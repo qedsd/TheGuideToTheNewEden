@@ -32,7 +32,25 @@ namespace TheGuideToTheNewEden.WinUI
         /// </summary>
         public App()
         {
+            UnhandledException += App_UnhandledException;
             this.InitializeComponent();
+            Models.Setting.Load();
+            if (Models.Setting.Instance.IsRequestedTheme)
+            {
+                if(Models.Setting.Instance.Theme == Enums.ThemeModeEnum.Light)
+                {
+                    RequestedTheme = ApplicationTheme.Light;
+                }
+                else
+                {
+                    RequestedTheme = ApplicationTheme.Dark;
+                }
+            }
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
         }
 
         /// <summary>
@@ -42,6 +60,9 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+            
+            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Models.Setting.Instance.UILanguageStr;
             m_window = new MainWindow();
             m_window.Activate();
         }

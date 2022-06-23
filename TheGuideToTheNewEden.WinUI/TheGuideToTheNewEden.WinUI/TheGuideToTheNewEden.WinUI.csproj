@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -9,10 +10,51 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>
-
+  <PropertyGroup Label="MultilingualAppToolkit">
+    <MultilingualAppToolkitVersion>4.0</MultilingualAppToolkitVersion>
+    <MultilingualFallbackLanguage>zh-CN</MultilingualFallbackLanguage>
+    <TranslationReport Condition="'$(Configuration)' == 'Release'">true</TranslationReport>
+    <SuppressPseudoWarning Condition="'$(Configuration)' == 'Debug'">true</SuppressPseudoWarning>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\Microsoft.Multilingual.PriResources.targets" Label="MultilingualAppToolkit" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\v$(MultilingualAppToolkitVersion)\Microsoft.Multilingual.PriResources.targets')" />
+  <Target Name="MATPrerequisite" BeforeTargets="PrepareForBuild" Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\Microsoft.Multilingual.PriResources.targets')" Label="MultilingualAppToolkit">
+    <Warning Text="$(MSBuildProjectFile) is Multilingual build enabled, but the Multilingual App Toolkit is unavailable during the build. If building with Visual Studio, please check to ensure that toolkit is properly installed." />
+  </Target>
   <ItemGroup>
+    <Compile Remove="en-US\**" />
+    <Content Remove="en-US\**" />
+    <EmbeddedResource Remove="en-US\**" />
+    <None Remove="en-US\**" />
+    <Page Remove="en-US\**" />
+    <PRIResource Remove="en-US\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Themes\ColorDictionary.xaml" />
+    <None Remove="Views\HomePage.xaml" />
+    <None Remove="Views\SettingPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.1" />
     <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\SettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\HomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Themes\ColorDictionary.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

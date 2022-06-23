@@ -5,9 +5,17 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    xmlns:Views1="using:TheGuideToTheNewEden.WinUI.Views"
+    mc:Ignorable="d"
+    >
+    <Grid Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Border x:Name="AppTitleBar" VerticalAlignment="Top" Height="32" Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
+            <TextBlock x:Name="AppTitle" x:Uid="AppName" VerticalAlignment="Top" Margin="10,8,0,0" />
+        </Border>
+        <Views1:SettingPage Grid.Row="1"/>
+    </Grid>
 </Window>

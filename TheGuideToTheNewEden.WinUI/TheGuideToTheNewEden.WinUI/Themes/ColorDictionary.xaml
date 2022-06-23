@@ -1,0 +1,19 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Themes">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <Style TargetType="TextBlock" x:Key="TextBlock1">
+                <Setter Property="Foreground" Value="Red"/>
+            </Style>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <Style TargetType="TextBlock" x:Key="TextBlock1">
+                <Setter Property="Foreground" Value="Yellow"/>
+            </Style>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    
+</ResourceDictionary>

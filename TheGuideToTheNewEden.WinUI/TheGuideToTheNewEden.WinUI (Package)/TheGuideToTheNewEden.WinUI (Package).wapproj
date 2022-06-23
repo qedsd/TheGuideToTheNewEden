@@ -43,6 +43,24 @@
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefaultLanguage>zh-CN</DefaultLanguage>
+  </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
@@ -67,7 +85,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="[1.1.1]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="[10.0.22000.194]">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.1">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
