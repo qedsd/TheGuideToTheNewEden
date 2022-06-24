@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using TheGuideToTheNewEden.UWP.Activation;
-using TheGuideToTheNewEden.UWP.Core.Helpers;
+using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.UWP.Services;
 
 using Windows.ApplicationModel.Activation;
@@ -66,6 +66,8 @@ namespace TheGuideToTheNewEden.UWP.Services
         {
             await Singleton<BackgroundTaskService>.Instance.RegisterBackgroundTasksAsync().ConfigureAwait(false);
             await ThemeSelectorService.InitializeAsync().ConfigureAwait(false);
+            await LanguageSelectorService.InitializeAsync().ConfigureAwait(false);
+            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = LanguageSelectorService.Language;
         }
 
         private async Task HandleActivationAsync(object activationArgs)

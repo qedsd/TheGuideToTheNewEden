@@ -2,68 +2,63 @@
     x:Class="TheGuideToTheNewEden.UWP.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.UWP.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helper="using:TheGuideToTheNewEden.UWP.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Style="{StaticResource PageStyle}"
     xmlns:xaml="using:Windows.UI.Xaml"
+    xmlns:fluent="using:Fluent.Icons"
+    Style="{StaticResource PageStyle}"
+    Background="Transparent"
     mc:Ignorable="d">
     <Page.Resources>
         <helper:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="ElementTheme" />
+        <Style TargetType="fluent:FluentIconElement">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Page.Resources>
 
-    <Grid Margin="{StaticResource MediumLeftRightMargin}">
-        <StackPanel
-            x:Name="ContentArea">
-            <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
-            <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
-                <TextBlock x:Uid="Settings_Theme" />
-
-                <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                    <RadioButton
-                        x:Uid="Settings_Theme_Light"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Light</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Dark"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Default"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Default</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                </StackPanel>
+    <StackPanel  Margin="{StaticResource MediumLeftTopRightBottomMargin}" Spacing="4" >
+        <StackPanel.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
+            </TransitionCollection>
+        </StackPanel.ChildrenTransitions>
+        <controls:ExpandableSettingControl x:Uid="Setting_Theme">
+            <controls:ExpandableSettingControl.Icon>
+                <fluent:FluentIconElement Symbol="PaintBrush20"/>
+            </controls:ExpandableSettingControl.Icon>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}" Width="128">
+                    <ComboBoxItem x:Uid="Setting_Theme_Default" />
+                    <ComboBoxItem x:Uid="Setting_Theme_Light" />
+                    <ComboBoxItem x:Uid="Setting_Theme_Dark" />
+                </ComboBox>
             </StackPanel>
+        </controls:ExpandableSettingControl>
 
-            <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
-
-            <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" />
-                <TextBlock
-                    x:Uid="Settings_AboutDescription"
-                    Margin="{StaticResource XSmallTopMargin}"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
-
-                <HyperlinkButton x:Uid="Settings_PrivacyTermsLink" Margin="{StaticResource XSmallTopMargin}" />
+        <controls:ExpandableSettingControl x:Uid="Setting_UILanguage">
+            <controls:ExpandableSettingControl.Icon>
+                <fluent:FluentIconElement Symbol="LocalLanguage20" />
+            </controls:ExpandableSettingControl.Icon>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox SelectedIndex="{x:Bind ViewModel.SelectedUILanguageIndex, Mode=TwoWay}" Width="128">
+                    <ComboBoxItem Content="中文" />
+                    <ComboBoxItem Content="English" />
+                </ComboBox>
             </StackPanel>
-        </StackPanel>
-    </Grid>    
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_DBLanguage">
+            <controls:ExpandableSettingControl.Icon>
+                <fluent:FluentIconElement Symbol="LocalLanguage20" />
+            </controls:ExpandableSettingControl.Icon>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox SelectedIndex="{x:Bind ViewModel.SelectedDBLanguageIndex, Mode=TwoWay}" Width="128">
+                    <ComboBoxItem Content="中文" />
+                    <ComboBoxItem Content="English" />
+                </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+    </StackPanel>
 </Page>

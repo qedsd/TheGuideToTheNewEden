@@ -4,15 +4,34 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    NavigationCacheMode="Enabled"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
-    <Grid x:Name="ContentArea" Margin="{StaticResource MediumLeftRightMargin}">
-        <Grid
-            Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
-            <!--
-                The SystemControlPageBackgroundChromeLowBrush background represents where you should place your content. 
-                Place your content here.
-            -->
-        </Grid>
+    <Grid x:Name="ContentArea" Margin="{StaticResource MediumLeftTopRightBottomMargin}">
+        <ScrollViewer>
+            <StackPanel>
+                <Border Height="260" CornerRadius="8">
+                    <Border.Background>
+                        <ImageBrush
+                            ImageSource="/Assets/Imgs/home.jpg"
+                            Opacity="1"
+                            Stretch="UniformToFill" />
+                    </Border.Background>
+                    <StackPanel Margin="60,0,0,0" VerticalAlignment="Center">
+                        <TextBlock
+                            x:Uid="AppDisplayNameTextBlock"
+                            FontSize="32"
+                            Foreground="White" />
+                        <TextBlock
+                            FontSize="14"
+                            Foreground="WhiteSmoke"
+                            Text="{x:Bind ViewModel.VersionDescription}" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel />
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

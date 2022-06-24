@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace TheGuideToTheNewEden.UWP.Core.Helpers
+namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class TaskExtensions
     {

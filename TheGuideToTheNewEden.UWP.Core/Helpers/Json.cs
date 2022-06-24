@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
-namespace TheGuideToTheNewEden.UWP.Core.Helpers
+namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class Json
     {

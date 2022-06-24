@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGuideToTheNewEden.UWP", "TheGuideToTheNewEden.UWP\TheGuideToTheNewEden.UWP.csproj", "{94682672-E7CD-419D-BB46-43451B26211B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGuideToTheNewEden.UWP.Core", "TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.UWP.Core.csproj", "{93DCB9F3-43B9-4B83-B1AF-3E582795808C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGuideToTheNewEden.Core", "TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.Core.csproj", "{93DCB9F3-43B9-4B83-B1AF-3E582795808C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

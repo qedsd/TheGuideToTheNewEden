@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace TheGuideToTheNewEden.UWP.Core.Helpers
+namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class Singleton<T>
         where T : new()

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-using TheGuideToTheNewEden.UWP.Core.Helpers;
+using TheGuideToTheNewEden.Core.Helpers;
 
 using Windows.Storage;
 using Windows.Storage.Streams;

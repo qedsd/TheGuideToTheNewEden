@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TheGuideToTheNewEden.UWP</RootNamespace>
     <AssemblyName>TheGuideToTheNewEden.UWP</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
+    <DefaultLanguage>zh-CN</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
@@ -115,7 +115,16 @@
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
+  <PropertyGroup Label="MultilingualAppToolkit">
+    <MultilingualAppToolkitVersion>4.0</MultilingualAppToolkitVersion>
+    <MultilingualFallbackLanguage>zh-CN</MultilingualFallbackLanguage>
+    <TranslationReport Condition="'$(Configuration)' == 'Release'">true</TranslationReport>
+    <SuppressPseudoWarning Condition="'$(Configuration)' == 'Debug'">true</SuppressPseudoWarning>
+  </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Fluent.Icons">
+      <Version>1.1.110</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.14</Version>
     </PackageReference>
@@ -125,11 +134,23 @@
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications">
       <Version>7.1.2</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
+      <Version>7.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
+      <Version>7.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls.DataGrid">
+      <Version>7.1.2</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.7.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="PropertyChanged.Fody">
+      <Version>3.4.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -141,25 +162,37 @@
     <Compile Include="BackgroundTasks\BackgroundTask1.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
+    <Compile Include="Controls\ExpandableSettingControl.xaml.cs">
+      <DependentUpon>ExpandableSettingControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ExpandableSettingHeaderControl.xaml.cs">
+      <DependentUpon>ExpandableSettingHeaderControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\StrVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToBooleanConverter.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="Services\BackgroundTaskService.cs" />
+    <Compile Include="Services\CharacterService.cs" />
+    <Compile Include="Services\DBLanguageSelectorService.cs" />
+    <Compile Include="Services\LanguageSelectorService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ToastNotificationsService.cs" />
     <Compile Include="Services\ToastNotificationsService.Samples.cs" />
+    <Compile Include="ViewModels\CharacterViewModel.cs" />
     <Compile Include="ViewModels\HomeViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\ShellViewModel.cs" />
+    <Compile Include="Views\CharacterPage.xaml.cs">
+      <DependentUpon>CharacterPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
@@ -175,6 +208,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\ExpandableSettingControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ExpandableSettingHeaderControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Page.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -195,11 +236,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Views\CharacterPage.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MainPage.xaml">
+    <Page Include="Views\HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -221,6 +262,204 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Icon\alliances.png" />
+    <Content Include="Assets\Icon\character.png" />
+    <Content Include="Assets\Icon\corporation.png" />
+    <Content Include="Assets\Icon\earth_128.png" />
+    <Content Include="Assets\Icon\eve-online.png" />
+    <Content Include="Assets\Icon\region.png" />
+    <Content Include="Assets\Icon\ship.png" />
+    <Content Include="Assets\Icon\systems.png" />
+    <Content Include="Assets\Icon\transparent_32.png" />
+    <Content Include="Assets\Icon\WindowIcons\abyssalFilament.png" />
+    <Content Include="Assets\Icon\WindowIcons\accessGroups.png" />
+    <Content Include="Assets\Icon\WindowIcons\achievements.png" />
+    <Content Include="Assets\Icon\WindowIcons\activityTracker.png" />
+    <Content Include="Assets\Icon\WindowIcons\agent.png" />
+    <Content Include="Assets\Icon\WindowIcons\agentfinder.png" />
+    <Content Include="Assets\Icon\WindowIcons\aggression.png" />
+    <Content Include="Assets\Icon\WindowIcons\alliances.png" />
+    <Content Include="Assets\Icon\WindowIcons\assets.png" />
+    <Content Include="Assets\Icon\WindowIcons\assetscorp.png" />
+    <Content Include="Assets\Icon\WindowIcons\attention.png" />
+    <Content Include="Assets\Icon\WindowIcons\attributes.png" />
+    <Content Include="Assets\Icon\WindowIcons\augmentations.png" />
+    <Content Include="Assets\Icon\WindowIcons\basicServices.png" />
+    <Content Include="Assets\Icon\WindowIcons\biography.png" />
+    <Content Include="Assets\Icon\WindowIcons\bleedchannel.png" />
+    <Content Include="Assets\Icon\WindowIcons\bountyoffice.png" />
+    <Content Include="Assets\Icon\WindowIcons\browser.png" />
+    <Content Include="Assets\Icon\WindowIcons\browserbookmarks.png" />
+    <Content Include="Assets\Icon\WindowIcons\calculator.png" />
+    <Content Include="Assets\Icon\WindowIcons\calendar.png" />
+    <Content Include="Assets\Icon\WindowIcons\capitalnavigation.png" />
+    <Content Include="Assets\Icon\WindowIcons\cargo.png" />
+    <Content Include="Assets\Icon\WindowIcons\cargocontainer.png" />
+    <Content Include="Assets\Icon\WindowIcons\cargocontainerlocked.png" />
+    <Content Include="Assets\Icon\WindowIcons\cargoscan.png" />
+    <Content Include="Assets\Icon\WindowIcons\certificates.png" />
+    <Content Include="Assets\Icon\WindowIcons\channeloperator.png" />
+    <Content Include="Assets\Icon\WindowIcons\charactersheet.png" />
+    <Content Include="Assets\Icon\WindowIcons\charcustomization.png" />
+    <Content Include="Assets\Icon\WindowIcons\chatchannel.png" />
+    <Content Include="Assets\Icon\WindowIcons\chatchannels.png" />
+    <Content Include="Assets\Icon\WindowIcons\cloneBay.png" />
+    <Content Include="Assets\Icon\WindowIcons\combatlog.png" />
+    <Content Include="Assets\Icon\WindowIcons\commandcenterhold.png" />
+    <Content Include="Assets\Icon\WindowIcons\comparetool.png" />
+    <Content Include="Assets\Icon\WindowIcons\concord.png" />
+    <Content Include="Assets\Icon\WindowIcons\contacts.png" />
+    <Content Include="Assets\Icon\WindowIcons\container.png" />
+    <Content Include="Assets\Icon\WindowIcons\contractauction.png" />
+    <Content Include="Assets\Icon\WindowIcons\contractcourier.png" />
+    <Content Include="Assets\Icon\WindowIcons\contractitemexchange.png" />
+    <Content Include="Assets\Icon\WindowIcons\contracts.png" />
+    <Content Include="Assets\Icon\WindowIcons\corpdeliveries.png" />
+    <Content Include="Assets\Icon\WindowIcons\corpHangar.png" />
+    <Content Include="Assets\Icon\WindowIcons\corpmap.png" />
+    <Content Include="Assets\Icon\WindowIcons\corporation.png" />
+    <Content Include="Assets\Icon\WindowIcons\corporationdecorations.png" />
+    <Content Include="Assets\Icon\WindowIcons\corporationlocations.png" />
+    <Content Include="Assets\Icon\WindowIcons\corporationmembers.png" />
+    <Content Include="Assets\Icon\WindowIcons\corporationstandings.png" />
+    <Content Include="Assets\Icon\WindowIcons\criminal.png" />
+    <Content Include="Assets\Icon\WindowIcons\criminal.zh.png" />
+    <Content Include="Assets\Icon\WindowIcons\criticalstate.png" />
+    <Content Include="Assets\Icon\WindowIcons\decorations.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryActivities.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryIndustry.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryInventory.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryMarket.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryPersonal.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryServices.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryShip.png" />
+    <Content Include="Assets\Icon\WindowIcons\directorySocial.png" />
+    <Content Include="Assets\Icon\WindowIcons\directoryUtilities.png" />
+    <Content Include="Assets\Icon\WindowIcons\docking.png" />
+    <Content Include="Assets\Icon\WindowIcons\dogtags.png" />
+    <Content Include="Assets\Icon\WindowIcons\dronebay.png" />
+    <Content Include="Assets\Icon\WindowIcons\drones.png" />
+    <Content Include="Assets\Icon\WindowIcons\employmenthistory.png" />
+    <Content Include="Assets\Icon\WindowIcons\evemail.png" />
+    <Content Include="Assets\Icon\WindowIcons\evemailcompose.png" />
+    <Content Include="Assets\Icon\WindowIcons\evemailtag.png" />
+    <Content Include="Assets\Icon\WindowIcons\factionalwarfare.png" />
+    <Content Include="Assets\Icon\WindowIcons\fitting.png" />
+    <Content Include="Assets\Icon\WindowIcons\fittingManagement.png" />
+    <Content Include="Assets\Icon\WindowIcons\fleet.png" />
+    <Content Include="Assets\Icon\WindowIcons\Folder.png" />
+    <Content Include="Assets\Icon\WindowIcons\folder_cargo.png" />
+    <Content Include="Assets\Icon\WindowIcons\forward.png" />
+    <Content Include="Assets\Icon\WindowIcons\fuelbay.png" />
+    <Content Include="Assets\Icon\WindowIcons\gashold.png" />
+    <Content Include="Assets\Icon\WindowIcons\grouplist.png" />
+    <Content Include="Assets\Icon\WindowIcons\help.png" />
+    <Content Include="Assets\Icon\WindowIcons\hidestatus.png" />
+    <Content Include="Assets\Icon\WindowIcons\hidewindows.png" />
+    <Content Include="Assets\Icon\WindowIcons\incursions.png" />
+    <Content Include="Assets\Icon\WindowIcons\Industry.png" />
+    <Content Include="Assets\Icon\WindowIcons\info.png" />
+    <Content Include="Assets\Icon\WindowIcons\insider.png" />
+    <Content Include="Assets\Icon\WindowIcons\insurance.png" />
+    <Content Include="Assets\Icon\WindowIcons\ISIS.png" />
+    <Content Include="Assets\Icon\WindowIcons\itemHangar.png" />
+    <Content Include="Assets\Icon\WindowIcons\items.png" />
+    <Content Include="Assets\Icon\WindowIcons\journal.png" />
+    <Content Include="Assets\Icon\WindowIcons\jukebox.png" />
+    <Content Include="Assets\Icon\WindowIcons\jumpclones.png" />
+    <Content Include="Assets\Icon\WindowIcons\killreport.png" />
+    <Content Include="Assets\Icon\WindowIcons\killrights.png" />
+    <Content Include="Assets\Icon\WindowIcons\limitedengagement.png" />
+    <Content Include="Assets\Icon\WindowIcons\lockedcontainer.png" />
+    <Content Include="Assets\Icon\WindowIcons\log.png" />
+    <Content Include="Assets\Icon\WindowIcons\lpstore.png" />
+    <Content Include="Assets\Icon\WindowIcons\map.png" />
+    <Content Include="Assets\Icon\WindowIcons\market.png" />
+    <Content Include="Assets\Icon\WindowIcons\marketdeliveries.png" />
+    <Content Include="Assets\Icon\WindowIcons\medical.png" />
+    <Content Include="Assets\Icon\WindowIcons\member.png" />
+    <Content Include="Assets\Icon\WindowIcons\memberdelay.png" />
+    <Content Include="Assets\Icon\WindowIcons\mercenary.png" />
+    <Content Include="Assets\Icon\WindowIcons\mercenaryadd.png" />
+    <Content Include="Assets\Icon\WindowIcons\mercenaryally.png" />
+    <Content Include="Assets\Icon\WindowIcons\mercenaryattention.png" />
+    <Content Include="Assets\Icon\WindowIcons\mineralhold.png" />
+    <Content Include="Assets\Icon\WindowIcons\miningLedger.png" />
+    <Content Include="Assets\Icon\WindowIcons\mischold.png" />
+    <Content Include="Assets\Icon\WindowIcons\moonDrill.png" />
+    <Content Include="Assets\Icon\WindowIcons\moonDrillScheduler.png" />
+    <Content Include="Assets\Icon\WindowIcons\mutation.png" />
+    <Content Include="Assets\Icon\WindowIcons\mutualwars.png" />
+    <Content Include="Assets\Icon\WindowIcons\navigation.png" />
+    <Content Include="Assets\Icon\WindowIcons\NES.png" />
+    <Content Include="Assets\Icon\WindowIcons\newspost.png" />
+    <Content Include="Assets\Icon\WindowIcons\note.png" />
+    <Content Include="Assets\Icon\WindowIcons\notegroup.png" />
+    <Content Include="Assets\Icon\WindowIcons\notepad.png" />
+    <Content Include="Assets\Icon\WindowIcons\offices.png" />
+    <Content Include="Assets\Icon\WindowIcons\opportunitiesTree.png" />
+    <Content Include="Assets\Icon\WindowIcons\orehold.png" />
+    <Content Include="Assets\Icon\WindowIcons\other.png" />
+    <Content Include="Assets\Icon\WindowIcons\peopleandplaces.png" />
+    <Content Include="Assets\Icon\WindowIcons\personalDeliveries.png" />
+    <Content Include="Assets\Icon\WindowIcons\personallocations.png" />
+    <Content Include="Assets\Icon\WindowIcons\personalstandings.png" />
+    <Content Include="Assets\Icon\WindowIcons\pilotlicense.png" />
+    <Content Include="Assets\Icon\WindowIcons\planetarycommodities.png" />
+    <Content Include="Assets\Icon\WindowIcons\planets.png" />
+    <Content Include="Assets\Icon\WindowIcons\politics.png" />
+    <Content Include="Assets\Icon\WindowIcons\projectdiscovery.png" />
+    <Content Include="Assets\Icon\WindowIcons\question.png" />
+    <Content Include="Assets\Icon\WindowIcons\reactions.png" />
+    <Content Include="Assets\Icon\WindowIcons\recruitment.png" />
+    <Content Include="Assets\Icon\WindowIcons\redeem.png" />
+    <Content Include="Assets\Icon\WindowIcons\repairshop.png" />
+    <Content Include="Assets\Icon\WindowIcons\reply.png" />
+    <Content Include="Assets\Icon\WindowIcons\replyall.png" />
+    <Content Include="Assets\Icon\WindowIcons\Reprocess.png" />
+    <Content Include="Assets\Icon\WindowIcons\reprocessing.png" />
+    <Content Include="Assets\Icon\WindowIcons\research.png" />
+    <Content Include="Assets\Icon\WindowIcons\restriction.png" />
+    <Content Include="Assets\Icon\WindowIcons\salvagehold.png" />
+    <Content Include="Assets\Icon\WindowIcons\sanctionableactions.png" />
+    <Content Include="Assets\Icon\WindowIcons\satellite.png" />
+    <Content Include="Assets\Icon\WindowIcons\scopeNetwork.png" />
+    <Content Include="Assets\Icon\WindowIcons\searchmarket.png" />
+    <Content Include="Assets\Icon\WindowIcons\securitystatus.png" />
+    <Content Include="Assets\Icon\WindowIcons\Settings.png" />
+    <Content Include="Assets\Icon\WindowIcons\shiphangar.png" />
+    <Content Include="Assets\Icon\WindowIcons\ships.png" />
+    <Content Include="Assets\Icon\WindowIcons\shipscan.png" />
+    <Content Include="Assets\Icon\WindowIcons\skills.png" />
+    <Content Include="Assets\Icon\WindowIcons\skins.png" />
+    <Content Include="Assets\Icon\WindowIcons\smallfolder.png" />
+    <Content Include="Assets\Icon\WindowIcons\sovereignty.png" />
+    <Content Include="Assets\Icon\WindowIcons\standings.png" />
+    <Content Include="Assets\Icon\WindowIcons\station.png" />
+    <Content Include="Assets\Icon\WindowIcons\stationcontainer.png" />
+    <Content Include="Assets\Icon\WindowIcons\stationcontainerlocked.png" />
+    <Content Include="Assets\Icon\WindowIcons\stop.png" />
+    <Content Include="Assets\Icon\WindowIcons\structurebrowser.png" />
+    <Content Include="Assets\Icon\WindowIcons\subSystems.png" />
+    <Content Include="Assets\Icon\WindowIcons\surrender.png" />
+    <Content Include="Assets\Icon\WindowIcons\surrenderattention.png" />
+    <Content Include="Assets\Icon\WindowIcons\systems.png" />
+    <Content Include="Assets\Icon\WindowIcons\terminate.png" />
+    <Content Include="Assets\Icon\WindowIcons\terminate.zh.png" />
+    <Content Include="Assets\Icon\WindowIcons\theAgency.PNG" />
+    <Content Include="Assets\Icon\WindowIcons\tipoftheday.png" />
+    <Content Include="Assets\Icon\WindowIcons\trainingqueue.png" />
+    <Content Include="Assets\Icon\WindowIcons\triglavianRace.png" />
+    <Content Include="Assets\Icon\WindowIcons\triglavians.png" />
+    <Content Include="Assets\Icon\WindowIcons\tutorial.png" />
+    <Content Include="Assets\Icon\WindowIcons\UIHelper.png" />
+    <Content Include="Assets\Icon\WindowIcons\votes.png" />
+    <Content Include="Assets\Icon\WindowIcons\wallet.png" />
+    <Content Include="Assets\Icon\WindowIcons\warning.png" />
+    <Content Include="Assets\Icon\WindowIcons\warreport.png" />
+    <Content Include="Assets\Icon\WindowIcons\wars.png" />
+    <Content Include="Assets\Imgs\home.jpg" />
+    <Content Include="Assets\Logo\Square44x44Logo.scale-100.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -232,6 +471,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
+    <PRIResource Include="Strings\zh-CN\Resources.resw" />
+    <PRIResource Include="Strings\zh-CN\Setting.resw" />
     <None Include="TheGuideToTheNewEden.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -241,15 +482,19 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.UWP.Core.csproj">
+    <ProjectReference Include="..\TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.Core.csproj">
       <Project>{93DCB9F3-43B9-4B83-B1AF-3E582795808C}</Project>
-      <Name>TheGuideToTheNewEden.UWP.Core</Name>
+      <Name>TheGuideToTheNewEden.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\Microsoft.Multilingual.PriResources.targets" Label="MultilingualAppToolkit" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\v$(MultilingualAppToolkitVersion)\Microsoft.Multilingual.PriResources.targets')" />
+  <Target Name="MATPrerequisite" BeforeTargets="PrepareForBuild" Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\Multilingual App Toolkit\Microsoft.Multilingual.PriResources.targets')" Label="MultilingualAppToolkit">
+    <Warning Text="$(MSBuildProjectFile) is Multilingual build enabled, but the Multilingual App Toolkit is unavailable during the build. If building with Visual Studio, please check to ensure that toolkit is properly installed." />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

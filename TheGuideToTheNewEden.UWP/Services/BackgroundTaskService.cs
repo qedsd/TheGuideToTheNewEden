@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using TheGuideToTheNewEden.UWP.Activation;
 using TheGuideToTheNewEden.UWP.BackgroundTasks;
-using TheGuideToTheNewEden.UWP.Core.Helpers;
+using TheGuideToTheNewEden.Core.Helpers;
 
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Background;
