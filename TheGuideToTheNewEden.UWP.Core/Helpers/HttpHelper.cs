@@ -52,6 +52,23 @@ namespace TheGuideToTheNewEden.UWP.Core.Helpers
             }
         }
 
+
+        public static async Task<string> PostAsync(string url, Dictionary<string, string> form)
+        {
+            HttpClient client = new HttpClient(new HttpClientHandler() { UseCookies = false });
+            HttpContent content = new FormUrlEncodedContent(form);
+            try
+            {
+                HttpResponseMessage response = await client.PostAsync(url, content);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return responseBody;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// 使用get方法异步请求
         /// </summary>

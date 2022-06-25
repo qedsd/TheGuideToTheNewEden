@@ -8,10 +8,11 @@ namespace TheGuideToTheNewEden.UWP.Core.Models.Character
     {
         public int CharacterID { get; set; }
         public string CharacterName { get; set; }
-        public string CharacterOwnerHash { get; set; }
         public string ExpiresOn { get; set; }
-        public string IntellectualProperty { get; set; }
         public string Scopes { get; set; }
         public string TokenType { get; set; }
+        public string CharacterOwnerHash { get; set; }
+        public string ClientID { get; set; }
+        
     }
 }

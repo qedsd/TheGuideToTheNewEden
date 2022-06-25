@@ -32,33 +32,40 @@ namespace TheGuideToTheNewEden.UWP.Services
 
         public async Task ActivateAsync(object activationArgs)
         {
-            if (IsInteractive(activationArgs))
+            if(activationArgs is ProtocolActivatedEventArgs )
             {
-                // Initialize services that you need before app activation
-                // take into account that the splash screen is shown while this code runs.
-                await InitializeAsync();
-
-                // Do not repeat app initialization when the Window already has content,
-                // just ensure that the window is active
-                if (Window.Current.Content == null)
-                {
-                    // Create a Shell or Frame to act as the navigation context
-                    Window.Current.Content = _shell?.Value ?? new Frame();
-                }
+                CharacterService.HandelProtocol((activationArgs as ProtocolActivatedEventArgs).Uri.ToString());
             }
-
-            // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
-            // will navigate to the first page
-            await HandleActivationAsync(activationArgs);
-            _lastActivationArgs = activationArgs;
-
-            if (IsInteractive(activationArgs))
+            else
             {
-                // Ensure the current window is active
-                Window.Current.Activate();
+                if (IsInteractive(activationArgs))
+                {
+                    // Initialize services that you need before app activation
+                    // take into account that the splash screen is shown while this code runs.
+                    await InitializeAsync();
 
-                // Tasks after activation
-                await StartupAsync();
+                    // Do not repeat app initialization when the Window already has content,
+                    // just ensure that the window is active
+                    if (Window.Current.Content == null)
+                    {
+                        // Create a Shell or Frame to act as the navigation context
+                        Window.Current.Content = _shell?.Value ?? new Frame();
+                    }
+                }
+
+                // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
+                // will navigate to the first page
+                await HandleActivationAsync(activationArgs);
+                _lastActivationArgs = activationArgs;
+
+                if (IsInteractive(activationArgs))
+                {
+                    // Ensure the current window is active
+                    Window.Current.Activate();
+
+                    // Tasks after activation
+                    await StartupAsync();
+                }
             }
         }
 

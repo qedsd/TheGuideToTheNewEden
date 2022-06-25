@@ -1,15 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.UWP.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.UWP.Services
 {
     public static class CharacterService
     {
-        public static string ClientId = "put your clientid in here";
+        public static string ClientId = "197e9346911a457abbdb717aac5eb454";
         public static string RedirectUri = "eveauth-qedsd-neweden:///";
         public static string Scope = "esi-universe.read_structures.v1 esi-markets.structure_markets.v1";
         public static string CharacterScope = "esi-skills.read_skills.v1 esi-skills.read_skillqueue.v1 esi-skills.read_skills.v1 esi-wallet.read_character_wallet.v1 " +
@@ -35,8 +37,30 @@ namespace TheGuideToTheNewEden.UWP.Services
         {
             var array = uri.Split(new char[2] { '=', '&' });
             string code = array[1];
-            var http = new HttpClient();
-            await Core.Helpers.HttpHelper.PostJsonAsync(Core.Services.Api.APIService.OauthToken(), content);
+            var form = new Dictionary<string, string>();
+            form.Add("grant_type", "authorization_code");
+            form.Add("client_id", ClientId);
+            form.Add("code", code);
+            string result = await Core.Helpers.HttpHelper.PostAsync(Core.Services.Api.APIService.OauthToken(), form);
+            if(!string.IsNullOrEmpty(result))
+            {
+                var token = JsonConvert.DeserializeObject<OauthToken>(result);
+                if(token != null)
+                {
+                    var vorifyToken = await GetVorifyTokenAsync(token.Access_token);
+                    if(vorifyToken != null)
+                    {
+                        CharacterOauth characterOauth = new CharacterOauth(token, vorifyToken);
+                        //save
+                    }
+                }
+            }
+        }
+
+        public static async Task<VorifyToken> GetVorifyTokenAsync(string access_token)
+        {
+            string result = await Core.Helpers.HttpHelper.GetAsync(Core.Services.Api.APIService.VerifyToken(ClientId, access_token));
+            return JsonConvert.DeserializeObject<VorifyToken>(result);
         }
     }
 }

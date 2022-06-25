@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.UWP.Views"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:model="using:TheGuideToTheNewEden.UWP.Core.Models.Character"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -112,12 +112,11 @@
                     <ListBox
                         x:Name="ListBox_Characters"
                         Background="Transparent"
-                        ItemContainerStyle="{StaticResource ListBoxItemStyle2}"
                         RightTapped="ListBox_Characters_RightTapped"
                         SelectedIndex="-1"
                         Tapped="ListBox_Characters_Tapped">
                         <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="model:CharacterHomeOauth">
+                            <DataTemplate x:DataType="model:CharacterOauth">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="32" />
@@ -150,8 +149,7 @@
                     Margin="10,10"
                     Padding="0"
                     Background="Transparent"
-                    Click="Button_AddNewCharacter_Click"
-                    Style="{StaticResource ButtonStyle_Tran2}">
+                    Click="Button_AddNewCharacter_Click">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />

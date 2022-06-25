@@ -26,5 +26,20 @@ namespace TheGuideToTheNewEden.UWP.Views
         {
             this.InitializeComponent();
         }
+
+        private void ListBox_Characters_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_Characters_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_AddNewCharacter_Click(object sender, RoutedEventArgs e)
+        {
+            Services.CharacterService.GetAuthorizeByBrower();
+        }
     }
 }

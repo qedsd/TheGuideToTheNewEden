@@ -43,6 +43,14 @@
       </uap:VisualElements>
 
       <Extensions>
+
+        <uap:Extension Category="windows.protocol">
+
+          <uap:Protocol Name="eveauth-qedsd-neweden">
+
+            <uap:DisplayName>ms-resource:AppDisplayName</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

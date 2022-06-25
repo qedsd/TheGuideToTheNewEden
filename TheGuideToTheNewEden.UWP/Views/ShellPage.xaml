@@ -84,6 +84,15 @@
                         <icons:FluentIconElement Symbol="Home20" />
                     </winui:NavigationViewItem.Icon>
                 </winui:NavigationViewItem>
+
+                <winui:NavigationViewItem
+                    x:Uid="Shell_Character"
+                    helpers:NavHelper.NavigateTo="views:CharacterPage"
+                    Tag="Collapsed">
+                    <winui:NavigationViewItem.Icon>
+                        <icons:FluentIconElement Symbol="People20" />
+                    </winui:NavigationViewItem.Icon>
+                </winui:NavigationViewItem>
             </winui:NavigationView.MenuItems>
             <i:Interaction.Behaviors>
                 <!--<behaviors:NavigationViewHeaderBehavior DefaultHeader="{x:Bind ViewModel.Selected.Content, Mode=OneWay}">
