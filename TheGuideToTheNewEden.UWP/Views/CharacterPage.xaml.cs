@@ -22,24 +22,10 @@ namespace TheGuideToTheNewEden.UWP.Views
     /// </summary>
     public sealed partial class CharacterPage : Page
     {
+        public ViewModels.CharacterViewModel ViewModel { get; } = new ViewModels.CharacterViewModel();
         public CharacterPage()
         {
             this.InitializeComponent();
-        }
-
-        private void ListBox_Characters_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-
-        }
-
-        private void ListBox_Characters_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
-        private void Button_AddNewCharacter_Click(object sender, RoutedEventArgs e)
-        {
-            Services.CharacterService.GetAuthorizeByBrower();
         }
     }
 }

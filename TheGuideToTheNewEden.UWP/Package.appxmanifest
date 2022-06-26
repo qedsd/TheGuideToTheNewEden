@@ -8,7 +8,7 @@
   IgnorableNamespaces="uap mp genTemplate">
 
   <Identity
-    Name="C7B9C2CC-3486-4320-A944-115D178B75F2"
+    Name="TheGuideToTheNewEden.UWP"
     Publisher="CN=190826"
     Version="1.0.0.0" />
 
@@ -16,7 +16,7 @@
 
   <Properties>
     <DisplayName>TheGuideToTheNewEden.UWP</DisplayName>
-    <PublisherDisplayName>190826</PublisherDisplayName>
+    <PublisherDisplayName>QEDSD</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

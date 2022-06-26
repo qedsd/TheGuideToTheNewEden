@@ -7,9 +7,6 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
 {
     public static partial class APIService
     {
-        private const string TranquilityUri = "https://esi.evetech.net/latest/";
-        private const string SerenityUri = "https://esi.evepc.163.com/latest/";
-
         /// <summary>
         /// 角色技能
         /// </summary>
@@ -24,6 +21,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/skills/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 角色技能
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterSkills(int characterId, string token)=> CharacterSkills(DefaultGameServer,characterId,token);
 
         /// <summary>
         /// 角色钱包
@@ -39,6 +43,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/wallet/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 角色钱包
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterWallet(int characterId, string token)=> CharacterWallet(DefaultGameServer, characterId,token);
 
         /// <summary>
         /// 角色忠诚点数
@@ -54,6 +65,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/loyalty/points/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 角色忠诚点数
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterLoyaltyPoint(int characterId, string token)=> CharacterLoyaltyPoint(DefaultGameServer,characterId, token);
 
         /// <summary>
         /// 在线情况
@@ -69,6 +87,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/online/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 在线情况
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterOnline(int characterId, string token)=> CharacterOnline(DefaultGameServer,characterId,token);
 
         /// <summary>
         /// 当前位置
@@ -84,6 +109,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/location/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 当前位置
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterLocation(int characterId, string token)=> CharacterLocation(DefaultGameServer, characterId, token);
 
         /// <summary>
         /// 当前舰船信息
@@ -99,6 +131,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/ship/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 当前舰船信息
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterShip(int characterId, string token)=> CharacterShip(DefaultGameServer,characterId, token);
 
         /// <summary>
         /// 技能队列
@@ -114,6 +153,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/skillqueue/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 技能队列
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterSkillqueue(int characterId, string token) => CharacterSkillqueue(DefaultGameServer, characterId, token);
 
         /// <summary>
         /// 钱包记录
@@ -129,6 +175,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/wallet/journal/?datasource=serenity&token={token}&page={page}";
         }
+        /// <summary>
+        /// 钱包记录
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public static string CharacterWalletJournal(int characterId, string token, int page)=> CharacterWalletJournal(DefaultGameServer,characterId,token,page);
 
         /// <summary>
         /// 交易记录
@@ -144,6 +198,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/wallet/transactions/?datasource=serenity&token={token}&page={page}";
         }
+        /// <summary>
+        /// 交易记录
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public static string CharacterWalletTransactions(int characterId, string token, int page)=> CharacterWalletTransactions(DefaultGameServer,characterId:characterId,token:token,page);
 
         /// <summary>
         /// 邮箱标签
@@ -159,6 +221,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/mail/labels/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 邮箱标签
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterMailLabels(int characterId, string token)=> CharacterMailLabels(DefaultGameServer,characterId,token);
 
         /// <summary>
         /// 订阅邮件列表
@@ -174,6 +243,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/mail/lists/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 订阅邮件列表
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterMailLists(int characterId, string token)=> CharacterMailLists(DefaultGameServer, characterId,token);
 
         /// <summary>
         /// 最近50邮件
@@ -189,6 +265,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/mail/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 最近50邮件
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterMail(int characterId, string token)=> CharacterMail(DefaultGameServer,characterId, token);
 
         /// <summary>
         /// 指定邮箱标签最近50邮件
@@ -204,6 +287,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/mail/?datasource=serenity&token={token}&labels={labelIds}";
         }
+        /// <summary>
+        /// 指定邮箱标签最近50邮件
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="labelIds"></param>
+        /// <returns></returns>
+        public static string CharacterMailOfLables(int characterId, string token, int labelIds)=> CharacterMailOfLables(DefaultGameServer,characterId,token,labelIds);
 
         /// <summary>
         /// 指定id邮件详情
@@ -219,6 +310,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/mail/{id}/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 指定id邮件详情
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string CharacterMailDetail(int characterId, string token, int id) => CharacterMailDetail(DefaultGameServer, characterId,token,id);
 
         /// <summary>
         /// 指定页数合同列表
@@ -234,6 +333,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/contracts/?datasource=serenity&token={token}&page={page}";
         }
+        /// <summary>
+        /// 指定页数合同列表
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public static string CharacterContracts(int characterId, string token, int page)=> CharacterContracts(DefaultGameServer,characterId, token,page);
 
         /// <summary>
         /// 指定合同详细
@@ -249,6 +356,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/contracts/{id}/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 指定合同详细
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string CharacterContractDetail(int characterId, string token, int id) => CharacterContractDetail(DefaultGameServer,characterId,token,id);
 
         /// <summary>
         /// 拍卖合同出价情况
@@ -264,6 +379,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/contracts/{id}/bids/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 拍卖合同出价情况
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string CharacterContractBids(int characterId, string token, int id) => CharacterContractBids(DefaultGameServer, characterId,token,id);
 
         /// <summary>
         /// 克隆体信息
@@ -279,6 +402,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/clones/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 克隆体信息
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterClones(int characterId, string token) => CharacterClones(DefaultGameServer,characterId, token);
 
         /// <summary>
         /// 当前克隆体植入体
@@ -294,6 +424,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/implants/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 当前克隆体植入体
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterImplants(int characterId, string token) => CharacterImplants(DefaultGameServer,characterId,token);
 
         /// <summary>
         /// 军团、联盟信息
@@ -309,6 +446,11 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/affiliation/?datasource=serenity";
         }
+        /// <summary>
+        ///  军团、联盟信息
+        /// </summary>
+        /// <returns></returns>
+        public static string CharacterAffiliation() => CharacterAffiliation(DefaultGameServer);
 
         /// <summary>
         /// 角色基本信息
@@ -324,6 +466,12 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/?datasource=serenity";
         }
+        /// <summary>
+        /// 角色基本信息
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        public static string CharacterInfo(int characterId) => CharacterInfo(DefaultGameServer,characterId);
 
         /// <summary>
         /// 市场订单
@@ -339,6 +487,13 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/orders/?datasource=serenity&token={token}";
         }
+        /// <summary>
+        /// 市场订单
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static string CharacterOrders(int characterId, string token) => CharacterOrders(DefaultGameServer,characterId,token);
 
         /// <summary>
         /// 资产
@@ -354,6 +509,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/assets/?datasource=serenity&token={token}&page={page}";
         }
+        /// <summary>
+        /// 资产
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="token"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public static string CharacterOrders(int characterId, string token, int page) => CharacterOrders(DefaultGameServer,characterId,token,page);
 
         /// <summary>
         /// 雇佣历史
@@ -369,5 +532,11 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/characters/{characterId}/corporationhistory/?datasource=serenity";
         }
+        /// <summary>
+        /// 雇佣历史
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        public static string CharacterCorporationhistory(int characterId) => CharacterCorporationhistory(DefaultGameServer,characterId);
     }
 }

@@ -3,13 +3,20 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:converters="using:TheGuideToTheNewEden.UWP.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.UWP.Views"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:model="using:TheGuideToTheNewEden.UWP.Core.Models.Character"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:TheGuideToTheNewEden.UWP.Core.Models.Character"
+    NavigationCacheMode="Enabled"
+    x:Name="Page"
     Background="Transparent"
     mc:Ignorable="d">
-
-    <Grid>
+    <Page.Resources>
+        <converters:CharacterIdToAvatarConverter x:Key="CharacterIdToAvatarConverter" />
+        <converters:CharacterIdToAvatarConverter x:Key="CharacterIdToAvatarConverter32" Size="32" />
+    </Page.Resources>
+    <Grid Margin="{ThemeResource MediumTopMargin}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
@@ -27,7 +34,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 CornerRadius="999"
-                Source="http://src.qedsd.club/qedsd.jpg"
+                Source="{x:Bind ViewModel.CharacterOauth.CharacterID, Converter={StaticResource CharacterIdToAvatarConverter}, Mode=OneWay}"
                 Stretch="Fill" />
             <StackPanel Grid.Row="1" HorizontalAlignment="Center">
                 <TextBlock
@@ -36,7 +43,7 @@
                     FontFamily="SimSun"
                     FontSize="24"
                     Foreground="{StaticResource SystemAccentColor}"
-                    Text="QEDSD" />
+                    Text="{x:Bind ViewModel.CharacterOauth.CharacterName, Mode=OneWay}" />
 
                 <StackPanel
                     Margin="0,4"
@@ -112,12 +119,19 @@
                     <ListBox
                         x:Name="ListBox_Characters"
                         Background="Transparent"
-                        RightTapped="ListBox_Characters_RightTapped"
-                        SelectedIndex="-1"
-                        Tapped="ListBox_Characters_Tapped">
+                        ItemsSource="{x:Bind ViewModel.CharacterOauths}"
+                        SelectedItem="{x:Bind ViewModel.CharacterOauth, Mode=TwoWay}">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="model:CharacterOauth">
                                 <Grid>
+                                    <Grid.ContextFlyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem
+                                                x:Uid="Character_Remove"
+                                                Command="{Binding ElementName=Page, Path=ViewModel.RemoveCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}" />
+                                        </MenuFlyout>
+                                    </Grid.ContextFlyout>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="32" />
                                         <ColumnDefinition Width="*" />
@@ -129,13 +143,13 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         CornerRadius="999"
-                                        Source="{x:Bind CharacterID, Converter={StaticResource CharacterAvatar32}}"
+                                        Source="{x:Bind CharacterID, Converter={StaticResource CharacterIdToAvatarConverter32}}"
                                         Stretch="Fill" />
                                     <TextBlock
                                         Grid.Column="1"
                                         Margin="10,0,0,0"
                                         VerticalAlignment="Center"
-                                        Text="{x:Bind CharacterName}" />
+                                        Text="{x:Bind CharacterName, Mode=OneWay}" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -149,7 +163,7 @@
                     Margin="10,10"
                     Padding="0"
                     Background="Transparent"
-                    Click="Button_AddNewCharacter_Click">
+                    Command="{x:Bind ViewModel.AddCommand}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />

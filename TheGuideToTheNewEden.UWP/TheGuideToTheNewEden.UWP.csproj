@@ -168,8 +168,10 @@
     <Compile Include="Controls\ExpandableSettingHeaderControl.xaml.cs">
       <DependentUpon>ExpandableSettingHeaderControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\CharacterIdToAvatarConverter.cs" />
     <Compile Include="Converters\StrVisibilityConverter.cs" />
     <Compile Include="Converters\NullToBooleanConverter.cs" />
+    <Compile Include="Enums\ProtocolType.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Services\BackgroundTaskService.cs" />
     <Compile Include="Services\CharacterService.cs" />
     <Compile Include="Services\DBLanguageSelectorService.cs" />
+    <Compile Include="Services\GameServerSelectorService.cs" />
     <Compile Include="Services\LanguageSelectorService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
@@ -473,7 +476,6 @@
     <None Include=".editorconfig" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <PRIResource Include="Strings\zh-CN\Setting.resw" />
-    <None Include="TheGuideToTheNewEden.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

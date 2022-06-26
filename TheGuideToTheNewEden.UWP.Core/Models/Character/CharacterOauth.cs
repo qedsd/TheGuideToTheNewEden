@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.UWP.Core.Models.Character
 {
@@ -10,10 +11,14 @@ namespace TheGuideToTheNewEden.UWP.Core.Models.Character
         public string CharacterName { get; set; }
         public string Access_token { get; set; }
         public string Refresh_token { get; set; }
+        /// <summary>
+        /// 秒
+        /// </summary>
         public int Expires_in { get; set; }
         public DateTime GetDateTime { get; set; }
         public bool IsActive { get; set; } = false;
 
+        public CharacterOauth() { }
         public CharacterOauth(OauthToken oauthToken,VorifyToken vorifyToken)
         {
             CharacterID = vorifyToken.CharacterID;
@@ -22,6 +27,18 @@ namespace TheGuideToTheNewEden.UWP.Core.Models.Character
             Refresh_token = oauthToken.Refresh_token;
             Expires_in = oauthToken.Expires_in;
             GetDateTime = DateTime.Now;
+        }
+
+        public async Task<string> GetAccessToken()
+        {
+            await Services.CharacterService.TryUpdateAccessTokenAsync(this);
+            return Access_token;
+        }
+
+        public async Task<string> GetAccessToken(string clientId, string scope)
+        {
+            await Services.CharacterService.TryUpdateAccessTokenAsync(clientId, scope,this);
+            return Access_token;
         }
     }
 }

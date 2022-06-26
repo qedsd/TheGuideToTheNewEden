@@ -29,12 +29,12 @@ namespace TheGuideToTheNewEden.UWP.Services
             _shell = shell;
             _defaultNavItem = defaultNavItem;
         }
-
+        public static Enums.ProtocolType ProtocolType = Enums.ProtocolType.CharacterOauth;
         public async Task ActivateAsync(object activationArgs)
         {
             if(activationArgs is ProtocolActivatedEventArgs )
             {
-                CharacterService.HandelProtocol((activationArgs as ProtocolActivatedEventArgs).Uri.ToString());
+                HandleProtocol(activationArgs as ProtocolActivatedEventArgs);
             }
             else
             {
@@ -74,6 +74,9 @@ namespace TheGuideToTheNewEden.UWP.Services
             await Singleton<BackgroundTaskService>.Instance.RegisterBackgroundTasksAsync().ConfigureAwait(false);
             await ThemeSelectorService.InitializeAsync().ConfigureAwait(false);
             await LanguageSelectorService.InitializeAsync().ConfigureAwait(false);
+            await DBLanguageSelectorService.InitializeAsync().ConfigureAwait(false);
+            await GameServerSelectorService.InitializeAsync().ConfigureAwait(false);
+            await CharacterService.InitAsync().ConfigureAwait(false);
             Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = LanguageSelectorService.Language;
         }
 
@@ -112,6 +115,15 @@ namespace TheGuideToTheNewEden.UWP.Services
         private bool IsInteractive(object args)
         {
             return args is IActivatedEventArgs;
+        }
+
+        private void HandleProtocol(ProtocolActivatedEventArgs args)
+        {
+            switch (ProtocolType)
+            {
+                case Enums.ProtocolType.CharacterOauth: CharacterService.HandelCharacterOatuhProtocol(args.Uri.ToString());break;
+                case Enums.ProtocolType.StructureOauth: CharacterService.HandelStructureOauthProtocol(args.Uri.ToString()); break;
+            }
         }
     }
 }

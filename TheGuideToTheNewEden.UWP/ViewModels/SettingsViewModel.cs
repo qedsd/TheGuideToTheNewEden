@@ -13,7 +13,6 @@ using Windows.UI.Xaml;
 
 namespace TheGuideToTheNewEden.UWP.ViewModels
 {
-    [PropertyChanged.AddINotifyPropertyChangedInterface]
     public class SettingsViewModel : ObservableObject
     {
         private ElementTheme _elementTheme = ThemeSelectorService.Theme;
@@ -51,20 +50,29 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 }
             }
         }
-        private int selectedDBLanguageIndex = DBLanguageSelectorService.Language == "zh-CN" ? 0 : 1;
+
+        private int selectedDBLanguageIndex = (int)DBLanguageSelectorService.Language;
         public int SelectedDBLanguageIndex
         {
             get => selectedDBLanguageIndex;
             set
             {
                 selectedDBLanguageIndex = value;
-                switch (value)
-                {
-                    case 0: _ = DBLanguageSelectorService.SetLangAsync("zh-CN"); break;
-                    case 1: _ = DBLanguageSelectorService.SetLangAsync("en-US"); break;
-                }
+                _=DBLanguageSelectorService.SetLangAsync((Core.Enums.Language)value);
             }
         }
+
+        private int selectedGameServerIndex = (int)GameServerSelectorService.GameServerType;
+        public int SelectedGameServerIndex
+        {
+            get => selectedGameServerIndex;
+            set
+            {
+                selectedGameServerIndex = value;
+                _ = GameServerSelectorService.SetAsync((Core.Enums.GameServerType)value);
+            }
+        }
+
         private ICommand _switchThemeCommand;
 
         public ICommand SwitchThemeCommand

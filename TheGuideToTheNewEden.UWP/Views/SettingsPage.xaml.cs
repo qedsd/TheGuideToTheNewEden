@@ -15,11 +15,13 @@ namespace TheGuideToTheNewEden.UWP.Views
         public SettingsPage()
         {
             InitializeComponent();
+            Loaded += SettingsPage_Loaded;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        private async void SettingsPage_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             await ViewModel.InitializeAsync();
+            Loaded -= SettingsPage_Loaded;
         }
     }
 }
