@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
         public StayShip StayShip { get; set; }
         public Affiliation Affiliation { get; set; }
         public List<SkillQueue> SkillQueues { get; set; }
-        public SkillQueue FirstSkillQueue { get => SkillQueues.FirstOrDefault(); }
+        public SkillQueue FirstSkillQueue { get;private set; }
         private int mainPivotIndex;
         public int MainPivotIndex
         {
@@ -112,6 +112,7 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 StayShip = ship;
                 Affiliation = affiliation;
                 SkillQueues = skillQueues;
+                FirstSkillQueue = SkillQueues?.FirstOrDefault();
             });
             Controls.WaitingPopup.Hide();
         }

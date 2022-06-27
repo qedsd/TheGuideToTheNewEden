@@ -13,6 +13,10 @@ namespace TheGuideToTheNewEden.UWP.Converters
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
+            if(value == null)
+            {
+                return Visibility.Collapsed;
+            }
             if((bool)value)
             {
                 return IsReverse?Visibility.Collapsed:Visibility.Visible;

@@ -365,7 +365,7 @@
                                 Foreground="MediumSeaGreen"
                                 Glyph="&#xE1F5;"
                                 ToolTipService.ToolTip="进行中"
-                                Visibility="{x:Bind ViewModel.FirstSkillQueue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                Visibility="{x:Bind ViewModel.FirstSkillQueue.IsTraing, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                             <FontIcon
                                 x:Name="FontIcon_SkillQueueStop"
                                 FontFamily="Segoe MDL2 Assets"
@@ -379,7 +379,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Name="TextBlock_SkillQueue" />
+                                <TextBlock Text="{x:Bind ViewModel.FirstSkillQueue.Skill_name,Mode=OneWay}"/>
                                 <StackPanel Margin="4,0,0,0" Orientation="Horizontal">
                                     <TextBlock Name="TextBlock_SkillCount" />
                                 </StackPanel>
