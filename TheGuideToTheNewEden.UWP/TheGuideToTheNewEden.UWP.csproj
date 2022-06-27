@@ -168,9 +168,11 @@
     <Compile Include="Controls\ExpandableSettingHeaderControl.xaml.cs">
       <DependentUpon>ExpandableSettingHeaderControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\TypeImgConverter.cs" />
     <Compile Include="Converters\CharacterIdToAvatarConverter.cs" />
     <Compile Include="Converters\StrVisibilityConverter.cs" />
     <Compile Include="Converters\NullToBooleanConverter.cs" />
+    <Compile Include="CoreConfig.cs" />
     <Compile Include="Enums\ProtocolType.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\NavHelper.cs" />

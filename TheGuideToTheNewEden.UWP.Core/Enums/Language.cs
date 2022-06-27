@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Enums
+namespace TheGuideToTheNewEden.Core.Enums
 {
     public enum Language
     {

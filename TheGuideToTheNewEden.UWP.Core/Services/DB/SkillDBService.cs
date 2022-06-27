@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Services.DB
+namespace TheGuideToTheNewEden.Core.Services.DB
 {
     public static class SkillDBService
     {

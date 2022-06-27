@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TheGuideToTheNewEden.UWP.Core.Enums;
+using TheGuideToTheNewEden.Core.Enums;
 
-namespace TheGuideToTheNewEden.UWP.Core.Services.Api
+namespace TheGuideToTheNewEden.Core.Services.Api
 {
     public static partial class APIService
     {
@@ -434,6 +434,7 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
 
         /// <summary>
         /// 军团、联盟信息
+        /// post
         /// </summary>
         /// <param name="server"></param>
         /// <param name="characterId"></param>
@@ -448,6 +449,7 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
         }
         /// <summary>
         ///  军团、联盟信息
+        ///  post
         /// </summary>
         /// <returns></returns>
         public static string CharacterAffiliation() => CharacterAffiliation(DefaultGameServer);

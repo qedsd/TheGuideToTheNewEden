@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.DBModels
+namespace TheGuideToTheNewEden.Core.DBModels
 {
     public static class Config
     {
-        private static string MainDBPath = "db.sqlite";
+        private static string MainDBPath = System.IO.Path.Combine(Core.Config.DBPath, "main.db");
         private static string MainDBConnectionString = @"DataSource=" + MainDBPath;
         private static ConnectionConfig mainDBConnectionConfig;
         public static ConnectionConfig MainDBConnectionConfig
@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.UWP.Core.DBModels
             }
         }
 
-        private static string ZHDBPath = "zh.sqlite";
+        private static string ZHDBPath = System.IO.Path.Combine(Core.Config.DBPath, "zh.db");
         private static string ZHDBConnectionString = @"DataSource=" + ZHDBPath;
         private static ConnectionConfig zhDBConnectionConfig;
         public static ConnectionConfig ZHDBConnectionConfig

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Character
+namespace TheGuideToTheNewEden.Core.Models.Character
 {
     public class VorifyToken
     {

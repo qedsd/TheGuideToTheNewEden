@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Character
+namespace TheGuideToTheNewEden.Core.Models.Character
 {
     public class Affiliation
     {
@@ -10,5 +10,9 @@ namespace TheGuideToTheNewEden.UWP.Core.Models.Character
         public int Character_id { get; set; }
         public int Corporation_id { get; set; }
         public int Faction_id { get; set; }
+
+        public CharacterInfo CharacterInfo { get; set; }
+        public Corporation.Corporation Corporation { get; set; }
+        public Alliance.Alliance Alliance { get; set; }
     }
 }

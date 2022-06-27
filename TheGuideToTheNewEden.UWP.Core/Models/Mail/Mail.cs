@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Mail
+namespace TheGuideToTheNewEden.Core.Models.Mail
 {
     public class Mail
     {

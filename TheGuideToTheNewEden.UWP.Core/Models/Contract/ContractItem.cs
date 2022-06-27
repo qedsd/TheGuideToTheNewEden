@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Contract
+namespace TheGuideToTheNewEden.Core.Models.Contract
 {
     /// <summary>
     /// 合同包含物品

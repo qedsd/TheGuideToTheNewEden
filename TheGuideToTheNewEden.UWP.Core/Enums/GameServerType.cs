@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Enums
+namespace TheGuideToTheNewEden.Core.Enums
 {
     public enum GameServerType
     {

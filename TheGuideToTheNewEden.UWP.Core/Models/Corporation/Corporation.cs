@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Corporation
+namespace TheGuideToTheNewEden.Core.Models.Corporation
 {
     public class Corporation
     {

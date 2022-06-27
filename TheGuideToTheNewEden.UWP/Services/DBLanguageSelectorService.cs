@@ -17,13 +17,13 @@ namespace TheGuideToTheNewEden.UWP.Services
         public static async Task InitializeAsync()
         {
             Language = await LoadLanguageFromSettingsAsync();
-            Core.Services.DB.DBService.Language = Language;
+            CoreConfig.DBLanguage = Language;
         }
 
         public static async Task SetLangAsync(Core.Enums.Language language)
         {
             Language = language;
-            Core.Services.DB.DBService.Language = Language;
+            CoreConfig.DBLanguage = Language;
             await SaveThemeInSettingsAsync(Language);
         }
 

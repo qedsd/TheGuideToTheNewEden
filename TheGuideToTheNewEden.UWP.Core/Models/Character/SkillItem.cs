@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Character
+namespace TheGuideToTheNewEden.Core.Models.Character
 {
-    public class killItem
+    public class SkillItem
     {
         public int Active_skill_level { get; set; }
         public int Skill_id { get; set; }

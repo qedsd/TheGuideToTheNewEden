@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Http;
 using ICSharpCode.SharpZipLib.GZip;
 
-namespace TheGuideToTheNewEden.UWP.Core.Helpers
+namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class HttpHelper
     {

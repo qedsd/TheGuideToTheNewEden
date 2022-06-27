@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TheGuideToTheNewEden.UWP.Core.Enums;
+using TheGuideToTheNewEden.Core.Enums;
 
-namespace TheGuideToTheNewEden.UWP.Core.Services.Api
+namespace TheGuideToTheNewEden.Core.Services.Api
 {
     public static partial class APIService
     {
@@ -20,5 +20,6 @@ namespace TheGuideToTheNewEden.UWP.Core.Services.Api
             else
                 return $"{SerenityUri}/alliances/{allianceId}/?datasource=serenity";
         }
+        public static string AllianceInfo(int allianceId) => AllianceInfo(DefaultGameServer,allianceId);
     }
 }

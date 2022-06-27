@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Services
+namespace TheGuideToTheNewEden.Core.Services
 {
     public class DefaultGameServerService
     {

@@ -17,13 +17,13 @@ namespace TheGuideToTheNewEden.UWP.Services
         public static async Task InitializeAsync()
         {
             GameServerType = await LoadFromSettingsAsync();
-            Core.Services.Api.APIService.DefaultGameServer = GameServerType;
+            CoreConfig.DefaultGameServer = GameServerType;
         }
 
         public static async Task SetAsync(Core.Enums.GameServerType value)
         {
             GameServerType = value;
-            Core.Services.Api.APIService.DefaultGameServer = GameServerType;
+            CoreConfig.DefaultGameServer = GameServerType;
             await SaveInSettingsAsync(value);
         }
 

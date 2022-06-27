@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using TheGuideToTheNewEden.UWP.Core.Models.Character;
+using TheGuideToTheNewEden.Core.Models.Character;
 using Windows.Storage;
 
 namespace TheGuideToTheNewEden.UWP.Services
@@ -26,9 +26,9 @@ namespace TheGuideToTheNewEden.UWP.Services
 
         public static async Task InitAsync()
         {
-            Core.Services.CharacterService.Init(ClientId, CharacterScope);
+            CoreConfig.ClientId = ClientId;
+            CoreConfig.Scope = CharacterScope;
             var localFile = await ApplicationData.Current.LocalFolder.TryGetItemAsync(FileName) as StorageFile;
-            //string path = System.IO.Path.Combine(ApplicationData.Current.LocalFolder.Path, FileName);
             if(localFile!=null)
             {
                 string json = await FileIO.ReadTextAsync(localFile);
@@ -100,5 +100,6 @@ namespace TheGuideToTheNewEden.UWP.Services
         {
 
         }
+
     }
 }

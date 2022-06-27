@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Wallet
+namespace TheGuideToTheNewEden.Core.Models.Wallet
 {
     public class Walletjournal
     {

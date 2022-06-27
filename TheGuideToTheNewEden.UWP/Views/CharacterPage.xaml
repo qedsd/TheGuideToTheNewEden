@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.UWP.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="using:TheGuideToTheNewEden.UWP.Core.Models.Character"
+    xmlns:model="using:TheGuideToTheNewEden.Core.Models.Character"
     NavigationCacheMode="Enabled"
     x:Name="Page"
     Background="Transparent"

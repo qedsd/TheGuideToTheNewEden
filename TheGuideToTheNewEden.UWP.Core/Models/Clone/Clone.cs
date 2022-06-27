@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Clone
+namespace TheGuideToTheNewEden.Core.Models.Clone
 {
     public class Clone
     {

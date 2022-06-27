@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using TheGuideToTheNewEden.UWP.Core.Models.Character;
+using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.UWP.ViewModels
 {
@@ -22,6 +22,7 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             set
             {
                 SetProperty(ref characterOauth, value);
+                GetBaseInfo(value);
             }
         }
         public Core.Enums.GameServerType GameServerType { get; set; } =  Services.GameServerSelectorService.GameServerType;
@@ -61,5 +62,21 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 await Services.CharacterService.RemoveAsync(item.DataContext as CharacterOauth);
             }
         });
+
+        private async void GetBaseInfo(CharacterOauth characterOauth)
+        {
+            if(characterOauth == null)
+            {
+                return;
+            }
+            var skill = await Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var isk = await Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var loyalty = await Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var onlineStatus = await Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var location = await Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var ship = await Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, characterOauth.Access_token);
+            var affiliation = await Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID);
+            var skillQueue = await Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, characterOauth.Access_token);
+        }
     }
 }

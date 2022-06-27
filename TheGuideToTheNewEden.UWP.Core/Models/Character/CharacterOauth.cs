@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TheGuideToTheNewEden.UWP.Core.Models.Character
+namespace TheGuideToTheNewEden.Core.Models.Character
 {
     public class CharacterOauth
     {

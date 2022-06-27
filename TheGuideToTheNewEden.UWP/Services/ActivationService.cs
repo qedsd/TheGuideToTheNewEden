@@ -77,6 +77,7 @@ namespace TheGuideToTheNewEden.UWP.Services
             await DBLanguageSelectorService.InitializeAsync().ConfigureAwait(false);
             await GameServerSelectorService.InitializeAsync().ConfigureAwait(false);
             await CharacterService.InitAsync().ConfigureAwait(false);
+            CoreConfig.DBPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
             Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = LanguageSelectorService.Language;
         }
 

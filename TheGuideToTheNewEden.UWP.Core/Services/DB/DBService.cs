@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.UWP.Core.Services.DB
+namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public static class DBService
+    public class DBService
     {
-        public static Enums.Language Language { get; set; } = Enums.Language.Chinese;
+        public static Enums.Language DBLanguage { get => Config.DBLanguage; }
     }
 }
