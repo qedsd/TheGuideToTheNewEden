@@ -128,6 +128,36 @@
   <data name="AppDisplayNameTextBlock.Text" xml:space="preserve">
     <value>新伊甸漫游指南</value>
   </data>
+  <data name="CharacterPage_LastLogin.Text" xml:space="preserve">
+    <value>上次登陆</value>
+  </data>
+  <data name="CharacterPage_LastLogout.Text" xml:space="preserve">
+    <value>上次登出</value>
+  </data>
+  <data name="CharacterPage_LoginCount.Text" xml:space="preserve">
+    <value>登陆次数</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Base.Text" xml:space="preserve">
+    <value>基本</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Clone.Text" xml:space="preserve">
+    <value>克隆</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Contract.Text" xml:space="preserve">
+    <value>合同</value>
+  </data>
+  <data name="CharacterPage_MainPivot_ISK.Text" xml:space="preserve">
+    <value>钱包</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Mail.Text" xml:space="preserve">
+    <value>邮箱</value>
+  </data>
+  <data name="CharacterPage_Offline.ToolTipService.ToolTip" xml:space="preserve">
+    <value>离线</value>
+  </data>
+  <data name="CharacterPage_Online.ToolTipService.ToolTip" xml:space="preserve">
+    <value>在线</value>
+  </data>
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>删除</value>
   </data>
@@ -174,5 +204,8 @@
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>主页</value>
     <comment>Navigation view item name for Home</comment>
+  </data>
+  <data name="WaitingPopup.Text" xml:space="preserve">
+    <value>加载中</value>
   </data>
 </root>

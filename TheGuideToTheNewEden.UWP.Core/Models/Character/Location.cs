@@ -12,5 +12,10 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public string Structure { get; set; }
         public int Station_id { get; set; }
         public string Station { get; set; }
+
+        public string LocationName
+        {
+            get => Station == null ? Structure : Station;
+        }
     }
 }

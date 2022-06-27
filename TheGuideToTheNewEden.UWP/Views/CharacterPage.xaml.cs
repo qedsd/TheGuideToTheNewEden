@@ -27,5 +27,35 @@ namespace TheGuideToTheNewEden.UWP.Views
         {
             this.InitializeComponent();
         }
+
+        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_MailList_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_Implant_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_Contract_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_CHMails_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ListBox_Label_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
     }
 }

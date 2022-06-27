@@ -128,6 +128,21 @@
   <data name="AppDisplayNameTextBlock.Text" xml:space="preserve">
     <value>TheGuideToTheNewEden</value>
   </data>
+  <data name="CharacterPage_MainPivot_Base.Text" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Clone.Text" xml:space="preserve">
+    <value>Clone</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Contract.Text" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CharacterPage_MainPivot_ISK.Text" xml:space="preserve">
+    <value>ISK</value>
+  </data>
+  <data name="CharacterPage_MainPivot_Mail.Text" xml:space="preserve">
+    <value>Mail</value>
+  </data>
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>Remove</value>
   </data>
@@ -169,5 +184,8 @@
   </data>
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>Home</value>
+  </data>
+  <data name="WaitingPopup.Text" xml:space="preserve">
+    <value>Loading</value>
   </data>
 </root>

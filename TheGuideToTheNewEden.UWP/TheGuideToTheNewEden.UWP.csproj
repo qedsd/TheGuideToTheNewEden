@@ -162,14 +162,30 @@
     <Compile Include="BackgroundTasks\BackgroundTask1.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderBehavior.cs" />
     <Compile Include="Behaviors\NavigationViewHeaderMode.cs" />
+    <Compile Include="Controls\CloneControl.xaml.cs">
+      <DependentUpon>CloneControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ExpandableSettingControl.xaml.cs">
       <DependentUpon>ExpandableSettingControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ExpandableSettingHeaderControl.xaml.cs">
       <DependentUpon>ExpandableSettingHeaderControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\TypeImgConverter.cs" />
-    <Compile Include="Converters\CharacterIdToAvatarConverter.cs" />
+    <Compile Include="Controls\NotifyPopup.xaml.cs">
+      <DependentUpon>NotifyPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SkillStatus.xaml.cs">
+      <DependentUpon>SkillStatus.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SkillTree.xaml.cs">
+      <DependentUpon>SkillTree.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\WaitingPopup.xaml.cs">
+      <DependentUpon>WaitingPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter .cs" />
+    <Compile Include="Converters\GameImageConverter.cs" />
     <Compile Include="Converters\StrVisibilityConverter.cs" />
     <Compile Include="Converters\NullToBooleanConverter.cs" />
     <Compile Include="CoreConfig.cs" />
@@ -213,11 +229,31 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\CloneControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\ExpandableSettingControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ExpandableSettingHeaderControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\NotifyPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SkillStatus.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SkillTree.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\WaitingPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -477,7 +513,6 @@
   <ItemGroup>
     <None Include=".editorconfig" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
-    <PRIResource Include="Strings\zh-CN\Setting.resw" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

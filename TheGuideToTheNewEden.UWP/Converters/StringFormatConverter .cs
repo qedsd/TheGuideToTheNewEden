@@ -1,18 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Data;
 
 namespace TheGuideToTheNewEden.UWP.Converters
 {
-    public sealed class TypeImgConverter : IValueConverter
+    public class StringFormatConverter : IValueConverter
     {
-        public int Size { get; set; } = 32;
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            switch (Services.GameServerSelectorService.GameServerType)
-            {
-                case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/type/{value}_{Size}.jpg";
-                default: return string.Empty;
-            }
+            if (value == null)
+                return null;
+
+            if (parameter == null)
+                return value;
+
+            return string.Format((string)parameter, value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

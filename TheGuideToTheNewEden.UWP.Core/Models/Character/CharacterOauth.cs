@@ -9,6 +9,9 @@ namespace TheGuideToTheNewEden.Core.Models.Character
     {
         public int CharacterID { get; set; }
         public string CharacterName { get; set; }
+        /// <summary>
+        /// 不要直接使用，请使用GetAccessToken()
+        /// </summary>
         public string Access_token { get; set; }
         public string Refresh_token { get; set; }
         /// <summary>

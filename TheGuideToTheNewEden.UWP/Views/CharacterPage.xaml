@@ -3,25 +3,43 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:controls1="using:TheGuideToTheNewEden.UWP.Controls"
     xmlns:converters="using:TheGuideToTheNewEden.UWP.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.UWP.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:TheGuideToTheNewEden.Core.Models.Character"
-    NavigationCacheMode="Enabled"
+    xmlns:model1="using:TheGuideToTheNewEden.Core.Models.Clone"
+    xmlns:model2="using:TheGuideToTheNewEden.Core.Models.Wallet"
+    xmlns:model3="using:TheGuideToTheNewEden.Core.Models.Mail"
+    xmlns:model4="using:TheGuideToTheNewEden.Core.Models.Contract"
     x:Name="Page"
     Background="Transparent"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:CharacterIdToAvatarConverter x:Key="CharacterIdToAvatarConverter" />
-        <converters:CharacterIdToAvatarConverter x:Key="CharacterIdToAvatarConverter32" Size="32" />
+        <converters:GameImageConverter
+            x:Key="CharacterImgConverter512"
+            Size="512"
+            Type="Character" />
+        <converters:GameImageConverter x:Key="CorpImgConverter" Type="Corporation" />
+        <converters:GameImageConverter x:Key="TypeImgConverter" Type="Type" />
+        <converters:GameImageConverter x:Key="AllianceImgConverter" Type="Alliance" />
+        <converters:GameImageConverter
+            x:Key="CharacterImgConverter128"
+            Size="128"
+            Type="Character" />
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" IsReverse="True" />
     </Page.Resources>
-    <Grid Margin="{ThemeResource MediumTopMargin}">
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid Margin="{ThemeResource MediumTopMargin}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1.5*" />
@@ -34,7 +52,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 CornerRadius="999"
-                Source="{x:Bind ViewModel.CharacterOauth.CharacterID, Converter={StaticResource CharacterIdToAvatarConverter}, Mode=OneWay}"
+                Source="{x:Bind ViewModel.CharacterOauth.CharacterID, Converter={StaticResource CharacterImgConverter512}, Mode=OneWay}"
                 Stretch="Fill" />
             <StackPanel Grid.Row="1" HorizontalAlignment="Center">
                 <TextBlock
@@ -54,10 +72,9 @@
                         Height="24"
                         UriSource="Assets/Icon/WindowIcons/skills.png" />
                     <TextBlock
-                        Name="TextBlock_CharacterSP"
                         Margin="2,0,0,0"
                         VerticalAlignment="Center"
-                        Text="0" />
+                        Text="{x:Bind ViewModel.Skill.Total_sp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
                     <TextBlock
                         Margin="4,0,0,0"
                         VerticalAlignment="Center"
@@ -72,10 +89,9 @@
                         Height="24"
                         UriSource="Assets/Icon/WindowIcons/wallet.png" />
                     <TextBlock
-                        Name="TextBlock_CharacterISK"
                         Margin="2,0,0,0"
                         VerticalAlignment="Center"
-                        Text="0"
+                        Text="{x:Bind ViewModel.ISK, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                         TextWrapping="Wrap" />
                     <TextBlock
                         Margin="4,0,0,0"
@@ -91,10 +107,9 @@
                         Height="24"
                         UriSource="Assets/Icon/WindowIcons/agent.png" />
                     <TextBlock
-                        Name="TextBlock_CharacterLP"
                         Margin="2,0,0,0"
                         VerticalAlignment="Center"
-                        Text="0"
+                        Text="{x:Bind ViewModel.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
                         TextWrapping="Wrap" />
                     <TextBlock
                         Margin="4,0,0,0"
@@ -143,7 +158,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         CornerRadius="999"
-                                        Source="{x:Bind CharacterID, Converter={StaticResource CharacterIdToAvatarConverter32}}"
+                                        Source="{x:Bind CharacterID, Converter={StaticResource CharacterImgConverter128}}"
                                         Stretch="Fill" />
                                     <TextBlock
                                         Grid.Column="1"
@@ -184,5 +199,710 @@
 
             </Grid>
         </Grid>
+        <Rectangle
+            Grid.Column="1"
+            Width="1"
+            Margin="{ThemeResource MediumTopBottomMargin}"
+            Fill="{StaticResource SystemAccentColor}" />
+        <Pivot
+            Grid.Column="2"
+            Margin="{ThemeResource MediumTopMargin}"
+            SelectedIndex="{x:Bind ViewModel.MainPivotIndex, Mode=TwoWay}">
+            <PivotItem Tag="0">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="基本" />
+                </PivotItem.Header>
+                <StackPanel Margin="0,10">
+                    <StackPanel
+                        Margin="0,4"
+                        Padding="10"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Orientation="Horizontal">
+                        <controls:ImageEx
+                            Name="ImageEx_Corporation"
+                            Grid.Row="1"
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="999"
+                            Source="{x:Bind ViewModel.Affiliation.Corporation_id, Converter={StaticResource CorpImgConverter}, Mode=OneWay}"
+                            Stretch="Fill" />
+                        <Grid Margin="10,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{x:Bind ViewModel.Affiliation.Corporation.Name, Mode=OneWay}" />
+                            <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Affiliation.Corporation.Ticker, Mode=OneWay}" />
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        Padding="10"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Orientation="Horizontal">
+                        <controls:ImageEx
+                            Grid.Row="1"
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="999"
+                            Source="{x:Bind ViewModel.Affiliation.Alliance_id, Converter={StaticResource AllianceImgConverter}, Mode=OneWay}"
+                            Stretch="Fill" />
+                        <Grid Margin="10,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{x:Bind ViewModel.Affiliation.Alliance.Name, Mode=OneWay}" />
+                            <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Affiliation.Alliance.Ticker, Mode=OneWay}" />
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        Padding="10"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Orientation="Horizontal">
+                        <controls:ImageEx
+                            Grid.Row="1"
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="999"
+                            Source="{x:Bind ViewModel.StayShip.Ship_type_id, Converter={StaticResource TypeImgConverter}, Mode=OneWay}"
+                            Stretch="Fill" />
+                        <Grid Margin="10,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind ViewModel.StayShip.Ship_name, Mode=OneWay}" />
+                                <Rectangle
+                                    Width="8"
+                                    Height="1"
+                                    Margin="4,0"
+                                    Fill="Black" />
+                                <TextBlock Text="{x:Bind ViewModel.Location.LocationName, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind ViewModel.StayShip.Ship_name, Mode=OneWay}" />
+                                <TextBlock Margin="4,0,0,0" Text="(" />
+                                <TextBlock Text="{x:Bind ViewModel.StayShip.Ship_type_name, Mode=OneWay}" />
+                                <TextBlock Text=")" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        Padding="10"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Orientation="Horizontal">
+                        <Grid Width="48" Height="48">
+                            <FontIcon
+                                x:Uid="CharacterPage_Online"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                Foreground="MediumSeaGreen"
+                                Glyph="&#xE1F5;"
+                                Visibility="{x:Bind ViewModel.OnlineStatus.Online, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                            <FontIcon
+                                x:Uid="CharacterPage_Offline"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                Foreground="OrangeRed"
+                                Glyph="&#xE1F5;"
+                                Visibility="{x:Bind ViewModel.OnlineStatus.Online, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Margin="10,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Uid="CharacterPage_LastLogin" />
+                                <Rectangle
+                                    Width="8"
+                                    Height="1"
+                                    Margin="4,0"
+                                    Fill="Black" />
+                                <TextBlock Text="{x:Bind ViewModel.OnlineStatus.Last_login, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                <TextBlock x:Uid="CharacterPage_LastLogout" />
+                                <Rectangle
+                                    Width="8"
+                                    Height="1"
+                                    Margin="4,0"
+                                    Fill="Black" />
+                                <TextBlock Text="{x:Bind ViewModel.OnlineStatus.Last_logout, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <TextBlock x:Uid="CharacterPage_LoginCount" />
+                                <Rectangle
+                                    Width="8"
+                                    Height="1"
+                                    Margin="4,0"
+                                    Fill="Black" />
+                                <TextBlock Text="{x:Bind ViewModel.OnlineStatus.Logins, Mode=OneWay}" />
+                            </StackPanel>
+
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        Padding="10"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Orientation="Horizontal">
+                        <Grid Width="48" Height="48">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                Foreground="MediumSeaGreen"
+                                Glyph="&#xE1F5;"
+                                ToolTipService.ToolTip="进行中"
+                                Visibility="{x:Bind ViewModel.FirstSkillQueue, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                            <FontIcon
+                                x:Name="FontIcon_SkillQueueStop"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="10"
+                                Foreground="OrangeRed"
+                                Glyph="&#xE1F5;" />
+                        </Grid>
+                        <Grid Margin="10,0,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Name="TextBlock_SkillQueue" />
+                                <StackPanel Margin="4,0,0,0" Orientation="Horizontal">
+                                    <TextBlock Name="TextBlock_SkillCount" />
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock
+                                Name="TextBlock_SkillQueueDoneTime"
+                                Grid.Row="1"
+                                ToolTipService.ToolTip="当前技能剩余时间" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </PivotItem>
+            <PivotItem Tag="1">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="技能" />
+                </PivotItem.Header>
+                <ScrollViewer Margin="0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <!--<StackPanel Orientation="Horizontal">
+                                <TextBlock Text="队列状态："/>
+                                <TextBlock  Name="TextBlock_SkillQueue"/>
+                                <TextBlock Text="技能数量：" Margin="20,0,0,0"/>
+                                <TextBlock Name="TextBlock_SkillCount"/>
+                                <TextBlock Text="完成日期：" Margin="20,0,0,0"/>
+                                <TextBlock Name="TextBlock_SkillQueueDoneTime"/>
+                            </StackPanel>-->
+                        <TextBlock
+                            Grid.Row="0"
+                            Margin="0,0,0,4"
+                            Foreground="Gray"
+                            Text="队列中" />
+                        <ListBox x:Name="ListBox_SkillQueue" Grid.Row="1">
+                            <ListBox.Background>
+                                <AcrylicBrush
+                                    BackgroundSource="Backdrop"
+                                    TintColor="White"
+                                    TintOpacity="0.1" />
+                            </ListBox.Background>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model:SkillQueue">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Skill_name}" ToolTipService.ToolTip="{x:Bind Skill_des}" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                Text="{x:Bind Finished_level}"
+                                                ToolTipService.ToolTip="等级" />
+                                        </StackPanel>
+                                        <StackPanel
+                                            Grid.Row="1"
+                                            Margin="0,2,0,0"
+                                            Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Start_date}" ToolTipService.ToolTip="{x:Bind Start_date, Converter={StaticResource LocalTime}}" />
+                                            <TextBlock Margin="4,0" Text="-" />
+                                            <TextBlock Text="{x:Bind Finish_date}" ToolTipService.ToolTip="{x:Bind Finish_date, Converter={StaticResource LocalTime}}" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            Grid.RowSpan="2"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Text="{x:Bind Duration, Converter={StaticResource TimeSpanToString}}"
+                                            ToolTipService.ToolTip="耗时" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock
+                            Grid.Row="2"
+                            Margin="0,20,0,4"
+                            Foreground="Gray"
+                            Text="全部" />
+                        <ListBox Name="ListBox_SkillTree" Grid.Row="3">
+                            <ListBox.Background>
+                                <AcrylicBrush
+                                    BackgroundSource="Backdrop"
+                                    TintColor="White"
+                                    TintOpacity="0.1" />
+                            </ListBox.Background>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model:SkillGroup">
+                                    <controls1:SkillTree SkillGroup="{x:Bind}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </ScrollViewer>
+            </PivotItem>
+            <PivotItem Tag="2">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="钱包" />
+                </PivotItem.Header>
+                <Pivot Padding="0,0,0,10">
+                    <PivotItem Tag="0">
+                        <PivotItem.Header>
+                            <TextBlock
+                                FontSize="14"
+                                Text="日志"
+                                ToolTipService.ToolTip="最近30天钱包日志" />
+                        </PivotItem.Header>
+                        <ListBox x:Name="ListBox_WalletJournal">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model2:Walletjournal">
+                                    <Grid Padding="0,0,4,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Text="{x:Bind Ref_type}"
+                                            ToolTipService.ToolTip="类型" />
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.ColumnSpan="2"
+                                            Text="{x:Bind Description}"
+                                            TextWrapping="WrapWholeWords"
+                                            ToolTipService.ToolTip="描述" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Foreground="{x:Bind Amount, Converter={StaticResource GetAddOrReduceColor_double}}"
+                                            Text="{Binding Amount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                            ToolTipService.ToolTip="合计" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Text="{Binding Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                            ToolTipService.ToolTip="钱包余额" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </PivotItem>
+                    <PivotItem Tag="1">
+                        <PivotItem.Header>
+                            <TextBlock
+                                FontSize="14"
+                                Text="交易"
+                                ToolTipService.ToolTip="最近30天市场交易" />
+                        </PivotItem.Header>
+                        <ListBox x:Name="ListBox_WalletTransactions">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model2:WalletTransactions">
+                                    <Grid Padding="0,0,4,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Type_name}" ToolTipService.ToolTip="物品" />
+                                            <TextBlock Margin="2,0" Text="x" />
+                                            <TextBlock Text="{x:Bind Quantity}" ToolTipService.ToolTip="数量" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="2" Text="买家" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Text="{Binding Unit_price, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                            ToolTipService.ToolTip="单价" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Foreground="{x:Bind Is_buy, Converter={StaticResource GetAddOrReduceColor_bool}}"
+                                            Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                            ToolTipService.ToolTip="合计" />
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Text="{x:Bind Client_name}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </PivotItem>
+                    <PivotItem Tag="2">
+                        <PivotItem.Header>
+                            <TextBlock
+                                FontSize="14"
+                                Text="交易-统计"
+                                ToolTipService.ToolTip="最近30天市场交易" />
+                        </PivotItem.Header>
+                        <ListBox x:Name="ListBox_WalletTransactions_Statistic">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model2:WalletTransactions">
+                                    <Grid Padding="0,0,4,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{x:Bind Type_name}" ToolTipService.ToolTip="物品" />
+                                            <TextBlock Margin="2,0" Text="x" />
+                                            <TextBlock Text="{x:Bind Quantity}" ToolTipService.ToolTip="数量" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Foreground="{x:Bind Is_buy, Converter={StaticResource GetAddOrReduceColor_bool}}"
+                                            Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                            ToolTipService.ToolTip="合计" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </PivotItem>
+                </Pivot>
+            </PivotItem>
+            <PivotItem Tag="3">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="邮件" />
+                </PivotItem.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <ListBox
+                            x:Name="ListBox_Label"
+                            Background="Transparent"
+                            Tapped="ListBox_Label_Tapped">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model3:MailLabel">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Name}" TextWrapping="WrapWholeWords" />
+                                        <Grid
+                                            Grid.Column="1"
+                                            Width="20"
+                                            Height="20"
+                                            VerticalAlignment="Center"
+                                            Visibility="{x:Bind Unread_count, Converter={StaticResource UnreadMailTipVisibility}}">
+                                            <Rectangle
+                                                Grid.Column="1"
+                                                Fill="MediumSeaGreen"
+                                                Opacity="0.8"
+                                                RadiusX="10"
+                                                RadiusY="10" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Foreground="White"
+                                                Text="{x:Bind Unread_count}"
+                                                ToolTipService.ToolTip="未读邮件" />
+                                        </Grid>
+
+                                    </Grid>
+
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Rectangle
+                            Height="1"
+                            Margin="2,10"
+                            Fill="Gray" />
+                        <ListBox
+                            x:Name="ListBox_MailList"
+                            Background="Transparent"
+                            Tapped="ListBox_MailList_Tapped">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model3:MailList">
+                                    <TextBlock Text="{x:Bind Name}" TextWrapping="WrapWholeWords" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                    <Rectangle
+                        Grid.Column="1"
+                        Width="1"
+                        Margin="2,0"
+                        Fill="{StaticResource SystemAccentColor}" />
+                    <ListBox
+                        x:Name="ListBox_CHMails"
+                        Grid.Column="2"
+                        Background="Transparent"
+                        Tapped="ListBox_CHMails_Tapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="model3:Mail">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        Grid.RowSpan="2"
+                                        Margin="0,0,4,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="10"
+                                        Foreground="MediumSeaGreen"
+                                        Glyph="&#xE1F5;"
+                                        ToolTipService.ToolTip="未读"
+                                        Visibility="{x:Bind Is_read, Converter={StaticResource IsMailRead}}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Foreground="Gray"
+                                        Text="{x:Bind Timestamp}"
+                                        ToolTipService.ToolTip="{x:Bind Timestamp, Converter={StaticResource LocalTime}}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        Text="{x:Bind Subject}"
+                                        ToolTipService.ToolTip="标题" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="3"
+                                        Foreground="Gray"
+                                        Text="{x:Bind From_name}"
+                                        ToolTipService.ToolTip="发件人" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </PivotItem>
+            <PivotItem Tag="4">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="合同" />
+                </PivotItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Name="TextBlock_Contract_Tip"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Center"
+                        Visibility="Collapsed" />
+                    <ListBox
+                        x:Name="ListBox_Contract"
+                        Grid.Row="1"
+                        Tapped="ListBox_Contract_Tapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="model4:Contract">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{x:Bind Title}" ToolTipService.ToolTip="标题" />
+                                        <Grid Margin="10,0">
+                                            <Rectangle
+                                                Fill="{x:Bind Type, Converter={StaticResource ContractTypeBg}}"
+                                                Opacity="0.6"
+                                                RadiusX="10"
+                                                RadiusY="10" />
+                                            <TextBlock
+                                                Padding="4,1"
+                                                Text="{x:Bind Type, Converter={StaticResource ContractTypeText}}"
+                                                ToolTipService.ToolTip="类型" />
+                                        </Grid>
+                                        <Grid>
+                                            <Rectangle
+                                                Fill="{x:Bind Status, Converter={StaticResource ContractStatusBg}}"
+                                                Opacity="0.6"
+                                                RadiusX="10"
+                                                RadiusY="10" />
+                                            <TextBlock
+                                                Padding="4,1"
+                                                Text="{x:Bind Status, Converter={StaticResource ContractStatusText}}"
+                                                ToolTipService.ToolTip="状态" />
+                                        </Grid>
+                                    </StackPanel>
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,2,0,0"
+                                        FontSize="12"
+                                        Foreground="Gray"
+                                        Text="{x:Bind Date_Issued}"
+                                        ToolTipService.ToolTip="{x:Bind Date_Issued, Converter={StaticResource LocalTime}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </PivotItem>
+            <PivotItem Tag="5">
+                <PivotItem.Header>
+                    <TextBlock FontSize="20" Text="克隆" />
+                </PivotItem.Header>
+                <ScrollViewer>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Padding="4">
+                            <Grid.Background>
+                                <AcrylicBrush
+                                    BackgroundSource="Backdrop"
+                                    TintColor="White"
+                                    TintOpacity="0.1" />
+                            </Grid.Background>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="1" Padding="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="上一次远克" />
+                                <TextBlock
+                                    x:Name="TextBlock_LastCloneJump"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Name="TextBlock_LastCloneJump_Tip" />
+                                    </ToolTipService.ToolTip>
+                                </TextBlock>
+                            </Grid>
+                            <Grid Grid.Row="2" Padding="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="上一次远程修改基地空间站" />
+                                <TextBlock
+                                    x:Name="TextBlock_LastStationChange"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock x:Name="TextBlock_LastStationChange_Tip" />
+                                    </ToolTipService.ToolTip>
+                                </TextBlock>
+                            </Grid>
+                            <Grid Grid.Row="0" Margin="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="基地空间站" />
+                                <TextBlock
+                                    x:Name="TextBlock_HomeStation"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right" />
+                            </Grid>
+                        </Grid>
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,10,0,2"
+                            Foreground="Gray"
+                            Text="远程克隆" />
+                        <ListBox x:Name="ListBox_Clones" Grid.Row="2">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model1:JumpClone">
+                                    <controls1:CloneControl JumpClone="{x:Bind}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock
+                            Grid.Row="3"
+                            Margin="0,10,0,2"
+                            Foreground="Gray"
+                            Text="当前克隆植入体" />
+                        <ListBox
+                            x:Name="ListBox_Implant"
+                            Grid.Row="4"
+                            Margin="0,4"
+                            Tapped="ListBox_Implant_Tapped">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="model1:CloneImplant">
+                                    <TextBlock Text="{x:Bind Name}" ToolTipService.ToolTip="{x:Bind Des}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </ScrollViewer>
+
+            </PivotItem>
+        </Pivot>
     </Grid>
 </Page>
