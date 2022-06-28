@@ -17,6 +17,9 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public int Training_start_sp { get; set; }
         public string Skill_des { get; set; }
         public TimeSpan Duration { get; set; }
-        public bool IsTraing { get; set; }
+        public bool IsTraing
+        {
+            get => Duration.Ticks != 0;
+        }
     }
 }

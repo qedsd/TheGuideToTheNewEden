@@ -128,6 +128,12 @@
   <data name="AppDisplayNameTextBlock.Text" xml:space="preserve">
     <value>新伊甸漫游指南</value>
   </data>
+  <data name="CharacterPage_Base_DoneSkill.Text" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="CharacterPage_Base_TraingSkill.Text" xml:space="preserve">
+    <value>队列中</value>
+  </data>
   <data name="CharacterPage_LastLogin.Text" xml:space="preserve">
     <value>上次登陆</value>
   </data>

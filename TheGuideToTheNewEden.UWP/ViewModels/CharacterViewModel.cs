@@ -38,6 +38,8 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
         public Affiliation Affiliation { get; set; }
         public List<SkillQueue> SkillQueues { get; set; }
         public SkillQueue FirstSkillQueue { get;private set; }
+        public int DoneSkillCount { get; set; }
+        public int TraingSkillCount { get; set; }
         private int mainPivotIndex;
         public int MainPivotIndex
         {
@@ -99,6 +101,22 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             var ship = await Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, await characterOauth.GetAccessToken());
             var affiliation = await Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID);
             var skillQueues = await Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, await characterOauth.GetAccessToken());
+            DoneSkillCount = 0;
+            TraingSkillCount = 0;
+            if(skillQueues != null)
+            {
+                foreach(var item in skillQueues)
+                {
+                    if(item.Duration.Ticks == 0&&item.Finish_date!=DateTime.MinValue)
+                    {
+                        DoneSkillCount++;
+                    }
+                    else
+                    {
+                        TraingSkillCount++;
+                    }
+                }
+            }
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High,
             () =>
             {

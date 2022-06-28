@@ -32,6 +32,9 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" IsReverse="True" />
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converters:RemainTimeConverter x:Key="RemainTimeConverter" />
+        <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
     </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -213,10 +216,11 @@
                     <TextBlock FontSize="20" Text="基本" />
                 </PivotItem.Header>
                 <StackPanel Margin="0,10">
+                    <!--  Corp  -->
                     <StackPanel
                         Margin="0,4"
                         Padding="10"
-                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Background="{ThemeResource ContentBackgroudBrush}"
                         Orientation="Horizontal">
                         <controls:ImageEx
                             Name="ImageEx_Corporation"
@@ -237,11 +241,13 @@
                             <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Affiliation.Corporation.Ticker, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
+                    <!--  Alliance  -->
                     <StackPanel
                         Margin="0,4"
                         Padding="10"
-                        Background="{ThemeResource ExpanderHeaderBackground}"
-                        Orientation="Horizontal">
+                        Background="{ThemeResource ContentBackgroudBrush}"
+                        Orientation="Horizontal"
+                        Visibility="{x:Bind ViewModel.Affiliation.Alliance, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
                         <controls:ImageEx
                             Grid.Row="1"
                             Width="48"
@@ -260,10 +266,11 @@
                             <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Affiliation.Alliance.Ticker, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
+                    <!--  Ship  -->
                     <StackPanel
                         Margin="0,4"
                         Padding="10"
-                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Background="{ThemeResource ContentBackgroudBrush}"
                         Orientation="Horizontal">
                         <controls:ImageEx
                             Grid.Row="1"
@@ -296,10 +303,11 @@
                             </StackPanel>
                         </Grid>
                     </StackPanel>
+                    <!--  Online  -->
                     <StackPanel
                         Margin="0,4"
                         Padding="10"
-                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        Background="{ThemeResource ContentBackgroudBrush}"
                         Orientation="Horizontal">
                         <Grid Width="48" Height="48">
                             <FontIcon
@@ -353,11 +361,13 @@
 
                         </Grid>
                     </StackPanel>
+                    <!--  Skill  -->
                     <StackPanel
                         Margin="0,4"
                         Padding="10"
-                        Background="{ThemeResource ExpanderHeaderBackground}"
-                        Orientation="Horizontal">
+                        Background="{ThemeResource ContentBackgroudBrush}"
+                        Orientation="Horizontal"
+                        Visibility="{x:Bind ViewModel.FirstSkillQueue, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
                         <Grid Width="48" Height="48">
                             <FontIcon
                                 FontFamily="Segoe MDL2 Assets"
@@ -371,7 +381,8 @@
                                 FontFamily="Segoe MDL2 Assets"
                                 FontSize="10"
                                 Foreground="OrangeRed"
-                                Glyph="&#xE1F5;" />
+                                Glyph="&#xE1F5;"
+                                Visibility="{x:Bind ViewModel.FirstSkillQueue.IsTraing, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
                         </Grid>
                         <Grid Margin="10,0,0,0">
                             <Grid.RowDefinitions>
@@ -379,15 +390,27 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind ViewModel.FirstSkillQueue.Skill_name,Mode=OneWay}"/>
+                                <TextBlock Text="{x:Bind ViewModel.FirstSkillQueue.Skill_name, Mode=OneWay}" />
                                 <StackPanel Margin="4,0,0,0" Orientation="Horizontal">
-                                    <TextBlock Name="TextBlock_SkillCount" />
+                                    <TextBlock Text="(" />
+                                    <StackPanel
+                                        Margin="4,0,0,0"
+                                        Orientation="Horizontal"
+                                        Visibility="{x:Bind ViewModel.DoneSkillCount, Converter={StaticResource IntToVisibilityConverter}, Mode=OneWay}">
+                                        <TextBlock x:Uid="CharacterPage_Base_DoneSkill" Margin="0,0,4,0" />
+                                        <TextBlock Text="{x:Bind ViewModel.DoneSkillCount, Mode=OneWay}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Margin="4,0,0,0"
+                                        Orientation="Horizontal"
+                                        Visibility="{x:Bind ViewModel.TraingSkillCount, Converter={StaticResource IntToVisibilityConverter}, Mode=OneWay}">
+                                        <TextBlock x:Uid="CharacterPage_Base_TraingSkill" Margin="0,0,4,0" />
+                                        <TextBlock Text="{x:Bind ViewModel.TraingSkillCount, Mode=OneWay}" />
+                                    </StackPanel>
+                                    <TextBlock Text=")" />
                                 </StackPanel>
                             </StackPanel>
-                            <TextBlock
-                                Name="TextBlock_SkillQueueDoneTime"
-                                Grid.Row="1"
-                                ToolTipService.ToolTip="当前技能剩余时间" />
+                            <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.FirstSkillQueue.Finish_date, Converter={StaticResource RemainTimeConverter}, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
                 </StackPanel>

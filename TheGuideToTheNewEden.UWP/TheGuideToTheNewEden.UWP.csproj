@@ -183,7 +183,10 @@
     <Compile Include="Controls\WaitingPopup.xaml.cs">
       <DependentUpon>WaitingPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\IntToVisibilityConverter.cs" />
+    <Compile Include="Converters\RemainTimeConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter .cs" />
     <Compile Include="Converters\GameImageConverter.cs" />
     <Compile Include="Converters\StrVisibilityConverter.cs" />

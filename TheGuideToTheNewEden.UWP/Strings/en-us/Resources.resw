@@ -128,6 +128,21 @@
   <data name="AppDisplayNameTextBlock.Text" xml:space="preserve">
     <value>TheGuideToTheNewEden</value>
   </data>
+  <data name="CharacterPage_Base_DoneSkill.Text" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="CharacterPage_Base_TraingSkill.Text" xml:space="preserve">
+    <value>Traing</value>
+  </data>
+  <data name="CharacterPage_LastLogin.Text" xml:space="preserve">
+    <value>Last login</value>
+  </data>
+  <data name="CharacterPage_LastLogout.Text" xml:space="preserve">
+    <value>Last login</value>
+  </data>
+  <data name="CharacterPage_LoginCount.Text" xml:space="preserve">
+    <value>Login count</value>
+  </data>
   <data name="CharacterPage_MainPivot_Base.Text" xml:space="preserve">
     <value>Base</value>
   </data>
@@ -142,6 +157,12 @@
   </data>
   <data name="CharacterPage_MainPivot_Mail.Text" xml:space="preserve">
     <value>Mail</value>
+  </data>
+  <data name="CharacterPage_Offline.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="CharacterPage_Online.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Online</value>
   </data>
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>Remove</value>

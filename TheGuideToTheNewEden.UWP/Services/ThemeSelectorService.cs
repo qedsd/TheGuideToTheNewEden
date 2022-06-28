@@ -24,9 +24,9 @@ namespace TheGuideToTheNewEden.UWP.Services
         public static async Task SetThemeAsync(ElementTheme theme)
         {
             Theme = theme;
-
             await SetRequestedThemeAsync();
             await SaveThemeInSettingsAsync(Theme);
+            ThemeChanged?.Invoke(null, EventArgs.Empty);
         }
 
         public static async Task SetRequestedThemeAsync()
@@ -60,5 +60,7 @@ namespace TheGuideToTheNewEden.UWP.Services
         {
             await ApplicationData.Current.LocalSettings.SaveAsync(SettingsKey, theme.ToString());
         }
+
+        public static event EventHandler ThemeChanged;
     }
 }
