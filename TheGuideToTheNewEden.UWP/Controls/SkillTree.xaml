@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.UWP.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:model="using:TheGuideToTheNewEden.Core.Models.Character"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:TheGuideToTheNewEden.Core.Models.Character"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -50,14 +51,9 @@
             x:Name="ListBox_MasterSkill"
             Grid.Row="2"
             Margin="0,4"
-            ItemContainerStyle="{StaticResource ListBoxItemStyle1}"
+            Background="Transparent"
+            ItemContainerStyle="{StaticResource UnfocusedListBoxItem}"
             Visibility="Collapsed">
-            <ListBox.Background>
-                <AcrylicBrush
-                    BackgroundSource="Backdrop"
-                    TintColor="White"
-                    TintOpacity="0.1" />
-            </ListBox.Background>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="model:SkillItem">
                     <Grid>

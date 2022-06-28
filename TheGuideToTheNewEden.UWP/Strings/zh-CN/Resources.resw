@@ -158,11 +158,23 @@
   <data name="CharacterPage_MainPivot_Mail.Text" xml:space="preserve">
     <value>邮箱</value>
   </data>
+  <data name="CharacterPage_MainPivot_Skill.Text" xml:space="preserve">
+    <value>技能</value>
+  </data>
   <data name="CharacterPage_Offline.ToolTipService.ToolTip" xml:space="preserve">
     <value>离线</value>
   </data>
   <data name="CharacterPage_Online.ToolTipService.ToolTip" xml:space="preserve">
     <value>在线</value>
+  </data>
+  <data name="CharacterPage_Skill_All.Text" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="CharacterPage_Skill_Duration.ToolTipService.ToolTip" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="CharacterPage_Skill_InQueue.Text" xml:space="preserve">
+    <value>队列中</value>
   </data>
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>删除</value>

@@ -158,11 +158,23 @@
   <data name="CharacterPage_MainPivot_Mail.Text" xml:space="preserve">
     <value>Mail</value>
   </data>
+  <data name="CharacterPage_MainPivot_Skill.Text" xml:space="preserve">
+    <value>Skill</value>
+  </data>
   <data name="CharacterPage_Offline.ToolTipService.ToolTip" xml:space="preserve">
     <value>Offline</value>
   </data>
   <data name="CharacterPage_Online.ToolTipService.ToolTip" xml:space="preserve">
     <value>Online</value>
+  </data>
+  <data name="CharacterPage_Skill_All.Text" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="CharacterPage_Skill_Duration.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="CharacterPage_Skill_InQueue.Text" xml:space="preserve">
+    <value>Queue</value>
   </data>
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>Remove</value>

@@ -184,6 +184,7 @@
       <DependentUpon>WaitingPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\IntToVisibilityConverter.cs" />
+    <Compile Include="Converters\LocalTimeConverter.cs" />
     <Compile Include="Converters\RemainTimeConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
@@ -257,6 +258,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\WaitingPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Custom.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

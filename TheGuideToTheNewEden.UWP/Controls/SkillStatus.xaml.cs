@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.UWP.Controls
         };
         static SolidColorBrush inactiveBrush = new SolidColorBrush()
         {
-            Color = Windows.UI.Colors.LightGoldenrodYellow
+            Color = Windows.UI.Colors.MediumSeaGreen
         };
         public SkillStatus()
         {
