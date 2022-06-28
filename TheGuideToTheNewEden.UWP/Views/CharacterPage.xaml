@@ -502,46 +502,57 @@
                                 Text="日志"
                                 ToolTipService.ToolTip="最近30天钱包日志" />
                         </PivotItem.Header>
-                        <ListBox>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="model2:Walletjournal">
-                                    <Grid Padding="0,0,4,0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Text="{x:Bind Ref_type}"
-                                            ToolTipService.ToolTip="类型" />
-                                        <TextBlock
-                                            Grid.Row="2"
-                                            Grid.ColumnSpan="2"
-                                            Text="{x:Bind Description}"
-                                            TextWrapping="WrapWholeWords"
-                                            ToolTipService.ToolTip="描述" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            Foreground="{x:Bind Amount, Converter={StaticResource GetAddOrReduceColor_double}}"
-                                            Text="{Binding Amount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
-                                            ToolTipService.ToolTip="合计" />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
-                                            ToolTipService.ToolTip="钱包余额" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ListBox>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="model2:Walletjournal">
+                                        <Grid Padding="0,0,4,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Text="{x:Bind Ref_type}"
+                                                ToolTipService.ToolTip="类型" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Text="{x:Bind Description}"
+                                                TextWrapping="WrapWholeWords"
+                                                ToolTipService.ToolTip="描述" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Foreground="{x:Bind Amount, Converter={StaticResource GetAddOrReduceColor_double}}"
+                                                Text="{Binding Amount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                ToolTipService.ToolTip="合计" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Text="{Binding Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                ToolTipService.ToolTip="钱包余额" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <controls1:NavigationBar
+                                Grid.Row="1"
+                                MaxPage="10"
+                                OnPageChanged="{x:Bind ViewModel.WalletJournalPageChangedEvent}"
+                                Page="2" />
+                        </Grid>
                     </PivotItem>
                     <PivotItem Tag="1">
                         <PivotItem.Header>

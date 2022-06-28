@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.Core.Services.Api
         public static string UniverseStructureInfo(long structureId, string token)=> UniverseStructureInfo(DefaultGameServer,structureId,token);
 
         /// <summary>
-        /// 由物品名字搜索ID
+        /// 由ID搜索名字
         /// Http.Post
         /// </summary>
         /// <returns></returns>

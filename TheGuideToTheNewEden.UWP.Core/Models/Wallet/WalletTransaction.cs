@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models.Wallet
 {
-    public class WalletTransactions
+    public class WalletTransaction
     {
         public int Client_id { get; set; }
         public string Client_name { get; set; }
@@ -18,6 +18,9 @@ namespace TheGuideToTheNewEden.Core.Models.Wallet
         public int Type_id { get; set; }
         public string Type_name { get; set; }
         public double Unit_price { get; set; }
-        public double TotalPrice { get; set; }
+        public double TotalPrice
+        {
+            get => Quantity * Unit_price;
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models.Character;
+using TheGuideToTheNewEden.Core.Models.Wallet;
 using TheGuideToTheNewEden.Core.Services.Api;
 using TheGuideToTheNewEden.Core.Services.DB;
 
@@ -286,6 +287,61 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
 
+        public static async Task<List<Walletjournal>> GetWalletjournalAsync(int characterId, string token, int page)
+        {
+            string result = await HttpHelper.GetAsync(APIService.CharacterWalletJournal(characterId, token, page));
+            if (!string.IsNullOrEmpty(result))
+            {
+                return JsonConvert.DeserializeObject<List<Walletjournal>>(result);
+            }
+            else
+            {
+                return null;
+            }
+        }
 
+        public static async Task<List<WalletTransaction>> GetWalletTransactionsAsync(int characterId, string token, int page, bool needClientName = true)
+        {
+            string result = await HttpHelper.GetAsync(APIService.CharacterWalletTransactions(characterId, token, page));
+            if (!string.IsNullOrEmpty(result))
+            {
+                var items = JsonConvert.DeserializeObject<List<WalletTransaction>>(result);
+                if(items != null && items.Count != 0)
+                {
+                    var types = await InvTypeService.QueryTypesAsync(items.Select(p => p.Type_id).ToList());
+                    if (types?.Count != 0)
+                    {
+                        var dic = types.ToDictionary(p => p.TypeID);
+                        foreach (var item in items)
+                        {
+                            if (dic.TryGetValue(item.Type_id, out var invType))
+                            {
+                                item.Type_name = invType.TypeName;
+                            }
+                        }
+                    }
+                    if(needClientName)
+                    {
+                        var names = await UniverseService.SearchNameByIdsAsync(items.Select(p => p.Client_id).ToList());
+                        if(names != null)
+                        {
+                            var dic = names.ToDictionary(p => p.Id);
+                            foreach (var item in items)
+                            {
+                                if (dic.TryGetValue(item.Client_id, out var name))
+                                {
+                                    item.Type_name = name.Name;
+                                }
+                            }
+                        }
+                    }
+                }
+                return items;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

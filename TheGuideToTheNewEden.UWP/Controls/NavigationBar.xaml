@@ -1,0 +1,48 @@
+﻿<UserControl
+    x:Class="TheGuideToTheNewEden.UWP.Controls.NavigationBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fluent="using:Fluent.Icons"
+    xmlns:local="using:TheGuideToTheNewEden.UWP.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d"
+    x:Name="control">
+
+    <StackPanel Orientation="Horizontal">
+        <Button
+            x:Name="StartButton"
+            BorderBrush="Transparent"
+            Click="StartButton_Click">
+            <fluent:FluentSymbolIcon Symbol="CaretLeft20" />
+        </Button>
+        <Button
+            x:Name="PrevButton"
+            BorderBrush="Transparent"
+            Click="PrevButton_Click">
+            <fluent:FluentSymbolIcon Symbol="ChevronLeft20" />
+        </Button>
+        <TextBox
+            x:Name="PageTextBox"
+            Width="24"
+            HorizontalContentAlignment="Center"
+            KeyDown="PageTextBox_KeyDown"
+            BorderThickness="0,0,0,1"
+            Text="{Binding ElementName=control,Path=Page, Mode=TwoWay}" />
+        <Button
+            x:Name="NextButton"
+            BorderBrush="Transparent"
+            Click="NextButton_Click">
+            <fluent:FluentSymbolIcon Symbol="ChevronRight20" />
+        </Button>
+        <Button
+            x:Name="EndButton"
+            BorderBrush="Transparent"
+            Click="EndButton_Click">
+            <fluent:FluentSymbolIcon Symbol="CaretRight20" />
+        </Button>
+    </StackPanel>
+</UserControl>

@@ -134,5 +134,11 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             });
             Controls.WaitingPopup.Hide();
         }
+
+        public Controls.NavigationBar.PageChangedDelegate WalletJournalPageChangedEvent => OnWalletJournalPageChanged;
+        private void OnWalletJournalPageChanged(int page)
+        {
+
+        }
     }
 }

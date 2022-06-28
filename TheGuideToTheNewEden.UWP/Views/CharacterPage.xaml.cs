@@ -57,5 +57,7 @@ namespace TheGuideToTheNewEden.UWP.Views
         {
 
         }
+
+        
     }
 }
