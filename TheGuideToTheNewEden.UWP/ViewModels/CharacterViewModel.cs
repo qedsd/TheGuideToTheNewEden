@@ -308,5 +308,28 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             }
         }
         #endregion
+
+        #region mail
+        public List<Core.Models.Mail.MailLabel> MailLabels { get; set; }
+        public List<Core.Models.Mail.MailList> MailLists { get; set; }
+        private async Task GetMailLabels()
+        {
+            Controls.WaitingPopup.Show();
+            var root = await Core.Services.CharacterService.GetMailLabelsAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync());
+            if(root != null)
+            {
+                MailLabels = root.Labels;
+            }
+            Controls.WaitingPopup.Hide();
+        }
+        private async Task GetMailLists()
+        {
+            Controls.WaitingPopup.Show();
+            MailLists = await Core.Services.CharacterService.GetMailListsAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync());
+            Controls.WaitingPopup.Hide();
+        }
+
+
+        #endregion
     }
 }

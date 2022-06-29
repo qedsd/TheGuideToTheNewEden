@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models.Character;
+using TheGuideToTheNewEden.Core.Models.Mail;
 using TheGuideToTheNewEden.Core.Models.Wallet;
 using TheGuideToTheNewEden.Core.Services.Api;
 using TheGuideToTheNewEden.Core.Services.DB;
@@ -337,6 +338,71 @@ namespace TheGuideToTheNewEden.Core.Services
                     }
                 }
                 return items;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static async Task<MailLabelRoot> GetMailLabelsAsync(int characterId, string token)
+        {
+            string result = await HttpHelper.GetAsync(APIService.CharacterMailLabels(characterId, token));
+            if (!string.IsNullOrEmpty(result))
+            {
+                return JsonConvert.DeserializeObject<MailLabelRoot>(result);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static async Task<List<MailList>> GetMailListsAsync(int characterId, string token)
+        {
+            string result = await HttpHelper.GetAsync(APIService.CharacterMailLists(characterId, token));
+            if (!string.IsNullOrEmpty(result))
+            {
+                return JsonConvert.DeserializeObject<List<MailList>>(result);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static async Task<List<Mail>> GetMailsAsync(int characterId, string token, int label)
+        {
+            List<int> labelIds = new List<int>() { label };
+            return await GetMailsAsync(characterId, token, labelIds);
+        }
+        public static async Task<List<Mail>> GetMailsAsync(int characterId, string token,List<int> labelIds = null,int lastMailId = 0)
+        {
+            string result;
+            if (labelIds == null)
+            {
+                result = await HttpHelper.GetAsync(APIService.CharacterMail(characterId, token, lastMailId));
+            }
+            else
+            {
+                result = await HttpHelper.GetAsync(APIService.CharacterMailOfLables(characterId, token, labelIds, lastMailId));
+            }
+            if (!string.IsNullOrEmpty(result))
+            {
+                return JsonConvert.DeserializeObject<List<Mail>>(result);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static async Task<Mail> GetMailDetailAsync(int characterId, string token, int mailId)
+        {
+            string result = await HttpHelper.GetAsync(APIService.CharacterMailDetail(characterId, token,mailId));
+            if (!string.IsNullOrEmpty(result))
+            {
+                return JsonConvert.DeserializeObject<Mail>(result);
             }
             else
             {

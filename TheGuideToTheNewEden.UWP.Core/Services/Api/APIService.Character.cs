@@ -258,12 +258,17 @@ namespace TheGuideToTheNewEden.Core.Services.Api
         /// <param name="characterId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static string CharacterMail(GameServerType server, int characterId, string token)
+        public static string CharacterMail(GameServerType server, int characterId, string token,int lastMailId = 0)
         {
-            if (server == GameServerType.Tranquility)
-                return $"{TranquilityUri}/characters/{characterId}/mail/?datasource=tranquility&token={token}";
+            string baseUri = server == GameServerType.Tranquility ? TranquilityUri : SerenityUri;
+            if (lastMailId == 0)
+            {
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}&token={token}";
+            }
             else
-                return $"{SerenityUri}/characters/{characterId}/mail/?datasource=serenity&token={token}";
+            {
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}&token={token}&last_mail_id={lastMailId}";
+            }
         }
         /// <summary>
         /// 最近50邮件
@@ -271,7 +276,7 @@ namespace TheGuideToTheNewEden.Core.Services.Api
         /// <param name="characterId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static string CharacterMail(int characterId, string token)=> CharacterMail(DefaultGameServer,characterId, token);
+        public static string CharacterMail(int characterId, string token,int lastMailId)=> CharacterMail(DefaultGameServer,characterId, token, lastMailId);
 
         /// <summary>
         /// 指定邮箱标签最近50邮件
@@ -280,12 +285,20 @@ namespace TheGuideToTheNewEden.Core.Services.Api
         /// <param name="characterId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static string CharacterMailOfLables(GameServerType server, int characterId, string token, int labelIds)
+        public static string CharacterMailOfLables(GameServerType server, int characterId, string token, List<int> labelIds, int lastMailId = 0)
         {
-            if (server == GameServerType.Tranquility)
-                return $"{TranquilityUri}/characters/{characterId}/mail/?datasource=tranquility&token={token}&labels={labelIds}";
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach(var item in labelIds)
+            {
+                stringBuilder.Append(item.ToString());
+                stringBuilder.Append(',');
+            }
+            stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            string baseUri = server == GameServerType.Tranquility ? TranquilityUri : SerenityUri;
+            if (lastMailId == 0)
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}& token={token}&labels={stringBuilder}";
             else
-                return $"{SerenityUri}/characters/{characterId}/mail/?datasource=serenity&token={token}&labels={labelIds}";
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}& token={token}&labels={stringBuilder}&last_mail_id={lastMailId}";
         }
         /// <summary>
         /// 指定邮箱标签最近50邮件
@@ -294,7 +307,7 @@ namespace TheGuideToTheNewEden.Core.Services.Api
         /// <param name="token"></param>
         /// <param name="labelIds"></param>
         /// <returns></returns>
-        public static string CharacterMailOfLables(int characterId, string token, int labelIds)=> CharacterMailOfLables(DefaultGameServer,characterId,token,labelIds);
+        public static string CharacterMailOfLables(int characterId, string token, List<int> labelIds, int lastMailId = 0) => CharacterMailOfLables(DefaultGameServer,characterId,token,labelIds, lastMailId);
 
         /// <summary>
         /// 指定id邮件详情
