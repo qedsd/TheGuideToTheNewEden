@@ -7,10 +7,10 @@
     xmlns:local="using:TheGuideToTheNewEden.UWP.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
+    x:Name="control"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    mc:Ignorable="d"
-    x:Name="control">
+    mc:Ignorable="d">
 
     <StackPanel Orientation="Horizontal">
         <Button
@@ -29,9 +29,9 @@
             x:Name="PageTextBox"
             Width="24"
             HorizontalContentAlignment="Center"
-            KeyDown="PageTextBox_KeyDown"
             BorderThickness="0,0,0,1"
-            Text="{Binding ElementName=control,Path=Page, Mode=TwoWay}" />
+            KeyDown="PageTextBox_KeyDown"
+            Text="{Binding ElementName=control, Path=Page, Mode=TwoWay}" />
         <Button
             x:Name="NextButton"
             BorderBrush="Transparent"

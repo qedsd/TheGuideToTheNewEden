@@ -18,9 +18,10 @@ namespace TheGuideToTheNewEden.Core.Models.Wallet
         public int Type_id { get; set; }
         public string Type_name { get; set; }
         public double Unit_price { get; set; }
-        public double TotalPrice
+        public double AutoTotalPrice
         {
             get => Quantity * Unit_price;
         }
+        public double TotalPrice { get; set; }
     }
 }

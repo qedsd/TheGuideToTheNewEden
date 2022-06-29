@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.UWP.Controls
             }
         }
 
-        public static readonly DependencyProperty PageDep = DependencyProperty.Register
+        public static readonly DependencyProperty PageProperty = DependencyProperty.Register
             (
                 "Page",
                 typeof(int),
@@ -83,9 +83,9 @@ namespace TheGuideToTheNewEden.UWP.Controls
         }
         public int Page
         {
-            get { return (int)GetValue(PageDep); }
+            get { return (int)GetValue(PageProperty); }
 
-            set { SetValue(PageDep, value); }
+            set { SetValue(PageProperty, value); }
         }
 
         public static readonly DependencyProperty MaxPageDep = DependencyProperty.Register

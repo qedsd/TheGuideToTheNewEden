@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.Core.Models.Character
             GetDateTime = DateTime.Now;
         }
 
-        public async Task<string> GetAccessToken()
+        public async Task<string> GetAccessTokenAsync()
         {
             await Services.CharacterService.TryUpdateAccessTokenAsync(this);
             return Access_token;

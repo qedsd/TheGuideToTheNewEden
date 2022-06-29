@@ -36,6 +36,8 @@
         <converters:RemainTimeConverter x:Key="RemainTimeConverter" />
         <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
         <converters:LocalTimeConverter x:Key="LocalTimeConverter" />
+        <converters:DoubleAddOrReduceColorConverter x:Key="DoubleAddOrReduceColorConverter" />
+        <converters:BoolAddOrReduceColorConverter x:Key="BoolAddOrReduceColorConverter" />
     </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -494,7 +496,7 @@
                 <PivotItem.Header>
                     <TextBlock x:Uid="CharacterPage_MainPivot_ISK" FontSize="20" />
                 </PivotItem.Header>
-                <Pivot Padding="0,0,0,10">
+                <Pivot Padding="0,0,0,10" SelectedIndex="{x:Bind ViewModel.WalletPivotIndex, Mode=TwoWay}">
                     <PivotItem Tag="0">
                         <PivotItem.Header>
                             <TextBlock
@@ -507,7 +509,7 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ListBox>
+                            <ListBox ItemsSource="{x:Bind ViewModel.Walletjournals, Mode=OneWay}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="model2:Walletjournal">
                                         <Grid Padding="0,0,4,0">
@@ -520,7 +522,7 @@
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
+                                            <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTimeConverter}}" />
                                             <TextBlock
                                                 Grid.Row="1"
                                                 Text="{x:Bind Ref_type}"
@@ -534,14 +536,14 @@
                                             <TextBlock
                                                 Grid.Column="1"
                                                 HorizontalAlignment="Right"
-                                                Foreground="{x:Bind Amount, Converter={StaticResource GetAddOrReduceColor_double}}"
-                                                Text="{Binding Amount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                Foreground="{x:Bind Amount, Converter={StaticResource DoubleAddOrReduceColorConverter}}"
+                                                Text="{x:Bind Amount, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
                                                 ToolTipService.ToolTip="合计" />
                                             <TextBlock
                                                 Grid.Row="1"
                                                 Grid.Column="1"
                                                 HorizontalAlignment="Right"
-                                                Text="{Binding Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                Text="{x:Bind Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
                                                 ToolTipService.ToolTip="钱包余额" />
                                         </Grid>
                                     </DataTemplate>
@@ -549,9 +551,9 @@
                             </ListBox>
                             <controls1:NavigationBar
                                 Grid.Row="1"
-                                MaxPage="10"
+                                MaxPage="{x:Bind ViewModel.MaxWalletJournalPage, Mode=OneWay}"
                                 OnPageChanged="{x:Bind ViewModel.WalletJournalPageChangedEvent}"
-                                Page="2" />
+                                Page="{x:Bind ViewModel.WalletJournalPage, Mode=TwoWay}" />
                         </Grid>
                     </PivotItem>
                     <PivotItem Tag="1">
@@ -561,47 +563,58 @@
                                 Text="交易"
                                 ToolTipService.ToolTip="最近30天市场交易" />
                         </PivotItem.Header>
-                        <ListBox x:Name="ListBox_WalletTransactions">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="model2:WalletTransactions">
-                                    <Grid Padding="0,0,4,0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTime}}" />
-                                        <StackPanel Grid.Row="1" Orientation="Horizontal">
-                                            <TextBlock Text="{x:Bind Type_name}" ToolTipService.ToolTip="物品" />
-                                            <TextBlock Margin="2,0" Text="x" />
-                                            <TextBlock Text="{x:Bind Quantity}" ToolTipService.ToolTip="数量" />
-                                        </StackPanel>
-                                        <TextBlock Grid.Row="2" Text="买家" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            Text="{Binding Unit_price, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
-                                            ToolTipService.ToolTip="单价" />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            Foreground="{x:Bind Is_buy, Converter={StaticResource GetAddOrReduceColor_bool}}"
-                                            Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
-                                            ToolTipService.ToolTip="合计" />
-                                        <TextBlock
-                                            Grid.Row="2"
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            Text="{x:Bind Client_name}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactions, Mode=OneWay}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="model2:WalletTransaction">
+                                        <Grid Padding="0,0,4,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Date}" ToolTipService.ToolTip="{x:Bind Date, Converter={StaticResource LocalTimeConverter}}" />
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                                <TextBlock Text="{x:Bind Type_name}" ToolTipService.ToolTip="物品" />
+                                                <TextBlock Margin="2,0" Text="x" />
+                                                <TextBlock Text="{x:Bind Quantity}" ToolTipService.ToolTip="数量" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Row="2" Text="买家" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Text="{Binding Unit_price, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                ToolTipService.ToolTip="单价" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Foreground="{x:Bind Is_buy, Converter={StaticResource BoolAddOrReduceColorConverter}}"
+                                                Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                ToolTipService.ToolTip="合计" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                Text="{x:Bind Client_name}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <controls1:NavigationBar
+                                Grid.Row="1"
+                                MaxPage="{x:Bind ViewModel.MaxWalletTransactionPage, Mode=OneWay}"
+                                OnPageChanged="{x:Bind ViewModel.WalletTransactionPageChangedEvent}"
+                                Page="{x:Bind ViewModel.WalletTransactionPage, Mode=TwoWay}" />
+                        </Grid>
                     </PivotItem>
                     <PivotItem Tag="2">
                         <PivotItem.Header>
@@ -610,9 +623,9 @@
                                 Text="交易-统计"
                                 ToolTipService.ToolTip="最近30天市场交易" />
                         </PivotItem.Header>
-                        <ListBox x:Name="ListBox_WalletTransactions_Statistic">
+                        <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactionStatistic}">
                             <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="model2:WalletTransactions">
+                                <DataTemplate x:DataType="model2:WalletTransaction">
                                     <Grid Padding="0,0,4,0">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -626,7 +639,7 @@
                                         <TextBlock
                                             Grid.Column="1"
                                             HorizontalAlignment="Right"
-                                            Foreground="{x:Bind Is_buy, Converter={StaticResource GetAddOrReduceColor_bool}}"
+                                            Foreground="{x:Bind Is_buy, Converter={StaticResource BoolAddOrReduceColorConverter}}"
                                             Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
                                             ToolTipService.ToolTip="合计" />
                                     </Grid>
@@ -757,6 +770,7 @@
                     </ListBox>
                 </Grid>
             </PivotItem>
+
             <PivotItem Tag="4">
                 <PivotItem.Header>
                     <TextBlock x:Uid="CharacterPage_MainPivot_Contract" FontSize="20" />

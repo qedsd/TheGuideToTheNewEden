@@ -186,6 +186,8 @@
     <Compile Include="Controls\WaitingPopup.xaml.cs">
       <DependentUpon>WaitingPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BoolAddOrReduceColorConverter.cs" />
+    <Compile Include="Converters\DoubleAddOrReduceColorConverter.cs" />
     <Compile Include="Converters\IntToVisibilityConverter.cs" />
     <Compile Include="Converters\LocalTimeConverter.cs" />
     <Compile Include="Converters\RemainTimeConverter.cs" />
@@ -199,6 +201,7 @@
     <Compile Include="Enums\ProtocolType.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
+    <Compile Include="Helpers\ObjectExtension.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
