@@ -38,6 +38,7 @@
         <converters:LocalTimeConverter x:Key="LocalTimeConverter" />
         <converters:DoubleAddOrReduceColorConverter x:Key="DoubleAddOrReduceColorConverter" />
         <converters:BoolAddOrReduceColorConverter x:Key="BoolAddOrReduceColorConverter" />
+        <converters:SkillQueueStatusConverter x:Key="SkillQueueStatusConverter" />
     </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -413,7 +414,7 @@
                                     <TextBlock Text=")" />
                                 </StackPanel>
                             </StackPanel>
-                            <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.FirstSkillQueue.Finish_date, Converter={StaticResource RemainTimeConverter}, Mode=OneWay}" />
+                            <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.FirstSkillQueue, Converter={StaticResource SkillQueueStatusConverter}, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
                 </StackPanel>
@@ -468,7 +469,7 @@
                                             Grid.RowSpan="2"
                                             Grid.Column="1"
                                             HorizontalAlignment="Right"
-                                            Text="{x:Bind Duration}" />
+                                            Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext, Converter={StaticResource SkillQueueStatusConverter}, Mode=OneWay}" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -662,9 +663,14 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel>
                         <ListBox
-                            x:Name="ListBox_Label"
                             Background="Transparent"
-                            Tapped="ListBox_Label_Tapped">
+                            ItemsSource="{x:Bind ViewModel.MailLabels, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.MailLabel, Mode=TwoWay}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="model3:MailLabel">
                                     <Grid>
@@ -678,13 +684,14 @@
                                             Width="20"
                                             Height="20"
                                             VerticalAlignment="Center"
-                                            Visibility="{x:Bind Unread_count, Converter={StaticResource UnreadMailTipVisibility}}">
+                                            Visibility="{x:Bind Unread_count, Converter={StaticResource IntToVisibilityConverter}}">
                                             <Rectangle
                                                 Grid.Column="1"
+                                                Width="8"
+                                                Height="8"
                                                 Fill="MediumSeaGreen"
-                                                Opacity="0.8"
-                                                RadiusX="10"
-                                                RadiusY="10" />
+                                                RadiusX="8"
+                                                RadiusY="8" />
                                             <TextBlock
                                                 Grid.Column="1"
                                                 HorizontalAlignment="Center"
@@ -704,9 +711,14 @@
                             Margin="2,10"
                             Fill="Gray" />
                         <ListBox
-                            x:Name="ListBox_MailList"
                             Background="Transparent"
-                            Tapped="ListBox_MailList_Tapped">
+                            ItemsSource="{x:Bind ViewModel.MailLists, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.MailList, Mode=TwoWay}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="model3:MailList">
                                     <TextBlock Text="{x:Bind Name}" TextWrapping="WrapWholeWords" />
@@ -720,16 +732,21 @@
                         Margin="2,0"
                         Fill="{StaticResource SystemAccentColor}" />
                     <ListBox
-                        x:Name="ListBox_CHMails"
                         Grid.Column="2"
                         Background="Transparent"
-                        Tapped="ListBox_CHMails_Tapped">
+                        ItemsSource="{x:Bind ViewModel.Mails, Mode=OneWay}"
+                        SelectedItem="{x:Bind ViewModel.Mail, Mode=TwoWay}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="model3:Mail">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="0.8*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -746,13 +763,7 @@
                                         Foreground="MediumSeaGreen"
                                         Glyph="&#xE1F5;"
                                         ToolTipService.ToolTip="未读"
-                                        Visibility="{x:Bind Is_read, Converter={StaticResource IsMailRead}}" />
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Foreground="Gray"
-                                        Text="{x:Bind Timestamp}"
-                                        ToolTipService.ToolTip="{x:Bind Timestamp, Converter={StaticResource LocalTime}}" />
+                                        Visibility="{x:Bind Is_read, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         Grid.ColumnSpan="2"
@@ -760,8 +771,14 @@
                                         ToolTipService.ToolTip="标题" />
                                     <TextBlock
                                         Grid.Row="1"
+                                        Grid.Column="1"
+                                        FontSize="12"
+                                        Text="{x:Bind Timestamp}" />
+                                    <TextBlock
+                                        Grid.Row="1"
                                         Grid.Column="3"
-                                        Foreground="Gray"
+                                        HorizontalAlignment="Right"
+                                        FontSize="12"
                                         Text="{x:Bind From_name}"
                                         ToolTipService.ToolTip="发件人" />
                                 </Grid>

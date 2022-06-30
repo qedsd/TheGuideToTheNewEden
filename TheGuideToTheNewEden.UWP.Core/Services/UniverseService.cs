@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Helpers;
@@ -14,9 +15,21 @@ namespace TheGuideToTheNewEden.Core.Services
         private static string ClientId { get => Config.ClientId; }
         private static string Scope { get => Config.Scope; }
 
-        public static async Task<List<SearchName>> SearchNameByIdsAsync(List<int> ids)
+        public static async Task<List<SearchName>> SearchNameByIdsAsync(List<int> ids, bool isUnique = false)
         {
-            string result = await HttpHelper.PostJsonAsync(APIService.UniverseName(),JsonConvert.SerializeObject(ids));
+            List<int> uniqueIds;
+            if(isUnique)
+            {
+                uniqueIds = ids;
+            }
+            else
+            {
+                HashSet<int> sets = new HashSet<int>();
+                ids.ForEach(p => sets.Add(p));
+                uniqueIds = sets.ToList();
+            }
+            
+            string result = await HttpHelper.PostJsonAsync(APIService.UniverseName(),JsonConvert.SerializeObject(uniqueIds));
             if (!string.IsNullOrEmpty(result))
             {
                 return JsonConvert.DeserializeObject<List<SearchName>>(result);

@@ -19,5 +19,24 @@ namespace TheGuideToTheNewEden.Core.Extensions
             }
             return sets;
         }
+
+        public static string ToSeqString<T>(this IEnumerable<T> ls, string separator)
+        {
+            if (ReferenceEquals(ls, null))
+            {
+                return null;
+            }
+            else
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var p in ls)
+                {
+                    stringBuilder.Append(p);
+                    stringBuilder.Append(separator);
+                }
+                stringBuilder.Remove(stringBuilder.Length - separator.Length, separator.Length);
+                return stringBuilder.ToString();
+            }
+        }
     }
 }

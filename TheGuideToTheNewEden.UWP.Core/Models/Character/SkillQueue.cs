@@ -16,10 +16,25 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public DateTime Start_date { get; set; }
         public int Training_start_sp { get; set; }
         public string Skill_des { get; set; }
-        public TimeSpan Duration { get; set; }
-        public bool IsTraing
+        /// <summary>
+        /// <0 已完成 =0 暂停 >0 训练队列中 
+        /// </summary>
+        public TimeSpan Duration
         {
-            get => Duration.Ticks != 0;
+            get
+            {
+                if(Finish_date == DateTime.MinValue)
+                {
+                    return TimeSpan.FromTicks(0);
+                }
+                else
+                {
+                    return TimeSpan.FromTicks((Finish_date - DateTime.UtcNow).Ticks);
+                }
+            }
         }
+        public bool IsTraing { get => Duration.Ticks > 0; }
+        public bool IsDone { get => Duration.Ticks < 0; }
+        public bool IsPause { get => Duration.Ticks == 0; }
     }
 }

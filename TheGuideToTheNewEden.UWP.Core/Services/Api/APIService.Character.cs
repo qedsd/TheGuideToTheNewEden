@@ -296,9 +296,9 @@ namespace TheGuideToTheNewEden.Core.Services.Api
             stringBuilder.Remove(stringBuilder.Length - 1, 1);
             string baseUri = server == GameServerType.Tranquility ? TranquilityUri : SerenityUri;
             if (lastMailId == 0)
-                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}& token={token}&labels={stringBuilder}";
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}&token={token}&labels={stringBuilder}";
             else
-                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}& token={token}&labels={stringBuilder}&last_mail_id={lastMailId}";
+                return $"{baseUri}/characters/{characterId}/mail/?datasource={server.ToString().ToLower()}&token={token}&labels={stringBuilder}&last_mail_id={lastMailId}";
         }
         /// <summary>
         /// 指定邮箱标签最近50邮件

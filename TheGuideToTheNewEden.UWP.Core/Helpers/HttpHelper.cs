@@ -88,8 +88,6 @@ namespace TheGuideToTheNewEden.Core.Helpers
             try
             {
                 HttpResponseMessage response = await client.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                    return null;
                 string responseBody;
                 if (Gzip)
                 {

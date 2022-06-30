@@ -11,5 +11,6 @@ namespace TheGuideToTheNewEden.Core.Models.Mail
     {
         public int Recipient_id { get; set; }
         public string Recipient_type { get; set; }
+        public string Recipient_name { get; set; }
     }
 }

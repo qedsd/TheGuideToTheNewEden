@@ -22,7 +22,12 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             get => characterOauth;
             set
             {
+                if (characterOauth != null)
+                {
+                    characterOauth.IsActive = false;
+                }
                 SetProperty(ref characterOauth, value);
+                value.IsActive = true;
                 GetBaseInfo(value);
             }
         }
@@ -51,12 +56,17 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 switch(value)
                 {
                     case 2:TryInitWallet();break;
+                    case 3:TryInitMail();break;
                 }
             }
         }
         public CharacterViewModel()
         {
-            CharacterOauth = CharacterOauths.FirstOrDefault();
+            CharacterOauth = CharacterOauths.FirstOrDefault(p=>p.IsActive);
+            if(CharacterOauth == null)
+            {
+                CharacterOauth = CharacterOauths.FirstOrDefault();
+            }
             CharacterOauths.CollectionChanged += CharacterOauths_CollectionChanged;
         }
 
@@ -110,22 +120,12 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             TraingSkillCount = 0;
             if(skillQueues != null)
             {
-                foreach(var item in skillQueues)
-                {
-                    if(item.Duration.Ticks == 0&&item.Finish_date!=DateTime.MinValue)
-                    {
-                        DoneSkillCount++;
-                    }
-                    else
-                    {
-                        TraingSkillCount++;
-                    }
-                }
+                DoneSkillCount = skillQueues.Where(p => p.IsDone).Count();
+                TraingSkillCount = skillQueues.Count - DoneSkillCount;
             }
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High,
             () =>
             {
-                //SP = skill.Total_sp;
                 ISK = isk;
                 LP = loyalties == null? 0: loyalties.Sum(p => p.Loyalty_points);
                 Skill = skill;
@@ -135,7 +135,11 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 StayShip = ship;
                 Affiliation = affiliation;
                 SkillQueues = skillQueues;
-                FirstSkillQueue = SkillQueues?.FirstOrDefault();
+                FirstSkillQueue = SkillQueues?.FirstOrDefault(p=>p.IsTraing);
+                if(FirstSkillQueue == null)
+                {
+                    FirstSkillQueue = SkillQueues?.FirstOrDefault();
+                }
             });
             Controls.WaitingPopup.Hide();
         }
@@ -155,6 +159,10 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             WalletTransactionStatistic = null;
 
             WalletPivotIndex = 0;
+
+            MailLabels = null;
+            MailLabels = null;
+            Mails = null;
         }
 
         #region wallet
@@ -312,24 +320,130 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
         #region mail
         public List<Core.Models.Mail.MailLabel> MailLabels { get; set; }
         public List<Core.Models.Mail.MailList> MailLists { get; set; }
+        public List<Core.Models.Mail.Mail> Mails { get; set; }
+        private Core.Models.Mail.MailLabel mailLabel;
+        public Core.Models.Mail.MailLabel MailLabel
+        {
+            get => mailLabel;
+            set
+            {
+                mailLabel = value;
+                if(value != null)
+                {
+                    _ = GetMails(value.Label_id);
+                }
+            }
+        }
+        public Core.Models.Mail.MailList mailList;
+        public Core.Models.Mail.MailList MailList
+        {
+            get => mailList;
+            set
+            {
+                mailList = value;
+                if(value != null)
+                {
+                    _= GetMails(value.Mailing_list_id);
+                }
+            }
+        }
+        private Core.Models.Mail.Mail mail;
+        public Core.Models.Mail.Mail Mail
+        {
+            get=> mail;
+            set
+            {
+                mail = value;
+                if (value != null)
+                {
+                    ShowMailDetail(Mail);
+                }
+            }
+        }
+        private async void TryInitMail()
+        {
+            if(MailLabels == null)
+            {
+                Controls.WaitingPopup.Show();
+                await GetMailLabels();
+                await GetMailLists();
+                Controls.WaitingPopup.Hide();
+                await GetMails();
+            }
+        }
+        /// <summary>
+        /// 获取邮件标签
+        /// </summary>
+        /// <returns></returns>
         private async Task GetMailLabels()
         {
-            Controls.WaitingPopup.Show();
             var root = await Core.Services.CharacterService.GetMailLabelsAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync());
             if(root != null)
             {
                 MailLabels = root.Labels;
             }
-            Controls.WaitingPopup.Hide();
         }
+        /// <summary>
+        /// 邮件订阅列表
+        /// </summary>
+        /// <returns></returns>
         private async Task GetMailLists()
         {
-            Controls.WaitingPopup.Show();
             MailLists = await Core.Services.CharacterService.GetMailListsAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync());
+        }
+        private async Task GetMails(int labelId = -1,int lastMailId = 0)
+        {
+            Controls.WaitingPopup.Show();
+            List<int> labelIds = null;
+            if (labelId != -1)
+            {
+                labelIds = new List<int>();
+                labelIds.Add(labelId);
+            }
+            var mails = await Core.Services.CharacterService.GetMailsAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync(), labelIds,lastMailId);
+            if(mails!= null)
+            {
+                var names = await Core.Services.UniverseService.SearchNameByIdsAsync(mails.Select(p => p.From).ToList());
+                var dic = names.ToDictionary(p => p.Id);
+                mails.ForEach(p =>
+                {
+                    if(dic.TryGetValue(p.From,out var name))
+                    {
+                        p.From_name = name.Name;
+                    }
+                });
+            }
+            Mails = mails;
             Controls.WaitingPopup.Hide();
         }
-
-
+        private async void ShowMailDetail(Core.Models.Mail.Mail inputMail)
+        {
+            Controls.WaitingPopup.Show();
+            var mail = await Core.Services.CharacterService.GetMailDetailAsync(CharacterOauth.CharacterID, await CharacterOauth.GetAccessTokenAsync(), inputMail.Mail_id);
+            Controls.WaitingPopup.Hide();
+            if (mail != null )
+            {
+                mail.From_name = inputMail.From_name;
+                if (mail.Recipients!=null && mail.Recipients.Count > 0)
+                {
+                    var names = await Core.Services.UniverseService.SearchNameByIdsAsync(mail.Recipients.Select(p => p.Recipient_id).ToList());
+                    var dic = names.ToDictionary(p => p.Id);
+                    mail.Recipients.ForEach(p =>
+                    {
+                        if (dic.TryGetValue(p.Recipient_id, out var name))
+                        {
+                            p.Recipient_name = name.Name;
+                        }
+                    });
+                }
+                Dialogs.MailDetailDialog mailDetailDialog = new Dialogs.MailDetailDialog(mail);
+                await mailDetailDialog.ShowAsync();
+            }
+            else
+            {
+                Controls.NotifyPopup.ShowError("Null");
+            }
+        }
         #endregion
     }
 }

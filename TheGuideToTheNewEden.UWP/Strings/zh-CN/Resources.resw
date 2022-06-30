@@ -179,6 +179,15 @@
   <data name="Character_Remove.Text" xml:space="preserve">
     <value>删除</value>
   </data>
+  <data name="MailDetail.PrimaryButtonText" xml:space="preserve">
+    <value>回复</value>
+  </data>
+  <data name="MailDetail.SecondaryButtonText" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="MailDetail_Recipient.Text" xml:space="preserve">
+    <value>收件人</value>
+  </data>
   <data name="Setting_DBLanguage.Description" xml:space="preserve">
     <value>物品数据库显示语言</value>
   </data>
@@ -222,6 +231,15 @@
   <data name="Shell_Home.Content" xml:space="preserve">
     <value>主页</value>
     <comment>Navigation view item name for Home</comment>
+  </data>
+  <data name="SkillQueue_Done" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="SkillQueue_Pause" xml:space="preserve">
+    <value>暂停中</value>
+  </data>
+  <data name="SkillQueue_Waiting" xml:space="preserve">
+    <value>队列中</value>
   </data>
   <data name="WaitingPopup.Text" xml:space="preserve">
     <value>加载中</value>

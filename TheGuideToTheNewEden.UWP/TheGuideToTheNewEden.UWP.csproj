@@ -189,6 +189,7 @@
     <Compile Include="Converters\BoolAddOrReduceColorConverter.cs" />
     <Compile Include="Converters\DoubleAddOrReduceColorConverter.cs" />
     <Compile Include="Converters\IntToVisibilityConverter.cs" />
+    <Compile Include="Converters\SkillQueueStatusConverter.cs" />
     <Compile Include="Converters\LocalTimeConverter.cs" />
     <Compile Include="Converters\RemainTimeConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
@@ -198,8 +199,12 @@
     <Compile Include="Converters\StrVisibilityConverter.cs" />
     <Compile Include="Converters\NullToBooleanConverter.cs" />
     <Compile Include="CoreConfig.cs" />
+    <Compile Include="Dialogs\MailDetailDialog.xaml.cs">
+      <DependentUpon>MailDetailDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Enums\ProtocolType.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
+    <Compile Include="Helpers\GameTextToH5Helper.cs" />
     <Compile Include="Helpers\NavHelper.cs" />
     <Compile Include="Helpers\ObjectExtension.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
@@ -268,6 +273,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\WaitingPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\MailDetailDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -543,6 +552,9 @@
       <Project>{93DCB9F3-43B9-4B83-B1AF-3E582795808C}</Project>
       <Name>TheGuideToTheNewEden.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
