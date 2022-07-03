@@ -108,14 +108,60 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             }
             Controls.WaitingPopup.Show();
             ResetCharacter();
-            var skill = await Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var isk = await Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var loyalties = await Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var onlineStatus = await Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var location = await Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var ship = await Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
-            var affiliation = await Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID);
-            var skillQueues = await Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            string token = await characterOauth.GetAccessTokenAsync();
+            Skill skill = null;
+            double isk = 0;
+            List<Loyalty> loyalties = null;
+            OnlineStatus onlineStatus = null;
+            Location location = null;
+            StayShip ship = null;
+            Affiliation affiliation = null;
+            List<SkillQueue> skillQueues = null;
+            var tasks = new Task[]
+            {
+                Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    skill = p.Result;
+                }),
+                Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    isk = p.Result;
+                }),
+                Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    loyalties = p.Result;
+                }),
+                Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    onlineStatus = p.Result;
+                }),
+                Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    location = p.Result;
+                }),
+                Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    ship = p.Result;
+                }),
+                Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID).ContinueWith((p)=>
+                {
+                    affiliation = p.Result;
+                }),
+                Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+                {
+                    skillQueues = p.Result;
+                }),
+            };
+            await Task.WhenAll(tasks);
+            
+            //var skill = await Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, );
+            //var isk = await Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            //var loyalties = await Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            //var onlineStatus = await Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            //var location = await Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            //var ship = await Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
+            //var affiliation = await Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID);
+            //var skillQueues = await Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, await characterOauth.GetAccessTokenAsync());
             DoneSkillCount = 0;
             TraingSkillCount = 0;
             if(skillQueues != null)
@@ -285,7 +331,7 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                     if(clone != null)
                     {
                         clone.TotalPrice = clone.AutoTotalPrice;
-                        dic.Add(p.Type_id, p.DepthClone<Core.Models.Wallet.WalletTransaction>());
+                        dic.Add(p.Type_id, clone);
                     }
                 }
             }
@@ -296,6 +342,7 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
         {
             if(WalletPivotIndex == 0 && Walletjournals == null)
             {
+                WalletJournalPage = 0;
                 WalletJournalPage = 1;
             }
         }
@@ -404,14 +451,17 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             if(mails!= null)
             {
                 var names = await Core.Services.UniverseService.SearchNameByIdsAsync(mails.Select(p => p.From).ToList());
-                var dic = names.ToDictionary(p => p.Id);
-                mails.ForEach(p =>
+                if (names != null)
                 {
-                    if(dic.TryGetValue(p.From,out var name))
+                    var dic = names.ToDictionary(p => p.Id);
+                    mails.ForEach(p =>
                     {
-                        p.From_name = name.Name;
-                    }
-                });
+                        if (dic.TryGetValue(p.From, out var name))
+                        {
+                            p.From_name = name.Name;
+                        }
+                    });
+                }
             }
             Mails = mails;
             Controls.WaitingPopup.Hide();
@@ -427,14 +477,17 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
                 if (mail.Recipients!=null && mail.Recipients.Count > 0)
                 {
                     var names = await Core.Services.UniverseService.SearchNameByIdsAsync(mail.Recipients.Select(p => p.Recipient_id).ToList());
-                    var dic = names.ToDictionary(p => p.Id);
-                    mail.Recipients.ForEach(p =>
+                    if (names != null)
                     {
-                        if (dic.TryGetValue(p.Recipient_id, out var name))
+                        var dic = names.ToDictionary(p => p.Id);
+                        mail.Recipients.ForEach(p =>
                         {
-                            p.Recipient_name = name.Name;
-                        }
-                    });
+                            if (dic.TryGetValue(p.Recipient_id, out var name))
+                            {
+                                p.Recipient_name = name.Name;
+                            }
+                        });
+                    }
                 }
                 Dialogs.MailDetailDialog mailDetailDialog = new Dialogs.MailDetailDialog(mail);
                 await mailDetailDialog.ShowAsync();

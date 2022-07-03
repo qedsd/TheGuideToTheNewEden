@@ -123,7 +123,7 @@
                     FontSize="24"
                     Text="{x:Bind ViewModel.Selected.Content, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.Selected.Tag, Mode=OneWay, Converter={StaticResource StrVisibilityConverter}}" />
-                <Frame x:Name="shellFrame" Grid.Row="1" />
+                <Frame x:Name="shellFrame" Grid.Row="1"/>
             </Grid>
         </winui:NavigationView>
 

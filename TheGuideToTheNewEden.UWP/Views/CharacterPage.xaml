@@ -510,7 +510,7 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ListBox ItemsSource="{x:Bind ViewModel.Walletjournals, Mode=OneWay}">
+                            <ListBox ItemsSource="{x:Bind ViewModel.Walletjournals, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="model2:Walletjournal">
                                         <Grid Padding="0,0,4,0">
@@ -569,7 +569,7 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactions, Mode=OneWay}">
+                            <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactions, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="model2:WalletTransaction">
                                         <Grid Padding="0,0,4,0">
@@ -599,7 +599,7 @@
                                                 Grid.Column="1"
                                                 HorizontalAlignment="Right"
                                                 Foreground="{x:Bind Is_buy, Converter={StaticResource BoolAddOrReduceColorConverter}}"
-                                                Text="{Binding TotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
+                                                Text="{x:Bind AutoTotalPrice, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:N2}'}"
                                                 ToolTipService.ToolTip="合计" />
                                             <TextBlock
                                                 Grid.Row="2"
@@ -624,7 +624,7 @@
                                 Text="交易-统计"
                                 ToolTipService.ToolTip="最近30天市场交易" />
                         </PivotItem.Header>
-                        <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactionStatistic}">
+                        <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactionStatistic, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="model2:WalletTransaction">
                                     <Grid Padding="0,0,4,0">

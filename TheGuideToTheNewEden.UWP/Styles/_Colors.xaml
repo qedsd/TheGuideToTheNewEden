@@ -2,7 +2,7 @@
     <SolidColorBrush x:Key="ThemeControlForegroundBaseHighBrush" Color="{ThemeResource SystemBaseHighColor}" />
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#2e333c" />
+            <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#fdfdfe" />

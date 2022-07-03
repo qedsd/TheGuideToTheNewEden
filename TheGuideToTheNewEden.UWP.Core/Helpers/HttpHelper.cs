@@ -34,17 +34,24 @@ namespace TheGuideToTheNewEden.Core.Helpers
             try
             {
                 HttpResponseMessage response = await client.PostAsync(url, content);
-                string responseBody;
-                if (Gzip)
+                if (response.IsSuccessStatusCode)
                 {
-                    GZipInputStream inputStream = new GZipInputStream(await response.Content.ReadAsStreamAsync());
-                    responseBody = new StreamReader(inputStream).ReadToEnd();
+                    string responseBody;
+                    if (Gzip)
+                    {
+                        GZipInputStream inputStream = new GZipInputStream(await response.Content.ReadAsStreamAsync());
+                        responseBody = new StreamReader(inputStream).ReadToEnd();
+                    }
+                    else
+                    {
+                        responseBody = await response.Content.ReadAsStringAsync();
+                    }
+                    return responseBody;
                 }
                 else
                 {
-                    responseBody = await response.Content.ReadAsStringAsync();
+                    return null;
                 }
-                return responseBody;
             }
             catch(Exception)
             {

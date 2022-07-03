@@ -331,7 +331,7 @@ namespace TheGuideToTheNewEden.Core.Services
                             {
                                 if (dic.TryGetValue(item.Client_id, out var name))
                                 {
-                                    item.Type_name = name.Name;
+                                    item.Client_name = name.Name;
                                 }
                             }
                         }
