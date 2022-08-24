@@ -61,7 +61,7 @@ namespace TheGuideToTheNewEden.ServerLogger
         {
             try
             {
-                string result = await HttpHelper.GetAsync("https://esi.evepc.163.com/latest/status/?datasource=tranquility");
+                string result = await HttpHelper.GetAsync("https://esi.evepc.163.com/latest/status/?datasource=serenity");
                 if (string.IsNullOrEmpty(result))
                     return;
                 SerenityServerStatus status = Newtonsoft.Json.JsonConvert.DeserializeObject<SerenityServerStatus>(result);
