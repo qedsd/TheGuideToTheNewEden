@@ -200,6 +200,12 @@
   <data name="Setting_GameServer.Title" xml:space="preserve">
     <value>Game Server</value>
   </data>
+  <data name="Setting_PlayerStatus.Description" xml:space="preserve">
+    <value>Server Api</value>
+  </data>
+  <data name="Setting_PlayerStatus.Title" xml:space="preserve">
+    <value>Player Status Api</value>
+  </data>
   <data name="Setting_Theme.Description" xml:space="preserve">
     <value>Select with app theme to display</value>
   </data>

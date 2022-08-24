@@ -216,6 +216,7 @@
     <Compile Include="Services\GameServerSelectorService.cs" />
     <Compile Include="Services\LanguageSelectorService.cs" />
     <Compile Include="Services\NavigationService.cs" />
+    <Compile Include="Services\PlayerStatusService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ToastNotificationsService.cs" />
     <Compile Include="Services\ToastNotificationsService.Samples.cs" />

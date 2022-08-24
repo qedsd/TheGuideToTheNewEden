@@ -8,8 +8,8 @@
     xmlns:helper="using:TheGuideToTheNewEden.UWP.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Windows.UI.Xaml"
-    NavigationCacheMode="Enabled"
     Background="Transparent"
+    NavigationCacheMode="Enabled"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
     <Page.Resources>
@@ -71,6 +71,15 @@
                     <ComboBoxItem Content="Tranquility" />
                     <ComboBoxItem Content="Serenity" />
                 </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_PlayerStatus">
+            <controls:ExpandableSettingControl.Icon>
+                <fluent:FluentIconElement Symbol="Status24" />
+            </controls:ExpandableSettingControl.Icon>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Width="240" Text="{x:Bind ViewModel.PlayerStatusApi, Mode=TwoWay}" />
             </StackPanel>
         </controls:ExpandableSettingControl>
     </StackPanel>

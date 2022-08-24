@@ -73,6 +73,17 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
             }
         }
 
+        private string playerStatusApi = PlayerStatusService.Api;
+        public string PlayerStatusApi
+        {
+            get => playerStatusApi;
+            set
+            {
+                playerStatusApi = value;
+                _ = PlayerStatusService.SetAsync(value);
+            }
+        }
+
         private ICommand _switchThemeCommand;
 
         public ICommand SwitchThemeCommand

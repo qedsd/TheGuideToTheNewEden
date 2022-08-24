@@ -29,5 +29,9 @@ namespace TheGuideToTheNewEden.Core
         /// 授权服务的scope
         /// </summary>
         public static string Scope { get; set; }
+        /// <summary>
+        /// 玩家统计服务器API
+        /// </summary>
+        public static string PlayerStatusApi { get; set; }
     }
 }

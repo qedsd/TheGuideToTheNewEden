@@ -200,6 +200,12 @@
   <data name="Setting_GameServer.Title" xml:space="preserve">
     <value>游戏服务器</value>
   </data>
+  <data name="Setting_PlayerStatus.Description" xml:space="preserve">
+    <value>统计服务器在线人数、贴吧活跃度的API服务器地址</value>
+  </data>
+  <data name="Setting_PlayerStatus.Title" xml:space="preserve">
+    <value>玩家统计API地址</value>
+  </data>
   <data name="Setting_Theme.Description" xml:space="preserve">
     <value>选择要显示的应用主题</value>
   </data>
