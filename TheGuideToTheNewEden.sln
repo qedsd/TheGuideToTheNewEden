@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGuideToTheNewEden.UWP", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGuideToTheNewEden.Core", "TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.Core.csproj", "{93DCB9F3-43B9-4B83-B1AF-3E582795808C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGuideToTheNewEden.ServerLogger", "TheGuideToTheNewEden.ServerLogger\TheGuideToTheNewEden.ServerLogger.csproj", "{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,26 @@ Global
 		{93DCB9F3-43B9-4B83-B1AF-3E582795808C}.Release|x64.Build.0 = Release|Any CPU
 		{93DCB9F3-43B9-4B83-B1AF-3E582795808C}.Release|x86.ActiveCfg = Release|Any CPU
 		{93DCB9F3-43B9-4B83-B1AF-3E582795808C}.Release|x86.Build.0 = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|ARM.Build.0 = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|x64.Build.0 = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|ARM.ActiveCfg = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|ARM.Build.0 = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|ARM64.Build.0 = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|x64.ActiveCfg = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|x64.Build.0 = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{C20B7E4C-BFDF-4100-B6D8-AD5020AB50DE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
