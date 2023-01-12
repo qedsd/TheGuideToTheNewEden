@@ -23,12 +23,11 @@ namespace TheGuideToTheNewEden.UWP.ViewModels
         }
         private string GetVersionDescription()
         {
-            //var appName = "AppDisplayName".GetLocalized();
             var package = Package.Current;
             var packageId = package.Id;
             var version = packageId.Version;
 
-            return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            return $"v{version.Major}.{version.Minor}.{version.Build}";
         }
     }
 }

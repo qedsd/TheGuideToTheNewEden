@@ -1,0 +1,94 @@
+﻿<Window
+    x:Class="TheGuideToTheNewEden.WinUI.BaseWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="MainWindowGrid" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid
+            Height="42"
+            VerticalAlignment="Top"
+            Canvas.ZIndex="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Name="AppTitleLeftBorder"
+                Grid.Column="0"
+                Width="20" />
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Grid
+                    Grid.Column="1"
+                    Height="16"
+                    CornerRadius="8">
+                    <Image
+                        Width="16"
+                        Height="16"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Source="/Images/logo_32.png" />
+                </Grid>
+
+                <TextBlock
+                    x:Uid="AppDisplayNameTextBlock"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Foreground="{ThemeResource WindowCaptionForeground}" />
+
+                <StackPanel x:Name="HeadPanel" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="2,0"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{ThemeResource WindowCaptionForeground}"
+                        Text="•" />
+                    <TextBlock
+                        x:Name="HeadTextBlock"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{ThemeResource WindowCaptionForeground}"
+                        Text="Head" />
+                </StackPanel>
+            </StackPanel>
+
+            <!--  Draggable part of the title bar  -->
+            <Border
+                x:Name="AppTitleBar"
+                Grid.Column="1"
+                Height="32"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top" />
+        </Grid>
+        <Grid Grid.Row="1">
+            <Frame x:Name="ContentFrame" Background="Transparent" />
+            <InfoBar
+                x:Name="InfoBar"
+                Height="50"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                IsOpen="False"
+                Severity="Informational" />
+            <Grid x:Name="WaitingGrid" Visibility="Collapsed">
+                <Grid.Background>
+                    <SolidColorBrush Opacity="0.6" Color="{ThemeResource ControlFillColorDefault}" />
+                </Grid.Background>
+                <ProgressRing
+                    x:Name="WaitingProgressRing"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
