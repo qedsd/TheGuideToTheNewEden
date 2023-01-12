@@ -15,11 +15,11 @@
     </Page.DataContext>
     <Grid Margin="{StaticResource MediumLeftRightMargin}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="0.4*" />
+            <RowDefinition Height="0.6*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
         </Grid.RowDefinitions>
-        <Border Height="260" CornerRadius="8">
+        <Border CornerRadius="8">
             <Border.Background>
                 <ImageBrush
                     x:Name="BannerImage"
@@ -28,7 +28,10 @@
                     Stretch="UniformToFill" />
             </Border.Background>
             <Grid>
-                <StackPanel Margin="60,0,0,0" VerticalAlignment="Center">
+                <StackPanel
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
                     <TextBlock
                         x:Uid="AppDisplayNameTextBlock"
                         FontSize="32"
@@ -62,24 +65,31 @@
                         Width="300"
                         Height="70"
                         Padding="10,4"
-                        Background="{ThemeResource ContentBackgroudBrush}"
+                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                         CornerRadius="4">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="0.6*" />
-                            <RowDefinition Height="0.4*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             FontSize="16"
                             Text="{x:Bind Title}" />
                         <TextBlock
                             Grid.Row="1"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                            FontSize="12"
                             FontWeight="Thin"
-                            Text="{x:Bind Description}" />
+                            Text="{x:Bind Description}"
+                            Visibility="{x:Bind Description, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
                     </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
+        <Grid Grid.Row="2">
+            <!--  服务器状态  -->
+        </Grid>
     </Grid>
 </Page>

@@ -2,6 +2,7 @@
     x:Class="TheGuideToTheNewEden.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:local="using:TheGuideToTheNewEden.WinUI">
     <Application.Resources>
         <ResourceDictionary>
@@ -15,6 +16,7 @@
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

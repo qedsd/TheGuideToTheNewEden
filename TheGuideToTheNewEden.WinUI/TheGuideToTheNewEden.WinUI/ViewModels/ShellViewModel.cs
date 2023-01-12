@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Models;
+using TheGuideToTheNewEden.WinUI.Views;
 using Windows.ApplicationModel;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -18,10 +19,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             VersionDescription = GetVersionDescription();
             ToolItems = new List<ToolItem>()
             {
-                new ToolItem("角色","技能、邮件、合同...", null),
-                new ToolItem("市场","实时查看公开市场订单",null),
-                new ToolItem("比价","市场价格对比",null),
-                new ToolItem("预警","聊天频道手动预警", null)
+                new ToolItem("角色","查看角色技能、邮件、合同等信息", typeof(CharacterPage)),
+                new ToolItem("市场","实时查看公开市场订单", typeof(MarketPage)),
+                new ToolItem("商业","市场价格对比",typeof(BusinessPage)),
+                new ToolItem("预警","聊天频道手动预警", typeof(EarlyWarningPage)),
+                new ToolItem("设置","", typeof(SettingPage)),
             };
         }
         private static string GetVersionDescription()

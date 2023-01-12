@@ -11,6 +11,11 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="BaseWindow.xaml" />
+    <None Remove="Views\BusinessPage.xaml" />
+    <None Remove="Views\CharacterPage.xaml" />
+    <None Remove="Views\EarlyWarningPage.xaml" />
+    <None Remove="Views\MarketPage.xaml" />
+    <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
 
@@ -28,6 +33,36 @@
     <Content Update="Resources\Images\home.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\BusinessPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\MarketPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\CharacterPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\SettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\EarlyWarningPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

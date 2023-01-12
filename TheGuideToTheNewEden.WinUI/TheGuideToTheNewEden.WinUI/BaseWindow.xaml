@@ -48,11 +48,11 @@
 
                 <StackPanel x:Name="HeadPanel" Orientation="Horizontal">
                     <TextBlock
-                        Margin="2,0"
+                        Margin="2,0,4,0"
                         VerticalAlignment="Center"
                         FontSize="13"
                         Foreground="{ThemeResource WindowCaptionForeground}"
-                        Text="•" />
+                        Text="-" />
                     <TextBlock
                         x:Name="HeadTextBlock"
                         VerticalAlignment="Center"
