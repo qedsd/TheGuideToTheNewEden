@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <BaseIntermediateOutputPath />
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.Core.csproj" />
+    <ProjectReference Include="..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
   </ItemGroup>
 
 </Project>

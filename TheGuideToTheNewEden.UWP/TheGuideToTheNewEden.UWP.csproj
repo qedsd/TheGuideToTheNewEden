@@ -549,13 +549,13 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TheGuideToTheNewEden.UWP.Core\TheGuideToTheNewEden.Core.csproj">
-      <Project>{93DCB9F3-43B9-4B83-B1AF-3E582795808C}</Project>
-      <Name>TheGuideToTheNewEden.Core</Name>
-    </ProjectReference>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Extensions\" />
+    <ProjectReference Include="..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj">
+      <Project>{fff0b114-5007-4195-bdc1-a5410b4513ea}</Project>
+      <Name>TheGuideToTheNewEden.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
