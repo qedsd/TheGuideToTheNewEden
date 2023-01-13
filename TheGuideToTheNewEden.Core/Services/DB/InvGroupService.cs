@@ -10,31 +10,26 @@ using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public class InvGroupService: DBService
+    public class InvGroupService
     {
         public static async Task<InvGroup> QueryGroupAsync(int id)
         {
-            SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-            var item = await db.Queryable<InvGroup>().FirstAsync(p => p.GroupID == id);
-            if (DBLanguage == Enums.Language.Chinese)
+            var item = await DBService.MainDb.Queryable<InvGroup>().FirstAsync(p => p.GroupID == id);
+            if (DBService.NeedLocalization)
             {
-                await ZHDBService.TranInvGroupAsync(item);
+                await LocalDbService.TranInvGroupAsync(item);
             }
             return item;
         }
 
         public static async Task<List<InvGroup>> QueryGroupsAsync(List<int> ids)
         {
-            return await Task.Run(async() =>
+            var items = await DBService.MainDb.Queryable<InvGroup>().Where(p => ids.Contains(p.GroupID)).ToListAsync();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var items = db.Queryable<InvGroup>().Where(p => ids.Contains(p.GroupID)).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranInvGroupsAsync(items);
-                }
-                return items;
-            });
+                await LocalDbService.TranInvGroupsAsync(items);
+            }
+            return items;
         }
         /// <summary>
         /// 获取每个技能组的id、name、包含的skill id
@@ -46,11 +41,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await Task.Run(async () =>
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var groups = db.Queryable<InvGroup>().Where(p => p.CategoryID == 16).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
+                var groups = DBService.MainDb.Queryable<InvGroup>().Where(p => p.CategoryID == 16).ToList();
+                if (DBService.NeedLocalization)
                 {
-                    await ZHDBService.TranInvGroupsAsync(groups);
+                    await LocalDbService.TranInvGroupsAsync(groups);
                 }
                 List<SkillGroup> skillGroups = new List<SkillGroup>();
                 foreach(var group in groups)

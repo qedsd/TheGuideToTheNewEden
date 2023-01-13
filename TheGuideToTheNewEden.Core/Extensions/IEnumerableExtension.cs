@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Extensions
@@ -37,6 +38,17 @@ namespace TheGuideToTheNewEden.Core.Extensions
                 stringBuilder.Remove(stringBuilder.Length - separator.Length, separator.Length);
                 return stringBuilder.ToString();
             }
+        }
+
+        /// <summary>
+        /// 既不为null也不为空
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ls"></param>
+        /// <returns></returns>
+        public static bool NotNullOrEmpty<T>(this IEnumerable<T> ls)
+        {
+            return ls != null && ls.Any();
         }
     }
 }

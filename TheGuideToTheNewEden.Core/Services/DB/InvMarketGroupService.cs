@@ -7,31 +7,26 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public class InvMarketGroupService : DBService
+    public class InvMarketGroupService
     {
         public static async Task<InvMarketGroup> QueryAsync(int id)
         {
-            SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-            var type = await db.Queryable<InvMarketGroup>().FirstAsync(p => p.MarketGroupID == id);
-            if (DBLanguage == Enums.Language.Chinese)
+            var type = await DBService.MainDb.Queryable<InvMarketGroup>().FirstAsync(p => p.MarketGroupID == id);
+            if (DBService.NeedLocalization)
             {
-                await ZHDBService.TranInvMarketGroupAsync(type);
+                await LocalDbService.TranInvMarketGroupAsync(type);
             }
             return type;
         }
 
         public static async Task<List<InvMarketGroup>> QueryAsync(List<int> ids)
         {
-            return await Task.Run(async() =>
+            var types = await DBService.MainDb.Queryable<InvMarketGroup>().Where(p => ids.Contains(p.MarketGroupID)).ToListAsync();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var types = db.Queryable<InvMarketGroup>().Where(p => ids.Contains(p.MarketGroupID)).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranInvMarketGroupsAsync(types);
-                }
-                return types;
-            });
+                await LocalDbService.TranInvMarketGroupsAsync(types);
+            }
+            return types;
         }
     }
 }

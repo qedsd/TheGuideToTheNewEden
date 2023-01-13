@@ -7,31 +7,26 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public class MapRegionService : DBService
+    public class MapRegionService
     {
         public static async Task<MapRegion> QueryAsync(int id)
         {
-            SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-            var type = await db.Queryable<MapRegion>().FirstAsync(p => p.RegionID == id);
-            if (DBLanguage == Enums.Language.Chinese)
+            var type = await DBService.MainDb.Queryable<MapRegion>().FirstAsync(p => p.RegionID == id);
+            if (DBService.NeedLocalization)
             {
-                await ZHDBService.TranMapRegionAsync(type);
+                await LocalDbService.TranMapRegionAsync(type);
             }
             return type;
         }
 
         public static async Task<List<MapRegion>> QueryAsync(List<int> ids)
         {
-            return await Task.Run(async() =>
+            var types = DBService.MainDb.Queryable<MapRegion>().Where(p => ids.Contains(p.RegionID)).ToList();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var types = db.Queryable<MapRegion>().Where(p => ids.Contains(p.RegionID)).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranMapRegionsAsync(types);
-                }
-                return types;
-            });
+                await LocalDbService.TranMapRegionsAsync(types);
+            }
+            return types;
         }
     }
 }

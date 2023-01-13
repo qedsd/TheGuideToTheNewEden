@@ -188,17 +188,17 @@
   <data name="MailDetail_Recipient.Text" xml:space="preserve">
     <value>Recipient</value>
   </data>
-  <data name="Setting_DBLanguage.Description" xml:space="preserve">
-    <value>Game item language</value>
-  </data>
-  <data name="Setting_DBLanguage.Title" xml:space="preserve">
-    <value>DB Language</value>
-  </data>
   <data name="Setting_GameServer.Description" xml:space="preserve">
     <value>The app maybe need to be restarted when selecting another server</value>
   </data>
   <data name="Setting_GameServer.Title" xml:space="preserve">
     <value>Game Server</value>
+  </data>
+  <data name="Setting_LocalDb.Description" xml:space="preserve">
+    <value>Game item language. The app needs to be restarted when selecting another db</value>
+  </data>
+  <data name="Setting_LocalDb.Title" xml:space="preserve">
+    <value>DB Language</value>
   </data>
   <data name="Setting_PlayerStatus.Description" xml:space="preserve">
     <value>Server Api</value>

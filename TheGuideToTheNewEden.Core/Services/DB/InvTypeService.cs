@@ -7,45 +7,36 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public class InvTypeService: DBService
+    public class InvTypeService
     {
         public static async Task<InvType> QueryTypeAsync(int id)
         {
-            SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-            var type = await db.Queryable<InvType>().FirstAsync(p => p.TypeID == id);
-            if (DBLanguage == Enums.Language.Chinese)
+            var type = await DBService.MainDb.Queryable<InvType>().FirstAsync(p => p.TypeID == id);
+            if (DBService.NeedLocalization)
             {
-                await ZHDBService.TranInvTypeAsync(type);
+                await LocalDbService.TranInvTypeAsync(type);
             }
             return type;
         }
 
         public static async Task<List<InvType>> QueryTypesAsync(List<int> ids)
         {
-            return await Task.Run(async() =>
+            var types = await DBService.MainDb.Queryable<InvType>().Where(p => ids.Contains(p.TypeID)).ToListAsync();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var types = db.Queryable<InvType>().Where(p => ids.Contains(p.TypeID)).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranInvTypesAsync(types);
-                }
-                return types;
-            });
+                await LocalDbService.TranInvTypesAsync(types);
+            }
+            return types;
         }
 
         public static async Task<List<InvType>> QueryTypesInGroupAsync(int groupId)
         {
-            return await Task.Run(async () =>
+            var types = await DBService.MainDb.Queryable<InvType>().Where(p => p.GroupID == groupId).ToListAsync();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var types = db.Queryable<InvType>().Where(p => p.GroupID == groupId).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranInvTypesAsync(types);
-                }
-                return types;
-            });
+                await LocalDbService.TranInvTypesAsync(types);
+            }
+            return types;
         }
     }
 }

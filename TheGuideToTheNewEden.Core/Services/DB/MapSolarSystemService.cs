@@ -7,31 +7,26 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
-    public class MapSolarSystemService : DBService
+    public class MapSolarSystemService
     {
         public static async Task<MapSolarSystem> QueryAsync(int id)
         {
-            SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-            var type = await db.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemID == id);
-            if (DBLanguage == Enums.Language.Chinese)
+            var type = await DBService.MainDb.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemID == id);
+            if (DBService.NeedLocalization)
             {
-                await ZHDBService.TranMapSolarSystemAsync(type);
+                await LocalDbService.TranMapSolarSystemAsync(type);
             }
             return type;
         }
 
         public static async Task<List<MapSolarSystem>> QueryAsync(List<int> ids)
         {
-            return await Task.Run(async() =>
+            var types = await DBService.MainDb.Queryable<MapSolarSystem>().Where(p => ids.Contains(p.SolarSystemID)).ToListAsync();
+            if (DBService.NeedLocalization)
             {
-                SqlSugarClient db = new SqlSugarClient(DBModels.Config.MainDBConnectionConfig);
-                var types = db.Queryable<MapSolarSystem>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
-                if (DBLanguage == Enums.Language.Chinese)
-                {
-                    await ZHDBService.TranMapSolarSystemsAsync(types);
-                }
-                return types;
-            });
+                await LocalDbService.TranMapSolarSystemsAsync(types);
+            }
+            return types;
         }
     }
 }

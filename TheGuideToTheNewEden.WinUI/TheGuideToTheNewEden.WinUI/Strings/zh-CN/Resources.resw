@@ -188,17 +188,17 @@
   <data name="MailDetail_Recipient.Text" xml:space="preserve">
     <value>收件人</value>
   </data>
-  <data name="Setting_DBLanguage.Description" xml:space="preserve">
-    <value>物品数据库显示语言</value>
-  </data>
-  <data name="Setting_DBLanguage.Title" xml:space="preserve">
-    <value>数据库语言</value>
-  </data>
   <data name="Setting_GameServer.Description" xml:space="preserve">
     <value>修改使用的游戏服务器后，部分功能可能需要重启生效</value>
   </data>
   <data name="Setting_GameServer.Title" xml:space="preserve">
     <value>游戏服务器</value>
+  </data>
+  <data name="Setting_LocalDb.Description" xml:space="preserve">
+    <value>物品数据库显示语言。修改后需要重启软件</value>
+  </data>
+  <data name="Setting_LocalDb.Title" xml:space="preserve">
+    <value>数据库语言</value>
   </data>
   <data name="Setting_PlayerStatus.Description" xml:space="preserve">
     <value>统计服务器在线人数、贴吧活跃度的API服务器地址</value>

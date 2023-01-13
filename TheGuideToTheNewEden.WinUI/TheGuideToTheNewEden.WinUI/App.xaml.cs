@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -42,10 +43,12 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            Services.ActivationService.Init();
             m_window = new BaseWindow()
             {
                 MainContent = new Views.ShellPage()
             };
+            WindowHelper.SetMainWindow(m_window);
             m_window.Activate();
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Services.DB;
 
 namespace TheGuideToTheNewEden.Core
 {
@@ -10,9 +11,13 @@ namespace TheGuideToTheNewEden.Core
     public static class Config
     {
         /// <summary>
-        /// 数据库所在文件夹
+        /// 主数据库数据库文件路径
         /// </summary>
-        public static string DBPath { get; set; } = string.Empty;
+        public static string DBPath { get; set; }
+        /// <summary>
+        /// 本地化数据库文件路径
+        /// </summary>
+        public static string LocalDBPath { get; set; }
         /// <summary>
         /// 数据库使用语言
         /// </summary>
@@ -33,5 +38,16 @@ namespace TheGuideToTheNewEden.Core
         /// 玩家统计服务器API
         /// </summary>
         public static string PlayerStatusApi { get; set; }
+
+        public static bool InitDb()
+        {
+            bool result = true;
+            result = DBService.InitMainDb(DBPath) && result;
+            //其他必须的数据库
+            //...
+            //本地化数据库不是必须的
+            DBService.InitLocalDb(LocalDBPath);
+            return result;
+        }
     }
 }

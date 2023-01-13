@@ -36,6 +36,11 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             {
                 Values = new Dictionary<string, string>();
             }
+            
+            GameServerSelectorService.Initialize();
+            LanguageSelectorService.Initialize();
+            LocalDbSelectorService.Initialize();
+            PlayerStatusService.Initialize();
             ThemeSelectorService.Initialize();
         }
         public static string GetValue(string key)

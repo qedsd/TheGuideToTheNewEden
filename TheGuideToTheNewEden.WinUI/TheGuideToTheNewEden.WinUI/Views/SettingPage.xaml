@@ -2,11 +2,70 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.SettingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid />
+    <Page.DataContext>
+        <viewmodels:SettingsViewModel x:Name="VM" />
+    </Page.DataContext>
+    <StackPanel Margin="{StaticResource MediumLeftTopRightBottomMargin}" Spacing="4">
+        <StackPanel.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
+            </TransitionCollection>
+        </StackPanel.ChildrenTransitions>
+        <controls:ExpandableSettingControl x:Uid="Setting_Theme">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedThemeIndex, Mode=TwoWay}">
+                    <ComboBoxItem x:Uid="Setting_Theme_Default" />
+                    <ComboBoxItem x:Uid="Setting_Theme_Light" />
+                    <ComboBoxItem x:Uid="Setting_Theme_Dark" />
+                </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_UILanguage">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="中文" />
+                    <ComboBoxItem Content="English" />
+                </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_LocalDb">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox
+                    Width="128"
+                    ItemsSource="{x:Bind VM.LocalDbs}"
+                    SelectedItem="{x:Bind VM.SelectedLocalDb, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Value, Converter={StaticResource FileToNameWithoutExtConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_GameServer">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedGameServerIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="Tranquility" />
+                    <ComboBoxItem Content="Serenity" />
+                </ComboBox>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+
+        <controls:ExpandableSettingControl x:Uid="Setting_PlayerStatus">
+            <StackPanel Orientation="Horizontal">
+                <TextBox Width="240" Text="{x:Bind VM.PlayerStatusApi, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+    </StackPanel>
 </Page>

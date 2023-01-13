@@ -17,6 +17,14 @@
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
             <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
+            <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
+            <converters:NullToBooleanConverter x:Key="NullToFalseConverter" IsInverted="True" />
+            <converters:NullToBooleanConverter
+                x:Key="StringNullOrWhiteSpaceToFalseConverter"
+                EnforceNonWhiteSpaceString="True"
+                IsInverted="True" />
+            <converters:FileToNameConverter x:Key="FileToNameWithoutExtConverter" WithExtension="False" />
+            <converters:FileToNameConverter x:Key="FileToNameConverter" WithExtension="True" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
