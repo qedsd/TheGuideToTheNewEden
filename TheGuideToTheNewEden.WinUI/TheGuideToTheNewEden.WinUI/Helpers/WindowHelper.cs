@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using System;
 using System.Collections.Generic;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
@@ -46,5 +47,9 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             MainWindow = window;
         }
 
+        public static Window CurrentWindow()
+        {
+            return Window.Current;
+        }
     }
 }

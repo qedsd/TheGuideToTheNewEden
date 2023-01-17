@@ -15,6 +15,7 @@
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
+    <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
@@ -48,6 +49,9 @@
     <None Update="Resources\Database\main.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\EarlyWarningItemPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
