@@ -4,11 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Interfaces;
 using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
-    public static class EarlyWarningService
+    public static class ObservableFileService
     {
         /// <summary>
         /// 同一个文件夹下的文件由一个watcher监控
@@ -19,24 +20,30 @@ namespace TheGuideToTheNewEden.Core.Services
         /// 所有的监控项
         /// key为文件路径
         /// </summary>
-        private static Dictionary<string, EarlyWarningItem> ItemsDic;
-        public static void Add(EarlyWarningItem earlyWarningItem)
+        private static Dictionary<string, IObservableFile> ItemsDic;
+        public static bool Add(IObservableFile item)
         {
             if(FileWatcherDic == null)
             {
                 FileWatcherDic = new Dictionary<string, FileSystemWatcher>();
-                ItemsDic = new Dictionary<string, EarlyWarningItem>();
+                ItemsDic = new Dictionary<string, IObservableFile>();
             }
-            if(!FileWatcherDic.ContainsKey(earlyWarningItem.ChatChanelInfo.Folder()))//未存在文件夹监控器，新建
+            string folder = Path.GetDirectoryName(item.FilePath);
+            if (!FileWatcherDic.ContainsKey(folder))//未存在文件夹监控器，新建
             {
-                FileSystemWatcher watcher = new FileSystemWatcher(earlyWarningItem.ChatChanelInfo.Folder());
+                FileSystemWatcher watcher = new FileSystemWatcher(folder);
                 watcher.EnableRaisingEvents = true;
                 watcher.Changed += Watcher_Changed;
-                FileWatcherDic.Add(earlyWarningItem.ChatChanelInfo.Folder(), watcher);
+                FileWatcherDic.Add(folder, watcher);
             }
-            ItemsDic.Add(earlyWarningItem.ChatChanelInfo.FilePath, earlyWarningItem);
+            if(!ItemsDic.ContainsKey(folder))
+            {
+                ItemsDic.Add(item.FilePath, item);
+                return true;
+            }
+            return false;
         }
-        public static void Add(List<EarlyWarningItem> items)
+        public static void Add(List<IObservableFile> items)
         {
             if(items.NotNullOrEmpty())
             {
@@ -46,11 +53,11 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
             }
         }
-        public static void Remove(EarlyWarningItem item)
+        public static void Remove(IObservableFile item)
         {
-            if(ItemsDic.ContainsKey(item.ChatChanelInfo.FilePath))
+            if(ItemsDic.ContainsKey(item.FilePath))
             {
-                ItemsDic.Remove(item.ChatChanelInfo.FilePath);
+                ItemsDic.Remove(item.FilePath);
 
             }
         }
@@ -58,7 +65,10 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             if(ItemsDic.TryGetValue(e.FullPath, out var item))
             {
-                item.Update();
+                if (e.ChangeType == item.WatcherChangeTypes)
+                {
+                    item.Update();
+                }
             }
         }
     }
