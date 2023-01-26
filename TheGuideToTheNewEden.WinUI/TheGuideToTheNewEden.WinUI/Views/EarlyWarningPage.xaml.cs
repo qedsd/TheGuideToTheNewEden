@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -12,20 +13,32 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Windows.UI;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class EarlyWarningPage : Page
     {
         public EarlyWarningPage()
         {
             this.InitializeComponent();
+        }
+
+        private void TabView_AddTabButtonClick(TabView sender, object args)
+        {
+            TabViewItem item = new TabViewItem()
+            {
+                Header = "新建预警",
+                Content = new EarlyWarningItemPage(),
+                IsSelected = true,
+            };
+            sender.TabItems.Add(item);
+        }
+
+        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            ((args.Item as TabViewItem).Content as EarlyWarningItemPage).Stop();
+            sender.TabItems.Remove(args.Item);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models;
@@ -26,7 +27,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     {
                         if (line.EndsWith("---------------------------------------------------------------"))
                         {
-                            if (headContents.Count > 0)
+                            if (headContents.NotNullOrEmpty())
                             {
                                 break;
                             }
@@ -53,15 +54,17 @@ namespace TheGuideToTheNewEden.Core.Helpers
                         string content = c.TrimStart();
                         if(content != null)
                         {
-                            var array = content.Split(':');
-                            if(array != null && array.Length == 2)
+                            int index = content.IndexOf(':');
+                            if (index != -1 && index != content.Length - 1)
                             {
-                                switch(array[0])
+                                string key = content.Substring(0, index);
+                                string value = content.Substring(index + 1).Trim();
+                                switch (key)
                                 {
-                                    case "Channel ID": chatChanelInfo.ChannelID = array[1].Trim(); break;
-                                    case "Channel Name": chatChanelInfo.ChannelName = array[1].Trim(); break;
-                                    case "Listener": chatChanelInfo.Listener = array[1].Trim(); break;
-                                    case "Session started": chatChanelInfo.SessionStarted = DateTime.Parse(array[1].Trim()); break;
+                                    case "Channel ID": chatChanelInfo.ChannelID = value; break;
+                                    case "Channel Name": chatChanelInfo.ChannelName = value; break;
+                                    case "Listener": chatChanelInfo.Listener = value; break;
+                                    case "Session started": chatChanelInfo.SessionStarted = DateTime.Parse(value); break;
                                 }
                             }
                         }

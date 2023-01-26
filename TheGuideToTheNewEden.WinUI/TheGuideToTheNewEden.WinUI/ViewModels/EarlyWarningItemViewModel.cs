@@ -14,7 +14,7 @@ using TheGuideToTheNewEden.WinUI.Models;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class EarlyWarningItemViewModel : ObservableObject
+    internal class EarlyWarningItemViewModel : BaseViewModel
     {
         private string logPath;
         public string LogPath
@@ -62,25 +62,65 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private async void InitDicAsync()
         {
             ListenerChannelDic = new Dictionary<string, List<ChatChanelInfo>>();
-            await Task.Run(() =>
+            if (System.IO.Directory.Exists(LogPath))
             {
-                var allFiles = System.IO.Directory.GetFiles(LogPath);
-                foreach (var file in allFiles)
+                await Task.Run(() =>
                 {
-                    var chanelInfo = GameLogHelper.GetChatChanelInfo(file);
-                    if (chanelInfo != null)
+                    var allFiles = System.IO.Directory.GetFiles(LogPath);
+                    Dictionary<string, Core.Models.ChatChanelInfo> onlyOneChanels = new Dictionary<string, Core.Models.ChatChanelInfo>();
+                    foreach (var file in allFiles)
                     {
-                        if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
+                        var chanelInfo = GameLogHelper.GetChatChanelInfo(file);
+                        if (chanelInfo != null)
                         {
-                            channels.Add(ChatChanelInfo.Create(chanelInfo));
-                        }
-                        else
-                        {
-                            ListenerChannelDic.Add(chanelInfo.Listener, channels);
+                            //if(onlyOneChanels.TryGetValue(chanelInfo.ChannelID,out var chanel))
+                            //{
+                            //    if(chanel.SessionStarted < chanelInfo.SessionStarted)
+                            //    {
+                            //        onlyOneChanels.Remove(chanelInfo.ChannelID);
+                            //        onlyOneChanels.Add(chanelInfo.ChannelID,chanelInfo);
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    onlyOneChanels.Add(chanelInfo.ChannelID, chanelInfo);
+                            //}
+                            if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
+                            {
+                                var sameChanel = channels.FirstOrDefault(p => p.ChannelName == chanelInfo.ChannelName);
+                                if(sameChanel != null && sameChanel.SessionStarted < chanelInfo.SessionStarted)
+                                {
+                                    channels.Remove(sameChanel);
+                                }
+                                channels.Add(ChatChanelInfo.Create(chanelInfo));
+                            }
+                            else
+                            {
+                                channels = new List<ChatChanelInfo>()
+                                {
+                                    ChatChanelInfo.Create(chanelInfo)
+                                };
+                                ListenerChannelDic.Add(chanelInfo.Listener, channels);
+                            }
                         }
                     }
-                }
-            });
+                    //foreach(var chanelInfo in onlyOneChanels.Values)
+                    //{
+                    //    if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
+                    //    {
+                    //        channels.Add(ChatChanelInfo.Create(chanelInfo));
+                    //    }
+                    //    else
+                    //    {
+                    //        channels = new List<ChatChanelInfo>()
+                    //            {
+                    //                ChatChanelInfo.Create(chanelInfo)
+                    //            };
+                    //        ListenerChannelDic.Add(chanelInfo.Listener, channels);
+                    //    }
+                    //}
+                });
+            }
             if (ListenerChannelDic.Count != 0)
             {
                 Characters = ListenerChannelDic.Select(p => p.Key).ToList();
@@ -111,6 +151,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand StartCommand => new RelayCommand(() =>
         {
             
+        });
+
+        public ICommand StopCommand => new RelayCommand(() =>
+        {
+
         });
     }
 }

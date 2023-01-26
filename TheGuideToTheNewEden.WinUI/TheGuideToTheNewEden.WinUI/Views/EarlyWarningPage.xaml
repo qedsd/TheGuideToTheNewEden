@@ -8,5 +8,11 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid />
+    <TabView AddTabButtonClick="TabView_AddTabButtonClick"
+             TabCloseRequested="TabView_TabCloseRequested"
+             x:Name="TabView"
+             Background="Transparent"
+             VerticalAlignment="Stretch">
+        
+    </TabView>
 </Page>
