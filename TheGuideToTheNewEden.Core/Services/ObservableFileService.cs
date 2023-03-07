@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 watcher.Changed += Watcher_Changed;
                 FileWatcherDic.Add(folder, watcher);
             }
-            if(!ItemsDic.ContainsKey(folder))
+            if(!ItemsDic.ContainsKey(item.FilePath))
             {
                 ItemsDic.Add(item.FilePath, item);
                 return true;

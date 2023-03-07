@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
+using Windows.UI.ViewManagement;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -32,6 +34,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"EVE", "logs", "Chatlogs");
         }
 
+        /// <summary>
+        /// key为角色名
+        /// value为角色下所有的不重复频道
+        /// 每个频道都是该频道最新日期的那个文件
+        /// </summary>
         private Dictionary<string, List<ChatChanelInfo>> ListenerChannelDic;
 
         private string selectedCharacter;
@@ -59,6 +66,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref chatChanelInfos, value);
         }
 
+        private ObservableCollection<string> chatContents = new ObservableCollection<string>();
+        public ObservableCollection<string> ChatContents
+        {
+            get => chatContents;
+            set => SetProperty(ref chatContents, value);
+        }
+
         private async void InitDicAsync()
         {
             ListenerChannelDic = new Dictionary<string, List<ChatChanelInfo>>();
@@ -73,20 +87,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         var chanelInfo = GameLogHelper.GetChatChanelInfo(file);
                         if (chanelInfo != null)
                         {
-                            //if(onlyOneChanels.TryGetValue(chanelInfo.ChannelID,out var chanel))
-                            //{
-                            //    if(chanel.SessionStarted < chanelInfo.SessionStarted)
-                            //    {
-                            //        onlyOneChanels.Remove(chanelInfo.ChannelID);
-                            //        onlyOneChanels.Add(chanelInfo.ChannelID,chanelInfo);
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    onlyOneChanels.Add(chanelInfo.ChannelID, chanelInfo);
-                            //}
                             if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
                             {
+                                //频道会按每天单独存储为一个文件，需要监控最新日期的那个
                                 var sameChanel = channels.FirstOrDefault(p => p.ChannelName == chanelInfo.ChannelName);
                                 if(sameChanel != null && sameChanel.SessionStarted < chanelInfo.SessionStarted)
                                 {
@@ -104,21 +107,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             }
                         }
                     }
-                    //foreach(var chanelInfo in onlyOneChanels.Values)
-                    //{
-                    //    if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
-                    //    {
-                    //        channels.Add(ChatChanelInfo.Create(chanelInfo));
-                    //    }
-                    //    else
-                    //    {
-                    //        channels = new List<ChatChanelInfo>()
-                    //            {
-                    //                ChatChanelInfo.Create(chanelInfo)
-                    //            };
-                    //        ListenerChannelDic.Add(chanelInfo.Listener, channels);
-                    //    }
-                    //}
                 });
             }
             if (ListenerChannelDic.Count != 0)
@@ -150,8 +138,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            
+            if(ChatChanelInfos.NotNullOrEmpty())
+            {
+                foreach(var ch in ChatChanelInfos.Where(p=>p.IsChecked))
+                {
+                    Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
+                    earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
+                    Core.Services.ObservableFileService.Add(earlyWarningItem);
+                    earlyWarningItem.Update();
+                }
+            }
         });
+
+        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<string> newlines)
+        {
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (var line in newlines)
+                {
+                    ChatContents.Add(line);
+                }
+            });
+        }
 
         public ICommand StopCommand => new RelayCommand(() =>
         {

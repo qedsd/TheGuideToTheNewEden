@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => ChatChanelInfo.FilePath;
         }
-        private int lastLineIndex;
+        private int lastLineIndex = -1;
         /// <summary>
         /// 文件内容有更新
         /// </summary>
@@ -40,7 +40,7 @@ namespace TheGuideToTheNewEden.Core.Models
                     var allLines = System.IO.File.ReadLines(ChatChanelInfo.FilePath);
                     if (allLines != null)
                     {
-                        var newLines = allLines.Skip(lastLineIndex + 1);
+                        var newLines = allLines.Skip(lastLineIndex + 1).ToList();
                         if (newLines.NotNullOrEmpty())
                         {
                             lastLineIndex += newLines.Count();
@@ -54,10 +54,11 @@ namespace TheGuideToTheNewEden.Core.Models
                                 }
                             }
                             //TODO:UI线程
-                            foreach(var line in newLines)
+                            foreach(var line in contents)
                             {
                                 Contents.Add(line);
                             }
+                            OnContentUpdate?.Invoke(this, contents);
                         }
                     }
                 }
@@ -68,5 +69,7 @@ namespace TheGuideToTheNewEden.Core.Models
                 }
             });
         }
+        public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<string> newlines);
+        public event ContentUpdate OnContentUpdate;
     }
 }

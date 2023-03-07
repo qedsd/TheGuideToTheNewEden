@@ -65,7 +65,7 @@
                         Width="300"
                         Height="70"
                         Padding="10,4"
-                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
                         CornerRadius="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />

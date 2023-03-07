@@ -8,11 +8,10 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <TabView AddTabButtonClick="TabView_AddTabButtonClick"
-             TabCloseRequested="TabView_TabCloseRequested"
-             x:Name="TabView"
-             Background="Transparent"
-             VerticalAlignment="Stretch">
-        
-    </TabView>
+    <TabView
+        x:Name="TabView"
+        VerticalAlignment="Stretch"
+        AddTabButtonClick="TabView_AddTabButtonClick"
+        Background="Transparent"
+        TabCloseRequested="TabView_TabCloseRequested" />
 </Page>
