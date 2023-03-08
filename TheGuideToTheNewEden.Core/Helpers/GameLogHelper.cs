@@ -20,31 +20,64 @@ namespace TheGuideToTheNewEden.Core.Helpers
             if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
             {
                 List<string> headContents = null;//包含频道信息的内容
-                using (StreamReader sr = new StreamReader(file))
+                using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
+                    byte[] b = new byte[1024];
+                    if (fs.Read(b, 0, b.Length) > 0)
                     {
-                        if (line.EndsWith("---------------------------------------------------------------"))
+                        var content = Encoding.Unicode.GetString(b);
+                        var contents = content.Split('\n','\r');
+                        if(contents.NotNullOrEmpty())
                         {
-                            if (headContents.NotNullOrEmpty())
+                            foreach (var line in contents)
                             {
-                                break;
-                            }
-                            else
-                            {
-                                headContents = new List<string>();
-                            }
-                        }
-                        else
-                        {
-                            if (headContents != null && !string.IsNullOrEmpty(line))
-                            {
-                                headContents.Add(line);
+                                if (line.EndsWith("---------------------------------------------------------------"))
+                                {
+                                    if (headContents.NotNullOrEmpty())
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        headContents = new List<string>();
+                                    }
+                                }
+                                else
+                                {
+                                    if (headContents != null && !string.IsNullOrEmpty(line))
+                                    {
+                                        headContents.Add(line);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                //using (StreamReader sr = new StreamReader(file))
+                //{
+                //    string line;
+                //    while ((line = sr.ReadLine()) != null)
+                //    {
+                //        if (line.EndsWith("---------------------------------------------------------------"))
+                //        {
+                //            if (headContents.NotNullOrEmpty())
+                //            {
+                //                break;
+                //            }
+                //            else
+                //            {
+                //                headContents = new List<string>();
+                //            }
+                //        }
+                //        else
+                //        {
+                //            if (headContents != null && !string.IsNullOrEmpty(line))
+                //            {
+                //                headContents.Add(line);
+                //            }
+                //        }
+                //    }
+                //}
                 if (headContents.NotNullOrEmpty())
                 {
                     ChatChanelInfo chatChanelInfo = new ChatChanelInfo();

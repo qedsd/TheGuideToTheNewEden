@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => ChatChanelInfo.FilePath;
         }
-        private int lastLineIndex = -1;
+        private int offset = 0;
         /// <summary>
         /// 文件内容有更新
         /// </summary>
@@ -37,37 +37,50 @@ namespace TheGuideToTheNewEden.Core.Models
             {
                 try
                 {
-                    var allLines = System.IO.File.ReadLines(ChatChanelInfo.FilePath);
-                    if (allLines != null)
+                    //var l = new FileInfo(ChatChanelInfo.FilePath).Length;
+                    List<string> newLines = null;
+                    using (FileStream fs = new FileStream(ChatChanelInfo.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        var newLines = allLines.Skip(lastLineIndex + 1).ToList();
-                        if (newLines.NotNullOrEmpty())
+                        byte[] b = new byte[1024];
+                        int curReadCount = 0;
+                        StringBuilder stringBuilder= new StringBuilder();
+                        fs.Position = offset;
+                        while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
                         {
-                            lastLineIndex += newLines.Count();
-                            List<string> contents = new List<string>();
-                            List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
-                            foreach (var line in newLines)
+                            offset += curReadCount;
+                            var content = Encoding.Unicode.GetString(b);
+                            stringBuilder.Append(content);
+                        }
+                        if(stringBuilder.Length> 0)
+                        {
+                            newLines = stringBuilder.ToString().Split(new char[] { '\n', '\r' }).ToList();
+                        }
+                    }
+                    if (newLines.NotNullOrEmpty())
+                    {
+                        List<string> contents = new List<string>();
+                        List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
+                        foreach (var line in newLines)
+                        {
+                            if (line.StartsWith("﻿[ "))
                             {
-                                if (line.StartsWith("﻿[ "))
+                                contents.Add(line);
+                                var result = AnalyzeContent(line);
+                                if (result != null)
                                 {
-                                    contents.Add(line);
-                                    var result = AnalyzeContent(line);
-                                    if(result != null)
-                                    {
-                                        newWarning.Add(result);
-                                    }
+                                    newWarning.Add(result);
                                 }
                             }
-                            if(newWarning.Count != 0)
-                            {
-                                OnWarningUpdate?.Invoke(this,newWarning);
-                            }
-                            foreach(var line in contents)
-                            {
-                                Contents.Add(line);
-                            }
-                            OnContentUpdate?.Invoke(this, contents);
                         }
+                        if (newWarning.Count != 0)
+                        {
+                            OnWarningUpdate?.Invoke(this, newWarning);
+                        }
+                        foreach (var line in contents)
+                        {
+                            Contents.Add(line);
+                        }
+                        OnContentUpdate?.Invoke(this, contents);
                     }
                 }
                 catch (Exception ex)

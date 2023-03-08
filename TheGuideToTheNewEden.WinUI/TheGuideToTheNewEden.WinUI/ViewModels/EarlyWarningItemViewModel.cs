@@ -146,8 +146,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
                     earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                     earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
-                    Core.Services.ObservableFileService.Add(earlyWarningItem);
-                    earlyWarningItem.Update();
+                    if(Core.Services.ObservableFileService.Add(earlyWarningItem))
+                    {
+                        earlyWarningItem.Update();
+                    }
                 }
             }
         });

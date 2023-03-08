@@ -32,8 +32,8 @@ namespace TheGuideToTheNewEden.Core.Services
             if (!FileWatcherDic.ContainsKey(folder))//未存在文件夹监控器，新建
             {
                 FileSystemWatcher watcher = new FileSystemWatcher(folder);
-                watcher.EnableRaisingEvents = true;
                 watcher.Changed += Watcher_Changed;
+                watcher.EnableRaisingEvents = true;
                 FileWatcherDic.Add(folder, watcher);
             }
             if(!ItemsDic.ContainsKey(item.FilePath))
