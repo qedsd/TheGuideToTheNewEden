@@ -12,6 +12,7 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
+using TheGuideToTheNewEden.WinUI.Services;
 using Windows.UI.ViewManagement;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -144,12 +145,31 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
                     earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
+                    earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
                     Core.Services.ObservableFileService.Add(earlyWarningItem);
                     earlyWarningItem.Update();
                 }
             }
         });
 
+        /// <summary>
+        /// 预警更新
+        /// </summary>
+        /// <param name="earlyWarningItem"></param>
+        /// <param name="news"></param>
+        private void EarlyWarningItem_OnWarningUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<Core.Models.EarlyWarningContent> news)
+        {
+            foreach(var ch in news)
+            {
+                WarningService.NotifyWindow(ch);
+                WarningService.NotifyPopupToast(ch);
+            }
+        }
+        /// <summary>
+        /// 频道内容更新
+        /// </summary>
+        /// <param name="earlyWarningItem"></param>
+        /// <param name="newlines"></param>
         private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<string> newlines)
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>

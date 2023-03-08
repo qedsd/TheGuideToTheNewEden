@@ -15,13 +15,13 @@ namespace TheGuideToTheNewEden.Core.Models
         public EarlyWarningItem(ChatChanelInfo info)
         {
             ChatChanelInfo = info;
-            Contents = new ObservableCollection<string>();
         }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
         /// 原始聊天内容
         /// </summary>
-        public ObservableCollection<string> Contents { get; set; }
+        public List<string> Contents { get;private set; } = new List<string>();
+        public List<EarlyWarningContent> Warnings { get;private set; } = new List<EarlyWarningContent>();
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Changed;
         public string FilePath
         {
@@ -45,15 +45,23 @@ namespace TheGuideToTheNewEden.Core.Models
                         {
                             lastLineIndex += newLines.Count();
                             List<string> contents = new List<string>();
+                            List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
                             foreach (var line in newLines)
                             {
                                 if (line.StartsWith("﻿[ "))
                                 {
                                     contents.Add(line);
-                                    //TODO:分析
+                                    var result = AnalyzeContent(line);
+                                    if(result != null)
+                                    {
+                                        newWarning.Add(result);
+                                    }
                                 }
                             }
-                            //TODO:UI线程
+                            if(newWarning.Count != 0)
+                            {
+                                OnWarningUpdate?.Invoke(this,newWarning);
+                            }
                             foreach(var line in contents)
                             {
                                 Contents.Add(line);
@@ -70,6 +78,21 @@ namespace TheGuideToTheNewEden.Core.Models
             });
         }
         public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<string> newlines);
+        /// <summary>
+        /// 消息更新
+        /// </summary>
         public event ContentUpdate OnContentUpdate;
+
+        public delegate void WarningUpdate(EarlyWarningItem earlyWarningItem, IEnumerable<EarlyWarningContent> news);
+        /// <summary>
+        /// 预警更新
+        /// </summary>
+        public event WarningUpdate OnWarningUpdate;
+
+        private EarlyWarningContent AnalyzeContent(string str)
+        {
+            //TODO:分析
+            return null;
+        }
     }
 }
