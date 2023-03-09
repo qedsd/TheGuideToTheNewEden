@@ -88,6 +88,16 @@
                 Icon="Play"
                 Label="开始" />
         </Grid>
-        <ListView Grid.Column="2" ItemsSource="{x:Bind VM.ChatContents, Mode=OneWay}" />
+        <ListView Grid.Column="2" ItemsSource="{x:Bind VM.ChatContents, Mode=OneWay}"
+                  x:Name="LogContentListView">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock
+                        Margin="0,10"
+                        Text="{Binding}"
+                        TextWrapping="WrapWholeWords" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>

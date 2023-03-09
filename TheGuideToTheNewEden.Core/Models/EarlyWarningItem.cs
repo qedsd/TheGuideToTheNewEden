@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => ChatChanelInfo.FilePath;
         }
-        private int offset = 0;
+        private int FileStreamOffset = 0;
         /// <summary>
         /// 文件内容有更新
         /// </summary>
@@ -46,10 +46,10 @@ namespace TheGuideToTheNewEden.Core.Models
                         byte[] b = new byte[1024];
                         int curReadCount = 0;
                         StringBuilder stringBuilder= new StringBuilder();
-                        fs.Position = offset;
+                        fs.Position = FileStreamOffset;
                         while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
                         {
-                            offset += curReadCount;
+                            FileStreamOffset += curReadCount;
                             var content = Encoding.Unicode.GetString(b);
                             stringBuilder.Append(content);
                         }
@@ -118,6 +118,7 @@ namespace TheGuideToTheNewEden.Core.Models
                 && newChanelInfo.SessionStarted > ChatChanelInfo.SessionStarted)
             {
                 ChatChanelInfo.FilePath = file;
+                FileStreamOffset = 0;
                 return true;
             }
             else

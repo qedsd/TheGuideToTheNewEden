@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Interfaces;
 using TheGuideToTheNewEden.Core.Models;
@@ -91,7 +93,7 @@ namespace TheGuideToTheNewEden.Core.Services
     {
         private System.Timers.Timer Timer;
         private string Folder;
-        private Dictionary<string, EVEFileInfo> LastFiles = new Dictionary<string, EVEFileInfo>();
+        private Dictionary<string, ulong> LastFiles = new Dictionary<string, ulong>();
 
         public EVEFileSystemWatcher(string folder, int interval = 100)
         {
@@ -120,7 +122,7 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 foreach (var file in files)
                 {
-                    LastFiles.Add(file, new EVEFileInfo(file));
+                    LastFiles.Add(file, GetFileLength(file));
                 }
             }
         }
@@ -134,22 +136,34 @@ namespace TheGuideToTheNewEden.Core.Services
                 {
                     if(LastFiles.TryGetValue(file,out var value))
                     {
-                        var newLength = value.FileInfo.Length;
-                        if(newLength != value.Length) 
+                        var newLength = GetFileLength(file);
+                        if(newLength != value) 
                         {
-                            value.Length = newLength;
+                            LastFiles.Remove(file);
+                            LastFiles.Add(file, newLength);
                             OnChanged?.Invoke(file);
                         }
                     }
                     else
                     {
-                        LastFiles.Add(file, new EVEFileInfo(file));
+                        LastFiles.Add(file, GetFileLength(file));
                         OnAdded?.Invoke(file);
                     }
                 }
             }
             Timer.Start();
         }
+        private ulong GetFileLength(string file)
+        {
+            //用来获取高位数字(只有在读取超过4GB的文件才需要用到该参数)
+            uint h = 0;
+            //用来获取低位数据
+            uint l = GetCompressedFileSize(file, ref h);
+            //将两个int32拼接成一个int64
+            return ((ulong)h << 32) + l;
+        }
+        [DllImport("Kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern uint GetCompressedFileSize(string fileName, ref uint fileSizeHigh);
         public delegate void Changed(string file);
         public event Changed OnChanged;
 
