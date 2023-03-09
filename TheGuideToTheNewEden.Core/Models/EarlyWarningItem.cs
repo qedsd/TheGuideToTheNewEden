@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Interfaces;
 
 namespace TheGuideToTheNewEden.Core.Models
@@ -106,6 +108,22 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             //TODO:分析
             return null;
+        }
+
+        public bool IsReplaced(string file)
+        {
+            var newChanelInfo = GameLogHelper.GetChatChanelInfo(file);
+            if (newChanelInfo != null 
+                && newChanelInfo.ChannelName == ChatChanelInfo.ChannelName 
+                && newChanelInfo.SessionStarted > ChatChanelInfo.SessionStarted)
+            {
+                ChatChanelInfo.FilePath = file;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
