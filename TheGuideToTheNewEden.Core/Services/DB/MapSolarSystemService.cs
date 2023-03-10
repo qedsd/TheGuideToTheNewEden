@@ -28,5 +28,14 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+
+        public static async Task<List<MapSolarSystem>> QueryAllAsync()
+        {
+            return await DBService.MainDb.Queryable<MapSolarSystem>().ToListAsync();
+        }
+        public static List<MapSolarSystem> QueryAll()
+        {
+            return DBService.MainDb.Queryable<MapSolarSystem>().ToList();
+        }
     }
 }
