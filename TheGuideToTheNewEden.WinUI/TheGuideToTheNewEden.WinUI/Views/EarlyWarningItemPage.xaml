@@ -19,7 +19,7 @@
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid x:Name="ChatSelectArea">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -27,10 +27,14 @@
             <ComboBox
                 Margin="4,0,4,4"
                 HorizontalAlignment="Stretch"
+                IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
                 ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
                 SelectedIndex="-1"
                 SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
-            <ListView Grid.Row="1" ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
+            <ListView
+                Grid.Row="1"
+                IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:ChatChanelInfo">
                         <Grid Margin="10,4">
@@ -60,34 +64,48 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <StackPanel>
+            <StackPanel x:Name="SettingArea">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Header="角色当前位置" />
-                    <CheckBox Grid.Column="1" Content="自动更新位置" />
+                    <TextBox Header="角色当前位置" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                    <CheckBox
+                        Grid.Column="1"
+                        Content="自动更新位置"
+                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
                 </Grid>
-                <NumberBox Header="预警跳数" Minimum="0" />
-                <ComboBox Header="预警窗口">
+                <NumberBox
+                    Header="预警跳数"
+                    IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                    Minimum="0" />
+                <ComboBox Header="预警窗口" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
                     <ComboBoxItem Content="不显示" />
                     <ComboBoxItem Content="必要时显示" />
                     <ComboBoxItem Content="一直显示" />
                 </ComboBox>
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Content="预警声" />
-                    <TextBox HorizontalAlignment="Stretch" />
-                    <Button Content="+" />
+                    <CheckBox Content="预警声" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                    <TextBox HorizontalAlignment="Stretch" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                    <Button Content="+" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
                 </StackPanel>
-                <CheckBox Content="系统通知" />
+                <CheckBox Content="系统通知" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
             </StackPanel>
             <AppBarButton
                 Grid.Row="1"
                 HorizontalAlignment="Center"
                 Command="{x:Bind VM.StartCommand}"
                 Icon="Play"
-                Label="开始" />
+                Label="开始"
+                Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+            <AppBarButton
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                Command="{x:Bind VM.StopCommand}"
+                Icon="Stop"
+                Label="停止"
+                Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
         </Grid>
         <ScrollViewer x:Name="ChatContentsScroll" Grid.Column="2">
             <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="False" />

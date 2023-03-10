@@ -29,9 +29,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
             TabViewItem item = new TabViewItem()
             {
                 Header = "新建预警",
-                Content = new EarlyWarningItemPage(),
                 IsSelected = true,
             };
+            item.Content = new EarlyWarningItemPage(item);
             sender.TabItems.Add(item);
         }
 

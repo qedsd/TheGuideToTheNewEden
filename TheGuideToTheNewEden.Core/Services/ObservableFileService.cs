@@ -47,13 +47,23 @@ namespace TheGuideToTheNewEden.Core.Services
             return false;
         }
 
-        public static void Add(List<IObservableFile> items)
+        public static void Add(IEnumerable<IObservableFile> items)
         {
             if(items.NotNullOrEmpty())
             {
                 foreach(var item in items)
                 {
                     Add(item);
+                }
+            }
+        }
+        public static void Remove(IEnumerable<IObservableFile> items)
+        {
+            if (items.NotNullOrEmpty())
+            {
+                foreach (var item in items)
+                {
+                    Remove(item);
                 }
             }
         }

@@ -25,6 +25,9 @@
                 IsInverted="True" />
             <converters:FileToNameConverter x:Key="FileToNameWithoutExtConverter" WithExtension="False" />
             <converters:FileToNameConverter x:Key="FileToNameConverter" WithExtension="True" />
+            <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
+            <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" IsReverse="True" />
+            <converters:BoolReverseConverte x:Key="BoolReverseConverte" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

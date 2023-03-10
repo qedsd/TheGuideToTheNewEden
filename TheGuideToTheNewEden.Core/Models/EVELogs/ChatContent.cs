@@ -34,7 +34,7 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
                                         return new ChatContent()
                                         {
                                             EVETime = eveTime,
-                                            SpeakerName = speakerName,
+                                            SpeakerName = speakerName.Trim(),
                                             Content = content3,
                                             SourceContent = content
                                         };

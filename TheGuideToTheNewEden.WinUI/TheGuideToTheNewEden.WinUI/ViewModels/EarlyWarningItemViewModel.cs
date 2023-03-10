@@ -62,6 +62,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
 
         private List<ChatChanelInfo> chatChanelInfos;
+        /// <summary>
+        /// 当前角色所有聊天频道
+        /// </summary>
         public List<ChatChanelInfo> ChatChanelInfos
         {
             get => chatChanelInfos;
@@ -69,10 +72,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
 
         private ObservableCollection<ChatContent> chatContents = new ObservableCollection<ChatContent>();
+        /// <summary>
+        /// 当前选中频道所有聊天内容
+        /// </summary>
         public ObservableCollection<ChatContent> ChatContents
         {
             get => chatContents;
             set => SetProperty(ref chatContents, value);
+        }
+
+        /// <summary>
+        /// 当前选中的聊天频道对应的预警项
+        /// </summary>
+        private List<Core.Models.EarlyWarningItem> EarlyWarningItems = new List<Core.Models.EarlyWarningItem>();
+
+        private bool isRunning;
+        /// <summary>
+        /// 是否监控中
+        /// </summary>
+        public bool IsRunning
+        {
+            get => isRunning;
+            set => SetProperty(ref isRunning, value);
         }
 
         private async void InitDicAsync()
@@ -121,12 +142,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
+        internal delegate void SelectedCharacterChanged(string selectedCharacter);
+        internal event SelectedCharacterChanged OnSelectedCharacterChanged;
         private void UpdateSelectedCharacter()
         {
             if(ListenerChannelDic.TryGetValue(selectedCharacter,out var chatChanelInfos))
             {
                 ChatChanelInfos = chatChanelInfos;
             }
+            OnSelectedCharacterChanged?.Invoke(selectedCharacter);
         }
 
         public ICommand PickLogFolderCommand => new RelayCommand(async() =>
@@ -142,15 +166,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(ChatChanelInfos.NotNullOrEmpty())
             {
-                foreach(var ch in ChatChanelInfos.Where(p=>p.IsChecked))
+                var checkedItems = ChatChanelInfos.Where(p => p.IsChecked).ToList();
+                if(checkedItems.NotNullOrEmpty())
                 {
-                    Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
-                    earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
-                    earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
-                    if(Core.Services.ObservableFileService.Add(earlyWarningItem))
+                    foreach (var ch in checkedItems)
                     {
-                        earlyWarningItem.Update();
+                        Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
+                        earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
+                        earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
+                        if (Core.Services.ObservableFileService.Add(earlyWarningItem))
+                        {
+                            EarlyWarningItems.Add(earlyWarningItem);
+                            earlyWarningItem.Update();
+                        }
                     }
+                    IsRunning = true;
                 }
             }
         });
@@ -186,7 +216,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
-
+            Core.Services.ObservableFileService.Remove(EarlyWarningItems);
+            ChatContents.Clear();
+            IsRunning = false;
         });
     }
 }

@@ -22,17 +22,26 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class EarlyWarningItemPage : Page
     {
-        public EarlyWarningItemPage()
+        private TabViewItem TabViewItem;
+        public EarlyWarningItemPage(TabViewItem tabViewItem)
         {
+            TabViewItem = tabViewItem;
             this.InitializeComponent();
             Loaded += EarlyWarningItemPage_Loaded;
+            
         }
+
 
         private void EarlyWarningItemPage_Loaded(object sender, RoutedEventArgs e)
         {
+            (DataContext as EarlyWarningItemViewModel).OnSelectedCharacterChanged += EarlyWarningItemPage_OnSelectedCharacterChanged;
             ChatContents.Blocks.Add(new Paragraph());
             (this.DataContext as EarlyWarningItemViewModel).ChatContents.CollectionChanged += ChatContents_CollectionChanged;
             ChatContentsScroll.LayoutUpdated += ChatContentsScroll_LayoutUpdated;
+        }
+        private void EarlyWarningItemPage_OnSelectedCharacterChanged(string selectedCharacter)
+        {
+            TabViewItem.Header = selectedCharacter;
         }
 
         private void ChatContentsScroll_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -42,36 +51,43 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private bool isAdded = false;
         private void ChatContents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            foreach(var item in e.NewItems)
+            if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
             {
-                var chatContent = item as ChatContent;
-                Paragraph paragraph = new Paragraph()
+                foreach (var item in e.NewItems)
                 {
-                    Margin = new Thickness(0, 8, 0, 8),
-                };
-                Run timeRun = new Run()
-                {
-                    FontWeight = FontWeights.Light,
-                    Text = $"[ {chatContent.EVETime} ]"
-                };
-                Run nameRun = new Run()
-                {
-                    FontWeight = FontWeights.Medium,
-                    Text = $" {chatContent.SpeakerName} > "
-                };
-                Run contentRun = new Run()
-                {
-                    FontWeight = FontWeights.Normal,
-                    Text = chatContent.Content
-                };
-                paragraph.Inlines.Add(timeRun);
-                paragraph.Inlines.Add(nameRun);
-                paragraph.Inlines.Add(contentRun);
-                if(ChatContentsScroll.VerticalOffset == ChatContentsScroll.ScrollableHeight)
-                {
-                    isAdded = true;
+                    var chatContent = item as ChatContent;
+                    Paragraph paragraph = new Paragraph()
+                    {
+                        Margin = new Thickness(0, 8, 0, 8),
+                    };
+                    Run timeRun = new Run()
+                    {
+                        FontWeight = FontWeights.Light,
+                        Text = $"[ {chatContent.EVETime} ]"
+                    };
+                    Run nameRun = new Run()
+                    {
+                        FontWeight = FontWeights.Medium,
+                        Text = $" {chatContent.SpeakerName} > "
+                    };
+                    Run contentRun = new Run()
+                    {
+                        FontWeight = FontWeights.Normal,
+                        Text = chatContent.Content
+                    };
+                    paragraph.Inlines.Add(timeRun);
+                    paragraph.Inlines.Add(nameRun);
+                    paragraph.Inlines.Add(contentRun);
+                    if (ChatContentsScroll.VerticalOffset == ChatContentsScroll.ScrollableHeight)
+                    {
+                        isAdded = true;
+                    }
+                    ChatContents.Blocks.Add(paragraph);
                 }
-                ChatContents.Blocks.Add(paragraph);
+            }
+            else if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                ChatContents.Blocks.Clear();
             }
         }
 
