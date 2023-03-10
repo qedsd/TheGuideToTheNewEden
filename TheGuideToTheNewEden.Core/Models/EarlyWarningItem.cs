@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Interfaces;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -22,7 +23,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// <summary>
         /// 原始聊天内容
         /// </summary>
-        public List<string> Contents { get;private set; } = new List<string>();
+        public List<ChatContent> Contents { get;private set; } = new List<ChatContent>();
         public List<EarlyWarningContent> Warnings { get;private set; } = new List<EarlyWarningContent>();
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Changed;
         public string FilePath
@@ -39,7 +40,6 @@ namespace TheGuideToTheNewEden.Core.Models
             {
                 try
                 {
-                    //var l = new FileInfo(ChatChanelInfo.FilePath).Length;
                     List<string> newLines = null;
                     using (FileStream fs = new FileStream(ChatChanelInfo.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
@@ -60,29 +60,33 @@ namespace TheGuideToTheNewEden.Core.Models
                     }
                     if (newLines.NotNullOrEmpty())
                     {
-                        List<string> contents = new List<string>();
-                        List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
+                        List<ChatContent> newContents = new List<ChatContent>();
                         foreach (var line in newLines)
                         {
-                            if (line.StartsWith("﻿[ "))
+                            var chatContent = ChatContent.Create(line);
+                            if(chatContent != null)
                             {
-                                contents.Add(line);
-                                var result = AnalyzeContent(line);
+                                newContents.Add(chatContent);
+                            }
+                        }
+                        if(newContents.Count > 0)
+                        {
+                            Contents.AddRange(newContents);
+                            OnContentUpdate?.Invoke(this, newContents);
+                            List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
+                            foreach (var newContent in newContents)
+                            {
+                                var result = AnalyzeContent(newContent.Content);
                                 if (result != null)
                                 {
                                     newWarning.Add(result);
                                 }
                             }
+                            if (newWarning.Count != 0)
+                            {
+                                OnWarningUpdate?.Invoke(this, newWarning);
+                            }
                         }
-                        if (newWarning.Count != 0)
-                        {
-                            OnWarningUpdate?.Invoke(this, newWarning);
-                        }
-                        foreach (var line in contents)
-                        {
-                            Contents.Add(line);
-                        }
-                        OnContentUpdate?.Invoke(this, contents);
                     }
                 }
                 catch (Exception ex)
@@ -92,7 +96,7 @@ namespace TheGuideToTheNewEden.Core.Models
                 }
             });
         }
-        public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<string> newlines);
+        public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<ChatContent> news);
         /// <summary>
         /// 消息更新
         /// </summary>

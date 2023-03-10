@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using Windows.UI.ViewManagement;
@@ -67,8 +68,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref chatChanelInfos, value);
         }
 
-        private ObservableCollection<string> chatContents = new ObservableCollection<string>();
-        public ObservableCollection<string> ChatContents
+        private ObservableCollection<ChatContent> chatContents = new ObservableCollection<ChatContent>();
+        public ObservableCollection<ChatContent> ChatContents
         {
             get => chatContents;
             set => SetProperty(ref chatContents, value);
@@ -172,11 +173,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         /// <param name="earlyWarningItem"></param>
         /// <param name="newlines"></param>
-        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<string> newlines)
+        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<ChatContent> news)
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                foreach (var line in newlines)
+                foreach (var line in news)
                 {
                     ChatContents.Add(line);
                 }
