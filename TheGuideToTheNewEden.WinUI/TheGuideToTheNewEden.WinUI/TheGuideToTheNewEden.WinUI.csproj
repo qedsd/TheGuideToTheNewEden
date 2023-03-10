@@ -43,6 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\Configs\SolarSystemMap.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Database\Local\zh.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
