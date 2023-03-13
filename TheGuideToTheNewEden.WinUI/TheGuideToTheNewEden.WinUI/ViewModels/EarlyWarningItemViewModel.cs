@@ -1,10 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Shapes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -172,6 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(ListenerChannelDic.TryGetValue(selectedCharacter,out var chatChanelInfos))
             {
                 ChatChanelInfos = chatChanelInfos;
+                GetCharacterLocation();
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
         }
@@ -267,6 +268,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 return null;
+            }
+        }
+
+        private void GetCharacterLocation()
+        {
+            var localChat = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == "local");
+            if(localChat != null)
+            {
+                var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelNames.json"));
+                if(!string.IsNullOrEmpty(json))
+                {
+                    var channelNames = JsonConvert.DeserializeObject<List<Core.Models.ChannelName>>(json);
+                    if(channelNames != null)
+                    {
+                        var localNames = channelNames.FirstOrDefault(p => p.Id == "local");
+                        if (localNames != null)
+                        {
+                        }
+                    }
+                }
             }
         }
     }
