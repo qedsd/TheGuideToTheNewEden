@@ -17,6 +17,8 @@ using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using TheGuideToTheNewEden.Core.Extensions;
+using Microsoft.UI;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -28,9 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             TabViewItem = tabViewItem;
             this.InitializeComponent();
             Loaded += EarlyWarningItemPage_Loaded;
-            
         }
-
 
         private void EarlyWarningItemPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -75,6 +75,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         FontWeight = FontWeights.Normal,
                         Text = chatContent.Content
                     };
+                    if (chatContent.Important)
+                    {
+                        contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                    }
                     paragraph.Inlines.Add(timeRun);
                     paragraph.Inlines.Add(nameRun);
                     paragraph.Inlines.Add(contentRun);
@@ -103,6 +107,16 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public void Stop()
         {
             (DataContext as ViewModels.EarlyWarningItemViewModel).StopCommand.Execute(null);
+        }
+
+        private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            (DataContext as EarlyWarningItemViewModel).SelectedNameDbs = (sender as ListView).SelectedItems?.ToList<string>();
+        }
+
+        private void ListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            (sender as ListView).SelectedItems.Add((sender as ListView).Items.FirstOrDefault());
         }
     }
 }

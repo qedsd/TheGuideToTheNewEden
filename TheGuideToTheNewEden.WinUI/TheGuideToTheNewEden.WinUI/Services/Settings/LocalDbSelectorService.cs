@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
@@ -34,6 +35,24 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         private static async Task SaveToSettingsAsync(string value)
         {
             await SettingService.SetValueAsync(Key, value);
+        }
+
+        /// <summary>
+        /// 获取所有本地数据库
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetAll()
+        {
+            string localDbFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "Local");
+            var files = System.IO.Directory.GetFiles(localDbFolder);
+            if (files.NotNullOrEmpty())
+            {
+                return files.Where(p => p.EndsWith(".db", StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

@@ -19,7 +19,7 @@
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid x:Name="ChatSelectArea">
+        <Grid x:Name="ChatSelectArea" Margin="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -59,10 +59,10 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
-        <Grid Grid.Column="1" Margin="10,0">
+        <Grid Grid.Column="1" Margin="8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel x:Name="SettingArea">
                 <Grid>
@@ -91,6 +91,36 @@
                     <Button Content="+" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
                 </StackPanel>
                 <CheckBox Content="系统通知" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                <StackPanel Margin="0,10,0,4" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="星系名语言数据库" />
+                    <Button
+                        Width="24"
+                        Height="24"
+                        Margin="4,0,0,0"
+                        Padding="0"
+                        BorderThickness="0"
+                        Content="!"
+                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                        <Button.Flyout>
+                            <Flyout>
+                                <TextBlock Text="聊天日志匹配预警星系时，需要支持哪些语言的星系名称" />
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+                <ListView
+                    ItemsSource="{x:Bind VM.NameDbs}"
+                    Loaded="ListView_Loaded"
+                    SelectionChanged="GridView_SelectionChanged"
+                    SelectionMode="Multiple">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext, Converter={StaticResource FileToNameWithoutExtConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </StackPanel>
             <AppBarButton
                 Grid.Row="1"
@@ -107,7 +137,10 @@
                 Label="停止"
                 Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
         </Grid>
-        <ScrollViewer x:Name="ChatContentsScroll" Grid.Column="2">
+        <ScrollViewer
+            x:Name="ChatContentsScroll"
+            Grid.Column="2"
+            Margin="8">
             <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="False" />
         </ScrollViewer>
     </Grid>

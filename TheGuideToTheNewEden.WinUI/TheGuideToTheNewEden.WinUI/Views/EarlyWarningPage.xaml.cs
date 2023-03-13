@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.Core.Services.DB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -22,6 +23,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public EarlyWarningPage()
         {
             this.InitializeComponent();
+            this.Unloaded += EarlyWarningPage_Unloaded;
+        }
+
+        private void EarlyWarningPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            MapSolarSystemNameService.ClearCache();
         }
 
         private void TabView_AddTabButtonClick(TabView sender, object args)

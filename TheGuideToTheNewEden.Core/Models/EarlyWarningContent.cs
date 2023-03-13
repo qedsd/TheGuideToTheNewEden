@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.Core.Models
     {
         public EarlyWarningContent() 
         {
-            Time = DateTime.Now;
+            //Time = DateTime.Now;
         }
         public DateTime Time { get; set; }
         public int SolarSystemId { get; set; }

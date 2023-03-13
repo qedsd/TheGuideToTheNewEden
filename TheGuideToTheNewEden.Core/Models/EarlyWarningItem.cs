@@ -30,6 +30,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => ChatChanelInfo.FilePath;
         }
+        public Dictionary<string, int> SolarSystemNames { get; set; }
         private int FileStreamOffset = 0;
         /// <summary>
         /// 文件内容有更新
@@ -45,15 +46,15 @@ namespace TheGuideToTheNewEden.Core.Models
                     {
                         byte[] b = new byte[1024];
                         int curReadCount = 0;
-                        StringBuilder stringBuilder= new StringBuilder();
+                        StringBuilder stringBuilder = new StringBuilder();
                         fs.Position = FileStreamOffset;
                         while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
                         {
                             FileStreamOffset += curReadCount;
-                            var content = Encoding.Unicode.GetString(b);
+                            var content = Encoding.Unicode.GetString(b,0, curReadCount);
                             stringBuilder.Append(content);
                         }
-                        if(stringBuilder.Length> 0)
+                        if (stringBuilder.Length> 0)
                         {
                             newLines = stringBuilder.ToString().Split(new char[] { '\n', '\r' }).ToList();
                         }
@@ -71,17 +72,18 @@ namespace TheGuideToTheNewEden.Core.Models
                         }
                         if(newContents.Count > 0)
                         {
-                            Contents.AddRange(newContents);
-                            OnContentUpdate?.Invoke(this, newContents);
                             List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
                             foreach (var newContent in newContents)
                             {
-                                var result = AnalyzeContent(newContent.Content);
+                                var result = AnalyzeContent(newContent);
                                 if (result != null)
                                 {
                                     newWarning.Add(result);
+                                    newContent.Important = true;
                                 }
                             }
+                            Contents.AddRange(newContents);
+                            OnContentUpdate?.Invoke(this, newContents);
                             if (newWarning.Count != 0)
                             {
                                 OnWarningUpdate?.Invoke(this, newWarning);
@@ -108,9 +110,29 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public event WarningUpdate OnWarningUpdate;
 
-        private EarlyWarningContent AnalyzeContent(string str)
+        private EarlyWarningContent AnalyzeContent(ChatContent chatContent)
         {
-            //TODO:分析
+            if(SolarSystemNames != null)
+            {
+                foreach(var name in SolarSystemNames)
+                {
+                    var array = chatContent.Content.Replace('*',' ').Split(' ');
+                    if(array.Length > 0)
+                    {
+                        if(array.Contains(name.Key))
+                        {
+                            return new EarlyWarningContent()
+                            {
+                                Content = chatContent.Content,
+                                Time = chatContent.EVETime,
+                                SolarSystemId = name.Value,
+                                SolarSystemName = name.Key,
+                                Level = 3
+                            };
+                        }
+                    }
+                }
+            }
             return null;
         }
 

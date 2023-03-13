@@ -119,27 +119,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void InitLocalDb()
         {
-            string localDbFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "Local");
-            var files = System.IO.Directory.GetFiles(localDbFolder);
-            if(files.NotNullOrEmpty())
+            List<string> dbs = new List<string>
             {
-                List<string> dbs = new List<string>();
-                dbs.Add("None");
-                dbs.AddRange(files.Where(p => p.EndsWith(".db", StringComparison.OrdinalIgnoreCase)).ToList());
-                LocalDbs = dbs;
-            }
-            else
+                "None"
+            };
+            var all = LocalDbSelectorService.GetAll();
+            if(all.NotNullOrEmpty())
             {
-                LocalDbs = null;
+                dbs.AddRange(all);
             }
+            LocalDbs = dbs;
         }
 
         public async Task InitializeAsync()
         {
-            
             await Task.CompletedTask;
         }
-
-       
     }
 }

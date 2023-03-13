@@ -55,5 +55,9 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
         }
         public string SpeakerName { get; set; }
         public string Content { get; set; }
+        /// <summary>
+        /// 重要消息
+        /// </summary>
+        public bool Important { get; set; }
     }
 }

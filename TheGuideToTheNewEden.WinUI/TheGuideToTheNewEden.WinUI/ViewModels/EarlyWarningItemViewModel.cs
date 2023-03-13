@@ -12,8 +12,10 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.UI.ViewManagement;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -29,11 +31,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 SetProperty(ref logPath, value);
                 InitDicAsync();
             }
-        }
-
-        internal EarlyWarningItemViewModel()
-        {
-            LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"EVE", "logs", "Chatlogs");
         }
 
         /// <summary>
@@ -96,6 +93,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref isRunning, value);
         }
 
+        private List<string> nameDbs;
+        public List<string> NameDbs
+        {
+            get => nameDbs;
+            set => SetProperty(ref nameDbs, value);
+        }
+
+        public List<string> SelectedNameDbs { get; set; }
+
+        internal EarlyWarningItemViewModel()
+        {
+            LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs", "Chatlogs");
+            InitNameDbs();
+        }
+        private void InitNameDbs()
+        {
+            NameDbs = new List<string>()
+            {
+                "default(en)"
+            };
+            var local = LocalDbSelectorService.GetAll();
+            if(local.NotNullOrEmpty())
+            {
+                NameDbs.AddRange(local);
+            }
+        }
         private async void InitDicAsync()
         {
             ListenerChannelDic = new Dictionary<string, List<ChatChanelInfo>>();
@@ -162,7 +185,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
 
-        public ICommand StartCommand => new RelayCommand(() =>
+        public ICommand StartCommand => new RelayCommand(async() =>
         {
             if(ChatChanelInfos.NotNullOrEmpty())
             {
@@ -172,6 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     foreach (var ch in checkedItems)
                     {
                         Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
+                        earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
                         earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                         earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
                         if (Core.Services.ObservableFileService.Add(earlyWarningItem))
@@ -183,6 +207,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     IsRunning = true;
                 }
             }
+        });
+
+        public ICommand StopCommand => new RelayCommand(() =>
+        {
+            Core.Services.ObservableFileService.Remove(EarlyWarningItems);
+            EarlyWarningItems.Clear();
+            ChatContents.Clear();
+            IsRunning = false;
         });
 
         /// <summary>
@@ -214,11 +246,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             });
         }
 
-        public ICommand StopCommand => new RelayCommand(() =>
+        private async Task<Dictionary<string,int>> GetSolarSystemNames()
         {
-            Core.Services.ObservableFileService.Remove(EarlyWarningItems);
-            ChatContents.Clear();
-            IsRunning = false;
-        });
+            if(SelectedNameDbs != null)
+            {
+                Dictionary<string, int> names = new Dictionary<string, int>();
+                foreach (var item in SelectedNameDbs)
+                {
+                    var result = await MapSolarSystemNameService.QueryAllAsync(item == NameDbs.FirstOrDefault() ? Core.Config.DBPath : item);
+                    if(result.NotNullOrEmpty())
+                    {
+                        foreach(var solar in result)
+                        {
+                            names.TryAdd(solar.SolarSystemName, solar.SolarSystemID);
+                        }
+                    }
+                }
+                return names;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
