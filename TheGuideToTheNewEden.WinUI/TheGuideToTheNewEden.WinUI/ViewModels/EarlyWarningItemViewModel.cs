@@ -276,18 +276,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var localChat = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == "local");
             if(localChat != null)
             {
-                var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelNames.json"));
-                if(!string.IsNullOrEmpty(json))
-                {
-                    var channelNames = JsonConvert.DeserializeObject<List<Core.Models.ChannelName>>(json);
-                    if(channelNames != null)
-                    {
-                        var localNames = channelNames.FirstOrDefault(p => p.Id == "local");
-                        if (localNames != null)
-                        {
-                        }
-                    }
-                }
             }
         }
     }
