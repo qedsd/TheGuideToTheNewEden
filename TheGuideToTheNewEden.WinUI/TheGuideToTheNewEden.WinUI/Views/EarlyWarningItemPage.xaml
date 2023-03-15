@@ -70,7 +70,12 @@
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Header="角色当前位置" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                    <AutoSuggestBox
+                        DisplayMemberPath="SolarSystemName"
+                        Header="角色当前位置"
+                        Text="{x:Bind VM.SelectedMapSolarSystem.SolarSystemName,Mode=TwoWay}"
+                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                        ItemsSource="{x:Bind VM.MapSolarSystems, Mode=OneWay}" />
                     <CheckBox
                         Grid.Column="1"
                         Content="自动更新位置"

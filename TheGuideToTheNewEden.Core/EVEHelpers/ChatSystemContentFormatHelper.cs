@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
     public class ChatSystemContentFormatHelper
     {
-        private dynamic Formats;
+        private ChatSystemContentFormat Formats;
         private List<string> localChangedFormats;
         private List<string> LocalChangedFormats
         {
@@ -16,17 +17,17 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 if (localChangedFormats == null)
                 {
-                    localChangedFormats = (Current.Formats.LocalChanged as List<string>);
+                    localChangedFormats = Formats.LocalChanged;
                 }
                 return localChangedFormats;
             }
         }
         private ChatSystemContentFormatHelper()
         {
-            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChatSystemContentFormat.json"));
+            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "ChatSystemContentFormat.json"));
             if (json != null)
             {
-                Formats = JsonConvert.DeserializeObject(json);
+                Formats = JsonConvert.DeserializeObject<ChatSystemContentFormat>(json);
             }
         }
 
@@ -50,14 +51,19 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 foreach(var item in Current.LocalChangedFormats)
                 {
-
+                    if(content.TrimStart().StartsWith(item))
+                    {
+                        return true;
+                    }
                 }
                 
             }
-            else
-            {
-                return false;
-            }
+            return false;
+        }
+
+        class ChatSystemContentFormat
+        {
+            public List<string> LocalChanged { get; set;}
         }
     }
 }

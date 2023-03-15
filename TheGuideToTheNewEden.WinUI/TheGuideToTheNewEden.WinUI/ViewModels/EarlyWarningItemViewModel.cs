@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.UI.Converters;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,10 +105,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public List<string> SelectedNameDbs { get; set; }
 
+        private List<Core.DBModels.MapSolarSystemBase> mapSolarSystems;
+        public List<Core.DBModels.MapSolarSystemBase> MapSolarSystems
+        {
+            get => mapSolarSystems;
+            set => SetProperty(ref mapSolarSystems, value);
+        }
+
+        private Core.DBModels.MapSolarSystemBase selectedMapSolarSystem;
+        public Core.DBModels.MapSolarSystemBase SelectedMapSolarSystem
+        {
+            get => selectedMapSolarSystem;
+            set => SetProperty(ref selectedMapSolarSystem, value);
+        }
+
         internal EarlyWarningItemViewModel()
         {
             LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs", "Chatlogs");
             InitNameDbs();
+            InitSolarSystems();
         }
         private void InitNameDbs()
         {
@@ -164,6 +182,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Characters = null;
             }
         }
+        private async void InitSolarSystems()
+        {
+            var list = await Core.Services.DB.MapSolarSystemService.QueryAllAsync();
+            if(list.NotNullOrEmpty())
+            {
+                MapSolarSystems = list.Select(p=>p as Core.DBModels.MapSolarSystemBase).ToList();
+            }
+        }
 
         internal delegate void SelectedCharacterChanged(string selectedCharacter);
         internal event SelectedCharacterChanged OnSelectedCharacterChanged;
@@ -172,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(ListenerChannelDic.TryGetValue(selectedCharacter,out var chatChanelInfos))
             {
                 ChatChanelInfos = chatChanelInfos;
-                GetCharacterLocation();
+                UpdateCharacterLocation();
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
         }
@@ -271,12 +297,69 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        private void GetCharacterLocation()
+        private async void UpdateCharacterLocation()
         {
             var localChat = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == "local");
             if(localChat != null)
             {
+                List<string> newLines = null;
+                using (FileStream fs = new FileStream(localChat.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    byte[] b = new byte[1024];
+                    int curReadCount = 0;
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
+                    {
+                        var content = Encoding.Unicode.GetString(b, 0, curReadCount);
+                        stringBuilder.Append(content);
+                    }
+                    if (stringBuilder.Length > 0)
+                    {
+                        newLines = stringBuilder.ToString().Split(new char[] { '\n', '\r' }).ToList();
+                    }
+                }
+                if (newLines.NotNullOrEmpty())
+                {
+                    for(int i = newLines.Count - 1; i >= 0; i--)
+                    {
+                        var chatContent = ChatContent.Create(newLines[i]);
+                        if(chatContent != null)
+                        {
+                            int id = await TryGetCharacterLocationAsync(chatContent);
+                            if(id != -1)
+                            {
+                                //Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                                //{
+                                    SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
+                                //});
+                            }
+                        }
+                    }
+                }
             }
+        }
+        private async Task<int> TryGetCharacterLocationAsync(ChatContent chatContent)
+        {
+            if (Core.EVEHelpers.ChatSpeakerHelper.IsEVESystem(chatContent.SpeakerName))
+            {
+                if (Core.EVEHelpers.ChatSystemContentFormatHelper.IsLocalChanged(chatContent.Content))
+                {
+                    var array = chatContent.Content.Split(new char[] { ':', '：' });
+                    if (array.Length > 0)
+                    {
+                        var name = array.Last().Trim().Replace("*", "");
+                        foreach (var db in NameDbs)
+                        {
+                            int id = await MapSolarSystemNameService.QueryIdAsync(db == NameDbs.FirstOrDefault() ? Core.Config.DBPath : db, name);
+                            if(id != -1)
+                            {
+                                return id;
+                            }
+                        }
+                    }
+                }
+            }
+            return -1;
         }
     }
 }

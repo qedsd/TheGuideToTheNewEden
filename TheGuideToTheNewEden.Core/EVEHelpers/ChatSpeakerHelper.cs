@@ -8,7 +8,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
     public class ChatSpeakerHelper
     {
-        private dynamic Speakers;
+        private SpeakerNames Speakers;
         private HashSet<string> eveSystems;
         private HashSet<string> EVESystems
         {
@@ -16,17 +16,17 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 if (eveSystems == null)
                 {
-                    eveSystems = (Current.Speakers.EVESystem as List<string>)?.ToHashSet();
+                    eveSystems = Speakers.EVESystem?.ToHashSet();
                 }
                 return eveSystems;
             }
         }
         private ChatSpeakerHelper()
         {
-            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "SpeakerNames.json"));
+            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "SpeakerNames.json"));
             if(json != null )
             {
-                Speakers = JsonConvert.DeserializeObject(json);
+                Speakers = JsonConvert.DeserializeObject<SpeakerNames>(json);
             }
         }
 
@@ -54,6 +54,10 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 return false;
             }
+        }
+        class SpeakerNames
+        {
+            public List<string> EVESystem { get; set; }
         }
     }
 }

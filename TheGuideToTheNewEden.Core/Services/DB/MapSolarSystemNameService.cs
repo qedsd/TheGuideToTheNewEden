@@ -53,8 +53,14 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// <summary>
         /// 缓存结果
         /// 节省SqlSugarClient资源开销
+        /// key为数据库路径，value为此数据库对应的星系名列表
         /// </summary>
         private readonly Dictionary<string, List<MapSolarSystemBase>> Cache = new Dictionary<string, List<MapSolarSystemBase>>();
+        /// <summary>
+        /// 缓存结果
+        /// key为星系名，value为星系id
+        /// </summary>
+        private readonly Dictionary<string, int> CacheNames = new Dictionary<string, int>();
         public static async Task<List<MapSolarSystemBase>> QueryAllAsync(string dbPath)
         {
             if (Current.Cache.TryGetValue(dbPath, out var cacheResult))
@@ -83,6 +89,13 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                     if (result.NotNullOrEmpty())
                     {
                         Current.Cache.Add(dbPath, result);
+                        foreach(var mapSolarSystem in result)
+                        {
+                            if(!Current.CacheNames.ContainsKey(mapSolarSystem.SolarSystemName))
+                            {
+                                Current.CacheNames.Add(mapSolarSystem.SolarSystemName, mapSolarSystem.SolarSystemID);
+                            }
+                        }
                     }
                     return result;
                 }
@@ -90,6 +103,66 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 {
                     return null;
                 }
+            }
+        }
+        /// <summary>
+        /// 按星系名查询id
+        /// </summary>
+        /// <param name="dbPath">目标数据库路径</param>
+        /// <param name="solarSystemName">星系名</param>
+        /// <returns>查询成功，返回星系id，查询失败，返回-1</returns>
+        public static async Task<int> QueryIdAsync(string dbPath, string solarSystemName)
+        {
+            if (Current.CacheNames.TryGetValue(solarSystemName, out var cacheResult))
+            {
+                return cacheResult;
+            }
+            else
+            {
+                ISqlSugarClient db;
+                if (dbPath == Config.DBPath)
+                {
+                    db = DBService.MainDb;
+                }
+                else if (dbPath == Config.LocalDBPath)
+                {
+                    db = DBService.LocalDb;
+                }
+                else
+                {
+                    db = Current.CreateDb(dbPath);
+                }
+                if (db != null)
+                {
+                    MapSolarSystemBase result = await db.Queryable<MapSolarSystemBase>().FirstAsync(p => p.SolarSystemName == solarSystemName);
+                    if (result != null)
+                    {
+                        Current.CacheNames.Add(result.SolarSystemName, result.SolarSystemID);
+                        return result.SolarSystemID;
+                    }
+                    return -1;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+        /// <summary>
+        /// 按星系名查询id
+        /// 仅查询缓存
+        /// </summary>
+        /// <param name="solarSystemName">星系名</param>
+        /// <returns>查询成功，返回星系id，查询失败，返回-1</returns>
+        public static int QueryId(string solarSystemName)
+        {
+            if (Current.CacheNames.TryGetValue(solarSystemName, out var cacheResult))
+            {
+                return cacheResult;
+            }
+            else
+            {
+                return -1;
             }
         }
         /// <summary>
