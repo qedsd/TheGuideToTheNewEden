@@ -15,15 +15,17 @@ namespace TheGuideToTheNewEden.Core.Models
 {
     public class EarlyWarningItem: IObservableFile
     {
-        public EarlyWarningItem(ChatChanelInfo info)
+        public EarlyWarningItem(ChatChanelInfo info, EarlyWarningSetting setting)
         {
             ChatChanelInfo = info;
+            Setting = setting;
+            InitWords();
         }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
         /// 原始聊天内容
         /// </summary>
-        public List<ChatContent> Contents { get;private set; } = new List<ChatContent>();
+        public List<IntelChatContent> Contents { get;private set; } = new List<IntelChatContent>();
         public List<EarlyWarningContent> Warnings { get;private set; } = new List<EarlyWarningContent>();
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Changed;
         public string FilePath
@@ -32,6 +34,7 @@ namespace TheGuideToTheNewEden.Core.Models
         }
         public Dictionary<string, int> SolarSystemNames { get; set; }
         private int FileStreamOffset = 0;
+        public EarlyWarningSetting Setting { get; set; }
         /// <summary>
         /// 文件内容有更新
         /// </summary>
@@ -61,12 +64,13 @@ namespace TheGuideToTheNewEden.Core.Models
                     }
                     if (newLines.NotNullOrEmpty())
                     {
-                        List<ChatContent> newContents = new List<ChatContent>();
+                        List<IntelChatContent> newContents = new List<IntelChatContent>();
                         foreach (var line in newLines)
                         {
-                            var chatContent = ChatContent.Create(line);
+                            var chatContent = IntelChatContent.Create(line);
                             if(chatContent != null)
                             {
+                                TrySetIntelType(chatContent);
                                 newContents.Add(chatContent);
                             }
                         }
@@ -80,6 +84,7 @@ namespace TheGuideToTheNewEden.Core.Models
                                 {
                                     newWarning.Add(result);
                                     newContent.Important = true;
+                                    newContent.IntelType = Enums.IntelChatType.Intel;
                                 }
                             }
                             Contents.AddRange(newContents);
@@ -98,7 +103,7 @@ namespace TheGuideToTheNewEden.Core.Models
                 }
             });
         }
-        public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<ChatContent> news);
+        public delegate void ContentUpdate(EarlyWarningItem earlyWarningItem,IEnumerable<IntelChatContent> news);
         /// <summary>
         /// 消息更新
         /// </summary>
@@ -110,25 +115,29 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public event WarningUpdate OnWarningUpdate;
 
-        private EarlyWarningContent AnalyzeContent(ChatContent chatContent)
+        private EarlyWarningContent AnalyzeContent(IntelChatContent chatContent)
         {
-            if(SolarSystemNames != null)
+            if(chatContent.IntelType == Enums.IntelChatType.None)
             {
-                foreach(var name in SolarSystemNames)
+                if (SolarSystemNames != null)
                 {
-                    var array = chatContent.Content.Replace('*',' ').Split(' ');
-                    if(array.Length > 0)
+                    foreach (var name in SolarSystemNames)
                     {
-                        if(array.Contains(name.Key))
+                        var array = chatContent.Content.Replace('*', ' ').Split(' ');
+                        if (array.Length > 0)
                         {
-                            return new EarlyWarningContent()
+                            if (array.Contains(name.Key))
                             {
-                                Content = chatContent.Content,
-                                Time = chatContent.EVETime,
-                                SolarSystemId = name.Value,
-                                SolarSystemName = name.Key,
-                                Level = 3
-                            };
+                                return new EarlyWarningContent()
+                                {
+                                    Content = chatContent.Content,
+                                    Time = chatContent.EVETime,
+                                    SolarSystemId = name.Value,
+                                    SolarSystemName = name.Key,
+                                    Level = 3,//TODO:预警等级划分
+                                    IntelType = chatContent.IntelType
+                                };
+                            }
                         }
                     }
                 }
@@ -152,5 +161,44 @@ namespace TheGuideToTheNewEden.Core.Models
                 return false;
             }
         }
+
+        #region 关键词设置
+        private void InitWords()
+        {
+            if (Setting != null)
+            {
+                IgnoreWords = Setting.IgnoreWords?.Split(',');
+                ClearWords = Setting.ClearWords?.Split(',');
+            }
+        }
+        private string[] IgnoreWords;
+        private string[] ClearWords;
+        private void TrySetIntelType(IntelChatContent content)
+        {
+            if(Setting != null)
+            {
+                if (IgnoreWords.NotNullOrEmpty())
+                {
+                    foreach (var w in IgnoreWords)
+                    {
+                        if (content.Content.Contains(w))
+                        {
+                            content.IntelType = Core.Enums.IntelChatType.Ignore; break;
+                        }
+                    }
+                }
+                if(ClearWords.NotNullOrEmpty())
+                {
+                    foreach (var w in ClearWords)
+                    {
+                        if (content.Content.Contains(w))
+                        {
+                            content.IntelType = Core.Enums.IntelChatType.Clear; break;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

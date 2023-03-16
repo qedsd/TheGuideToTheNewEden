@@ -14,10 +14,10 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         public static void Save()
         {
             string json = JsonConvert.SerializeObject(Values);
-            string entryStoragePath = System.IO.Path.GetDirectoryName(Path);
-            if (!System.IO.Directory.Exists(entryStoragePath))
+            string path = System.IO.Path.GetDirectoryName(Path);
+            if (!System.IO.Directory.Exists(path))
             {
-                System.IO.Directory.CreateDirectory(entryStoragePath);
+                System.IO.Directory.CreateDirectory(path);
             }
             System.IO.File.WriteAllText(Path, json);
         }

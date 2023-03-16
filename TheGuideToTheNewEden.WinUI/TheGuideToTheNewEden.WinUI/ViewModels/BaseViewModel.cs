@@ -12,7 +12,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         internal BaseWindow Window { get; set; }
         internal BaseViewModel()
         {
-            Window = Microsoft.UI.Xaml.Window.Current as BaseWindow;
         }
         internal void ShowMsg(string msg, bool autoClose = true)
         {
@@ -33,6 +32,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         internal void HideWaiting()
         {
             Window?.HideWaiting();
+        }
+
+        public void SetWindow(BaseWindow baseWindow)
+        {
+            Window = baseWindow;
         }
     }
 }

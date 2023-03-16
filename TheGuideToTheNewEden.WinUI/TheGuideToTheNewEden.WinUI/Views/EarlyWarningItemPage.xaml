@@ -63,84 +63,136 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <StackPanel x:Name="SettingArea">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <AutoSuggestBox
-                        DisplayMemberPath="SolarSystemName"
-                        Header="角色当前位置"
-                        Text="{x:Bind VM.SelectedMapSolarSystem.SolarSystemName,Mode=TwoWay}"
-                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
-                        ItemsSource="{x:Bind VM.MapSolarSystems, Mode=OneWay}" />
+            <ScrollViewer IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                <StackPanel x:Name="SettingArea">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <AutoSuggestBox
+                            x:Name="LocationBox"
+                            DisplayMemberPath="SolarSystemName"
+                            Header="角色当前位置"
+                            ItemsSource="{x:Bind VM.MapSolarSystems, Mode=OneWay}"
+                            SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                            TextChanged="AutoSuggestBox_TextChanged" />
+                        <CheckBox
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Bottom"
+                            Content="自动更新位置"
+                            IsChecked="{x:Bind VM.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <NumberBox
+                            Margin="0,10"
+                            Header="预警跳数"
+                            LargeChange="1"
+                            Minimum="0"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind VM.Setting.IntelJumps, Mode=TwoWay}" />
+                        <ComboBox
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Header="预警窗口"
+                            SelectedIndex="{x:Bind VM.Setting.OverlapType, Mode=TwoWay}">
+                            <ComboBoxItem Content="一直显示" />
+                            <ComboBoxItem Content="必要时显示" />
+                            <ComboBoxItem Content="不显示" />
+                        </ComboBox>
+                    </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="预警声" IsChecked="{x:Bind VM.Setting.MakeSound, Mode=TwoWay}" />
+                        <TextBox
+                            Grid.Column="1"
+                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}"
+                            Text="{x:Bind VM.Setting.SoundFilePath, Mode=TwoWay}" />
+                        <Button
+                            Grid.Column="2"
+                            Command="{x:Bind VM.PickSoundFileCommand}"
+                            Content="+"
+                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}" />
+                    </Grid>
                     <CheckBox
-                        Grid.Column="1"
-                        Content="自动更新位置"
-                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
-                </Grid>
-                <NumberBox
-                    Header="预警跳数"
-                    IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
-                    Minimum="0" />
-                <ComboBox Header="预警窗口" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
-                    <ComboBoxItem Content="不显示" />
-                    <ComboBoxItem Content="必要时显示" />
-                    <ComboBoxItem Content="一直显示" />
-                </ComboBox>
-                <StackPanel Orientation="Horizontal">
-                    <CheckBox Content="预警声" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
-                    <TextBox HorizontalAlignment="Stretch" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
-                    <Button Content="+" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                        Margin="0,10"
+                        Content="系统通知"
+                        IsChecked="{x:Bind VM.Setting.SystemNotify, Mode=TwoWay}" />
+                    <TextBox
+                        Margin="0,10"
+                        Header="忽视关键词"
+                        PlaceholderText="每个关键词使用,隔开"
+                        Text="{x:Bind VM.Setting.IgnoreWords, Mode=TwoWay}" />
+                    <TextBox
+                        Margin="0,10"
+                        Header="接触预警关键词"
+                        PlaceholderText="每个关键词使用,隔开"
+                        Text="{x:Bind VM.Setting.ClearWords, Mode=TwoWay}" />
+                    <StackPanel Margin="0,10,0,4" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="星系名语言数据库" />
+                        <Button
+                            Width="24"
+                            Height="24"
+                            Margin="4,0,0,0"
+                            Padding="0"
+                            BorderThickness="0"
+                            Content="!"
+                            IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="聊天日志匹配预警星系时，需要支持哪些语言的星系名称" />
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                    <ListView
+                        x:Name="SelectedNameDbsListView"
+                        ItemsSource="{x:Bind VM.NameDbs}"
+                        Loaded="ListView_Loaded"
+                        SelectionChanged="GridView_SelectionChanged"
+                        SelectionMode="Multiple">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext, Converter={StaticResource FileToNameWithoutExtConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
-                <CheckBox Content="系统通知" IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
-                <StackPanel Margin="0,10,0,4" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Text="星系名语言数据库" />
-                    <Button
-                        Width="24"
-                        Height="24"
-                        Margin="4,0,0,0"
-                        Padding="0"
-                        BorderThickness="0"
-                        Content="!"
-                        IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
-                        <Button.Flyout>
-                            <Flyout>
-                                <TextBlock Text="聊天日志匹配预警星系时，需要支持哪些语言的星系名称" />
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
-                </StackPanel>
-                <ListView
-                    ItemsSource="{x:Bind VM.NameDbs}"
-                    Loaded="ListView_Loaded"
-                    SelectionChanged="GridView_SelectionChanged"
-                    SelectionMode="Multiple">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext, Converter={StaticResource FileToNameWithoutExtConverter}}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </StackPanel>
-            <AppBarButton
+            </ScrollViewer>
+            <Rectangle
                 Grid.Row="1"
-                HorizontalAlignment="Center"
-                Command="{x:Bind VM.StartCommand}"
-                Icon="Play"
-                Label="开始"
-                Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-            <AppBarButton
-                Grid.Row="1"
-                HorizontalAlignment="Center"
-                Command="{x:Bind VM.StopCommand}"
-                Icon="Stop"
-                Label="停止"
-                Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                Height="1"
+                Fill="{ThemeResource SystemAccentColor}" />
+            <Grid Grid.Row="2">
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StartCommand}"
+                    Icon="Play"
+                    Label="开始"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StopCommand}"
+                    Icon="Stop"
+                    Label="停止"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+            </Grid>
         </Grid>
         <ScrollViewer
             x:Name="ChatContentsScroll"

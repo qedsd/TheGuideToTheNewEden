@@ -71,11 +71,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref chatChanelInfos, value);
         }
 
-        private ObservableCollection<ChatContent> chatContents = new ObservableCollection<ChatContent>();
+        private ObservableCollection<IntelChatContent> chatContents = new ObservableCollection<IntelChatContent>();
         /// <summary>
         /// 当前选中频道所有聊天内容
         /// </summary>
-        public ObservableCollection<ChatContent> ChatContents
+        public ObservableCollection<IntelChatContent> ChatContents
         {
             get => chatContents;
             set => SetProperty(ref chatContents, value);
@@ -103,7 +103,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref nameDbs, value);
         }
 
-        public List<string> SelectedNameDbs { get; set; }
+        private List<string> selectedNameDbs;
+        public List<string> SelectedNameDbs
+        {
+            get => selectedNameDbs;
+            set => SetProperty(ref selectedNameDbs, value);
+        }
 
         private List<Core.DBModels.MapSolarSystemBase> mapSolarSystems;
         public List<Core.DBModels.MapSolarSystemBase> MapSolarSystems
@@ -118,7 +123,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => selectedMapSolarSystem;
             set => SetProperty(ref selectedMapSolarSystem, value);
         }
-
+        private Core.Models.EarlyWarningSetting setting = new Core.Models.EarlyWarningSetting();
+        public Core.Models.EarlyWarningSetting Setting
+        {
+            get => setting;
+            set => SetProperty(ref setting, value);
+        }
         internal EarlyWarningItemViewModel()
         {
             LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs", "Chatlogs");
@@ -198,9 +208,41 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(ListenerChannelDic.TryGetValue(selectedCharacter,out var chatChanelInfos))
             {
                 ChatChanelInfos = chatChanelInfos;
-                UpdateCharacterLocation();
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
+            var setting = Services.Settings.IntelSettingService.GetValue(selectedCharacter);
+            if(setting == null)
+            {
+                Setting = Setting.DepthClone<Core.Models.EarlyWarningSetting>();
+                Setting.Listener = SelectedCharacter;
+            }
+            else
+            {
+                Setting = setting;
+            }
+            LoadSetting();
+            if(Setting.AutoUpdateLocaltion)
+            {
+                UpdateCharacterLocation();
+            }
+            Setting.PropertyChanged += Setting_PropertyChanged;
+        }
+
+        /// <summary>
+        /// 设置参数变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Setting_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(Core.Models.EarlyWarningSetting.AutoUpdateLocaltion))
+            {
+                //如果勾选上自动更新位置，立即获取当前位置
+                if(Setting.AutoUpdateLocaltion)
+                {
+                    UpdateCharacterLocation();
+                }
+            }
         }
 
         public ICommand PickLogFolderCommand => new RelayCommand(async() =>
@@ -211,9 +253,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 LogPath = folder.Path;
             }
         });
+        public ICommand PickSoundFileCommand => new RelayCommand(async () =>
+        {
+            var file = await Helpers.PickHelper.PickFileAsync(Window);
+            if (file != null)
+            {
+                Setting.SoundFilePath= file.Path;
+            }
+        });
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
+            ShowWaiting();
             if(ChatChanelInfos.NotNullOrEmpty())
             {
                 var checkedItems = ChatChanelInfos.Where(p => p.IsChecked).ToList();
@@ -221,7 +272,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     foreach (var ch in checkedItems)
                     {
-                        Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch);
+                        Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch,setting);
                         earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
                         earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                         earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
@@ -232,8 +283,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                     IsRunning = true;
+                    SaveSetting();
+                }
+                else
+                {
+                    ShowMsg("请选择预警频道");
                 }
             }
+            HideWaiting();
         });
 
         public ICommand StopCommand => new RelayCommand(() =>
@@ -244,6 +301,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             IsRunning = false;
         });
 
+        
         /// <summary>
         /// 预警更新
         /// </summary>
@@ -262,7 +320,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         /// <param name="earlyWarningItem"></param>
         /// <param name="newlines"></param>
-        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<ChatContent> news)
+        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
@@ -320,25 +378,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 if (newLines.NotNullOrEmpty())
                 {
-                    for(int i = newLines.Count - 1; i >= 0; i--)
+                    int systemId = -1;
+                    for(int i = 0; i < newLines.Count; i++)
                     {
-                        var chatContent = ChatContent.Create(newLines[i]);
+                        var chatContent = IntelChatContent.Create(newLines[i]);
                         if(chatContent != null)
                         {
-                            int id = await TryGetCharacterLocationAsync(chatContent);
+                            int id = await TryGetCharacterLocationAsync(chatContent as IntelChatContent);
                             if(id != -1)
                             {
-                                //Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                                //{
-                                    SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
-                                //});
+                                systemId = id;
                             }
                         }
+                    }
+                    if (systemId != -1)
+                    {
+                        SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == systemId);
                     }
                 }
             }
         }
-        private async Task<int> TryGetCharacterLocationAsync(ChatContent chatContent)
+        private async Task<int> TryGetCharacterLocationAsync(IntelChatContent chatContent)
         {
             if (Core.EVEHelpers.ChatSpeakerHelper.IsEVESystem(chatContent.SpeakerName))
             {
@@ -360,6 +420,71 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
             return -1;
+        }
+
+        /// <summary>
+        /// 加载应用设置
+        /// </summary>
+        private void LoadSetting()
+        {
+            if(Setting != null)
+            {
+                if (Setting.ChannelIDs.NotNullOrEmpty())
+                {
+                    foreach (var id in Setting.ChannelIDs)
+                    {
+                        var target = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == id);
+                        if (target != null)
+                        {
+                            target.IsChecked = true;
+                        }
+                    }
+                }
+                else
+                {
+                    ChatChanelInfos.ForEach(p=>p.IsChecked = false);
+                }
+                if(Setting.LocationID > 1)
+                {
+                    SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p=>p.SolarSystemID == Setting.LocationID);
+                }
+                else
+                {
+                    SelectedMapSolarSystem = null;
+                }
+                if (Setting.NameDbs.NotNullOrEmpty())
+                {
+                    foreach (var db in Setting.NameDbs)
+                    {
+                        var target = NameDbs.FirstOrDefault(p => p == db);
+                        if (target != null)
+                        {
+                            if (SelectedNameDbs == null)
+                            {
+                                SelectedNameDbs = new List<string>();
+                            }
+                            SelectedNameDbs.Add(target);
+                        }
+                    }
+                }
+                else
+                {
+                    SelectedNameDbs = new List<string>()
+                    {
+                        NameDbs.FirstOrDefault()
+                    };
+                }
+            }
+        }
+
+        private void SaveSetting()
+        {
+            if (Setting != null)
+            {
+                Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
+                Setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
+                IntelSettingService.SetValue(Setting);
+            }
         }
     }
 }

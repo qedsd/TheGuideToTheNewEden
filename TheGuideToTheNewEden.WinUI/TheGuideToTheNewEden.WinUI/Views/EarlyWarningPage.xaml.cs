@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -20,10 +21,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class EarlyWarningPage : Page
     {
+        private BaseWindow _window;
         public EarlyWarningPage()
         {
             this.InitializeComponent();
             this.Unloaded += EarlyWarningPage_Unloaded;
+            Loaded += EarlyWarningPage_Loaded;
+        }
+
+        private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private void EarlyWarningPage_Unloaded(object sender, RoutedEventArgs e)
@@ -38,7 +46,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Header = "新建预警",
                 IsSelected = true,
             };
-            item.Content = new EarlyWarningItemPage(item);
+            EarlyWarningItemPage content = new EarlyWarningItemPage(item);
+            (content.DataContext as ViewModels.EarlyWarningItemViewModel).SetWindow(_window);
+            item.Content = content;
             sender.TabItems.Add(item);
         }
 

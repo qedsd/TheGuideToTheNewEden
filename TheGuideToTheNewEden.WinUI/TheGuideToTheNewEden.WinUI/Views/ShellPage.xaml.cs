@@ -40,6 +40,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 {
                     MainContent = obj
                 };
+                Helpers.WindowHelper.TrackWindow(win);
                 win.Activate();
             }
         }

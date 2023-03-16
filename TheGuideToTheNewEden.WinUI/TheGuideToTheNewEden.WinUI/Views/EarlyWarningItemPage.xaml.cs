@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI;
+using System.Reflection;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -34,11 +35,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void EarlyWarningItemPage_Loaded(object sender, RoutedEventArgs e)
         {
-            (DataContext as EarlyWarningItemViewModel).OnSelectedCharacterChanged += EarlyWarningItemPage_OnSelectedCharacterChanged;
+            VM.OnSelectedCharacterChanged += EarlyWarningItemPage_OnSelectedCharacterChanged;
             ChatContents.Blocks.Add(new Paragraph());
-            (this.DataContext as EarlyWarningItemViewModel).ChatContents.CollectionChanged += ChatContents_CollectionChanged;
+            VM.ChatContents.CollectionChanged += ChatContents_CollectionChanged;
             ChatContentsScroll.LayoutUpdated += ChatContentsScroll_LayoutUpdated;
+            VM.PropertyChanged += EarlyWarningItemPage_PropertyChanged;
         }
+
+        private void EarlyWarningItemPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(EarlyWarningItemViewModel.SelectedMapSolarSystem))
+            {
+                SetAutoSuggestBoxText(VM.SelectedMapSolarSystem?.SolarSystemName);
+            }
+            else if(e.PropertyName == nameof(EarlyWarningItemViewModel.SelectedNameDbs))
+            {
+                SetSelectedNameDbs();
+            }
+        }
+
         private void EarlyWarningItemPage_OnSelectedCharacterChanged(string selectedCharacter)
         {
             TabViewItem.Header = selectedCharacter;
@@ -55,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 foreach (var item in e.NewItems)
                 {
-                    var chatContent = item as ChatContent;
+                    var chatContent = item as IntelChatContent;
                     Paragraph paragraph = new Paragraph()
                     {
                         Margin = new Thickness(0, 8, 0, 8),
@@ -75,9 +90,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         FontWeight = FontWeights.Normal,
                         Text = chatContent.Content
                     };
-                    if (chatContent.Important)
+                    switch(chatContent.IntelType)
                     {
-                        contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                        case Core.Enums.IntelChatType.Intel: contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed);break;
+                        case Core.Enums.IntelChatType.Clear: contentRun.Foreground = new SolidColorBrush(Colors.SeaGreen); break;
                     }
                     paragraph.Inlines.Add(timeRun);
                     paragraph.Inlines.Add(nameRun);
@@ -106,17 +122,70 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void Stop()
         {
-            (DataContext as ViewModels.EarlyWarningItemViewModel).StopCommand.Execute(null);
+            VM.StopCommand.Execute(null);
         }
 
+        #region 星系名语言数据库
+        private bool IgnoreNameDbsSelectionChanged;
         private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            (DataContext as EarlyWarningItemViewModel).SelectedNameDbs = (sender as ListView).SelectedItems?.ToList<string>();
+            if(!IgnoreNameDbsSelectionChanged)
+            {
+                VM.SelectedNameDbs = (sender as ListView).SelectedItems?.ToList<string>();
+            }
         }
-
+        private void SetSelectedNameDbs()
+        {
+            IgnoreNameDbsSelectionChanged = true;
+            foreach (var item in VM.SelectedNameDbs)
+            {
+                SelectedNameDbsListView.SelectedItems.Add(item);
+            }
+            IgnoreNameDbsSelectionChanged = false;
+        }
+        #endregion
         private void ListView_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as ListView).SelectedItems.Add((sender as ListView).Items.FirstOrDefault());
+            if(VM.SelectedNameDbs != null)
+            {
+                foreach (var item in VM.SelectedNameDbs)
+                {
+                    (sender as ListView).SelectedItems.Add(item);
+                }
+            }
         }
+
+        #region 自动填充角色位置
+        private bool textChangedIgnore = false;
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if(textChangedIgnore)
+            {
+                textChangedIgnore = false;
+                sender.IsSuggestionListOpen = false;
+                return;
+            }
+            if(string.IsNullOrEmpty(sender.Text))
+            {
+                sender.ItemsSource = VM.MapSolarSystems;
+            }
+            else
+            {
+                var targets = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains(sender.Text)).ToList();
+                sender.ItemsSource = targets;
+            }
+        }
+
+        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            VM.SelectedMapSolarSystem = args.SelectedItem as Core.DBModels.MapSolarSystemBase;
+            SetAutoSuggestBoxText((args.SelectedItem as Core.DBModels.MapSolarSystemBase).SolarSystemName);
+        }
+        private void SetAutoSuggestBoxText(string text)
+        {
+            textChangedIgnore = true;
+            LocationBox.Text = text;
+        }
+        #endregion
     }
 }

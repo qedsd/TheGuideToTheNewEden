@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Enums;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -22,5 +23,6 @@ namespace TheGuideToTheNewEden.Core.Models
         /// 0最小，表示无危险
         /// </summary>
         public int Level { get; set; }
+        public IntelChatType IntelType { get; set; }
     }
 }
