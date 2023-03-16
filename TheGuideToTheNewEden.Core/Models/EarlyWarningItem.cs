@@ -84,7 +84,7 @@ namespace TheGuideToTheNewEden.Core.Models
                                 {
                                     newWarning.Add(result);
                                     newContent.Important = true;
-                                    newContent.IntelType = Enums.IntelChatType.Intel;
+                                    newContent.IntelType= result.IntelType;
                                 }
                             }
                             Contents.AddRange(newContents);
@@ -117,7 +117,7 @@ namespace TheGuideToTheNewEden.Core.Models
 
         private EarlyWarningContent AnalyzeContent(IntelChatContent chatContent)
         {
-            if(chatContent.IntelType == Enums.IntelChatType.None)
+            if(chatContent.IntelType != Enums.IntelChatType.Ignore)
             {
                 if (SolarSystemNames != null)
                 {
@@ -135,7 +135,7 @@ namespace TheGuideToTheNewEden.Core.Models
                                     SolarSystemId = name.Value,
                                     SolarSystemName = name.Key,
                                     Level = 3,//TODO:预警等级划分
-                                    IntelType = chatContent.IntelType
+                                    IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear: Enums.IntelChatType.Intel,
                                 };
                             }
                         }
