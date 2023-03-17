@@ -12,13 +12,19 @@ namespace TheGuideToTheNewEden.WinUI
     /// </summary>
     public static class CoreConfig
     {
-        public static string MainDbPath { set=>Core.Config.DBPath = value; }
-        public static string LocalDbPath { set => Core.Config.LocalDBPath = value; }
+        
         public static Core.Enums.Language DBLanguage { set => Core.Config.DBLanguage = value; }
         public static Core.Enums.GameServerType DefaultGameServer{set=>Core.Config.DefaultGameServer = value; }
         public static string ClientId {set=>Core.Config.ClientId = value; }
         public static string Scope {set=>Core.Config.Scope = value; }
         public static string PlayerStatusApi { set=>Core.Config.PlayerStatusApi = value; }
+
+        #region 文件路径
+        public static string MainDbPath { set => Core.Config.DBPath = value; }
+        public static string LocalDbPath { set => Core.Config.LocalDBPath = value; }
+        public static string SolarSystemMapPath { set=> Core.Config.SolarSystemMapPath = value; }
+        #endregion
+
         public static bool InitDb()
         {
             return Core.Config.InitDb();

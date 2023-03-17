@@ -10,6 +10,7 @@ namespace TheGuideToTheNewEden.Core
     /// </summary>
     public static class Config
     {
+        #region 文件路径
         /// <summary>
         /// 主数据库数据库文件路径
         /// </summary>
@@ -18,6 +19,11 @@ namespace TheGuideToTheNewEden.Core
         /// 本地化数据库文件路径
         /// </summary>
         public static string LocalDBPath { get; set; }
+        /// <summary>
+        /// 星系位置更新文件路径
+        /// </summary>
+        public static string SolarSystemMapPath { get; set; }
+        #endregion
         /// <summary>
         /// 数据库使用语言
         /// </summary>

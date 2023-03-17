@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,7 +11,8 @@ namespace TheGuideToTheNewEden.Core.Models.Map
     public class SolarSystemPosition
     {
         public int SolarSystemID { get; set; }
-        //public string SolarSystemName { get; set; }
+        [JsonIgnore]
+        public string SolarSystemName { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         /// <summary>

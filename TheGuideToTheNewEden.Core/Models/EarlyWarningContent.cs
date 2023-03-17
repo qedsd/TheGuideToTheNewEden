@@ -24,5 +24,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public int Level { get; set; }
         public IntelChatType IntelType { get; set; }
+
+        public Map.IntelSolarSystemMap IntelMap { get; set; }
     }
 }

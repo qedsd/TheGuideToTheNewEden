@@ -20,6 +20,7 @@ namespace TheGuideToTheNewEden.Core.Models
             ChatChanelInfo = info;
             Setting = setting;
             InitWords();
+            FileStreamOffset += FileHelper.GetStreamLength(ChatChanelInfo.FilePath);
         }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
@@ -33,35 +34,19 @@ namespace TheGuideToTheNewEden.Core.Models
             get => ChatChanelInfo.FilePath;
         }
         public Dictionary<string, int> SolarSystemNames { get; set; }
-        private int FileStreamOffset = 0;
+        private long FileStreamOffset = 0;
         public EarlyWarningSetting Setting { get; set; }
         /// <summary>
         /// 文件内容有更新
         /// </summary>
         public void Update()
         {
-            Task.Run(() =>
+            Task.Run(async() =>
             {
                 try
                 {
-                    List<string> newLines = null;
-                    using (FileStream fs = new FileStream(ChatChanelInfo.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        byte[] b = new byte[1024];
-                        int curReadCount = 0;
-                        StringBuilder stringBuilder = new StringBuilder();
-                        fs.Position = FileStreamOffset;
-                        while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
-                        {
-                            FileStreamOffset += curReadCount;
-                            var content = Encoding.Unicode.GetString(b,0, curReadCount);
-                            stringBuilder.Append(content);
-                        }
-                        if (stringBuilder.Length> 0)
-                        {
-                            newLines = stringBuilder.ToString().Split(new char[] { '\n', '\r' }).ToList();
-                        }
-                    }
+                    var newLines = Helpers.FileHelper.ReadLines(ChatChanelInfo.FilePath, FileStreamOffset, out int readOffset);
+                    FileStreamOffset += readOffset;
                     if (newLines.NotNullOrEmpty())
                     {
                         List<IntelChatContent> newContents = new List<IntelChatContent>();
@@ -79,7 +64,7 @@ namespace TheGuideToTheNewEden.Core.Models
                             List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
                             foreach (var newContent in newContents)
                             {
-                                var result = AnalyzeContent(newContent);
+                                var result = await AnalyzeContent(newContent);
                                 if (result != null)
                                 {
                                     newWarning.Add(result);
@@ -115,7 +100,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public event WarningUpdate OnWarningUpdate;
 
-        private EarlyWarningContent AnalyzeContent(IntelChatContent chatContent)
+        private async Task<EarlyWarningContent> AnalyzeContent(IntelChatContent chatContent)
         {
             if(chatContent.IntelType != Enums.IntelChatType.Ignore)
             {
@@ -128,15 +113,24 @@ namespace TheGuideToTheNewEden.Core.Models
                         {
                             if (array.Contains(name.Key))
                             {
-                                return new EarlyWarningContent()
+                                var intelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, name.Value,Setting.IntelJumps);
+                                if(intelMap != null)
                                 {
-                                    Content = chatContent.Content,
-                                    Time = chatContent.EVETime,
-                                    SolarSystemId = name.Value,
-                                    SolarSystemName = name.Key,
-                                    Level = 3,//TODO:预警等级划分
-                                    IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear: Enums.IntelChatType.Intel,
-                                };
+                                    return new EarlyWarningContent()
+                                    {
+                                        Content = chatContent.Content,
+                                        Time = chatContent.EVETime,
+                                        SolarSystemId = name.Value,
+                                        SolarSystemName = name.Key,
+                                        Level = 3,//TODO:预警等级划分
+                                        IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
+                                        IntelMap = intelMap
+                                    };
+                                }
+                                else
+                                {
+                                    return null;
+                                }
                             }
                         }
                     }

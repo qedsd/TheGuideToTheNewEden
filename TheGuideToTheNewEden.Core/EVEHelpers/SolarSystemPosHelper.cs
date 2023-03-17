@@ -1,0 +1,160 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.Core.Extensions;
+using System.Linq;
+using TheGuideToTheNewEden.Core.Services.DB;
+using System.Threading.Tasks;
+
+namespace TheGuideToTheNewEden.Core.EVEHelpers
+{
+    public static class SolarSystemPosHelper
+    {
+        private static Dictionary<int, SolarSystemPosition> positionDic;
+        private static Dictionary<int, SolarSystemPosition> PositionDic
+        {
+            get
+            {
+                if (positionDic == null)
+                {
+                    var json = System.IO.File.ReadAllText(Config.SolarSystemMapPath);
+                    if(!string.IsNullOrEmpty(json) )
+                    {
+                        var list = JsonConvert.DeserializeObject<List<SolarSystemPosition>>(json);
+                        if(list.NotNullOrEmpty())
+                        {
+                            positionDic = list.ToDictionary(p => p.SolarSystemID);
+                        }
+                    }
+                }
+                return positionDic;
+            }
+        }
+        public static async Task<IntelSolarSystemMap> GetIntelSolarSystemMapAsync(int centerId, int targetId, int jumps)
+        {
+            if(PositionDic.TryGetValue(centerId,out var center))
+            {
+                if(PositionDic.TryGetValue(targetId, out var target))
+                {
+                    var allJumpTo = GetSolarSystemOnJumps(centerId, jumps);//中心星系jumps跳数内的所有星系
+                    if(allJumpTo.Contains(target))
+                    {
+                        //命名星系
+                        var names = await MapSolarSystemService.QueryAsync(allJumpTo.Select(p => p.SolarSystemID).ToList());
+                        if(names.NotNullOrEmpty())
+                        {
+                            foreach(var system in allJumpTo)
+                            {
+                                var name = names.FirstOrDefault(p=>p.SolarSystemID == system.SolarSystemID);
+                                if(name != null)
+                                {
+                                    system.SolarSystemName = name.SolarSystemName;
+                                }
+                            }
+                        }
+                        //构建IntelSolarSystemMap
+                        var map = center.DepthClone<IntelSolarSystemMap>();
+                        map.Jumps = GetJumpTo(map.JumpTo, allJumpTo);
+                        return map;
+                    }
+                }
+            }
+            return null;
+        }
+        private static List<IntelSolarSystemMap> GetJumpTo(List<int> jumpToIds, List<SolarSystemPosition> all)
+        {
+            //TODO:死循环
+            if(jumpToIds.NotNullOrEmpty())
+            {
+                List<IntelSolarSystemMap> maps = new List<IntelSolarSystemMap>();
+                foreach(var jumpToId in jumpToIds)
+                {
+                    var pos = all.FirstOrDefault(p => p.SolarSystemID == jumpToId);
+                    if(pos != null)
+                    {
+                        var map = pos.DepthClone<IntelSolarSystemMap>();
+                        if(map.JumpTo.NotNullOrEmpty())
+                        {
+                            var jumpTo = map.JumpTo.ToList();
+                            var needRemoved = map.JumpTo.Intersect(jumpToIds).ToList();
+                            if(needRemoved.NotNullOrEmpty())
+                            {
+                                foreach(var item in needRemoved)
+                                {
+                                    jumpTo.Remove(item);
+                                }
+                            }
+                            if(jumpTo.NotNullOrEmpty())
+                            {
+                                map.Jumps = GetJumpTo(map.JumpTo, all);
+                                maps.Add(map);
+                            }
+                        }
+                        
+                    }
+                }
+                return maps;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取星系指定跳数外的所有星系
+        /// </summary>
+        /// <param name="centerId"></param>
+        /// <param name="jumps"></param>
+        /// <returns></returns>
+        public static List<SolarSystemPosition> GetSolarSystemOnJumps(int centerId, int jumps)
+        {
+            if (PositionDic.TryGetValue(centerId, out var center))
+            {
+                List<SolarSystemPosition> all = new List<SolarSystemPosition>();
+                List<SolarSystemPosition> currentJumpList = new List<SolarSystemPosition>()
+                {
+                    center
+                };//当前跳数的星系，开始只有中心星系一个
+                List<SolarSystemPosition> newJumpList = new List<SolarSystemPosition>();//下一跳数的星系
+                for (int i=0; i< jumps; i++)
+                {
+                    foreach(var position in currentJumpList)//找出当前跳数星系所有的一跳外星系
+                    {
+                        if (position.JumpTo.NotNullOrEmpty())
+                        {
+                            foreach (var jumpToId in position.JumpTo)
+                            {
+                                if (PositionDic.TryGetValue(jumpToId, out var jumpTo))
+                                {
+                                    newJumpList.Add(jumpTo);//将一跳外星系加入下一跳数的星系列表中
+                                }
+                            }
+                        }
+                    }
+                    //将当前跳数星系所有的一跳外星系去重加入结果列表
+                    if(newJumpList.Any())
+                    {
+                        var distinct = newJumpList.Distinct();
+                        all.AddRange(distinct);
+                        currentJumpList.Clear();
+                        currentJumpList.AddRange(newJumpList);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return all;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+    }
+}

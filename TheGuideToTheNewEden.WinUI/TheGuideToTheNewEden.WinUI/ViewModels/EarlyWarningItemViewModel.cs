@@ -85,6 +85,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// 当前选中的聊天频道对应的预警项
         /// </summary>
         private List<Core.Models.EarlyWarningItem> EarlyWarningItems = new List<Core.Models.EarlyWarningItem>();
+        private Core.Models.EarlyWarningItem LocalEarlyWarningItem;
 
         private bool isRunning;
         /// <summary>
@@ -164,12 +165,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
                             {
                                 //频道会按每天单独存储为一个文件，需要监控最新日期的那个
-                                var sameChanel = channels.FirstOrDefault(p => p.ChannelName == chanelInfo.ChannelName);
-                                if(sameChanel != null && sameChanel.SessionStarted < chanelInfo.SessionStarted)
+                                var sameChanel = channels.FirstOrDefault(p => p.ChannelID == chanelInfo.ChannelID);
+                                if(sameChanel != null)
                                 {
-                                    channels.Remove(sameChanel);
+                                    if(sameChanel.SessionStarted < chanelInfo.SessionStarted)
+                                    {
+                                        channels.Remove(sameChanel); channels.Add(ChatChanelInfo.Create(chanelInfo));
+                                    }
                                 }
-                                channels.Add(ChatChanelInfo.Create(chanelInfo));
+                                else
+                                {
+                                    channels.Add(ChatChanelInfo.Create(chanelInfo));
+                                }
                             }
                             else
                             {
@@ -273,13 +280,34 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     foreach (var ch in checkedItems)
                     {
                         Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch,setting);
-                        earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
-                        earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
-                        earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
                         if (Core.Services.ObservableFileService.Add(earlyWarningItem))
                         {
+                            earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
+                            earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
+                            earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
                             EarlyWarningItems.Add(earlyWarningItem);
-                            earlyWarningItem.Update();
+                            //earlyWarningItem.Update();
+
+                            if(Setting.AutoUpdateLocaltion && ch.ChannelID == "local")//自动更新位置需要添加本地频道监控
+                            {
+                                earlyWarningItem.OnContentUpdate += EarlyWarningItem_LocalChanged;
+                                LocalEarlyWarningItem = earlyWarningItem;
+                            }
+                        }
+                    }
+                    if(Setting.AutoUpdateLocaltion && LocalEarlyWarningItem == null)//自动更新位置需要添加本地频道监控
+                    {
+                        var localChat = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == "local");
+                        if(localChat != null)
+                        {
+                            Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(localChat, setting);
+                            if (Core.Services.ObservableFileService.Add(earlyWarningItem))
+                            {
+                                earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
+                                earlyWarningItem.OnContentUpdate += EarlyWarningItem_LocalChanged;
+                                EarlyWarningItems.Add(earlyWarningItem);
+                                LocalEarlyWarningItem = earlyWarningItem;
+                            }
                         }
                     }
                     IsRunning = true;
@@ -299,6 +327,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             EarlyWarningItems.Clear();
             ChatContents.Clear();
             IsRunning = false;
+            LocalEarlyWarningItem = null;
         });
 
         
@@ -339,6 +368,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     ChatContents.Add(line);
                 }
             });
+        }
+        /// <summary>
+        /// 本地频道内容更新
+        /// 判断是否更新位置
+        /// </summary>
+        /// <param name="earlyWarningItem"></param>
+        /// <param name="news"></param>
+        private async void EarlyWarningItem_LocalChanged(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
+        {
+            for(int i = news.Count() - 1;i >= 0; i--)//从后面往回找，新消息位于后面
+            {
+                var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i),NameDbs);
+                if(id > 0)
+                {
+                    Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        Setting.LocationID = id;
+                        SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
+                    });
+                    break;
+                }
+            }
         }
 
         private async Task<Dictionary<string,int>> GetSolarSystemNames()
@@ -394,7 +445,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         var chatContent = IntelChatContent.Create(newLines[i]);
                         if(chatContent != null)
                         {
-                            int id = await TryGetCharacterLocationAsync(chatContent as IntelChatContent);
+                            int id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(chatContent, NameDbs);
                             if(id != -1)
                             {
                                 systemId = id;
@@ -408,29 +459,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private async Task<int> TryGetCharacterLocationAsync(IntelChatContent chatContent)
-        {
-            if (Core.EVEHelpers.ChatSpeakerHelper.IsEVESystem(chatContent.SpeakerName))
-            {
-                if (Core.EVEHelpers.ChatSystemContentFormatHelper.IsLocalChanged(chatContent.Content))
-                {
-                    var array = chatContent.Content.Split(new char[] { ':', '：' });
-                    if (array.Length > 0)
-                    {
-                        var name = array.Last().Trim().Replace("*", "");
-                        foreach (var db in NameDbs)
-                        {
-                            int id = await MapSolarSystemNameService.QueryIdAsync(db == NameDbs.FirstOrDefault() ? Core.Config.DBPath : db, name);
-                            if(id != -1)
-                            {
-                                return id;
-                            }
-                        }
-                    }
-                }
-            }
-            return -1;
-        }
+        
 
         /// <summary>
         /// 加载应用设置

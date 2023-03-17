@@ -139,7 +139,7 @@
                         Text="{x:Bind VM.Setting.IgnoreWords, Mode=TwoWay}" />
                     <TextBox
                         Margin="0,10"
-                        Header="接触预警关键词"
+                        Header="解除预警关键词"
                         PlaceholderText="每个关键词使用,隔开"
                         Text="{x:Bind VM.Setting.ClearWords, Mode=TwoWay}" />
                     <StackPanel Margin="0,10,0,4" Orientation="Horizontal">
