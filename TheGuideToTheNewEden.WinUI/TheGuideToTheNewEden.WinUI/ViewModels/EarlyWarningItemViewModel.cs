@@ -311,8 +311,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach(var ch in news)
             {
-                WarningService.NotifyWindow(ch);
-                WarningService.NotifyPopupToast(ch);
+                if(Setting.OverlapType != 2)
+                {
+                    WarningService.NotifyWindow(ch);
+                }
+                if(Setting.SystemNotify && ch.IntelType == Core.Enums.IntelChatType.Intel)
+                {
+                    WarningService.NotifyToast(ch);
+                }
+                if(Setting.MakeSound)
+                {
+                    WarningService.NotifySound(ch);
+                }
             }
         }
         /// <summary>

@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
 
             // When adding new a scenario, be sure to add its notification handler here.
             c_notificationHandlers = new Dictionary<int, Action<AppNotificationActivatedEventArgs>>();
-            c_notificationHandlers.Add(ToastWithAvatar.ScenarioId, ToastWithAvatar.NotificationReceived);
+            c_notificationHandlers.Add(IntelToast.ScenarioId, IntelToast.NotificationReceived);
             c_notificationHandlers.Add(ToastWithTextBox.ScenarioId, ToastWithTextBox.NotificationReceived);
         }
 

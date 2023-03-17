@@ -34,7 +34,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
 
         }
-        public static void NotifyPopupToast(EarlyWarningContent content)
+        public static void NotifyToast(EarlyWarningContent content)
+        {
+            Notifications.IntelToast.SendToast(content);
+        }
+
+        public static void NotifySound(EarlyWarningContent content)
         {
 
         }

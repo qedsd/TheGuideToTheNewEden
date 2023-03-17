@@ -1,36 +1,31 @@
 ﻿using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
-
+using System;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.WinUI.Notifications
 {
-    internal class ToastWithAvatar
+    internal class IntelToast
     {
         public const int ScenarioId = 1;
 
-        public static bool SendToast(string Title = "新伊甸漫游指南",string content = "Toast通知")
+        public static bool SendToast(EarlyWarningContent earlyWarningContent)
         {
-            //AddArgument为用户点击通知后返回的参数标识
             var appNotification = new AppNotificationBuilder()
                 .AddArgument("action", "ToastClick")
                 .AddArgument(Common.scenarioTag, ScenarioId.ToString())
                 .SetAppLogoOverride(new System.Uri("file://" + App.GetFullPathToAsset("Square150x150Logo.png")), AppNotificationImageCrop.Circle)
-                .AddText(Title)
-                .AddText(content)
+                .AddText($"频道预警：{earlyWarningContent.SolarSystemName}")
+                .AddText(earlyWarningContent.Content)
                 .BuildNotification();
-
+            appNotification.Expiration = DateTime.Now.AddMinutes(1);
             AppNotificationManager.Default.Show(appNotification);
 
-            return appNotification.Id != 0; // return true (indicating success) if the toast was sent (if it has an Id)
+            return appNotification.Id != 0;
         }
 
         public static void NotificationReceived(AppNotificationActivatedEventArgs notificationActivatedEventArgs)
         {
-            //var notification = new MainPage.Notification();
-            //notification.Originator = ScenarioName;
-            //notification.Action = notificationActivatedEventArgs.Arguments["action"];
-            //MainPage.Current.NotificationReceived(notification);
-            //App.ToForeground();
         }
     }
 }
