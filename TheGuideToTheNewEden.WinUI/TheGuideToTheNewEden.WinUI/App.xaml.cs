@@ -12,10 +12,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Notifications;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -27,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI
     /// </summary>
     public partial class App : Application
     {
+        private NotificationManager notificationManager;
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -34,6 +37,14 @@ namespace TheGuideToTheNewEden.WinUI
         public App()
         {
             this.InitializeComponent();
+            notificationManager = new NotificationManager();
+            notificationManager.Init();
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+        }
+
+        private void OnProcessExit(object sender, EventArgs e)
+        {
+            notificationManager.Unregister();
         }
 
         /// <summary>
@@ -53,5 +64,26 @@ namespace TheGuideToTheNewEden.WinUI
         }
 
         private Window m_window;
+
+        public static void ToForeground()
+        {
+            //if (m_window != null)
+            //{
+            //    HWND hwnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+            //    SwitchToThisWindow(hwnd, true);
+            //}
+        }
+
+        public static string GetFullPathToExe()
+        {
+            var path = AppDomain.CurrentDomain.BaseDirectory;
+            var pos = path.LastIndexOf("\\");
+            return path.Substring(0, pos);
+        }
+
+        public static string GetFullPathToAsset(string assetName)
+        {
+            return GetFullPathToExe() + "\\Assets\\" + assetName;
+        }
     }
 }

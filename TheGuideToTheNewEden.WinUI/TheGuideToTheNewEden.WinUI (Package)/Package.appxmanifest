@@ -49,7 +49,7 @@
 			<!--Register COM CLSID-->
 			<com:Extension Category="windows.comServer">
 				<com:ComServer>
-					<com:ExeServer Executable="SampleApp\SampleApp.exe" DisplayName="SampleApp" Arguments="----AppNotificationActivated:">
+					<com:ExeServer Executable="TheGuideToTheNewEden.WinUI.exe" DisplayName="TheGuideToTheNewEden" Arguments="----AppNotificationActivated:">
 						<com:Class Id="5D514C15-D280-421A-96F8-3282AE6AE6E2" />
 					</com:ExeServer>
 				</com:ComServer>
