@@ -15,7 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
                 .AddArgument("action", "ToastClick")
                 .AddArgument(Common.scenarioTag, ScenarioId.ToString())
                 .SetAppLogoOverride(new System.Uri("file://" + App.GetFullPathToAsset("Square150x150Logo.png")), AppNotificationImageCrop.Circle)
-                .AddText($"频道预警：{earlyWarningContent.SolarSystemName}")
+                .AddText($"频道预警：{earlyWarningContent.SolarSystemName} {earlyWarningContent.Jumps}跳")
                 .AddText(earlyWarningContent.Content)
                 .BuildNotification();
             appNotification.Expiration = DateTime.Now.AddMinutes(1);

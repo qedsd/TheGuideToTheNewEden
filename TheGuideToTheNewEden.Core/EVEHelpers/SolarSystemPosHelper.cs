@@ -32,40 +32,40 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 return positionDic;
             }
         }
-        public static async Task<IntelSolarSystemMap> GetIntelSolarSystemMapAsync(int centerId, int targetId, int jumps)
+        public static async Task<IntelSolarSystemMap> GetIntelSolarSystemMapAsync(int centerId, int jumps)
+        {
+            return await Task.Run(() =>
+            {
+                return GetIntelSolarSystemMap(centerId, jumps);
+            });
+        }
+        public static IntelSolarSystemMap GetIntelSolarSystemMap(int centerId, int jumps)
         {
             if(PositionDic.TryGetValue(centerId,out var center))
             {
-                if(PositionDic.TryGetValue(targetId, out var target))
+                var allJumpTo = GetSolarSystemOnJumps(centerId, jumps);//中心星系jumps跳数内的所有星系
+                //命名星系
+                var names = MapSolarSystemService.Query(allJumpTo.Select(p => p.SolarSystemID).ToList());
+                if (names.NotNullOrEmpty())
                 {
-                    var allJumpTo = GetSolarSystemOnJumps(centerId, jumps);//中心星系jumps跳数内的所有星系
-                    if(allJumpTo.Contains(target))
+                    foreach (var system in allJumpTo)
                     {
-                        //命名星系
-                        var names = await MapSolarSystemService.QueryAsync(allJumpTo.Select(p => p.SolarSystemID).ToList());
-                        if(names.NotNullOrEmpty())
+                        var name = names.FirstOrDefault(p => p.SolarSystemID == system.SolarSystemID);
+                        if (name != null)
                         {
-                            foreach(var system in allJumpTo)
-                            {
-                                var name = names.FirstOrDefault(p=>p.SolarSystemID == system.SolarSystemID);
-                                if(name != null)
-                                {
-                                    system.SolarSystemName = name.SolarSystemName;
-                                }
-                            }
+                            system.SolarSystemName = name.SolarSystemName;
                         }
-                        //构建IntelSolarSystemMap
-                        var map = center.DepthClone<IntelSolarSystemMap>();
-                        map.Jumps = GetJumpTo(map.JumpTo, allJumpTo);
-                        return map;
                     }
                 }
+                //构建IntelSolarSystemMap
+                var map = center.DepthClone<IntelSolarSystemMap>();
+                map.Jumps = GetJumpTo(map.JumpTo, allJumpTo);
+                return map;
             }
             return null;
         }
         private static List<IntelSolarSystemMap> GetJumpTo(List<int> jumpToIds, List<SolarSystemPosition> all)
         {
-            //TODO:死循环
             if(jumpToIds.NotNullOrEmpty())
             {
                 List<IntelSolarSystemMap> maps = new List<IntelSolarSystemMap>();
@@ -74,7 +74,15 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     var pos = all.FirstOrDefault(p => p.SolarSystemID == jumpToId);
                     if(pos != null)
                     {
-                        var map = pos.DepthClone<IntelSolarSystemMap>();
+                        var map = new IntelSolarSystemMap()
+                        {
+                            SolarSystemID = pos.SolarSystemID,
+                            X = pos.X,
+                            Y = pos.Y,
+                            JumpTo = pos.JumpTo
+                        };
+                        //map.CopyFrom(pos);
+                        //var map = pos.DepthClone<IntelSolarSystemMap>();
                         if(map.JumpTo.NotNullOrEmpty())
                         {
                             var jumpTo = map.JumpTo.ToList();
@@ -88,7 +96,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                             }
                             if(jumpTo.NotNullOrEmpty())
                             {
-                                map.Jumps = GetJumpTo(map.JumpTo, all);
+                                map.Jumps = GetJumpTo(jumpTo, all);
                                 maps.Add(map);
                             }
                         }

@@ -125,6 +125,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<MapSolarSystemBase>().Where(p => ids.Contains(p.SolarSystemID)).ToListAsync();
         }
+        public static List<MapSolarSystemBase> TranMapSolarSystems(List<int> ids)
+        {
+            return DBService.LocalDb.Queryable<MapSolarSystemBase>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
+        }
         public static async Task<MapSolarSystemBase> TranMapSolarSystemAsync(int id)
         {
             return await DBService.LocalDb.Queryable<MapSolarSystemBase>().FirstAsync(p => id == p.SolarSystemID);
@@ -138,6 +142,24 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 keyValuePairs.Add(item.SolarSystemID, item);
             }
             var results = await TranMapSolarSystemsAsync(items.Select(p => p.SolarSystemID).ToList());
+            foreach (var result in results)
+            {
+                keyValuePairs.TryGetValue(result.SolarSystemID, out var keyValue);
+                {
+                    keyValue.SolarSystemName = result.SolarSystemName;
+                }
+            }
+            keyValuePairs.Clear();
+            keyValuePairs = null;
+        }
+        public static void TranMapSolarSystems(List<MapSolarSystem> items)
+        {
+            Dictionary<int, MapSolarSystem> keyValuePairs = new Dictionary<int, MapSolarSystem>();
+            foreach (var item in items)
+            {
+                keyValuePairs.Add(item.SolarSystemID, item);
+            }
+            var results = TranMapSolarSystems(items.Select(p => p.SolarSystemID).ToList());
             foreach (var result in results)
             {
                 keyValuePairs.TryGetValue(result.SolarSystemID, out var keyValue);

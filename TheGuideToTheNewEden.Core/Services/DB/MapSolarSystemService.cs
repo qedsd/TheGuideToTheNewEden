@@ -28,6 +28,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+        public static List<MapSolarSystem> Query(List<int> ids)
+        {
+            var types = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapSolarSystems(types);
+            }
+            return types;
+        }
 
         public static async Task<List<MapSolarSystem>> QueryAllAsync()
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Interfaces;
@@ -21,6 +23,12 @@ namespace TheGuideToTheNewEden.Core.Models
             Setting = setting;
             InitWords();
             FileStreamOffset += FileHelper.GetStreamLength(ChatChanelInfo.FilePath);
+        }
+        public Map.IntelSolarSystemMap IntelMap { get; set; }
+        public async Task InitAsync()
+        {
+            //IntelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+            IntelMap = EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMap(Setting.LocationID, Setting.IntelJumps);
         }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
@@ -41,7 +49,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public void Update()
         {
-            Task.Run(async() =>
+            Task.Run(() =>
             {
                 try
                 {
@@ -64,7 +72,7 @@ namespace TheGuideToTheNewEden.Core.Models
                             List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
                             foreach (var newContent in newContents)
                             {
-                                var result = await AnalyzeContent(newContent);
+                                var result = AnalyzeContent(newContent);
                                 if (result != null)
                                 {
                                     newWarning.Add(result);
@@ -100,7 +108,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public event WarningUpdate OnWarningUpdate;
 
-        private async Task<EarlyWarningContent> AnalyzeContent(IntelChatContent chatContent)
+        private EarlyWarningContent AnalyzeContent(IntelChatContent chatContent)
         {
             if(chatContent.IntelType != Enums.IntelChatType.Ignore)
             {
@@ -108,13 +116,12 @@ namespace TheGuideToTheNewEden.Core.Models
                 {
                     foreach (var name in SolarSystemNames)
                     {
-                        var array = chatContent.Content.Replace('*', ' ').Split(' ');
-                        if (array.Length > 0)
+                        if (chatContent.Content.Contains(name.Key))
                         {
-                            if (array.Contains(name.Key))
+                            if(IntelMap != null)
                             {
-                                var intelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, name.Value,Setting.IntelJumps);
-                                if(intelMap != null)
+                                int jumps = IntelMap.JumpsOf(name.Value);
+                                if(jumps != -1)
                                 {
                                     return new EarlyWarningContent()
                                     {
@@ -124,13 +131,18 @@ namespace TheGuideToTheNewEden.Core.Models
                                         SolarSystemName = name.Key,
                                         Level = 3,//TODO:预警等级划分
                                         IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
-                                        IntelMap = intelMap
+                                        IntelMap = IntelMap,
+                                        Jumps = jumps
                                     };
                                 }
                                 else
                                 {
                                     return null;
                                 }
+                            }
+                            else
+                            {
+                                return null;
                             }
                         }
                     }

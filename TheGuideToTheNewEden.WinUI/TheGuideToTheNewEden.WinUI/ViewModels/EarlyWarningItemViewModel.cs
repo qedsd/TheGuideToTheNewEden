@@ -282,6 +282,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch,setting);
                         if (Core.Services.ObservableFileService.Add(earlyWarningItem))
                         {
+                            await earlyWarningItem.InitAsync();
                             earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
                             earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                             earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
