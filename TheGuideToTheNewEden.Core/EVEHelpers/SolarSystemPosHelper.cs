@@ -41,25 +41,26 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         }
         public static IntelSolarSystemMap GetIntelSolarSystemMap(int centerId, int jumps)
         {
-            if(PositionDic.TryGetValue(centerId,out var center))
+            if (PositionDic.TryGetValue(centerId, out var center))
             {
-                var allJumpTo = GetSolarSystemOnJumps(centerId, jumps);//中心星系jumps跳数内的所有星系
-                //命名星系
-                var names = MapSolarSystemService.Query(allJumpTo.Select(p => p.SolarSystemID).ToList());
-                if (names.NotNullOrEmpty())
+                var map = GetBaseIntelSolarSystemMap(centerId, jumps);
+                if (map != null)
                 {
-                    foreach (var system in allJumpTo)
+                    var all = map.GetAllSolarSystem();
+                    var names = MapSolarSystemService.Query(all.Select(p => p.SolarSystemID).ToList());
+                    if (names.NotNullOrEmpty())
                     {
-                        var name = names.FirstOrDefault(p => p.SolarSystemID == system.SolarSystemID);
-                        if (name != null)
+                        foreach (var system in all)
                         {
-                            system.SolarSystemName = name.SolarSystemName;
+                            var name = names.FirstOrDefault(p => p.SolarSystemID == system.SolarSystemID);
+                            if (name != null)
+                            {
+                                system.SolarSystemName = name.SolarSystemName;
+                            }
                         }
                     }
                 }
-                //构建IntelSolarSystemMap
-                var map = center.DepthClone<IntelSolarSystemMap>();
-                map.Jumps = GetJumpTo(map.JumpTo, allJumpTo);
+                GC.Collect();
                 return map;
             }
             return null;
@@ -138,6 +139,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                                 if (PositionDic.TryGetValue(jumpToId, out var jumpTo))
                                 {
                                     newJumpList.Add(jumpTo);//将一跳外星系加入下一跳数的星系列表中
+
                                 }
                             }
                         }
@@ -163,6 +165,64 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
         }
 
-
+        /// <summary>
+        /// 获取星系指定跳数外的所有星系
+        /// </summary>
+        /// <param name="centerId"></param>
+        /// <param name="jumps"></param>
+        /// <returns></returns>
+        private static IntelSolarSystemMap GetBaseIntelSolarSystemMap(int centerId, int jumps)
+        {
+            if (PositionDic.TryGetValue(centerId, out var center))
+            {
+                IntelSolarSystemMap map = new IntelSolarSystemMap();
+                map.CopyFrom(center);
+                List<IntelSolarSystemMap> all = new List<IntelSolarSystemMap>();
+                List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
+                {
+                    map
+                };//当前跳数的星系，开始只有中心星系一个
+                List<IntelSolarSystemMap> newJumpList = new List<IntelSolarSystemMap>();//下一跳数的星系
+                for (int i = 0; i < jumps; i++)
+                {
+                    foreach (var position in currentJumpList)//找出当前跳数星系所有的一跳外星系
+                    {
+                        if (position.JumpTo.NotNullOrEmpty())
+                        {
+                            if(position.Jumps == null)
+                            {
+                                position.Jumps = new List<IntelSolarSystemMap>();
+                            }
+                            foreach (var jumpToId in position.JumpTo)
+                            {
+                                if (PositionDic.TryGetValue(jumpToId, out var jumpTo))
+                                {
+                                    var next = new IntelSolarSystemMap(jumpTo);
+                                    newJumpList.Add(next);//将一跳外星系加入下一跳数的星系列表中
+                                    position.Jumps.Add(next);
+                                }
+                            }
+                        }
+                    }
+                    //将当前跳数星系所有的一跳外星系去重加入结果列表
+                    if (newJumpList.Any())
+                    {
+                        var distinct = newJumpList.Distinct();
+                        all.AddRange(distinct);
+                        currentJumpList.Clear();
+                        currentJumpList.AddRange(newJumpList);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return map;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

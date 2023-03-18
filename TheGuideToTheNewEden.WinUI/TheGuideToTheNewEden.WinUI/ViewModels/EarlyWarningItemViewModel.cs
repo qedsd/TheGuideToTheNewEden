@@ -329,6 +329,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChatContents.Clear();
             IsRunning = false;
             LocalEarlyWarningItem = null;
+            GC.Collect();
         });
 
         

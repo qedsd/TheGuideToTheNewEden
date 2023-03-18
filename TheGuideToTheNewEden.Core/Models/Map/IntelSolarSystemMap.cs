@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
@@ -8,6 +9,11 @@ namespace TheGuideToTheNewEden.Core.Models.Map
 {
     public class IntelSolarSystemMap: SolarSystemPosition
     {
+        public IntelSolarSystemMap() { }
+        public IntelSolarSystemMap(SolarSystemPosition pos)
+        {
+            this.CopyFrom(pos);
+        }
         public List<IntelSolarSystemMap> Jumps { get; set; }
 
         public bool Contain(int solaySystemId)
@@ -41,6 +47,27 @@ namespace TheGuideToTheNewEden.Core.Models.Map
                     }
                 }
                 return -1;
+            }
+        }
+
+        public List<IntelSolarSystemMap> GetAllSolarSystem()
+        {
+            List<IntelSolarSystemMap> list = new List<IntelSolarSystemMap>() { this };
+            if (Jumps.NotNullOrEmpty())
+            {
+                foreach (var item in Jumps)
+                {
+                    var next = item.GetAllSolarSystem();
+                    if (next.NotNullOrEmpty())
+                    {
+                        list.AddRange(next);
+                    }
+                }
+                return list.Distinct().ToList();
+            }
+            else
+            {
+                return list;
             }
         }
     }
