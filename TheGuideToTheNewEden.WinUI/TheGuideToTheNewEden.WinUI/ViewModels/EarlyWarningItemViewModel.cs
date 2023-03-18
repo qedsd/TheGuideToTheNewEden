@@ -344,7 +344,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(Setting.OverlapType != 2)
                 {
-                    WarningService.NotifyWindow(ch);
+                    Window.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        WarningService.NotifyWindow(Setting.Listener, earlyWarningItem.IntelMap, ch);
+                    });
                 }
                 if(Setting.SystemNotify && ch.IntelType == Core.Enums.IntelChatType.Intel)
                 {

@@ -224,5 +224,20 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 return null;
             }
         }
+
+        public static void ResetXY(List<IntelSolarSystemMap> all)
+        {
+            var maxX = all.Max(p => p.X);
+            var minX = all.Min(p => p.X);
+            var maxY = all.Max(p=>p.Y);
+            var minY = all.Min(p => p.Y);
+            var xSpan = maxX - minX;
+            var ySpan = maxY - minY;
+            foreach(var position in all)
+            {
+                position.X = (position.X - minX) / xSpan;
+                position.Y = (position.Y - minY) / ySpan;
+            }
+        }
     }
 }

@@ -28,6 +28,7 @@ namespace TheGuideToTheNewEden.Core.Models
         public async Task InitAsync()
         {
             IntelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+            EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
         }
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>

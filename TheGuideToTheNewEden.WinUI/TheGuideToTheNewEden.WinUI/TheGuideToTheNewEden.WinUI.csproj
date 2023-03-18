@@ -58,6 +58,9 @@
     <None Update="Resources\Database\main.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Windows\IntelWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\EarlyWarningItemPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

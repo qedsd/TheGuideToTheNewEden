@@ -17,7 +17,7 @@ using WinRT;
 
 namespace TheGuideToTheNewEden.WinUI
 {
-    public sealed partial class BaseWindow : Window
+    public partial class BaseWindow : Window
     {
         public BaseWindow(string head = null)
         {
@@ -54,7 +54,7 @@ namespace TheGuideToTheNewEden.WinUI
                 SetHeadText(value);
             }
         }
-        private void SetHeadText(string head)
+        public void SetHeadText(string head)
         {
             if (string.IsNullOrEmpty(head))
             {
