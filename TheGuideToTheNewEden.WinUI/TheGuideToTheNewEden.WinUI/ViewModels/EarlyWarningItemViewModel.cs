@@ -346,7 +346,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Window.DispatcherQueue.TryEnqueue(() =>
                     {
-                        WarningService.NotifyWindow(Setting.Listener, earlyWarningItem.IntelMap, ch);
+                        WarningService.NotifyWindow(Setting.Listener,Setting.IntelJumps, earlyWarningItem.IntelMap, ch);
                     });
                 }
                 if(Setting.SystemNotify && ch.IntelType == Core.Enums.IntelChatType.Intel)

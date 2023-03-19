@@ -63,7 +63,7 @@ namespace TheGuideToTheNewEden.Core.Models.Map
                         list.AddRange(next);
                     }
                 }
-                return list.Distinct().ToList();
+                return list.GroupBy(p=>p.SolarSystemID).Select(p=>p.First()).ToList();
             }
             else
             {

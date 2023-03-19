@@ -22,9 +22,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     public sealed partial class IntelWindow
     {
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
+        private int Jumps;
         private Canvas ContentCanvas;
         private BaseWindow Window;
-        public IntelWindow(Core.Models.Map.IntelSolarSystemMap intelMap)
+        public IntelWindow(Core.Models.Map.IntelSolarSystemMap intelMap,int jumps)
         {
             Window = new BaseWindow();
             ContentCanvas = new Canvas()
@@ -33,19 +34,20 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             Window.MainContent = ContentCanvas;
             IntelMap = intelMap;
+            Jumps = jumps;
             Window.Activated += IntelWindow_Activated;
-            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-            WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new Windows.Graphics.SizeInt32(500, 500));
-            appWindow.MoveInZOrderAtTop();
-            appWindow.Changed += AppWindow_Changed;
+            //IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
+            //WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            //Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            //appWindow.Resize(new Windows.Graphics.SizeInt32(Math.Max(200 * jumps,300), Math.Max(200 * jumps,300)));
+            //appWindow.MoveInZOrderAtTop();
+            //appWindow.Changed += AppWindow_Changed;
         }
 
-        private void AppWindow_Changed(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowChangedEventArgs args)
-        {
-            sender.MoveInZOrderAtTop();
-        }
+        //private void AppWindow_Changed(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowChangedEventArgs args)
+        //{
+        //    sender.MoveInZOrderAtTop();
+        //}
 
         public void Show()
         {
@@ -53,12 +55,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private void IntelWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            Init(IntelMap);
+            Init(IntelMap,Jumps);
             Window.Activated -= IntelWindow_Activated;
         }
 
-        public void Init(Core.Models.Map.IntelSolarSystemMap intelMap)
+        public void Init(Core.Models.Map.IntelSolarSystemMap intelMap, int jumps)
         {
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
+            WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            appWindow.Resize(new Windows.Graphics.SizeInt32(Math.Max(200 * jumps, 300), Math.Max(200 * jumps, 300)));
+
             ContentCanvas.Children.Clear();
             double width = Window.Bounds.Width;
             double height = Window.Bounds.Height;
@@ -66,9 +73,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 Ellipse ellipse = new Ellipse()
                 {
-                    Fill = new SolidColorBrush(Colors.Black),
-                    Width = 10,
-                    Height = 10,
+                    Fill = new SolidColorBrush(Colors.DarkGray),
+                    Width = 8,
+                    Height = 8,
                     StrokeThickness = 0,
                 };
                 ContentCanvas.Children.Add(ellipse);

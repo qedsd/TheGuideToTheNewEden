@@ -177,7 +177,6 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 IntelSolarSystemMap map = new IntelSolarSystemMap();
                 map.CopyFrom(center);
-                List<IntelSolarSystemMap> all = new List<IntelSolarSystemMap>();
                 List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
                 {
                     map
@@ -189,7 +188,11 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     {
                         if (position.JumpTo.NotNullOrEmpty())
                         {
-                            if(position.Jumps == null)
+                            if(position.Jumps.NotNullOrEmpty())
+                            {
+                                continue;//说明前面已经找过此星系的
+                            }
+                            if (position.Jumps == null)
                             {
                                 position.Jumps = new List<IntelSolarSystemMap>();
                             }
@@ -208,9 +211,8 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     if (newJumpList.Any())
                     {
                         var distinct = newJumpList.Distinct();
-                        all.AddRange(distinct);
                         currentJumpList.Clear();
-                        currentJumpList.AddRange(newJumpList);
+                        currentJumpList.AddRange(distinct);
                     }
                     else
                     {
@@ -225,7 +227,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
         }
 
-        public static void ResetXY(List<IntelSolarSystemMap> all)
+        public static void ResetXY(List<IntelSolarSystemMap> all,int refP = 10)
         {
             var maxX = all.Max(p => p.X);
             var minX = all.Min(p => p.X);
@@ -233,10 +235,14 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             var minY = all.Min(p => p.Y);
             var xSpan = maxX - minX;
             var ySpan = maxY - minY;
-            foreach(var position in all)
+            double percent = refP / 100;
+            foreach (var position in all)
             {
-                position.X = (position.X - minX) / xSpan;
-                position.Y = (position.Y - minY) / ySpan;
+                var beforeXPercent = (position.X - minX) / xSpan;//x在所有点x原始范围内比例
+                var beforeYPercent = (position.Y - minY) / ySpan;//y在所有点y原始范围内比例
+                //var afterXpercent = 
+                position.X = beforeXPercent;
+                position.Y = beforeYPercent;
             }
         }
     }

@@ -31,16 +31,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         private Dictionary<string, IntelWindow> WarningWindows = new Dictionary<string, IntelWindow>();
 
-        public static void NotifyWindow(string Listener, Core.Models.Map.IntelSolarSystemMap intelMap, EarlyWarningContent content)
+        public static void NotifyWindow(string listener,int jumps, Core.Models.Map.IntelSolarSystemMap intelMap, EarlyWarningContent content)
         {
-            if(Current.WarningWindows.TryGetValue(Listener,out var value))
+            if(Current.WarningWindows.TryGetValue(listener,out var value))
             {
-
+                UpdateWindow(listener, jumps, intelMap);
             }
             else
             {
-                IntelWindow intelWindow = new IntelWindow(intelMap);
+                IntelWindow intelWindow = new IntelWindow(intelMap, jumps);
                 intelWindow.Show();
+                Current.WarningWindows.Add(listener, intelWindow);
             }
             
             
@@ -49,11 +50,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
 
         }
-        public static void UpdateWindow(string Listener, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public static void UpdateWindow(string Listener, int jumps, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             if (Current.WarningWindows.TryGetValue(Listener, out var value))
             {
-                value.Init(intelMap);
+                value.Init(intelMap, jumps);
+                value.Show();
             }
         }
         public static void NotifyToast(EarlyWarningContent content)
