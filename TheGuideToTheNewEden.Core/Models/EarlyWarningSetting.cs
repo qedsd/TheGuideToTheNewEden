@@ -122,5 +122,44 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => clearWords; set => SetProperty(ref clearWords, value);
         }
+
+        private bool autoClear;
+        /// <summary>
+        /// 自动清除预警
+        /// </summary>
+        public bool AutoClear
+        {
+            get => autoClear;
+            set => SetProperty(ref autoClear, value);
+        }
+
+        private double autoClearMinute = 1.5;
+        /// <summary>
+        /// 自动清除预警
+        /// </summary>
+        public double AutoClearMinute
+        {
+            get => autoClearMinute;
+            set => SetProperty(ref autoClearMinute, value);
+        }
+
+        /// <summary>
+        /// 自动减低预警
+        /// </summary>
+        private bool autoDowngrade;
+        public bool AutoDowngrade
+        {
+            get => autoDowngrade;
+            set => SetProperty(ref autoDowngrade, value);
+        }
+        /// <summary>
+        /// 自动减低预警
+        /// </summary>
+        private double autoDowngradeMinute = 1;
+        public double AutoDowngradeMinute
+        {
+            get => autoDowngradeMinute;
+            set => SetProperty(ref autoDowngradeMinute, value);
+        }
     }
 }

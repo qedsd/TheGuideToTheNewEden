@@ -20,6 +20,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI.Windowing;
 using Windows.UI.ViewManagement;
 using TheGuideToTheNewEden.Core.Models;
+using System.Timers;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -32,8 +33,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private SolidColorBrush defaultBrush = new SolidColorBrush(Colors.DarkGray);
         private SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
         private SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
+        private SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
         private int defaultWidth = 6;
+        private int homeWidth = 12;
         private int intelWidth = 10;
+        private Timer autoIntelTimer;
         public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             ContentCanvas = new Canvas()
@@ -106,8 +110,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 if (item.SolarSystemID == intelMap.SolarSystemID)
                 {
                     ellipse.Fill = homeBrush;
-                    ellipse.Width = 12;
-                    ellipse.Height = 12;
+                    ellipse.Width = homeWidth;
+                    ellipse.Height = homeWidth;
                 }
                 else
                 {
@@ -159,8 +163,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     
                 }
             }
-        }
 
+            InitTimer();
+        }
+        private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
             if(EllipseDic.TryGetValue(content.SolarSystemId, out var value))
@@ -170,14 +176,110 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     value.Fill = intelBrush;
                     value.Height = intelWidth;
                     value.Width = intelWidth;
+                    StartTimes.Remove(content.SolarSystemId);
+                    StartTimes.Add(content.SolarSystemId, DateTime.Now);
                 }
                 else if(content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
-                    value.Fill = defaultBrush;
-                    value.Height = defaultWidth;
-                    value.Width = defaultWidth;
+                    if (content.SolarSystemId == Setting.LocationID)
+                    {
+                        value.Fill = homeBrush;
+                        value.Width = homeWidth;
+                        value.Height = homeWidth;
+                    }
+                    else
+                    {
+                        value.Fill = defaultBrush;
+                        value.Width = defaultWidth;
+                        value.Height = defaultWidth;
+                    }
+                    StartTimes.Remove(content.SolarSystemId);
                 }
             }
+        }
+
+        private void InitTimer()
+        {
+            if(autoIntelTimer != null)
+            {
+                autoIntelTimer.Stop();
+                autoIntelTimer.Dispose();
+            }
+            if(Setting.AutoClear || Setting.AutoDowngrade)
+            {
+                autoIntelTimer = new Timer()
+                {
+                    AutoReset = true,
+                    Interval = 30000
+                };
+                autoIntelTimer.Elapsed += AutoIntelTimer_Elapsed;
+                autoIntelTimer.Start();
+            }
+        }
+
+        private void AutoIntelTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if(Setting.AutoClear)
+                ClearElapsed();
+            if(Setting.AutoDowngrade)
+                DowngradeElapsed();
+        }
+
+        private void ClearElapsed()
+        {
+            DateTime now = DateTime.Now;
+            List<int> remove = new List<int>();
+            foreach(var item in StartTimes)
+            {
+                if((now - item.Value).TotalMinutes >= Setting.AutoClearMinute)
+                {
+                    remove.Add(item.Key);
+                }
+            }
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (var item in remove)
+                {
+                    StartTimes.Remove(item);
+                    if (EllipseDic.TryGetValue(item, out var value))
+                    {
+                        if(item == Setting.LocationID)
+                        {
+                            value.Fill = homeBrush;
+                            value.Width = homeWidth;
+                            value.Height = homeWidth;
+                        }
+                        else
+                        {
+                            value.Fill = defaultBrush;
+                            value.Width = defaultWidth;
+                            value.Height = defaultWidth;
+                        }
+                    }
+                }
+            });
+        }
+        private void DowngradeElapsed()
+        {
+            DateTime now = DateTime.Now;
+            List<int> changed = new List<int>();
+            foreach (var item in StartTimes)
+            {
+                if ((now - item.Value).TotalMinutes >= Setting.AutoDowngradeMinute)
+                {
+                    changed.Add(item.Key);
+                }
+            }
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (var item in changed)
+                {
+                    if (EllipseDic.TryGetValue(item, out var value))
+                    {
+                        value.Fill = downgradeBrush;
+                    }
+                }
+            });
         }
 
         public void Dispose()
@@ -185,6 +287,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             ContentCanvas = null;
             Window?.Close();
             EllipseDic = null;
+            autoIntelTimer?.Stop();
+            autoIntelTimer?.Dispose();
+            autoIntelTimer = null;
         }
     }
 }
