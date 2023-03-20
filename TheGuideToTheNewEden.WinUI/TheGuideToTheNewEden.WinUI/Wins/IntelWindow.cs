@@ -95,7 +95,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             IntelMap = intelMap;
             Setting = setting;
-            Window.Head = $"{Setting.Listener}-{Setting.IntelJumps}";
+            Window.Head = $"{Setting.Listener} - {Setting.IntelJumps}";
             ContentCanvas.Children.Clear();
             double width = Window.Bounds.Width;
             double height = Window.Bounds.Height - 42;

@@ -128,6 +128,46 @@
                             Content="+"
                             IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}" />
                     </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="160" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="自动解除预警级别" IsChecked="{x:Bind VM.Setting.AutoClear, Mode=TwoWay}" />
+                        <NumberBox
+                            Grid.Column="1"
+                            IsEnabled="{x:Bind VM.Setting.AutoClear, Mode=OneWay}"
+                            Minimum="1"
+                            SmallChange="0.5"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind VM.Setting.AutoClearMinute, Mode=TwoWay}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="m" />
+                    </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="160" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="自动降低预警级别" IsChecked="{x:Bind VM.Setting.AutoDowngrade, Mode=TwoWay}" />
+                        <NumberBox
+                            Grid.Column="1"
+                            IsEnabled="{x:Bind VM.Setting.AutoDowngrade, Mode=OneWay}"
+                            Minimum="0.5"
+                            SmallChange="0.5"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind VM.Setting.AutoDowngradeMinute, Mode=TwoWay}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="m" />
+                    </Grid>
                     <CheckBox
                         Margin="0,10"
                         Content="系统通知"
