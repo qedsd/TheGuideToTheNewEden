@@ -227,23 +227,55 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
         }
 
-        public static void ResetXY(List<IntelSolarSystemMap> all,int refP = 10)
+        public static void ResetXY(List<IntelSolarSystemMap> all)
         {
-            var maxX = all.Max(p => p.X);
-            var minX = all.Min(p => p.X);
-            var maxY = all.Max(p=>p.Y);
-            var minY = all.Min(p => p.Y);
-            var xSpan = maxX - minX;
-            var ySpan = maxY - minY;
-            double percent = refP / 100;
-            foreach (var position in all)
+            //if(all.Count < 10)
+            //{
+            //    var maxX = all.Max(p => p.X);
+            //    var minX = all.Min(p => p.X);
+            //    var maxY = all.Max(p => p.Y);
+            //    var minY = all.Min(p => p.Y);
+            //    var xSpan = maxX - minX;
+            //    var ySpan = maxY - minY;
+            //    foreach (var position in all)
+            //    {
+            //        position.X = (position.X - minX) / xSpan;//x在所有点x原始范围内比例
+            //        position.Y = (position.Y - minY) / ySpan;//y在所有点y原始范围内比例
+            //    }
+            //}
+            //else
             {
-                var beforeXPercent = (position.X - minX) / xSpan;//x在所有点x原始范围内比例
-                var beforeYPercent = (position.Y - minY) / ySpan;//y在所有点y原始范围内比例
-                //var afterXpercent = 
-                position.X = beforeXPercent;
-                position.Y = beforeYPercent;
+                //int refP = all.Count / 5;
+                int refP = Math.Max(all.Count / 5, 4);
+                var orderX = all.OrderBy(p => p.X).ToList();
+                var orderY = all.OrderBy(p => p.Y).ToList();
+                int spanCount = Math.Max(1,(int)Math.Ceiling(all.Count / (double)refP));//每档包含的个数
+                double spanXY = Math.Round(1f / refP, 2);//每档XY坐标跨越
+                for (int i = 0; i < refP; i++)
+                {
+                    var currentSpanItemXs = orderX.Skip(i * spanCount).Take(spanCount);
+                    foreach (var currentSpanItemX in currentSpanItemXs)
+                    {
+                        currentSpanItemX.X = spanXY * i;
+                    }
+                    var currentSpanItemYs = orderY.Skip(i * spanCount).Take(spanCount);
+                    foreach (var currentSpanItemY in currentSpanItemYs)
+                    {
+                        currentSpanItemY.Y = spanXY * i;
+                    }
+                }
+                //再重新按100%比例调整
+                double maxX = orderX.Last().X;
+                double maxY = orderY.Last().Y;
+                double addX = (1 - maxX) / 2;
+                double addY = (1 - maxY) / 2;
+                foreach(var item in all)
+                {
+                    item.X += addX;
+                    item.Y += addY;
+                }
             }
+            
         }
     }
 }

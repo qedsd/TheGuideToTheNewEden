@@ -130,6 +130,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => setting;
             set => SetProperty(ref setting, value);
         }
+        public Core.Models.Map.IntelSolarSystemMap IntelMap { get; set; }
         internal EarlyWarningItemViewModel()
         {
             LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs", "Chatlogs");
@@ -277,12 +278,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var checkedItems = ChatChanelInfos.Where(p => p.IsChecked).ToList();
                 if(checkedItems.NotNullOrEmpty())
                 {
+                    IntelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+                    Core.EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
                     foreach (var ch in checkedItems)
                     {
                         Core.Models.EarlyWarningItem earlyWarningItem = new Core.Models.EarlyWarningItem(ch,setting);
+                        earlyWarningItem.IntelMap = IntelMap;
                         if (Core.Services.ObservableFileService.Add(earlyWarningItem))
                         {
-                            await earlyWarningItem.InitAsync();
                             earlyWarningItem.SolarSystemNames = await GetSolarSystemNames();
                             earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                             earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
@@ -309,6 +312,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 EarlyWarningItems.Add(earlyWarningItem);
                                 LocalEarlyWarningItem = earlyWarningItem;
                             }
+                        }
+                    }
+                    if(Setting.OverlapType != 2)
+                    {
+                        WarningService.AddNotifyWindow(Setting, IntelMap);
+                        if(Setting.OverlapType == 0)
+                        {
+                            WarningService.ShowWindow(Setting.Listener);
                         }
                     }
                     IsRunning = true;
@@ -346,7 +357,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Window.DispatcherQueue.TryEnqueue(() =>
                     {
-                        WarningService.NotifyWindow(Setting.Listener,Setting.IntelJumps, earlyWarningItem.IntelMap, ch);
+                        WarningService.NotifyWindow(Setting.Listener, ch);
                     });
                 }
                 if(Setting.SystemNotify && ch.IntelType == Core.Enums.IntelChatType.Intel)

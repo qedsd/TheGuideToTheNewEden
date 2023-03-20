@@ -25,11 +25,11 @@ namespace TheGuideToTheNewEden.Core.Models
             FileStreamOffset += FileHelper.GetStreamLength(ChatChanelInfo.FilePath);
         }
         public Map.IntelSolarSystemMap IntelMap { get; set; }
-        public async Task InitAsync()
-        {
-            IntelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
-            EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
-        }
+        //public async Task InitAsync()
+        //{
+        //    IntelMap = await EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+        //    EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
+        //}
         public ChatChanelInfo ChatChanelInfo { get; set; }
         /// <summary>
         /// 原始聊天内容

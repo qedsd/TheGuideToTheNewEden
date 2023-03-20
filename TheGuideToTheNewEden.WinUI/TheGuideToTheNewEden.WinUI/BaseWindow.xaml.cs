@@ -37,6 +37,7 @@ namespace TheGuideToTheNewEden.WinUI
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
             }
             SetHeadText(head);
+            Helpers.WindowHelper.CenterToScreen(this);
         }
         public object MainContent
         {
