@@ -47,6 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             //ScrollViewer scrollViewer = new ScrollViewer();
             //scrollViewer.Content = ContentCanvas;
             Window.MainContent = ContentCanvas;
+            Window.HideAppDisplayName();
             ContentCanvas.MinWidth = 500;
             ContentCanvas.MinHeight = 500;
             IntelMap = intelMap;

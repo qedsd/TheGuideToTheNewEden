@@ -40,14 +40,19 @@
                 </Grid>
 
                 <TextBlock
+                    x:Name="AppDisplayNameTextBlock"
                     x:Uid="AppDisplayNameTextBlock"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center"
                     FontSize="13"
                     Foreground="{ThemeResource WindowCaptionForeground}" />
 
-                <StackPanel x:Name="HeadPanel" Orientation="Horizontal">
+                <StackPanel
+                    x:Name="HeadPanel"
+                    Margin="4,0,0,0"
+                    Orientation="Horizontal">
                     <TextBlock
+                        x:Name="HeadTextLine"
                         Margin="2,0,4,0"
                         VerticalAlignment="Center"
                         FontSize="13"

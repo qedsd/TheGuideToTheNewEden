@@ -64,8 +64,19 @@ namespace TheGuideToTheNewEden.WinUI
             else
             {
                 HeadPanel.Visibility = Visibility.Visible;
+                HeadTextLine.Visibility = AppDisplayNameTextBlock.Visibility;
                 HeadTextBlock.Text = head;
             }
+        }
+        public void HideAppDisplayName()
+        {
+            AppDisplayNameTextBlock.Visibility = Visibility.Collapsed;
+            HeadTextLine.Visibility = Visibility.Collapsed;
+        }
+        public void ShowAppDisplayName()
+        {
+            AppDisplayNameTextBlock.Visibility = Visibility.Visible;
+            HeadTextLine.Visibility = HeadPanel.Visibility;
         }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
