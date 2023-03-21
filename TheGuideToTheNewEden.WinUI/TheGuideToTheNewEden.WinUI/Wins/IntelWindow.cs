@@ -29,21 +29,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
         private Core.Models.EarlyWarningSetting Setting;
         private Canvas ContentCanvas;
-        private BaseWindow Window = new BaseWindow();
-        private SolidColorBrush defaultBrush = new SolidColorBrush(Colors.DarkGray);
-        private SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
-        private SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
-        private SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
-        private int defaultWidth = 6;
-        private int homeWidth = 12;
-        private int intelWidth = 10;
+        private readonly BaseWindow Window = new BaseWindow();
+        private readonly SolidColorBrush defaultBrush = new SolidColorBrush(Colors.DarkGray);
+        private readonly SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
+        private readonly SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
+        private readonly SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
+        private const int defaultWidth = 6;
+        private const int homeWidth = 12;
+        private const int intelWidth = 10;
         private Timer autoIntelTimer;
         public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            ContentCanvas = new Canvas()
-            {
-                Margin = new Thickness(8),
-            };
+            ContentCanvas = new Canvas();
             //TODO:是否需要放大缩小
             //ScrollViewer scrollViewer = new ScrollViewer();
             //scrollViewer.Content = ContentCanvas;
@@ -61,6 +58,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             appWindow.Closing += AppWindow_Closing;
             appWindow.IsShownInSwitchers = false;
             (appWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
+            //(appWindow.Presenter as OverlappedPresenter).SetBorderAndTitleBar(false, false);
         }
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
