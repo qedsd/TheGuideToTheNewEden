@@ -112,6 +112,13 @@
                         </ComboBox>
                     </Grid>
                     <Grid Margin="0,10">
+                        <Slider
+                            Header="预警窗口透明度"
+                            Maximum="100"
+                            Minimum="1"
+                            Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Margin="0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="90" />
                             <ColumnDefinition />

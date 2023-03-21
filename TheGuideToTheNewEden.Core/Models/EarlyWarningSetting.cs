@@ -161,5 +161,16 @@ namespace TheGuideToTheNewEden.Core.Models
             get => autoDowngradeMinute;
             set => SetProperty(ref autoDowngradeMinute, value);
         }
+
+        /// <summary>
+        /// 预警窗口透明度
+        /// 0-100
+        /// </summary>
+        private int overlapOpacity = 80;
+        public int OverlapOpacity
+        {
+            get => overlapOpacity;
+            set => SetProperty(ref overlapOpacity, value);
+        }
     }
 }

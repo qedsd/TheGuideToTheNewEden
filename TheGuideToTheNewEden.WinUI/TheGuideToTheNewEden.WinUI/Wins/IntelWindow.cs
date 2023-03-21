@@ -21,6 +21,8 @@ using Microsoft.UI.Windowing;
 using Windows.UI.ViewManagement;
 using TheGuideToTheNewEden.Core.Models;
 using System.Timers;
+using System.Runtime.InteropServices;
+using TheGuideToTheNewEden.WinUI.Helpers;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -58,7 +60,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             appWindow.Closing += AppWindow_Closing;
             appWindow.IsShownInSwitchers = false;
             (appWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
-            //(appWindow.Presenter as OverlappedPresenter).SetBorderAndTitleBar(false, false);
+            TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
         }
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
