@@ -16,7 +16,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="340" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid x:Name="ChatSelectArea" Margin="8">
@@ -66,7 +66,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <ScrollViewer IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
-                <StackPanel x:Name="SettingArea">
+                <StackPanel x:Name="SettingArea" Margin="10,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -120,28 +120,11 @@
                     </Grid>
                     <Grid Margin="0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90" />
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <CheckBox Content="预警声" IsChecked="{x:Bind VM.Setting.MakeSound, Mode=TwoWay}" />
-                        <TextBox
-                            Grid.Column="1"
-                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}"
-                            Text="{x:Bind VM.Setting.SoundFilePath, Mode=TwoWay}" />
-                        <Button
-                            Grid.Column="2"
-                            Command="{x:Bind VM.PickSoundFileCommand}"
-                            Content="+"
-                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}" />
-                    </Grid>
-                    <Grid Margin="0,10">
-                        <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="160" />
                             <ColumnDefinition />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox Content="自动解除预警级别" IsChecked="{x:Bind VM.Setting.AutoClear, Mode=TwoWay}" />
+                        <CheckBox Content="自动解除预警" IsChecked="{x:Bind VM.Setting.AutoClear, Mode=TwoWay}" />
                         <NumberBox
                             Grid.Column="1"
                             IsEnabled="{x:Bind VM.Setting.AutoClear, Mode=OneWay}"
@@ -175,13 +158,30 @@
                             VerticalAlignment="Center"
                             Text="m" />
                     </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="预警声" IsChecked="{x:Bind VM.Setting.MakeSound, Mode=TwoWay}" />
+                        <TextBox
+                            Grid.Column="1"
+                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}"
+                            Text="{x:Bind VM.Setting.SoundFilePath, Mode=TwoWay}" />
+                        <Button
+                            Grid.Column="2"
+                            Command="{x:Bind VM.PickSoundFileCommand}"
+                            Content="+"
+                            IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}" />
+                    </Grid>
                     <CheckBox
                         Margin="0,10"
                         Content="系统通知"
                         IsChecked="{x:Bind VM.Setting.SystemNotify, Mode=TwoWay}" />
                     <TextBox
                         Margin="0,10"
-                        Header="忽视关键词"
+                        Header="忽视预警关键词"
                         PlaceholderText="每个关键词使用,隔开"
                         Text="{x:Bind VM.Setting.IgnoreWords, Mode=TwoWay}" />
                     <TextBox
