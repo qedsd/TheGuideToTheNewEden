@@ -179,6 +179,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     value.Width = intelWidth;
                     StartTimes.Remove(content.SolarSystemId);
                     StartTimes.Add(content.SolarSystemId, DateTime.Now);
+                    TyrHideWindow();
                 }
                 else if(content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
@@ -258,6 +259,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         }
                     }
                 }
+                TyrHideWindow();
             });
         }
         private void DowngradeElapsed()
@@ -282,7 +284,33 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             });
         }
-
+        private void TyrHideWindow()
+        {
+            if(Setting.OverlapType == 1)
+            {
+                if (StartTimes.Count == 0)
+                {
+                    //延迟30秒后关闭窗口
+                    Timer timer = new Timer()
+                    {
+                        AutoReset = false,
+                        Interval = 30000
+                    };
+                    timer.Elapsed += ((s, e) =>
+                    {
+                        //再次判断
+                        if (StartTimes.Count == 0)
+                        {
+                            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
+                            WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+                            appWindow.Hide();
+                        }
+                    });
+                    timer.Start();
+                }
+            }
+        }
         public void Dispose()
         {
             ContentCanvas = null;
