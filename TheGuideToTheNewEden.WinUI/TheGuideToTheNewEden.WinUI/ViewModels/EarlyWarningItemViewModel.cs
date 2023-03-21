@@ -340,6 +340,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChatContents.Clear();
             IsRunning = false;
             LocalEarlyWarningItem = null;
+            Services.WarningService.RemoveWindow(Setting.Listener);
             GC.Collect();
         });
 

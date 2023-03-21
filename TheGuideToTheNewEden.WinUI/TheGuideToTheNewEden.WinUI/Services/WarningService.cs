@@ -38,16 +38,39 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 value.Intel(content);
             }
         }
-        public static void AddNotifyWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public static bool AddNotifyWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            IntelWindow intelWindow = new IntelWindow(setting, intelMap);
-            Current.WarningWindows.Add(setting.Listener, intelWindow);
+            if (Current.WarningWindows.ContainsKey(setting.Listener))
+            {
+                return false;
+            }
+            else
+            {
+                IntelWindow intelWindow = new IntelWindow(setting, intelMap);
+                Current.WarningWindows.Add(setting.Listener, intelWindow);
+                return true;
+            }
         }
         public static void ShowWindow(string listener)
         {
             if (Current.WarningWindows.TryGetValue(listener, out var value))
             {
                 value.Show();
+            }
+        }
+        public static void RemoveWindow(string listener)
+        {
+            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            {
+                value.Dispose();
+                Current.WarningWindows.Remove(listener);
+            }
+        }
+        public static void ClearWindow()
+        {
+            foreach(var item in Current.WarningWindows.Values)
+            {
+                item.Dispose();
             }
         }
         public static void NotifyToast(EarlyWarningContent content)
