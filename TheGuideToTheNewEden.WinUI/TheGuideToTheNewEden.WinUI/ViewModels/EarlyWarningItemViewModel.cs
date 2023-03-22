@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class EarlyWarningItemViewModel : BaseViewModel
     {
+        public static HashSet<string> RunningCharacters;
         private string logPath;
         public string LogPath
         {
@@ -272,6 +273,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
+            if(RunningCharacters.Contains(SelectedCharacter))
+            {
+                Window.ShowError("此角色已开启预警");
+                return;
+            }
             ShowWaiting();
             if(ChatChanelInfos.NotNullOrEmpty())
             {
@@ -290,7 +296,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             earlyWarningItem.OnContentUpdate += EarlyWarningItem_OnContentUpdate;
                             earlyWarningItem.OnWarningUpdate += EarlyWarningItem_OnWarningUpdate;
                             EarlyWarningItems.Add(earlyWarningItem);
-                            //earlyWarningItem.Update();
 
                             if(Setting.AutoUpdateLocaltion && ch.ChannelID == "local")//自动更新位置需要添加本地频道监控
                             {
@@ -323,6 +328,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                     IsRunning = true;
+                    RunningCharacters.Add(SelectedCharacter);
                     SaveSetting();
                 }
                 else
@@ -341,6 +347,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             IsRunning = false;
             LocalEarlyWarningItem = null;
             Services.WarningService.RemoveWindow(Setting.Listener);
+            RunningCharacters.Remove(SelectedCharacter);
             GC.Collect();
         });
 

@@ -28,6 +28,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
             this.Unloaded += EarlyWarningPage_Unloaded;
             Loaded += EarlyWarningPage_Loaded;
+            if(ViewModels.EarlyWarningItemViewModel.RunningCharacters == null)
+            {
+                ViewModels.EarlyWarningItemViewModel.RunningCharacters = new HashSet<string>();
+            }
+            else
+            {
+                ViewModels.EarlyWarningItemViewModel.RunningCharacters.Clear();
+            }
         }
 
         private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
