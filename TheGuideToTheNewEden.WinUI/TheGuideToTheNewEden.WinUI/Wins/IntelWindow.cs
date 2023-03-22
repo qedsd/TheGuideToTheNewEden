@@ -23,6 +23,7 @@ using TheGuideToTheNewEden.Core.Models;
 using System.Timers;
 using System.Runtime.InteropServices;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Views;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -36,20 +37,28 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private readonly SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
         private readonly SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
         private readonly SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
-        private const int defaultWidth = 6;
+        private const int defaultWidth = 10;
         private const int homeWidth = 12;
-        private const int intelWidth = 10;
-        private Timer autoIntelTimer;
+        private readonly System.Numerics.Vector3 intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
+        private DispatcherTimer autoIntelTimer;
+        private TextBlock TipTextBlock;
+        private TextBlock InfoTextBlock;
+        public Grid MapGrid;
+        private Ellipse LastPointerToEllipse;
         public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            ContentCanvas = new Canvas();
+            var intelPage = new IntelOverlapPage();
+            ContentCanvas = intelPage.MapCanvas;
+            TipTextBlock = intelPage.TipTextBlock;
+            InfoTextBlock = intelPage.InfoTextBlock;
+            MapGrid = intelPage.MapGrid;
             //TODO:是否需要放大缩小
             //ScrollViewer scrollViewer = new ScrollViewer();
             //scrollViewer.Content = ContentCanvas;
-            Window.MainContent = ContentCanvas;
+            Window.MainContent = intelPage;
             Window.HideAppDisplayName();
-            ContentCanvas.MinWidth = 500;
-            ContentCanvas.MinHeight = 500;
+            //ContentCanvas.MinWidth = 500;
+            //ContentCanvas.MinHeight = 500;
             IntelMap = intelMap;
             Setting = setting;
             Window.Activated += IntelWindow_Activated;
@@ -63,6 +72,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             (appWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
         }
+
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
@@ -87,6 +97,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private Dictionary<int, Ellipse> EllipseDic;
 
+        private List<Core.Models.Map.IntelSolarSystemMap> AllSolarSystem;
         /// <summary>
         /// 调用会重新绘制ui
         /// </summary>
@@ -101,12 +112,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             double width = Window.Bounds.Width;
             double height = Window.Bounds.Height - 42;
             EllipseDic = new Dictionary<int, Ellipse>();
-            var allSolarSystem = intelMap.GetAllSolarSystem();
-            foreach (var item in allSolarSystem)
+            AllSolarSystem = intelMap.GetAllSolarSystem();
+            foreach (var item in AllSolarSystem)
             {
                 Ellipse ellipse = new Ellipse()
                 {
-                    StrokeThickness = 0
+                    StrokeThickness = 0,
+                    Tag = item
                 };
                 if (item.SolarSystemID == intelMap.SolarSystemID)
                 {
@@ -122,12 +134,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
                 EllipseDic.Add(item.SolarSystemID, ellipse);
                 ContentCanvas.Children.Add(ellipse);
+                ellipse.PointerMoved += Ellipse_PointerMoved;
+                ellipse.PointerExited += Ellipse_PointerExited;
                 Canvas.SetLeft(ellipse, width * item.X);
                 Canvas.SetTop(ellipse, height * item.Y);
             }
             //line
             HashSet<int> drawn = new HashSet<int>();
-            foreach (var item in allSolarSystem)
+            foreach (var item in AllSolarSystem)
             {
                 if(item.JumpTo.NotNullOrEmpty())
                 {
@@ -167,35 +181,85 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
             InitTimer();
         }
+
+        #region 星系提示
+        private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            CancelSelected();
+        }
+
+        private void Ellipse_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var ellipse = sender as Ellipse;
+            if(LastPointerToEllipse == ellipse)
+            {
+                return;
+            }
+            CancelSelected();
+            var map = ellipse.Tag as Core.Models.Map.IntelSolarSystemMap;
+            if(map != null)
+            {
+                LastPointerToEllipse = ellipse;
+                ellipse.Scale = new System.Numerics.Vector3(1.6f, 1.6f, 1);
+
+                Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * 0.6 / 2);
+                Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * 0.6 / 2);
+                TipTextBlock.Text = map.SolarSystemName;
+                TipTextBlock.Visibility = Visibility.Visible;
+                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 4, ellipse.ActualOffset.Y - 16, 1);
+                //TipTextBlock.CenterPoint = new System.Numerics.Vector3(ellipse.ActualOffset.X, ellipse.ActualOffset.Y - 16, 1);
+                //Canvas.SetLeft(TipTextBlock, );
+                //Canvas.SetTop(TipTextBlock, ellipse.ActualOffset.Y - 20);
+            }
+        }
+        private void CancelSelected()
+        {
+            if (LastPointerToEllipse != null)
+            {
+                LastPointerToEllipse.Scale = new System.Numerics.Vector3(1f, 1f, 1f);
+                Canvas.SetLeft(LastPointerToEllipse, LastPointerToEllipse.ActualOffset.X + LastPointerToEllipse.Width * 0.6 / 2);
+                Canvas.SetTop(LastPointerToEllipse, LastPointerToEllipse.ActualOffset.Y + LastPointerToEllipse.Height * 0.6 / 2);
+            }
+            LastPointerToEllipse = null;
+            TipTextBlock.Visibility = Visibility.Collapsed;
+        }
+        #endregion
         private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
-            if(EllipseDic.TryGetValue(content.SolarSystemId, out var value))
+            InfoTextBlock.Text = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
+            if (EllipseDic.TryGetValue(content.SolarSystemId, out var value))
             {
                 if(content.IntelType == Core.Enums.IntelChatType.Intel)
                 {
-                    value.Fill = intelBrush;
-                    value.Height = intelWidth;
-                    value.Width = intelWidth;
-                    StartTimes.Remove(content.SolarSystemId);
-                    StartTimes.Add(content.SolarSystemId, DateTime.Now);
-                    TyrHideWindow();
+                    if(value.Fill != intelBrush)
+                    {
+                        value.Fill = intelBrush;
+                        value.Scale = intelScale;
+                        Canvas.SetLeft(value, value.ActualOffset.X - value.Width * (intelScale.X - 1) / 2);
+                        Canvas.SetTop(value, value.ActualOffset.Y - value.Height * (intelScale.Y - 1) / 2);
+                        StartTimes.Remove(content.SolarSystemId);
+                        StartTimes.Add(content.SolarSystemId, DateTime.Now);
+                    }
                 }
                 else if(content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
+                    if(value.Scale.X != 1)
+                    {
+                        value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                        Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (intelScale.X - 1) / 2);
+                        Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (intelScale.Y - 1) / 2);
+                        StartTimes.Remove(content.SolarSystemId);
+                    }
                     if (content.SolarSystemId == Setting.LocationID)
                     {
                         value.Fill = homeBrush;
-                        value.Width = homeWidth;
-                        value.Height = homeWidth;
                     }
                     else
                     {
                         value.Fill = defaultBrush;
-                        value.Width = defaultWidth;
-                        value.Height = defaultWidth;
                     }
-                    StartTimes.Remove(content.SolarSystemId);
+                    TyrHideWindow();
                 }
             }
         }
@@ -205,25 +269,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             if(autoIntelTimer != null)
             {
                 autoIntelTimer.Stop();
-                autoIntelTimer.Dispose();
             }
             if(Setting.AutoClear || Setting.AutoDowngrade)
             {
-                autoIntelTimer = new Timer()
-                {
-                    AutoReset = true,
-                    Interval = 30000
-                };
-                autoIntelTimer.Elapsed += AutoIntelTimer_Elapsed;
+                autoIntelTimer = new DispatcherTimer();
+                autoIntelTimer.Interval = TimeSpan.FromSeconds(10);
+                autoIntelTimer.Tick += AutoIntelTimer_Tick; ;
                 autoIntelTimer.Start();
             }
         }
 
-        private void AutoIntelTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void AutoIntelTimer_Tick(object sender, object e)
         {
-            if(Setting.AutoClear)
+            if (Setting.AutoClear)
                 ClearElapsed();
-            if(Setting.AutoDowngrade)
+            if (Setting.AutoDowngrade)
                 DowngradeElapsed();
         }
 
@@ -238,29 +298,25 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     remove.Add(item.Key);
                 }
             }
-            Window.DispatcherQueue.TryEnqueue(() =>
+            foreach (var item in remove)
             {
-                foreach (var item in remove)
+                StartTimes.Remove(item);
+                if (EllipseDic.TryGetValue(item, out var value))
                 {
-                    StartTimes.Remove(item);
-                    if (EllipseDic.TryGetValue(item, out var value))
+                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (intelScale.X - 1) / 2);
+                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (intelScale.Y - 1) / 2);
+                    if (item == Setting.LocationID)
                     {
-                        if(item == Setting.LocationID)
-                        {
-                            value.Fill = homeBrush;
-                            value.Width = homeWidth;
-                            value.Height = homeWidth;
-                        }
-                        else
-                        {
-                            value.Fill = defaultBrush;
-                            value.Width = defaultWidth;
-                            value.Height = defaultWidth;
-                        }
+                        value.Fill = homeBrush;
+                    }
+                    else
+                    {
+                        value.Fill = defaultBrush;
                     }
                 }
-                TyrHideWindow();
-            });
+            }
+            TyrHideWindow();
         }
         private void DowngradeElapsed()
         {
@@ -273,16 +329,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     changed.Add(item.Key);
                 }
             }
-            Window.DispatcherQueue.TryEnqueue(() =>
+            foreach (var item in changed)
             {
-                foreach (var item in changed)
+                if (EllipseDic.TryGetValue(item, out var value))
                 {
-                    if (EllipseDic.TryGetValue(item, out var value))
-                    {
-                        value.Fill = downgradeBrush;
-                    }
+                    value.Fill = downgradeBrush;
                 }
-            });
+            }
         }
         private void TyrHideWindow()
         {
@@ -317,7 +370,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             Window?.Close();
             EllipseDic = null;
             autoIntelTimer?.Stop();
-            autoIntelTimer?.Dispose();
+            //autoIntelTimer?.Dispose();
             autoIntelTimer = null;
         }
     }

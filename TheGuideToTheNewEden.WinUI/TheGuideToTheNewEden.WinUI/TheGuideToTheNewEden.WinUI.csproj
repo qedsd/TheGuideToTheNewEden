@@ -17,6 +17,7 @@
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
+    <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
@@ -58,6 +59,9 @@
     <None Update="Resources\Database\main.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\IntelOverlapPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="Windows\IntelWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
