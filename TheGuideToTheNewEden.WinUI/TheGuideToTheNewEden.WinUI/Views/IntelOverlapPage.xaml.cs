@@ -18,6 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
     public sealed partial class IntelOverlapPage : Page
     {
         public Canvas MapCanvas { get => mapCanvas; }
+        public Canvas LineCanvas { get => lineCanvas; }
         public Grid MapGrid { get => mapGrid; }
         public TextBlock TipTextBlock { get => tipTextBlock; }
         public TextBlock InfoTextBlock { get => infoTextBlock; }

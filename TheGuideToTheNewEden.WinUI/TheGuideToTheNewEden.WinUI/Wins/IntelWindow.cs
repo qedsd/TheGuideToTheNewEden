@@ -33,12 +33,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
         private Core.Models.EarlyWarningSetting Setting;
         private Canvas ContentCanvas;
+        private Canvas LineCanvas;
         private readonly BaseWindow Window = new BaseWindow();
         private readonly SolidColorBrush defaultBrush = new SolidColorBrush(Colors.DarkGray);
         private readonly SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
         private readonly SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
         private readonly SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
-        private const int defaultWidth = 10;
+        private const int defaultWidth = 8;
         private const int homeWidth = 12;
         private readonly System.Numerics.Vector3 intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
         private DispatcherTimer autoIntelTimer;
@@ -55,6 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             TipTextBlock = intelPage.TipTextBlock;
             InfoTextBlock = intelPage.InfoTextBlock;
             MapGrid = intelPage.MapGrid;
+            LineCanvas = intelPage.LineCanvas;
             Window.MainContent = intelPage;
             Window.HideAppDisplayName();
             IntelMap = intelMap;
@@ -123,6 +125,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             Setting = setting;
             Window.Head = $"{Setting.Listener} - {Setting.IntelJumps}";
             ContentCanvas.Children.Clear();
+            LineCanvas.Children.Clear();
             double width = Window.Bounds.Width;
             double height = Window.Bounds.Height - 42;
             EllipseDic = new Dictionary<int, Ellipse>();
@@ -148,7 +151,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
                 EllipseDic.Add(item.SolarSystemID, ellipse);
                 ContentCanvas.Children.Add(ellipse);
-                ellipse.PointerMoved += Ellipse_PointerMoved;
+                ellipse.PointerEntered += Ellipse_PointerEntered;
                 ellipse.PointerExited += Ellipse_PointerExited;
                 Canvas.SetLeft(ellipse, width * item.X);
                 Canvas.SetTop(ellipse, height * item.Y);
@@ -184,7 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                                         StrokeThickness = 1,
                                         Stroke = new SolidColorBrush(Colors.DarkGray)
                                     };
-                                    ContentCanvas.Children.Add(line);
+                                    LineCanvas.Children.Add(line);
                                 }
                             }
                         }
@@ -196,22 +199,22 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             InitTimer();
         }
 
+
         #region –«œµÃ· æ
         private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             CancelSelected();
         }
-
-        private void Ellipse_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var ellipse = sender as Ellipse;
-            if(LastPointerToEllipse == ellipse)
+            if (LastPointerToEllipse == ellipse)
             {
                 return;
             }
             CancelSelected();
             var map = ellipse.Tag as Core.Models.Map.IntelSolarSystemMap;
-            if(map != null)
+            if (map != null)
             {
                 LastPointerToEllipse = ellipse;
                 ellipse.Scale = new System.Numerics.Vector3(1.6f, 1.6f, 1);
@@ -220,7 +223,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * 0.6 / 2);
                 TipTextBlock.Text = map.SolarSystemName;
                 TipTextBlock.Visibility = Visibility.Visible;
-                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 4, ellipse.ActualOffset.Y - 16, 1);
+                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
                 //TipTextBlock.CenterPoint = new System.Numerics.Vector3(ellipse.ActualOffset.X, ellipse.ActualOffset.Y - 16, 1);
                 //Canvas.SetLeft(TipTextBlock, );
                 //Canvas.SetTop(TipTextBlock, ellipse.ActualOffset.Y - 20);
@@ -381,6 +384,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Dispose()
         {
             ContentCanvas = null;
+            LineCanvas = null;
             AppWindow.Closing -= AppWindow_Closing;
             Window?.Close();
             EllipseDic = null;
