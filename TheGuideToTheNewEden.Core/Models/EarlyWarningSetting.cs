@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref autoUpdateLocaltion, value);
         }
 
-        private int intelJumps = 8;
+        private int intelJumps = 4;
         /// <summary>
         /// 预警跳数
         /// </summary>
@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.Core.Models
             get => overlapType; set => SetProperty(ref overlapType, value);
         }
 
-        private bool makeSound;
+        private bool makeSound = true;
         /// <summary>
         /// 预警声
         /// </summary>
@@ -133,7 +133,7 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref autoClear, value);
         }
 
-        private double autoClearMinute = 1.5;
+        private double autoClearMinute = 20;
         /// <summary>
         /// 自动清除预警
         /// </summary>
@@ -155,7 +155,7 @@ namespace TheGuideToTheNewEden.Core.Models
         /// <summary>
         /// 自动减低预警
         /// </summary>
-        private double autoDowngradeMinute = 1;
+        private double autoDowngradeMinute = 10;
         public double AutoDowngradeMinute
         {
             get => autoDowngradeMinute;
