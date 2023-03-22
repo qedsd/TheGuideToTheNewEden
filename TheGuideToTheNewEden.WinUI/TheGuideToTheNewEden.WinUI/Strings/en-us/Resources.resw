@@ -188,6 +188,12 @@
   <data name="MailDetail_Recipient.Text" xml:space="preserve">
     <value>Recipient</value>
   </data>
+  <data name="Setting_EVELogsPath.Description" xml:space="preserve">
+    <value>Set folder of 'logs'</value>
+  </data>
+  <data name="Setting_EVELogsPath.Title" xml:space="preserve">
+    <value>EVE logs path</value>
+  </data>
   <data name="Setting_GameServer.Description" xml:space="preserve">
     <value>The app maybe need to be restarted when selecting another server</value>
   </data>

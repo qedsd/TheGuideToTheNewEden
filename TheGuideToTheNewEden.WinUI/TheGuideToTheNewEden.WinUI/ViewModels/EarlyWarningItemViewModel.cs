@@ -134,7 +134,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public Core.Models.Map.IntelSolarSystemMap IntelMap { get; set; }
         internal EarlyWarningItemViewModel()
         {
-            LogPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs", "Chatlogs");
+            LogPath = System.IO.Path.Combine(EVELogsPathSelectorService.Value, "Chatlogs");
             InitNameDbs();
             InitSolarSystems();
         }

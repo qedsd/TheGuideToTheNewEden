@@ -138,7 +138,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 m.Dispose();
             }
             Current.MediaSourceDic.Clear();
-            Current.DefaultMediaSource.Dispose();
+            Current.DefaultMediaSource?.Dispose();
             Current.DefaultMediaSource = null;
             if(Current.mediaPlayer != null)
             {
