@@ -374,7 +374,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 if(Setting.MakeSound)
                 {
-                    WarningService.NotifySound(ch);
+                    WarningService.NotifySound(Setting.SoundFilePath);
                 }
             }
         }
