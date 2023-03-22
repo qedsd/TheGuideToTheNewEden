@@ -69,5 +69,19 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
             }
         }
+
+        public static void MoveToScreen(Window window,int x, int y)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            if (appWindow is not null)
+            {
+                var CenteredPosition = appWindow.Position;
+                CenteredPosition.X = x;
+                CenteredPosition.Y = y;
+                appWindow.Move(CenteredPosition);
+            }
+        }
     }
 }

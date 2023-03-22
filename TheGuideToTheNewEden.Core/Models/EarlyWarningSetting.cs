@@ -172,5 +172,33 @@ namespace TheGuideToTheNewEden.Core.Models
             get => overlapOpacity;
             set => SetProperty(ref overlapOpacity, value);
         }
+
+        private int winX = -1;
+        public int WinX
+        {
+            get => winX;
+            set => SetProperty(ref winX, value);
+        }
+
+        private int winY = -1;
+        public int WinY
+        {
+            get => winY;
+            set => SetProperty(ref winY, value);
+        }
+
+        private int winW = 500;
+        public int WinW
+        {
+            get => winW;
+            set => SetProperty(ref winW, value);
+        }
+
+        private int winH = 500;
+        public int WinH
+        {
+            get => winH;
+            set => SetProperty(ref winH, value);
+        }
     }
 }

@@ -24,6 +24,7 @@ using System.Timers;
 using System.Runtime.InteropServices;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Views;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -45,6 +46,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private TextBlock InfoTextBlock;
         public Grid MapGrid;
         private Ellipse LastPointerToEllipse;
+
+        private AppWindow AppWindow;
         public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             var intelPage = new IntelOverlapPage();
@@ -52,27 +55,38 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             TipTextBlock = intelPage.TipTextBlock;
             InfoTextBlock = intelPage.InfoTextBlock;
             MapGrid = intelPage.MapGrid;
-            //TODO:是否需要放大缩小
-            //ScrollViewer scrollViewer = new ScrollViewer();
-            //scrollViewer.Content = ContentCanvas;
             Window.MainContent = intelPage;
             Window.HideAppDisplayName();
-            //ContentCanvas.MinWidth = 500;
-            //ContentCanvas.MinHeight = 500;
             IntelMap = intelMap;
             Setting = setting;
             Window.Activated += IntelWindow_Activated;
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
             WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new Windows.Graphics.SizeInt32(500, 500));
+            AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(Setting.WinW, Setting.WinH));
+            if(Setting.WinX != -1 && Setting.WinY != -1)
+            {
+                Helpers.WindowHelper.MoveToScreen(Window, Setting.WinX, Setting.WinY);
+            }
             Window.SizeChanged += Window_SizeChanged;
-            appWindow.Closing += AppWindow_Closing;
-            appWindow.IsShownInSwitchers = false;
-            (appWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
+            AppWindow.Changed += AppWindow_Changed;
+            AppWindow.Closing += AppWindow_Closing;
+            AppWindow.IsShownInSwitchers = false;
+            (AppWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
         }
 
+        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if(args.DidPositionChange || args.DidSizeChange)
+            {
+                Setting.WinX = sender.Position.X;
+                Setting.WinY = sender.Position.Y;
+                Setting.WinW = sender.Size.Width;
+                Setting.WinH = sender.Size.Height;
+                IntelSettingService.SetValue(Setting);
+            }
+        }
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
@@ -367,6 +381,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Dispose()
         {
             ContentCanvas = null;
+            AppWindow.Closing -= AppWindow_Closing;
             Window?.Close();
             EllipseDic = null;
             autoIntelTimer?.Stop();
