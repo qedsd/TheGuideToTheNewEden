@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using System.Linq;
 using TheGuideToTheNewEden.Core.Services.DB;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
@@ -177,6 +178,8 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 IntelSolarSystemMap map = new IntelSolarSystemMap();
                 map.CopyFrom(center);
+                Dictionary<int, IntelSolarSystemMap> foundMaps = new Dictionary<int, IntelSolarSystemMap>();
+                foundMaps.Add(centerId, map);
                 List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
                 {
                     map
@@ -188,10 +191,10 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     {
                         if (position.JumpTo.NotNullOrEmpty())
                         {
-                            if(position.Jumps.NotNullOrEmpty())
-                            {
-                                continue;//说明前面已经找过此星系的
-                            }
+                            //if(position.Jumps.NotNullOrEmpty())
+                            //{
+                            //    continue;//说明前面已经找过此星系的
+                            //}
                             if (position.Jumps == null)
                             {
                                 position.Jumps = new List<IntelSolarSystemMap>();
@@ -200,9 +203,16 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                             {
                                 if (PositionDic.TryGetValue(jumpToId, out var jumpTo))
                                 {
-                                    var next = new IntelSolarSystemMap(jumpTo);
-                                    newJumpList.Add(next);//将一跳外星系加入下一跳数的星系列表中
-                                    position.Jumps.Add(next);
+                                    if(foundMaps.TryGetValue(jumpToId,out var nextMap))
+                                    {
+                                        position.Jumps.Add(nextMap);//直接添加下一跳星系，但不用查找下一跳星系的下一跳
+                                    }
+                                    else
+                                    {
+                                        var next = new IntelSolarSystemMap(jumpTo);
+                                        newJumpList.Add(next);//将一跳外星系加入下一跳数的星系列表中
+                                        position.Jumps.Add(next);
+                                    }
                                 }
                             }
                         }
@@ -210,7 +220,8 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     //将当前跳数星系所有的一跳外星系去重加入结果列表
                     if (newJumpList.Any())
                     {
-                        var distinct = newJumpList.Distinct();
+                        var distinct = newJumpList.Distinct().ToList();
+                        newJumpList.Clear();
                         currentJumpList.Clear();
                         currentJumpList.AddRange(distinct);
                     }
@@ -229,53 +240,77 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 
         public static void ResetXY(List<IntelSolarSystemMap> all)
         {
-            //if(all.Count < 10)
-            //{
-            //    var maxX = all.Max(p => p.X);
-            //    var minX = all.Min(p => p.X);
-            //    var maxY = all.Max(p => p.Y);
-            //    var minY = all.Min(p => p.Y);
-            //    var xSpan = maxX - minX;
-            //    var ySpan = maxY - minY;
-            //    foreach (var position in all)
-            //    {
-            //        position.X = (position.X - minX) / xSpan;//x在所有点x原始范围内比例
-            //        position.Y = (position.Y - minY) / ySpan;//y在所有点y原始范围内比例
-            //    }
-            //}
-            //else
+            var orderX = all.OrderBy(p => p.X).ToList();
+            var orderY = all.OrderBy(p => p.Y).ToList();
+            int spanCount = (int)Math.Ceiling(Math.Sqrt(all.Count));
+            double spanXY = Math.Round(1f / spanCount, 2);//每档XY坐标跨越
+            for (int i = 0; i < spanCount; i++)
             {
-                //int refP = all.Count / 5;
-                int refP = Math.Max(all.Count / 5, 4);
-                var orderX = all.OrderBy(p => p.X).ToList();
-                var orderY = all.OrderBy(p => p.Y).ToList();
-                int spanCount = Math.Max(1,(int)Math.Ceiling(all.Count / (double)refP));//每档包含的个数
-                double spanXY = Math.Round(1f / refP, 2);//每档XY坐标跨越
-                for (int i = 0; i < refP; i++)
+                var currentSpanItemXs = orderX.Skip(i * spanCount).Take(spanCount);
+                foreach (var currentSpanItemX in currentSpanItemXs)
                 {
-                    var currentSpanItemXs = orderX.Skip(i * spanCount).Take(spanCount);
-                    foreach (var currentSpanItemX in currentSpanItemXs)
-                    {
-                        currentSpanItemX.X = spanXY * i;
-                    }
-                    var currentSpanItemYs = orderY.Skip(i * spanCount).Take(spanCount);
-                    foreach (var currentSpanItemY in currentSpanItemYs)
-                    {
-                        currentSpanItemY.Y = spanXY * i;
-                    }
+                    currentSpanItemX.X = spanXY * i;
                 }
-                //再重新按100%比例调整
-                double maxX = orderX.Last().X;
-                double maxY = orderY.Last().Y;
-                double addX = (1 - maxX) / 2;
-                double addY = (1 - maxY) / 2;
-                foreach(var item in all)
+                var currentSpanItemYs = orderY.Skip(i * spanCount).Take(spanCount);
+                foreach (var currentSpanItemY in currentSpanItemYs)
                 {
-                    item.X += addX;
-                    item.Y += addY;
+                    currentSpanItemY.Y = spanXY * i;
                 }
             }
-            
+            //再重新按100%比例调整
+            double maxX = orderX.Last().X;
+            double maxY = orderY.Last().Y;
+            double addX = (1 - maxX) / 2;
+            double addY = (1 - maxY) / 2;
+            foreach (var item in all)
+            {
+                item.X += addX;
+                item.Y += addY;
+            }
+
+            //解决两个星系xy过于相近导致的重叠
+            var sameXY = all.GroupBy(p=>new {p.X, p.Y}).ToList();
+            foreach(var sames in sameXY)
+            {
+                int count = sames.Count();
+                if (count > 1)
+                {
+                    var splitSpan = spanXY * 0.8 / count;
+                    var moveSpan = splitSpan * (count / 2);
+                    if(sames.Key.X - moveSpan < 0)//只能往右挪
+                    {
+                        for(int i = 0; i < count; i++)
+                        {
+                            sames.ElementAt(i).X += (i * moveSpan);
+                        }
+                    }
+                    else if(sames.Key.X + moveSpan > 1)//只能往左挪
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            sames.ElementAt(i).X -= (i * moveSpan);
+                        }
+                    }
+                    else//居中挪
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            sames.ElementAt(i).X -= moveSpan;
+                            sames.ElementAt(i).X += (i * moveSpan);
+                        }
+                    }
+                }
+            }
+            //Random random = new Random();
+            //foreach (var item in all)
+            //{
+            //    item.X *= (1 - random.Next(-10, 10) / 100f);
+            //    item.Y *= (1- random.Next(-10, 10) / 100f);
+            //    item.X = item.X < 0 ? 0 : item.X;
+            //    item.X = item.X > 1 ? 1 : item.X;
+            //    item.Y = item.Y < 0 ? 0 : item.Y;
+            //    item.Y = item.Y > 1 ? 1 : item.Y;
+            //}
         }
     }
 }

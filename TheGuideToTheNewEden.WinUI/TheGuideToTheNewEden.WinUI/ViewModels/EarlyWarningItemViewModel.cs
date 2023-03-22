@@ -479,6 +479,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if (systemId != -1)
                     {
                         SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == systemId);
+                        Setting.LocationID = systemId;
                     }
                 }
             }

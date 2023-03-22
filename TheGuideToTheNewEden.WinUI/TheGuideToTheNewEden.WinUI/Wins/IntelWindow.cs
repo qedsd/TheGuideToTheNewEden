@@ -157,18 +157,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             HashSet<int> drawn = new HashSet<int>();
             foreach (var item in AllSolarSystem)
             {
-                if(item.JumpTo.NotNullOrEmpty())
+                if(item.Jumps.NotNullOrEmpty())
                 {
                     if(EllipseDic.TryGetValue(item.SolarSystemID, out Ellipse itemEllipse))
                     {
-                        foreach (var jumpTo in item.JumpTo)
+                        foreach (var jumpTo in item.Jumps)
                         {
-                            int min = Math.Min(item.SolarSystemID, jumpTo) - 30000000;
-                            int max = Math.Max(item.SolarSystemID, jumpTo) - 30000000;
+                            int min = Math.Min(item.SolarSystemID, jumpTo.SolarSystemID) - 30000000;
+                            int max = Math.Max(item.SolarSystemID, jumpTo.SolarSystemID) - 30000000;
                             int mark = min * 10000 + max;//最大星系个数不可能超过10000，故以此组合作为线标记
                             if (!drawn.Contains(mark))
                             {
-                                if (EllipseDic.TryGetValue(jumpTo, out Ellipse jumpToEllipse))
+                                if (EllipseDic.TryGetValue(jumpTo.SolarSystemID, out Ellipse jumpToEllipse))
                                 {
                                     drawn.Add(mark);
                                     double startX = itemEllipse.ActualOffset.X + itemEllipse.ActualSize.X / 2;

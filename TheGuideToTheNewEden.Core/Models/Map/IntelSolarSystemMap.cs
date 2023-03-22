@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TheGuideToTheNewEden.Core.Models.Map
 {
@@ -52,23 +53,63 @@ namespace TheGuideToTheNewEden.Core.Models.Map
 
         public List<IntelSolarSystemMap> GetAllSolarSystem()
         {
-            List<IntelSolarSystemMap> list = new List<IntelSolarSystemMap>() { this };
-            if (Jumps.NotNullOrEmpty())
+            //List<IntelSolarSystemMap> list = new List<IntelSolarSystemMap>() { this };
+            //if (Jumps.NotNullOrEmpty())
+            //{
+            //    foreach (var item in Jumps)
+            //    {
+            //        var next = item.GetAllSolarSystem();
+            //        if (next.NotNullOrEmpty())
+            //        {
+            //            list.AddRange(next);
+            //        }
+            //    }
+            //    return list.GroupBy(p=>p.SolarSystemID).Select(p=>p.First()).ToList();
+            //}
+            //else
+            //{
+            //    return list;
+            //}
+
+            Dictionary<int, IntelSolarSystemMap> foundMaps = new Dictionary<int, IntelSolarSystemMap>
             {
-                foreach (var item in Jumps)
+                { this.SolarSystemID, this }
+            };
+            List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
+            {
+                this
+            };//当前跳数的星系，开始只有中心星系一个
+            List<IntelSolarSystemMap> newJumpList = new List<IntelSolarSystemMap>();//下一跳数的星系
+            while(currentJumpList.Count > 0)
+            {
+                foreach(var jump in currentJumpList)
                 {
-                    var next = item.GetAllSolarSystem();
-                    if (next.NotNullOrEmpty())
+                    if (jump.Jumps.NotNullOrEmpty())
                     {
-                        list.AddRange(next);
+                        foreach (var nextJump in jump.Jumps)
+                        {
+                            if (!foundMaps.ContainsKey(nextJump.SolarSystemID))
+                            {
+                                foundMaps.Add(nextJump.SolarSystemID, nextJump);
+                                newJumpList.Add(nextJump);//将一跳外星系加入下一跳数的星系列表中
+                            }
+                        }
                     }
                 }
-                return list.GroupBy(p=>p.SolarSystemID).Select(p=>p.First()).ToList();
+                //将当前跳数星系所有的一跳外星系去重加入结果列表
+                if (newJumpList.Any())
+                {
+                    var distinct = newJumpList.Distinct().ToList();
+                    newJumpList.Clear();
+                    currentJumpList.Clear();
+                    currentJumpList.AddRange(distinct);
+                }
+                else
+                {
+                    break;
+                }
             }
-            else
-            {
-                return list;
-            }
+            return foundMaps.Values.ToList();
         }
     }
 }
