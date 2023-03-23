@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,25 +31,52 @@ namespace TheGuideToTheNewEden.Core.Models.Map
         }
         public int JumpsOf(int solaySystemId)
         {
-            if(SolarSystemID == solaySystemId)
-            {
-                return 0;
-            }
-            else
-            {
-                if (Jumps.NotNullOrEmpty())
+            //按层数寻找
+            int jump = -1;
+            HashSet<int> found = new HashSet<int>();
+            List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
                 {
-                    foreach (var jump in Jumps)
+                    this
+                };//当前跳数的星系，开始只有中心星系一个
+            List<IntelSolarSystemMap> newJumpList = new List<IntelSolarSystemMap>();//下一跳数的星系
+            while (currentJumpList.Count > 0)
+            {
+                jump += 1;
+                foreach (var currentJump in currentJumpList)
+                {
+                    if (currentJump.SolarSystemID == solaySystemId)
                     {
-                        int nextIndex = jump.JumpsOf(solaySystemId);
-                        if(nextIndex != -1)
+                        return jump;
+                    }
+                    else
+                    {
+                        if (currentJump.Jumps.NotNullOrEmpty())
                         {
-                            return nextIndex + 1;
+                            foreach (var next in currentJump.Jumps)
+                            {
+                                if (!found.Contains(next.SolarSystemID))
+                                {
+                                    newJumpList.Add(next);
+                                    found.Add(next.SolarSystemID);
+                                }
+                            }
                         }
                     }
                 }
-                return -1;
+                //将当前跳数星系所有的一跳外星系去重加入结果列表
+                if (newJumpList.Any())
+                {
+                    var distinct = newJumpList.Distinct().ToList();
+                    newJumpList.Clear();
+                    currentJumpList.Clear();
+                    currentJumpList.AddRange(distinct);
+                }
+                else
+                {
+                    break;
+                }
             }
+            return -1;
         }
 
         public List<IntelSolarSystemMap> GetAllSolarSystem()

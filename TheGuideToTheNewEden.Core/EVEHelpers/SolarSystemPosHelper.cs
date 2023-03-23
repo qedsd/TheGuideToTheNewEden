@@ -301,16 +301,56 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     }
                 }
             }
-            //Random random = new Random();
-            //foreach (var item in all)
-            //{
-            //    item.X *= (1 - random.Next(-10, 10) / 100f);
-            //    item.Y *= (1- random.Next(-10, 10) / 100f);
-            //    item.X = item.X < 0 ? 0 : item.X;
-            //    item.X = item.X > 1 ? 1 : item.X;
-            //    item.Y = item.Y < 0 ? 0 : item.Y;
-            //    item.Y = item.Y > 1 ? 1 : item.Y;
-            //}
+        }
+
+        public static int GetShortesRoute(IntelSolarSystemMap home, IntelSolarSystemMap start)
+        {
+            //按层数寻找
+            int jump = -1;
+            HashSet<int> found = new HashSet<int>();
+            List<IntelSolarSystemMap> currentJumpList = new List<IntelSolarSystemMap>()
+                {
+                    home
+                };//当前跳数的星系，开始只有中心星系一个
+            List<IntelSolarSystemMap> newJumpList = new List<IntelSolarSystemMap>();//下一跳数的星系
+            while(currentJumpList.Count > 0)
+            {
+                jump += 1;
+                foreach (var currentJump in currentJumpList)
+                {
+                    if(currentJump.SolarSystemID == start.SolarSystemID)
+                    {
+                        return jump;
+                    }
+                    else
+                    {
+                        if(currentJump.Jumps.NotNullOrEmpty())
+                        {
+                            foreach (var next in currentJump.Jumps)
+                            {
+                                if(!found.Contains(next.SolarSystemID))
+                                {
+                                    newJumpList.Add(next);
+                                    found.Add(next.SolarSystemID);
+                                }
+                            }
+                        }
+                    }
+                }
+                //将当前跳数星系所有的一跳外星系去重加入结果列表
+                if (newJumpList.Any())
+                {
+                    var distinct = newJumpList.Distinct().ToList();
+                    newJumpList.Clear();
+                    currentJumpList.Clear();
+                    currentJumpList.AddRange(distinct);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return -1;
         }
     }
 }
