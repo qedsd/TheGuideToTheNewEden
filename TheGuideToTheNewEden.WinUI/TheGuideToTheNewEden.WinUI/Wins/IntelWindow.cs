@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Views;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using Windows.UI;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -34,11 +35,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Core.Models.EarlyWarningSetting Setting;
         private Canvas ContentCanvas;
         private Canvas LineCanvas;
+        private Canvas TempCanvas;
         private readonly BaseWindow Window = new BaseWindow();
         private readonly SolidColorBrush defaultBrush = new SolidColorBrush(Colors.DarkGray);
         private readonly SolidColorBrush homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
         private readonly SolidColorBrush intelBrush = new SolidColorBrush(Colors.OrangeRed);
         private readonly SolidColorBrush downgradeBrush = new SolidColorBrush(Colors.Yellow);
+        private readonly SolidColorBrush defaultLineBrush = new SolidColorBrush(Colors.DarkGray);
+        private readonly SolidColorBrush tempLineBrush = new SolidColorBrush(Color.FromArgb(255, 135, 227, 205));
         private const int defaultWidth = 8;
         private const int homeWidth = 12;
         private readonly System.Numerics.Vector3 intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
@@ -57,6 +61,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             InfoTextBlock = intelPage.InfoTextBlock;
             MapGrid = intelPage.MapGrid;
             LineCanvas = intelPage.LineCanvas;
+            TempCanvas = intelPage.TempCanvas;
             Window.MainContent = intelPage;
             Window.HideAppDisplayName();
             IntelMap = intelMap;
@@ -185,7 +190,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                                         X2 = endX,
                                         Y2 = endY,
                                         StrokeThickness = 1,
-                                        Stroke = new SolidColorBrush(Colors.DarkGray)
+                                        Stroke = defaultLineBrush
                                     };
                                     LineCanvas.Children.Add(line);
                                 }
@@ -203,6 +208,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         #region 星系提示
         private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            TempCanvas.Children.Clear();
             CancelSelected();
         }
         private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -212,10 +218,38 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 return;
             }
+            TempCanvas.Children.Clear();
             CancelSelected();
             var map = ellipse.Tag as Core.Models.Map.IntelSolarSystemMap;
             if (map != null)
             {
+                #region 临近星系连线
+                if (map.JumpTo.NotNullOrEmpty())
+                {
+                    foreach (var jump in map.JumpTo)
+                    {
+                        if (EllipseDic.TryGetValue(jump, out Ellipse jumpToEllipse))
+                        {
+                            double startX = ellipse.ActualOffset.X + ellipse.ActualSize.X / 2;
+                            double startY = ellipse.ActualOffset.Y + ellipse.ActualSize.Y / 2;
+                            double endX = jumpToEllipse.ActualOffset.X + jumpToEllipse.ActualSize.X / 2;
+                            double endY = jumpToEllipse.ActualOffset.Y + jumpToEllipse.ActualSize.Y / 2;
+                            Line line = new Line()
+                            {
+                                X1 = startX,
+                                Y1 = startY,
+                                X2 = endX,
+                                Y2 = endY,
+                                StrokeThickness = 2,
+                                Stroke = tempLineBrush
+                            };
+                            TempCanvas.Children.Add(line);
+                        }
+                    }
+                }
+                #endregion
+
+                #region 选择星系突出显示
                 LastPointerToEllipse = ellipse;
                 ellipse.Scale = new System.Numerics.Vector3(1.6f, 1.6f, 1);
 
@@ -224,9 +258,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 TipTextBlock.Text = map.SolarSystemName;
                 TipTextBlock.Visibility = Visibility.Visible;
                 TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
-                //TipTextBlock.CenterPoint = new System.Numerics.Vector3(ellipse.ActualOffset.X, ellipse.ActualOffset.Y - 16, 1);
-                //Canvas.SetLeft(TipTextBlock, );
-                //Canvas.SetTop(TipTextBlock, ellipse.ActualOffset.Y - 20);
+
+                #endregion
             }
         }
         private void CancelSelected()

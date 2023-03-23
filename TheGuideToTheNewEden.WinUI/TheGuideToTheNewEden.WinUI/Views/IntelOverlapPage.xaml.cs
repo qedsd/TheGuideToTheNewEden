@@ -19,6 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
     {
         public Canvas MapCanvas { get => mapCanvas; }
         public Canvas LineCanvas { get => lineCanvas; }
+        public Canvas TempCanvas { get => tempCanvas; }
         public Grid MapGrid { get => mapGrid; }
         public TextBlock TipTextBlock { get => tipTextBlock; }
         public TextBlock InfoTextBlock { get => infoTextBlock; }
