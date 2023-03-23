@@ -23,6 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("市场","实时查看公开市场订单", typeof(MarketPage)),
                 new ToolItem("商业","市场价格对比",typeof(BusinessPage)),
                 new ToolItem("预警","聊天频道手动预警", typeof(EarlyWarningPage)),
+                new ToolItem("窗口置顶","多开时游戏窗口置顶辅助", typeof(MutiWindowPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }
