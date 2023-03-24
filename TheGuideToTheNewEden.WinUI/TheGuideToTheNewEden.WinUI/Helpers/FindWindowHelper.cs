@@ -22,7 +22,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         [DllImport("user32")]
         public static extern int EnumWindows(CallBack x, int y);
         public delegate bool CallBack(IntPtr hwnd, int lParam);
-        struct WinfowInfo
+        public struct WinfowInfo
         {
             public IntPtr hwnd;
             public string Title;
@@ -47,9 +47,33 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             GetWindowText(hWnd, windowName, windowName.Capacity);
             return windowName.ToString();
         }
-        public static List<WinfowInfo> EnumWindows()
+
+        public static async Task<List<WinfowInfo>> EnumWindowsAsync(int waitTime = 1000)
         {
-            return null;
+            if(winfowInfos == null)
+            {
+                winfowInfos = new Queue<WinfowInfo>();
+            }
+            else
+            {
+                winfowInfos.Clear();
+            }
+            EnumWindows(EnumWindowsCallback, 0);
+            await Task.Delay(waitTime);
+            return winfowInfos.ToList();
+        }
+        private static Queue<WinfowInfo> winfowInfos;
+        public static bool EnumWindowsCallback(IntPtr hwnd, int lParam)
+        {
+            if (IsAltTabWindow(hwnd))
+            {
+                string title = GetWindowTitle(hwnd);
+                if (!string.IsNullOrEmpty(title))
+                {
+                    winfowInfos.Enqueue(new WinfowInfo() { hwnd = hwnd, Title = title });
+                }
+            }
+            return true;
         }
     }
 }

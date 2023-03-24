@@ -24,5 +24,16 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             return bitmapImage;
         }
+
+        public static MemoryStream ConvertToMemoryStream(Bitmap bitmap)
+        {
+            MemoryStream ms = new MemoryStream();
+            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+            return ms;
+        }
+        public static Bitmap ConvertFromMemoryStream(MemoryStream ms)
+        {
+            return new Bitmap(ms);
+        }
     }
 }

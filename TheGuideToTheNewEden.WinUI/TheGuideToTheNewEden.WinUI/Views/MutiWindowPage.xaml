@@ -10,13 +10,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Rectangle
-            Width="100"
-            Height="100"
-            Fill="Yellow" />
         <ScrollViewer Grid.Column="1">
             <Image x:Name="Img" />
         </ScrollViewer>
