@@ -1,21 +1,23 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Controls.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using static TheGuideToTheNewEden.WinUI.Helpers.FindWindowHelper;
+using TheGuideToTheNewEden.WinUI.Helpers;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
     internal class WindowCapture
     {
-        public Helpers.FindWindowHelper.WinfowInfo Info { get; set; }
+        public Helpers.WindowInfo Info { get; set; }
         private Timer Timer;
-        public delegate void WindowCaptured(WinfowInfo winfowInfo, Bitmap bitmap);
+        public delegate void WindowCaptured(WindowInfo winfowInfo, Bitmap bitmap);
         public event WindowCaptured OnWindowCaptured;
-        public WindowCapture(WinfowInfo info) 
+        public WindowCapture(WindowInfo info) 
         {
             Info = info;
         }

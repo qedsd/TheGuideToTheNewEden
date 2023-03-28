@@ -14,10 +14,10 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid x:Name="mapGrid" Margin="0,-12,0,0">
-            <Canvas x:Name="lineCanvas"/>
-            <Canvas x:Name="tempCanvas"/>
+            <Canvas x:Name="lineCanvas" />
+            <Canvas x:Name="tempCanvas" />
             <Canvas x:Name="mapCanvas" />
-            <TextBlock x:Name="tipTextBlock" Visibility="Collapsed"/>
+            <TextBlock x:Name="tipTextBlock" Visibility="Collapsed" />
         </Grid>
         <TextBlock
             x:Name="infoTextBlock"

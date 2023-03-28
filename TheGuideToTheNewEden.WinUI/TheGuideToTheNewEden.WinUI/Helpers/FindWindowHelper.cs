@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
+    public class WindowInfo
+    {
+        public IntPtr hwnd;
+        public string Title;
+    }
     internal static class FindWindowHelper
     {
         [DllImport("user32.dll")]
@@ -22,23 +27,20 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         [DllImport("user32")]
         public static extern int EnumWindows(CallBack x, int y);
         public delegate bool CallBack(IntPtr hwnd, int lParam);
-        public struct WinfowInfo
-        {
-            public IntPtr hwnd;
-            public string Title;
-        }
+        
         private static bool IsAltTabWindow(IntPtr hwnd)
         {
-            // Start at the root owner
-            IntPtr hwndWalk = GetAncestor(hwnd, 3);
-            // See if we are the last active visible popup
-            IntPtr hwndTry;
-            while ((hwndTry = GetLastActivePopup(hwndWalk)) != hwndTry)
-            {
-                if (IsWindowVisible(hwndTry)) break;
-                hwndWalk = hwndTry;
-            }
-            return hwndWalk == hwnd;
+            //// Start at the root owner
+            //IntPtr hwndWalk = GetAncestor(hwnd, 3);
+            //// See if we are the last active visible popup
+            //IntPtr hwndTry;
+            //while ((hwndTry = GetLastActivePopup(hwndWalk)) != hwndTry)
+            //{
+            //    if (IsWindowVisible(hwndTry)) break;
+            //    hwndWalk = hwndTry;
+            //}
+            //return hwndWalk == hwnd;
+            return true;
         }
         private static string GetWindowTitle(IntPtr hWnd)
         {
@@ -48,21 +50,21 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             return windowName.ToString();
         }
 
-        public static async Task<List<WinfowInfo>> EnumWindowsAsync(int waitTime = 1000)
+        public static async Task<List<WindowInfo>> EnumWindowsAsync(int waitTime = 1000)
         {
-            if(winfowInfos == null)
+            if(windowInfos == null)
             {
-                winfowInfos = new Queue<WinfowInfo>();
+                windowInfos = new Queue<WindowInfo>();
             }
             else
             {
-                winfowInfos.Clear();
+                windowInfos.Clear();
             }
             EnumWindows(EnumWindowsCallback, 0);
             await Task.Delay(waitTime);
-            return winfowInfos.ToList();
+            return windowInfos.ToList();
         }
-        private static Queue<WinfowInfo> winfowInfos;
+        private static Queue<WindowInfo> windowInfos;
         public static bool EnumWindowsCallback(IntPtr hwnd, int lParam)
         {
             if (IsAltTabWindow(hwnd))
@@ -70,7 +72,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 string title = GetWindowTitle(hwnd);
                 if (!string.IsNullOrEmpty(title))
                 {
-                    winfowInfos.Enqueue(new WinfowInfo() { hwnd = hwnd, Title = title });
+                    windowInfos.Enqueue(new WindowInfo() { hwnd = hwnd, Title = title });
                 }
             }
             return true;

@@ -60,7 +60,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void WindowCapture_OnWindowCaptured(FindWindowHelper.WinfowInfo winfowInfo, System.Drawing.Bitmap bitmap)
+        private void WindowCapture_OnWindowCaptured(WindowInfo winfowInfo, System.Drawing.Bitmap bitmap)
         {
             int h = ImageH;
             //lock (locker)
@@ -74,7 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             //var resizeBitmap = Helpers.BitmapConveters.ConvertFromMemoryStream(resize);
             BaseWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                Img.Source = Helpers.BitmapConveters.ConvertToBitMapSource(resizeBitmap);
+                //Img.Source = Helpers.BitmapConveters.ConvertToBitMapSource(resizeBitmap);
             });
             windowCapture.Start();
         }
