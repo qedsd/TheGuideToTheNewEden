@@ -22,7 +22,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("角色","查看角色技能、邮件、合同等信息", typeof(CharacterPage)),
                 new ToolItem("市场","实时查看公开市场订单", typeof(MarketPage)),
                 new ToolItem("商业","市场价格对比",typeof(BusinessPage)),
-                new ToolItem("预警","聊天频道手动预警", typeof(EarlyWarningPage)),
+                new ToolItem("频道预警","聊天频道手动预警", typeof(EarlyWarningPage)),
+                new ToolItem("本地预警","本地频道声望自动识别", typeof(LocalIntelPage)),
                 new ToolItem("窗口置顶","多开时游戏窗口置顶辅助", typeof(MutiWindowPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
