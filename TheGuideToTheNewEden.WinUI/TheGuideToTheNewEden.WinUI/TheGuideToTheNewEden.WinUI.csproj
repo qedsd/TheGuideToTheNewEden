@@ -19,6 +19,8 @@
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\GamePreviewMgrPage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
+    <None Remove="Views\LocalIntelItemPage.xaml" />
+    <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MutiWindowPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
@@ -65,6 +67,12 @@
     <None Update="Resources\default.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\LocalIntelItemPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\LocalIntelPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="Views\GamePreviewMgrPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
