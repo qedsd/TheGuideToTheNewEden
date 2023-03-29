@@ -24,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("商业","市场价格对比",typeof(BusinessPage)),
                 new ToolItem("频道预警","聊天频道手动预警", typeof(EarlyWarningPage)),
                 new ToolItem("本地预警","本地频道声望自动识别", typeof(LocalIntelPage)),
-                new ToolItem("窗口置顶","多开时游戏窗口置顶辅助", typeof(MutiWindowPage)),
+                new ToolItem("多开预览","多开时游戏窗口置顶辅助", typeof(GamePreviewMgrPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }

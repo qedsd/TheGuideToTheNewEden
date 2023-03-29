@@ -2,60 +2,101 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.GamePreviewMgrPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:diagnostics="using:System.Diagnostics"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="using:TheGuideToTheNewEden.WinUI.Helpers"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:GamePreviewMgrViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="20">
+    <Grid x:Name="ContentGrid" Margin="20,0,20,10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="320" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid Margin="0,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <TextBox
-                Header="窗口关键词"
                 PlaceholderText="多个关键词时，使用符号,分割"
-                Text="{x:Bind VM.Setting.TitleKeywords, Mode=TwoWay}" />
-            <ListView
+                Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}"
+                ToolTipService.ToolTip="进程关键词" />
+            <ListBox
+                x:Name="ProcessList"
                 Grid.Row="1"
+                Margin="0,0,0,10"
                 Background="Transparent"
-                ItemsSource="{x:Bind VM.WindowInfos, Mode=OneWay}"
-                SelectedItem="{x:Bind VM.SelectedWindowInfo, Mode=TwoWay}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="model:WindowInfo">
-                        <TextBlock Text="{x:Bind Title}" ToolTipService.ToolTip="{x:Bind Title}" />
+                ItemsSource="{x:Bind VM.Processes, Mode=OneWay}"
+                SelectedItem="{x:Bind VM.SelectedProcesses, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="diagnostics:Process">
+                        <TextBlock Text="{x:Bind ProcessName}" />
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                </ListBox.ItemTemplate>
+            </ListBox>
             <Button
                 Grid.Row="2"
                 HorizontalAlignment="Center"
                 Command="{x:Bind VM.RefreshWindowCommand}"
-                Content="更新列表" />
+                Content="Update" />
         </Grid>
-        <Grid Grid.Column="1" Background="Transparent">
+        <Grid Grid.Column="1" Margin="10,0">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <!--<controls:ImageCropper
-                x:Name="PreviewImage"
-                Background="Transparent"
-                CropShape="Rectangular"
-                ThumbPlacement="All" />-->
-            <Image Source="{x:Bind VM.PreviewImage, Mode=OneWay}" />
+            <ScrollViewer IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                <StackPanel x:Name="SettingArea" Margin="10,0">
+                    <Grid>
+                        <CheckBox Content="显示标题栏" IsChecked="{x:Bind VM.Setting.ShowTitleBar, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Margin="0,10">
+                        <Slider
+                            Header="窗口透明度"
+                            Maximum="100"
+                            Minimum="1"
+                            Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Margin="0,10">
+                        <TextBox Header="快捷键" Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}">
+                            <TextBox.ContextFlyout>
+                                <Flyout>
+                                    <Grid Width="100" Height="100" />
+                                </Flyout>
+                            </TextBox.ContextFlyout>
+                        </TextBox>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                Fill="{ThemeResource SystemAccentColor}" />
+            <Grid Grid.Row="2">
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StartCommand}"
+                    Icon="Play"
+                    Label="开始"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StopCommand}"
+                    Icon="Stop"
+                    Label="停止"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+            </Grid>
         </Grid>
+        <Grid
+            x:Name="PreviewGrid"
+            Grid.Column="2"
+            Background="Transparent" />
     </Grid>
 </Page>

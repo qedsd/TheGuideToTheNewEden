@@ -7,15 +7,15 @@ namespace TheGuideToTheNewEden.Core.Models.WindowPreviews
 {
     public class PreviewSetting : ObservableObject
     {
-        private string titleKeywords = "EVE,星战前夜";
+        private string processeKeywords = "wechat";
         /// <summary>
-        /// 游戏窗口标题关键词
+        /// 游戏进程名关键词
         /// 按,分割
         /// </summary>
-        public string TitleKeywords
+        public string ProcessKeywords
         {
-            get => titleKeywords;
-            set => SetProperty(ref titleKeywords, value);
+            get => processeKeywords;
+            set => SetProperty(ref processeKeywords, value);
         }
 
         private List<PreviewItem> previewItems;

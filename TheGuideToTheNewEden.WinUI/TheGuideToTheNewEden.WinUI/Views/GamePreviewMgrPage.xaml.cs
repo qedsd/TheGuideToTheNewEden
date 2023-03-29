@@ -14,8 +14,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
+using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -23,28 +25,57 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class GamePreviewMgrPage : Page
     {
+        private BaseWindow Window;
+        private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
             this.InitializeComponent();
-            (DataContext as GamePreviewMgrViewModel).UpdatePreviewImage += GamePreviewMgrPage_UpdatePreviewImage;
             Loaded += GamePreviewMgrPage_Loaded;
         }
-
+        private IntPtr windowHandle = IntPtr.Zero;
         private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
         {
-            (DataContext as GamePreviewMgrViewModel).Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            var processes = Process.GetProcesses();
-            var tragetPro = processes.FirstOrDefault(p => p.ProcessName.Contains("exefile"));
-            if(tragetPro != null)
-            {
-                //tragetPro.MainWindowHandle
-                WindowCaptureHelper.Show(WinRT.Interop.WindowNative.GetWindowHandle(Helpers.WindowHelper.GetWindowForElement(this)),tragetPro.MainWindowHandle);
-            }
+            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            (DataContext as GamePreviewMgrViewModel).Window = Window;
+            ProcessList.SelectionChanged += ProcessList_SelectionChanged;
+            windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
+            AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
+            Window.SizeChanged += Window_SizeChanged;
         }
 
-        private void GamePreviewMgrPage_UpdatePreviewImage(string path)
+        private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
-            //PreviewImage.LoadImageFromFile(path);
+            UpdateThumbDestination();
+        }
+
+        private IntPtr lastThumb = IntPtr.Zero;
+        private void ProcessList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(e.AddedItems.Count > 0)
+            {
+                var process = e.AddedItems.FirstOrDefault() as Process;
+                if(process != null)
+                {
+                    if(lastThumb != IntPtr.Zero)
+                    {
+                        WindowCaptureHelper.HideThumb(lastThumb);
+                    }
+                    lastThumb = WindowCaptureHelper.Show(windowHandle, process.MainWindowHandle);
+                    UpdateThumbDestination();
+                }
+            }
+        }
+        private void UpdateThumbDestination()
+        {
+            var thumbSize = WindowCaptureHelper.GetThumbSourceSize(lastThumb);
+            var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
+            var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
+            var showH = showW / thumbSize.x * thumbSize.y;
+            int left = (int)(AppWindow.ClientSize.Width * (1- showWPresent));
+            int top = (int)(AppWindow.ClientSize.Height / 2 - showH / 2);
+            int right = (int)(left + showW);
+            int bottom = (int)(top + showH);
+            WindowCaptureHelper.UpdateThumbDestination(lastThumb, new WindowCaptureHelper.Rect(left, top, right, bottom));
         }
     }
 }

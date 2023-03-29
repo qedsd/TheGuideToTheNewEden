@@ -8,5 +8,7 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid />
+    <Grid>
+        <TextBox Header="测试" />
+    </Grid>
 </Page>

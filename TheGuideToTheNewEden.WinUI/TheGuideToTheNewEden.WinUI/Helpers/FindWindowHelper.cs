@@ -30,17 +30,16 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         
         private static bool IsAltTabWindow(IntPtr hwnd)
         {
-            //// Start at the root owner
-            //IntPtr hwndWalk = GetAncestor(hwnd, 3);
-            //// See if we are the last active visible popup
-            //IntPtr hwndTry;
-            //while ((hwndTry = GetLastActivePopup(hwndWalk)) != hwndTry)
-            //{
-            //    if (IsWindowVisible(hwndTry)) break;
-            //    hwndWalk = hwndTry;
-            //}
-            //return hwndWalk == hwnd;
-            return true;
+            // Start at the root owner
+            IntPtr hwndWalk = GetAncestor(hwnd, 3);
+            // See if we are the last active visible popup
+            IntPtr hwndTry;
+            while ((hwndTry = GetLastActivePopup(hwndWalk)) != hwndTry)
+            {
+                if (IsWindowVisible(hwndTry)) break;
+                hwndWalk = hwndTry;
+            }
+            return hwndWalk == hwnd;
         }
         private static string GetWindowTitle(IntPtr hWnd)
         {

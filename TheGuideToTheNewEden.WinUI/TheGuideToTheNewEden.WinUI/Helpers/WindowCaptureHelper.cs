@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.System;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -27,9 +28,31 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindowDC(IntPtr hwnd);
 
+        [DllImport("gdi32.dll")]
+        public static extern int BitBlt(
+         IntPtr hdcDest, // handle to destination DC目标设备的句柄
+         int nXDest,   // x-coord of destination upper-left corner目标对象的左上角的X坐标
+         int nYDest,   // y-coord of destination upper-left corner目标对象的左上角的Y坐标
+         int nWidth,   // width of destination rectangle目标对象的矩形宽度
+         int nHeight, // height of destination rectangle目标对象的矩形长度
+         IntPtr hdcSrc,   // handle to source DC源设备的句柄
+         int nXSrc,    // x-coordinate of source upper-left corner源对象的左上角的X坐标
+         int nYSrc,    // y-coordinate of source upper-left corner源对象的左上角的Y坐标
+         UInt32 dwRop   // raster operation code光栅的操作值
+         );
+        public static Rectangle GetWindowRect(IntPtr hWnd)
+        {
+            var windowRect = new Rectangle();
+            GetWindowRect(hWnd, ref windowRect);
+            return windowRect;
+        }
         public static Bitmap GetShotCutImage(IntPtr hWnd)
         {
             var hscrdc = GetWindowDC(hWnd);
+            if(hscrdc == IntPtr.Zero)
+            {
+                return null;
+            }
             var windowRect = new Rectangle();
             GetWindowRect(hWnd, ref windowRect);
             int width = Math.Abs(windowRect.Width - windowRect.X);
@@ -42,6 +65,36 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             DeleteDC(hscrdc);
             DeleteDC(hmemdc);
             return bmp;
+        }
+        public const int SRCCOPY = 0x00CC0020;
+        [DllImport("user32.dll")]
+        public static extern IntPtr ReleaseDC(IntPtr hWnd, IntPtr hDC);
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hObject);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDesktopWindow();
+        /// <summary>
+        /// 指定窗口截图
+        /// </summary>
+        /// <param name="handle">窗口句柄. (在windows应用程序中, 从Handle属性获得)</param>
+        /// <returns></returns>
+        public static Bitmap CaptureWindow(IntPtr handle)
+        {
+            IntPtr hdcSrc = GetWindowDC(handle);
+            var windowRect = new Rectangle();
+            GetWindowRect(handle, ref windowRect);
+            int width = Math.Abs(windowRect.Width - windowRect.X);
+            int height = Math.Abs(windowRect.Height - windowRect.Y);
+            IntPtr hdcDest = CreateCompatibleDC(hdcSrc);
+            IntPtr hBitmap = CreateCompatibleBitmap(hdcSrc, width, height);
+            IntPtr hOld = SelectObject(hdcDest, hBitmap);
+            BitBlt(hdcDest, 0, 0, width, height, hdcSrc, 0, 0, SRCCOPY);
+            SelectObject(hdcDest, hOld);
+            DeleteDC(hdcDest);
+            ReleaseDC(handle, hdcSrc);
+            Bitmap img = Image.FromHbitmap(hBitmap);
+            DeleteObject(hBitmap);
+            return img;
         }
 
         #region Interop structs
@@ -66,7 +119,13 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 Right = right;
                 Bottom = bottom;
             }
-
+            internal Rect(double left, double top, float right, float bottom)
+            {
+                Left = (int)left;
+                Top = (int)top;
+                Right = (int)right;
+                Bottom = (int)bottom;
+            }
             public int Left;
             public int Top;
             public int Right;
@@ -104,10 +163,15 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         #endregion
 
-        public static void Show(IntPtr targetHWnd, IntPtr sourceHWnd)
+        public static IntPtr Show(IntPtr targetHWnd, IntPtr sourceHWnd)
         {
-            int i = DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb);
+            DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb);
             UpdateThumb(thumb);
+            return thumb;
+        }
+        public static int HideThumb(IntPtr thumb)
+        {
+            return DwmUnregisterThumbnail(thumb);
         }
         private static void UpdateThumb(IntPtr thumb)
         {
@@ -120,31 +184,25 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 props.fVisible = true;
                 props.dwFlags = DWM_TNP_VISIBLE | DWM_TNP_RECTDESTINATION | DWM_TNP_OPACITY;
                 props.opacity = 255;
-                props.rcDestination = new Rect(0, 0, size.x/2, size.y/2);//显示的位置大小
-
-                /*
-                if (size.x < pictureBox.Width)
-                    props.rcDestination.Right = props.rcDestination.Left + size.x;
-
-                if (size.y < pictureBox.Height)
-                    props.rcDestination.Bottom = props.rcDestination.Top + size.y;
-                 */
-
+                props.rcDestination = new Rect(0, 0, size.x, size.y);//显示的位置大小
                 DwmUpdateThumbnailProperties(thumb, ref props);
-                Console.WriteLine("Succesfully handled thumbnail stuff");
-
-                /*
-                Console.WriteLine("Making BMP!");
-                Bitmap bmp = new Bitmap(size.x, size.y, PixelFormat.Format32bppArgb);
-                Console.WriteLine("Made BMP; width = " + bmp.Width + ", height = " + bmp.Height);
-
-                //bmp.Save("J:\\AutomationTool\\screenshot at " + DateTime.Now.ToString("HH-mm-ss tt") + ".png", ImageFormat.Png);
-                bmp.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\screenshot at " + DateTime.Now.ToString("HH-mm-ss tt") + ".png", ImageFormat.Png);
-               
-                Console.WriteLine("Saved bmp!");
-                bmp.Dispose();
-                */
             }
+        }
+        public static void UpdateThumbDestination(IntPtr thumb, Rect rect)
+        {
+            if (thumb != IntPtr.Zero)
+            {
+                DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+                props.dwFlags = DWM_TNP_RECTDESTINATION;
+                props.rcDestination = rect;//显示的位置大小
+                DwmUpdateThumbnailProperties(thumb, ref props);
+            }
+        }
+        public static PSIZE GetThumbSourceSize(IntPtr thumb)
+        {
+            PSIZE size;
+            DwmQueryThumbnailSourceSize(thumb, out size);
+            return size;
         }
     }
 }
