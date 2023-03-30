@@ -2,6 +2,7 @@
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
@@ -40,14 +41,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _appWindow.IsShownInSwitchers = false;
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            lastSize.Width = _appWindow.Size.Width;
-            lastSize.Height = _appWindow.Size.Height;
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
-            lastPos.X = _appWindow.Position.X;
-            lastPos.Y = _appWindow.Position.Y;
             var grid = new Microsoft.UI.Xaml.Controls.Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -71,21 +68,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(content2);
             content3.PointerReleased += Content_PointerReleased;
+            content3.PointerWheelChanged += Content3_PointerWheelChanged;
             _appWindow.Closing += _appWindow_Closing;
-            _appWindow.Changed += _appWindow_Changed;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
-        }
-
-        private void _appWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
-        {
-            if (args.DidPositionChange)
-            {
-                if (Math.Abs(_appWindow.Size.Width - lastSize.Width) < 10 && Math.Abs(_appWindow.Size.Height - lastSize.Height) < 10)
-                {
-                    lastPos.X = _appWindow.Position.X;
-                    lastPos.Y = _appWindow.Position.Y;
-                }
-            }
         }
 
         private void GamePreviewWindow_VisibilityChanged(object sender, WindowVisibilityChangedEventArgs args)
@@ -130,29 +115,28 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, new WindowCaptureHelper.Rect(left, top, right, bottom));
             }
         }
-        private Windows.Graphics.SizeInt32 lastSize = new Windows.Graphics.SizeInt32(0,0);
-        private Windows.Graphics.PointInt32 lastPos = new Windows.Graphics.PointInt32(0, 0);
         private void GamePreviewWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
-            if(lastSize.Width != 0 && lastSize.Height != 0)
-            {
-                if (Math.Abs(_appWindow.Size.Width - lastSize.Width) > 10 || Math.Abs(_appWindow.Size.Height - lastSize.Height) > 10)
-                {
-                    var CenteredPosition = _appWindow.Position;
-                    CenteredPosition.X = lastPos.X;
-                    CenteredPosition.Y = lastPos.Y;
-                    _appWindow.Move(CenteredPosition);
-                    _appWindow.Resize(new Windows.Graphics.SizeInt32(lastSize.Width, lastSize.Height));
-                    return;
-                }
-            }
-            lastSize.Width = _appWindow.Size.Width;
-            lastSize.Height = _appWindow.Size.Height;
-            lastPos.X = _appWindow.Position.X;
-            lastPos.Y = _appWindow.Position.Y;
             if (_thumbHWnd != IntPtr.Zero)
             {
                 UpdateThumbDestination();
+            }
+        }
+
+
+        private void Content3_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var properties = e.GetCurrentPoint(sender as Grid).Properties;
+            if (properties != null)
+            {
+                if (properties.MouseWheelDelta > 0)
+                {
+                    _appWindow.Resize(new Windows.Graphics.SizeInt32((int)(_appWindow.Size.Width * 1.05), (int)(_appWindow.Size.Height * 1.05)));
+                }
+                else
+                {
+                    _appWindow.Resize(new Windows.Graphics.SizeInt32((int)(_appWindow.Size.Width * 0.95), (int)(_appWindow.Size.Height * 0.95)));
+                }
             }
         }
         public void Stop()
@@ -164,7 +148,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
             SizeChanged -= GamePreviewWindow_SizeChanged;
             _appWindow.Closing -= _appWindow_Closing;
-            _appWindow.Changed -= _appWindow_Changed;
             this.VisibilityChanged -= GamePreviewWindow_VisibilityChanged;
             Close();
         }
