@@ -18,6 +18,7 @@ using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -41,14 +42,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => processes;
             set => SetProperty(ref processes, value);
         }
-        private ProcessInfo selectedProcesses;
-        public ProcessInfo SelectedProcesses
+        private ProcessInfo selectedProcess;
+        public ProcessInfo SelectedProcess
         {
-            get => selectedProcesses;
+            get => selectedProcess;
             set
             {
-                SetProperty(ref selectedProcesses, value);
-                SelectWindowInfo();
+                SetProperty(ref selectedProcess, value);
+                SetProcess();
             }
         }
         private ImageSource previewImage;
@@ -64,6 +65,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref isRunning, value);
         }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
+        private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
+        private Dictionary<string, PreviewItem> _settings = new Dictionary<string, PreviewItem>();
         public GamePreviewMgrViewModel()
         {
             if(System.IO.File.Exists(Path))
@@ -81,6 +84,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 PreviewSetting = new Core.Models.GamePreviews.PreviewSetting();
+            }
+            if(PreviewSetting.PreviewItems.NotNullOrEmpty())
+            {
+                foreach(var item in PreviewSetting.PreviewItems)
+                {
+                    _settings.Add(item.GUID, item);
+                }
             }
             Init();
         }
@@ -124,9 +134,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Window?.HideWaiting();
         }
-        private void SelectWindowInfo()
+        private void SetProcess()
         {
-
+            if(SelectedProcess != null)
+            {
+                var id = SelectedProcess.GetGuid();
+                if (_settings.TryGetValue(id, out var targetSetting))
+                {
+                    Setting = targetSetting;
+                }
+                else
+                {
+                    Setting = new PreviewItem();
+                    _settings.Add(id, Setting);
+                }
+            }
         }
 
         public ICommand RefreshProcessListCommand => new RelayCommand(() =>
@@ -134,14 +156,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Init();
         });
 
-        public ICommand StartCommand => new RelayCommand(async () =>
+        public ICommand StartCommand => new RelayCommand(() =>
         {
-            
+            if(Setting != null)
+            {
+                GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting);
+                gamePreviewWindow.Start(SelectedProcess.MainWindowHandle);
+                _runningDic.Add(SelectedProcess.GetGuid(), gamePreviewWindow);
+                SelectedProcess.Running = true;
+            }
         });
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            
+            if (Setting != null)
+            {
+                if(_runningDic.TryGetValue(SelectedProcess.GetGuid(),out var window))
+                {
+                    SelectedProcess.Running = false;
+                    window.Stop();
+                    _runningDic.Remove(SelectedProcess.GetGuid());
+                }
+            }
         });
     }
 }

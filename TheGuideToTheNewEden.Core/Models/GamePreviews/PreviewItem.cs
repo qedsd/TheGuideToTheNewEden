@@ -8,21 +8,21 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
     public class PreviewItem : ObservableObject
     {
 
-        private string title;
+        private string guid;
         /// <summary>
-        /// 窗口标题
+        /// 标记id
         /// 默认为游戏角色名
         /// </summary>
-        public string Title
+        public string GUID
         {
-            get => title;
-            set => SetProperty(ref title, value);
+            get => guid;
+            set => SetProperty(ref guid, value);
         }
         /// <summary>
         /// 窗口透明度
         /// 0-100
         /// </summary>
-        private int overlapOpacity = 80;
+        private int overlapOpacity = 100;
         public int OverlapOpacity
         {
             get => overlapOpacity;
@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref winW, value);
         }
 
-        private int winH = 500;
+        private int winH = 281;
         public int WinH
         {
             get => winH;

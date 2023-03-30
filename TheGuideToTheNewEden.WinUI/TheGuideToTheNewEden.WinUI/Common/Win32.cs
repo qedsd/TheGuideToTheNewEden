@@ -30,5 +30,21 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public const int WM_SETICON = 0x0080;
         public const int ICON_SMALL = 0;
         public const int ICON_BIG = 1;
+
+        [DllImport("User32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+        /// <summary>
+        /// 显示窗口操作
+        /// https://www.cnblogs.com/PLM-Teamcenter/p/15726204.html
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="nCmdShow">
+        /// 0 关闭窗口
+        /// 1 正常大小显示窗口
+        /// 2 最小化窗口
+        /// 3 最大化窗口</param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }
