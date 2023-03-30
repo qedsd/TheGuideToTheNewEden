@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             return hwndWalk == hwnd;
         }
-        private static string GetWindowTitle(IntPtr hWnd)
+        public static string GetWindowTitle(IntPtr hWnd)
         {
             int length = GetWindowTextLength(hWnd);
             StringBuilder windowName = new StringBuilder(length + 1);

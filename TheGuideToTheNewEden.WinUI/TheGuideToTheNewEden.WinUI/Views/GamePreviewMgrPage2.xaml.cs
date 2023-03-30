@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
+﻿// Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
 using Microsoft.UI.Xaml;
@@ -23,11 +23,11 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class GamePreviewMgrPage1 : Page
+    public sealed partial class GamePreviewMgrPage : Page
     {
         private BaseWindow Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
-        public GamePreviewMgrPage1()
+        public GamePreviewMgrPage()
         {
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
@@ -51,12 +51,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private IntPtr lastThumb = IntPtr.Zero;
         private void ProcessList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(e.AddedItems.Count > 0)
+            if (e.AddedItems.Count > 0)
             {
                 var process = e.AddedItems.FirstOrDefault() as Core.Models.GamePreviews.ProcessInfo;
-                if(process != null)
+                if (process != null)
                 {
-                    if(lastThumb != IntPtr.Zero)
+                    if (lastThumb != IntPtr.Zero)
                     {
                         WindowCaptureHelper.HideThumb(lastThumb);
                     }
@@ -71,7 +71,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
             var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
             var showH = showW / thumbSize.x * thumbSize.y;
-            int left = (int)(AppWindow.ClientSize.Width * (1- showWPresent));
+            int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent));
             int top = (int)(AppWindow.ClientSize.Height / 2 - showH / 2);
             int right = (int)(left + showW);
             int bottom = (int)(top + showH);
@@ -80,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if(e.Key == Windows.System.VirtualKey.Enter)
+            if (e.Key == Windows.System.VirtualKey.Enter)
             {
                 VM.RefreshProcessListCommand.Execute(null);
             }

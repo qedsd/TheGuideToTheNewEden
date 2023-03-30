@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.Core.Models.WindowPreviews
+namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 {
     public class PreviewItem : ObservableObject
     {

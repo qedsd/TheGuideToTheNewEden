@@ -10,8 +10,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class MutiWindowViewModel : BaseViewModel
     {
-        private Core.Models.WindowPreviews.PreviewSetting setting;
-        public Core.Models.WindowPreviews.PreviewSetting Setting
+        private Core.Models.GamePreviews.PreviewSetting setting;
+        public Core.Models.GamePreviews.PreviewSetting Setting
         {
             get => setting;
             set => SetProperty(ref setting, value);
@@ -22,11 +22,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             string json = System.IO.File.ReadAllText(Path);
             if(string.IsNullOrEmpty(json))
             {
-                Setting = new Core.Models.WindowPreviews.PreviewSetting();
+                Setting = new Core.Models.GamePreviews.PreviewSetting();
             }
             else
             {
-                Setting = JsonConvert.DeserializeObject<Core.Models.WindowPreviews.PreviewSetting>(json);
+                Setting = JsonConvert.DeserializeObject<Core.Models.GamePreviews.PreviewSetting>(json);
             }
         }
     }

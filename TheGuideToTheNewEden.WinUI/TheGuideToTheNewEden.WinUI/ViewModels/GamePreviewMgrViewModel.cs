@@ -17,31 +17,32 @@ using System.Diagnostics;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.Core.Models.GamePreviews;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class GamePreviewMgrViewModel : BaseViewModel
     {
-        private Core.Models.WindowPreviews.PreviewSetting previewSetting;
-        public Core.Models.WindowPreviews.PreviewSetting PreviewSetting
+        private Core.Models.GamePreviews.PreviewSetting previewSetting;
+        public Core.Models.GamePreviews.PreviewSetting PreviewSetting
         {
             get => previewSetting;
             set => SetProperty(ref previewSetting, value);
         }
-        private Core.Models.WindowPreviews.PreviewItem setting;
-        public Core.Models.WindowPreviews.PreviewItem Setting
+        private Core.Models.GamePreviews.PreviewItem setting;
+        public Core.Models.GamePreviews.PreviewItem Setting
         {
             get => setting;
             set => SetProperty(ref setting, value);
         }
-        private List<Process> processes;
-        public List<Process> Processes
+        private List<ProcessInfo> processes;
+        public List<ProcessInfo> Processes
         {
             get => processes;
             set => SetProperty(ref processes, value);
         }
-        private Process selectedProcesses;
-        public Process SelectedProcesses
+        private ProcessInfo selectedProcesses;
+        public ProcessInfo SelectedProcesses
         {
             get => selectedProcesses;
             set
@@ -70,16 +71,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 string json = System.IO.File.ReadAllText(Path);
                 if (string.IsNullOrEmpty(json))
                 {
-                    PreviewSetting = new Core.Models.WindowPreviews.PreviewSetting();
+                    PreviewSetting = new Core.Models.GamePreviews.PreviewSetting();
                 }
                 else
                 {
-                    PreviewSetting = JsonConvert.DeserializeObject<Core.Models.WindowPreviews.PreviewSetting>(json);
+                    PreviewSetting = JsonConvert.DeserializeObject<Core.Models.GamePreviews.PreviewSetting>(json);
                 }
             }
             else
             {
-                PreviewSetting = new Core.Models.WindowPreviews.PreviewSetting();
+                PreviewSetting = new Core.Models.GamePreviews.PreviewSetting();
             }
             Init();
         }
@@ -89,7 +90,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var allProcesses = Process.GetProcesses();
             if(allProcesses.NotNullOrEmpty())
             {
-                List<Process> targetProcesses = new List<Process>();
+                List<ProcessInfo> targetProcesses = new List<ProcessInfo>();
                 var keywords = PreviewSetting.ProcessKeywords.Split(',');
                 await Task.Run(() =>
                 {
@@ -99,7 +100,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             if (process.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                             {
-                                targetProcesses.Add(process);
+                                if(process.MainWindowHandle != IntPtr.Zero)
+                                {
+                                    string title = Helpers.FindWindowHelper.GetWindowTitle(process.MainWindowHandle);
+                                    ProcessInfo processInfo = new ProcessInfo()
+                                    {
+                                        MainWindowHandle = process.MainWindowHandle,
+                                        ProcessName = process.ProcessName,
+                                        WindowTitle = title,
+                                    };
+                                    targetProcesses.Add(processInfo);
+                                }
                                 break;
                             }
                         }
@@ -118,7 +129,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         }
 
-        public ICommand RefreshWindowCommand => new RelayCommand(() =>
+        public ICommand RefreshProcessListCommand => new RelayCommand(() =>
         {
             Init();
         });
