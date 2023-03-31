@@ -145,7 +145,6 @@ namespace TheGuideToTheNewEden.WinUI.Common
         delegate int HookProc(int nCode, Int32 wParam, IntPtr lParam);
         private int hKeyboardHook = 0;
         private Dictionary<int, KeyboardInfo> pressedKeyDic = new Dictionary<int, KeyboardInfo>();
-        private int lastVK = int.MinValue;
         private int KeyboardHookProc(int nCode, Int32 wParam, IntPtr lParam)
         {
             if (nCode == 0)
@@ -166,26 +165,6 @@ namespace TheGuideToTheNewEden.WinUI.Common
                         pressedKeyDic.Add(vk, new KeyboardInfo(vk, scanCode, name));
                         KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
                     }
-                    //int scanCode = msg.scanCode & 0xff;
-                    //if(lastVK != vk)
-                    //{
-                    //    foreach (var key in pressedKeyDic)
-                    //    {
-                    //        if ((GetAsyncKeyState(key.Key) & 0x8000) == 0)
-                    //        {
-                    //            pressedKeyDic.Remove(key.Key);
-                    //        }
-                    //    }
-                    //    lastVK = vk;
-                    //    string name = string.Empty;
-                    //    StringBuilder strKeyName = new StringBuilder(225);
-                    //    if (GetKeyNameText(scanCode * 65536, strKeyName, 255) > 0)
-                    //    {
-                    //        name = strKeyName.ToString().Trim(new char[] { ' ', '\0' });
-                    //    }
-                    //    pressedKeyDic.Add(vk,new KeyboardInfo(vk, scanCode, name));
-                    //    KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
-                    //}
                 }
                 else if(wParam == 0x101)//松开
                 {
