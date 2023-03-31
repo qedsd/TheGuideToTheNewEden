@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             SetTitleBar(content2);
             content3.PointerReleased += Content_PointerReleased;
             content3.PointerWheelChanged += Content3_PointerWheelChanged;
-            _appWindow.Closing += _appWindow_Closing;
+            _appWindow.Closing += AppWindow_Closing;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
         }
 
@@ -81,14 +81,29 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-        private void _appWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
         }
 
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            Win32.ShowWindow(_sourceHWnd, 1);
+            ActiveSourceWindow();
+        }
+        /// <summary>
+        /// 显示目标窗口
+        /// </summary>
+        private void ActiveSourceWindow()
+        {
+            if (Win32.IsIconic(_sourceHWnd))
+            {
+                Win32.ShowWindow(_sourceHWnd, 4);
+            }
+            else
+            {
+                Win32.ShowWindow(_sourceHWnd, 5);
+            }
+            Win32.SetForegroundWindow(_sourceHWnd);
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;
@@ -147,7 +162,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbHWnd = IntPtr.Zero;
             }
             SizeChanged -= GamePreviewWindow_SizeChanged;
-            _appWindow.Closing -= _appWindow_Closing;
+            _appWindow.Closing -= AppWindow_Closing;
             this.VisibilityChanged -= GamePreviewWindow_VisibilityChanged;
             Close();
         }

@@ -37,14 +37,24 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// 显示窗口操作
         /// https://www.cnblogs.com/PLM-Teamcenter/p/15726204.html
         /// </summary>
-        /// <param name="hWnd"></param>
+        /// <param name="hWnd">窗口句柄</param>
         /// <param name="nCmdShow">
         /// 0 关闭窗口
         /// 1 正常大小显示窗口
         /// 2 最小化窗口
-        /// 3 最大化窗口</param>
+        /// 3 最大化窗口
+        /// 4 在其最近的大小和位置显示一个窗口
+        /// 5 激活窗口并以当前大小和位置显示窗口
+        /// </param>
         /// <returns></returns>
         [DllImport("User32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        /// <summary>
+        /// 最小化
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        public static extern bool IsIconic(IntPtr hWnd);
     }
 }

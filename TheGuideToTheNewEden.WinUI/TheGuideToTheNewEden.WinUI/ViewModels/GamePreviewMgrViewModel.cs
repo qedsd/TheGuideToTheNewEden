@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Wins;
+using Microsoft.UI.Xaml;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -63,6 +64,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             get => isRunning;
             set => SetProperty(ref isRunning, value);
+        }
+        private Visibility settingVisible = Visibility.Collapsed;
+        public Visibility SettingVisible
+        {
+            get => settingVisible;
+            set => SetProperty(ref settingVisible,value);
         }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
@@ -138,6 +145,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(SelectedProcess != null)
             {
+                SettingVisible = Visibility.Visible;
                 var id = SelectedProcess.GetGuid();
                 if (_settings.TryGetValue(id, out var targetSetting))
                 {
@@ -148,6 +156,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     Setting = new PreviewItem();
                     _settings.Add(id, Setting);
                 }
+            }
+            else
+            {
+                SettingVisible = Visibility.Collapsed;
             }
         }
 
