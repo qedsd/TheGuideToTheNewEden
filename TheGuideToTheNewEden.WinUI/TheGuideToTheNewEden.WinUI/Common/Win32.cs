@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public static extern bool SetForegroundWindow(IntPtr hWnd);
         /// <summary>
         /// 显示窗口操作
-        /// https://www.cnblogs.com/PLM-Teamcenter/p/15726204.html
+        /// https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-showwindow
         /// </summary>
         /// <param name="hWnd">窗口句柄</param>
         /// <param name="nCmdShow">

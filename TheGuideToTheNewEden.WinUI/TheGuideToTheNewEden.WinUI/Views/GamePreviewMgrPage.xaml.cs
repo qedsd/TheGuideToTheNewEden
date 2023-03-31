@@ -14,12 +14,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -27,20 +30,41 @@ namespace TheGuideToTheNewEden.WinUI.Views
     {
         private BaseWindow Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
+        private KeyboardHook _keyboardHook;
         public GamePreviewMgrPage()
         {
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
+            _keyboardHook = new KeyboardHook();
+            _keyboardHook.Start();
+            _keyboardHook.KeyboardEvent += _keyboardHook_KeyboardEvent;
         }
+
+        private void _keyboardHook_KeyboardEvent(List<KeyboardInfo> keys)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            keys.ForEach(p => stringBuilder.Append($"{p.Name} "));
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                TestBox.Text = stringBuilder.ToString();
+            });
+        }
+
         private IntPtr windowHandle = IntPtr.Zero;
         private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
         {
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            Window.Closed += Window_Closed;
             (DataContext as GamePreviewMgrViewModel).Window = Window;
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
+        }
+
+        private void Window_Closed(object sender, WindowEventArgs args)
+        {
+            _keyboardHook.Stop();
         }
 
         private void PreviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)
