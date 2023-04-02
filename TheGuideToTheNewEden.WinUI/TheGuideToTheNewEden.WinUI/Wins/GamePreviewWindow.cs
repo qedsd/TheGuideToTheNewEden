@@ -71,6 +71,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content3.PointerWheelChanged += Content3_PointerWheelChanged;
             _appWindow.Closing += AppWindow_Closing;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
+            _appWindow.Changed += AppWindow_Changed;
+        }
+
+        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if(args.DidPositionChange || args.DidSizeChange)
+            {
+                _setting.WinW = _appWindow.ClientSize.Width;
+                _setting.WinH = _appWindow.ClientSize.Height;
+                _setting.WinX = _appWindow.Position.X;
+                _setting.WinY = _appWindow.Position.Y;
+                OnSettingChanged?.Invoke(_setting);
+            }
         }
 
         private void GamePreviewWindow_VisibilityChanged(object sender, WindowVisibilityChangedEventArgs args)
@@ -127,7 +140,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 int top = 0;
                 int right = _appWindow.ClientSize.Width;
                 int bottom = _appWindow.ClientSize.Height;
-                WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, new WindowCaptureHelper.Rect(left, top, right, bottom));
+                var windowRect = new System.Drawing.Rectangle();
+                Win32.GetWindowRect(_sourceHWnd, ref windowRect);
+                var clientRect = new System.Drawing.Rectangle();
+                Win32.GetClientRect(_sourceHWnd, ref clientRect);
+                System.Drawing.Point point = new System.Drawing.Point();
+                Win32.ClientToScreen(_sourceHWnd, ref point);
+                var titleBarHeight = point.Y - (windowRect.Top > 0 ? windowRect.Top : 0);
+                if(Win32.IsZoomed(_sourceHWnd))
+                {
+                    titleBarHeight += 5;
+                }
+                //todo:左边白边
+                WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
+                WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(0, titleBarHeight, clientRect.Right, clientRect.Bottom);
+                WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
             }
         }
         private void GamePreviewWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
@@ -174,5 +201,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 WindowCaptureHelper.HideThumb(_thumbHWnd);
             }
         }
+
+        public delegate void SettingChangedDelegate(PreviewItem previewItem);
+        public event SettingChangedDelegate OnSettingChanged;
     }
 }

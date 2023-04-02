@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,16 +9,18 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
     public class PreviewItem : ObservableObject
     {
 
-        private string guid;
+        private string name;
         /// <summary>
         /// 标记id
         /// 默认为游戏角色名
         /// </summary>
-        public string GUID
+        public string Name
         {
-            get => guid;
-            set => SetProperty(ref guid, value);
+            get => name;
+            set => SetProperty(ref name, value);
         }
+        [JsonIgnore]
+        public string ProcessGUID { get; set; }
         /// <summary>
         /// 窗口透明度
         /// 0-100

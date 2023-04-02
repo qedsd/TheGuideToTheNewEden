@@ -28,7 +28,6 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
-                    KeyUp="TextBox_KeyUp"
                     PlaceholderText="多个关键词时，使用符号,分割"
                     Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}"
                     ToolTipService.ToolTip="进程关键词" />
@@ -57,20 +56,31 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="gamepreviews:ProcessInfo">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind WindowTitle}" />
-                            <Rectangle
-                                Grid.Column="1"
-                                Width="10"
-                                Height="10"
-                                Fill="{ThemeResource SystemAccentColor}"
-                                RadiusX="10"
-                                RadiusY="10"
-                                ToolTipService.ToolTip="预览中"
-                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind WindowTitle}" />
+                                <Rectangle
+                                    Grid.Column="1"
+                                    Width="10"
+                                    Height="10"
+                                    Fill="{ThemeResource SystemAccentColor}"
+                                    RadiusX="10"
+                                    RadiusY="10"
+                                    ToolTipService.ToolTip="预览中"
+                                    Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                            </Grid>
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,4,0,0"
+                                Text="{x:Bind SettingName, Mode=OneWay}"
+                                Visibility="{x:Bind ShowSettingName, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                         </Grid>
 
                     </DataTemplate>
@@ -87,9 +97,39 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ScrollViewer IsEnabled="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+            <ScrollViewer IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
                 <StackPanel x:Name="SettingArea" Margin="10,0">
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            x:Name="NameComboBox"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{x:Bind VM.Settings, Mode=OneWay}"
+                            SelectedIndex="-1"
+                            SelectionChanged="ComboBox_SelectionChanged"
+                            Text="{x:Bind VM.Setting.Name, Mode=OneWay}" />
+                        <Button
+                            x:Name="CancelSettingButton"
+                            Grid.Column="1"
+                            VerticalAlignment="Stretch"
+                            Command="{x:Bind VM.CancelSettingCommand}"
+                            ToolTipService.ToolTip="清除选择"
+                            Visibility="Collapsed">
+                            <Button.Content>
+                                <TextBlock
+                                    FontFamily="Segoe UI Symbol"
+                                    FontSize="12"
+                                    Foreground="OrangeRed"
+                                    Text="&#xE10A;" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+                    <Grid Margin="0,10">
                         <CheckBox Content="显示标题栏" IsChecked="{x:Bind VM.Setting.ShowTitleBar, Mode=TwoWay}" />
                     </Grid>
                     <Grid Margin="0,10">
@@ -117,7 +157,7 @@
             <Grid Grid.Row="2">
                 <AppBarButton
                     HorizontalAlignment="Center"
-                    Command="{x:Bind VM.StartCommand}"
+                    Click="Start_Click"
                     Icon="Play"
                     Label="开始"
                     Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
@@ -133,7 +173,10 @@
             x:Name="PreviewGrid"
             Grid.Column="2"
             Background="Transparent">
-            <TextBlock x:Name="TestBox" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <TextBlock
+                x:Name="TestBox"
+                VerticalAlignment="Top"
+                TextWrapping="Wrap" />
         </Grid>
     </Grid>
 </Page>

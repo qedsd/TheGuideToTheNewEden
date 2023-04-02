@@ -160,6 +160,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         static readonly int DWM_TNP_VISIBLE = 0x8;
         static readonly int DWM_TNP_OPACITY = 0x4;
         static readonly int DWM_TNP_RECTDESTINATION = 0x1;
+        static readonly int DWM_TNP_RECTSOURCE = 0x2;
 
         #endregion
 
@@ -195,6 +196,17 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
                 props.dwFlags = DWM_TNP_RECTDESTINATION;
                 props.rcDestination = rect;//显示的位置大小
+                DwmUpdateThumbnailProperties(thumb, ref props);
+            }
+        }
+        public static void UpdateThumbDestination(IntPtr thumb, Rect rcDestination, Rect rcSource)
+        {
+            if (thumb != IntPtr.Zero)
+            {
+                DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+                props.dwFlags = DWM_TNP_RECTDESTINATION | DWM_TNP_RECTSOURCE;
+                props.rcDestination = rcDestination;//显示的位置大小
+                props.rcSource = rcSource;
                 DwmUpdateThumbnailProperties(thumb, ref props);
             }
         }

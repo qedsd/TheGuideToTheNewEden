@@ -56,5 +56,18 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// <returns></returns>
         [DllImport("User32.dll")]
         public static extern bool IsIconic(IntPtr hWnd);
+        /// <summary>
+        /// 最大化
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        public static extern bool IsZoomed(IntPtr hwnd);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetClientRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
+        [DllImport("user32.dll")]
+        public static extern IntPtr ClientToScreen(IntPtr hWnd, ref System.Drawing.Point point);
     }
 }

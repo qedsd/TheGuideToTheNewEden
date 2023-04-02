@@ -40,5 +40,22 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 return name;
             }
         }
+
+        private string settingName;
+        public string SettingName
+        {
+            get => settingName;
+            set
+            {
+                SetProperty(ref settingName, value);
+                ShowSettingName = !string.IsNullOrEmpty(value);
+            }
+        }
+
+        private bool showSettingName;
+        public bool ShowSettingName
+        {
+            get => showSettingName; set => SetProperty(ref showSettingName, value);
+        }
     }
 }

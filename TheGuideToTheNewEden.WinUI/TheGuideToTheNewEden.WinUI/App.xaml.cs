@@ -40,8 +40,12 @@ namespace TheGuideToTheNewEden.WinUI
             notificationManager = new NotificationManager();
             notificationManager.Init();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+            UnhandledException += App_UnhandledException;
         }
-
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+        }
         private void OnProcessExit(object sender, EventArgs e)
         {
             notificationManager.Unregister();

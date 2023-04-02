@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref processeKeywords, value);
         }
 
-        private List<PreviewItem> previewItems;
+        private List<PreviewItem> previewItems = new List<PreviewItem>();
         public List<PreviewItem> PreviewItems
         {
             get => previewItems;

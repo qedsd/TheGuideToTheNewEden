@@ -20,6 +20,9 @@ using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Microsoft.UI.Xaml;
+using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -35,7 +38,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public Core.Models.GamePreviews.PreviewItem Setting
         {
             get => setting;
-            set => SetProperty(ref setting, value);
+            set
+            {
+                SetProperty(ref setting, value);
+                value.ProcessGUID = SelectedProcess.GetGuid();
+            }
+        }
+        private ObservableCollection<PreviewItem> settings;
+        public ObservableCollection<PreviewItem> Settings
+        {
+            get => settings;
+            set => SetProperty(ref settings, value);
         }
         private List<ProcessInfo> processes;
         public List<ProcessInfo> Processes
@@ -59,12 +72,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => previewImage;
             set => SetProperty(ref previewImage, value);
         }
-        private bool isRunning;
-        public bool IsRunning
-        {
-            get => isRunning;
-            set => SetProperty(ref isRunning, value);
-        }
         private Visibility settingVisible = Visibility.Collapsed;
         public Visibility SettingVisible
         {
@@ -73,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
-        private Dictionary<string, PreviewItem> _settings = new Dictionary<string, PreviewItem>();
+        //private List<PreviewItem> _settings = new List<PreviewItem>();
         public GamePreviewMgrViewModel()
         {
             if(System.IO.File.Exists(Path))
@@ -94,10 +101,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             if(PreviewSetting.PreviewItems.NotNullOrEmpty())
             {
-                foreach(var item in PreviewSetting.PreviewItems)
+                Settings = PreviewSetting.PreviewItems.ToObservableCollection();
+                foreach(var item in Settings)
                 {
-                    _settings.Add(item.GUID, item);
+                    item.ProcessGUID = item.Name;
                 }
+            }
+            else
+            {
+                Settings = new ObservableCollection<PreviewItem>();
             }
             Init();
         }
@@ -146,15 +158,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(SelectedProcess != null)
             {
                 SettingVisible = Visibility.Visible;
-                var id = SelectedProcess.GetGuid();
-                if (_settings.TryGetValue(id, out var targetSetting))
+                var guid = SelectedProcess.GetGuid();
+                if(!string.IsNullOrEmpty(guid))
                 {
-                    Setting = targetSetting;
-                }
-                else
-                {
-                    Setting = new PreviewItem();
-                    _settings.Add(id, Setting);
+                    var targetSetting = Settings.FirstOrDefault(p => p.ProcessGUID == guid);
+                    if (targetSetting != null)
+                    {
+                        Setting = targetSetting;
+                    }
+                    else
+                    {
+                        Setting = new PreviewItem()
+                        {
+                            ProcessGUID = guid
+                        };
+                    }
                 }
             }
             else
@@ -173,11 +191,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(Setting != null)
             {
                 GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting);
+                gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
                 gamePreviewWindow.Start(SelectedProcess.MainWindowHandle);
                 _runningDic.Add(SelectedProcess.GetGuid(), gamePreviewWindow);
                 SelectedProcess.Running = true;
+                SelectedProcess.SettingName = Setting.Name;
+                //保存
+                if (!string.IsNullOrEmpty(Setting.Name))
+                {
+                    if(!PreviewSetting.PreviewItems.Contains(Setting))
+                    {
+                        PreviewSetting.PreviewItems.Add(Setting);
+                    }
+                    if(!Settings.Contains(Setting))
+                    {
+                        Settings.Add(Setting);
+                    }
+                    SaveSetting();
+                }
             }
         });
+
+        private void GamePreviewWindow_OnSettingChanged(PreviewItem previewItem)
+        {
+            SaveSetting();
+        }
+        private void SaveSetting()
+        {
+            if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(Path)))
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
+            }
+            string json = JsonConvert.SerializeObject(PreviewSetting);
+            System.IO.File.WriteAllText(Path,json);
+        }
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
@@ -191,5 +238,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         });
+
+        public ICommand CancelSettingCommand => new RelayCommand(() =>
+        {
+            Setting = new PreviewItem()
+            {
+                ProcessGUID = SelectedProcess.GetGuid()
+            };
+        });
+
+        public void StopAll()
+        {
+            foreach(var window in _runningDic.Values)
+            {
+                window.Stop();
+            }
+        }
     }
 }

@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
@@ -60,11 +61,32 @@ namespace TheGuideToTheNewEden.WinUI.Views
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
+            VM.PropertyChanged += VM_PropertyChanged;
+        }
+
+        private void VM_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(VM.Setting))
+            {
+                NameComboBox.SelectionChanged -= ComboBox_SelectionChanged;
+                if (VM.Settings.Contains(VM.Setting))
+                {
+                    NameComboBox.SelectedItem = VM.Setting;
+                    CancelSettingButton.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    NameComboBox.SelectedItem = null;
+                    CancelSettingButton.Visibility = Visibility.Collapsed;
+                }
+                NameComboBox.SelectionChanged += ComboBox_SelectionChanged;
+            }
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             _keyboardHook.Stop();
+            VM.StopAll();
         }
 
         private void PreviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -102,12 +124,19 @@ namespace TheGuideToTheNewEden.WinUI.Views
             WindowCaptureHelper.UpdateThumbDestination(lastThumb, new WindowCaptureHelper.Rect(left, top, right, bottom));
         }
 
-        private void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if(NameComboBox.SelectedIndex != -1)
             {
-                VM.RefreshProcessListCommand.Execute(null);
+                VM.Setting = NameComboBox.SelectedItem as PreviewItem;
             }
+            CancelSettingButton.Visibility = NameComboBox.SelectedIndex != -1 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void Start_Click(object sender, RoutedEventArgs e)
+        {
+            VM.Setting.Name = NameComboBox.Text;
+            VM.StartCommand.Execute(null);
         }
     }
 }
