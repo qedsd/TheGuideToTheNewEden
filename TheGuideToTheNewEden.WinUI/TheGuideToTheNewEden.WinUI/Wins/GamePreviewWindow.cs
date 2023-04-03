@@ -19,6 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow: Window
     {
+        //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
         private PreviewItem _setting;
         private AppWindow _appWindow;
         private IntPtr _windowHandle = IntPtr.Zero;
@@ -136,25 +137,28 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
-                int left = 0;
-                int top = 0;
-                int right = _appWindow.ClientSize.Width;
-                int bottom = _appWindow.ClientSize.Height;
-                var windowRect = new System.Drawing.Rectangle();
-                Win32.GetWindowRect(_sourceHWnd, ref windowRect);
-                var clientRect = new System.Drawing.Rectangle();
-                Win32.GetClientRect(_sourceHWnd, ref clientRect);
-                System.Drawing.Point point = new System.Drawing.Point();
-                Win32.ClientToScreen(_sourceHWnd, ref point);
-                var titleBarHeight = point.Y - (windowRect.Top > 0 ? windowRect.Top : 0);
-                if(Win32.IsZoomed(_sourceHWnd))
+                try
                 {
-                    titleBarHeight += 5;
+                    int left = 0;
+                    int top = 0;
+                    int right = _appWindow.ClientSize.Width;
+                    int bottom = _appWindow.ClientSize.Height;
+                    var windowRect = new System.Drawing.Rectangle();
+                    Win32.GetWindowRect(_sourceHWnd, ref windowRect);
+                    var clientRect = new System.Drawing.Rectangle();
+                    Win32.GetClientRect(_sourceHWnd, ref clientRect);
+                    System.Drawing.Point point = new System.Drawing.Point();
+                    Win32.ClientToScreen(_sourceHWnd, ref point);
+                    var titleBarHeight = point.Y - windowRect.Top;//去掉标题栏高度
+                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
+                    int widthMargin = point.X - windowRect.Left;//去掉左边白边及右边显示完整
+                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
+                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
                 }
-                //todo:左边白边
-                WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
-                WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(0, titleBarHeight, clientRect.Right, clientRect.Bottom);
-                WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                catch(Exception ex)
+                {
+
+                }
             }
         }
         private void GamePreviewWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
