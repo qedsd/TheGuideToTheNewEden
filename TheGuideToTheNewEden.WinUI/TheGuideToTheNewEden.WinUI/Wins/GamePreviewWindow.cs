@@ -226,7 +226,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             foreach(var key in _keys)
             {
-                if(keys.FirstOrDefault(p=>p.Name == key) == null)
+                if(!keys.Where(p=>p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
                 {
                     return;
                 }
