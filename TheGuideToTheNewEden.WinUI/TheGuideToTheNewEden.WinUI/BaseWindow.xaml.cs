@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -22,6 +23,7 @@ namespace TheGuideToTheNewEden.WinUI
         public BaseWindow(string head = null)
         {
             this.InitializeComponent();
+            TitleBarHeight = WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this));
             this.Title = "The Guide To The NewEden";
             Helpers.WindowHelper.TrackWindow(this);
             ExtendsContentIntoTitleBar = true;
@@ -45,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI
 
             set => ContentFrame.Content = value;
         }
-
+        public int TitleBarHeight { get;private set; }
         public string Head
         {
             get => HeadTextBlock.Text;
@@ -77,6 +79,23 @@ namespace TheGuideToTheNewEden.WinUI
         {
             AppDisplayNameTextBlock.Visibility = Visibility.Visible;
             HeadTextLine.Visibility = HeadPanel.Visibility;
+        }
+        public double GetTitleBarDesignHeight()
+        {
+            return AppTitleBar.Height;
+        }
+        public void SetSmallTitleBar()
+        {
+            SetTitleBarHeight(32);
+            SetAppTitleLeftBorder(10);
+        }
+        public void SetTitleBarHeight(int h)
+        {
+            AppTitleBarGrid.Height = h;
+        }
+        public void SetAppTitleLeftBorder(int w)
+        {
+            AppTitleLeftBorder.Width = w;
         }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {

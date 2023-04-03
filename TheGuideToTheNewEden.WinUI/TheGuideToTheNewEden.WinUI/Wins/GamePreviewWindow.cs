@@ -17,25 +17,19 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class GamePreviewWindow: Window
+    internal class GamePreviewWindow: BaseWindow
     {
         //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
         private PreviewItem _setting;
         private AppWindow _appWindow;
         private IntPtr _windowHandle = IntPtr.Zero;
-        public GamePreviewWindow(PreviewItem setting)
+        public GamePreviewWindow(PreviewItem setting):base()
         {
             _setting = setting;
-            
+            SetSmallTitleBar();
+            HideAppDisplayName();
+            SetHeadText(setting.Name);
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
-            if (!_setting.ShowTitleBar)
-            {
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = false;
-                presenter.IsResizable = false;
-                presenter.SetBorderAndTitleBar(false, false);
-            }
-            
             presenter.IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
@@ -65,9 +59,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             grid.Children.Add(content2);
             grid.Children.Add(content3);
-            Content = grid;
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(content2);
+            MainContent = grid;
+            //ExtendsContentIntoTitleBar = true;
+            //SetTitleBar(content2);
             content3.PointerReleased += Content_PointerReleased;
             content3.PointerWheelChanged += Content3_PointerWheelChanged;
             _appWindow.Closing += AppWindow_Closing;
@@ -140,18 +134,16 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 try
                 {
                     int left = 0;
-                    int top = 0;
+                    int top = _setting.ShowTitleBar? TitleBarHeight : 0;
                     int right = _appWindow.ClientSize.Width;
                     int bottom = _appWindow.ClientSize.Height;
-                    var windowRect = new System.Drawing.Rectangle();
-                    Win32.GetWindowRect(_sourceHWnd, ref windowRect);
+                    var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
+                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
                     var clientRect = new System.Drawing.Rectangle();
-                    Win32.GetClientRect(_sourceHWnd, ref clientRect);
-                    System.Drawing.Point point = new System.Drawing.Point();
-                    Win32.ClientToScreen(_sourceHWnd, ref point);
-                    var titleBarHeight = point.Y - windowRect.Top;//去掉标题栏高度
+                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
+                    //目标窗口显示区域，及GamePreviewWindow
                     WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
-                    int widthMargin = point.X - windowRect.Left;//去掉左边白边及右边显示完整
+                    //源窗口捕获区域，即游戏的窗口
                     WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
                     WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
                 }

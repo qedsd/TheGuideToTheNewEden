@@ -13,6 +13,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid
+            x:Name="AppTitleBarGrid"
             Height="42"
             VerticalAlignment="Top"
             Canvas.ZIndex="1">
@@ -67,9 +68,8 @@
             <Border
                 x:Name="AppTitleBar"
                 Grid.Column="1"
-                Height="32"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Top" />
+                VerticalAlignment="Stretch" />
         </Grid>
         <Grid Grid.Row="1">
             <Frame x:Name="ContentFrame" Background="Transparent" />

@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using TheGuideToTheNewEden.WinUI.Common;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -98,6 +99,36 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static OverlappedPresenter GetOverlappedPresenter(Window window)
         {
             return GetAppWindow(window).Presenter as OverlappedPresenter;
+        }
+
+        /// <summary>
+        /// 标题栏高度
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
+        public static int GetTitleBarHeight(IntPtr hwnd)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            Win32.GetWindowRect(hwnd, ref windowRect);
+            var clientRect = new System.Drawing.Rectangle();
+            Win32.GetClientRect(hwnd, ref clientRect);
+            System.Drawing.Point point = new System.Drawing.Point();
+            Win32.ClientToScreen(hwnd, ref point);
+            return point.Y - windowRect.Top;
+        }
+
+        /// <summary>
+        /// 边框宽度
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
+        public static int GetBorderWidth(IntPtr hwnd)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            Win32.GetWindowRect(hwnd, ref windowRect);
+            System.Drawing.Point point = new System.Drawing.Point();
+            Win32.ClientToScreen(hwnd, ref point);
+            return point.X - windowRect.Left;
         }
     }
 }
