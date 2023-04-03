@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _appWindow.IsShownInSwitchers = false;
-            _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
+            
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
@@ -111,6 +111,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _thumbHWnd = WindowCaptureHelper.Show(_windowHandle, sourceHWnd);
             SizeChanged += GamePreviewWindow_SizeChanged;
             Closed += GamePreviewWindow_Closed;
+            if (_setting.WinW == 0 || _setting.WinH == 0)
+            {
+                _setting.WinW = 500;
+                var clientSize = WindowHelper.GetClientRect(_sourceHWnd);
+                _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
+            }
+            _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
             UpdateThumbDestination();
             this.Activate();
         }

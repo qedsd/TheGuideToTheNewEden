@@ -46,14 +46,14 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref winY, value);
         }
 
-        private int winW = 500;
+        private int winW = 0;
         public int WinW
         {
             get => winW;
             set => SetProperty(ref winW, value);
         }
 
-        private int winH = 281;
+        private int winH = 0;
         public int WinH
         {
             get => winH;

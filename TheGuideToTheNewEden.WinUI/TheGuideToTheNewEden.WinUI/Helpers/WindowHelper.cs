@@ -101,6 +101,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             return GetAppWindow(window).Presenter as OverlappedPresenter;
         }
 
+        public static System.Drawing.Rectangle GetClientRect(IntPtr hwnd)
+        {
+            var clientRect = new System.Drawing.Rectangle();
+            Win32.GetClientRect(hwnd, ref clientRect);
+            return clientRect;
+        }
         /// <summary>
         /// 标题栏高度
         /// </summary>
