@@ -114,14 +114,37 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void UpdateThumbDestination()
         {
             var thumbSize = WindowCaptureHelper.GetThumbSourceSize(lastThumb);
-            var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
-            var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
-            var showH = showW / thumbSize.x * thumbSize.y;
-            int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent));
-            int top = (int)(AppWindow.ClientSize.Height / 2 - showH / 2);
-            int right = (int)(left + showW);
-            int bottom = (int)(top + showH);
-            WindowCaptureHelper.UpdateThumbDestination(lastThumb, new WindowCaptureHelper.Rect(left, top, right, bottom));
+            if(thumbSize.x > thumbSize.y)//横向
+            {
+                var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
+                var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
+                var showH = showW / thumbSize.x * thumbSize.y;
+                int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent));
+                int top = (int)(AppWindow.ClientSize.Height / 2 - showH / 2);
+                int right = (int)(left + showW);
+                int bottom = (int)(top + showH);
+                WindowCaptureHelper.UpdateThumbDestination(lastThumb, new WindowCaptureHelper.Rect(left, top, right, bottom));
+            }
+            else//竖向
+            {
+                var showHPresent = PreviewGrid.ActualHeight / Window.Content.ActualSize.Y;//不能显示到标题栏
+                var showH = showHPresent * (AppWindow.ClientSize.Height - (ContentGrid.Margin.Top + ContentGrid.Margin.Bottom));
+                var showW = showH / thumbSize.y * thumbSize.x;
+                var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
+                int top = (int)(AppWindow.ClientSize.Height * (1 - showHPresent));
+                int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent * 0.5) - showW / 2);
+                int right = (int)(left + showW);
+                int bottom = (int)(top + showH);
+
+                //限制范围内
+                var minLeft = (1 - (PreviewGrid.ActualWidth / ContentGrid.ActualWidth)) * AppWindow.ClientSize.Width;
+                var maxRight = AppWindow.ClientSize.Width;
+                var maxBottom = AppWindow.ClientSize.Height;
+                left = left < minLeft ? (int)minLeft : left;
+                right = right > maxRight ? maxRight : right;
+                bottom = bottom > maxBottom ? maxBottom : bottom;
+                WindowCaptureHelper.UpdateThumbDestination(lastThumb, new WindowCaptureHelper.Rect(left, top, right, bottom));
+            }
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
