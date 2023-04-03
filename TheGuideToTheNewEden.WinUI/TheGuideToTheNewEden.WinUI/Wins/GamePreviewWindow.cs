@@ -13,7 +13,9 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.Core.Extensions;
 using WinUIEx;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -52,6 +54,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Closing += AppWindow_Closing;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
             _appWindow.Changed += AppWindow_Changed;
+
+            InitHotkey();
         }
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
@@ -183,6 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             SizeChanged -= GamePreviewWindow_SizeChanged;
             _appWindow.Closing -= AppWindow_Closing;
             this.VisibilityChanged -= GamePreviewWindow_VisibilityChanged;
+            HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             Close();
         }
 
@@ -199,5 +204,35 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public delegate void StopDelegate(PreviewItem previewItem);
         public event StopDelegate OnStop;
+
+
+        #region 快捷键
+        private List<string> _keys;
+        private void InitHotkey()
+        {
+            //快捷键
+            if (!string.IsNullOrEmpty(_setting.HotKey))
+            {
+                var keynames = _setting.HotKey.Split(',');
+                if (keynames.NotNullOrEmpty())
+                {
+                    _keys = keynames.ToList();
+                    HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                }
+            }
+        }
+
+        private void HotkeyService_OnKeyboardClicked(List<KeyboardHook.KeyboardInfo> keys)
+        {
+            foreach(var key in _keys)
+            {
+                if(keys.FirstOrDefault(p=>p.Name == key) == null)
+                {
+                    return;
+                }
+            }
+            ActiveSourceWindow();
+        }
+        #endregion
     }
 }

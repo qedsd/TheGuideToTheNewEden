@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Foundation;
@@ -31,17 +32,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
     {
         private BaseWindow Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
-        private KeyboardHook _keyboardHook;
         public GamePreviewMgrPage()
         {
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
-            _keyboardHook = new KeyboardHook();
-            _keyboardHook.Start();
-            _keyboardHook.KeyboardEvent += _keyboardHook_KeyboardEvent;
+            HotkeyService.Start();
+            HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 
-        private void _keyboardHook_KeyboardEvent(List<KeyboardInfo> keys)
+        private void HotkeyService_OnKeyboardClicked(List<KeyboardInfo> keys)
         {
             StringBuilder stringBuilder = new StringBuilder();
             keys.ForEach(p => stringBuilder.Append($"{p.Name} "));
@@ -85,7 +84,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            _keyboardHook.Stop();
+            HotkeyService.Stop();
             VM.StopAll();
         }
 

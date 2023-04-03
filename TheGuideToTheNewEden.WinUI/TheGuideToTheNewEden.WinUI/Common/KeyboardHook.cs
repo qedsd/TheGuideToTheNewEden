@@ -48,7 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Common
             /// </summary>
             public DateTime Time;
         }
-        public struct KeyboardInfo
+        public class KeyboardInfo
         {
             public KeyboardInfo(int vk, int sc)
             {
