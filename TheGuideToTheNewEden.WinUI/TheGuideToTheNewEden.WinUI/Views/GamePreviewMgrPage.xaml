@@ -56,31 +56,37 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="gamepreviews:ProcessInfo">
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind WindowTitle}" />
-                                <Rectangle
-                                    Grid.Column="1"
-                                    Width="10"
-                                    Height="10"
-                                    Fill="{ThemeResource SystemAccentColor}"
-                                    RadiusX="10"
-                                    RadiusY="10"
-                                    ToolTipService.ToolTip="预览中"
-                                    Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <TextBlock
+                                        HorizontalAlignment="Stretch"
+                                        Text="{x:Bind WindowTitle}"
+                                        ToolTipService.ToolTip="{x:Bind WindowTitle}" />
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,4,0,0"
+                                    Text="{x:Bind SettingName, Mode=OneWay}"
+                                    Visibility="{x:Bind ShowSettingName, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                             </Grid>
-                            <TextBlock
-                                Grid.Row="1"
-                                Margin="0,4,0,0"
-                                Text="{x:Bind SettingName, Mode=OneWay}"
-                                Visibility="{x:Bind ShowSettingName, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                            <Rectangle
+                                Grid.Column="1"
+                                Width="10"
+                                Height="10"
+                                Margin="4,0,0,0"
+                                Fill="{ThemeResource SystemAccentColor}"
+                                RadiusX="10"
+                                RadiusY="10"
+                                ToolTipService.ToolTip="预览中"
+                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                         </Grid>
 
                     </DataTemplate>
