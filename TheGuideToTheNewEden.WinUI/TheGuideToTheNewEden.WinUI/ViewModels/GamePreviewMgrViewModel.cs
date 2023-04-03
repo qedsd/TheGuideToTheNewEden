@@ -169,7 +169,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         Setting = new PreviewItem()
                         {
-                            ProcessGUID = guid
+                            ProcessGUID = guid,
+                            Name = SelectedProcess.GetCharacterName()
                         };
                     }
                 }

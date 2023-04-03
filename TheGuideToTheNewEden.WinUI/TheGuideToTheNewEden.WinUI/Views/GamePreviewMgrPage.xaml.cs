@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -37,9 +34,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
             HotkeyService.Start();
-            HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+            //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 
+        /// <summary>
+        /// 测试检测按键
+        /// </summary>
+        /// <param name="keys"></param>
         private void HotkeyService_OnKeyboardClicked(List<KeyboardInfo> keys)
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -96,15 +97,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private IntPtr lastThumb = IntPtr.Zero;
         private void ProcessList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (lastThumb != IntPtr.Zero)
+            {
+                WindowCaptureHelper.HideThumb(lastThumb);
+            }
             if (e.AddedItems.Count > 0)
             {
                 var process = e.AddedItems.FirstOrDefault() as Core.Models.GamePreviews.ProcessInfo;
                 if (process != null)
                 {
-                    if (lastThumb != IntPtr.Zero)
-                    {
-                        WindowCaptureHelper.HideThumb(lastThumb);
-                    }
                     lastThumb = WindowCaptureHelper.Show(windowHandle, process.MainWindowHandle);
                     UpdateThumbDestination();
                 }

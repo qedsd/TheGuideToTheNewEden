@@ -17,12 +17,12 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         }
         public string GetCharacterName()
         {
-            if(string.IsNullOrEmpty(WindowTitle))
+            if(!string.IsNullOrEmpty(WindowTitle))
             {
                 var array = WindowTitle.Split('-');
                 if(array.Length == 2)
                 {
-                    return array[1];
+                    return array[1].Trim();
                 }
             }
             return null;
