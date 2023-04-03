@@ -20,9 +20,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal class GamePreviewWindow: BaseWindow
     {
         //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
-        private PreviewItem _setting;
-        private AppWindow _appWindow;
-        private IntPtr _windowHandle = IntPtr.Zero;
+        private readonly PreviewItem _setting;
+        private readonly AppWindow _appWindow;
+        private readonly IntPtr _windowHandle = IntPtr.Zero;
         public GamePreviewWindow(PreviewItem setting):base()
         {
             _setting = setting;
@@ -40,30 +40,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
-            var grid = new Microsoft.UI.Xaml.Controls.Grid()
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-               Background = new SolidColorBrush(Colors.AliceBlue)
-            };
-            var content2 = new Microsoft.UI.Xaml.Controls.Grid()
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Height = 32
-            };
-            var content3 = new Microsoft.UI.Xaml.Controls.Grid()
+            var content = new Microsoft.UI.Xaml.Controls.Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Background = new SolidColorBrush(Colors.AliceBlue),
             };
-            grid.Children.Add(content2);
-            grid.Children.Add(content3);
-            MainContent = grid;
-            //ExtendsContentIntoTitleBar = true;
-            //SetTitleBar(content2);
-            content3.PointerReleased += Content_PointerReleased;
-            content3.PointerWheelChanged += Content3_PointerWheelChanged;
+            MainContent = content;
+            content.PointerReleased += Content_PointerReleased;
+            content.PointerWheelChanged += Content_PointerWheelChanged;
             _appWindow.Closing += AppWindow_Closing;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
             _appWindow.Changed += AppWindow_Changed;
@@ -162,7 +147,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
 
-        private void Content3_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Content_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var properties = e.GetCurrentPoint(sender as Grid).Properties;
             if (properties != null)
