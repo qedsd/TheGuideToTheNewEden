@@ -80,7 +80,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
-        //private List<PreviewItem> _settings = new List<PreviewItem>();
         public GamePreviewMgrViewModel()
         {
             if(System.IO.File.Exists(Path))
@@ -192,6 +191,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting);
                 gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
+                gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
                 gamePreviewWindow.Start(SelectedProcess.MainWindowHandle);
                 _runningDic.Add(SelectedProcess.GetGuid(), gamePreviewWindow);
                 SelectedProcess.Running = true;
@@ -211,6 +211,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         });
+
+        private void GamePreviewWindow_OnStop(PreviewItem previewItem)
+        {
+            if (_runningDic.TryGetValue(previewItem.ProcessGUID, out var window))
+            {
+                SelectedProcess.Running = false;
+                window.Stop();
+                _runningDic.Remove(SelectedProcess.GetGuid());
+            }
+        }
 
         private void GamePreviewWindow_OnSettingChanged(PreviewItem previewItem)
         {

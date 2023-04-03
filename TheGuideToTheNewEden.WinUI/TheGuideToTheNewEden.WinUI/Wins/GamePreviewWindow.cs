@@ -76,7 +76,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
-            args.Cancel = true;
+            args.Cancel = true;//预览窗口不自动处理关闭
+            if (_setting.ShowTitleBar)
+            {
+                OnStop?.Invoke(_setting);//交给调用者处理关闭
+            }
         }
 
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -185,5 +189,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public delegate void SettingChangedDelegate(PreviewItem previewItem);
         public event SettingChangedDelegate OnSettingChanged;
+
+        public delegate void StopDelegate(PreviewItem previewItem);
+        public event StopDelegate OnStop;
     }
 }
