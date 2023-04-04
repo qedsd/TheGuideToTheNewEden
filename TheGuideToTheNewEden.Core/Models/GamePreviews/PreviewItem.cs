@@ -70,7 +70,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         private string hotKey;
         /// <summary>
         /// 快捷键
-        /// 以,分隔
+        /// 以+分隔
         /// </summary>
         public string HotKey
         {

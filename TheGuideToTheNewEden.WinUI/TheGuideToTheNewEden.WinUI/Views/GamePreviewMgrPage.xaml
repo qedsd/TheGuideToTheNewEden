@@ -113,7 +113,10 @@
                             <ColumnDefinition />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="SettingNameBox" Text="{x:Bind VM.Setting.Name, Mode=OneWay}" />
+                        <TextBox
+                            x:Name="SettingNameBox"
+                            Text="{x:Bind VM.Setting.Name, Mode=OneWay}"
+                            ToolTipService.ToolTip="标识名" />
                         <Button
                             Grid.Column="1"
                             VerticalAlignment="Stretch"
@@ -196,7 +199,7 @@
                     <Grid Margin="0,10">
                         <TextBox
                             Header="激活快捷键"
-                            PlaceholderText="组合键使用,分割 eg： Ctrl,1"
+                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
                             Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}" />
                     </Grid>
                 </StackPanel>

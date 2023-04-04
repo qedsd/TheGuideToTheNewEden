@@ -213,7 +213,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             //快捷键
             if (!string.IsNullOrEmpty(_setting.HotKey))
             {
-                var keynames = _setting.HotKey.Split(',');
+                var keynames = _setting.HotKey.Split('+');
                 if (keynames.NotNullOrEmpty())
                 {
                     _keys = keynames.ToList();
