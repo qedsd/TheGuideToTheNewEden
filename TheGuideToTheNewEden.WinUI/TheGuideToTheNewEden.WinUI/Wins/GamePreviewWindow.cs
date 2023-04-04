@@ -94,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <summary>
         /// 显示目标窗口
         /// </summary>
-        private void ActiveSourceWindow()
+        public void ActiveSourceWindow()
         {
             if (Win32.IsIconic(_sourceHWnd))
             {

@@ -50,6 +50,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => settings;
             set => SetProperty(ref settings, value);
         }
+        private Core.Models.GamePreviews.PreviewItem selectedSetting;
+        public Core.Models.GamePreviews.PreviewItem SelectedSetting
+        {
+            get => selectedSetting;
+            set
+            {
+                SetProperty(ref selectedSetting, value);
+                if(value != null)
+                {
+                    value.ProcessGUID = SelectedProcess.GetGuid();
+                    Setting = value;
+                }
+                else
+                {
+                    Setting = new PreviewItem()
+                    {
+                        ProcessGUID = SelectedProcess.GetGuid(),
+                        Name = SelectedProcess.GetCharacterName()
+                    };
+                }
+            }
+        }
         private List<ProcessInfo> processes;
         public List<ProcessInfo> Processes
         {
@@ -78,7 +100,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => settingVisible;
             set => SetProperty(ref settingVisible,value);
         }
+        private bool running;
+        public bool Running
+        {
+            get => running;
+            set => SetProperty(ref running, value);
+        }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
+        /// <summary>
+        /// key为ProcessInfo.GetGuid(),可能为角色名，可能为GUID
+        /// </summary>
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
         public GamePreviewMgrViewModel()
         {
@@ -111,7 +142,59 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Settings = new ObservableCollection<PreviewItem>();
             }
             Init();
+            HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
+        #region 切换快捷键
+        private string _lastProcessGUID;
+        private void HotkeyService_OnKeyboardClicked(List<Common.KeyboardHook.KeyboardInfo> keys)
+        {
+            if (_runningDic.Count != 0 && !string.IsNullOrEmpty(PreviewSetting.SwitchHotkey))
+            {
+                var keynames = PreviewSetting.SwitchHotkey.Split('+');
+                if (keynames.NotNullOrEmpty())
+                {
+                    var targetkeys = keynames.ToList();
+                    foreach (var key in targetkeys)
+                    {
+                        if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
+                        {
+                            return;
+                        }
+                    }
+                    if(_lastProcessGUID == null)
+                    {
+                        _runningDic.First().Value.ActiveSourceWindow();
+                        _lastProcessGUID = _runningDic.First().Key;
+                    }
+                    else
+                    {
+                        for(int i = 0;i< _runningDic.Count;i++)
+                        {
+                            var item = _runningDic.ElementAt(i);
+                            if (item.Key == _lastProcessGUID)
+                            {
+                                KeyValuePair<string, GamePreviewWindow> show;
+                                if(i != _runningDic.Count - 1)
+                                {
+                                    show = _runningDic.ElementAt(i + 1);
+                                }
+                                else
+                                {
+                                    show = _runningDic.First();
+                                }
+                                if(show.Key != null)
+                                {
+                                    _lastProcessGUID = show.Key;
+                                    show.Value.ActiveSourceWindow();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
         private async void Init()
         {
             Window?.ShowWaiting();
@@ -164,6 +247,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if (targetSetting != null)
                     {
                         Setting = targetSetting;
+                        SelectedSetting = targetSetting;
                     }
                     else
                     {
@@ -197,6 +281,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _runningDic.Add(SelectedProcess.GetGuid(), gamePreviewWindow);
                 SelectedProcess.Running = true;
                 SelectedProcess.SettingName = Setting.Name;
+                Running = true;
                 //保存
                 if (!string.IsNullOrEmpty(Setting.Name))
                 {
@@ -207,6 +292,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if(!Settings.Contains(Setting))
                     {
                         Settings.Add(Setting);
+                        SelectedSetting = Setting;
                     }
                     SaveSetting();
                 }
@@ -247,6 +333,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     window.Stop();
                     _runningDic.Remove(SelectedProcess.GetGuid());
                 }
+                if(_runningDic.Count == 0)
+                {
+                    Running = false;
+                }
             }
         });
 
@@ -257,7 +347,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ProcessGUID = SelectedProcess.GetGuid()
             };
         });
-
+        public ICommand NewSettingCommand => new RelayCommand(() =>
+        {
+            SelectedSetting = null;
+        });
+        public ICommand RemoveSettingCommand => new RelayCommand<PreviewItem>((item) =>
+        {
+            if(item != null)
+            {
+                if(Settings.Remove(item))
+                {
+                    if(PreviewSetting.PreviewItems.Remove(item))
+                    {
+                        SaveSetting();
+                        if(item == SelectedSetting)
+                        {
+                            SelectedSetting = null;
+                        }
+                    }
+                }
+            }
+        });
         public void StopAll()
         {
             foreach(var window in _runningDic.Values)

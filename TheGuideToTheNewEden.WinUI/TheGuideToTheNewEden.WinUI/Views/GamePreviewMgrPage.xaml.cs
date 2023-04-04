@@ -31,9 +31,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
+            HotkeyService.Start();
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
-            HotkeyService.Start();
             //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 
@@ -61,26 +61,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
-            VM.PropertyChanged += VM_PropertyChanged;
-        }
-
-        private void VM_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == nameof(VM.Setting))
-            {
-                NameComboBox.SelectionChanged -= ComboBox_SelectionChanged;
-                if (VM.Settings.Contains(VM.Setting))
-                {
-                    NameComboBox.SelectedItem = VM.Setting;
-                    CancelSettingButton.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    NameComboBox.SelectedItem = null;
-                    CancelSettingButton.Visibility = Visibility.Collapsed;
-                }
-                NameComboBox.SelectionChanged += ComboBox_SelectionChanged;
-            }
         }
 
         private void Window_Closed(object sender, WindowEventArgs args)
@@ -147,19 +127,24 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if(NameComboBox.SelectedIndex != -1)
-            {
-                VM.Setting = NameComboBox.SelectedItem as PreviewItem;
-            }
-            CancelSettingButton.Visibility = NameComboBox.SelectedIndex != -1 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            VM.Setting.Name = NameComboBox.Text;
+            VM.Setting.Name = SettingNameBox.Text;//只在开始后才保存修改的名字
             VM.StartCommand.Execute(null);
+        }
+
+        private void RemoveSetting_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null)
+            {
+                VM.RemoveSettingCommand.Execute(button.DataContext as PreviewItem);
+            }
+        }
+
+        private void SettingList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SettingListFlyout.Hide();
         }
     }
 }

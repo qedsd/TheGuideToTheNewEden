@@ -7,7 +7,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 {
     public class PreviewSetting : ObservableObject
     {
-        private string processeKeywords = "wechat";
+        private string processeKeywords = "exefile";
         /// <summary>
         /// 游戏进程名关键词
         /// 按,分割
@@ -17,7 +17,15 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => processeKeywords;
             set => SetProperty(ref processeKeywords, value);
         }
-
+        private string switchHotkey = "Ctrl+Tab";
+        /// <summary>
+        /// 切换运行中的窗口对应的源窗口
+        /// </summary>
+        public string SwitchHotkey
+        {
+            get => switchHotkey;
+            set => SetProperty(ref switchHotkey, value);
+        }
         private List<PreviewItem> previewItems = new List<PreviewItem>();
         public List<PreviewItem> PreviewItems
         {
