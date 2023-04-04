@@ -13,7 +13,11 @@ Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "TheGuideToTheNewEden.WinUI 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGuideToTheNewEden.WinUI", "TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI.csproj", "{ED2D455A-D382-4930-8E13-E95F51DBC3FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGuideToTheNewEden.DevTools", "TheGuideToTheNewEden.DevTools\TheGuideToTheNewEden.DevTools.csproj", "{D08A273E-8979-4701-8688-0155D7FA8ED3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGuideToTheNewEden.DevTools", "TheGuideToTheNewEden.DevTools\TheGuideToTheNewEden.DevTools.csproj", "{D08A273E-8979-4701-8688-0155D7FA8ED3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevTools", "DevTools", "{B677376A-010B-417E-A1B0-B27E9C87B880}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGuideToTheNewEden.ExefileSimulation", "TheGuideToTheNewEden.ExefileSimulation\TheGuideToTheNewEden.ExefileSimulation.csproj", "{38BFF471-CF56-43D0-8E20-195D56A395D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -169,9 +173,33 @@ Global
 		{D08A273E-8979-4701-8688-0155D7FA8ED3}.Release|x64.Build.0 = Release|Any CPU
 		{D08A273E-8979-4701-8688-0155D7FA8ED3}.Release|x86.ActiveCfg = Release|Any CPU
 		{D08A273E-8979-4701-8688-0155D7FA8ED3}.Release|x86.Build.0 = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|ARM.Build.0 = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|x64.Build.0 = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Debug|x86.Build.0 = Debug|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|ARM.ActiveCfg = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|ARM.Build.0 = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|ARM64.Build.0 = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|x64.ActiveCfg = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|x64.Build.0 = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|x86.ActiveCfg = Release|Any CPU
+		{38BFF471-CF56-43D0-8E20-195D56A395D8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D08A273E-8979-4701-8688-0155D7FA8ED3} = {B677376A-010B-417E-A1B0-B27E9C87B880}
+		{38BFF471-CF56-43D0-8E20-195D56A395D8} = {B677376A-010B-417E-A1B0-B27E9C87B880}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E88FC4E7-9E4F-4C4A-AEB9-8C6099DDBAFA}
