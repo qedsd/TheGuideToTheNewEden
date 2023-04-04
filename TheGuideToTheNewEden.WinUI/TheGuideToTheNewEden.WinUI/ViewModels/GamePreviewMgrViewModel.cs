@@ -23,6 +23,7 @@ using Microsoft.UI.Xaml;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
+using System.Timers;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -72,8 +73,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private List<ProcessInfo> processes;
-        public List<ProcessInfo> Processes
+        private ObservableCollection<ProcessInfo> processes;
+        public ObservableCollection<ProcessInfo> Processes
         {
             get => processes;
             set => SetProperty(ref processes, value);
@@ -198,10 +199,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private async void Init()
         {
             Window?.ShowWaiting();
+            StopGameMonitor();
             var allProcesses = Process.GetProcesses();
             if(allProcesses.NotNullOrEmpty())
             {
-                List<ProcessInfo> targetProcesses = new List<ProcessInfo>();
+                ObservableCollection<ProcessInfo> targetProcesses = new ObservableCollection<ProcessInfo>();
                 var keywords = PreviewSetting.ProcessKeywords.Split(',');
                 await Task.Run(() =>
                 {
@@ -219,6 +221,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                         MainWindowHandle = process.MainWindowHandle,
                                         ProcessName = process.ProcessName,
                                         WindowTitle = title,
+                                        Process = process
                                     };
                                     targetProcesses.Add(processInfo);
                                 }
@@ -233,8 +236,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Processes = null;
             }
+            StartGameMonitor();
             Window?.HideWaiting();
         }
+
         private void SetProcess()
         {
             if(SelectedProcess != null)
@@ -375,5 +380,68 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 window.Stop();
             }
         }
+
+        #region 监控游戏关闭
+        private Timer gameMonitor;
+        private void StartGameMonitor()
+        {
+            if(Processes.Count != 0)
+            {
+                if(gameMonitor == null)
+                {
+                    gameMonitor = new Timer()
+                    {
+                        Interval = 500,
+                        AutoReset = false,
+                    };
+                    gameMonitor.Elapsed += GameMonitor_Elapsed;
+                }
+                gameMonitor.Start();
+            }
+        }
+        private void StopGameMonitor()
+        {
+            gameMonitor?.Stop();
+        }
+        private void GameMonitor_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if(processes.NotNullOrEmpty())
+            {
+                List<ProcessInfo> exited = new List<ProcessInfo>();
+                foreach (var pro in processes)
+                {
+                    if (pro.Process.HasExited)
+                    {
+                        exited.Add(pro);
+                    }
+                }
+                if(exited.Any())
+                {
+                    Window.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        foreach (var pro in exited)
+                        {
+                            Processes.Remove(pro);
+                            if (_runningDic.TryGetValue(pro.GetGuid(), out var value))
+                            {
+                                _runningDic.Remove(pro.GetGuid());
+                                value.Stop();
+                                if(SelectedProcess == pro)
+                                {
+                                    SelectedProcess.Running = false;
+                                    SelectedProcess = null;
+                                }
+                            }
+                            if (_runningDic.Count == 0)
+                            {
+                                Running = false;
+                            }
+                        }
+                    });
+                }
+            }
+            gameMonitor.Start();
+        }
+        #endregion
     }
 }

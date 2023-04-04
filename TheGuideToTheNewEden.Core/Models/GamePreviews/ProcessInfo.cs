@@ -7,6 +7,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 {
     public class ProcessInfo : ObservableObject
     {
+        public System.Diagnostics.Process Process { get; set; }
         public IntPtr MainWindowHandle { get; set; }
         public string WindowTitle { get; set; }
         public string ProcessName { get; set; }
