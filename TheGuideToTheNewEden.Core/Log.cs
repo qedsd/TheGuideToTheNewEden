@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI
 {
-    internal static class Log
+    public static class Log
     {
         private static ILog log;
         public static void Init()
         {
-            XmlConfigurator.Configure(new FileInfo(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "log4net.config")));
+            XmlConfigurator.Configure(new FileInfo(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config")));
             log = LogManager.GetLogger(typeof(Log));
         }
         public static void Info(object info)
@@ -36,6 +36,11 @@ namespace TheGuideToTheNewEden.WinUI
         public static void Debug(object debug)
         {
             log.Debug(debug);
+        }
+
+        public static string GetLogPath()
+        {
+            return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
         }
     }
 }

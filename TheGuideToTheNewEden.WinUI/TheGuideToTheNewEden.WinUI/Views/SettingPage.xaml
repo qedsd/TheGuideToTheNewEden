@@ -73,5 +73,16 @@
                 <TextBox Width="240" Text="{x:Bind VM.EvelogsPath, Mode=TwoWay}" />
             </StackPanel>
         </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl x:Uid="Setting_Log">
+            <StackPanel Orientation="Horizontal">
+                <Button Width="100" Command="{x:Bind VM.CheckLogCommand}">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Uid="Setting_Log_Check" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </controls:ExpandableSettingControl>
     </StackPanel>
 </Page>

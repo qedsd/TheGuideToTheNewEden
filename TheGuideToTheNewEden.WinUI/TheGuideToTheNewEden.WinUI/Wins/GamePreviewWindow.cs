@@ -149,7 +149,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
                 catch(Exception ex)
                 {
-
+                    Log.Error(ex);
                 }
             }
         }

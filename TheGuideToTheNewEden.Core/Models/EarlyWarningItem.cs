@@ -92,7 +92,6 @@ namespace TheGuideToTheNewEden.Core.Models
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    //TODO:日志输出
                 }
             });
         }

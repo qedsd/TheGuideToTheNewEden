@@ -206,6 +206,15 @@
   <data name="Setting_LocalDb.Title" xml:space="preserve">
     <value>数据库语言</value>
   </data>
+  <data name="Setting_Log.Description" xml:space="preserve">
+    <value>记录App异常信息</value>
+  </data>
+  <data name="Setting_Log.Title" xml:space="preserve">
+    <value>App日志</value>
+  </data>
+  <data name="Setting_Log_Check.Text" xml:space="preserve">
+    <value>查看</value>
+  </data>
   <data name="Setting_PlayerStatus.Description" xml:space="preserve">
     <value>统计服务器在线人数、贴吧活跃度的API服务器地址</value>
   </data>

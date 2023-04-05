@@ -206,6 +206,15 @@
   <data name="Setting_LocalDb.Title" xml:space="preserve">
     <value>DB Language</value>
   </data>
+  <data name="Setting_Log.Description" xml:space="preserve">
+    <value>App log</value>
+  </data>
+  <data name="Setting_Log.Title" xml:space="preserve">
+    <value>App log</value>
+  </data>
+  <data name="Setting_Log_Check.Text" xml:space="preserve">
+    <value>Check</value>
+  </data>
   <data name="Setting_PlayerStatus.Description" xml:space="preserve">
     <value>Server Api</value>
   </data>

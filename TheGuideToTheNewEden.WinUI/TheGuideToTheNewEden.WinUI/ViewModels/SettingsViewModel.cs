@@ -125,7 +125,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public SettingsViewModel()
         {
             InitLocalDb();
-
         }
 
         private void InitLocalDb()
@@ -146,5 +145,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             await Task.CompletedTask;
         }
+
+        public ICommand CheckLogCommand => new RelayCommand(() =>
+        {
+            System.Diagnostics.Process.Start("explorer.exe", Log.GetLogPath());
+        });
     }
 }

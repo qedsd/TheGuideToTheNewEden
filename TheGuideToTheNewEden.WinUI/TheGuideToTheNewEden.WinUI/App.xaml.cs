@@ -27,11 +27,11 @@ namespace TheGuideToTheNewEden.WinUI
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
             UnhandledException += App_UnhandledException;
             Log.Init();
-
         }
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             e.Handled = true;
+            Log.Error(e.Exception);
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
