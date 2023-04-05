@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT;
@@ -24,7 +25,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             this.InitializeComponent();
             TitleBarHeight = WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this));
-            this.Title = "The Guide To The NewEden";
+            this.Title = "新伊甸漫游指南";
             Helpers.WindowHelper.TrackWindow(this);
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
@@ -40,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI
             }
             SetHeadText(head);
             Helpers.WindowHelper.CenterToScreen(this);
+            WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
         }
         public object MainContent
         {
