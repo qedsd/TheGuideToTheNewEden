@@ -25,9 +25,20 @@ namespace TheGuideToTheNewEden.WinUI
             notificationManager = new NotificationManager();
             notificationManager.Init();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-            UnhandledException += App_UnhandledException;
+            UnhandledException += App_UnhandledException;//UI线程
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             Log.Init();
         }
+
+        private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            if(e.IsTerminating)
+            {
+                Log.Error("发生致命错误");
+            }
+            Log.Error(e.ExceptionObject);
+        }
+
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             e.Handled = true;
