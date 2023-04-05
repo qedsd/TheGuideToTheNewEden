@@ -64,6 +64,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             TempCanvas = intelPage.TempCanvas;
             Window.MainContent = intelPage;
             Window.HideAppDisplayName();
+            Window.SetSmallTitleBar();
             IntelMap = intelMap;
             Setting = setting;
             Window.Activated += IntelWindow_Activated;
@@ -291,6 +292,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         StartTimes.Remove(content.SolarSystemId);
                         StartTimes.Add(content.SolarSystemId, DateTime.Now);
                     }
+                    Show();
                 }
                 else if(content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
@@ -407,7 +409,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
                             WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
                             Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-                            appWindow.Hide();
+                            appWindow?.Hide();
                         }
                     });
                     timer.Start();

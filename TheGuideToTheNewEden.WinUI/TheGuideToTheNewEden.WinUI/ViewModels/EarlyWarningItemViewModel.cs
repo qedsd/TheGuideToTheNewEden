@@ -368,13 +368,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         WarningService.NotifyWindow(Setting.Listener, ch);
                     });
                 }
-                if(Setting.SystemNotify && ch.IntelType == Core.Enums.IntelChatType.Intel)
+                if(ch.IntelType == Core.Enums.IntelChatType.Intel)
                 {
-                    WarningService.NotifyToast(ch);
-                }
-                if(Setting.MakeSound)
-                {
-                    WarningService.NotifySound(Setting.SoundFilePath);
+                    if (Setting.SystemNotify)
+                    {
+                        WarningService.NotifyToast(ch);
+                    }
+                    if (Setting.MakeSound)
+                    {
+                        WarningService.NotifySound(Setting.SoundFilePath);
+                    }
                 }
             }
         }

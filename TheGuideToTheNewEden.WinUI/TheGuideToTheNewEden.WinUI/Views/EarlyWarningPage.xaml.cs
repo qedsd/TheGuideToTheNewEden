@@ -41,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
         {
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            TabView_AddTabButtonClick(TabView, null);
         }
 
         private void EarlyWarningPage_Unloaded(object sender, RoutedEventArgs e)
