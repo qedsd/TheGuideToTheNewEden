@@ -33,7 +33,7 @@
                     Height="16"
                     VerticalAlignment="Center"
                     CornerRadius="8">
-                    <Image HorizontalAlignment="Left" Source="/Images/logo_32.png" />
+                    <Image HorizontalAlignment="Left" Source="Resources/Images/logo_32.png" />
                 </Grid>
 
                 <TextBlock
