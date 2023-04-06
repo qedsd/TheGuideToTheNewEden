@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static void Initialize()
         {
             Value = LoadLanguageFromSettings();
-            Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Value;
+            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Value;//仅打包版本支持切换
         }
 
         public static async Task SetLangAsync(string language)
