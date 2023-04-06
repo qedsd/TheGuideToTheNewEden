@@ -10,7 +10,12 @@
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>logo_32.ico</ApplicationIcon>
     <PackageIcon>logo_180.png</PackageIcon>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	 <!--unpackage需注释掉-->
+	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsPackageType>None</WindowsPackageType>
+    <!--unpackage需注释掉-->
   </PropertyGroup>
   <ItemGroup>
     <None Remove="BaseWindow.xaml" />
@@ -45,13 +50,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="E:\文档\新伊甸漫游指南\ps\3\logo_180.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
   </ItemGroup>
 
@@ -66,7 +64,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\log4net.config">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\SpeakerNames.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -81,6 +79,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\default.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\home.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Page Update="Views\LocalIntelItemPage.xaml">
