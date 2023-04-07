@@ -34,6 +34,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void LocalIntelPage_Loaded(object sender, RoutedEventArgs e)
         {
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            TabView_AddTabButtonClick(TabView,null);
         }
 
         private void LocalIntelPage_Unloaded(object sender, RoutedEventArgs e)

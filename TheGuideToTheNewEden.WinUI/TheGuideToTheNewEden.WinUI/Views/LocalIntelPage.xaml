@@ -13,5 +13,6 @@
         VerticalAlignment="Stretch"
         AddTabButtonClick="TabView_AddTabButtonClick"
         Background="Transparent"
+        CloseButtonOverlayMode="OnPointerOver"
         TabCloseRequested="TabView_TabCloseRequested" />
 </Page>

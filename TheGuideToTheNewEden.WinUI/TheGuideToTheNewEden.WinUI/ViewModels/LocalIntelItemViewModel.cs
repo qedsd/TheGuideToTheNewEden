@@ -19,12 +19,23 @@ using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.UI.ViewManagement;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class LocalIntelItemViewModel : BaseViewModel
     {
+        private bool running;
+        public bool Running { get => running; set => SetProperty(ref running, value); }
+        private float xStart;
+        public float XStart { get => xStart; set => SetProperty(ref xStart, value); }
+        private float yStart;
+        public float YStart { get => yStart; set => SetProperty(ref yStart, value); }
+        private float xEnd;
+        public float XEnd { get => xEnd; set => SetProperty(ref xEnd, value); }
+        private float yEnd;
+        public float YEnd { get => yEnd; set => SetProperty(ref yEnd, value); }
         public ICommand PickLogFolderCommand => new RelayCommand(async() =>
         {
             var folder = await Helpers.PickHelper.PickFolderAsync(Helpers.WindowHelper.CurrentWindow());
@@ -33,23 +44,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 //LogPath = folder.Path;
             }
         });
-        public ICommand PickSoundFileCommand => new RelayCommand(async () =>
+        public ICommand SelectRectCommand => new RelayCommand( () =>
         {
-            var file = await Helpers.PickHelper.PickFileAsync(Window);
-            if (file != null)
-            {
-                //Setting.SoundFilePath= file.Path;
-            }
+            SelectWindowRectWindow selectWindowRectWindow = new SelectWindowRectWindow();
+            selectWindowRectWindow.Activate();
         });
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
-            
+            Running = true;
         });
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            
+            Running = false;
         });
         /// <summary>
         /// 加载应用设置

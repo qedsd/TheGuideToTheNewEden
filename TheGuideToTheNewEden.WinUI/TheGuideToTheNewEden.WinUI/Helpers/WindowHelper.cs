@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using TheGuideToTheNewEden.WinUI.Common;
+using Windows.UI.WindowManagement;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -135,6 +136,16 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             System.Drawing.Point point = new System.Drawing.Point();
             Win32.ClientToScreen(hwnd, ref point);
             return point.X - windowRect.Left;
+        }
+
+        public static void HideTitleBar(Window window)
+        {
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);
+            presenter.IsAlwaysOnTop = true;
+            presenter.IsMinimizable = false;
+            presenter.IsMaximizable = false;
+            presenter.IsResizable = false;
+            presenter.SetBorderAndTitleBar(false, false);
         }
     }
 }
