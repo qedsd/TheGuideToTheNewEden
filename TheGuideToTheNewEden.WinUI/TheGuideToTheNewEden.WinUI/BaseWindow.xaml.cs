@@ -94,6 +94,7 @@ namespace TheGuideToTheNewEden.WinUI
         public void SetTitleBarHeight(int h)
         {
             AppTitleBarGrid.Height = h;
+            //AppTitleBar.Height = h;
         }
         public void SetAppTitleLeftBorder(int w)
         {

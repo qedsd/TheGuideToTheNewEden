@@ -68,8 +68,8 @@
             <Border
                 x:Name="AppTitleBar"
                 Grid.Column="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch" />
+                Height="32"
+                VerticalAlignment="Top" />
         </Grid>
         <Grid Grid.Row="1">
             <Frame x:Name="ContentFrame" Background="Transparent" />
