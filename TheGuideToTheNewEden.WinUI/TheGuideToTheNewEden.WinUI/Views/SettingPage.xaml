@@ -13,76 +13,102 @@
     <Page.DataContext>
         <viewmodels:SettingsViewModel x:Name="VM" />
     </Page.DataContext>
-    <StackPanel Margin="{StaticResource MediumLeftTopRightBottomMargin}" Spacing="4">
-        <StackPanel.ChildrenTransitions>
-            <TransitionCollection>
-                <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
-            </TransitionCollection>
-        </StackPanel.ChildrenTransitions>
-        <controls:ExpandableSettingControl x:Uid="Setting_Theme">
-            <StackPanel Orientation="Horizontal">
-                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedThemeIndex, Mode=TwoWay}">
-                    <ComboBoxItem x:Uid="Setting_Theme_Default" />
-                    <ComboBoxItem x:Uid="Setting_Theme_Light" />
-                    <ComboBoxItem x:Uid="Setting_Theme_Dark" />
-                </ComboBox>
-            </StackPanel>
-        </controls:ExpandableSettingControl>
+    <ScrollViewer Margin="{StaticResource MediumLeftTopRightBottomMargin}">
+        <StackPanel Spacing="4">
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
+            <controls:ExpandableSettingControl x:Uid="Setting_Theme">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedThemeIndex, Mode=TwoWay}">
+                        <ComboBoxItem x:Uid="Setting_Theme_Default" />
+                        <ComboBoxItem x:Uid="Setting_Theme_Light" />
+                        <ComboBoxItem x:Uid="Setting_Theme_Dark" />
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_UILanguage" Visibility="Collapsed">
-            <StackPanel Orientation="Horizontal">
-                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="中文" />
-                    <ComboBoxItem Content="English" />
-                </ComboBox>
-            </StackPanel>
-        </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl x:Uid="Setting_UILanguage" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="中文" />
+                        <ComboBoxItem Content="English" />
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_LocalDb">
-            <StackPanel Orientation="Horizontal">
-                <ComboBox
-                    Width="128"
-                    ItemsSource="{x:Bind VM.LocalDbs}"
-                    SelectedItem="{x:Bind VM.SelectedLocalDb, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Value, Converter={StaticResource FileToNameWithoutExtConverter}}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
-        </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl x:Uid="Setting_LocalDb">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox
+                        Width="128"
+                        ItemsSource="{x:Bind VM.LocalDbs}"
+                        SelectedItem="{x:Bind VM.SelectedLocalDb, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Value, Converter={StaticResource FileToNameWithoutExtConverter}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_GameServer">
-            <StackPanel Orientation="Horizontal">
-                <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedGameServerIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="Tranquility" />
-                    <ComboBoxItem Content="Serenity" />
-                </ComboBox>
-            </StackPanel>
-        </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl x:Uid="Setting_GameServer">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedGameServerIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="Tranquility" />
+                        <ComboBoxItem Content="Serenity" />
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_PlayerStatus">
-            <StackPanel Orientation="Horizontal">
-                <TextBox Width="240" Text="{x:Bind VM.PlayerStatusApi, Mode=TwoWay}" />
-            </StackPanel>
-        </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl x:Uid="Setting_PlayerStatus">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="240" Text="{x:Bind VM.PlayerStatusApi, Mode=TwoWay}" />
+                </StackPanel>
+            </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_EVELogsPath">
-            <StackPanel Orientation="Horizontal">
-                <TextBox Width="240" Text="{x:Bind VM.EvelogsPath, Mode=TwoWay}" />
-            </StackPanel>
-        </controls:ExpandableSettingControl>
-        <controls:ExpandableSettingControl x:Uid="Setting_Log">
-            <StackPanel Orientation="Horizontal">
-                <Button Width="100" Command="{x:Bind VM.CheckLogCommand}">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Uid="Setting_Log_Check" />
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
-            </StackPanel>
-        </controls:ExpandableSettingControl>
-    </StackPanel>
+            <controls:ExpandableSettingControl x:Uid="Setting_EVELogsPath">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="240" Text="{x:Bind VM.EvelogsPath, Mode=TwoWay}" />
+                </StackPanel>
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl x:Uid="Setting_Log">
+                <StackPanel Orientation="Horizontal">
+                    <Button Width="100" Command="{x:Bind VM.CheckLogCommand}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Uid="Setting_Log_Check" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="关于">
+                <controls:ExpandableSettingControl.ExpandableContent>
+                    <RichTextBlock Margin="60,10">
+                        <Paragraph>
+                            <Run>几年前挖了一个大坑，填了一半就提桶跑路。近来闲着，决定在边上再挖一个坑，不大不小，埋葬CCP刚刚好</Run>
+                        </Paragraph>
+                        <Paragraph />
+                        <Paragraph>
+                            <Run>用爱发电，厚颜无耻地蹲个有缘人施舍个小星星</Run>
+                            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
+                            <Run>。</Run>
+                            <Run>没做版本更新检测，如需使用新版本，可定期到GitHub上查看</Run>
+                            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
+                        </Paragraph>
+                        <Paragraph />
+                        <Paragraph>
+                            <Run>有问题可游戏内联系我：</Run>
+                            <Run FontWeight="Medium">QEDSD</Run>
+                            <Run>（有生之年上线）</Run>
+                        </Paragraph>
+                    </RichTextBlock>
+                </controls:ExpandableSettingControl.ExpandableContent>
+            </controls:ExpandableSettingControl>
+        </StackPanel>
+    </ScrollViewer>
+
 </Page>
