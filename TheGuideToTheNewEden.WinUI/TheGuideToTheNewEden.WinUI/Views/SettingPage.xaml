@@ -29,7 +29,7 @@
             </StackPanel>
         </controls:ExpandableSettingControl>
 
-        <controls:ExpandableSettingControl x:Uid="Setting_UILanguage">
+        <controls:ExpandableSettingControl x:Uid="Setting_UILanguage" Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
                 <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
                     <ComboBoxItem Content="中文" />
