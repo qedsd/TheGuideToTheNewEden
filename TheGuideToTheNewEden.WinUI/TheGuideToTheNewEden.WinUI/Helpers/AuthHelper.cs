@@ -18,21 +18,24 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             yourProtocolName.SetValue("URL Protocol", "");
             command.SetValue(null, $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"");
         }
-
+        private static FileSystemWatcher _fileSystemWatcher;
         public static async Task<string> WaitingAuthAsync()
         {
             _msg = null;
             _waiting = true;
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth");
-            if (!Directory.Exists(folder))
+            if(_fileSystemWatcher == null)
             {
-                Directory.CreateDirectory(folder);
+                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth");
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+                FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
+                fileSystemWatcher.Path = folder;
+                fileSystemWatcher.EnableRaisingEvents = true;
+                fileSystemWatcher.Changed += FileSystemWatcher_Changed;
             }
-            FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
-            fileSystemWatcher.Path = folder;
-            fileSystemWatcher.EnableRaisingEvents = true;
-            fileSystemWatcher.Changed += FileSystemWatcher_Changed;
-            while(_waiting)
+            while (_waiting)
             {
                 await Task.Delay(1000);
             }

@@ -13,6 +13,7 @@ using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.ViewModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -23,7 +24,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public CharacterPage()
         {
             this.InitializeComponent();
+            Loaded += CharacterPage_Loaded;
         }
 
+        private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            (DataContext as BaseViewModel).Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
     }
 }

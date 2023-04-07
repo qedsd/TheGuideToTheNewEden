@@ -28,6 +28,18 @@
             <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
             <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" IsReverse="True" />
             <converters:BoolReverseConverte x:Key="BoolReverseConverte" />
+            <converters:GameImageConverter
+                x:Key="CharacterImgConverter512"
+                Size="512"
+                Type="Character" />
+            <converters:GameImageConverter x:Key="CorpImgConverter" Type="Corporation" />
+            <converters:GameImageConverter x:Key="TypeImgConverter" Type="Type" />
+            <converters:GameImageConverter x:Key="AllianceImgConverter" Type="Alliance" />
+            <converters:GameImageConverter
+                x:Key="CharacterImgConverter128"
+                Size="128"
+                Type="Character" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

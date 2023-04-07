@@ -249,8 +249,17 @@ namespace TheGuideToTheNewEden.WinUI
                 }
             });
         }
-        public void ShowWaiting()
+        public void ShowWaiting(string tip = null)
         {
+            if(string.IsNullOrEmpty(tip))
+            {
+                WaitingText.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                WaitingText.Visibility = Visibility.Visible;
+                WaitingText.Text = tip;
+            }
             WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             WaitingProgressRing.IsActive = true;
         }

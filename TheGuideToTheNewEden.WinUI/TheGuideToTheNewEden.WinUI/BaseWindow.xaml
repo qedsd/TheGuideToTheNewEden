@@ -85,10 +85,21 @@
                 <Grid.Background>
                     <SolidColorBrush Opacity="0.6" Color="{ThemeResource ControlFillColorDefault}" />
                 </Grid.Background>
-                <ProgressRing
-                    x:Name="WaitingProgressRing"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center" />
+                <Grid Height="100">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ProgressRing
+                        x:Name="WaitingProgressRing"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        x:Name="WaitingText"
+                        Grid.Row="1"
+                        Margin="10"
+                        HorizontalAlignment="Center" />
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
