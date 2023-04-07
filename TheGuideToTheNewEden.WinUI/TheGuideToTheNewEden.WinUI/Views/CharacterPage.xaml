@@ -5,8 +5,82 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
-
-    <Grid />
+    <Page.DataContext>
+        <viewmodels:CharacterViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid />
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ComboBox HorizontalAlignment="Stretch" />
+                <Button Grid.Column="1" Command="{x:Bind VM.AddCommand}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
+                    </Button.Content>
+                </Button>
+            </Grid>
+        </Grid>
+        <NavigationView
+            Grid.Column="1"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Top">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="概要" />
+                <NavigationViewItem Content="技能" />
+                <NavigationViewItem Content="克隆" />
+                <NavigationViewItem Content="钱包" />
+                <NavigationViewItem Content="邮件" />
+                <NavigationViewItem Content="合同" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="contentFrame" Background="Transparent" />
+        </NavigationView>
+        <!--<Pivot Grid.Column="1" VerticalAlignment="Stretch">
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="概要" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="技能" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="克隆" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="钱包" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="邮件" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="16" Text="合同" />
+                </PivotItem.Header>
+            </PivotItem>
+        </Pivot>-->
+    </Grid>
 </Page>
