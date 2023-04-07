@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Models;
@@ -16,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public List<ToolItem> ToolItems { get; set; }
         public ShellViewModel()
         {
-            //VersionDescription = GetVersionDescription();
+            VersionDescription = GetVersionDescription();
             ToolItems = new List<ToolItem>()
             {
                 new ToolItem("角色","查看角色技能、邮件、合同等信息", typeof(CharacterPage)),
@@ -30,11 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private static string GetVersionDescription()
         {
-            var package = Package.Current;
-            var packageId = package.Id;
-            var version = packageId.Version;
-
-            return $"V{version.Major}.{version.Minor}.{version.Build}";
+            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
     }
 }

@@ -15,6 +15,7 @@
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <!--package需注释掉-->
   </PropertyGroup>
   <ItemGroup>
