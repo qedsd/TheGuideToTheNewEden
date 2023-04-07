@@ -1,0 +1,1 @@
+此项目为编译打包(Package)版本，编译前需把TheGuideToTheNewEden.WinUI.csproj与unpackage相关配置注释掉
