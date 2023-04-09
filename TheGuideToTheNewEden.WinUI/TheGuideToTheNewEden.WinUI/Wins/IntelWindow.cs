@@ -256,7 +256,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
                 Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * 0.6 / 2);
                 Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * 0.6 / 2);
-                TipTextBlock.Text = map.SolarSystemName;
+                TipTextBlock.Text = $"{map.SolarSystemName} {IntelMap.JumpsOf(map.SolarSystemID)} Ìø";
                 TipTextBlock.Visibility = Visibility.Visible;
                 TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
 
