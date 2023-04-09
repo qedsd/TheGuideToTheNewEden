@@ -16,7 +16,6 @@ EVE Online实用工具集
 # 新生
 半年前，上班闲得慌，逛贴吧无意间发现还有人记得新伊甸漫游指南，甚是惊喜，随后决定把V1版本的代码整理一下开源，也算是放到GitHub上备份一下避免丢失。很巧，后面紧接着就出官中了，发现有人对中文星系频道预警有需求，辅助多开的eve-o-preview因为中文bug标题栏不显示角色名称导致多开窗口显示异常，嘿嘿，这道题我会。然后就有了
 新伊甸漫游指南V2
-#功能
 
 # 功能
 新版本不会加入更多新功能，甚至还会砍掉不少功能，更多功能是V1版本重构。目前确定有的功能如下
@@ -46,20 +45,27 @@ EVE Online实用工具集
 12. 设置忽视关键词，聊天里有出现相关关键词时，不触发预警
 13. 设置解除预警关键词，聊天里有出现相关关键词时，相应的星系不再处于预警状态
 14. 设置星系名语言数据库，与near2、smt等前辈不同，新伊甸漫游指南不仅支持英文星系名，还可以支持其他语言星系名，只要按照规范在软件目录Resources\Database\Local下放置其他语言数据库就可在此处列表中显示，勾上相应数据库后即可支持相应语言的星系名预警，默认只提供中文。当然，很多00玩家会吐槽这个功能用处不大，00又没有中文名，但我只是在纯粹解决一个有没有的问题。
-15. 设置完参数就可以点击开始监控了。
+15. 设置完参数就可以点击开始监控了，可鼠标拖动预警窗口显示大小、位置
 
 ### 效果图
 - 预警窗口：
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel2.png?raw=true?raw=true)
+
 - 鼠标移动到预警窗口星系位置会显示该星系名及距离，以及连线显示其周围一跳范围内星系
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel3.png?raw=true?raw=true)
+
 - 有预警时相应星系会红色高亮显示
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel4.png?raw=true?raw=true)
+
 - 如果勾上系统通知，有预警时会在系统通知中心弹出信息
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel5.png?raw=true?raw=true)
-- 如果软件设置了中文数据库，预警窗口的信息名将由中文显示，同时支持中英文信息预警
+
+- 如果软件设置了中文数据库，预警窗口的信息名将由中文显示
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelInZhDb.png?raw=true?raw=true)
+
+- 如果勾选了多个星系名数据库，可同时支持多种星系名预警
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelMutilLang.png?raw=true?raw=true)
+
 - 支持多个角色同时开启预警
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/mutilIntel.png?raw=true?raw=true)
 
@@ -69,7 +75,7 @@ eve-o-preview青春版，将游戏画面置顶显示在系统上，这样一来�
 简单使用说明：
 1. （可选）设置游戏进程名，刷新游戏列表，实际上游戏进程名是固定的exefile，所以可以忽略这个设置。
 2. 选择要预览的游戏进程
-3. （可选）设置标识名，如果游戏是英文，此处会自动识别出角色名称，并以此名子自动匹配以前可能使用过的设置，如果此标识名没有使用过，加载默认配置。
+3. （可选）设置标识名，如果游戏是英文，此处会自动识别出角色名称，并以此名字自动匹配以前可能使用过的设置，如果此标识名没有使用过，加载默认配置。
 4. （可选）对于设置了中文的游戏，因为游戏标题栏不显示角色名，标识名会识别异常，可以通过标识名右边的列表按钮选择以前使用过的设置，或者新建设置。
 5. 设置是否要显示预览窗口的标题栏
 6. 设置预览窗口的透明度
@@ -85,13 +91,12 @@ eve-o-preview青春版，将游戏画面置顶显示在系统上，这样一来�
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/previewInEn.png?raw=true?raw=true)
 
 
-## APP支持黑暗模式
+## 支持黑暗模式
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/darkthemeHome.png?raw=true?raw=true)
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/darkthemeAll.png?raw=true?raw=true)
 
 # 下载
-
-[下载]: https://github.com/qedsd/TheGuideToTheNewEden/releases
+[Releases]([https://github.com/Gavin914/WX-JDCheck](https://github.com/qedsd/TheGuideToTheNewEden/releases))
 
 # 后续计划
 目前虽然只有两个功能可用，但是bug多呀，修修补补又一年。争取在接下来一两个月内把角色中心、市场、商业三个功能重构完，后续的功能就随缘了。
