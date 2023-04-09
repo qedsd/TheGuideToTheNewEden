@@ -76,6 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 item.Dispose();
             }
+            Current.WarningWindows.Clear();
         }
         public static void NotifyToast(EarlyWarningContent content)
         {
