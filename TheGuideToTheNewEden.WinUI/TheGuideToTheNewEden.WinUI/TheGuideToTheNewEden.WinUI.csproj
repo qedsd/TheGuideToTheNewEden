@@ -16,6 +16,7 @@
 	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
     <!--package需注释掉-->
   </PropertyGroup>
   <ItemGroup>
