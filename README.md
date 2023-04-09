@@ -49,25 +49,25 @@ EVE Online实用工具集
 
 ### 效果图
 - 预警窗口：
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel2.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel2.png?raw=true?raw=true)
 
 - 鼠标移动到预警窗口星系位置会显示该星系名及距离，以及连线显示其周围一跳范围内星系
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel3.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel3.png?raw=true?raw=true)
 
 - 有预警时相应星系会红色高亮显示
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel4.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel4.png?raw=true?raw=true)
 
 - 如果勾上系统通知，有预警时会在系统通知中心弹出信息
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel5.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intel5.png?raw=true?raw=true)
 
 - 如果软件设置了中文数据库，预警窗口的信息名将由中文显示
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelInZhDb.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelInZhDb.png?raw=true?raw=true)
 
 - 如果勾选了多个星系名数据库，可同时支持多种星系名预警
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelMutilLang.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/intelMutilLang.png?raw=true?raw=true)
 
 - 支持多个角色同时开启预警
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/mutilIntel.png?raw=true?raw=true)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/mutilIntel.png?raw=true?raw=true)
 
 ## 多开预览
 eve-o-preview青春版，将游戏画面置顶显示在系统上，这样一来多开时就可以操作一个游戏窗口时还可以看到别的游戏进程实时画面。
