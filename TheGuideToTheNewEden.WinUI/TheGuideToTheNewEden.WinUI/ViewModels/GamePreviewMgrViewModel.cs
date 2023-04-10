@@ -51,6 +51,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref settings, value);
         }
         private Core.Models.GamePreviews.PreviewItem selectedSetting;
+        /// <summary>
+        /// 标识保存列表被选中项，当前设置可能不在保存列表中，所以需要和Setting区分开
+        /// </summary>
         public Core.Models.GamePreviews.PreviewItem SelectedSetting
         {
             get => selectedSetting;
@@ -231,26 +234,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Window?.HideWaiting();
         }
 
+        /// <summary>
+        /// 加载相应设置
+        /// </summary>
         private void SetProcess()
         {
             if(SelectedProcess != null)
             {
                 SettingVisible = Visibility.Visible;
-                var name = SelectedProcess.GetCharacterName();
-                if(!string.IsNullOrEmpty(name))
+                if(SelectedProcess.Setting != null)//运行中
                 {
-                    var runningSetting = Settings.FirstOrDefault(p => p.ProcessGUID == SelectedProcess.GUID);
-                    if(runningSetting != null)
+                    Setting = SelectedProcess.Setting;
+                    SelectedSetting = Settings.Contains(Setting) ? Setting : null;
+                }
+                else //进程未运行中
+                {
+                    var name = SelectedProcess.GetCharacterName();
+                    if (!string.IsNullOrEmpty(name))
                     {
-                        //进程运行中
-                        Setting = runningSetting;
-                        SelectedSetting = runningSetting;
-                    }
-                    else
-                    {
-                        //进程未运行中
-                        //从设置里找出第一个同名且不在运行中的设置
-                        var targetSetting = Settings.FirstOrDefault(p => p.Name == name && p.ProcessGUID == null);
+                        //从保存列表里找出第一个同名且不在运行中的设置
+                        var targetSetting = Settings.FirstOrDefault(p => p.Name == name && p.ProcessInfo == null);
                         if (targetSetting != null)
                         {
                             Setting = targetSetting;
@@ -265,15 +268,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             SelectedSetting = null;
                         }
                     }
-                }
-                else//如果不设置名称，不会保存，直接新建
-                {
-                    Setting = new PreviewItem()
+                    else//如果不设置名称，不会保存，直接新建
                     {
-                        Name = SelectedProcess.GetCharacterName()
-                    };
-                    SelectedSetting = null;
+                        Setting = new PreviewItem()
+                        {
+                            Name = SelectedProcess.GetCharacterName()
+                        };
+                        SelectedSetting = null;
+                    }
                 }
+                
             }
             else
             {
@@ -292,18 +296,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    if (Setting.ProcessGUID != null && SelectedProcess.GUID != Setting.ProcessGUID)
-                    {
-                        Window.ShowError("该配置正在运行中");
-                        return;
-                    }
                     GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting);
                     if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
                         gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
                         gamePreviewWindow.Start(SelectedProcess.MainWindowHandle);
-                        Setting.ProcessGUID = SelectedProcess.GUID;
+                        SelectedProcess.Setting = Setting;
+                        Setting.ProcessInfo = SelectedProcess;
                         SelectedProcess.Running = true;
                         SelectedProcess.SettingName = Setting.Name;
                         Running = true;
@@ -360,19 +360,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void Stop(PreviewItem previewItem)
         {
-            if(previewItem == null)
+            if(previewItem == null || previewItem.ProcessInfo == null)
             {
                 return;
             }
-            if (_runningDic.TryGetValue(previewItem.ProcessGUID, out var window))
+            if (_runningDic.TryGetValue(previewItem.ProcessInfo.GUID, out var window))
             {
-                _runningDic.Remove(previewItem.ProcessGUID);
-                var targetProcess = Processes.FirstOrDefault(p => p.GUID == previewItem.ProcessGUID);
-                if (targetProcess != null)
-                {
-                    targetProcess.Running = false;
-                }
-                previewItem.ProcessGUID = null;
+                _runningDic.Remove(previewItem.ProcessInfo.GUID);
+                previewItem.ProcessInfo.Running = false;
+                previewItem.ProcessInfo.Setting = null;
+                previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
@@ -457,6 +454,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             if (_runningDic.TryGetValue(pro.GUID, out var value))
                             {
                                 _runningDic.Remove(pro.GUID);
+                                pro.Setting.ProcessInfo = null;
+                                pro.Setting = null;
                                 value.Stop();
                                 if(SelectedProcess == pro)
                                 {

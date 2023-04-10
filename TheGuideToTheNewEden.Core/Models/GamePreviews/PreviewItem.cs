@@ -19,8 +19,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => name;
             set => SetProperty(ref name, value);
         }
-        [JsonIgnore]
-        public string ProcessGUID { get; set; }
         /// <summary>
         /// 窗口透明度
         /// 0-100
@@ -76,6 +74,12 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get => hotKey;
             set => SetProperty(ref hotKey, value);
+        }
+        private ProcessInfo processInfo;
+        [JsonIgnore]
+        public ProcessInfo ProcessInfo
+        {
+            get => processInfo; set => SetProperty(ref processInfo, value);
         }
     }
 }

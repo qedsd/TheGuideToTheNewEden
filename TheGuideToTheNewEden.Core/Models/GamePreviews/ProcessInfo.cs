@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -49,6 +50,13 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         public bool ShowSettingName
         {
             get => showSettingName; set => SetProperty(ref showSettingName, value);
+        }
+
+        private PreviewItem setting;
+        [JsonIgnore]
+        public PreviewItem Setting
+        {
+            get => setting;set => SetProperty(ref setting, value);
         }
     }
 }
