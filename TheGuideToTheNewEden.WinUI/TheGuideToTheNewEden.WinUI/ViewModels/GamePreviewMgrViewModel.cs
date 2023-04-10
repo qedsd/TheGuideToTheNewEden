@@ -224,14 +224,73 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                 });
-                Processes = targetProcesses;
+                if(Processes.NotNullOrEmpty() && targetProcesses.NotNullOrEmpty())
+                {
+                    //保留当前运行中的进程
+                    var runnings = Processes.Where(p => p.Running).ToList();
+                    Processes.Clear();
+                    if (runnings.NotNullOrEmpty())//存在运行中，
+                    {
+                        //将运行中从新增里排除
+                        foreach (var running in runnings)
+                        {
+                            var item = targetProcesses.FirstOrDefault(p=>p.MainWindowHandle == running.MainWindowHandle);
+                            if(item != null)
+                            {
+                                targetProcesses.Remove(item);
+                            }
+                            Processes.Add(running);
+                        }
+                    }
+                    if(targetProcesses.Any())
+                    {
+                        foreach(var item in targetProcesses)
+                        {
+                            Processes.Add(item);
+                        }    
+                    }
+                }
+                else
+                {
+                    if(targetProcesses.NotNullOrEmpty())
+                    {
+                        Processes = targetProcesses;
+                    }
+                    else
+                    {
+                        TryClearProcesses();
+                    }
+                }
+            }
+            else
+            {
+                TryClearProcesses();
+            }
+            StartGameMonitor();
+            Window?.HideWaiting();
+        }
+        private void TryClearProcesses()
+        {
+            if (Processes.NotNullOrEmpty())
+            {
+                var runnings = Processes.Where(p => p.Running).ToList();
+                if (runnings.NotNullOrEmpty())
+                {
+                    Processes.Clear();
+                    foreach (var item in runnings)
+                    {
+                        Processes.Add(item);
+                    }
+                }
+                else
+                {
+                    Processes.Clear();
+                }
             }
             else
             {
                 Processes = null;
             }
-            StartGameMonitor();
-            Window?.HideWaiting();
         }
 
         /// <summary>

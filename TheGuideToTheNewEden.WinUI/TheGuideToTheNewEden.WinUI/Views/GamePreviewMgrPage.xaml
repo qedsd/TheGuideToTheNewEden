@@ -28,7 +28,6 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
-                    IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
                     PlaceholderText="多个关键词时，使用符号,分割"
                     Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}"
                     ToolTipService.ToolTip="进程关键词" />
@@ -36,7 +35,6 @@
                     Grid.Column="1"
                     VerticalAlignment="Stretch"
                     Command="{x:Bind VM.RefreshProcessListCommand}"
-                    IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
                     ToolTipService.ToolTip="刷新列表">
                     <Button.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE149;" />
