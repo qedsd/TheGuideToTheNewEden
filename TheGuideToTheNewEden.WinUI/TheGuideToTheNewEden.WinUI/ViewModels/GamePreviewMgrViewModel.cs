@@ -145,46 +145,52 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private string _lastProcessGUID;
         private void HotkeyService_OnKeyboardClicked(List<Common.KeyboardHook.KeyboardInfo> keys)
         {
-            if (_runningDic.Count != 0 && !string.IsNullOrEmpty(PreviewSetting.SwitchHotkey))
+            if(keys.NotNullOrEmpty())
             {
-                var keynames = PreviewSetting.SwitchHotkey.Split('+');
-                if (keynames.NotNullOrEmpty())
+                if (_runningDic.Count != 0 && !string.IsNullOrEmpty(PreviewSetting.SwitchHotkey))
                 {
-                    var targetkeys = keynames.ToList();
-                    foreach (var key in targetkeys)
+                    var keynames = PreviewSetting.SwitchHotkey.Split('+');
+                    if (keynames.NotNullOrEmpty())
                     {
-                        if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
+                        var targetkeys = keynames.ToList();
+                        foreach (var key in targetkeys)
                         {
-                            return;
-                        }
-                    }
-                    if(_lastProcessGUID == null)
-                    {
-                        _runningDic.First().Value.ActiveSourceWindow();
-                        _lastProcessGUID = _runningDic.First().Key;
-                    }
-                    else
-                    {
-                        for(int i = 0;i< _runningDic.Count;i++)
-                        {
-                            var item = _runningDic.ElementAt(i);
-                            if (item.Key == _lastProcessGUID)
+                            if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
                             {
-                                KeyValuePair<string, GamePreviewWindow> show;
-                                if(i != _runningDic.Count - 1)
+                                return;
+                            }
+                        }
+                        if (_lastProcessGUID == null)
+                        {
+                            Debug.WriteLine($"首次激活第一个{_runningDic.First().Key}");
+                            _runningDic.First().Value.ActiveSourceWindow();
+                            _lastProcessGUID = _runningDic.First().Key;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < _runningDic.Count; i++)
+                            {
+                                var item = _runningDic.ElementAt(i);
+                                if (item.Key == _lastProcessGUID)
                                 {
-                                    show = _runningDic.ElementAt(i + 1);
+                                    KeyValuePair<string, GamePreviewWindow> show;
+                                    if (i != _runningDic.Count - 1)
+                                    {
+                                        show = _runningDic.ElementAt(i + 1);
+                                        Debug.WriteLine($"激活下一个{show.Key}");
+                                    }
+                                    else
+                                    {
+                                        show = _runningDic.First();
+                                        Debug.WriteLine($"激活下一轮第一个{show.Key}");
+                                    }
+                                    if (show.Key != null)
+                                    {
+                                        _lastProcessGUID = show.Key;
+                                        show.Value.ActiveSourceWindow();
+                                    }
+                                    break;
                                 }
-                                else
-                                {
-                                    show = _runningDic.First();
-                                }
-                                if(show.Key != null)
-                                {
-                                    _lastProcessGUID = show.Key;
-                                    show.Value.ActiveSourceWindow();
-                                }
-                                break;
                             }
                         }
                     }
@@ -552,12 +558,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         if(item.Value.Setting.HideOnForeground)
                         {
-                            item.Value.Hide();
+                            item.Value.Hide2();
                         }
                     }
                     else
                     {
-                        item.Value.Show();
+                        item.Value.Show2();
                     }
                 }
             }
@@ -565,7 +571,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 foreach (var item in _runningDic)
                 {
-                    item.Value.Show();
+                    item.Value.Show2();
                 }
             }
         }
