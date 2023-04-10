@@ -223,7 +223,7 @@ namespace TheGuideToTheNewEden.WinUI
                 }
             });
         }
-        public void ShowError(string msg, bool autoClose = true)
+        public void ShowError(string msg, bool autoClose = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {

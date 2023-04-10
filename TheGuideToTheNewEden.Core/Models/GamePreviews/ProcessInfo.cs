@@ -16,6 +16,10 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get=>running; set => SetProperty(ref running,value);
         }
+        public string GUID
+        {
+            get => _guid;
+        }
         public string GetCharacterName()
         {
             if(!string.IsNullOrEmpty(WindowTitle))
@@ -29,18 +33,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             return null;
         }
         private string _guid = Guid.NewGuid().ToString();
-        public string GetGuid()
-        {
-            string name = GetCharacterName();
-            if(string.IsNullOrEmpty(name))
-            {
-                return _guid;
-            }
-            else
-            {
-                return name;
-            }
-        }
 
         private string settingName;
         public string SettingName
