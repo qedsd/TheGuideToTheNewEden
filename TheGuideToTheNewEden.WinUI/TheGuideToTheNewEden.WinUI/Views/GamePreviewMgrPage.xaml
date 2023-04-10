@@ -200,6 +200,9 @@
                             PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
                             Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}" />
                     </Grid>
+                    <Grid Margin="0,10">
+                        <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
+                    </Grid>
                 </StackPanel>
             </ScrollViewer>
             <Rectangle

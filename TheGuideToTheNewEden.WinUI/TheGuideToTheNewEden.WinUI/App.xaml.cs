@@ -2,6 +2,7 @@
 using System;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
+using TheGuideToTheNewEden.WinUI.Services;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -47,6 +48,7 @@ namespace TheGuideToTheNewEden.WinUI
         private void OnProcessExit(object sender, EventArgs e)
         {
             notificationManager.Unregister();
+            ForegroundWindowService.Current.Stop();
         }
 
         /// <summary>

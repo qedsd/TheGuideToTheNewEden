@@ -22,17 +22,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal class GamePreviewWindow: BaseWindow
     {
         //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
+        public PreviewItem Setting { get => _setting; }
         private readonly PreviewItem _setting;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
+        private OverlappedPresenter _presenter;
         public GamePreviewWindow(PreviewItem setting):base()
         {
             _setting = setting;
             SetSmallTitleBar();
             HideAppDisplayName();
             SetHeadText(setting.Name);
-            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
-            presenter.IsAlwaysOnTop = true;
+            _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
+            _presenter.IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
@@ -52,7 +54,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerReleased += Content_PointerReleased;
             content.PointerWheelChanged += Content_PointerWheelChanged;
             _appWindow.Closing += AppWindow_Closing;
-            this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
             InitHotkey();
         }
 
@@ -65,14 +66,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinX = _appWindow.Position.X;
                 _setting.WinY = _appWindow.Position.Y;
                 OnSettingChanged?.Invoke(_setting);
-            }
-        }
-
-        private void GamePreviewWindow_VisibilityChanged(object sender, WindowVisibilityChangedEventArgs args)
-        {
-            if(!args.Visible)
-            {
-                this.Activate();
             }
         }
 
@@ -124,7 +117,23 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
         }
-
+        public void Show()
+        {
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                Debug.WriteLine("Activate");
+                _presenter.IsAlwaysOnTop = true;
+                this.Activate();
+            });
+        }
+        public void Hide()
+        {
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                _presenter.IsAlwaysOnTop = false;
+                this.Minimize();
+            });
+        }
 
         private void UpdateThumbDestination()
         {
@@ -185,7 +194,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
             SizeChanged -= GamePreviewWindow_SizeChanged;
             _appWindow.Closing -= AppWindow_Closing;
-            this.VisibilityChanged -= GamePreviewWindow_VisibilityChanged;
             HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             Close();
         }

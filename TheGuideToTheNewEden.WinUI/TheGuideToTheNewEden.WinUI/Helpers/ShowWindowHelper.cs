@@ -24,5 +24,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         /// <returns></returns>
         [DllImport("User32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        /// <summary>
+        /// 返回当前活动窗口句柄
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
     }
 }

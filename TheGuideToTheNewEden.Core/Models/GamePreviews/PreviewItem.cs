@@ -81,5 +81,12 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get => processInfo; set => SetProperty(ref processInfo, value);
         }
+
+        private bool hideOnForeground = true;
+        public bool HideOnForeground
+        {
+            get => hideOnForeground;
+            set => SetProperty(ref hideOnForeground, value);
+        }
     }
 }

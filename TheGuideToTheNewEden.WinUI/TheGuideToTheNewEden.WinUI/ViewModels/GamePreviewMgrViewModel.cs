@@ -108,7 +108,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
         public GamePreviewMgrViewModel()
         {
-            if(System.IO.File.Exists(Path))
+            ForegroundWindowService.Current.Start();
+            ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;
+            if (System.IO.File.Exists(Path))
             {
                 string json = System.IO.File.ReadAllText(Path);
                 if (string.IsNullOrEmpty(json))
@@ -533,5 +535,39 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             gameMonitor.Start();
         }
         #endregion
+
+
+        /// <summary>
+        /// 当前活动窗口变化
+        /// </summary>
+        /// <param name="hWnd"></param>
+        private void Current_OnForegroundWindowChanged(IntPtr hWnd)
+        {
+            var targetProcess = Processes.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
+            if(targetProcess != null)
+            {
+                foreach(var item in _runningDic)
+                {
+                    if(item.Key == targetProcess.GUID)
+                    {
+                        if(item.Value.Setting.HideOnForeground)
+                        {
+                            item.Value.Hide();
+                        }
+                    }
+                    else
+                    {
+                        item.Value.Show();
+                    }
+                }
+            }
+            else
+            {
+                foreach (var item in _runningDic)
+                {
+                    item.Value.Show();
+                }
+            }
+        }
     }
 }
