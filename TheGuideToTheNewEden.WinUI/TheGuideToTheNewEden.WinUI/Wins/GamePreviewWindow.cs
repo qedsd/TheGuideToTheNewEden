@@ -117,16 +117,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
         }
-        public void Show()
+        public void Show2()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                Debug.WriteLine("Activate");
-                _presenter.IsAlwaysOnTop = true;
-                this.Activate();
+                if(!this.Visible)
+                {
+                    Debug.WriteLine("Activate");
+                    _presenter.IsAlwaysOnTop = true;
+                    this.Restore();
+                }
             });
         }
-        public void Hide()
+        public void Hide2()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
