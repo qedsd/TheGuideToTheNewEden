@@ -53,8 +53,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerWheelChanged += Content_PointerWheelChanged;
             _appWindow.Closing += AppWindow_Closing;
             this.VisibilityChanged += GamePreviewWindow_VisibilityChanged;
-            _appWindow.Changed += AppWindow_Changed;
-
             InitHotkey();
         }
 
@@ -62,8 +60,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if(args.DidPositionChange || args.DidSizeChange)
             {
-                _setting.WinW = _appWindow.ClientSize.Width;
-                _setting.WinH = _appWindow.ClientSize.Height;
+                _setting.WinW = _appWindow.Size.Width;
+                _setting.WinH = _appWindow.Size.Height;
                 _setting.WinX = _appWindow.Position.X;
                 _setting.WinY = _appWindow.Position.Y;
                 OnSettingChanged?.Invoke(_setting);
@@ -124,6 +122,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
             UpdateThumbDestination();
             this.Activate();
+            _appWindow.Changed += AppWindow_Changed;
         }
 
 
