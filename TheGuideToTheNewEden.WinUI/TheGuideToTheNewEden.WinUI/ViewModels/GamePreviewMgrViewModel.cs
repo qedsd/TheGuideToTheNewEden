@@ -473,7 +473,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private Timer gameMonitor;
         private void StartGameMonitor()
         {
-            if(Processes.Count != 0)
+            if(Processes?.Count != 0)
             {
                 if(gameMonitor == null)
                 {
