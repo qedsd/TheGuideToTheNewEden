@@ -234,14 +234,30 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void HotkeyService_OnKeyboardClicked(List<KeyboardHook.KeyboardInfo> keys)
         {
-            foreach(var key in _keys)
+            if(keys.Count != 0)
             {
-                if(!keys.Where(p=>p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
+                //TODO:无法获取按键事件
+                //if(keys.Count == 1)
+                //{
+                //    if (keys[0].Name.Equals("Esc", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        var foregroundW = Helpers.ShowWindowHelper.GetForegroundWindow();
+                //        if(foregroundW == _setting.ProcessInfo.MainWindowHandle)
+                //        {
+                //            OnStop?.Invoke(_setting);//交给调用者处理关闭
+                //            return;
+                //        }
+                //    }
+                //}
+                foreach (var key in _keys)
                 {
-                    return;
+                    if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        return;
+                    }
                 }
+                ActiveSourceWindow();
             }
-            ActiveSourceWindow();
         }
         #endregion
     }
