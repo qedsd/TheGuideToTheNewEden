@@ -14,6 +14,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
+using TheGuideToTheNewEden.WinUI.Views.Character;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -30,6 +31,19 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
             (DataContext as BaseViewModel).Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
+
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            switch((args.SelectedItem as NavigationViewItem).Tag)
+            {
+                case "Overview":ContentFrame.Navigate(typeof(OverviewPage));break;
+                case "Skill": ContentFrame.Navigate(typeof(SkillPage)); break;
+                case "Clone": ContentFrame.Navigate(typeof(ClonePage)); break;
+                case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;
+                case "Mail": ContentFrame.Navigate(typeof(MailPage)); break;
+                case "Contract": ContentFrame.Navigate(typeof(ContractPage)); break;
+            }
         }
     }
 }

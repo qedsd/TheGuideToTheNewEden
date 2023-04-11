@@ -510,7 +510,10 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ListBox ItemsSource="{x:Bind ViewModel.Walletjournals, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
+                            <ListBox
+                                Background="Transparent"
+                                ItemContainerStyle="{StaticResource UnfocusedListBoxItem}"
+                                ItemsSource="{x:Bind ViewModel.Walletjournals, Mode=OneWay}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="model2:Walletjournal">
                                         <Grid Padding="0,0,4,0">
@@ -569,7 +572,10 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactions, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
+                            <ListBox
+                                Background="Transparent"
+                                ItemContainerStyle="{StaticResource UnfocusedListBoxItem}"
+                                ItemsSource="{x:Bind ViewModel.WalletTransactions, Mode=OneWay}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="model2:WalletTransaction">
                                         <Grid Padding="0,0,4,0">
@@ -624,7 +630,10 @@
                                 Text="交易-统计"
                                 ToolTipService.ToolTip="最近30天市场交易" />
                         </PivotItem.Header>
-                        <ListBox ItemsSource="{x:Bind ViewModel.WalletTransactionStatistic, Mode=OneWay}" Background="Transparent" ItemContainerStyle="{StaticResource UnfocusedListBoxItem}">
+                        <ListBox
+                            Background="Transparent"
+                            ItemContainerStyle="{StaticResource UnfocusedListBoxItem}"
+                            ItemsSource="{x:Bind ViewModel.WalletTransactionStatistic, Mode=OneWay}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="model2:WalletTransaction">
                                     <Grid Padding="0,0,4,0">

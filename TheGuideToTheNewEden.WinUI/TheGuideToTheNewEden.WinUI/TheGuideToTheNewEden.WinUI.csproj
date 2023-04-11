@@ -221,6 +221,12 @@
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
+    <None Remove="Views\Character\ClonePage.xaml" />
+    <None Remove="Views\Character\ContractPage.xaml" />
+    <None Remove="Views\Character\MailPage.xaml" />
+    <None Remove="Views\Character\OverviewPage.xaml" />
+    <None Remove="Views\Character\SkillPage.xaml" />
+    <None Remove="Views\Character\WalletPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
@@ -285,6 +291,24 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Character\ContractPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\MailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\WalletPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\ClonePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\SkillPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\OverviewPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\LocalIntelItemPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
@@ -354,9 +378,5 @@
     <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\Character\" />
   </ItemGroup>
 </Project>

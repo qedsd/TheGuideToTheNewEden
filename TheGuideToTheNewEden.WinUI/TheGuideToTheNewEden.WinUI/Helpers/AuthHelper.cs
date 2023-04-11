@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Interfaces;
+using static SixLabors.ImageSharp.Metadata.Profiles.Exif.EncodedString;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -13,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
     {
         public static void RegistyProtocol()
         {
-            var yourProtocolName = Registry.ClassesRoot.CreateSubKey("TheGuideToTheNewEden");
+            var yourProtocolName = Registry.ClassesRoot.CreateSubKey("eveauth-qedsd-neweden2");
             var command = yourProtocolName.CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command");
             yourProtocolName.SetValue("URL Protocol", "");
             command.SetValue(null, $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"");

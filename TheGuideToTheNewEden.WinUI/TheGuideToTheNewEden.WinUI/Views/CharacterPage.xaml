@@ -105,7 +105,11 @@
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ComboBox HorizontalAlignment="Stretch" />
+                <ComboBox
+                    HorizontalAlignment="Stretch"
+                    DisplayMemberPath="CharacterName"
+                    ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                    SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
                 <Button Grid.Column="1" Command="{x:Bind VM.AddCommand}">
                     <Button.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
@@ -117,16 +121,17 @@
             Grid.Column="1"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
-            PaneDisplayMode="Top">
+            PaneDisplayMode="Top"
+            SelectionChanged="NavigationView_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="概要" />
-                <NavigationViewItem Content="技能" />
-                <NavigationViewItem Content="克隆" />
-                <NavigationViewItem Content="钱包" />
-                <NavigationViewItem Content="邮件" />
-                <NavigationViewItem Content="合同" />
+                <NavigationViewItem Content="概要" Tag="Overview" />
+                <NavigationViewItem Content="技能" Tag="Skill" />
+                <NavigationViewItem Content="克隆" Tag="Clone" />
+                <NavigationViewItem Content="钱包" Tag="Wallet" />
+                <NavigationViewItem Content="邮件" Tag="Mail" />
+                <NavigationViewItem Content="合同" Tag="Contract" />
             </NavigationView.MenuItems>
-            <Frame x:Name="contentFrame" Background="Transparent" />
+            <Frame x:Name="ContentFrame" Background="Transparent" />
         </NavigationView>
         <!--<Pivot Grid.Column="1" VerticalAlignment="Stretch">
             <PivotItem>

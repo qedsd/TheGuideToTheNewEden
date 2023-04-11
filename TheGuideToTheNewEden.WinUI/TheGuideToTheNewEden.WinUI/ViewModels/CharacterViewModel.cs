@@ -92,11 +92,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
         #endregion
+        public CharacterViewModel()
+        {
+            Characters = Services.CharacterService.CharacterOauths;
+            SelectedCharacter = Characters.FirstOrDefault();
+        }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
             AuthHelper.RegistyProtocol();
             Window.ShowWaiting("等待网页授权...");
-            var result = await AuthHelper.WaitingAuthAsync();
+            var result = await Services.CharacterService.AddAsync();
+            if(result != null)
+            {
+                Window.ShowSuccess("添加成功");
+                SelectedCharacter = result;
+            }
+            else
+            {
+                Window.ShowError("添加失败");
+            }
             Window.HideWaiting();
         });
         private void ResetCharacter()
@@ -109,7 +123,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 return;
             }
-            Window.ShowWaiting();
+            Window?.ShowWaiting();
             ResetCharacter();
             string token = await characterOauth.GetAccessTokenAsync();
             Skill skill = null;
@@ -120,43 +134,43 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             StayShip ship = null;
             Affiliation affiliation = null;
             List<SkillQueue> skillQueues = null;
-            var tasks = new Task[]
-            {
-                Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    skill = p.Result;
-                }),
-                Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    isk = p.Result;
-                }),
-                Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    loyalties = p.Result;
-                }),
-                Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    onlineStatus = p.Result;
-                }),
-                Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    location = p.Result;
-                }),
-                Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    ship = p.Result;
-                }),
-                Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID).ContinueWith((p)=>
-                {
-                    affiliation = p.Result;
-                }),
-                Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-                {
-                    skillQueues = p.Result;
-                }),
-            };
-            await Task.WhenAll(tasks);
-            
+            //var tasks = new Task[]
+            //{
+            //    Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        skill = p?.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        isk = p.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        loyalties = p ?.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        onlineStatus = p.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        location = p.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        ship = p.Result;
+            //    }),
+            //    Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID).ContinueWith((p)=>
+            //    {
+            //        affiliation = p.Result;
+            //    }),
+            //    Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
+            //    {
+            //        skillQueues = p.Result;
+            //    }),
+            //};
+            //await Task.WhenAll(tasks);
+            await Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token);
             DoneSkillCount = 0;
             TraingSkillCount = 0;
             if (skillQueues != null)
@@ -181,7 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     FirstSkillQueue = SkillQueues?.FirstOrDefault();
                 }
             });
-            Window.HideWaiting();
+            Window?.HideWaiting();
         }
     }
 }

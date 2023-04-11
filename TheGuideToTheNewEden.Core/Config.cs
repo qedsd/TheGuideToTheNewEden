@@ -44,7 +44,7 @@ namespace TheGuideToTheNewEden.Core
         /// 玩家统计服务器API
         /// </summary>
         public static string PlayerStatusApi { get; set; }
-
+        public static string ESICallback { get; set; }
         public static bool InitDb()
         {
             bool result = true;
