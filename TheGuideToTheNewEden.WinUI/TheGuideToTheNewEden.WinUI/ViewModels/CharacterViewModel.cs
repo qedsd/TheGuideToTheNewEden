@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using ABI.System;
+using CommunityToolkit.Mvvm.Input;
+using ESI.NET.Logic;
+using ESI.NET.Models.SSO;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,6 +14,7 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Mail;
 using TheGuideToTheNewEden.Core.Models.Wallet;
+using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Helpers;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -16,81 +22,66 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
     internal class CharacterViewModel: BaseViewModel
     {
         #region 属性
-        private ObservableCollection<CharacterOauth> characters;
-        public ObservableCollection<CharacterOauth> Characters
+        private BitmapImage _characterAvatar;
+        public BitmapImage CharacterAvatar { get => _characterAvatar; set => SetProperty(ref _characterAvatar, value); }
+
+        private ObservableCollection<AuthorizedCharacterData> _characters;
+        public ObservableCollection<AuthorizedCharacterData> Characters
         {
-            get => characters;
-            set => SetProperty(ref characters, value); 
+            get => _characters;
+            set => SetProperty(ref _characters, value); 
         }
-        private CharacterOauth selectedCharacter;
-        public CharacterOauth SelectedCharacter
+        private AuthorizedCharacterData _selectedCharacter;
+        public AuthorizedCharacterData SelectedCharacter
         {
-            get => selectedCharacter;
+            get => _selectedCharacter;
             set
             {
-                if (selectedCharacter != null)
+                SetProperty(ref _selectedCharacter, value);
+                Services.CharacterService.SetCurrentCharacter(value);
+                if (_selectedCharacter != null)
                 {
-                    selectedCharacter.IsActive = false;
-                }
-                SetProperty(ref selectedCharacter, value);
-                if (selectedCharacter != null)
-                {
-                    value.IsActive = true;
+                    if(Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility)
+                    {
+                        var uri = new System.Uri($"https://imageserver.eveonline.com/Character/{value.CharacterID}_{512}.jpg");
+                        CharacterAvatar = new BitmapImage(uri);
+                    }
+                    else
+                    {
+                        CharacterAvatar = null;
+                    }
                     GetBaseInfoAsync(value);
                 }
             }
         }
-        private long sp;
-        public long SP { get => sp; set => SetProperty(ref sp, value); }
 
-        private double isk;
-        public double ISK { get => isk; set => SetProperty(ref isk, value); }
+        private decimal _characterWallet;
+        public decimal CharacterWallet { get => _characterWallet; set => SetProperty(ref _characterWallet, value); }
 
-        private int lp;
-        public int LP { get => lp; set => SetProperty(ref lp, value); }
+        private int _lp;
+        public int LP { get => _lp; set => SetProperty(ref _lp, value); }
 
-        private Skill skill;
-        public Skill Skill { get => skill; set => SetProperty(ref skill, value); }
+        private ESI.NET.Models.Skills.SkillDetails _skill;
+        public ESI.NET.Models.Skills.SkillDetails Skill { get => _skill; set => SetProperty(ref _skill, value); }
 
-        private List<Loyalty> loyalties;
-        public List<Loyalty> Loyalties { get => loyalties; set => SetProperty(ref loyalties, value); }
+        private List<ESI.NET.Models.Loyalty.Points> _loyaltyPoints;
+        public List<ESI.NET.Models.Loyalty.Points> LoyaltyPoints { get => _loyaltyPoints; set => SetProperty(ref _loyaltyPoints, value); }
 
-        private OnlineStatus onlineStatus;
-        public OnlineStatus OnlineStatus { get => onlineStatus; set => SetProperty(ref onlineStatus, value); }
+        private ESI.NET.Models.Location.Activity _onlineStatus;
+        public ESI.NET.Models.Location.Activity OnlineStatus { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value); }
 
-        private Location location;
-        public Location Location { get => location; set => SetProperty(ref location, value); }
+        private ESI.NET.Models.Location.Location _location;
+        public ESI.NET.Models.Location.Location Location { get => _location; set => SetProperty(ref _location, value); }
 
-        private StayShip stayShip;
-        public StayShip StayShip { get => stayShip; set => SetProperty(ref stayShip, value); }
+        private ESI.NET.Models.Location.Ship _ship;
+        public ESI.NET.Models.Location.Ship Ship { get => _ship; set => SetProperty(ref _ship, value); }
 
-        private Affiliation affiliation;
-        public Affiliation Affiliation { get => affiliation; set => SetProperty(ref affiliation, value); }
+        private List<ESI.NET.Models.Wallet.Wallet> _corpWallets;
+        public List<ESI.NET.Models.Wallet.Wallet> CorpWallets { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
 
-        private List<SkillQueue> skillQueues;
-        public List<SkillQueue> SkillQueues { get => skillQueues; set => SetProperty(ref skillQueues, value); }
+        private decimal _corpWallet;
+        public decimal CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
 
-        private Skill queue;
-        public Skill Queue { get => queue; set => SetProperty(ref queue, value); }
-
-        private SkillQueue firstSkillQueue;
-        public SkillQueue FirstSkillQueue { get => firstSkillQueue; set => SetProperty(ref firstSkillQueue, value); }
-
-        private int doneSkillCount;
-        public int DoneSkillCount { get => doneSkillCount; set => SetProperty(ref doneSkillCount, value); }
-
-        private int traingSkillCount;
-        public int TraingSkillCount { get => traingSkillCount;set => SetProperty(ref  traingSkillCount, value); }
-
-        private int mainPivotIndex;
-        public int MainPivotIndex
-        {
-            get => mainPivotIndex;
-            set
-            {
-                SetProperty(ref  mainPivotIndex, value);
-            }
-        }
         #endregion
         public CharacterViewModel()
         {
@@ -117,82 +108,123 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             
         }
-        private async void GetBaseInfoAsync(CharacterOauth characterOauth)
+        private async void GetBaseInfoAsync(AuthorizedCharacterData characterData)
         {
-            if (characterOauth == null)
+            if (characterData == null)
             {
                 return;
             }
             Window?.ShowWaiting();
             ResetCharacter();
-            string token = await characterOauth.GetAccessTokenAsync();
-            Skill skill = null;
-            double isk = 0;
-            List<Loyalty> loyalties = null;
-            OnlineStatus onlineStatus = null;
-            Location location = null;
-            StayShip ship = null;
-            Affiliation affiliation = null;
-            List<SkillQueue> skillQueues = null;
-            //var tasks = new Task[]
-            //{
-            //    Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        skill = p?.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetWalletBalanceAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        isk = p.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetLoyaltysAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        loyalties = p ?.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetOnlineStatusAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        onlineStatus = p.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetLocationAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        location = p.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetStayShipAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        ship = p.Result;
-            //    }),
-            //    Core.Services.OrganizationService.GetAffiliationAsync(characterOauth.CharacterID).ContinueWith((p)=>
-            //    {
-            //        affiliation = p.Result;
-            //    }),
-            //    Core.Services.CharacterService.GetSkillQueuesAsync(characterOauth.CharacterID, token).ContinueWith((p)=>
-            //    {
-            //        skillQueues = p.Result;
-            //    }),
-            //};
-            //await Task.WhenAll(tasks);
-            await Core.Services.CharacterService.GetSkillWithGroupAsync(characterOauth.CharacterID, token);
-            DoneSkillCount = 0;
-            TraingSkillCount = 0;
-            if (skillQueues != null)
+            ESI.NET.Models.Skills.SkillDetails skill = null;
+            List<ESI.NET.Models.Loyalty.Points> loyalties = null;
+            ESI.NET.Models.Location.Activity onlineStatus = null;
+            ESI.NET.Models.Location.Location location = null;
+            ESI.NET.Models.Location.Ship ship = null;
+            decimal characterWallet = 0;
+            List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
+            var tasks = new Task[]
             {
-                DoneSkillCount = skillQueues.Where(p => p.IsDone).Count();
-                TraingSkillCount = skillQueues.Count - DoneSkillCount;
-            }
+                ESIService.Current.EsiClient.Skills.List().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        skill = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Loyalty.Points().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        loyalties = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Location.Online().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        onlineStatus = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Location.Location().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        location = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Location.Ship().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        ship = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        characterWallet = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+                ESIService.Current.EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        corpWallets = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Exception);
+                    }
+                }),
+            };
+            await Task.WhenAll(tasks);
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                ISK = isk;
-                LP = loyalties == null ? 0 : loyalties.Sum(p => p.Loyalty_points);
                 Skill = skill;
-                Loyalties = loyalties;
+                LoyaltyPoints = loyalties;
+                OnlineStatus = onlineStatus;
                 OnlineStatus = onlineStatus;
                 Location = location;
-                StayShip = ship;
-                Affiliation = affiliation;
-                SkillQueues = skillQueues;
-                FirstSkillQueue = SkillQueues?.FirstOrDefault(p => p.IsTraing);
-                if (FirstSkillQueue == null)
+                Ship = ship;
+                CharacterWallet = characterWallet;
+                CorpWallets = corpWallets;
+                if(CorpWallets.IsNullOrEmpty())
                 {
-                    FirstSkillQueue = SkillQueues?.FirstOrDefault();
+                    CorpWallet = CorpWallets.Sum(p => p.Balance);
+                }
+                if(loyalties.IsNullOrEmpty())
+                {
+                    LP = loyalties.Sum(p => p.LoyaltyPoints);
+                }
+                else
+                {
+                    LP = 0;
                 }
             });
             Window?.HideWaiting();

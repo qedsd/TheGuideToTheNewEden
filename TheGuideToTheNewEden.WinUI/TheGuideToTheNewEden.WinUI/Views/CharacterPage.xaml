@@ -12,6 +12,12 @@
     <Page.DataContext>
         <viewmodels:CharacterViewModel x:Name="VM" />
     </Page.DataContext>
+    <Page.Resources>
+        <Style x:Key="InfoStackPanel" TargetType="StackPanel">
+            <Setter Property="Margin" Value="10,4,0,4" />
+            <Setter Property="Orientation" Value="Horizontal" />
+        </Style>
+    </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
@@ -22,81 +28,94 @@
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <Grid Grid.RowSpan="2" Margin="0,-42,0,0">
+                <Grid.Background>
+                    <ImageBrush ImageFailed="ImageBrush_ImageFailed" ImageSource="{x:Bind VM.CharacterAvatar, Mode=OneWay}" />
+                </Grid.Background>
+                <Grid Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
+            </Grid>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="1.5*" />
+                    <RowDefinition />
+                    <RowDefinition />
                 </Grid.RowDefinitions>
-                <controls:ImageEx
-                    Name="ImageEx_CharacterAvatar"
-                    Width="128"
-                    Height="128"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    CornerRadius="999"
-                    Source="{x:Bind VM.SelectedCharacter.CharacterID, Converter={StaticResource CharacterImgConverter512}, Mode=OneWay}"
-                    Stretch="Fill" />
-                <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <controls:ImageEx
+                        Name="ImageEx_CharacterAvatar"
+                        Width="128"
+                        Height="128"
+                        CornerRadius="999"
+                        ImageExFailed="ImageEx_CharacterAvatar_ImageExFailed"
+                        Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
+                        Stretch="Fill" />
                     <TextBlock
-                        Margin="0,10,0,40"
+                        Margin="0,10,0,0"
                         HorizontalAlignment="Center"
                         FontFamily="SimSun"
                         FontSize="24"
                         Foreground="{StaticResource SystemAccentColor}"
                         Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
+                </StackPanel>
 
-                    <StackPanel
-                        Margin="0,4"
-                        Orientation="Horizontal"
-                        ToolTipService.ToolTip="技能点">
-                        <BitmapIcon
-                            Width="24"
-                            Height="24"
-                            UriSource="Assets/Icon/WindowIcons/skills.png" />
-                        <TextBlock
-                            Margin="2,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind VM.Skill.Total_sp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                <StackPanel
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom">
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
-                            Text="SP" />
-                    </StackPanel>
-                    <StackPanel
-                        Margin="0,4"
-                        Orientation="Horizontal"
-                        ToolTipService.ToolTip="钱包">
-                        <BitmapIcon
-                            Width="24"
-                            Height="24"
-                            UriSource="Assets/Icon/WindowIcons/wallet.png" />
+                            Text="技能点：" />
                         <TextBlock
                             Margin="2,0,0,0"
                             VerticalAlignment="Center"
-                            Text="{x:Bind VM.ISK, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
+                            Text="{x:Bind VM.Skill.TotalSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="(" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.Skill.UnallocatedSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
+                            ToolTipService.ToolTip="未使用" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Text=")" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="个人钱包：" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                             TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
-                            Text="ISK" />
-                    </StackPanel>
-                    <StackPanel
-                        Margin="0,4"
-                        Orientation="Horizontal"
-                        ToolTipService.ToolTip="忠诚点">
-                        <BitmapIcon
-                            Width="24"
-                            Height="24"
-                            UriSource="Assets/Icon/WindowIcons/agent.png" />
+                            Text="忠诚点" />
                         <TextBlock
                             Margin="2,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
                             TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
-                            Text="LP" />
+                            Text="公司钱包：" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.CorpWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -119,6 +138,7 @@
         </Grid>
         <NavigationView
             Grid.Column="1"
+            Margin="0,-16,0,0"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             PaneDisplayMode="Top"
@@ -133,37 +153,5 @@
             </NavigationView.MenuItems>
             <Frame x:Name="ContentFrame" Background="Transparent" />
         </NavigationView>
-        <!--<Pivot Grid.Column="1" VerticalAlignment="Stretch">
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="概要" />
-                </PivotItem.Header>
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="技能" />
-                </PivotItem.Header>
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="克隆" />
-                </PivotItem.Header>
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="钱包" />
-                </PivotItem.Header>
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="邮件" />
-                </PivotItem.Header>
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="16" Text="合同" />
-                </PivotItem.Header>
-            </PivotItem>
-        </Pivot>-->
     </Grid>
 </Page>

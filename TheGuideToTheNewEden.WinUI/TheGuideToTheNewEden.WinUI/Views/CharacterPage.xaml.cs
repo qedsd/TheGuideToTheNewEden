@@ -45,5 +45,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 case "Contract": ContentFrame.Navigate(typeof(ContractPage)); break;
             }
         }
+
+        private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+
+        }
+
+        private void ImageEx_CharacterAvatar_ImageExFailed(object sender, CommunityToolkit.WinUI.UI.Controls.ImageExFailedEventArgs e)
+        {
+
+        }
     }
 }

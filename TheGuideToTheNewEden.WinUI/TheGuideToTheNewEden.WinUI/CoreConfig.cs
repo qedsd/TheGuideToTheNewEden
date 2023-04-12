@@ -17,6 +17,7 @@ namespace TheGuideToTheNewEden.WinUI
         public static Core.Enums.GameServerType DefaultGameServer{set=>Core.Config.DefaultGameServer = value; }
         public static string ClientId {set=>Core.Config.ClientId = value; }
         public static string Scope {set=>Core.Config.Scope = value; }
+        public static List<string> Scopes { set => Core.Config.Scopes = value; }
         public static string ESICallback { set => Core.Config.ESICallback = value; }
         public static string PlayerStatusApi { set=>Core.Config.PlayerStatusApi = value; }
 

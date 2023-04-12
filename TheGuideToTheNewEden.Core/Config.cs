@@ -40,6 +40,7 @@ namespace TheGuideToTheNewEden.Core
         /// 授权服务的scope
         /// </summary>
         public static string Scope { get; set; }
+        public static List<string> Scopes { get; set; }
         /// <summary>
         /// 玩家统计服务器API
         /// </summary>
