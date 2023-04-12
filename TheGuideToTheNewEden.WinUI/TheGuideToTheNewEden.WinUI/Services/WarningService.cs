@@ -64,7 +64,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public static void RemoveWindow(string listener)
         {
-            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            if (listener != null && Current.WarningWindows.TryGetValue(listener, out var value))
             {
                 value.Dispose();
                 Current.WarningWindows.Remove(listener);
