@@ -1,5 +1,4 @@
-﻿using ABI.System;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using ESI.NET.Logic;
 using ESI.NET.Models.SSO;
 using Microsoft.IdentityModel.Tokens;
@@ -60,6 +59,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private int _lp;
         public int LP { get => _lp; set => SetProperty(ref _lp, value); }
+        private ESI.NET.Models.Character.Information _information;
+        public ESI.NET.Models.Character.Information Information { get => _information; set => SetProperty(ref _information, value); }
 
         private ESI.NET.Models.Skills.SkillDetails _skill;
         public ESI.NET.Models.Skills.SkillDetails Skill { get => _skill; set => SetProperty(ref _skill, value); }
@@ -86,6 +87,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public CharacterViewModel()
         {
             Characters = Services.CharacterService.CharacterOauths;
+        }
+        public void Init()
+        {
             SelectedCharacter = Characters.FirstOrDefault();
         }
         public ICommand AddCommand => new RelayCommand(async() =>
@@ -104,10 +108,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Window.HideWaiting();
         });
-        private void ResetCharacter()
+        public ICommand RefreshCommand => new RelayCommand(() =>
         {
-            
-        }
+            GetBaseInfoAsync(SelectedCharacter);
+        });
         private async void GetBaseInfoAsync(AuthorizedCharacterData characterData)
         {
             if (characterData == null)
@@ -115,7 +119,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
             Window?.ShowWaiting();
-            ResetCharacter();
+            await Services.CharacterService.WaitRefreshToken();
+            ESI.NET.Models.Character.Information information = null;
             ESI.NET.Models.Skills.SkillDetails skill = null;
             List<ESI.NET.Models.Loyalty.Points> loyalties = null;
             ESI.NET.Models.Location.Activity onlineStatus = null;
@@ -125,6 +130,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
             var tasks = new Task[]
             {
+                ESIService.Current.EsiClient.Character.Information(SelectedCharacter.CharacterID).ContinueWith((p)=>
+                {
+                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        information = p.Result.Data;
+                    }
+                    else
+                    {
+                        Log.Error(p?.Result.Message);
+                    }
+                }),
                 ESIService.Current.EsiClient.Skills.List().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -133,7 +149,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Loyalty.Points().ContinueWith((p)=>
@@ -144,7 +160,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Location.Online().ContinueWith((p)=>
@@ -155,7 +171,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Location.Location().ContinueWith((p)=>
@@ -166,7 +182,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Location.Ship().ContinueWith((p)=>
@@ -177,7 +193,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
@@ -188,7 +204,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
                 ESIService.Current.EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
@@ -199,7 +215,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Exception);
+                        Log.Error(p?.Result.Message);
                     }
                 }),
             };
@@ -214,11 +230,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Ship = ship;
                 CharacterWallet = characterWallet;
                 CorpWallets = corpWallets;
-                if(CorpWallets.IsNullOrEmpty())
+                Information = information;
+                if(CorpWallets != null && CorpWallets.Any())
                 {
                     CorpWallet = CorpWallets.Sum(p => p.Balance);
                 }
-                if(loyalties.IsNullOrEmpty())
+                else
+                {
+                    CorpWallet = 0;
+                }
+                if(loyalties != null && loyalties.Any())
                 {
                     LP = loyalties.Sum(p => p.LoyaltyPoints);
                 }

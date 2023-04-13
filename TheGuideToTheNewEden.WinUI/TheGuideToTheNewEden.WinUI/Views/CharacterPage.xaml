@@ -14,7 +14,7 @@
     </Page.DataContext>
     <Page.Resources>
         <Style x:Key="InfoStackPanel" TargetType="StackPanel">
-            <Setter Property="Margin" Value="10,4,0,4" />
+            <Setter Property="Margin" Value="32,4" />
             <Setter Property="Orientation" Value="Horizontal" />
         </Style>
     </Page.Resources>
@@ -37,37 +37,105 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid>
                     <controls:ImageEx
                         Name="ImageEx_CharacterAvatar"
-                        Width="128"
-                        Height="128"
+                        Width="160"
+                        Height="160"
+                        Margin="0,60,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
                         CornerRadius="999"
                         ImageExFailed="ImageEx_CharacterAvatar_ImageExFailed"
                         Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
                         Stretch="Fill" />
-                    <TextBlock
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Center"
-                        FontFamily="SimSun"
-                        FontSize="24"
-                        Foreground="{StaticResource SystemAccentColor}"
-                        Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
-                </StackPanel>
+                    <StackPanel
+                        Margin="0,0,4,4"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Orientation="Horizontal">
+                        <Button
+                            Height="32"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{x:Bind VM.RefreshCommand}"
+                            ToolTipService.ToolTip="刷新">
+                            <Button.Content>
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="16"
+                                    Text="&#xE117;" />
+                            </Button.Content>
+                        </Button>
+                        <Button
+                            Height="32"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ToolTipService.ToolTip="角色列表">
+                            <Button.Content>
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="18"
+                                    Text="&#xE136;" />
+                            </Button.Content>
+                            <Button.Flyout>
+                                <Flyout Placement="TopEdgeAlignedLeft">
+                                    <Grid Width="200" MaxHeight="400">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <ListBox
+                                            DisplayMemberPath="CharacterName"
+                                            ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                                            SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
+                                        <Button
+                                            Grid.Row="1"
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind VM.AddCommand}"
+                                            Content="+" />
+                                    </Grid>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+
+                </Grid>
 
                 <StackPanel
                     Grid.Row="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom">
+                    VerticalAlignment="Bottom"
+                    Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
+                    <StackPanel Margin="32,10,0,10" Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="Medium"
+                            Foreground="{ThemeResource SystemAccentColor}"
+                            Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
+                    </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="出生:" />
                         <TextBlock
-                            Margin="4,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
-                            Text="技能点：" />
+                            Text="{x:Bind VM.Information.Birthday, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="安全等级:" />
                         <TextBlock
-                            Margin="2,0,0,0"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.Information.SecurityStatus, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="技能点:" />
+                        <TextBlock
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.Skill.TotalSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
                         <TextBlock
@@ -85,41 +153,38 @@
                             Text=")" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="个人钱包:" />
                         <TextBlock
-                            Margin="4,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="个人钱包：" />
-                        <TextBlock
-                            Margin="2,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="忠诚点:" />
                         <TextBlock
-                            Margin="4,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="忠诚点" />
-                        <TextBlock
-                            Margin="2,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="公司钱包:" />
                         <TextBlock
-                            Margin="4,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="公司钱包：" />
-                        <TextBlock
-                            Margin="2,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.CorpWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </StackPanel>
+                    <Grid Margin="32,16,32,16">
+                        <StackPanel MaxHeight="32" Orientation="Horizontal">
+                            <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.CorporationID, Converter={StaticResource CorpImgConverter}, Mode=OneWay}" />
+                            <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.AllianceID, Converter={StaticResource AllianceImgConverter}, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
             </Grid>
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="1" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />

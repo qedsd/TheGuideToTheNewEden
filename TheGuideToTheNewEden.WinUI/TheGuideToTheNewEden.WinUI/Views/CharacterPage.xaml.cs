@@ -31,6 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
             (DataContext as BaseViewModel).Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            (DataContext as CharacterViewModel).Init();
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -48,12 +49,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
-
+            Log.Error(e.ErrorMessage);
         }
 
         private void ImageEx_CharacterAvatar_ImageExFailed(object sender, CommunityToolkit.WinUI.UI.Controls.ImageExFailedEventArgs e)
         {
-
+            Log.Error(e.ErrorMessage);
         }
     }
 }

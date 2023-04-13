@@ -11,6 +11,9 @@ using System.Reflection;
 using System.Linq;
 using ESI.NET.Models.SSO;
 using TheGuideToTheNewEden.Core.Services;
+using System.Timers;
+using TheGuideToTheNewEden.Core.Extensions;
+using Microsoft.UI.Xaml.Documents;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -193,11 +196,89 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             ESIService.Current.EsiClient.SetCharacterData(characterData);
             CurrentCharacter = characterData;
+            StartTimer();
         }
 
         public static AuthorizedCharacterData GetCurrentCharacter(AuthorizedCharacterData characterData)
         {
             return CurrentCharacter;
+        }
+
+        private static Timer RefreshTokenTimer;
+        private static void StartTimer()
+        {
+            if(CurrentCharacter != null)
+            {
+                if (RefreshTokenTimer == null)
+                {
+                    RefreshTokenTimer = new Timer()
+                    {
+                        AutoReset = false
+                    };
+                    RefreshTokenTimer.Elapsed += RefreshTokenTimer_Elapsed;
+                }
+                var span = CurrentCharacter.ExpiresOn.ToLocalTime() - DateTime.Now;
+                var interval = span.TotalMilliseconds - 60000;//提前一分钟刷新token
+                _refreshing = interval < 0 ? true : false;
+                interval = interval < 0 ? 1 : interval;
+                RefreshTokenTimer.Interval = interval;
+                RefreshTokenTimer.Start();
+            }
+        }
+        private static bool _refreshing = false;
+        private static async void RefreshTokenTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _refreshing = true;
+            int tryCount = 0;
+            while(tryCount < 3)
+            {
+                try
+                {
+                    var token = await ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, CurrentCharacter.RefreshToken, Guid.NewGuid().ToString());
+                    if (token != null)
+                    {
+                        var newdata = await ESIService.SSO.Verify(token);
+                        if (newdata != null)
+                        {
+                            CurrentCharacter.CopyFrom(newdata);
+                            break;
+                        }
+                        else
+                        {
+                            Log.Error("刷新Token时Verify返回空值");
+                        }
+                    }
+                    else
+                    {
+                        Log.Error("刷新Token时GetToken返回空值");
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            }
+            if(tryCount < 3)//成功刷新
+            {
+                var span = CurrentCharacter.ExpiresOn.ToLocalTime() - DateTime.Now;
+                var interval = span.TotalMilliseconds - 60000;//提前一分钟刷新token
+                RefreshTokenTimer.Interval = interval < 0 ? 100 : interval;
+                RefreshTokenTimer.Start();
+            }
+            else//刷新失败
+            {
+                Log.Error("刷新Token失败");
+                //TODO:弹窗提示
+            }
+            _refreshing = false;
+        }
+
+        public static async Task WaitRefreshToken()
+        {
+            while (_refreshing)
+            {
+                await Task.Delay(100);
+            }
         }
     }
 }
