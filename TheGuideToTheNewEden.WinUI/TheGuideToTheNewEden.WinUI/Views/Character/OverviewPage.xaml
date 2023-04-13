@@ -2,16 +2,49 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.Character.OverviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="ItemContentStackPanel" TargetType="StackPanel">
+            <Setter Property="Background" Value="{StaticResource ItemContentBg}" />
+            <Setter Property="Orientation" Value="Horizontal" />
+        </Style>
+    </Page.Resources>
+    <ScrollViewer>
+        <StackPanel>
+            <StackPanel Style="{StaticResource ItemContentStackPanel}">
+                <controls:ImageEx
+                    Name="Image_Corporation"
+                    Grid.Row="1"
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="999"
+                    Stretch="Fill" />
+                <Grid Margin="10,0,0,0">
+                    <TextBlock x:Name="TextBlock_CorpName" />
+                </Grid>
+            </StackPanel>
+            <StackPanel x:Name="AllianceStackPanel" Style="{StaticResource ItemContentStackPanel}">
+                <controls:ImageEx
+                    Name="Image_Alliance"
+                    Grid.Row="1"
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="999"
+                    Stretch="Fill" />
+                <Grid Margin="10,0,0,0">
+                    <TextBlock x:Name="TextBlock_AllianceName" />
+                </Grid>
+            </StackPanel>
+        </StackPanel>
 
-    <Grid>
-        <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="111" />
-    </Grid>
+    </ScrollViewer>
 </Page>

@@ -16,6 +16,11 @@
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
+
+            <SolidColorBrush
+                x:Key="ItemContentBg"
+                Opacity="0.6"
+                Color="{ThemeResource ThemeMainColor}" />
             <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
             <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
             <converters:NullToBooleanConverter x:Key="NullToFalseConverter" IsInverted="True" />

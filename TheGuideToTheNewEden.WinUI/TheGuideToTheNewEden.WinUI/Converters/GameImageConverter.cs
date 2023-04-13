@@ -24,6 +24,15 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             }
         }
 
+        public static string GetImageUri(int id, ImgType type, int size = 128)
+        {
+            switch (Services.GameServerSelectorService.Value)
+            {
+                case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/{type}/{id}_{size}.jpg";
+                default: return string.Empty;
+            }
+        }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             throw new NotImplementedException();

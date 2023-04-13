@@ -123,9 +123,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ESI.NET.Models.Character.Information information = null;
             ESI.NET.Models.Skills.SkillDetails skill = null;
             List<ESI.NET.Models.Loyalty.Points> loyalties = null;
-            ESI.NET.Models.Location.Activity onlineStatus = null;
-            ESI.NET.Models.Location.Location location = null;
-            ESI.NET.Models.Location.Ship ship = null;
+            
             decimal characterWallet = 0;
             List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
             var tasks = new Task[]
@@ -163,39 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                ESIService.Current.EsiClient.Location.Online().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        onlineStatus = p.Result.Data;
-                    }
-                    else
-                    {
-                        Log.Error(p?.Result.Message);
-                    }
-                }),
-                ESIService.Current.EsiClient.Location.Location().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        location = p.Result.Data;
-                    }
-                    else
-                    {
-                        Log.Error(p?.Result.Message);
-                    }
-                }),
-                ESIService.Current.EsiClient.Location.Ship().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        ship = p.Result.Data;
-                    }
-                    else
-                    {
-                        Log.Error(p?.Result.Message);
-                    }
-                }),
+                
                 ESIService.Current.EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -224,10 +190,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Skill = skill;
                 LoyaltyPoints = loyalties;
-                OnlineStatus = onlineStatus;
-                OnlineStatus = onlineStatus;
-                Location = location;
-                Ship = ship;
                 CharacterWallet = characterWallet;
                 CorpWallets = corpWallets;
                 Information = information;

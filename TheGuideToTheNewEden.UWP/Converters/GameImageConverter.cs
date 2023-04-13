@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using Windows.UI.Xaml.Data;
 
 namespace TheGuideToTheNewEden.UWP.Converters
