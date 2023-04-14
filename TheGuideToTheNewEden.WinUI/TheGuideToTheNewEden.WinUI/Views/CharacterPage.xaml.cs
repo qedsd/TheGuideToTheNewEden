@@ -30,15 +30,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
-            (DataContext as BaseViewModel).Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            (DataContext as CharacterViewModel).Init();
+            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            VM.Init();
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             switch((args.SelectedItem as NavigationViewItem).Tag)
             {
-                case "Overview":ContentFrame.Navigate(typeof(OverviewPage));break;
+                case "Overview":
+                    {
+                        ContentFrame.Navigate(typeof(OverviewPage));
+                        (ContentFrame.Content as OverviewPage).Set(VM.EsiClient, VM.SelectedCharacter);
+                    }
+                    break;
                 case "Skill": ContentFrame.Navigate(typeof(SkillPage)); break;
                 case "Clone": ContentFrame.Navigate(typeof(ClonePage)); break;
                 case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;

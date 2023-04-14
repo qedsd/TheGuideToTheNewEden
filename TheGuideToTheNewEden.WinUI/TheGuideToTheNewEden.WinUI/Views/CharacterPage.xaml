@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:CharacterViewModel x:Name="VM" />

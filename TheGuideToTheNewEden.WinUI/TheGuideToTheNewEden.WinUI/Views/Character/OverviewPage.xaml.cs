@@ -1,3 +1,4 @@
+using ESI.NET;
 using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,26 +22,37 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class OverviewPage : Page
     {
-        private AuthorizedCharacterData CharacterData { get; set; }
-        public OverviewPage(AuthorizedCharacterData characterData)
+        private EsiClient _esiClient;
+        private AuthorizedCharacterData _characterData;
+        public OverviewPage()
         {
-            CharacterData = characterData;
             this.InitializeComponent();
         }
-        public async void Init()
+        
+        public void Set(EsiClient esiClient, AuthorizedCharacterData characterData)
+        {
+            if(characterData != _characterData)
+            {
+                _characterData = characterData;
+                _esiClient = esiClient;
+                Refresh();
+            }
+        }
+
+        public async void Refresh()
         {
             ESI.NET.Models.Location.Activity onlineStatus = null;
             ESI.NET.Models.Location.Location location = null;
             ESI.NET.Models.Location.Ship ship = null;
             List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfo = null;
             List<long> ids = new List<long>();
-            if(CharacterData.CorporationID > 0)
+            if (_characterData.CorporationID > 0)
             {
-                ids.Add(CharacterData.CorporationID);
+                ids.Add(_characterData.CorporationID);
             }
-            if (CharacterData.AllianceID > 0)
+            if (_characterData.AllianceID > 0)
             {
-                ids.Add(CharacterData.AllianceID);
+                ids.Add(_characterData.AllianceID);
             }
             var tasks = new Task[]
             {
@@ -90,10 +102,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }),
             };
             await Task.WhenAll(tasks);
-            if(CharacterData.CorporationID > 0)
+            if (_characterData.CorporationID > 0)
             {
-                Image_Corporation.Source = Converters.GameImageConverter.GetImageUri(CharacterData.CorporationID, Converters.GameImageConverter.ImgType.Corporation);
-                var name = resolvedInfo.FirstOrDefault(p => p.Id == CharacterData.CorporationID);
+                Image_Corporation.Source = Converters.GameImageConverter.GetImageUri(_characterData.CorporationID, Converters.GameImageConverter.ImgType.Corporation);
+                var name = resolvedInfo.FirstOrDefault(p => p.Id == _characterData.CorporationID);
                 if (name != null)
                 {
                     TextBlock_CorpName.Visibility = Visibility.Visible;
@@ -104,12 +116,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     TextBlock_CorpName.Visibility = Visibility.Collapsed;
                 }
             }
-            if (CharacterData.AllianceID > 0)
+            if (_characterData.AllianceID > 0)
             {
                 AllianceStackPanel.Visibility = Visibility.Visible;
-                Image_Alliance.Source = Converters.GameImageConverter.GetImageUri(CharacterData.AllianceID, Converters.GameImageConverter.ImgType.Alliance);
-                var name = resolvedInfo.FirstOrDefault(p => p.Id == CharacterData.AllianceID);
-                if(name != null)
+                Image_Alliance.Source = Converters.GameImageConverter.GetImageUri(_characterData.AllianceID, Converters.GameImageConverter.ImgType.Alliance);
+                var name = resolvedInfo.FirstOrDefault(p => p.Id == _characterData.AllianceID);
+                if (name != null)
                 {
                     TextBlock_AllianceName.Visibility = Visibility.Visible;
                     TextBlock_AllianceName.Text = name.Name;
@@ -119,7 +131,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     TextBlock_AllianceName.Visibility = Visibility.Collapsed;
                 }
             }
-            
+
+            if(location.StationId > 0)
+            {
+                var station = await Core.Services.DB.StaStationService.QueryAsync(location.StationId);
+                if(station != null)
+                {
+
+                }
+            }
         }
     }
 }

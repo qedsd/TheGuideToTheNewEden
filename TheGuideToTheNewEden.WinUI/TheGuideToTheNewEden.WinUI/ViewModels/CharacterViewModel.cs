@@ -15,6 +15,11 @@ using TheGuideToTheNewEden.Core.Models.Mail;
 using TheGuideToTheNewEden.Core.Models.Wallet;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.Core.Extensions;
+using ESI.NET;
+using Newtonsoft.Json.Linq;
+using ESI.NET.Enumerations;
+using Microsoft.Extensions.Options;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -37,20 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set
             {
                 SetProperty(ref _selectedCharacter, value);
-                Services.CharacterService.SetCurrentCharacter(value);
-                if (_selectedCharacter != null)
-                {
-                    if(Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility)
-                    {
-                        var uri = new System.Uri($"https://imageserver.eveonline.com/Character/{value.CharacterID}_{512}.jpg");
-                        CharacterAvatar = new BitmapImage(uri);
-                    }
-                    else
-                    {
-                        CharacterAvatar = null;
-                    }
-                    GetBaseInfoAsync(value);
-                }
+                SetSelectedCharacter(value);
             }
         }
 
@@ -84,13 +76,45 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public decimal CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
 
         #endregion
+        #region 字段
+        public EsiClient EsiClient;
+        #endregion
         public CharacterViewModel()
         {
             Characters = Services.CharacterService.CharacterOauths;
         }
         public void Init()
         {
+            IOptions<EsiConfig> config = Options.Create(new EsiConfig()
+            {
+                EsiUrl = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://esi.evepc.163.com/",
+                DataSource = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Singularity,
+                ClientId = Core.Config.ClientId,
+                SecretKey = "Unneeded",
+                CallbackUrl = Core.Config.ESICallback,
+                UserAgent = "TheGuideToTheNewEden",
+            });
+            EsiClient = new ESI.NET.EsiClient(config);
             SelectedCharacter = Characters.FirstOrDefault();
+        }
+        private void SetSelectedCharacter(AuthorizedCharacterData characterData)
+        {
+            Services.CharacterService.SetCurrentCharacter(characterData);
+            EsiClient.SetCharacterData(characterData);
+            if (_selectedCharacter != null)
+            {
+                if (Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility)
+                {
+                    var uri = new System.Uri($"https://imageserver.eveonline.com/Character/{characterData.CharacterID}_{512}.jpg");
+                    CharacterAvatar = new BitmapImage(uri);
+                }
+                else
+                {
+                    CharacterAvatar = null;
+                }
+                GetBaseInfoAsync(characterData);
+                
+            }
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
@@ -120,6 +144,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Window?.ShowWaiting();
             await Services.CharacterService.WaitRefreshToken();
+            if(!SelectedCharacter.IsTokenValid())
+            {
+                if(!await SelectedCharacter.RefreshTokenAsync())
+                {
+                    Window?.HideWaiting();
+                    Window?.ShowError("Token已过期，尝试刷新失败");
+                    return;
+                }
+            }
             ESI.NET.Models.Character.Information information = null;
             ESI.NET.Models.Skills.SkillDetails skill = null;
             List<ESI.NET.Models.Loyalty.Points> loyalties = null;
@@ -128,7 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
             var tasks = new Task[]
             {
-                ESIService.Current.EsiClient.Character.Information(SelectedCharacter.CharacterID).ContinueWith((p)=>
+                EsiClient.Character.Information(SelectedCharacter.CharacterID).ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -139,7 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                ESIService.Current.EsiClient.Skills.List().ContinueWith((p)=>
+                EsiClient.Skills.List().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -150,7 +183,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                ESIService.Current.EsiClient.Loyalty.Points().ContinueWith((p)=>
+                EsiClient.Loyalty.Points().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -161,8 +194,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                
-                ESIService.Current.EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
+                EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -173,7 +205,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                ESIService.Current.EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
+                EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {

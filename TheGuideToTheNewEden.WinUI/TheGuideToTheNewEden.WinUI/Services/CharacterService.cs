@@ -17,6 +17,9 @@ using Microsoft.UI.Xaml.Documents;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
+    /// <summary>
+    /// 管理角色授权及自带刷新当前角色token
+    /// </summary>
     internal static class CharacterService
     {
         private static string ClientId = "8d0da2b105324ead932f60f32b1a55fb";//TODO:仅供测试
@@ -232,25 +235,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             int tryCount = 0;
             while(tryCount < 3)
             {
+                tryCount++;
                 try
                 {
-                    var token = await ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, CurrentCharacter.RefreshToken, Guid.NewGuid().ToString());
-                    if (token != null)
+                    if(await CurrentCharacter.RefreshTokenAsync())
                     {
-                        var newdata = await ESIService.SSO.Verify(token);
-                        if (newdata != null)
-                        {
-                            CurrentCharacter.CopyFrom(newdata);
-                            break;
-                        }
-                        else
-                        {
-                            Log.Error("刷新Token时Verify返回空值");
-                        }
-                    }
-                    else
-                    {
-                        Log.Error("刷新Token时GetToken返回空值");
+                        break;
                     }
                 }
                 catch(Exception ex)

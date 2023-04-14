@@ -10,8 +10,9 @@
     mc:Ignorable="d">
     <Page.Resources>
         <Style x:Key="ItemContentStackPanel" TargetType="StackPanel">
-            <Setter Property="Background" Value="{StaticResource ItemContentBg}" />
+            <Setter Property="Background" Value="{ThemeResource ItemContentBg}" />
             <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Height" Value="60" />
         </Style>
     </Page.Resources>
     <ScrollViewer>
@@ -43,6 +44,21 @@
                 <Grid Margin="10,0,0,0">
                     <TextBlock x:Name="TextBlock_AllianceName" />
                 </Grid>
+            </StackPanel>
+            <StackPanel Style="{StaticResource ItemContentStackPanel}">
+                <controls:ImageEx
+                    Name="Image_Ship"
+                    Grid.Row="1"
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="999"
+                    Stretch="Fill" />
+                <StackPanel Margin="10,0,0,0">
+                    <TextBlock x:Name="TextBlock_ShipName" />
+                    <TextBlock x:Name="TextBlock_ShipTypeName" />
+                </StackPanel>
             </StackPanel>
         </StackPanel>
 
