@@ -30,7 +30,10 @@
             </Grid.RowDefinitions>
             <Grid Grid.RowSpan="2" Margin="0,-42,0,0">
                 <Grid.Background>
-                    <ImageBrush ImageFailed="ImageBrush_ImageFailed" ImageSource="{x:Bind VM.CharacterAvatar, Mode=OneWay}" />
+                    <ImageBrush
+                        ImageFailed="ImageBrush_ImageFailed"
+                        ImageSource="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
+                        Stretch="UniformToFill" />
                 </Grid.Background>
                 <Grid Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
             </Grid>
@@ -51,26 +54,23 @@
                         ImageExFailed="ImageEx_CharacterAvatar_ImageExFailed"
                         Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
                         Stretch="Fill" />
-                    <StackPanel
-                        Margin="0,0,4,4"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        Orientation="Horizontal">
+                </Grid>
+
+                <StackPanel
+                    Grid.Row="1"
+                    VerticalAlignment="Bottom"
+                    Background="{StaticResource ItemContentBg}">
+                    <Grid Margin="32,10,16,10">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="Medium"
+                            Foreground="{ThemeResource SystemAccentColor}"
+                            Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
                         <Button
                             Height="32"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Command="{x:Bind VM.RefreshCommand}"
-                            ToolTipService.ToolTip="刷新">
-                            <Button.Content>
-                                <TextBlock
-                                    FontFamily="Segoe MDL2 Assets"
-                                    FontSize="16"
-                                    Text="&#xE117;" />
-                            </Button.Content>
-                        </Button>
-                        <Button
-                            Height="32"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
                             Background="Transparent"
                             BorderThickness="0"
                             ToolTipService.ToolTip="角色列表">
@@ -101,21 +101,7 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                    </StackPanel>
-
-                </Grid>
-
-                <StackPanel
-                    Grid.Row="1"
-                    VerticalAlignment="Bottom"
-                    Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
-                    <StackPanel Margin="32,10,0,10" Orientation="Horizontal">
-                        <TextBlock
-                            FontSize="18"
-                            FontWeight="Medium"
-                            Foreground="{ThemeResource SystemAccentColor}"
-                            Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
-                    </StackPanel>
+                    </Grid>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock VerticalAlignment="Center" Text="出生:" />
                         <TextBlock
@@ -176,29 +162,31 @@
                             Text="{x:Bind VM.CorpWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </StackPanel>
-                    <Grid Margin="32,16,32,16">
+                    <Grid Margin="32,16,16,16">
                         <StackPanel MaxHeight="32" Orientation="Horizontal">
                             <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.CorporationID, Converter={StaticResource CorpImgConverter}, Mode=OneWay}" />
                             <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.AllianceID, Converter={StaticResource AllianceImgConverter}, Mode=OneWay}" />
                         </StackPanel>
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Orientation="Horizontal">
+                            <Button
+                                Height="32"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{x:Bind VM.RefreshCommand}"
+                                ToolTipService.ToolTip="刷新基本信息">
+                                <Button.Content>
+                                    <TextBlock
+                                        FontFamily="Segoe MDL2 Assets"
+                                        FontSize="14"
+                                        Text="&#xE117;" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
-            </Grid>
-            <Grid Grid.Row="1" Visibility="Collapsed">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ComboBox
-                    HorizontalAlignment="Stretch"
-                    DisplayMemberPath="CharacterName"
-                    ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                    SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
-                <Button Grid.Column="1" Command="{x:Bind VM.AddCommand}">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
-                    </Button.Content>
-                </Button>
             </Grid>
         </Grid>
         <NavigationView

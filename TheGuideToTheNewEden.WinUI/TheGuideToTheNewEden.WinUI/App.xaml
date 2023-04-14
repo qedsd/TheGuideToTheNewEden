@@ -19,7 +19,7 @@
 
             <SolidColorBrush
                 x:Key="ItemContentBg"
-                Opacity="0.6"
+                Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
             <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
             <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
