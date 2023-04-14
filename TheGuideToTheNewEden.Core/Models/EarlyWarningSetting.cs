@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Enums;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -68,7 +69,8 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => overlapType; set => SetProperty(ref overlapType, value);
         }
-
+        private int overlapStyle;
+        public int OverlapStyle { get => overlapStyle; set => SetProperty(ref overlapStyle, value); }
         private bool makeSound = true;
         /// <summary>
         /// 预警声

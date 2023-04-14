@@ -230,6 +230,7 @@
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
+    <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
     <None Remove="Views\LocalIntelItemPage.xaml" />
     <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
@@ -291,6 +292,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Character\ContractPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
