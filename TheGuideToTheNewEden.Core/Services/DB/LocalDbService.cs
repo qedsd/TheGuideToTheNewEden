@@ -173,7 +173,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranMapSolarSystemAsync(MapSolarSystem item)
         {
-            var type = await TranMapSolarSystemAsync(item.RegionID);
+            var type = await TranMapSolarSystemAsync(item.SolarSystemID);
             item.SolarSystemName = type?.SolarSystemName;
         }
         #endregion

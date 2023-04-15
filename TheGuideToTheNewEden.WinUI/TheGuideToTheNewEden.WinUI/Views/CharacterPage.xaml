@@ -60,7 +60,7 @@
                 <StackPanel
                     Grid.Row="1"
                     VerticalAlignment="Bottom"
-                    Background="{StaticResource ItemContentBg}">
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                     <Grid Margin="32,10,16,10">
                         <TextBlock
                             VerticalAlignment="Center"
@@ -112,14 +112,6 @@
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
-                        <TextBlock VerticalAlignment="Center" Text="安全等级:" />
-                        <TextBlock
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind VM.Information.SecurityStatus, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}, Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock VerticalAlignment="Center" Text="技能点:" />
                         <TextBlock
                             Margin="12,0,0,0"
@@ -140,19 +132,27 @@
                             Text=")" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
-                        <TextBlock VerticalAlignment="Center" Text="个人钱包:" />
-                        <TextBlock
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Style="{StaticResource InfoStackPanel}">
                         <TextBlock VerticalAlignment="Center" Text="忠诚点:" />
                         <TextBlock
                             Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             Text="{x:Bind VM.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="安全等级:" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.Information.SecurityStatus, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource InfoStackPanel}">
+                        <TextBlock VerticalAlignment="Center" Text="个人钱包:" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource InfoStackPanel}">
@@ -193,12 +193,14 @@
         <NavigationView
             Grid.Column="1"
             Margin="0,-16,0,0"
+            SelectionChanged="NavigationView_SelectionChanged"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
-            PaneDisplayMode="Top"
-            SelectionChanged="NavigationView_SelectionChanged">
+            PaneDisplayMode="Top">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="概要" Tag="Overview" />
+                <NavigationViewItem
+                    Content="概要" x:Name="OverviewNavigationViewItem"
+                    Tag="Overview" />
                 <NavigationViewItem Content="技能" Tag="Skill" />
                 <NavigationViewItem Content="克隆" Tag="Clone" />
                 <NavigationViewItem Content="钱包" Tag="Wallet" />

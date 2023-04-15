@@ -41,8 +41,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => _selectedCharacter;
             set
             {
-                SetProperty(ref _selectedCharacter, value);
                 SetSelectedCharacter(value);
+                SetProperty(ref _selectedCharacter, value);
             }
         }
 
@@ -97,6 +97,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             EsiClient = new ESI.NET.EsiClient(config);
             SelectedCharacter = Characters.FirstOrDefault();
         }
+        public delegate void SelectedCharacterDelegate();
+        public event SelectedCharacterDelegate OnSelectedCharacter;
         private void SetSelectedCharacter(AuthorizedCharacterData characterData)
         {
             Services.CharacterService.SetCurrentCharacter(characterData);
@@ -113,7 +115,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     CharacterAvatar = null;
                 }
                 GetBaseInfoAsync(characterData);
-                
             }
         }
         public ICommand AddCommand => new RelayCommand(async() =>
@@ -242,6 +243,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     LP = 0;
                 }
             });
+            OnSelectedCharacter?.Invoke();
             Window?.HideWaiting();
         }
     }

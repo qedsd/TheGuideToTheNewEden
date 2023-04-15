@@ -17,24 +17,21 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
-    public sealed partial class OverviewPage : Page
+    public sealed partial class OverviewPage2 : Page
     {
         private EsiClient _esiClient;
         private AuthorizedCharacterData _characterData;
-        public OverviewPage()
+        public OverviewPage2()
         {
             this.InitializeComponent();
-            TextBlock_lastLoginText.Text = "最近上线：";
-            TextBlock_LoginCountText.Text = "上线次数：";
         }
-        
+
         public void Set(EsiClient esiClient, AuthorizedCharacterData characterData)
         {
-            if(characterData != null && characterData != _characterData)
+            if (characterData != _characterData)
             {
                 _characterData = characterData;
                 _esiClient = esiClient;
@@ -49,7 +46,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             ESI.NET.Models.Location.Ship ship = null;
             ESI.NET.Models.Corporation.Corporation corporation = null;
             ESI.NET.Models.Alliance.Alliance alliance = null;
-            List<ESI.NET.Models.Skills.SkillQueueItem> skillQueueItems = null;
             var tasks = new List<Task>
             {
                 _esiClient.Location.Online().ContinueWith((p)=>
@@ -96,37 +92,41 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         Log.Error(p?.Result.Message);
                     }
                 }),
-                _esiClient.Skills.Queue().ContinueWith((p) =>
-                {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        skillQueueItems = p.Result.Data;
-                    }
-                    else
-                    {
-                        Log.Error(p?.Result.Message);
-                    }
-                }),
             };
-            if (_characterData.AllianceID > 0)
-            {
-                var allianceTask = new Task(() =>
-                {
-                    _esiClient.Alliance.Information(_characterData.AllianceID).ContinueWith((p) =>
-                    {
-                        if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
-                            alliance = p.Result.Data;
-                        }
-                        else
-                        {
-                            Log.Error(p?.Result.Message);
-                        }
-                    });
-                });
-                allianceTask.Start();
-                tasks.Add(allianceTask);
-            }
+            //if (_characterData.CorporationID > 0)
+            //{
+            //    tasks.Add(new Task(() =>
+            //    {
+            //        _esiClient.Corporation.Information(_characterData.CorporationID).ContinueWith((p) =>
+            //        {
+            //            if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            //            {
+            //                corporation = p.Result.Data;
+            //            }
+            //            else
+            //            {
+            //                Log.Error(p?.Result.Message);
+            //            }
+            //        });
+            //    }));
+            //}
+            //if (_characterData.AllianceID > 0)
+            //{
+            //    tasks.Add(new Task(() =>
+            //    {
+            //        _esiClient.Alliance.Information(_characterData.AllianceID).ContinueWith((p) =>
+            //        {
+            //            if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+            //            {
+            //                alliance = p.Result.Data;
+            //            }
+            //            else
+            //            {
+            //                Log.Error(p?.Result.Message);
+            //            }
+            //        });
+            //    }));
+            //}
             await Task.WhenAll(tasks);
             if (corporation != null)
             {
@@ -138,7 +138,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             else
             {
-                CorpStackPanel.Visibility = Visibility.Collapsed;
+                CorpStackPanel.Visibility = Visibility.Visible;
             }
             if (alliance != null)
             {
@@ -150,26 +150,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             else
             {
-                AllianceStackPanel.Visibility = Visibility.Collapsed;
-            }
-            if(ship != null)
-            {
-                Image_Ship.Source = Converters.GameImageConverter.GetImageUri(ship.ShipTypeId, Converters.GameImageConverter.ImgType.Type);
-                TextBlock_ShipName.Text = ship.ShipName;
-                var shipItem = await Core.Services.DB.InvTypeService.QueryTypeAsync(ship.ShipTypeId);
-                if(shipItem != null)
-                {
-                    TextBlock_ShipTypeName.Text = shipItem.TypeName;
-                }
-            }
-            if(location != null)
-            {
-                var solarSystem = await Core.Services.DB.MapSolarSystemService.QueryAsync(location.SolarSystemId);
-                TextBlock_LocationSystemLevel.Text = solarSystem?.Security.ToString("N2");
-                TextBlock_LocationSystemName.Content = solarSystem?.SolarSystemName;
+                AllianceStackPanel.Visibility = Visibility.Visible;
             }
 
-            if (location?.StationId > 0)
+            var solarSystem = await Core.Services.DB.MapSolarSystemService.QueryAsync(location.SolarSystemId);
+            TextBlock_LocationSystemLevel.Text = solarSystem?.Security.ToString();
+            TextBlock_LocationSystemName.Text = solarSystem?.SolarSystemName;
+
+            if (location.StationId > 0)
             {
                 var station = await Core.Services.DB.StaStationService.QueryAsync(location.StationId);
                 if (station != null)
@@ -177,7 +165,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     TextBlock_LocationSataionName.Text = station.StationName;
                 }
             }
-            else if (location?.StructureId > 0)
+            else if (location.StructureId > 0)
             {
                 var structureRsp = await _esiClient.Universe.Structure(location.StructureId);
                 if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
@@ -196,33 +184,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
             if (onlineStatus != null)
             {
-                Grid_Online.Visibility = onlineStatus.Online ? Visibility.Visible: Visibility.Collapsed;
-                Grid_Outline.Visibility = onlineStatus.Online ? Visibility.Collapsed : Visibility.Visible;
+                Grid_OnlineStatus.Background = new SolidColorBrush(onlineStatus.Online ? Microsoft.UI.Colors.LightSeaGreen : Microsoft.UI.Colors.OrangeRed);
                 TextBlock_lastLogin.Text = onlineStatus.LastLogin.ToString("g");
+                TextBlock_LastLogout.Text = onlineStatus.LastLogout.ToString("g");
                 TextBlock_LoginCount.Text = onlineStatus.Logins.ToString();
-            }
-
-            if(skillQueueItems.NotNullOrEmpty())
-            {
-                List<Core.Models.Character.SkillQueueItem> skills = new List<Core.Models.Character.SkillQueueItem>();
-                var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(skillQueueItems.Select(p => p.SkillId).ToList());
-                if(types.NotNullOrEmpty())
-                {
-                    var dic = types.ToDictionary(p => p.TypeID);
-                    foreach (var skill in skillQueueItems)
-                    {
-                        if(dic.TryGetValue(skill.SkillId, out var invType))
-                        {
-                            Core.Models.Character.SkillQueueItem skillQueueItem = new Core.Models.Character.SkillQueueItem(skill);
-                            skillQueueItem.SkillName = invType.TypeName;
-                            skills.Add(skillQueueItem);
-                        }
-                    }
-                }
-                if(skills.Any())
-                {
-                    ListView_SkillQueue.ItemsSource = skills.OrderBy(p=>p.QueuePosition).ToList();
-                }
             }
         }
     }

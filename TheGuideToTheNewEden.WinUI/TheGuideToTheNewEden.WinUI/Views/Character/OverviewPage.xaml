@@ -2,33 +2,43 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.Character.OverviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:character="using:TheGuideToTheNewEden.Core.Models.Character"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Background="Transparent"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.Resources>
         <Style x:Key="ItemContentStackPanel" TargetType="StackPanel">
-            <Setter Property="Background" Value="{ThemeResource ItemContentBg}" />
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
             <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="Height" Value="60" />
+            <Setter Property="Height" Value="64" />
+            <Setter Property="Margin" Value="16,6" />
+            <Setter Property="Padding" Value="8,8" />
         </Style>
     </Page.Resources>
     <ScrollViewer>
         <StackPanel>
-            <StackPanel Style="{StaticResource ItemContentStackPanel}">
+            <StackPanel
+                x:Name="CorpStackPanel"
+                Margin="16,12,16,6"
+                Style="{StaticResource ItemContentStackPanel}">
                 <controls:ImageEx
                     Name="Image_Corporation"
                     Grid.Row="1"
-                    Width="48"
-                    Height="48"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CornerRadius="999"
                     Stretch="Fill" />
                 <Grid Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
                     <TextBlock x:Name="TextBlock_CorpName" />
+                    <TextBlock x:Name="TextBlock_CorpTicker" Grid.Row="1" />
                 </Grid>
             </StackPanel>
             <StackPanel x:Name="AllianceStackPanel" Style="{StaticResource ItemContentStackPanel}">
@@ -42,25 +52,124 @@
                     CornerRadius="999"
                     Stretch="Fill" />
                 <Grid Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
                     <TextBlock x:Name="TextBlock_AllianceName" />
+                    <TextBlock x:Name="TextBlock_AllianceTicker" Grid.Row="1" />
                 </Grid>
             </StackPanel>
             <StackPanel Style="{StaticResource ItemContentStackPanel}">
                 <controls:ImageEx
                     Name="Image_Ship"
                     Grid.Row="1"
-                    Width="48"
-                    Height="48"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CornerRadius="999"
                     Stretch="Fill" />
-                <StackPanel Margin="10,0,0,0">
-                    <TextBlock x:Name="TextBlock_ShipName" />
-                    <TextBlock x:Name="TextBlock_ShipTypeName" />
-                </StackPanel>
+                <Grid Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <TextBlock x:Name="TextBlock_LocationSataionName" VerticalAlignment="Center" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="(" />
+                        <TextBlock x:Name="TextBlock_LocationSystemLevel" VerticalAlignment="Center" />
+                        <Button
+                            x:Name="TextBlock_LocationSystemName"
+                            Margin="4,0,0,0"
+                            Padding="0"
+                            BorderThickness="0" />
+                        <TextBlock VerticalAlignment="Center" Text=")" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock x:Name="TextBlock_ShipName" VerticalAlignment="Center" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="(" />
+                        <TextBlock x:Name="TextBlock_ShipTypeName" VerticalAlignment="Center" />
+                        <TextBlock VerticalAlignment="Center" Text=")" />
+                    </StackPanel>
+                </Grid>
             </StackPanel>
+            <StackPanel x:Name="OnlineStatusStackPanel" Style="{StaticResource ItemContentStackPanel}">
+                <Grid Width="48">
+                    <Grid
+                        x:Name="Grid_Online"
+                        Width="8"
+                        Height="8"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="MediumSeaGreen"
+                        CornerRadius="4" />
+                    <Grid
+                        x:Name="Grid_Outline"
+                        Width="8"
+                        Height="8"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="OrangeRed"
+                        CornerRadius="4" />
+                </Grid>
+                <Grid Margin="10,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <TextBlock x:Name="TextBlock_lastLoginText" />
+                        <TextBlock x:Name="TextBlock_lastLogin" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock x:Name="TextBlock_LoginCountText" />
+                        <TextBlock x:Name="TextBlock_LoginCount" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+            <ListView
+                x:Name="ListView_SkillQueue"
+                Margin="16,6"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                SelectionMode="Single">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        <Setter Property="VerticalAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="8" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="character:SkillQueueItem">
+                        <Grid Height="48">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind SkillName}" />
+                                <TextBlock Margin="4,0,0,0" Text="{x:Bind FinishedLevel}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind RemainTime}" />
+                                <StackPanel
+                                    Margin="16,0,0,0"
+                                    Orientation="Horizontal"
+                                    Visibility="{x:Bind IsRunning, Converter={StaticResource TrueToVisibleConverter}}">
+                                    <TextBlock Text="{x:Bind StartDate, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:g}}" />
+                                    <TextBlock Margin="8,0" Text="-" />
+                                    <TextBlock Text="{x:Bind FinishDate, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:g}}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
-
     </ScrollViewer>
 </Page>
