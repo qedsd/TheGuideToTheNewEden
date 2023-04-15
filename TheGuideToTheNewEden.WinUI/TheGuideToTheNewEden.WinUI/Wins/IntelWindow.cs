@@ -127,6 +127,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
+            _intelPage.Intel(content);
             if (_allSolarSystem.Contains(content.SolarSystemId))
             {
                 if(content.IntelType == Core.Enums.IntelChatType.Intel)
@@ -180,21 +181,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             foreach (var item in remove)
             {
                 StartTimes.Remove(item);
-                if (EllipseDic.TryGetValue(item, out var value))
-                {
-                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
-                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (intelScale.X - 1) / 2);
-                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (intelScale.Y - 1) / 2);
-                    if (item == Setting.LocationID)
-                    {
-                        value.Fill = homeBrush;
-                    }
-                    else
-                    {
-                        value.Fill = defaultBrush;
-                    }
-                }
             }
+            _intelPage.Clear(remove);
             TyrHideWindow();
         }
         private void DowngradeElapsed()
@@ -208,13 +196,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     changed.Add(item.Key);
                 }
             }
-            foreach (var item in changed)
-            {
-                if (EllipseDic.TryGetValue(item, out var value))
-                {
-                    value.Fill = downgradeBrush;
-                }
-            }
+            _intelPage.Downgrade(changed);
         }
         private void TyrHideWindow()
         {
@@ -245,13 +227,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Dispose()
         {
-            ContentCanvas = null;
-            LineCanvas = null;
+            _intelPage.Dispose();
             AppWindow.Closing -= AppWindow_Closing;
             Window?.Close();
-            EllipseDic = null;
             autoIntelTimer?.Stop();
-            //autoIntelTimer?.Dispose();
             autoIntelTimer = null;
         }
     }

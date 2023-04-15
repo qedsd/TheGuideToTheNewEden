@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 using TheGuideToTheNewEden.Core.Extensions;
+using System.Threading.Channels;
 
 namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 {
@@ -38,7 +39,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private const int _defaultWidth = 8;
         private const int _homeWidth = 12;
         private readonly System.Numerics.Vector3 _intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
-        private DispatcherTimer _autoIntelTimer;
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic;
         private BaseWindow _window;
@@ -229,23 +229,42 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 }
             }
         }
-        void IIntelOverlapPage.ClearElapsed(List<int> systemIds)
+        void IIntelOverlapPage.Clear(List<int> systemIds)
         {
-            throw new NotImplementedException();
+            foreach (var item in systemIds)
+            {
+                if (_ellipseDic.TryGetValue(item, out var value))
+                {
+                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (_intelScale.X - 1) / 2);
+                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (_intelScale.Y - 1) / 2);
+                    if (item == _setting.LocationID)
+                    {
+                        value.Fill = _homeBrush;
+                    }
+                    else
+                    {
+                        value.Fill = _defaultBrush;
+                    }
+                }
+            }
         }
 
         void IIntelOverlapPage.Dispose()
         {
-            throw new NotImplementedException();
+            _ellipseDic.Clear();
+            _allSolarSystem.Clear();
         }
 
-        void IIntelOverlapPage.DowngradeElapsed(List<int> systemIds)
+        void IIntelOverlapPage.Downgrade(List<int> systemIds)
         {
-            throw new NotImplementedException();
+            foreach (var item in systemIds)
+            {
+                if (_ellipseDic.TryGetValue(item, out var value))
+                {
+                    value.Fill = _downgradeBrush;
+                }
+            }
         }
-
-        
-
-        
     }
 }

@@ -113,7 +113,10 @@
                         </ComboBox>
                     </Grid>
                     <Grid Margin="0,10">
-                        <ComboBox Header="预警窗口样式" SelectedIndex="{x:Bind VM.Setting.OverlapStyle, Mode=TwoWay}">
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            Header="预警窗口样式"
+                            SelectedIndex="{x:Bind VM.Setting.OverlapStyle, Mode=TwoWay}">
                             <ComboBoxItem Content="默认" />
                             <!--<ComboBoxItem Content="SMT" />
                             <ComboBoxItem Content="Near2" />-->
