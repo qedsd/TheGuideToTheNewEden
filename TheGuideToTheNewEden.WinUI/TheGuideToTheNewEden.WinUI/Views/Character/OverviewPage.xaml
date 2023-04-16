@@ -102,20 +102,20 @@
                 <Grid Width="48">
                     <Grid
                         x:Name="Grid_Online"
-                        Width="8"
-                        Height="8"
+                        Width="12"
+                        Height="12"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Background="MediumSeaGreen"
-                        CornerRadius="4" />
+                        CornerRadius="6" />
                     <Grid
                         x:Name="Grid_Outline"
-                        Width="8"
-                        Height="8"
+                        Width="12"
+                        Height="12"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Background="OrangeRed"
-                        CornerRadius="4" />
+                        CornerRadius="6" />
                 </Grid>
                 <Grid Margin="10,0,0,0">
                     <Grid.RowDefinitions>
@@ -147,25 +147,61 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="character:SkillQueueItem">
                         <Grid Height="48">
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind SkillName}" />
-                                <TextBlock Margin="4,0,0,0" Text="{x:Bind FinishedLevel}" />
-                            </StackPanel>
-                            <StackPanel Grid.Row="1" Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind RemainTime}" />
-                                <StackPanel
-                                    Margin="16,0,0,0"
-                                    Orientation="Horizontal"
-                                    Visibility="{x:Bind IsRunning, Converter={StaticResource TrueToVisibleConverter}}">
-                                    <TextBlock Text="{x:Bind StartDate, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:g}}" />
-                                    <TextBlock Margin="8,0" Text="-" />
-                                    <TextBlock Text="{x:Bind FinishDate, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:g}}" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid ToolTipService.ToolTip="{x:Bind Status}">
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Foreground="MediumSeaGreen"
+                                    Glyph="&#xE001;"
+                                    Visibility="{x:Bind IsFinished, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Foreground="MediumSeaGreen"
+                                    Glyph="&#xE1F5;"
+                                    Visibility="{x:Bind IsRunning, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Glyph="&#xE07F;"
+                                    Visibility="{x:Bind IsWaiting, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Foreground="OrangeRed"
+                                    Glyph="&#xE004;"
+                                    Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{x:Bind SkillName}" />
+                                    <TextBlock Margin="4,0,0,0" Text="{x:Bind FinishedLevel}" />
                                 </StackPanel>
-                            </StackPanel>
+                                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                    <TextBlock Text="{x:Bind Status}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
+                                    <TextBlock
+                                        Width="120"
+                                        Text="{x:Bind RemainTime}" />
+                                    <StackPanel
+                                        Margin="16,0,0,0"
+                                        Orientation="Horizontal"
+                                        Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
+                                        <TextBlock
+                                            Width="120"
+                                            Text="{x:Bind StartDateTime.ToString()}" />
+                                        <TextBlock
+                                            Margin="8,0"
+                                            Text="-" />
+                                        <TextBlock
+                                            Width="120"
+                                            Text="{x:Bind FinishDateTime.ToString()}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
