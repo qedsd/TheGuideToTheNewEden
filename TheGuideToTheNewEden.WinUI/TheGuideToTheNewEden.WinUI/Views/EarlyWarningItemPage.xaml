@@ -119,7 +119,7 @@
                             SelectedIndex="{x:Bind VM.Setting.OverlapStyle, Mode=TwoWay}">
                             <ComboBoxItem Content="默认" />
                             <ComboBoxItem Content="SMT" />
-                            <!--<ComboBoxItem Content="Near2" />-->
+                            <ComboBoxItem Content="Near2" />
                         </ComboBox>
                     </Grid>
                     <Grid Margin="0,10">

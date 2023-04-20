@@ -15,9 +15,10 @@ using TheGuideToTheNewEden.Core.Extensions;
 namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 {
     /// <summary>
-    /// SMT预警样式
+    /// near2预警样式
+    /// 起始就是smt上下方向翻转
     /// </summary>
-    public sealed partial class SMTIntelOverlapPage : Page, IIntelOverlapPage
+    public sealed partial class Near2IntelOverlapPage : Page, IIntelOverlapPage
     {
         private Core.Models.Map.IntelSolarSystemMap _intelMap;
         private Core.Models.EarlyWarningSetting _setting;
@@ -34,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic;
         private BaseWindow _window;
-        public SMTIntelOverlapPage()
+        public Near2IntelOverlapPage()
         {
             this.InitializeComponent();
         }
@@ -45,7 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             _setting = setting;
             UpdateUI();
         }
-        
+
         #region 星系提示
         private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
         {
@@ -92,7 +93,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 
                 #region 选择星系突出显示
                 _lastPointerToEllipse = ellipse;
-                
+
                 ellipse.Scale = new System.Numerics.Vector3(ellipse.Scale.X * 1.5f, ellipse.Scale.Y * 1.5f, 1);
                 Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (ellipse.Scale.X - 1) / 2);
                 Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (ellipse.Scale.Y - 1) / 2);
@@ -215,7 +216,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             var group = _intelMap.GroupByJump();
             var perJumpHeight = height / group.Count;//每层占高度
             var topOffset = perJumpHeight / 2;
-            for (int i = 0; i < group.Count; i++)
+            for (int i = group.Count - 1; i >= 0; i--)
             {
                 var top = i * perJumpHeight + topOffset;
                 var perWidth = width / group[i].Length;
