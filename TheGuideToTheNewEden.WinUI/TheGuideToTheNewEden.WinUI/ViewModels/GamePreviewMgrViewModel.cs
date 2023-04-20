@@ -542,7 +542,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         #endregion
 
-
+        private GamePreviewWindow _lastHighlightWindow;
         /// <summary>
         /// 当前活动窗口变化
         /// </summary>
@@ -552,6 +552,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var targetProcess = Processes.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
             if(targetProcess != null)
             {
+                if(_lastHighlightWindow != null)
+                {
+                    _lastHighlightWindow.CancelHighlight();
+                }
                 foreach(var item in _runningDic)
                 {
                     if(item.Key == targetProcess.GUID)
@@ -559,6 +563,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         if(item.Value.Setting.HideOnForeground)
                         {
                             item.Value.Hide2();
+                        }
+                        else
+                        {
+                            item.Value.Highlight();
+                            _lastHighlightWindow = item.Value;
                         }
                     }
                     else

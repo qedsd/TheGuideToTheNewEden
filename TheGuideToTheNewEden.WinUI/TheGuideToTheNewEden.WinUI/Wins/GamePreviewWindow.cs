@@ -260,5 +260,36 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
+
+        public void Highlight()
+        {
+            if (_thumbHWnd != IntPtr.Zero)
+            {
+                try
+                {
+                    int left = 0;
+                    int top = _setting.ShowTitleBar ? TitleBarHeight : 0;
+                    int right = _appWindow.ClientSize.Width;
+                    int bottom = _appWindow.ClientSize.Height;
+                    var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
+                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
+                    var clientRect = new System.Drawing.Rectangle();
+                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
+                    //目标窗口显示区域，及GamePreviewWindow
+                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left + 10, top + 10, right + 10, bottom + 10);
+                    //源窗口捕获区域，即游戏的窗口
+                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
+                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                }
+            }
+        }
+        public void CancelHighlight()
+        {
+            UpdateThumbDestination();
+        }
     }
 }
