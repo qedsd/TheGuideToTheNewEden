@@ -41,7 +41,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic;
         private BaseWindow _window;
-        private List<Core.Models.Map.IntelSolarSystemMap> _allSolarSystem;
         public SMTIntelOverlapPage()
         {
             this.InitializeComponent();
@@ -56,7 +55,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             double width = _window.Bounds.Width - 10;
             double height = _window.Bounds.Height;
             _ellipseDic = new Dictionary<int, Ellipse>();
-            _allSolarSystem = intelMap.GetAllSolarSystem();
             var group = intelMap.GroupByJump();
             var perJumpHeight = height / group.Count;//每层占高度
             var topOffset = perJumpHeight / 2;
@@ -94,8 +92,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 }
             }
             //line
+            List<IntelSolarSystemMap> allSystems = new List<IntelSolarSystemMap>();
+            foreach(var items in group)
+            {
+                allSystems.AddRange(items);
+            }
             HashSet<string> drawn = new HashSet<string>();
-            foreach (var item in _allSolarSystem)
+            foreach (var item in allSystems)
             {
                 if (item.Jumps.NotNullOrEmpty())
                 {
@@ -262,7 +265,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         void IIntelOverlapPage.Dispose()
         {
             _ellipseDic.Clear();
-            _allSolarSystem.Clear();
         }
 
         void IIntelOverlapPage.Downgrade(List<int> systemIds)
