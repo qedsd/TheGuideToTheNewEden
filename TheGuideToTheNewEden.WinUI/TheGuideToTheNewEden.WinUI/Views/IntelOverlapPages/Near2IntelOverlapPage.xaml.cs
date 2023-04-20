@@ -11,6 +11,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using Windows.UI;
 using TheGuideToTheNewEden.Core.Extensions;
+using System.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 {
@@ -218,7 +219,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             var topOffset = perJumpHeight / 2;
             for (int i = group.Count - 1; i >= 0; i--)
             {
-                var top = i * perJumpHeight + topOffset;
+                var top = (group.Count - i - 1) * perJumpHeight + topOffset;
                 var perWidth = width / group[i].Length;
                 var leftOffsset = perWidth / 2;
                 for (int j = 0; j < group[i].Length; j++)
