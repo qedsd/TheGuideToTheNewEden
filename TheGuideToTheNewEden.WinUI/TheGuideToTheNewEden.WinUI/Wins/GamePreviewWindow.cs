@@ -48,7 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Colors.AliceBlue),
+                Background = new SolidColorBrush(Colors.GreenYellow),
             };
             MainContent = content;
             content.PointerReleased += Content_PointerReleased;
@@ -276,7 +276,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     var clientRect = new System.Drawing.Rectangle();
                     Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
                     //目标窗口显示区域，及GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left + 10, top + 10, right + 10, bottom + 10);
+                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left + 5, top, right - 5, bottom - 5);
                     //源窗口捕获区域，即游戏的窗口
                     WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
                     WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
