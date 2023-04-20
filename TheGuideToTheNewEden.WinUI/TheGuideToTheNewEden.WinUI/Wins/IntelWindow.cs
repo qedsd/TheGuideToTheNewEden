@@ -45,6 +45,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             switch((Core.Enums.IntelOverlapStyle)setting.OverlapStyle)
             {
                 case Core.Enums.IntelOverlapStyle.Neweden: _intelPage = new DefaultIntelOverlapPage();break;
+                case Core.Enums.IntelOverlapStyle.SMT: _intelPage = new SMTIntelOverlapPage();break;
             }
             Window.MainContent = _intelPage;
             Window.HideAppDisplayName();

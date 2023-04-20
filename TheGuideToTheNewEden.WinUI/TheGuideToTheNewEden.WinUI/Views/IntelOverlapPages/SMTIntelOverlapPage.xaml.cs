@@ -12,21 +12,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 using TheGuideToTheNewEden.Core.Extensions;
-using System.Threading.Channels;
 
 namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 {
     /// <summary>
-    /// 默认预警窗口样式
+    /// SMT预警样式
     /// </summary>
-    public sealed partial class DefaultIntelOverlapPage : Page, IIntelOverlapPage
+    public sealed partial class SMTIntelOverlapPage : Page, IIntelOverlapPage
     {
         private Core.Models.Map.IntelSolarSystemMap _intelMap;
         private Core.Models.EarlyWarningSetting _setting;
@@ -43,7 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private Dictionary<int, Ellipse> _ellipseDic;
         private BaseWindow _window;
         private List<Core.Models.Map.IntelSolarSystemMap> _allSolarSystem;
-        public DefaultIntelOverlapPage()
+        public SMTIntelOverlapPage()
         {
             this.InitializeComponent();
         }
@@ -54,35 +53,45 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             _setting = setting;
             MapCanvas.Children.Clear();
             LineCanvas.Children.Clear();
-            double width = _window.Bounds.Width;
-            double height = _window.Bounds.Height - 42;
+            double width = _window.Bounds.Width - 10;
+            double height = _window.Bounds.Height;
             _ellipseDic = new Dictionary<int, Ellipse>();
             _allSolarSystem = intelMap.GetAllSolarSystem();
-            foreach (var item in _allSolarSystem)
+            var group = intelMap.GroupByJump();
+            var perJumpHeight = height / group.Count;//每层占高度
+            var topOffset = perJumpHeight / 2;
+            for (int i = 0;i< group.Count;i++)
             {
-                Ellipse ellipse = new Ellipse()
+                var top = i * perJumpHeight + topOffset;
+                var perWidth = width / group[i].Length;
+                var leftOffsset = perWidth / 2;
+                for(int j = 0; j< group[i].Length; j++)
                 {
-                    StrokeThickness = 0,
-                    Tag = item
-                };
-                if (item.SolarSystemID == intelMap.SolarSystemID)
-                {
-                    ellipse.Fill = _homeBrush;
-                    ellipse.Width = _homeWidth;
-                    ellipse.Height = _homeWidth;
+                    var item = group[i][j];
+                    Ellipse ellipse = new Ellipse()
+                    {
+                        StrokeThickness = 0,
+                        Tag = item
+                    };
+                    if (item.SolarSystemID == intelMap.SolarSystemID)
+                    {
+                        ellipse.Fill = _homeBrush;
+                        ellipse.Width = _homeWidth;
+                        ellipse.Height = _homeWidth;
+                    }
+                    else
+                    {
+                        ellipse.Fill = _defaultBrush;
+                        ellipse.Width = _defaultWidth;
+                        ellipse.Height = _defaultWidth;
+                    }
+                    _ellipseDic.Add(item.SolarSystemID, ellipse);
+                    MapCanvas.Children.Add(ellipse);
+                    ellipse.PointerEntered += Ellipse_PointerEntered;
+                    ellipse.PointerExited += Ellipse_PointerExited;
+                    Canvas.SetLeft(ellipse, j * perWidth + leftOffsset);
+                    Canvas.SetTop(ellipse, top);
                 }
-                else
-                {
-                    ellipse.Fill = _defaultBrush;
-                    ellipse.Width = _defaultWidth;
-                    ellipse.Height = _defaultWidth;
-                }
-                _ellipseDic.Add(item.SolarSystemID, ellipse);
-                MapCanvas.Children.Add(ellipse);
-                ellipse.PointerEntered += Ellipse_PointerEntered;
-                ellipse.PointerExited += Ellipse_PointerExited;
-                Canvas.SetLeft(ellipse, width * item.X);
-                Canvas.SetTop(ellipse, height * item.Y);
             }
             //line
             HashSet<string> drawn = new HashSet<string>();
