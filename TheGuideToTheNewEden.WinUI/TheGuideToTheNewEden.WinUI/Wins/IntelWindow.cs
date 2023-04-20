@@ -89,7 +89,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
-            Init(Setting, IntelMap);
+            _intelPage.UpdateUI();
         }
 
         public void Show()

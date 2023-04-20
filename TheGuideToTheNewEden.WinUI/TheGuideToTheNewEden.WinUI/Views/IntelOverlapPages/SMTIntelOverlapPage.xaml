@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid Margin="0,-32,0,0">
-            <Canvas x:Name="LineCanvas" />
+            <Canvas x:Name="LineCanvas" Opacity="0.4" />
             <Canvas x:Name="TempCanvas" />
             <Canvas x:Name="MapCanvas" />
             <TextBlock x:Name="TipTextBlock" Visibility="Collapsed" />

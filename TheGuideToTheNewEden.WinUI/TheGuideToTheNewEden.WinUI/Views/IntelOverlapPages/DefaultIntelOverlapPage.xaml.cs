@@ -39,6 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private const int _defaultWidth = 8;
         private const int _homeWidth = 12;
         private readonly System.Numerics.Vector3 _intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
+        private readonly System.Numerics.Vector3 _defaultScale = new System.Numerics.Vector3(1, 1, 1);
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic;
         private BaseWindow _window;
@@ -52,12 +53,175 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             _window = window;
             _intelMap = intelMap;
             _setting = setting;
+            UpdateUI();
+        }
+        #region 星系提示
+        private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            TempCanvas.Children.Clear();
+            CancelSelected();
+        }
+        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            var ellipse = sender as Ellipse;
+            if (_lastPointerToEllipse == ellipse)
+            {
+                return;
+            }
+            TempCanvas.Children.Clear();
+            CancelSelected();
+            var map = ellipse.Tag as Core.Models.Map.IntelSolarSystemMap;
+            if (map != null)
+            {
+                #region 临近星系连线
+                if (map.JumpTo.NotNullOrEmpty())
+                {
+                    foreach (var jump in map.JumpTo)
+                    {
+                        if (_ellipseDic.TryGetValue(jump, out Ellipse jumpToEllipse))
+                        {
+                            double startX = ellipse.ActualOffset.X + ellipse.ActualSize.X / 2;
+                            double startY = ellipse.ActualOffset.Y + ellipse.ActualSize.Y / 2;
+                            double endX = jumpToEllipse.ActualOffset.X + jumpToEllipse.ActualSize.X / 2;
+                            double endY = jumpToEllipse.ActualOffset.Y + jumpToEllipse.ActualSize.Y / 2;
+                            Line line = new Line()
+                            {
+                                X1 = startX,
+                                Y1 = startY,
+                                X2 = endX,
+                                Y2 = endY,
+                                StrokeThickness = 2,
+                                Stroke = _tempLineBrush
+                            };
+                            TempCanvas.Children.Add(line);
+                        }
+                    }
+                }
+                #endregion
+
+                #region 选择星系突出显示
+                _lastPointerToEllipse = ellipse;
+                ellipse.Scale = new System.Numerics.Vector3(ellipse.Scale.X * 1.5f, ellipse.Scale.Y * 1.5f, 1);
+                Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (ellipse.Scale.X - 1) / 2);
+                Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (ellipse.Scale.Y - 1) / 2);
+                TipTextBlock.Text = $"{map.SolarSystemName} {_intelMap.JumpsOf(map.SolarSystemID)} 跳";
+                TipTextBlock.Visibility = Visibility.Visible;
+                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
+
+                #endregion
+            }
+        }
+        private void CancelSelected()
+        {
+            if (_lastPointerToEllipse != null)
+            {
+                Canvas.SetLeft(_lastPointerToEllipse, _lastPointerToEllipse.ActualOffset.X + _lastPointerToEllipse.Width * (_lastPointerToEllipse.Scale.X - 1) / 2);
+                Canvas.SetTop(_lastPointerToEllipse, _lastPointerToEllipse.ActualOffset.Y + _lastPointerToEllipse.Height * (_lastPointerToEllipse.Scale.Y - 1) / 2);
+                _lastPointerToEllipse.Scale = new System.Numerics.Vector3(_lastPointerToEllipse.Scale.X / 1.5f, _lastPointerToEllipse.Scale.Y / 1.5f, 1);
+            }
+            _lastPointerToEllipse = null;
+            TipTextBlock.Visibility = Visibility.Collapsed;
+        }
+        #endregion
+
+        /// <summary>
+        /// 正处于预警中的星系
+        /// </summary>
+        private HashSet<int> _intelings = new HashSet<int>();
+        /// <summary>
+        /// 已降过级的星系
+        /// </summary>
+        private HashSet<int> _downgradeds = new HashSet<int>();
+        void IIntelOverlapPage.Intel(EarlyWarningContent content)
+        {
+            InfoTextBlock.Text = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
+            if (_ellipseDic.TryGetValue(content.SolarSystemId, out var value))
+            {
+                if (content.IntelType == Core.Enums.IntelChatType.Intel)
+                {
+                    if (value.Fill != _intelBrush)
+                    {
+                        value.Fill = _intelBrush;
+                        value.Scale = _intelScale;
+                        Canvas.SetLeft(value, value.ActualOffset.X - value.Width * (_intelScale.X - 1) / 2);
+                        Canvas.SetTop(value, value.ActualOffset.Y - value.Height * (_intelScale.Y - 1) / 2);
+                    }
+                }
+                else if (content.IntelType == Core.Enums.IntelChatType.Clear)
+                {
+                    if (value.Scale.X != 1)
+                    {
+                        value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                        Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (_intelScale.X - 1) / 2);
+                        Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (_intelScale.Y - 1) / 2);
+                    }
+                    if (content.SolarSystemId == _setting.LocationID)
+                    {
+                        value.Fill = _homeBrush;
+                    }
+                    else
+                    {
+                        value.Fill = _defaultBrush;
+                    }
+                }
+                _intelings.Add(content.SolarSystemId);
+                _downgradeds.Remove(content.SolarSystemId);
+            }
+        }
+        void IIntelOverlapPage.Clear(List<int> systemIds)
+        {
+            foreach (var item in systemIds)
+            {
+                if (_ellipseDic.TryGetValue(item, out var value))
+                {
+                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width / 4);
+                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height / 4);
+                    if (item == _setting.LocationID)
+                    {
+                        value.Fill = _homeBrush;
+                    }
+                    else
+                    {
+                        value.Fill = _defaultBrush;
+                    }
+                    _intelings.Remove(item);
+                    _downgradeds.Remove(item);
+                }
+            }
+        }
+
+        void IIntelOverlapPage.Dispose()
+        {
+            _ellipseDic.Clear();
+            _allSolarSystem.Clear();
+        }
+
+        void IIntelOverlapPage.Downgrade(List<int> systemIds)
+        {
+            foreach (var item in systemIds)
+            {
+                if (_ellipseDic.TryGetValue(item, out var value))
+                {
+                    value.Fill = _downgradeBrush;
+                    _intelings.Remove(item);
+                    _downgradeds.Add(item);
+                }
+            }
+        }
+
+        public void UpdateUI()
+        {
+            if (_window == null)
+            {
+                return;
+            }
             MapCanvas.Children.Clear();
             LineCanvas.Children.Clear();
             double width = _window.Bounds.Width;
             double height = _window.Bounds.Height - 42;
             _ellipseDic = new Dictionary<int, Ellipse>();
-            _allSolarSystem = intelMap.GetAllSolarSystem();
+            _allSolarSystem = _intelMap.GetAllSolarSystem();
             foreach (var item in _allSolarSystem)
             {
                 Ellipse ellipse = new Ellipse()
@@ -65,7 +229,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                     StrokeThickness = 0,
                     Tag = item
                 };
-                if (item.SolarSystemID == intelMap.SolarSystemID)
+                if (item.SolarSystemID == _intelMap.SolarSystemID)
                 {
                     ellipse.Fill = _homeBrush;
                     ellipse.Width = _homeWidth;
@@ -123,146 +287,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
 
                 }
             }
-        }
 
-        #region 星系提示
-        private void Ellipse_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            TempCanvas.Children.Clear();
-            CancelSelected();
-        }
-        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            var ellipse = sender as Ellipse;
-            if (_lastPointerToEllipse == ellipse)
+            //重绘预警中的
+            foreach (var item in _downgradeds)
             {
-                return;
-            }
-            TempCanvas.Children.Clear();
-            CancelSelected();
-            var map = ellipse.Tag as Core.Models.Map.IntelSolarSystemMap;
-            if (map != null)
-            {
-                #region 临近星系连线
-                if (map.JumpTo.NotNullOrEmpty())
+                if (_ellipseDic.TryGetValue(item, out var ellipse))
                 {
-                    foreach (var jump in map.JumpTo)
-                    {
-                        if (_ellipseDic.TryGetValue(jump, out Ellipse jumpToEllipse))
-                        {
-                            double startX = ellipse.ActualOffset.X + ellipse.ActualSize.X / 2;
-                            double startY = ellipse.ActualOffset.Y + ellipse.ActualSize.Y / 2;
-                            double endX = jumpToEllipse.ActualOffset.X + jumpToEllipse.ActualSize.X / 2;
-                            double endY = jumpToEllipse.ActualOffset.Y + jumpToEllipse.ActualSize.Y / 2;
-                            Line line = new Line()
-                            {
-                                X1 = startX,
-                                Y1 = startY,
-                                X2 = endX,
-                                Y2 = endY,
-                                StrokeThickness = 2,
-                                Stroke = _tempLineBrush
-                            };
-                            TempCanvas.Children.Add(line);
-                        }
-                    }
-                }
-                #endregion
-
-                #region 选择星系突出显示
-                _lastPointerToEllipse = ellipse;
-                ellipse.Scale = new System.Numerics.Vector3(1.6f, 1.6f, 1);
-
-                Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * 0.6 / 2);
-                Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * 0.6 / 2);
-                TipTextBlock.Text = $"{map.SolarSystemName} {_intelMap.JumpsOf(map.SolarSystemID)} 跳";
-                TipTextBlock.Visibility = Visibility.Visible;
-                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
-
-                #endregion
-            }
-        }
-        private void CancelSelected()
-        {
-            if (_lastPointerToEllipse != null)
-            {
-                _lastPointerToEllipse.Scale = new System.Numerics.Vector3(1f, 1f, 1f);
-                Canvas.SetLeft(_lastPointerToEllipse, _lastPointerToEllipse.ActualOffset.X + _lastPointerToEllipse.Width * 0.6 / 2);
-                Canvas.SetTop(_lastPointerToEllipse, _lastPointerToEllipse.ActualOffset.Y + _lastPointerToEllipse.Height * 0.6 / 2);
-            }
-            _lastPointerToEllipse = null;
-            TipTextBlock.Visibility = Visibility.Collapsed;
-        }
-        #endregion
-
-        void IIntelOverlapPage.Intel(EarlyWarningContent content)
-        {
-            InfoTextBlock.Text = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
-            if (_ellipseDic.TryGetValue(content.SolarSystemId, out var value))
-            {
-                if (content.IntelType == Core.Enums.IntelChatType.Intel)
-                {
-                    if (value.Fill != _intelBrush)
-                    {
-                        value.Fill = _intelBrush;
-                        value.Scale = _intelScale;
-                        Canvas.SetLeft(value, value.ActualOffset.X - value.Width * (_intelScale.X - 1) / 2);
-                        Canvas.SetTop(value, value.ActualOffset.Y - value.Height * (_intelScale.Y - 1) / 2);
-                    }
-                }
-                else if (content.IntelType == Core.Enums.IntelChatType.Clear)
-                {
-                    if (value.Scale.X != 1)
-                    {
-                        value.Scale = new System.Numerics.Vector3(1, 1, 1);
-                        Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (_intelScale.X - 1) / 2);
-                        Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (_intelScale.Y - 1) / 2);
-                    }
-                    if (content.SolarSystemId == _setting.LocationID)
-                    {
-                        value.Fill = _homeBrush;
-                    }
-                    else
-                    {
-                        value.Fill = _defaultBrush;
-                    }
+                    ellipse.Fill = _downgradeBrush;
+                    ellipse.Scale = _intelScale;
+                    Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (_intelScale.X - 1) / 2);
+                    Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (_intelScale.Y - 1) / 2);
                 }
             }
-        }
-        void IIntelOverlapPage.Clear(List<int> systemIds)
-        {
-            foreach (var item in systemIds)
+            foreach (var item in _intelings)
             {
-                if (_ellipseDic.TryGetValue(item, out var value))
+                if (_ellipseDic.TryGetValue(item, out var ellipse))
                 {
-                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
-                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width * (_intelScale.X - 1) / 2);
-                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height * (_intelScale.Y - 1) / 2);
-                    if (item == _setting.LocationID)
-                    {
-                        value.Fill = _homeBrush;
-                    }
-                    else
-                    {
-                        value.Fill = _defaultBrush;
-                    }
-                }
-            }
-        }
-
-        void IIntelOverlapPage.Dispose()
-        {
-            _ellipseDic.Clear();
-            _allSolarSystem.Clear();
-        }
-
-        void IIntelOverlapPage.Downgrade(List<int> systemIds)
-        {
-            foreach (var item in systemIds)
-            {
-                if (_ellipseDic.TryGetValue(item, out var value))
-                {
-                    value.Fill = _downgradeBrush;
+                    ellipse.Fill = _intelBrush;
+                    ellipse.Scale = _intelScale;
+                    Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (_intelScale.X - 1) / 2);
+                    Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (_intelScale.Y - 1) / 2);
                 }
             }
         }
