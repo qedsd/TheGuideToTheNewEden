@@ -549,13 +549,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
         {
+            if (_lastHighlightWindow != null)
+            {
+                _lastHighlightWindow.CancelHighlight();
+            }
             var targetProcess = Processes.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
             if(targetProcess != null)
-            {
-                if(_lastHighlightWindow != null)
-                {
-                    _lastHighlightWindow.CancelHighlight();
-                }
+            {                
                 foreach(var item in _runningDic)
                 {
                     if(item.Key == targetProcess.GUID)
@@ -567,6 +567,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         else
                         {
                             item.Value.Highlight();
+                            Debug.WriteLine(111);
                             _lastHighlightWindow = item.Value;
                         }
                     }

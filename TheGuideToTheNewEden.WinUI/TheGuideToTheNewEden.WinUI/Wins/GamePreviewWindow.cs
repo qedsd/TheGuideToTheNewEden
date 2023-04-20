@@ -276,7 +276,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     var clientRect = new System.Drawing.Rectangle();
                     Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
                     //目标窗口显示区域，及GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left + 5, top, right - 5, bottom - 5);
+                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - 8);
                     //源窗口捕获区域，即游戏的窗口
                     WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
                     WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
@@ -289,6 +289,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void CancelHighlight()
         {
+            Debug.WriteLine(222);
             UpdateThumbDestination();
         }
     }
