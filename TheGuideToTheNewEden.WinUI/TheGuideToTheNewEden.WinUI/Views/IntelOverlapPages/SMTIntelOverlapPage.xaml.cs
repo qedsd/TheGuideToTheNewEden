@@ -98,7 +98,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (ellipse.Scale.Y - 1) / 2);
                 TipTextBlock.Text = $"{map.SolarSystemName} {_intelMap.JumpsOf(map.SolarSystemID)} Ìø";
                 TipTextBlock.Visibility = Visibility.Visible;
-                TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
+                if (ellipse.ActualOffset.X > this.ActualWidth / 2)
+                {
+                    TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X - (float)TipTextBlock.ActualWidth - 8, ellipse.ActualOffset.Y - 20, 1);
+
+                }
+                else
+                {
+                    TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
+                }
 
                 #endregion
             }
