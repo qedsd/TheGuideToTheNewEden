@@ -306,13 +306,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetProcess()
         {
-            if(SelectedProcess != null)
+            if (_lastHighlightWindow != null)
+            {
+                _lastHighlightWindow.CancelHighlight();
+                _lastHighlightWindow = null;
+            }
+            if (SelectedProcess != null)
             {
                 SettingVisible = Visibility.Visible;
                 if(SelectedProcess.Setting != null)//运行中
                 {
                     Setting = SelectedProcess.Setting;
                     SelectedSetting = Settings.Contains(Setting) ? Setting : null;
+                    _lastHighlightWindow = null;
+                    if (_runningDic.TryGetValue(SelectedProcess.GUID,out var window))
+                    {
+                        window.Highlight();
+                        _lastHighlightWindow = window;
+                    }
                 }
                 else //进程未运行中
                 {
@@ -564,10 +575,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             item.Value.Hide2();
                         }
-                        else
+                        else if(item.Value.Setting.Highlight)
                         {
                             item.Value.Highlight();
-                            Debug.WriteLine(111);
                             _lastHighlightWindow = item.Value;
                         }
                     }

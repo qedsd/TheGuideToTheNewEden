@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Drawing;
 
 namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 {
@@ -87,6 +85,22 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get => hideOnForeground;
             set => SetProperty(ref hideOnForeground, value);
+        }
+
+        private bool highlight = true;
+        /// <summary>
+        /// 激活游戏窗口、管理窗口选中时高亮预览窗口
+        /// </summary>
+        public bool Highlight
+        {
+            get => highlight;
+            set => SetProperty(ref highlight, value);
+        }
+        private Color highlightColor = Color.Green;
+        public Color HighlightColor
+        {
+            get => highlightColor;
+            set => SetProperty(ref highlightColor, value);
         }
     }
 }

@@ -45,6 +45,8 @@
                 Size="128"
                 Type="Character" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <converters:ColorConverter x:Key="DrawColorToUIColorConverter" />
+            <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

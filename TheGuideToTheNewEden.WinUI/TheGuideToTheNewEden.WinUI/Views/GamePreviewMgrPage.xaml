@@ -203,6 +203,39 @@
                     <Grid Margin="0,10">
                         <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
                     </Grid>
+                    <Grid Margin="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Content="激活窗口时高亮" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" />
+                        <Button
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Padding="4"
+                            HorizontalAlignment="Right">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <ColorPicker
+                                        ColorSpectrumShape="Box"
+                                        IsAlphaEnabled="True"
+                                        IsAlphaSliderVisible="True"
+                                        IsAlphaTextInputVisible="True"
+                                        IsColorChannelTextInputVisible="True"
+                                        IsColorSliderVisible="True"
+                                        IsHexInputVisible="True"
+                                        IsMoreButtonVisible="True"
+                                        Color="{x:Bind VM.Setting.HighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
+                                </Flyout>
+                            </Button.Flyout>
+                            <Button.Content>
+                                <Rectangle
+                                    Width="100"
+                                    Height="24"
+                                    Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
                 </StackPanel>
             </ScrollViewer>
             <Rectangle
