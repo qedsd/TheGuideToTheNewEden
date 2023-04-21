@@ -47,6 +47,7 @@
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:ColorConverter x:Key="DrawColorToUIColorConverter" />
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
+            <converters:StringMatchToVisibilityConverter x:Key="StringMatchToVisibleConverter" TrueToVisible="True" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -32,5 +32,68 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => previewItems;
             set => SetProperty(ref previewItems, value);
         }
+
+        private int autoLayout;
+        /// <summary>
+        /// 窗口布局对齐方式
+        /// </summary>
+        public int AutoLayout
+        {
+            get => autoLayout;
+            set
+            {
+                SetProperty(ref autoLayout, value);
+            }
+        }
+        private int autoLayoutAnchor;
+        /// <summary>
+        /// 窗口布局对齐位置
+        /// </summary>
+        public int AutoLayoutAnchor
+        {
+            get => autoLayoutAnchor;
+            set
+            {
+                SetProperty(ref autoLayoutAnchor, value);
+            }
+        }
+
+        private int autoLayoutSpan = 10;
+        /// <summary>
+        /// 自动对齐间隔
+        /// </summary>
+        public int AutoLayoutSpan
+        {
+            get => autoLayoutSpan;
+            set
+            {
+                SetProperty(ref autoLayoutSpan, value);
+            }
+        }
+
+        private int uniformHeight = 300;
+        /// <summary>
+        /// 统一窗口长度
+        /// </summary>
+        public int UniformHeight
+        {
+            get => uniformHeight;
+            set
+            {
+                SetProperty(ref uniformHeight, value);
+            }
+        }
+        private int uniformWidth = 533;
+        /// <summary>
+        /// 统一窗口宽度
+        /// </summary>
+        public int UniformWidth
+        {
+            get => uniformWidth;
+            set
+            {
+                SetProperty(ref uniformWidth, value);
+            }
+        }
     }
 }

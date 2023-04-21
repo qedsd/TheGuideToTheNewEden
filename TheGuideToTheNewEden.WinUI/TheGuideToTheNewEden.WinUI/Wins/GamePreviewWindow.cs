@@ -260,7 +260,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
-
+        /// <summary>
+        /// 高亮
+        /// </summary>
         public void Highlight()
         {
             if (_thumbHWnd != IntPtr.Zero)
@@ -287,10 +289,41 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             }
         }
+        /// <summary>
+        /// 取消高亮
+        /// </summary>
         public void CancelHighlight()
         {
             Debug.WriteLine(222);
             UpdateThumbDestination();
+        }
+        /// <summary>
+        /// 设置窗口尺寸
+        /// </summary>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
+        public void SetSize(int w, int h)
+        {
+            _appWindow.Resize(new Windows.Graphics.SizeInt32(w, h));
+        }
+        public void SetPos(int x, int y)
+        {
+            Helpers.WindowHelper.MoveToScreen(this, x, y);
+        }
+        public void GetSizeAndPos(out int x, out int y,out int w, out int h)
+        {
+            x = _appWindow.Position.X;
+            y = _appWindow.Position.Y;
+            w = _appWindow.ClientSize.Width;
+            h = _appWindow.ClientSize.Height;
+        }
+        public int GetWidth()
+        {
+            return _appWindow.ClientSize.Width;
+        }
+        public int GetHeight()
+        {
+            return _appWindow.ClientSize.Height;
         }
     }
 }

@@ -101,6 +101,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => running;
             set => SetProperty(ref running, value);
         }
+        
+        
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
@@ -355,7 +357,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         SelectedSetting = null;
                     }
                 }
-                
             }
             else
             {
@@ -487,7 +488,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 window.Stop();
             }
         }
-
+        public ICommand SetUniformSizeCommand => new RelayCommand(() =>
+        {
+            if(!_runningDic.NotNullOrEmpty())
+            {
+                Window.ShowError("无激活窗口", true);
+            }
+            else
+            {
+                foreach (var window in _runningDic.Values)
+                {
+                    window.SetSize(PreviewSetting.UniformWidth, PreviewSetting.UniformHeight);
+                }
+                Window.ShowSuccess("已应用窗口尺寸");
+            }
+        });
         #region 监控游戏关闭
         private Timer gameMonitor;
         private void StartGameMonitor()
@@ -595,5 +610,138 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+
+        #region 自动窗口布局
+        
+        public ICommand SetAutoLayoutCommand => new RelayCommand(() =>
+        {
+            UpdateAutoLayout();
+        });
+        private void UpdateAutoLayout()
+        {
+            if(!Running)
+            {
+                Window.ShowError("请先开始当前进程预览", true);
+                return;
+            }
+            if(PreviewSetting.AutoLayout < 0)
+            {
+                Window.ShowError("请选择对齐方式", true);
+                return;
+            }
+            if (PreviewSetting.AutoLayoutAnchor < 0)
+            {
+                Window.ShowError("请选择对齐位置", true);
+                return;
+            }
+            if(_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))
+            {
+                switch(PreviewSetting.AutoLayout)
+                {
+                    case 0: SetAutoLayout1(window);break;
+                    case 1: SetAutoLayout2(window); break;
+                    case 2: SetAutoLayout3(window); break;
+                    case 3: SetAutoLayout4(window); break;
+                }
+                Window.ShowSuccess("已应用对齐布局");
+            }
+        }
+        /// <summary>
+        /// 左对齐
+        /// </summary>
+        private void SetAutoLayout1(GamePreviewWindow targetWindow)
+        {
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            int startX = targetWinX + targetWinW + PreviewSetting.AutoLayoutSpan;
+            foreach (var win in _runningDic.Values)
+            {
+                if(win == targetWindow)
+                {
+                    continue;
+                }
+                int startY = 0;
+                switch(PreviewSetting.AutoLayoutAnchor)
+                {
+                    case 0: startY = targetWinY; break;//上对齐
+                    case 1: startY = targetWinY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
+                    case 2: startY = targetWinY + targetWinH - win.GetHeight(); break;//下对齐
+                }
+                win.SetPos(startX, startY);
+                startX += win.GetWidth() + PreviewSetting.AutoLayoutSpan;
+            }
+        }
+        /// <summary>
+        /// 右对齐
+        /// </summary>
+        private void SetAutoLayout2(GamePreviewWindow targetWindow)
+        {
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            int startX = targetWinX - PreviewSetting.AutoLayoutSpan;
+            foreach (var win in _runningDic.Values)
+            {
+                if (win == targetWindow)
+                {
+                    continue;
+                }
+                startX = startX - win.GetWidth() - PreviewSetting.AutoLayoutSpan;
+                int startY = 0;
+                switch (PreviewSetting.AutoLayoutAnchor)
+                {
+                    case 0: startY = targetWinY; break;//上对齐
+                    case 1: startY = targetWinY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
+                    case 2: startY = targetWinY + targetWinH - win.GetHeight(); break;//下对齐
+                }
+                win.SetPos(startX, startY);
+            }
+        }
+        /// <summary>
+        /// 上对齐
+        /// </summary>
+        private void SetAutoLayout3(GamePreviewWindow targetWindow)
+        {
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            int startY = targetWinY + targetWinH + PreviewSetting.AutoLayoutSpan;
+            foreach (var win in _runningDic.Values)
+            {
+                if (win == targetWindow)
+                {
+                    continue;
+                }
+                int startX = 0;
+                switch (PreviewSetting.AutoLayoutAnchor)
+                {
+                    case 0: startX = targetWinX; break;//左对齐
+                    case 1: startX = (targetWinX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
+                    case 2: startX = (targetWinX + targetWinW) - win.GetWidth(); break;//右对齐
+                }
+                win.SetPos(startX, startY);
+                startY += win.GetHeight() + PreviewSetting.AutoLayoutSpan;
+            }
+        }
+        /// <summary>
+        /// 下对齐
+        /// </summary>
+        private void SetAutoLayout4(GamePreviewWindow targetWindow)
+        {
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            int startY = targetWinY - PreviewSetting.AutoLayoutSpan;
+            foreach (var win in _runningDic.Values)
+            {
+                if (win == targetWindow)
+                {
+                    continue;
+                }
+                startY = startY - win.GetHeight() - PreviewSetting.AutoLayoutSpan;
+                int startX = 0;
+                switch (PreviewSetting.AutoLayoutAnchor)
+                {
+                    case 0: startX = targetWinX; break;//左对齐
+                    case 1: startX = (targetWinX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
+                    case 2: startX = (targetWinX + targetWinW) - win.GetWidth(); break;//右对齐
+                }
+                win.SetPos(startX, startY);
+            }
+        }
+        #endregion
     }
 }
