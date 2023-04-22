@@ -483,10 +483,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public void StopAll()
         {
-            //foreach(var window in _runningDic.Values)
-            //{
-            //    window.Stop();
-            //}
             foreach(var item in Processes.Where(p=>p.Running).ToList())
             {
                 if (_runningDic.TryGetValue(item.GUID, out var window))
@@ -646,6 +642,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if (PreviewSetting.AutoLayoutAnchor < 0)
             {
                 Window.ShowError("请选择对齐位置", true);
+                return;
+            }
+            if(_runningDic.Count < 2)
+            {
+                Window.ShowError("请激活至少两个预览窗口", true);
                 return;
             }
             if(_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))

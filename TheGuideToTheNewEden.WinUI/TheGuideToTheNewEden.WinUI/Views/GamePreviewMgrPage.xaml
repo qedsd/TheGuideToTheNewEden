@@ -132,35 +132,100 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBox
-                                Header="切换快捷键"
-                                PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab"
-                                Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
-                            <StackPanel Grid.Row="1" Margin="0,8">
-                                <TextBlock Text="统一窗口大小" />
-                                <StackPanel Margin="0,6" Orientation="Horizontal">
+                            <StackPanel>
+                                <Grid Margin="8,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Margin="8,0"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="切换快捷键" />
+                                        <Button
+                                            Width="24"
+                                            Height="24"
+                                            Margin="4,0,0,0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Content="!">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock Text="按下快捷键时，按激活顺序依次切换显示相应的游戏窗口" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    <Rectangle
+                                        Grid.Column="2"
+                                        Height="1"
+                                        Fill="{ThemeResource SystemAccentColor}" />
+                                </Grid>
+                                <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Margin="0,24">
+                                <Grid Margin="8,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Margin="8,0"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="统一窗口大小" />
+                                        <Button
+                                            Width="24"
+                                            Height="24"
+                                            Margin="4,0,0,0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Content="!">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock Text="将所有的预览窗口设置为指定的大小" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    <Rectangle
+                                        Grid.Column="2"
+                                        Height="1"
+                                        Fill="{ThemeResource SystemAccentColor}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
                                     <NumberBox
-                                        Width="100"
                                         Minimum="1"
                                         PlaceholderText="窗口宽度"
                                         ToolTipService.ToolTip="窗口宽度"
                                         Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
                                     <TextBlock
+                                        Grid.Column="1"
                                         Margin="4,0"
                                         VerticalAlignment="Center"
                                         Text="×" />
                                     <NumberBox
-                                        Width="100"
+                                        Grid.Column="2"
                                         Minimum="1"
                                         PlaceholderText="窗口高度"
                                         ToolTipService.ToolTip="窗口高度"
                                         Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
-                                    <Button
-                                        Margin="8,0,0,0"
-                                        HorizontalAlignment="Right"
-                                        Command="{x:Bind VM.SetUniformSizeCommand}"
-                                        Content="应用" />
-                                </StackPanel>
+                                </Grid>
+                                <Button
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind VM.SetUniformSizeCommand}"
+                                    Content="应用" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Margin="0,8,0,16">
                                 <Grid Margin="8,8">
@@ -170,10 +235,29 @@
                                         <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                    <TextBlock
+                                    <StackPanel
                                         Grid.Column="1"
                                         Margin="8,0"
-                                        Text="自动对齐窗口" />
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="自动对齐窗口" />
+                                        <Button
+                                            Width="24"
+                                            Height="24"
+                                            Margin="4,0,0,0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Content="!">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock
+                                                        Width="300"
+                                                        Text="以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐"
+                                                        TextWrapping="Wrap" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+
                                     <Rectangle
                                         Grid.Column="2"
                                         Height="1"
@@ -401,12 +485,10 @@
                                         Margin="16,0,0,0"
                                         Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}" />
                                 </Grid>
-                                <AppBarButton
-                                    Width="160"
-                                    HorizontalAlignment="Center"
+                                <Button
+                                    HorizontalAlignment="Stretch"
                                     Command="{x:Bind VM.SetAutoLayoutCommand}"
-                                    Icon="Accept"
-                                    Label="应用布局" />
+                                    Content="应用" />
                             </StackPanel>
                         </Grid>
                     </Flyout>
