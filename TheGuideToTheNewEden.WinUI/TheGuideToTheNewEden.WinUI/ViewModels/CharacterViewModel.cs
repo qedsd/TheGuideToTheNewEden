@@ -119,7 +119,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
-            AuthHelper.RegistyProtocol();
+            if(!AuthHelper.RegistyProtocol())
+            {
+                Window.ShowError("注册授权服务失败，请使用管理员模式运行");
+                return;
+            }
             Window.ShowWaiting("等待网页授权...");
             var result = await Services.CharacterService.AddAsync();
             if(result != null)
