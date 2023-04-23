@@ -100,3 +100,8 @@ eve-o-preview青春版，将游戏画面置顶显示在系统上，这样一来�
 
 # 后续计划
 目前虽然只有两个功能可用，但是bug多呀，修修补补又一年。争取在接下来一两个月内把角色中心、市场、商业三个功能重构完，后续的功能就随缘了。
+
+# 联系我
+- 游戏ID：QEDSD
+- [QQ群：784194289](https://jq.qq.com/?_wv=1027&k=m8Ttv1DX)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/qq.jpg?raw=true?raw=true)

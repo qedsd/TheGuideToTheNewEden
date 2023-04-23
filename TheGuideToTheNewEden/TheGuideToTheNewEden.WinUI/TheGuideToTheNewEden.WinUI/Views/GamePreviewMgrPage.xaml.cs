@@ -55,18 +55,18 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
         {
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            Window.Closed += Window_Closed;
             (DataContext as GamePreviewMgrViewModel).Window = Window;
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
+            AppWindow.Closing += AppWindow_Closing;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
         }
 
-        private void Window_Closed(object sender, WindowEventArgs args)
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            HotkeyService.Stop();
             VM.StopAll();
+            HotkeyService.Stop();
         }
 
         private void PreviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)

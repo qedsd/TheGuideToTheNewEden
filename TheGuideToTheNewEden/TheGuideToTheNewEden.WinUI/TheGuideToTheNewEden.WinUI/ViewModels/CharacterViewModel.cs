@@ -75,6 +75,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private decimal _corpWallet;
         public decimal CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
 
+        private bool existedCharacter;
+        public bool ExistedCharacter { get => existedCharacter; set => SetProperty(ref existedCharacter, value); }
+
         #endregion
         #region 字段
         public EsiClient EsiClient;
@@ -96,6 +99,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             });
             EsiClient = new ESI.NET.EsiClient(config);
             SelectedCharacter = Characters.FirstOrDefault();
+            if(!Characters.NotNullOrEmpty())
+            {
+                ExistedCharacter = false;
+            }
+            else
+            {
+                ExistedCharacter = true;
+            }
         }
         public delegate void SelectedCharacterDelegate();
         public event SelectedCharacterDelegate OnSelectedCharacter;
@@ -119,13 +130,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
-            AuthHelper.RegistyProtocol();
+            if(!AuthHelper.RegistyProtocol())
+            {
+                Window.ShowError("注册授权服务失败，请使用管理员模式运行");
+                return;
+            }
             Window.ShowWaiting("等待网页授权...");
             var result = await Services.CharacterService.AddAsync();
             if(result != null)
             {
                 Window.ShowSuccess("添加成功");
                 SelectedCharacter = result;
+                ExistedCharacter = true;
             }
             else
             {

@@ -12,14 +12,23 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 {
     internal static class AuthHelper
     {
-        public static void RegistyProtocol()
+        public static bool RegistyProtocol()
         {
-            if(Registry.ClassesRoot.OpenSubKey("eveauth-qedsd-neweden2") == null)
+            try
             {
-                var yourProtocolName = Registry.ClassesRoot.CreateSubKey("eveauth-qedsd-neweden2");
-                var command = yourProtocolName.CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command");
-                yourProtocolName.SetValue("URL Protocol", "");
-                command.SetValue(null, $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"");
+                if (Registry.ClassesRoot.OpenSubKey("eveauth-qedsd-neweden2") == null)
+                {
+                    var yourProtocolName = Registry.ClassesRoot.CreateSubKey("eveauth-qedsd-neweden2");
+                    var command = yourProtocolName.CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command");
+                    yourProtocolName.SetValue("URL Protocol", "");
+                    command.SetValue(null, $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"");
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return false;
             }
         }
         private static FileSystemWatcher _fileSystemWatcher;

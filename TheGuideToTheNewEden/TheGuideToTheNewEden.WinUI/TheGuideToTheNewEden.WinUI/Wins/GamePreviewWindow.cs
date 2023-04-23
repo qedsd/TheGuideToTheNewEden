@@ -196,8 +196,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbHWnd = IntPtr.Zero;
             }
             SizeChanged -= GamePreviewWindow_SizeChanged;
+            Closed -= GamePreviewWindow_Closed;
             _appWindow.Closing -= AppWindow_Closing;
+            _appWindow.Changed -= AppWindow_Changed;
             HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+            (MainContent as UIElement).PointerReleased += Content_PointerReleased;
+            (MainContent as UIElement).PointerWheelChanged += Content_PointerWheelChanged;
             Close();
         }
 

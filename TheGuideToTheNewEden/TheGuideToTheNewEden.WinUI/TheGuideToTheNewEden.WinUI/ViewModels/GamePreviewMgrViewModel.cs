@@ -64,13 +64,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Setting = value;
                 }
-                else
-                {
-                    Setting = new PreviewItem()
-                    {
-                        Name = SelectedProcess.GetCharacterName()
-                    };
-                }
+                //else
+                //{
+                //    Setting = new PreviewItem()
+                //    {
+                //        Name = SelectedProcess.GetCharacterName()
+                //    };
+                //}
             }
         }
         private ObservableCollection<ProcessInfo> processes;
@@ -483,9 +483,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public void StopAll()
         {
-            foreach(var window in _runningDic.Values)
+            foreach(var item in Processes.Where(p=>p.Running).ToList())
             {
-                window.Stop();
+                if (_runningDic.TryGetValue(item.GUID, out var window))
+                {
+                    _runningDic.Remove(item.GUID);
+                    item.Running = false;
+                    item.Setting = null;
+                    window.Stop();
+                    if (_runningDic.Count == 0)
+                    {
+                        Running = false;
+                    }
+                }
             }
         }
         public ICommand SetUniformSizeCommand => new RelayCommand(() =>
@@ -632,6 +642,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if (PreviewSetting.AutoLayoutAnchor < 0)
             {
                 Window.ShowError("请选择对齐位置", true);
+                return;
+            }
+            if(_runningDic.Count < 2)
+            {
+                Window.ShowError("请激活至少两个预览窗口", true);
                 return;
             }
             if(_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))
