@@ -13,4 +13,3 @@ if(!Directory.Exists(folder))
 }
 string filepath = Path.Combine(folder, "msg.txt");
 File.WriteAllText(filepath,stringBuilder.ToString());
-Console.ReadLine();

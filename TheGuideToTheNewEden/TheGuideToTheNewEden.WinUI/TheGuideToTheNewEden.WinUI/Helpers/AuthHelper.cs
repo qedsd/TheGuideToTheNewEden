@@ -16,14 +16,18 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             try
             {
-                if (Registry.ClassesRoot.OpenSubKey("eveauth-qedsd-neweden2") == null)
+                var value = Registry.GetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden2\\shell\\open\\command", null, null) as string;
+                string newValue = $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"";
+                if (value == newValue)
                 {
-                    var yourProtocolName = Registry.ClassesRoot.CreateSubKey("eveauth-qedsd-neweden2");
-                    var command = yourProtocolName.CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command");
-                    yourProtocolName.SetValue("URL Protocol", "");
-                    command.SetValue(null, $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.AuthListener.exe")}\"%1\"");
+                    return true;
                 }
-                return true;
+                else
+                {
+                    Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden2", "URL Protocol", "");
+                    Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden2\\shell\\open\\command", null, newValue);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -31,37 +35,23 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 return false;
             }
         }
-        private static FileSystemWatcher _fileSystemWatcher;
         public static async Task<string> WaitingAuthAsync()
         {
-            _msg = null;
-            _waiting = true;
-            if(_fileSystemWatcher == null)
+            string msgFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth","msg.txt");
+            if(File.Exists(msgFile))
             {
-                string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth");
-                if (!Directory.Exists(folder))
+                File.Delete(msgFile);
+            }
+            while(true)
+            {
+                if(File.Exists(msgFile))
                 {
-                    Directory.CreateDirectory(folder);
+                    return File.ReadAllText(msgFile);
                 }
-                FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
-                fileSystemWatcher.Path = folder;
-                fileSystemWatcher.EnableRaisingEvents = true;
-                fileSystemWatcher.Changed += FileSystemWatcher_Changed;
-            }
-            while (_waiting)
-            {
-                await Task.Delay(1000);
-            }
-            return _msg;
-        }
-        private static bool _waiting = false;
-        private static string _msg;
-        private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            if(File.Exists(e.FullPath))
-            {
-                _msg = File.ReadAllText(e.FullPath);
-                _waiting = false;
+                else
+                {
+                    await Task.Delay(1000);
+                }
             }
         }
     }
