@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private readonly System.Numerics.Vector3 _intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
         private readonly System.Numerics.Vector3 _defaultScale = new System.Numerics.Vector3(1, 1, 1);
         private Ellipse _lastPointerToEllipse;
-        private Dictionary<int, Ellipse> _ellipseDic;
+        private Dictionary<int, Ellipse> _ellipseDic = new Dictionary<int, Ellipse>();
         private BaseWindow _window;
         public SMTIntelOverlapPage()
         {
@@ -219,7 +219,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             LineCanvas.Children.Clear();
             double width = _window.Bounds.Width - 10;
             double height = _window.Bounds.Height;
-            _ellipseDic = new Dictionary<int, Ellipse>();
+            _ellipseDic.Clear();
             var group = _intelMap.GroupByJump();
             var perJumpHeight = height / group.Count;//每层占高度
             var topOffset = perJumpHeight / 2;

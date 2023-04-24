@@ -53,7 +53,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             Window.SetSmallTitleBar();
             IntelMap = intelMap;
             Setting = setting;
-            Window.Activated += IntelWindow_Activated;
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
             WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
@@ -68,6 +67,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             AppWindow.IsShownInSwitchers = false;
             (AppWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
+
+            Init(Setting, IntelMap);
         }
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
@@ -96,11 +97,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Show()
         {
             Window.Activate();
-        }
-        private void IntelWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            Init(Setting, IntelMap);
-            Window.Activated -= IntelWindow_Activated;
         }
 
         /// <summary>

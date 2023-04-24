@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private readonly System.Numerics.Vector3 _intelScale = new System.Numerics.Vector3(1.5f, 1.5f, 1);
         private readonly System.Numerics.Vector3 _defaultScale = new System.Numerics.Vector3(1, 1, 1);
         private Ellipse _lastPointerToEllipse;
-        private Dictionary<int, Ellipse> _ellipseDic;
+        private Dictionary<int, Ellipse> _ellipseDic = new Dictionary<int, Ellipse>();
         private BaseWindow _window;
         private List<Core.Models.Map.IntelSolarSystemMap> _allSolarSystem;
         public DefaultIntelOverlapPage()
@@ -227,7 +227,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             LineCanvas.Children.Clear();
             double width = _window.Bounds.Width;
             double height = _window.Bounds.Height - 42;
-            _ellipseDic = new Dictionary<int, Ellipse>();
+            _ellipseDic.Clear();
             _allSolarSystem = _intelMap.GetAllSolarSystem();
             foreach (var item in _allSolarSystem)
             {
