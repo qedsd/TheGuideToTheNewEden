@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TheGuideToTheNewEden.WinUI
+namespace TheGuideToTheNewEden.Core
 {
     public static class Log
     {

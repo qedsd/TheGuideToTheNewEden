@@ -245,7 +245,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 catch(Exception ex)
                 {
-                    Log.Error(ex);
+                    Core.Log.Error(ex);
                 }
             }
             if(tryCount < 3)//成功刷新
@@ -257,7 +257,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else//刷新失败
             {
-                Log.Error("刷新Token失败");
+                Core.Log.Error("刷新Token失败");
                 //TODO:弹窗提示
             }
             _refreshing = false;

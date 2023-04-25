@@ -186,7 +186,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Core.Log.Error(p?.Result.Message);
                     }
                 }),
                 EsiClient.Skills.List().ContinueWith((p)=>
@@ -197,7 +197,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Core.Log.Error(p?.Result.Message);
                     }
                 }),
                 EsiClient.Loyalty.Points().ContinueWith((p)=>
@@ -208,7 +208,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Core.Log.Error(p?.Result.Message);
                     }
                 }),
                 EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
@@ -219,7 +219,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Core.Log.Error(p?.Result.Message);
                     }
                 }),
                 EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
@@ -230,7 +230,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Core.Log.Error(p?.Result.Message);
                     }
                 }),
             };
