@@ -123,7 +123,7 @@
                                     Header="加载配置方式"
                                     IsEnabled="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=OneWay}"
                                     SelectedIndex="{x:Bind VM.PreviewSetting.StartAllDefaultLoadType, Mode=TwoWay}">
-                                    <ComboBoxItem Content="自动依序使用保存列表中的配置" />
+                                    <ComboBoxItem Content="优先依序使用保存列表中的配置" />
                                     <ComboBoxItem Content="使用默认配置" />
                                 </ComboBox>
                             </StackPanel>
