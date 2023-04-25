@@ -22,7 +22,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="64" />
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -94,406 +94,431 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Grid Grid.Row="2" Margin="8,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0"
-                    Text="全局设置" />
-                <Rectangle
-                    Grid.Column="2"
-                    Height="1"
-                    Fill="{ThemeResource SystemAccentColor}" />
-            </Grid>
-            <Button
+            <Rectangle
+                Grid.Row="2"
+                Height="1"
+                Margin="8,8"
+                Fill="{ThemeResource SystemAccentColor}" />
+            <StackPanel
                 Grid.Row="3"
-                Width="74"
-                Height="64"
+                Margin="8"
                 HorizontalAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                Style="{StaticResource AlternateCloseButtonStyle}"
-                ToolTipService.ToolTip="全局设置">
-                <Button.Content>
-                    <StackPanel>
-                        <SymbolIcon Symbol="Setting" />
-                    </StackPanel>
-                </Button.Content>
-                <Button.Flyout>
-                    <Flyout>
-                        <Grid Grid.Row="3">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                Orientation="Horizontal">
+                <SplitButton
+                    Height="32"
+                    Command="{x:Bind VM.StartAllCommand}"
+                    ToolTipService.ToolTip="开始全部">
+                    <SplitButton.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE102;" />
+                    </SplitButton.Content>
+                    <SplitButton.Flyout>
+                        <Flyout>
                             <StackPanel>
-                                <Grid Margin="8,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Margin="8,0"
-                                        Orientation="Horizontal">
-                                        <TextBlock Text="切换快捷键" />
-                                        <Button
-                                            Width="24"
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Content="!">
-                                            <Button.Flyout>
-                                                <Flyout>
-                                                    <TextBlock Text="按下快捷键时，按激活顺序依次切换显示相应的游戏窗口" />
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
-                                    <Rectangle
-                                        Grid.Column="2"
-                                        Height="1"
-                                        Fill="{ThemeResource SystemAccentColor}" />
-                                </Grid>
-                                <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                                <CheckBox Content="开始无保存设置的进程" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
+                                <Rectangle
+                                    Height="1"
+                                    Margin="0,8"
+                                    Fill="{ThemeResource SystemAccentColor}" />
+                                <ComboBox
+                                    Header="加载配置方式"
+                                    IsEnabled="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=OneWay}"
+                                    SelectedIndex="{x:Bind VM.PreviewSetting.StartAllDefaultLoadType, Mode=TwoWay}">
+                                    <ComboBoxItem Content="自动依序使用保存列表中的配置" />
+                                    <ComboBoxItem Content="使用默认配置" />
+                                </ComboBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="1" Margin="0,24">
-                                <Grid Margin="8,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Margin="8,0"
-                                        Orientation="Horizontal">
-                                        <TextBlock Text="统一窗口大小" />
-                                        <Button
-                                            Width="24"
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Content="!">
-                                            <Button.Flyout>
-                                                <Flyout>
-                                                    <TextBlock Text="将所有的预览窗口设置为指定的大小" />
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
-                                    <Rectangle
-                                        Grid.Column="2"
-                                        Height="1"
-                                        Fill="{ThemeResource SystemAccentColor}" />
-                                </Grid>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <NumberBox
-                                        Minimum="1"
-                                        PlaceholderText="窗口宽度"
-                                        ToolTipService.ToolTip="窗口宽度"
-                                        Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Margin="4,0"
-                                        VerticalAlignment="Center"
-                                        Text="×" />
-                                    <NumberBox
-                                        Grid.Column="2"
-                                        Minimum="1"
-                                        PlaceholderText="窗口高度"
-                                        ToolTipService.ToolTip="窗口高度"
-                                        Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
-                                </Grid>
-                                <Button
-                                    Margin="0,8,0,0"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind VM.SetUniformSizeCommand}"
-                                    Content="应用" />
-                            </StackPanel>
-                            <StackPanel Grid.Row="2" Margin="0,8,0,16">
-                                <Grid Margin="8,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Margin="8,0"
-                                        Orientation="Horizontal">
-                                        <TextBlock Text="自动对齐窗口" />
-                                        <Button
-                                            Width="24"
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Content="!">
-                                            <Button.Flyout>
-                                                <Flyout>
-                                                    <TextBlock
-                                                        Width="300"
-                                                        Text="以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐"
-                                                        TextWrapping="Wrap" />
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
+                        </Flyout>
+                    </SplitButton.Flyout>
+                </SplitButton>
+                <Button
+                    Grid.Column="2"
+                    Height="32"
+                    Margin="4,0"
+                    Command="{x:Bind VM.StopAllCommand}"
+                    ToolTipService.ToolTip="暂停全部"
+                    Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE103;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    Grid.Column="2"
+                    Height="32"
+                    ToolTipService.ToolTip="全局设置">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <Flyout>
+                            <Grid Grid.Row="3">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel>
+                                    <Grid Margin="8,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Margin="8,0"
+                                            Orientation="Horizontal">
+                                            <TextBlock Text="切换快捷键" />
+                                            <Button
+                                                Width="24"
+                                                Height="24"
+                                                Margin="4,0,0,0"
+                                                Padding="0"
+                                                BorderThickness="0"
+                                                Content="!">
+                                                <Button.Flyout>
+                                                    <Flyout>
+                                                        <TextBlock Text="按下快捷键时，按激活顺序依次切换显示相应的游戏窗口" />
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
+                                        <Rectangle
+                                            Grid.Column="2"
+                                            Height="1"
+                                            Fill="{ThemeResource SystemAccentColor}" />
+                                    </Grid>
+                                    <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Margin="0,24">
+                                    <Grid Margin="8,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Margin="8,0"
+                                            Orientation="Horizontal">
+                                            <TextBlock Text="统一窗口大小" />
+                                            <Button
+                                                Width="24"
+                                                Height="24"
+                                                Margin="4,0,0,0"
+                                                Padding="0"
+                                                BorderThickness="0"
+                                                Content="!">
+                                                <Button.Flyout>
+                                                    <Flyout>
+                                                        <TextBlock Text="将所有的预览窗口设置为指定的大小" />
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
+                                        <Rectangle
+                                            Grid.Column="2"
+                                            Height="1"
+                                            Fill="{ThemeResource SystemAccentColor}" />
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <NumberBox
+                                            Minimum="1"
+                                            PlaceholderText="窗口宽度"
+                                            ToolTipService.ToolTip="窗口宽度"
+                                            Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="4,0"
+                                            VerticalAlignment="Center"
+                                            Text="×" />
+                                        <NumberBox
+                                            Grid.Column="2"
+                                            Minimum="1"
+                                            PlaceholderText="窗口高度"
+                                            ToolTipService.ToolTip="窗口高度"
+                                            Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Button
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind VM.SetUniformSizeCommand}"
+                                        Content="应用" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Margin="0,8,0,16">
+                                    <Grid Margin="8,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Margin="8,0"
+                                            Orientation="Horizontal">
+                                            <TextBlock Text="自动对齐窗口" />
+                                            <Button
+                                                Width="24"
+                                                Height="24"
+                                                Margin="4,0,0,0"
+                                                Padding="0"
+                                                BorderThickness="0"
+                                                Content="!">
+                                                <Button.Flyout>
+                                                    <Flyout>
+                                                        <TextBlock
+                                                            Width="300"
+                                                            Text="以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐"
+                                                            TextWrapping="Wrap" />
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
 
-                                    <Rectangle
-                                        Grid.Column="2"
-                                        Height="1"
-                                        Fill="{ThemeResource SystemAccentColor}" />
-                                </Grid>
-                                <Grid Margin="0,8">
-                                    <Grid.Resources>
-                                        <Style x:Key="MainItemGrid" TargetType="Grid">
-                                            <Setter Property="Margin" Value="2" />
-                                            <Setter Property="Width" Value="24" />
-                                            <Setter Property="Height" Value="16" />
-                                            <Setter Property="BorderThickness" Value="1" />
-                                            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}" />
-                                            <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
-                                        </Style>
-                                        <Style x:Key="OtherItemGrid" TargetType="Grid">
-                                            <Setter Property="Margin" Value="2" />
-                                            <Setter Property="Width" Value="24" />
-                                            <Setter Property="Height" Value="16" />
-                                            <Setter Property="BorderThickness" Value="1" />
-                                            <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
-                                        </Style>
-                                        <Style x:Key="MainPointGrid" TargetType="Grid">
-                                            <Setter Property="Margin" Value="4" />
-                                            <Setter Property="Width" Value="4" />
-                                            <Setter Property="Height" Value="4" />
-                                            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}" />
-                                            <Setter Property="CornerRadius" Value="2" />
-                                        </Style>
-                                        <Style x:Key="BorderGrid" TargetType="Grid">
-                                            <Setter Property="Width" Value="56" />
-                                            <Setter Property="Height" Value="40" />
-                                            <Setter Property="BorderThickness" Value="1" />
-                                            <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
-                                        </Style>
-                                    </Grid.Resources>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="16" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <ComboBox
-                                        Width="140"
-                                        Header="对齐方式"
-                                        SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayout, Mode=TwoWay}">
-                                        <ComboBoxItem>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Grid Style="{StaticResource MainItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                            </StackPanel>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource MainItemGrid}" />
-                                            </StackPanel>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <StackPanel Orientation="Vertical">
-                                                <Grid Style="{StaticResource MainItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                            </StackPanel>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <StackPanel Orientation="Vertical">
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource OtherItemGrid}" />
-                                                <Grid Style="{StaticResource MainItemGrid}" />
-                                            </StackPanel>
-                                        </ComboBoxItem>
-                                    </ComboBox>
+                                        <Rectangle
+                                            Grid.Column="2"
+                                            Height="1"
+                                            Fill="{ThemeResource SystemAccentColor}" />
+                                    </Grid>
+                                    <Grid Margin="0,8">
+                                        <Grid.Resources>
+                                            <Style x:Key="MainItemGrid" TargetType="Grid">
+                                                <Setter Property="Margin" Value="2" />
+                                                <Setter Property="Width" Value="24" />
+                                                <Setter Property="Height" Value="16" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="Background" Value="{ThemeResource SystemAccentColor}" />
+                                                <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
+                                            </Style>
+                                            <Style x:Key="OtherItemGrid" TargetType="Grid">
+                                                <Setter Property="Margin" Value="2" />
+                                                <Setter Property="Width" Value="24" />
+                                                <Setter Property="Height" Value="16" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
+                                            </Style>
+                                            <Style x:Key="MainPointGrid" TargetType="Grid">
+                                                <Setter Property="Margin" Value="4" />
+                                                <Setter Property="Width" Value="4" />
+                                                <Setter Property="Height" Value="4" />
+                                                <Setter Property="Background" Value="{ThemeResource SystemAccentColor}" />
+                                                <Setter Property="CornerRadius" Value="2" />
+                                            </Style>
+                                            <Style x:Key="BorderGrid" TargetType="Grid">
+                                                <Setter Property="Width" Value="56" />
+                                                <Setter Property="Height" Value="40" />
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox
+                                            Width="140"
+                                            Header="对齐方式"
+                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayout, Mode=TwoWay}">
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Grid Style="{StaticResource MainItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource MainItemGrid}" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Vertical">
+                                                    <Grid Style="{StaticResource MainItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Vertical">
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource OtherItemGrid}" />
+                                                    <Grid Style="{StaticResource MainItemGrid}" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                        </ComboBox>
 
-                                    <!--  左对齐  -->
-                                    <ComboBox
-                                        Grid.Column="2"
-                                        Width="140"
-                                        Header="对齐位置"
-                                        SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                        Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=0}">
-                                        <ComboBoxItem>
-                                            <!--  右上  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  右中  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  右下  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                    </ComboBox>
-                                    <!--  右对齐  -->
-                                    <ComboBox
-                                        Grid.Column="2"
-                                        Width="140"
-                                        Header="对齐位置"
-                                        SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                        Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=1}">
-                                        <ComboBoxItem>
-                                            <!--  左上  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Top"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  左中  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  左下  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Bottom"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                    </ComboBox>
-                                    <!--  上对齐  -->
-                                    <ComboBox
-                                        Grid.Column="2"
-                                        Width="140"
-                                        Header="对齐位置"
-                                        SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                        Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=2}">
-                                        <ComboBoxItem>
-                                            <!--  左下  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Bottom"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  中下  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Bottom"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  右下  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                    </ComboBox>
-                                    <!--  下对齐  -->
-                                    <ComboBox
-                                        Grid.Column="2"
-                                        Width="140"
-                                        Header="对齐位置"
-                                        SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                        Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=3}">
-                                        <ComboBoxItem>
-                                            <!--  左上  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Top"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  中上  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Top"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                        <ComboBoxItem>
-                                            <!--  右上  -->
-                                            <Grid Style="{StaticResource BorderGrid}">
-                                                <Grid
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Style="{StaticResource MainPointGrid}" />
-                                            </Grid>
-                                        </ComboBoxItem>
-                                    </ComboBox>
-                                </Grid>
-                                <Grid Margin="0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock VerticalAlignment="Center" Text="对齐间隔" />
-                                    <NumberBox
-                                        Grid.Column="1"
-                                        Margin="16,0,0,0"
-                                        Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}" />
-                                </Grid>
-                                <Button
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind VM.SetAutoLayoutCommand}"
-                                    Content="应用" />
-                            </StackPanel>
-                        </Grid>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
+                                        <!--  左对齐  -->
+                                        <ComboBox
+                                            Grid.Column="2"
+                                            Width="140"
+                                            Header="对齐位置"
+                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
+                                            Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=0}">
+                                            <ComboBoxItem>
+                                                <!--  右上  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  右中  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  右下  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                        <!--  右对齐  -->
+                                        <ComboBox
+                                            Grid.Column="2"
+                                            Width="140"
+                                            Header="对齐位置"
+                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
+                                            Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=1}">
+                                            <ComboBoxItem>
+                                                <!--  左上  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  左中  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  左下  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                        <!--  上对齐  -->
+                                        <ComboBox
+                                            Grid.Column="2"
+                                            Width="140"
+                                            Header="对齐位置"
+                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
+                                            Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=2}">
+                                            <ComboBoxItem>
+                                                <!--  左下  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  中下  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  右下  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                        <!--  下对齐  -->
+                                        <ComboBox
+                                            Grid.Column="2"
+                                            Width="140"
+                                            Header="对齐位置"
+                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
+                                            Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=3}">
+                                            <ComboBoxItem>
+                                                <!--  左上  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  中上  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Top"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <!--  右上  -->
+                                                <Grid Style="{StaticResource BorderGrid}">
+                                                    <Grid
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Style="{StaticResource MainPointGrid}" />
+                                                </Grid>
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Grid Margin="0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="对齐间隔" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="16,0,0,0"
+                                            Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind VM.SetAutoLayoutCommand}"
+                                        Content="应用" />
+                                </StackPanel>
+                            </Grid>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
         </Grid>
         <Grid
             Grid.Column="1"

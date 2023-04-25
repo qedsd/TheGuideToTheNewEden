@@ -95,5 +95,33 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref uniformWidth, value);
             }
         }
+
+        private bool startAllWithNoneSetting = true;
+        /// <summary>
+        /// 开始全部时包含无保存设置的进程
+        /// </summary>
+        public bool StartAllWithNoneSetting
+        {
+            get => startAllWithNoneSetting;
+            set
+            {
+                SetProperty(ref startAllWithNoneSetting, value);
+            }
+        }
+
+        private int startAllDefaultLoadType = 0;
+        /// <summary>
+        /// 开始全部无保存配置的进程加载配置方式
+        /// 0 依序使用已保存列表
+        /// 1 新建默认
+        /// </summary>
+        public int StartAllDefaultLoadType
+        {
+            get => startAllDefaultLoadType;
+            set
+            {
+                SetProperty(ref startAllDefaultLoadType, value);
+            }
+        }
     }
 }

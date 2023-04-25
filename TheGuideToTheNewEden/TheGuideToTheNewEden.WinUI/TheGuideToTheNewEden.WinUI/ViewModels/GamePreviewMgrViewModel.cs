@@ -24,6 +24,7 @@ using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 using System.Timers;
+using System.Xml.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -511,6 +512,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     window.SetSize(PreviewSetting.UniformWidth, PreviewSetting.UniformHeight);
                 }
                 Window.ShowSuccess("已应用窗口尺寸");
+                SaveSetting();
             }
         });
         #region 监控游戏关闭
@@ -626,6 +628,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand SetAutoLayoutCommand => new RelayCommand(() =>
         {
             UpdateAutoLayout();
+            SaveSetting();
         });
         private void UpdateAutoLayout()
         {
@@ -757,6 +760,137 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 win.SetPos(startX, startY);
             }
         }
+        #endregion
+
+        #region 开始全部、暂停全部
+        public ICommand StartAllCommand => new RelayCommand(() =>
+        {
+            SelectedProcess = null;
+            List<PreviewItem> needRunItems = new List<PreviewItem>();
+            #region 模拟选择进程步骤
+            foreach (var pro in Processes)
+            {
+                if(!pro.Running)
+                {
+                    PreviewItem setting = null;
+                    var name = pro.GetCharacterName();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        //从保存列表里找出第一个同名且不在运行中的设置
+                        var targetSetting = Settings.FirstOrDefault(p => p.Name == name && p.ProcessInfo == null);
+                        if (targetSetting != null)
+                        {
+                            setting = targetSetting;
+                        }
+                        else//没有找到则按加载方式选择
+                        {
+                            LoadDefaultSetting(out setting, name);
+                        }
+                    }
+                    else//无法找到名称，如中文下
+                    {
+                        LoadDefaultSetting(out setting, name);
+                    }
+                    if(setting != null)
+                    {
+                        setting.ProcessInfo = pro;
+                        needRunItems.Add(setting);
+                    }
+                }
+            }
+            #endregion
+
+            #region 模拟开始步骤
+            bool save = false;
+            foreach(var item in needRunItems)
+            {
+                try
+                {
+                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(item);
+                    if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
+                    {
+                        gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
+                        gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
+                        gamePreviewWindow.Start(item.ProcessInfo.MainWindowHandle);
+                        item.ProcessInfo.Setting = item;
+                        item.ProcessInfo.Running = true;
+                        item.ProcessInfo.SettingName = item.Name;
+                        Running = true;
+                        if (!string.IsNullOrEmpty(item.Name))
+                        {
+                            if (!PreviewSetting.PreviewItems.Contains(item))
+                            {
+                                PreviewSetting.PreviewItems.Add(item);
+                            }
+                            if (!Settings.Contains(item))
+                            {
+                                Settings.Add(item);
+                            }
+                            save = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                    Window.ShowError(ex.Message, false);
+                }
+            }
+            if(save)
+            {
+                SaveSetting();
+            }
+            #endregion
+        });
+        void LoadDefaultSetting(out PreviewItem setting, string name)
+        {
+            if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
+            {
+                //加载第一个不在运行中的配置
+                var firstNoRunning = Settings.FirstOrDefault(p => p.ProcessInfo == null);
+                if (firstNoRunning != null)
+                {
+                    setting = firstNoRunning;
+                }
+                else
+                {
+                    //没有不在运行中的配置，新建
+                    setting = new PreviewItem()
+                    {
+                        Name = name
+                    };
+                }
+            }
+            else//新建默认
+            {
+                setting = new PreviewItem()
+                {
+                    Name = name
+                };
+            }
+        }
+        public ICommand StopAllCommand => new RelayCommand(() =>
+        {
+            SelectedProcess = null;
+            foreach (var pro in Processes)
+            {
+                if (pro.Running)
+                {
+                    if (_runningDic.TryGetValue(pro.GUID, out var window))
+                    {
+                        _runningDic.Remove(pro.GUID);
+                        pro.Running = false;
+                        pro.Setting.ProcessInfo = null;
+                        pro.Setting = null;
+                        window.Stop();
+                    }
+                }
+            }
+            if (_runningDic.Count == 0)
+            {
+                Running = false;
+            }
+        });
         #endregion
     }
 }
