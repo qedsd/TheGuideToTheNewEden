@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TheGuideToTheNewEden.Updater": {
+      "commandName": "Project",
+      "commandLineArgs": "v2.1.0.0\r\n添加SMT、Near2预警样式\r\nhttps://github.com/qedsd/TheGuideToTheNewEden/releases/download/v2.1.0.0/TheGuideToTheNewEden_v2.1.0.zip"
+    }
+  }
+}

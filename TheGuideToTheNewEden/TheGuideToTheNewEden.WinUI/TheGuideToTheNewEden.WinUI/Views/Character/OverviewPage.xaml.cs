@@ -18,6 +18,7 @@ using TheGuideToTheNewEden.Core.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {

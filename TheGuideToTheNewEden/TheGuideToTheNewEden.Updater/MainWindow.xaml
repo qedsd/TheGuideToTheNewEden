@@ -1,0 +1,181 @@
+﻿<Window
+    x:Class="TheGuideToTheNewEden.Updater.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.Updater"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="新伊甸漫游指南更新器"
+    Width="500"
+    Height="240"
+    Foreground="White"
+    WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}"
+    WindowStartupLocation="CenterOwner"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <WindowChrome x:Key="WindowChromeKey">
+            <WindowChrome.ResizeBorderThickness>
+                <Thickness>5</Thickness>
+            </WindowChrome.ResizeBorderThickness>
+            <WindowChrome.CaptionHeight>0</WindowChrome.CaptionHeight>
+        </WindowChrome>
+    </Window.Resources>
+    <Window.Background>
+        <ImageBrush
+            ImageSource="/home.jpg"
+            Opacity="1"
+            Stretch="UniformToFill" />
+    </Window.Background>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid
+            Height="32"
+            Background="Transparent"
+            MouseLeftButtonDown="Grid_MouseLeftButtonDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="8,0" Orientation="Horizontal">
+                <Image
+                    Width="16"
+                    Height="16"
+                    Source="/logo_32.png" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="White"
+                    Text="新伊甸漫游指南更新器" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button
+                    x:Name="Button_Browser"
+                    Width="46"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Button_Browser_Click"
+                    Foreground="White"
+                    ToolTip="浏览器查看">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72D;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    x:Name="Button_Mini"
+                    Width="46"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Button_Mini_Click"
+                    ToolTip="最小化">
+                    <Button.Content>
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Foreground="White"
+                            Text="&#xE108;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    x:Name="Button_Close"
+                    Width="46"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Button_Close_Click"
+                    ToolTip="关闭">
+                    <Button.Content>
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Foreground="White"
+                            Text="&#xE10A;" />
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Margin="16,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="24" />
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="TextBlock_Version" />
+            <TextBlock
+                x:Name="TextBlock_Des"
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                TextWrapping="Wrap" />
+
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                x:Name="StackPanel_DownloadInfo"
+                Margin="8,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Visibility="Collapsed">
+                <TextBlock x:Name="TextBlock_Received" />
+                <TextBlock Margin="2,0" Text="/" />
+                <TextBlock x:Name="TextBlock_All" />
+            </StackPanel>
+            <ProgressBar
+                x:Name="ProgressBar_Download"
+                Grid.Column="1"
+                Height="4"
+                Margin="9,0"
+                Background="Black"
+                Foreground="LightSeaGreen"
+                Style="{DynamicResource ProgressBarFlat}"
+                ToolTip="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Value}"
+                Visibility="Collapsed"
+                Value="0" />
+            <StackPanel
+                Grid.Column="2"
+                Margin="8,8"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="Button_CancelDownload"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Button_CancelDownload_Click"
+                    Foreground="Red"
+                    ToolTip="取消"
+                    Visibility="Collapsed">
+                    <Button.Content>
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="14"
+                            Text="&#xE106;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    x:Name="Button_Download"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Button_Download_Click"
+                    Foreground="White"
+                    ToolTip="下载">
+                    <Button.Content>
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="16"
+                            Text="&#xE118;" />
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+    </Grid>
+</Window>

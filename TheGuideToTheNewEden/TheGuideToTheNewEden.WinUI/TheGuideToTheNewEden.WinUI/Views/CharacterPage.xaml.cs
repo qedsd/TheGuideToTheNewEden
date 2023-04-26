@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views.Character;

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Services;
-using TheGuideToTheNewEden.WinUI;
 
 namespace TheGuideToTheNewEden.Core.Extensions
 {

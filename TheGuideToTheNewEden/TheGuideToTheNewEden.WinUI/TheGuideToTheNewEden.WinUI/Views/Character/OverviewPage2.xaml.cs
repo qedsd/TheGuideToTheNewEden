@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;

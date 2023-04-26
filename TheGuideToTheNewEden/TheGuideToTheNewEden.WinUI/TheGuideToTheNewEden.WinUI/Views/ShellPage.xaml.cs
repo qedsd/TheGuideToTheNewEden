@@ -8,9 +8,11 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -22,9 +24,52 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public ShellPage()
         {
             this.InitializeComponent();
+            Loaded += ShellPage_Loaded;
             BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
         }
 
+        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            CheckUpdate();
+        }
+        private async void CheckUpdate()
+        {
+            var release = Core.Helpers.GithubHelper.GetLastReleaseInfo();
+            if (release != null)
+            {
+                var tagName = release.TagName;
+                if (!string.IsNullOrEmpty(tagName))
+                {
+                    var lastVersion = tagName.Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                    var curVersion = VM.VersionDescription.Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                    if (lastVersion != curVersion)
+                    {
+                        ContentDialog contentDialog = new ContentDialog();
+                        contentDialog.Title = "有可用更新";
+                        contentDialog.Content = new TextBlock()
+                        {
+                            Text = release.Body,
+                            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                        };
+                        contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
+                        contentDialog.PrimaryButtonText = "更新";
+                        contentDialog.SecondaryButtonText = "取消";
+                        if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
+                        {
+                            List<string> args = new List<string>()
+                            {
+                                release.TagName,
+                                release.Body,
+                                release.Url
+                            };
+                            Process pro = Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.Updater.exe"), args);
+                            pro.WaitForExit();
+                            var code = pro.ExitCode;
+                        }
+                    }
+                }
+            }
+        }
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
 

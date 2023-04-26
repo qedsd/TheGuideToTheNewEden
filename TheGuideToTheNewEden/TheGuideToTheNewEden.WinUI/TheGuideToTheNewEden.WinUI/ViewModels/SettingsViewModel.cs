@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Linq;
+using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {

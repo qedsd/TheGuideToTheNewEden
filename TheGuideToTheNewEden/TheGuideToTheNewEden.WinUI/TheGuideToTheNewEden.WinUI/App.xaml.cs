@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Services;

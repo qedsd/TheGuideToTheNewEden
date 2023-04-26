@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 using System.Timers;
 using System.Xml.Linq;
+using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
