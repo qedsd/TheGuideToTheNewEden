@@ -11,7 +11,7 @@
     Height="240"
     Foreground="White"
     WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowStyle="None"
     mc:Ignorable="d">
     <Window.Resources>
@@ -105,11 +105,12 @@
                 <RowDefinition />
                 <RowDefinition Height="24" />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="TextBlock_Version" />
+            <TextBlock x:Name="TextBlock_Version" FontSize="16" />
             <TextBlock
                 x:Name="TextBlock_Des"
                 Grid.Row="1"
                 Margin="0,8,0,0"
+                FontSize="14"
                 TextWrapping="Wrap" />
 
         </Grid>
@@ -140,6 +141,12 @@
                 ToolTip="{Binding RelativeSource={RelativeSource Mode=Self}, Path=Value}"
                 Visibility="Collapsed"
                 Value="0" />
+            <hc:LoadingLine
+                x:Name="LoadingLine_Installing"
+                Grid.Column="1"
+                Height="4"
+                Margin="10"
+                Visibility="Collapsed" />
             <StackPanel
                 Grid.Column="2"
                 Margin="8,8"
@@ -175,7 +182,16 @@
                     </Button.Content>
                 </Button>
             </StackPanel>
+            <Button
+                x:Name="Button_Install"
+                Grid.ColumnSpan="3"
+                Margin="0,8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="Button_Install_Click"
+                Content="安装"
+                Style="{StaticResource ButtonPrimary}"
+                Visibility="Collapsed" />
         </Grid>
-
     </Grid>
 </Window>

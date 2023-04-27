@@ -34,40 +34,56 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         private async void CheckUpdate()
         {
-            var release = Core.Helpers.GithubHelper.GetLastReleaseInfo();
-            if (release != null)
+            //List<string> args2 = new List<string>()
+            //                {
+            //                    "V1",
+            //                    "Test",
+            //                    "https://github.com/qedsd/TheGuideToTheNewEden/releases/download/v2.1.0.0/TheGuideToTheNewEden_v2.1.0.zip"
+            //                };
+            //Process pro = Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Updater","TheGuideToTheNewEden.Updater.exe"), args2);
+
+            //return;
+            try
             {
-                var tagName = release.TagName;
-                if (!string.IsNullOrEmpty(tagName))
+                //会因为Github的访问次数限制导致失败
+                var release = await System.Threading.Tasks.Task.Run(()=>Core.Helpers.GithubHelper.GetLastReleaseInfo());
+                if (release != null)
                 {
-                    var lastVersion = tagName.Replace("v", "", StringComparison.OrdinalIgnoreCase);
-                    var curVersion = VM.VersionDescription.Replace("v", "", StringComparison.OrdinalIgnoreCase);
-                    if (lastVersion != curVersion)
+                    var tagName = release.TagName;
+                    if (!string.IsNullOrEmpty(tagName))
                     {
-                        ContentDialog contentDialog = new ContentDialog();
-                        contentDialog.Title = "有可用更新";
-                        contentDialog.Content = new TextBlock()
+                        var lastVersion = tagName.Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                        var curVersion = VM.VersionDescription.Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                        if (lastVersion != curVersion)
                         {
-                            Text = release.Body,
-                            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
-                        };
-                        contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
-                        contentDialog.PrimaryButtonText = "更新";
-                        contentDialog.SecondaryButtonText = "取消";
-                        if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
-                        {
-                            List<string> args = new List<string>()
+                            ContentDialog contentDialog = new ContentDialog();
+                            contentDialog.Title = "有可用更新";
+                            contentDialog.Content = new TextBlock()
+                            {
+                                Text = release.Body,
+                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                            };
+                            contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
+                            contentDialog.PrimaryButtonText = "更新";
+                            contentDialog.SecondaryButtonText = "取消";
+                            if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
+                            {
+                                List<string> args = new List<string>()
                             {
                                 release.TagName,
                                 release.Body,
                                 release.Url
                             };
-                            Process pro = Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.Updater.exe"), args);
-                            pro.WaitForExit();
-                            var code = pro.ExitCode;
+                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.Updater.exe"), args);
+                            }
                         }
                     }
                 }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex.Message);
+                (WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError("获取更新失败", true);
             }
         }
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
