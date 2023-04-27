@@ -147,5 +147,17 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             presenter.IsResizable = false;
             presenter.SetBorderAndTitleBar(false, false);
         }
+
+        /// <summary>
+        /// 获取所有屏幕分辨率
+        /// 如果是多个屏幕，会自动按排布方式扩展
+        /// </summary>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
+        public static void GetAllScreenSize(out int w, out int h)
+        {
+            w = Win32.GetSystemMetrics(Win32.SM_CXVIRTUALSCREEN);
+            h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
+        }
     }
 }

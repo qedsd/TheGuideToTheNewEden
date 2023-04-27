@@ -69,5 +69,16 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public static extern IntPtr GetClientRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
         [DllImport("user32.dll")]
         public static extern IntPtr ClientToScreen(IntPtr hWnd, ref System.Drawing.Point point);
+
+        /// <summary>
+        /// 虚拟屏幕的宽度（以像素为单位）
+        /// </summary>
+        public const int SM_CXVIRTUALSCREEN = 78;
+        /// <summary>
+        /// 虚拟屏幕的高度（以像素为单位）
+        /// </summary>
+        public const int SM_CYVIRTUALSCREEN = 79;
+        [DllImport("user32.dll")]
+        public static extern int GetSystemMetrics(int nIndex);
     }
 }
