@@ -38,6 +38,7 @@ namespace TheGuideToTheNewEden.Updater
                 _url = App.Args[2];
                 TextBlock_Version.Text = _version;
                 TextBlock_Des.Text = _des;
+                Button_Download_Click(null, null);
             }
             else
             {

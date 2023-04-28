@@ -43,6 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             //Process pro = Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Updater","TheGuideToTheNewEden.Updater.exe"), args2);
 
             //return;
+            TryMoveUpdater();
             try
             {
                 //会因为Github的访问次数限制导致失败
@@ -69,12 +70,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
                             {
                                 List<string> args = new List<string>()
-                            {
-                                release.TagName,
-                                release.Body,
-                                release.Url
-                            };
-                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.Updater.exe"), args);
+                                {
+                                    release.TagName,
+                                    release.Body,
+                                    release.Assets.FirstOrDefault()?.BrowserDownloadUrl
+                                };
+                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater","TheGuideToTheNewEden.Updater.exe"), args);
                             }
                         }
                     }
@@ -84,6 +85,31 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 Core.Log.Error(ex.Message);
                 (WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError("获取更新失败", true);
+            }
+        }
+        private void TryMoveUpdater()
+        {
+            try
+            {
+                //更新器默认放置于同目录下，需要移动到Updater文件夹下
+                var updaterFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory).Where(p=>p.Contains(".Updater")).ToList();
+                if(updaterFiles.Any())
+                {
+                    string updaterFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater");
+                    if(!Directory.Exists(updaterFolder))
+                    {
+                        Directory.CreateDirectory(updaterFolder);
+                    }
+                    foreach(var file in  updaterFiles)
+                    {
+                        System.IO.File.Copy(file, System.IO.Path.Combine(updaterFolder, System.IO.Path.GetFileName(file)), true);
+                        System.IO.File.Delete(file);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex.Message);
             }
         }
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
