@@ -633,7 +633,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void UpdateAutoLayout()
         {
-            if(!Running)
+            if (Setting == null)
+            {
+                Window.ShowError("请选择参考进程", true);
+                return;
+            }
+            if (!Running)
             {
                 Window.ShowError("请先开始当前进程预览", true);
                 return;
@@ -670,20 +675,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout1(GamePreviewWindow targetWindow)
         {
+            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
+            //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
             int startX = targetWinX + targetWinW + PreviewSetting.AutoLayoutSpan;
+            int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
+            int yWrap = 1;//y换行方向，默认向下换行
             foreach (var win in _runningDic.Values)
             {
                 if(win == targetWindow)
                 {
                     continue;
                 }
+                if(startX + win.GetWidth() > allScreenW)//x超出屏幕范围，换行
+                {
+                    startX = targetWinX;//x回到起始位置
+                    int newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;//按默认或上一次换行方向换行后的y
+                    if(newRefY > allScreenH)
+                    {
+                        yWrap = -yWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
+                        newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;
+                    }
+                    refY = newRefY;
+                }
                 int startY = 0;
                 switch(PreviewSetting.AutoLayoutAnchor)
                 {
-                    case 0: startY = targetWinY; break;//上对齐
-                    case 1: startY = targetWinY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
-                    case 2: startY = targetWinY + targetWinH - win.GetHeight(); break;//下对齐
+                    case 0: startY = refY; break;//上对齐
+                    case 1: startY = refY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
+                    case 2: startY = refY + targetWinH - win.GetHeight(); break;//下对齐
                 }
                 win.SetPos(startX, startY);
                 startX += win.GetWidth() + PreviewSetting.AutoLayoutSpan;
@@ -694,8 +714,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout2(GamePreviewWindow targetWindow)
         {
+            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
+            //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
-            int startX = targetWinX - PreviewSetting.AutoLayoutSpan;
+            int startX = targetWinX;
+            int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
+            int yWrap = 1;//y换行方向，默认向下换行
             foreach (var win in _runningDic.Values)
             {
                 if (win == targetWindow)
@@ -703,12 +727,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     continue;
                 }
                 startX = startX - win.GetWidth() - PreviewSetting.AutoLayoutSpan;
+                if (startX < 0)//x超出屏幕范围，换行
+                {
+                    startX = targetWinX;//x回到起始位置
+                    int newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;//按默认或上一次换行方向换行后的y
+                    if (newRefY > allScreenH)
+                    {
+                        yWrap = -yWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
+                        newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;
+                    }
+                    refY = newRefY;
+                }
                 int startY = 0;
                 switch (PreviewSetting.AutoLayoutAnchor)
                 {
-                    case 0: startY = targetWinY; break;//上对齐
-                    case 1: startY = targetWinY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
-                    case 2: startY = targetWinY + targetWinH - win.GetHeight(); break;//下对齐
+                    case 0: startY = refY; break;//上对齐
+                    case 1: startY = refY + targetWinH / 2 - win.GetHeight() / 2; break;//中对齐
+                    case 2: startY = refY + targetWinH - win.GetHeight(); break;//下对齐
                 }
                 win.SetPos(startX, startY);
             }
@@ -718,20 +753,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout3(GamePreviewWindow targetWindow)
         {
+            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
+            //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
             int startY = targetWinY + targetWinH + PreviewSetting.AutoLayoutSpan;
+            int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
+            int xWrap = 1;//x换行方向，默认向右换行
             foreach (var win in _runningDic.Values)
             {
                 if (win == targetWindow)
                 {
                     continue;
                 }
+                if (startY + win.GetHeight() + PreviewSetting.AutoLayoutSpan > allScreenH)//y超出屏幕范围，换行
+                {
+                    startY = targetWinY;//y回到起始位置
+                    int newRefX = refX + (win.GetWidth() + PreviewSetting.AutoLayoutSpan) * xWrap;//按默认或上一次换行方向换行后的x
+                    if (newRefX > allScreenW)
+                    {
+                        xWrap = -xWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
+                        newRefX = refX + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * xWrap;
+                    }
+                    refX = newRefX;
+                }
                 int startX = 0;
                 switch (PreviewSetting.AutoLayoutAnchor)
                 {
-                    case 0: startX = targetWinX; break;//左对齐
-                    case 1: startX = (targetWinX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
-                    case 2: startX = (targetWinX + targetWinW) - win.GetWidth(); break;//右对齐
+                    case 0: startX = refX; break;//左对齐
+                    case 1: startX = (refX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
+                    case 2: startX = (refX + targetWinW) - win.GetWidth(); break;//右对齐
                 }
                 win.SetPos(startX, startY);
                 startY += win.GetHeight() + PreviewSetting.AutoLayoutSpan;
@@ -742,8 +792,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout4(GamePreviewWindow targetWindow)
         {
+            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
+            //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
-            int startY = targetWinY - PreviewSetting.AutoLayoutSpan;
+            int startY = targetWinY;
+            int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
+            int xWrap = 1;//x换行方向，默认向右换行
             foreach (var win in _runningDic.Values)
             {
                 if (win == targetWindow)
@@ -751,12 +805,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     continue;
                 }
                 startY = startY - win.GetHeight() - PreviewSetting.AutoLayoutSpan;
+                if (startY < 0)//y超出屏幕范围，换行
+                {
+                    startY = targetWinY;//y回到起始位置
+                    int newRefX = refX + (win.GetWidth() + PreviewSetting.AutoLayoutSpan) * xWrap;//按默认或上一次换行方向换行后的x
+                    if (newRefX > allScreenW)
+                    {
+                        xWrap = -xWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
+                        newRefX = refX + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * xWrap;
+                    }
+                    refX = newRefX;
+                }
                 int startX = 0;
                 switch (PreviewSetting.AutoLayoutAnchor)
                 {
-                    case 0: startX = targetWinX; break;//左对齐
-                    case 1: startX = (targetWinX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
-                    case 2: startX = (targetWinX + targetWinW) - win.GetWidth(); break;//右对齐
+                    case 0: startX = refX; break;//左对齐
+                    case 1: startX = (refX + targetWinW / 2) - win.GetWidth() / 2; break;//中对齐
+                    case 2: startX = (refX + targetWinW) - win.GetWidth(); break;//右对齐
                 }
                 win.SetPos(startX, startY);
             }

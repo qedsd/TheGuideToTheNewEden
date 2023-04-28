@@ -108,6 +108,13 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             Win32.GetClientRect(hwnd, ref clientRect);
             return clientRect;
         }
+
+        public static System.Drawing.Rectangle GetWindowRect(IntPtr hwnd)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            Win32.GetWindowRect(hwnd, ref windowRect);
+            return windowRect;
+        }
         /// <summary>
         /// 标题栏高度
         /// </summary>

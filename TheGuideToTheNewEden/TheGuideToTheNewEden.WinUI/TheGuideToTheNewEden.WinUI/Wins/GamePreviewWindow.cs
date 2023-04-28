@@ -315,6 +315,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             Helpers.WindowHelper.MoveToScreen(this, x, y);
         }
+        /// <summary>
+        /// 仅相对于所处的屏幕
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
         public void GetSizeAndPos(out int x, out int y,out int w, out int h)
         {
             x = _appWindow.Position.X;
