@@ -485,17 +485,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public void StopAll()
         {
-            foreach(var item in Processes.Where(p=>p.Running).ToList())
+            var list = Processes?.Where(p => p.Running).ToList();
+            if (list.NotNullOrEmpty())
             {
-                if (_runningDic.TryGetValue(item.GUID, out var window))
+                foreach (var item in Processes.Where(p => p.Running).ToList())
                 {
-                    _runningDic.Remove(item.GUID);
-                    item.Running = false;
-                    item.Setting = null;
-                    window.Stop();
-                    if (_runningDic.Count == 0)
+                    if (_runningDic.TryGetValue(item.GUID, out var window))
                     {
-                        Running = false;
+                        _runningDic.Remove(item.GUID);
+                        item.Running = false;
+                        item.Setting = null;
+                        window.Stop();
+                        if (_runningDic.Count == 0)
+                        {
+                            Running = false;
+                        }
                     }
                 }
             }
