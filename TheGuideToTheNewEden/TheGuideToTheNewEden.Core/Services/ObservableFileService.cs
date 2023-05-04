@@ -163,17 +163,7 @@ namespace TheGuideToTheNewEden.Core.Services
             }
             Timer.Start();
         }
-        //private ulong GetFileLength(string file)
-        //{
-        //    //用来获取高位数字(只有在读取超过4GB的文件才需要用到该参数)
-        //    uint h = 0;
-        //    //用来获取低位数据
-        //    uint l = GetCompressedFileSize(file, ref h);
-        //    //将两个int32拼接成一个int64
-        //    return ((ulong)h << 32) + l;
-        //}
-        //[DllImport("Kernel32.dll", CharSet = CharSet.Auto)]
-        //private static extern uint GetCompressedFileSize(string fileName, ref uint fileSizeHigh);
+
         public delegate void Changed(string file);
         public event Changed OnChanged;
 

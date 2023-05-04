@@ -12,6 +12,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
     {
         /// <summary>
         /// 获取聊天频道基本信息
+        /// 因为是打开文件流读取，资源消耗较大，不要在高频操作下使用
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
@@ -53,31 +54,6 @@ namespace TheGuideToTheNewEden.Core.Helpers
                         }
                     }
                 }
-                //using (StreamReader sr = new StreamReader(file))
-                //{
-                //    string line;
-                //    while ((line = sr.ReadLine()) != null)
-                //    {
-                //        if (line.EndsWith("---------------------------------------------------------------"))
-                //        {
-                //            if (headContents.NotNullOrEmpty())
-                //            {
-                //                break;
-                //            }
-                //            else
-                //            {
-                //                headContents = new List<string>();
-                //            }
-                //        }
-                //        else
-                //        {
-                //            if (headContents != null && !string.IsNullOrEmpty(line))
-                //            {
-                //                headContents.Add(line);
-                //            }
-                //        }
-                //    }
-                //}
                 if (headContents.NotNullOrEmpty())
                 {
                     ChatChanelInfo chatChanelInfo = new ChatChanelInfo();
@@ -106,6 +82,135 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// 获取聊天文件对应的文件名基本信息
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        public static List<ChatlogFileInfo> GetChatlogFileInfos(string folder)
+        {
+            var allFiles = System.IO.Directory.GetFiles(folder);
+            if(allFiles.NotNullOrEmpty())
+            {
+                return GetChatlogFileInfos(allFiles);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取聊天文件对应的文件名基本信息
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        public static List<ChatlogFileInfo> GetChatlogFileInfos(string[] files)
+        {
+            if(files.Any())
+            {
+                List<ChatlogFileInfo> infos = new List<ChatlogFileInfo>();
+                foreach(var file in files)
+                {
+                    var info = ChatlogFileInfo.Create(file);
+                    if(info != null)
+                    {
+                        infos.Add(info);
+                    }
+                }
+                return infos;
+            }
+            else
+            {
+                Log.Error("无聊天文件");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取每个角色下最新日期的聊天频道
+        /// </summary>
+        /// <param name="chatlogFileInfos">聊天文件</param>
+        /// <returns></returns>
+        public static Dictionary<string, List<ChatChanelInfo>> GetChatChanelInfos(List<ChatlogFileInfo> chatlogFileInfos)
+        {
+            if(chatlogFileInfos.NotNullOrEmpty())
+            {
+                //key为角色名,value为角色下所有的不重复频道
+                Dictionary<string, List<ChatChanelInfo>> listenerChannelDic = new Dictionary<string, List<ChatChanelInfo>>();
+                var groupByListener = chatlogFileInfos.GroupBy(p => p.ListenerID).ToList();//按角色划分开
+                foreach (var groupOfOneListener in groupByListener)
+                {
+                    Dictionary<string, ChatChanelInfo> dic = new Dictionary<string, ChatChanelInfo>();//该角色最新的频道日志，key为ChannelID
+                    var infosOfOneListener = groupOfOneListener.ToList();//该角色下所有的文件
+                    var groupByChannelName = infosOfOneListener.GroupBy(p => p.ChannelName).ToList();//按频道名划分
+                    foreach (var groupOfOneChannel in groupByChannelName)
+                    {
+                        var infosOfOneChannel = groupOfOneChannel.ToList();//该频道下所有的文件
+                        var latestInfo = infosOfOneChannel.OrderByDescending(p => p.Date).First();//该频道下最新的文件
+                        var chanelInfo = GetChatChanelInfo(latestInfo.FilePath);
+                        //因为文件名的频道名会跟语言相关，所有还需要读取文件内容里唯一的频道ID来判断
+                        if (chanelInfo != null)
+                        {
+                            if(dic.TryGetValue(chanelInfo.ChannelID, out var exist))
+                            {
+                                if(exist.SessionStarted < chanelInfo.SessionStarted)
+                                {
+                                    //保留最新的
+                                    dic.Remove(chanelInfo.ChannelID);
+                                    dic.Add(chanelInfo.ChannelID, chanelInfo);
+                                }
+                            }
+                            else
+                            {
+                                dic.Add(chanelInfo.ChannelID, chanelInfo);
+                            }
+                        }
+                    }
+                    var chanels = dic.Values.ToList();
+                    listenerChannelDic.Add(chanels.First().Listener, chanels);
+                }
+                return listenerChannelDic;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取每个角色下最新日期的聊天频道
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        public static Dictionary<string, List<ChatChanelInfo>> GetChatChanelInfos(string[] files)
+        {
+            var infos = GetChatlogFileInfos(files);
+            if(infos.NotNullOrEmpty())
+            {
+                return GetChatChanelInfos(infos);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取每个角色下最新日期的聊天频道
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        public static Dictionary<string, List<ChatChanelInfo>> GetChatChanelInfos(string folder)
+        {
+            var infos = GetChatlogFileInfos(folder);
+            if (infos.NotNullOrEmpty())
+            {
+                return GetChatChanelInfos(infos);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

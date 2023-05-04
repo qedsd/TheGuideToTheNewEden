@@ -157,37 +157,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    var allFiles = System.IO.Directory.GetFiles(LogPath);
-                    Dictionary<string, Core.Models.ChatChanelInfo> onlyOneChanels = new Dictionary<string, Core.Models.ChatChanelInfo>();
-                    foreach (var file in allFiles)
+                    var dic = GameLogHelper.GetChatChanelInfos(LogPath);
+                    if(dic != null)
                     {
-                        var chanelInfo = GameLogHelper.GetChatChanelInfo(file);
-                        if (chanelInfo != null)
+                        foreach(var item in dic)
                         {
-                            if (ListenerChannelDic.TryGetValue(chanelInfo.Listener, out List<ChatChanelInfo> channels))
+                            List<ChatChanelInfo> chatChanelInfos = new List<ChatChanelInfo>();
+                            foreach(var coreChatChanelInfos in item.Value)
                             {
-                                //频道会按每天单独存储为一个文件，需要监控最新日期的那个
-                                var sameChanel = channels.FirstOrDefault(p => p.ChannelID == chanelInfo.ChannelID);
-                                if(sameChanel != null)
-                                {
-                                    if(sameChanel.SessionStarted < chanelInfo.SessionStarted)
-                                    {
-                                        channels.Remove(sameChanel); channels.Add(ChatChanelInfo.Create(chanelInfo));
-                                    }
-                                }
-                                else
-                                {
-                                    channels.Add(ChatChanelInfo.Create(chanelInfo));
-                                }
+                                chatChanelInfos.Add(ChatChanelInfo.Create(coreChatChanelInfos));
                             }
-                            else
-                            {
-                                channels = new List<ChatChanelInfo>()
-                                {
-                                    ChatChanelInfo.Create(chanelInfo)
-                                };
-                                ListenerChannelDic.Add(chanelInfo.Listener, channels);
-                            }
+                            ListenerChannelDic.Add(item.Key, chatChanelInfos);
                         }
                     }
                 });
