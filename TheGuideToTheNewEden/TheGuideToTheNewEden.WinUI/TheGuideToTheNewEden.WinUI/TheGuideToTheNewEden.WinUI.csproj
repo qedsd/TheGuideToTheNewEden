@@ -12,8 +12,8 @@
     <PackageIcon>logo_180.png</PackageIcon>
 	  <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	 <!--package需注释掉-->
-	<EnablePreviewMsixTooling>false</EnablePreviewMsixTooling>
-	<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
     <AssemblyVersion>2.1.1.0</AssemblyVersion>
     <AssemblyName>TheGuideToTheNewEden</AssemblyName>
