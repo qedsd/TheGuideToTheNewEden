@@ -20,6 +20,7 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI;
 using System.Reflection;
+using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -187,5 +188,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
             LocationBox.Text = text;
         }
         #endregion
+
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
+            if(info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
+            }
+        }
     }
 }

@@ -38,6 +38,11 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:ChatChanelInfo">
                         <Grid Margin="10,4">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="打开文件" Click="MenuFlyoutItem_Click"/>
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition />
