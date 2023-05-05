@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,19 +32,27 @@ namespace TheGuideToTheNewEden.Core.Services
                 ItemsDic = new Dictionary<string, IObservableFile>();
             }
             string folder = Path.GetDirectoryName(item.FilePath);
-            if (!FileWatcherDic.ContainsKey(folder))//未存在文件夹监控器，新建
+            if(FileWatcherDic.TryGetValue(folder,out var watcher))
             {
-                EVEFileSystemWatcher watcher = new EVEFileSystemWatcher(folder);
-                watcher.OnChanged += Watcher_Changed;
-                watcher.OnAdded += Watcher_OnAdded;
-                watcher.Start();
-                FileWatcherDic.Add(folder, watcher);
+                if (!ItemsDic.ContainsKey(item.FilePath))
+                {
+                    ItemsDic.Add(item.FilePath, item);
+                    watcher.AddFile(item.FilePath);
+                    return true;
+                }
             }
-            if(!ItemsDic.ContainsKey(item.FilePath))
+            else//未存在文件夹监控器，新建
             {
+                EVEFileSystemWatcher newWatcher = new EVEFileSystemWatcher(folder);
+                newWatcher.OnChanged += Watcher_Changed;
+                newWatcher.OnAdded += Watcher_OnAdded;
+                newWatcher.Start();
+                FileWatcherDic.Add(folder, newWatcher);
                 ItemsDic.Add(item.FilePath, item);
+                newWatcher.AddFile(item.FilePath);
                 return true;
             }
+            
             return false;
         }
 
@@ -69,9 +78,13 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static void Remove(IObservableFile item)
         {
-            if(ItemsDic.ContainsKey(item.FilePath))
+            if(ItemsDic.Remove(item.FilePath))
             {
-                ItemsDic.Remove(item.FilePath);
+                string folder = Path.GetDirectoryName(item.FilePath);
+                if (FileWatcherDic.TryGetValue(folder, out var watcher))
+                {
+                    watcher.RemoveFile(item.FilePath);
+                }
             }
         }
         private static void Watcher_Changed(string file)
@@ -98,21 +111,54 @@ namespace TheGuideToTheNewEden.Core.Services
 
     /// <summary>
     /// 针对EVE日志文件自实现的类FileSystemWatcher
+    /// 实现为Timer循环判断监控文件大小和FileSystemWatcher检测新增文件
     /// </summary>
     class EVEFileSystemWatcher
     {
         private System.Timers.Timer Timer;
         private string Folder;
-        private Dictionary<string, ulong> LastFiles = new Dictionary<string, ulong>();
-
-        public EVEFileSystemWatcher(string folder, int interval = 100)
+        /// <summary>
+        /// 监控中的文件及对应的大小
+        /// </summary>
+        private Dictionary<string, ulong> WatchingFiles = new Dictionary<string, ulong>();
+        /// <summary>
+        /// 该文件夹上一次检查时所有的文件
+        /// </summary>
+        private HashSet<string> AllFiles = new HashSet<string>();
+        private FileSystemWatcher FileSystemWatcher;
+        public EVEFileSystemWatcher(string folder, int interval = 300)
         {
             Folder = folder;
+            Init();
+
+            //检测文件更新
             Timer = new System.Timers.Timer(interval);
             Timer.Elapsed += Timer_Elapsed;
             Timer.AutoReset = false;
-            Init();
+
+            //检查文件新增
+            FileSystemWatcher = new FileSystemWatcher()
+            {
+                Path = folder,
+            };
+            FileSystemWatcher.Created += FileSystemWatcher_Created;
         }
+
+        private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
+        {
+            var files = System.IO.Directory.GetFiles(Folder);//耗性能，不能频繁使用
+            if (files.NotNullOrEmpty())
+            {
+                foreach (var file in files)
+                {
+                    if (!AllFiles.Contains(file))
+                    {
+                        OnAdded?.Invoke(file);
+                    }
+                }
+            }
+        }
+
         public void Start()
         {
             Timer.Start();
@@ -125,6 +171,14 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             Timer.Dispose();
         }
+        public void AddFile(string file)
+        {
+            WatchingFiles.Add(file, Helpers.FileHelper.GetFileLength(file));
+        }
+        public void RemoveFile(string file)
+        {
+            WatchingFiles.Remove(file);
+        }
         private void Init()
         {
             var files = System.IO.Directory.GetFiles(Folder);
@@ -132,33 +186,22 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 foreach (var file in files)
                 {
-                    LastFiles.Add(file, Helpers.FileHelper.GetFileLength(file));
+                    AllFiles.Add(file);
                 }
             }
         }
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            //挨个检查文件修改、新增
-            var files = System.IO.Directory.GetFiles(Folder);
-            if(files.NotNullOrEmpty())
+            //判断监控中的文件是否有更新
+            //监控外的文件无视，避免过多文件时消耗性能
+            foreach (var file in WatchingFiles.ToList())
             {
-                foreach (var file in files)
+                var newLength = Helpers.FileHelper.GetFileLength(file.Key);
+                if (newLength != file.Value)
                 {
-                    if(LastFiles.TryGetValue(file,out var value))
-                    {
-                        var newLength = Helpers.FileHelper.GetFileLength(file);
-                        if(newLength != value) 
-                        {
-                            LastFiles.Remove(file);
-                            LastFiles.Add(file, newLength);
-                            OnChanged?.Invoke(file);
-                        }
-                    }
-                    else
-                    {
-                        LastFiles.Add(file, Helpers.FileHelper.GetFileLength(file));
-                        OnAdded?.Invoke(file);
-                    }
+                    WatchingFiles.Remove(file.Key);
+                    WatchingFiles.Add(file.Key, newLength);
+                    OnChanged?.Invoke(file.Key);
                 }
             }
             Timer.Start();
