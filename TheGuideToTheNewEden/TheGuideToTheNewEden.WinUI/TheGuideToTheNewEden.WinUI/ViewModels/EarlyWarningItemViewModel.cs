@@ -253,9 +253,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
+            if(SelectedCharacter == null)
+            {
+                Window.ShowError("请选择角色");
+                return;
+            }
             if(RunningCharacters.Contains(SelectedCharacter))
             {
                 Window.ShowError("此角色已开启预警");
+                return;
+            }
+            if(Setting.LocationID <= 0)
+            {
+                Window.ShowError("请选择角色当前位置");
                 return;
             }
             ShowWaiting();

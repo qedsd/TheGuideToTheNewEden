@@ -40,7 +40,7 @@
                         <Grid Margin="10,4">
                             <Grid.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="打开文件" Click="MenuFlyoutItem_Click"/>
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="打开文件" />
                                 </MenuFlyout>
                             </Grid.ContextFlyout>
                             <Grid.ColumnDefinitions>
@@ -184,6 +184,7 @@
                         <TextBox
                             Grid.Column="1"
                             IsEnabled="{x:Bind VM.Setting.MakeSound, Mode=OneWay}"
+                            PlaceholderText="预置"
                             Text="{x:Bind VM.Setting.SoundFilePath, Mode=TwoWay}" />
                         <Button
                             Grid.Column="2"
