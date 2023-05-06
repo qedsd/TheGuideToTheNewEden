@@ -46,14 +46,24 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private IntPtr _lastForegroundWindow;
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            var p = Helpers.ShowWindowHelper.GetForegroundWindow();
-            if(_lastForegroundWindow != p)
+            try
             {
-                Debug.WriteLine(p);
-                _lastForegroundWindow = p;
-                OnForegroundWindowChanged?.Invoke(_lastForegroundWindow);
+                var p = Helpers.ShowWindowHelper.GetForegroundWindow();
+                if (_lastForegroundWindow != p)
+                {
+                    Debug.WriteLine(p);
+                    _lastForegroundWindow = p;
+                    OnForegroundWindowChanged?.Invoke(_lastForegroundWindow);
+                }
             }
-            _timer.Start();
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            finally
+            {
+                _timer.Start();
+            }
         }
         public delegate void ForegroundWindowChangedDelegate(IntPtr hWnd);
         public event ForegroundWindowChangedDelegate OnForegroundWindowChanged;

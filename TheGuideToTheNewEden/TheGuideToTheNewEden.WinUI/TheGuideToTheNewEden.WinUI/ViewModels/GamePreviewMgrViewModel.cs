@@ -304,7 +304,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Processes = null;
             }
         }
-
+        private GamePreviewWindow _lastHighlightWindow;
         /// <summary>
         /// 加载相应设置
         /// </summary>
@@ -322,7 +322,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Setting = SelectedProcess.Setting;
                     SelectedSetting = Settings.Contains(Setting) ? Setting : null;
-                    _lastHighlightWindow = null;
                     if (_runningDic.TryGetValue(SelectedProcess.GUID,out var window))
                     {
                         window.Highlight();
@@ -585,44 +584,31 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         #endregion
 
-        private GamePreviewWindow _lastHighlightWindow;
         /// <summary>
         /// 当前活动窗口变化
         /// </summary>
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
         {
-            if (_lastHighlightWindow != null)
+            var targetProcess = Processes?.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
+            foreach (var item in _runningDic)
             {
-                _lastHighlightWindow.CancelHighlight();
-            }
-            var targetProcess = Processes.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
-            if(targetProcess != null)
-            {                
-                foreach(var item in _runningDic)
+                if (targetProcess != null && item.Key == targetProcess.GUID)
                 {
-                    if(item.Key == targetProcess.GUID)
+                    if (item.Value.Setting.HideOnForeground)
                     {
-                        if(item.Value.Setting.HideOnForeground)
-                        {
-                            item.Value.Hide2();
-                        }
-                        else if(item.Value.Setting.Highlight)
-                        {
-                            item.Value.Highlight();
-                            _lastHighlightWindow = item.Value;
-                        }
+                        item.Value.Hide2();
                     }
-                    else
+                    else if (item.Value.Setting.Highlight)
                     {
+                        _lastHighlightWindow = item.Value;
+                        item.Value.Highlight();
                         item.Value.Show2();
                     }
                 }
-            }
-            else
-            {
-                foreach (var item in _runningDic)
+                else
                 {
+                    item.Value.CancelHighlight();
                     item.Value.Show2();
                 }
             }

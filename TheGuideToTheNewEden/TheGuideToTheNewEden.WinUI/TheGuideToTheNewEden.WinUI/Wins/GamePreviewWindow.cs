@@ -51,6 +51,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
             };
+            content.Children.Add(new TextBlock()
+            {
+                Text = "不支持最小化游戏窗口",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
             MainContent = content;
             content.PointerReleased += Content_PointerReleased;
             content.PointerWheelChanged += Content_PointerWheelChanged;
@@ -117,26 +123,46 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             UpdateThumbDestination();
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromMilliseconds(200);
+            _timer.Tick += _timer_Tick;
+            _timer.Start();
         }
+        /// <summary>
+        /// 与透明度绑定，透明度为0时为不可见
+        /// </summary>
+        private bool _visible = true;
+        private void _timer_Tick(object sender, object e)
+        {
+            _timer.Stop();
+            if(_isVisible != _visible)
+            {
+                if(_isVisible)
+                {
+                    TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
+                    _visible = true;
+                }
+                else
+                {
+                    TransparentWindowHelper.TransparentWindow(this, 0);
+                    _visible = false;
+                }
+            }
+            _timer.Start();
+        }
+
+        private DispatcherTimer _timer;
+        /// <summary>
+        /// 标记当前窗口需不需要显示
+        /// </summary>
+        private bool _isVisible = true;
         public void Show2()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
-            {
-                if(!this.Visible)
-                {
-                    Debug.WriteLine("Activate");
-                    _presenter.IsAlwaysOnTop = true;
-                    this.Restore();
-                }
-            });
+            _isVisible = true;
         }
         public void Hide2()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
-            {
-                _presenter.IsAlwaysOnTop = false;
-                this.Minimize();
-            });
+            _isVisible = false;
         }
 
         private void UpdateThumbDestination()
@@ -201,8 +227,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Closing -= AppWindow_Closing;
             _appWindow.Changed -= AppWindow_Changed;
             HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
-            (MainContent as UIElement).PointerReleased += Content_PointerReleased;
-            (MainContent as UIElement).PointerWheelChanged += Content_PointerWheelChanged;
+            (MainContent as UIElement).PointerReleased -= Content_PointerReleased;
+            (MainContent as UIElement).PointerWheelChanged -= Content_PointerWheelChanged;
+            _timer.Stop();
             Close();
         }
 
@@ -299,7 +326,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void CancelHighlight()
         {
-            Debug.WriteLine(222);
             UpdateThumbDestination();
         }
         /// <summary>
