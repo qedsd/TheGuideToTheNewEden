@@ -117,6 +117,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 _setting.WinW = 500;
                 var clientSize = WindowHelper.GetClientRect(_sourceHWnd);
+                if(clientSize.Width <= 0)
+                {
+                    clientSize.Width = 500;
+                }
+                if(clientSize.Height <= 0)
+                {
+                    clientSize.Height = 300;
+                }
                 _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
             }
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
