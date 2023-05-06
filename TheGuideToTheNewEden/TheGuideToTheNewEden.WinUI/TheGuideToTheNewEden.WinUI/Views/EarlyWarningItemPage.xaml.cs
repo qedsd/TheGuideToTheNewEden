@@ -45,11 +45,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void EarlyWarningItemPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(EarlyWarningItemViewModel.SelectedMapSolarSystem))
-            {
-                SetAutoSuggestBoxText(VM.SelectedMapSolarSystem?.SolarSystemName);
-            }
-            else if(e.PropertyName == nameof(EarlyWarningItemViewModel.SelectedNameDbs))
+            if(e.PropertyName == nameof(EarlyWarningItemViewModel.SelectedNameDbs))
             {
                 SetSelectedNameDbs();
             }
@@ -156,45 +152,24 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        #region 自动填充角色位置
-        private bool textChangedIgnore = false;
-        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if(textChangedIgnore)
-            {
-                textChangedIgnore = false;
-                sender.IsSuggestionListOpen = false;
-                return;
-            }
-            if(string.IsNullOrEmpty(sender.Text))
-            {
-                sender.ItemsSource = VM.MapSolarSystems;
-            }
-            else
-            {
-                var targets = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains(sender.Text)).ToList();
-                sender.ItemsSource = targets;
-            }
-        }
-
-        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            VM.SelectedMapSolarSystem = args.SelectedItem as Core.DBModels.MapSolarSystemBase;
-            SetAutoSuggestBoxText((args.SelectedItem as Core.DBModels.MapSolarSystemBase).SolarSystemName);
-        }
-        private void SetAutoSuggestBoxText(string text)
-        {
-            textChangedIgnore = true;
-            LocationBox.Text = text;
-        }
-        #endregion
-
         private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
             var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
             if(info != null)
             {
                 System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
+            }
+        }
+
+        private void TextBox_SearchMapSolarSystem_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty((sender as TextBox).Text))
+            {
+                VM.SearchMapSolarSystems = VM.MapSolarSystems;
+            }
+            else
+            {
+                VM.SearchMapSolarSystems = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains((sender as TextBox).Text)).ToList();
             }
         }
     }

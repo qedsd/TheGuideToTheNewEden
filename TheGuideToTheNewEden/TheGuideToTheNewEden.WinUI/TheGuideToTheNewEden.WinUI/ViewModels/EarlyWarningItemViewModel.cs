@@ -119,11 +119,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref mapSolarSystems, value);
         }
 
+        private List<Core.DBModels.MapSolarSystemBase> searchMapSolarSystems;
+        public List<Core.DBModels.MapSolarSystemBase> SearchMapSolarSystems
+        {
+            get => searchMapSolarSystems;
+            set => SetProperty(ref searchMapSolarSystems, value);
+        }
+
+        private string locationSolarSystem;
+        public string LocationSolarSystem { get => locationSolarSystem; set => SetProperty(ref locationSolarSystem, value); }
+
         private Core.DBModels.MapSolarSystemBase selectedMapSolarSystem;
         public Core.DBModels.MapSolarSystemBase SelectedMapSolarSystem
         {
             get => selectedMapSolarSystem;
-            set => SetProperty(ref selectedMapSolarSystem, value);
+            set
+            {
+                SetProperty(ref selectedMapSolarSystem, value);
+                LocationSolarSystem = value?.SolarSystemName;
+            }
         }
         private Core.Models.EarlyWarningSetting setting = new Core.Models.EarlyWarningSetting();
         public Core.Models.EarlyWarningSetting Setting
@@ -263,14 +277,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowError("此角色已开启预警");
                 return;
             }
-            if(Setting.LocationID <= 0)
+            if(string.IsNullOrEmpty(LocationSolarSystem))
             {
-                Window.ShowError("请选择角色当前位置");
+                Window.ShowError("请设置角色当前所处星系");
+                return;
+            }
+            var location = MapSolarSystems.FirstOrDefault(p => p.SolarSystemName == LocationSolarSystem);
+            if (location == null)
+            {
+                Window.ShowError("无效的星系名称");
+                HideWaiting();
                 return;
             }
             ShowWaiting();
             if(ChatChanelInfos.NotNullOrEmpty())
             {
+                SelectedMapSolarSystem = location;
+                Setting.LocationID = location.SolarSystemID;
                 var checkedItems = ChatChanelInfos.Where(p => p.IsChecked).ToList();
                 if(checkedItems.NotNullOrEmpty())
                 {

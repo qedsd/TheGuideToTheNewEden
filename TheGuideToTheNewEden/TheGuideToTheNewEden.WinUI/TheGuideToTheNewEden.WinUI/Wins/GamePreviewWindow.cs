@@ -93,7 +93,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <summary>
         /// 显示目标窗口
         /// </summary>
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoOptimization)]
         public void ActiveSourceWindow()
         {
             var hForeWnd = Win32.GetForegroundWindow();
