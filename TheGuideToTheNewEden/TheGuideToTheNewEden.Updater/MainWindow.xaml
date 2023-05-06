@@ -106,13 +106,13 @@
                 <RowDefinition Height="24" />
             </Grid.RowDefinitions>
             <TextBlock x:Name="TextBlock_Version" FontSize="16" />
-            <TextBlock
-                x:Name="TextBlock_Des"
-                Grid.Row="1"
-                Margin="0,8,0,0"
-                FontSize="14"
-                TextWrapping="Wrap" />
-
+            <ScrollViewer Grid.Row="1">
+                <TextBlock
+                    x:Name="TextBlock_Des"
+                    Margin="0,8,0,0"
+                    FontSize="14"
+                    TextWrapping="Wrap" />
+            </ScrollViewer>
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>

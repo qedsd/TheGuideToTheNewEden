@@ -28,8 +28,12 @@ namespace TheGuideToTheNewEden.Updater
         private string _des;
         private string _url;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private string _baseDirectory;
+        private string _tempFolder;//解压临时文件夹
         public MainWindow()
         {
+            _baseDirectory = AppDomain.CurrentDomain.BaseDirectory;//updater执行文件路径文件夹
+            _tempFolder = System.IO.Path.Combine(_baseDirectory, "Temp");
             InitializeComponent();
             if(App.Args != null && App.Args.Length >= 3)
             {
@@ -47,7 +51,7 @@ namespace TheGuideToTheNewEden.Updater
         }
         public async void Download(string url, string saveFile)
         {
-            _savedFileName = System.IO.Path.GetFileName(saveFile);
+            _savedFileName = saveFile;
             ProgressBar_Download.Value = 0;
             TextBlock_Received.Text = string.Empty;
             TextBlock_All.Text = string.Empty;
@@ -114,7 +118,7 @@ namespace TheGuideToTheNewEden.Updater
         private void Button_Download_Click(object sender, RoutedEventArgs e)
         {
             ShowDownload();
-            Download(_url, _url.Split('/').Last());
+            Download(_url, System.IO.Path.Combine(_baseDirectory, _url.Split('/').Last()));
         }
 
         private void Button_Browser_Click(object sender, RoutedEventArgs e)
@@ -175,18 +179,14 @@ namespace TheGuideToTheNewEden.Updater
         }
         private bool KillProcess()
         {
-            //string basePath = AppDomain.CurrentDomain.BaseDirectory.Substring(0, AppDomain.CurrentDomain.BaseDirectory.Length - 8);
             foreach (Process p in Process.GetProcesses())
             {
                 try
                 {
                     if (p.ProcessName == "TheGuideToTheNewEden")
                     {
-                        //if(System.IO.Path.GetDirectoryName(p.MainModule.FileName) == basePath )
-                        {
-                            p.Kill();
-                            p.WaitForExit();
-                        }
+                        p.Kill();
+                        p.WaitForExit();
                     }
                 }
                 catch(Exception ex)
@@ -197,7 +197,7 @@ namespace TheGuideToTheNewEden.Updater
             }
             return true;
         }
-        private string _tempFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Temp");
+        
         /// <summary>
         /// 解压
         /// </summary>
@@ -227,27 +227,7 @@ namespace TheGuideToTheNewEden.Updater
                 }
             });
         }
-        /// <summary>
-        /// 备份原文件
-        /// </summary>
-        /// <returns></returns>
-        private async Task<bool> Backup()
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    string basePath = AppDomain.CurrentDomain.BaseDirectory.Substring(0, AppDomain.CurrentDomain.BaseDirectory.Length - 8);
-                    
-                    return true;
-                }
-                catch( Exception ex )
-                {
-                    MessageBox.Show(ex.Message);
-                    return false;
-                }
-            });
-        }
+
         private async Task<bool> CopyTo()
         {
             return await Task.Run(() =>
@@ -273,7 +253,7 @@ namespace TheGuideToTheNewEden.Updater
         }
         private void CopyFiles(string sourceFolder, string targetFolder)
         {
-            if(targetFolder == AppDomain.CurrentDomain.BaseDirectory)//不删除当前程序文件夹
+            if(targetFolder == _baseDirectory)//不删除当前程序文件夹
             {
                 return;
             }
