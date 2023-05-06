@@ -17,6 +17,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -92,8 +93,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <summary>
         /// 显示目标窗口
         /// </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoOptimization)]
         public void ActiveSourceWindow()
         {
+            var hForeWnd = Win32.GetForegroundWindow();
+            var dwCurID = Thread.CurrentThread.ManagedThreadId;
+            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd,out _);
+            Win32.AttachThreadInput(dwCurID, dwForeID, true);
             if (Win32.IsIconic(_sourceHWnd))
             {
                 Win32.ShowWindow(_sourceHWnd, 4);
@@ -103,6 +109,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Win32.ShowWindow(_sourceHWnd, 5);
             }
             Win32.SetForegroundWindow(_sourceHWnd);
+            Win32.BringWindowToTop(_sourceHWnd);
+            Win32.AttachThreadInput(dwCurID, dwForeID, false);
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;

@@ -80,5 +80,41 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public const int SM_CYVIRTUALSCREEN = 79;
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int nIndex);
+
+        /// <summary>
+        /// 返回当前活动窗口句柄
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+
+        /// <summary>
+        /// 返回创建指定窗口线程的标识和创建窗口的进程的标识符
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <param name="ID">可选</param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
+
+        /// <summary>
+        /// 将一个线程的输入处理机制附加到另一个线程的输入处理机制
+        /// </summary>
+        /// <param name="idAttach">要附加到另一个线程的线程的标识符</param>
+        /// <param name="idAttachTo">将附加到的线程的标识符</param>
+        /// <param name="fAttach">如果此参数为 TRUE，则附加两个线程。 如果参数为 FALSE，则分离线程</param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        public static extern bool AttachThreadInput(int idAttach, int idAttachTo, bool fAttach);
+
+        /// <summary>
+        /// 将指定的窗口置于 Z 顺序的顶部。 如果窗口是顶级窗口，则会激活该窗口。
+        /// 如果窗口是子窗口，则会激活与子窗口关联的顶级父窗口。
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
+        [DllImport("User32.dll")]
+        public static extern bool BringWindowToTop(IntPtr hwnd);
     }
 }
