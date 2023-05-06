@@ -169,7 +169,14 @@ namespace TheGuideToTheNewEden.Core.Helpers
                         }
                     }
                     var chanels = dic.Values.ToList();
-                    listenerChannelDic.Add(chanels.First().Listener, chanels);
+                    if(listenerChannelDic.ContainsKey(chanels.First().Listener))
+                    {
+                        Log.Error($"存在相同角色名称但角色ID不同：{chanels.First().Listener}");
+                    }
+                    else
+                    {
+                        listenerChannelDic.Add(chanels.First().Listener, chanels);
+                    }
                 }
                 return listenerChannelDic;
             }
