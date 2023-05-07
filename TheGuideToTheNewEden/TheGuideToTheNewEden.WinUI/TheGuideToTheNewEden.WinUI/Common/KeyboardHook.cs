@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Common
 {
@@ -147,13 +148,15 @@ namespace TheGuideToTheNewEden.WinUI.Common
         private Dictionary<int, KeyboardInfo> pressedKeyDic = new Dictionary<int, KeyboardInfo>();
         private int KeyboardHookProc(int nCode, Int32 wParam, IntPtr lParam)
         {
+            Core.Log.Debug($"按键事件：{nCode}");
             if (nCode == 0)
             {
                 EventMsg msg = (EventMsg)Marshal.PtrToStructure(lParam, typeof(EventMsg));
                 int vk = msg.vkCode & 0xff;
                 if (wParam == 0x100)//按下
                 {
-                    if(!pressedKeyDic.ContainsKey(vk))
+                    Core.Log.Debug($"按下{vk}");
+                    if (!pressedKeyDic.ContainsKey(vk))
                     {
                         int scanCode = msg.scanCode & 0xff;
                         string name = string.Empty;
@@ -162,14 +165,17 @@ namespace TheGuideToTheNewEden.WinUI.Common
                         {
                             name = strKeyName.ToString().Trim(new char[] { ' ', '\0' });
                         }
+                        Core.Log.Debug($"捕获到新按下按键{name}");
                         pressedKeyDic.Add(vk, new KeyboardInfo(vk, scanCode, name));
                         KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
                     }
                 }
                 else if(wParam == 0x101)//松开
                 {
-                    if(pressedKeyDic.Remove(vk))
+                    Core.Log.Debug($"松开{vk}");
+                    if (pressedKeyDic.Remove(vk))
                     {
+                        Core.Log.Debug($"捕获到松开已有按键{vk}");
                         KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
                     }
                 }
@@ -189,6 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.Common
         {
             if (hKeyboardHook == 0)
             {
+                Core.Log.Debug("安装按键钩子");
                 //WH_KEYBOARD_LL=13
                 keyboardHookProc = new HookProc(KeyboardHookProc);
                 hKeyboardHook = SetWindowsHookEx(13, keyboardHookProc, Marshal.GetHINSTANCE(Assembly.GetExecutingAssembly().GetModules()[0]), 0);
@@ -204,6 +211,7 @@ namespace TheGuideToTheNewEden.WinUI.Common
         {
             if (hKeyboardHook != 0)
             {
+                Core.Log.Debug("卸载按键钩子");
                 return UnhookWindowsHookEx(hKeyboardHook);
             }
             return true;

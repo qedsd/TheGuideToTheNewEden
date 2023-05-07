@@ -24,11 +24,7 @@ namespace TheGuideToTheNewEden.Core.Extensions
 
         public static string ToSeqString<T>(this IEnumerable<T> ls, string separator)
         {
-            if (ReferenceEquals(ls, null))
-            {
-                return null;
-            }
-            else
+            if (ls.NotNullOrEmpty())
             {
                 StringBuilder stringBuilder = new StringBuilder();
                 foreach (var p in ls)
@@ -38,6 +34,10 @@ namespace TheGuideToTheNewEden.Core.Extensions
                 }
                 stringBuilder.Remove(stringBuilder.Length - separator.Length, separator.Length);
                 return stringBuilder.ToString();
+            }
+            else
+            {
+                return string.Empty;
             }
         }
 

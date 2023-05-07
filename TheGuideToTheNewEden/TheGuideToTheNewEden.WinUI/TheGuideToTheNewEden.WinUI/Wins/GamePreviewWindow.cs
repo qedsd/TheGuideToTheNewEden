@@ -18,6 +18,8 @@ using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core;
 using System.Threading;
+using System.Reflection.Metadata;
+using Microsoft.UI.Xaml.Input;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -95,21 +97,30 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void ActiveSourceWindow()
         {
+            Core.Log.Debug($"激活窗口{_sourceHWnd}");
             var hForeWnd = Win32.GetForegroundWindow();
             var dwCurID = Thread.CurrentThread.ManagedThreadId;
-            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd,out _);
+            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
             Win32.AttachThreadInput(dwCurID, dwForeID, true);
             if (Win32.IsIconic(_sourceHWnd))
             {
-                Win32.ShowWindow(_sourceHWnd, 4);
+                Win32.ShowWindow(_sourceHWnd, 1);
             }
             else
             {
-                Win32.ShowWindow(_sourceHWnd, 5);
+                Win32.ShowWindow(_sourceHWnd, 8);
             }
             Win32.SetForegroundWindow(_sourceHWnd);
             Win32.BringWindowToTop(_sourceHWnd);
             Win32.AttachThreadInput(dwCurID, dwForeID, false);
+            //await FocusManager.TryFocusAsync(this.Content, FocusState.Pointer);
+            //Win32.SetForegroundWindow(_windowHandle);
+            //Win32.SetForegroundWindow(_sourceHWnd);
+            //int style = Win32.GetWindowLong(_sourceHWnd, Win32.GWL_STYLE);
+            //if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
+            //{
+            //    Win32.ShowWindowAsync(_sourceHWnd, Win32.SW_RESTORE);
+            //}
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;
@@ -268,6 +279,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void InitHotkey()
         {
             //快捷键
+            Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
             if (!string.IsNullOrEmpty(_setting.HotKey))
             {
                 var keynames = _setting.HotKey.Split('+');
@@ -303,6 +315,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         return;
                     }
                 }
+                Core.Log.Debug($"捕获到预览窗口激活快捷键{keys.Select(p=>p.Name).ToSeqString(",")}");
                 ActiveSourceWindow();
             }
         }

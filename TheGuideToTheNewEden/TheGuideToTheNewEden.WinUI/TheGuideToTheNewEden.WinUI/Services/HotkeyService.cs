@@ -26,6 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static void Start()
         {
+            Core.Log.Debug("开始监听按键");
             if(Current._keyboardHook == null)
             {
                 Current._keyboardHook = new KeyboardHook();
@@ -36,12 +37,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private static void _keyboardHook_KeyboardEvent(List<KeyboardInfo> keys)
         {
+            Core.Log.Debug($"HotkeyService监听到按键{keys.Count}");
             OnKeyboardClicked?.Invoke(keys);
         }
 
         public static void Stop()
         {
-            Current._keyboardHook?.Start();
+            Core.Log.Debug("停止监听按键");
+            Current._keyboardHook?.Stop();
         }
 
         public delegate void KeyboardDelegate(List<KeyboardInfo> keys);

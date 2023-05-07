@@ -31,6 +31,10 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public const int ICON_SMALL = 0;
         public const int ICON_BIG = 1;
 
+        public const UInt32 WS_MINIMIZE = 0x20000000;
+        public const int GWL_STYLE = (-16);
+        public const int SW_RESTORE = 9;
+
         [DllImport("User32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
         /// <summary>
@@ -116,5 +120,10 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// <returns></returns>
         [DllImport("User32.dll")]
         public static extern bool BringWindowToTop(IntPtr hwnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
 }
