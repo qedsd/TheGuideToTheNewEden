@@ -166,5 +166,33 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             w = Win32.GetSystemMetrics(Win32.SM_CXVIRTUALSCREEN);
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
         }
+
+        public static void SetForegroundWindow(IntPtr targetHandle)
+        {
+            Core.Log.Debug($"激活窗口{targetHandle}");
+            var hForeWnd = Win32.GetForegroundWindow();
+            var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
+            Win32.AttachThreadInput(dwCurID, dwForeID, true);
+            if (Win32.IsIconic(targetHandle))
+            {
+                Win32.ShowWindow(targetHandle, 1);
+            }
+            else
+            {
+                Win32.ShowWindow(targetHandle, 8);
+            }
+            Win32.SetForegroundWindow(targetHandle);
+            Win32.BringWindowToTop(targetHandle);
+            Win32.AttachThreadInput(dwCurID, dwForeID, false);
+
+            //EVE-O
+            //Win32.SetForegroundWindow(targetHandle);
+            //int style = Win32.GetWindowLong(targetHandle, Win32.GWL_STYLE);
+            //if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
+            //{
+            //    Win32.ShowWindowAsync(_sourceHtargetHandleWnd, Win32.SW_RESTORE);
+            //}
+        }
     }
 }

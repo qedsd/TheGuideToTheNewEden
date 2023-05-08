@@ -97,30 +97,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void ActiveSourceWindow()
         {
-            Core.Log.Debug($"激活窗口{_sourceHWnd}");
-            var hForeWnd = Win32.GetForegroundWindow();
-            var dwCurID = Thread.CurrentThread.ManagedThreadId;
-            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
-            Win32.AttachThreadInput(dwCurID, dwForeID, true);
-            if (Win32.IsIconic(_sourceHWnd))
-            {
-                Win32.ShowWindow(_sourceHWnd, 1);
-            }
-            else
-            {
-                Win32.ShowWindow(_sourceHWnd, 8);
-            }
-            Win32.SetForegroundWindow(_sourceHWnd);
-            Win32.BringWindowToTop(_sourceHWnd);
-            Win32.AttachThreadInput(dwCurID, dwForeID, false);
-            //await FocusManager.TryFocusAsync(this.Content, FocusState.Pointer);
-            //Win32.SetForegroundWindow(_windowHandle);
-            //Win32.SetForegroundWindow(_sourceHWnd);
-            //int style = Win32.GetWindowLong(_sourceHWnd, Win32.GWL_STYLE);
-            //if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
-            //{
-            //    Win32.ShowWindowAsync(_sourceHWnd, Win32.SW_RESTORE);
-            //}
+            _activeWindow = true;
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;
@@ -149,18 +126,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             UpdateThumbDestination();
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(200);
-            _timer.Tick += _timer_Tick;
-            _timer.Start();
+            _UITimer = new DispatcherTimer();
+            _UITimer.Interval = TimeSpan.FromMilliseconds(200);
+            _UITimer.Tick += UITimer_Tick;
+            _UITimer.Start();
         }
         /// <summary>
         /// 与透明度绑定，透明度为0时为不可见
         /// </summary>
         private bool _visible = true;
-        private void _timer_Tick(object sender, object e)
+        private bool _activeWindow = false;
+        private void UITimer_Tick(object sender, object e)
         {
-            _timer.Stop();
+            _UITimer.Stop();
             if(_isVisible != _visible)
             {
                 if(_isVisible)
@@ -174,10 +152,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     _visible = false;
                 }
             }
-            _timer.Start();
+            if(_activeWindow)
+            {
+                _activeWindow = false;
+                ShowSourceWindow();
+            }
+            _UITimer.Start();
         }
-
-        private DispatcherTimer _timer;
+        /// <summary>
+        /// 在UI线程执行的timer
+        /// </summary>
+        private DispatcherTimer _UITimer;
         /// <summary>
         /// 标记当前窗口需不需要显示
         /// </summary>
@@ -255,7 +240,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             (MainContent as UIElement).PointerReleased -= Content_PointerReleased;
             (MainContent as UIElement).PointerWheelChanged -= Content_PointerWheelChanged;
-            _timer.Stop();
+            _UITimer.Stop();
             Close();
         }
 
@@ -295,19 +280,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if(keys.Count != 0)
             {
-                //TODO:无法获取按键事件
-                //if(keys.Count == 1)
-                //{
-                //    if (keys[0].Name.Equals("Esc", StringComparison.OrdinalIgnoreCase))
-                //    {
-                //        var foregroundW = Helpers.ShowWindowHelper.GetForegroundWindow();
-                //        if(foregroundW == _setting.ProcessInfo.MainWindowHandle)
-                //        {
-                //            OnStop?.Invoke(_setting);//交给调用者处理关闭
-                //            return;
-                //        }
-                //    }
-                //}
                 foreach (var key in _keys)
                 {
                     if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
@@ -390,6 +362,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public int GetHeight()
         {
             return _appWindow.ClientSize.Height;
+        }
+
+        private void ShowSourceWindow()
+        {
+            this.Activated += GamePreviewWindow_Activated;
+            this.Activate();
+        }
+
+        private void GamePreviewWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            this.Activated -= GamePreviewWindow_Activated;
+            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
         }
     }
 }
