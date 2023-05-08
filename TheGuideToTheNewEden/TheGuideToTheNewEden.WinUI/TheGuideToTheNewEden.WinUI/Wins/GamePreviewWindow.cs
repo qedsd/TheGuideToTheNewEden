@@ -90,7 +90,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            ActiveSourceWindow();
+            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
         }
         /// <summary>
         /// 显示目标窗口
