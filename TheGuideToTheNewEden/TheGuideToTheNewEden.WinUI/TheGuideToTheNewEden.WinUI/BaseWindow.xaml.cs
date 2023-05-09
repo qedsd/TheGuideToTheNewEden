@@ -24,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI
         public BaseWindow(string head = null)
         {
             this.InitializeComponent();
-            TitleBarHeight = WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this));
+            TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = "新伊甸漫游指南";
             Helpers.WindowHelper.TrackWindow(this);
             ExtendsContentIntoTitleBar = true;
@@ -49,6 +49,9 @@ namespace TheGuideToTheNewEden.WinUI
 
             set => ContentFrame.Content = value;
         }
+        /// <summary>
+        /// 无缩放下的原始标题栏高度
+        /// </summary>
         public int TitleBarHeight { get;private set; }
         public string Head
         {

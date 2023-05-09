@@ -69,6 +69,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
+            if (args.DidPositionChange)
+            {
+                if(!Helpers.WindowHelper.IsInWindow(_appWindow.Position.X, _appWindow.Position.Y))
+                {
+                    //可能是最小化后不显示在屏幕范围内
+                    _appWindow.IsShownInSwitchers = true;
+                    return;//不保存位置
+                }
+                else if(_appWindow.IsShownInSwitchers)
+                {
+                    //最小化恢复正常显示
+                    _appWindow.IsShownInSwitchers = false;
+                    return;//不保存位置
+                }
+            }
             if(args.DidPositionChange || args.DidSizeChange)
             {
                 _setting.WinW = _appWindow.Size.Width;
@@ -183,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 try
                 {
                     int left = 0;
-                    int top = _setting.ShowTitleBar? TitleBarHeight : 0;
+                    int top = _setting.ShowTitleBar? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
                     int right = _appWindow.ClientSize.Width;
                     int bottom = _appWindow.ClientSize.Height;
                     var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度

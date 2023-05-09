@@ -194,5 +194,27 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             //    Win32.ShowWindowAsync(_sourceHtargetHandleWnd, Win32.SW_RESTORE);
             //}
         }
+
+        /// <summary>
+        /// 指定xy位置是否在显示范围内
+        /// 支持多屏幕
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static bool IsInWindow(int x, int y)
+        {
+            return DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(x, y), DisplayAreaFallback.None) != null;
+        }
+        /// <summary>
+        /// 获取屏幕缩放比例
+        /// eg：1.25
+        /// </summary>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static float GetDpiScale(Window window)
+        {
+            return Win32.GetDpiForWindow(GetWindowHandle(window)) / 96f;
+        }
     }
 }
