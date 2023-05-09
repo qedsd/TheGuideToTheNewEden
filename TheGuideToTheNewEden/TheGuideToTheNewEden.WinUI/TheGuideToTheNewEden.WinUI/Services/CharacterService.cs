@@ -168,6 +168,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
+        public static async Task<string> GetAuthorizeResultAsync()
+        {
+            GetAuthorizeByBrower();
+            return await AuthHelper.WaitingAuthAsync();
+        }
+
         public static void GetAuthorizeByBrower(Core.Enums.GameServerType server = Core.Enums.GameServerType.Tranquility)
         {
             string uri = Core.Services.ESIService.SSO.CreateAuthenticationUrl(EsiScopes, Version);

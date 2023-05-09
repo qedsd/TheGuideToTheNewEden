@@ -225,7 +225,6 @@
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\MailPage.xaml" />
     <None Remove="Views\Character\OverviewPage.xaml" />
-    <None Remove="Views\Character\OverviewPage2.xaml" />
     <None Remove="Views\Character\SkillPage.xaml" />
     <None Remove="Views\Character\WalletPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
@@ -299,9 +298,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\OverviewPage2.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml">

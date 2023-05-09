@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Models.Character
 {
     public class SkillItem
     {
-        public int Active_skill_level { get; set; }
-        public int Skill_id { get; set; }
-        public string Skill_name { get; set; }
-        public string Skill_des { get; set; }
-        public long Skillpoints_in_skill { get; set; }
-        public int Trained_skill_level { get; set; }
+        public ESI.NET.Models.Skills.Skill Skill { get; set; }
+        public InvType InvType { get; set; }
     }
 }

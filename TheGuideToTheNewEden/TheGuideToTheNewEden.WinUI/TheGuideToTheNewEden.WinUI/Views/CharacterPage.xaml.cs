@@ -55,7 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             (ContentFrame.Content as OverviewPage).Set(VM.EsiClient, VM.SelectedCharacter);
                         }
                         break;
-                    case "Skill": ContentFrame.Navigate(typeof(SkillPage)); break;
+                    case "Skill": ContentFrame.Navigate(typeof(SkillPage),VM.Skill); break;
                     case "Clone": ContentFrame.Navigate(typeof(ClonePage)); break;
                     case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;
                     case "Mail": ContentFrame.Navigate(typeof(MailPage)); break;
