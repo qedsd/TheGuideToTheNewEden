@@ -89,5 +89,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             ListView_Skills.ItemsSource = null;
             _isLoaded = false;
         }
+
+        public void Refresh()
+        {
+            
+        }
     }
 }

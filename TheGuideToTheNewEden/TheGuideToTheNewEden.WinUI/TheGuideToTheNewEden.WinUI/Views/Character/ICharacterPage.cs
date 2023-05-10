@@ -12,5 +12,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         /// 清空
         /// </summary>
         public void Clear();
+        public void Refresh();
     }
 }
