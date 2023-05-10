@@ -16,6 +16,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.DBModels;
+using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -28,11 +30,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             this.InitializeComponent();
             Loaded += SkillPage_Loaded;
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e) 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _skillDetails = e.Parameter as ESI.NET.Models.Skills.SkillDetails;
         }
-
         private void SkillPage_Loaded(object sender, RoutedEventArgs e)
         {
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
@@ -46,10 +47,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private async void Init()
         {
             var skills = await Core.Services.DB.InvGroupService.QuerySkillGroupsAsync();
-            if(_skillDetails != null && _skillDetails.Skills.NotNullOrEmpty())
+            List<int> allSkillIds = new List<int>();
+            skills.ForEach(p => allSkillIds.AddRange(p.SkillIds.ToList()));
+            if (_skillDetails != null && _skillDetails.Skills.NotNullOrEmpty())
             {
-                var skillsDic = _skillDetails.Skills.ToDictionary(p => p.SkillId);
-                var invTypes = await Core.Services.DB.InvTypeService.QueryTypesAsync(_skillDetails.Skills.Select(p=>p.SkillId).ToList());
+                var skillsDic = _skillDetails.Skills.ToDictionary(p => p.SkillId);//仅包含角色已经吸收的技能
+                var invTypes = await Core.Services.DB.InvTypeService.QueryTypesAsync(allSkillIds);//所有技能
                 if(invTypes.NotNullOrEmpty())
                 {
                     var invTypesDic = invTypes.ToDictionary(p => p.TypeID);
@@ -58,23 +61,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         skillGroup.Skills = new List<Core.Models.Character.SkillItem>();
                         foreach (var skill in skillGroup.SkillIds)
                         {
-                            if (skillsDic.TryGetValue(skill, out var value))
+                            if (invTypesDic.TryGetValue(skill, out var invType))
                             {
-                                string invTypeName = string.Empty;
-                                if(invTypesDic.TryGetValue(skill, out var invType))
+                                ESI.NET.Models.Skills.Skill cSkill = null;
+                                if (skillsDic.TryGetValue(skill, out var value))
                                 {
-                                    invTypeName = invType.TypeName;
+                                    cSkill = value;
                                 }
                                 skillGroup.Skills.Add(new Core.Models.Character.SkillItem()
                                 {
-                                    Skill = value,
+                                    Skill = cSkill,
                                     InvType = invType,
                                 });
                             }
                         }
                     }
+                    invTypesDic.Clear();
                 }
-                
+                skillsDic.Clear();
             }
             ListView_Skills.ItemsSource = skills;
         }

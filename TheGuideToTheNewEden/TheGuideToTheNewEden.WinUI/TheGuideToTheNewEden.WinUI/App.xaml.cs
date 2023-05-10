@@ -30,6 +30,8 @@ namespace TheGuideToTheNewEden.WinUI
             UnhandledException += App_UnhandledException;//UI线程
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             Log.Init();
+            //ResourceDictionary d = new ResourceDictionary();
+            //Application.Current.Resources.MergedDictionaries[0]
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)

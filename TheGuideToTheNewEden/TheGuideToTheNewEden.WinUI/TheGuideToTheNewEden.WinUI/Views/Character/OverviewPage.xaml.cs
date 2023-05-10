@@ -19,27 +19,36 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core;
+using ESI.NET.Models.Skills;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
-    public sealed partial class OverviewPage : Page
+    public sealed partial class OverviewPage : Page,ICharacterPage
     {
         private EsiClient _esiClient;
         private AuthorizedCharacterData _characterData;
         public OverviewPage()
         {
             this.InitializeComponent();
+            Loaded += OverviewPage_Loaded;
             TextBlock_lastLoginText.Text = "最近上线：";
             TextBlock_LoginCountText.Text = "上线次数：";
         }
-        
-        public void Set(EsiClient esiClient, AuthorizedCharacterData characterData)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if(characterData != null && characterData != _characterData)
+            var paras = e.Parameter as object[];
+            if(paras != null && paras.Length == 2)
             {
-                _characterData = characterData;
-                _esiClient = esiClient;
+                _esiClient = paras[0] as EsiClient;
+                _characterData = paras[1] as AuthorizedCharacterData;
+            }
+        }
+        private void OverviewPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if(!_isLoaded)
+            {
                 Refresh();
+                _isLoaded = true;
             }
         }
 
@@ -225,6 +234,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     ListView_SkillQueue.ItemsSource = skills.OrderBy(p=>p.QueuePosition).ToList();
                 }
             }
+        }
+        private bool _isLoaded = false;
+        public void Clear()
+        {
+            _isLoaded = false;
         }
     }
 }

@@ -7,7 +7,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
-    NavigationCacheMode="Enabled"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <ListView
@@ -36,7 +36,7 @@
                             <TextBlock
                                 Grid.Column="1"
                                 Text="{x:Bind SkillIds.Count}"
-                                ToolTipService.ToolTip="组内技能个数" />
+                                ToolTipService.ToolTip="{StaticResource SkillPage_SkillIdsCount}" />
                         </Grid>
                     </Expander.Header>
                     <ListView Margin="0,-16,0,0" ItemsSource="{x:Bind Skills}">
@@ -57,10 +57,10 @@
                                         <TextBlock
                                             Margin="8,0,0,0"
                                             Text="{x:Bind Skill.TrainedSkillLevel}"
-                                            ToolTipService.ToolTip="已掌握的等级" />
+                                            ToolTipService.ToolTip="{StaticResource SkillPage_TrainedSkillLevel}" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <TextBlock Text="{x:Bind Skill.SkillpointsInSkill}" ToolTipService.ToolTip="已训练的技能点" />
+                                        <TextBlock Text="{x:Bind Skill.SkillpointsInSkill}" ToolTipService.ToolTip="{StaticResource SkillPage_SkillpointsInSkill}" />
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>

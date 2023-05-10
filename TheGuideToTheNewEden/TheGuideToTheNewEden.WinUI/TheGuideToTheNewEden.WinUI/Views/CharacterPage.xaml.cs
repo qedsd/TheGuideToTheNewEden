@@ -39,28 +39,41 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void VM_OnSelectedCharacter()
         {
-            OverviewNavigationViewItem.IsSelected = false;
-            OverviewNavigationViewItem.IsSelected= true;
+            ResetPage();
         }
 
+        private readonly Dictionary<string, Page> _contentPages = new Dictionary<string, Page>();
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if(args.SelectedItem != null)
             {
-                switch ((args.SelectedItem as NavigationViewItem).Tag)
+                string tag = (args.SelectedItem as NavigationViewItem).Tag as string;
+                switch (tag)
                 {
                     case "Overview":
                         {
-                            ContentFrame.Navigate(typeof(OverviewPage));
-                            (ContentFrame.Content as OverviewPage).Set(VM.EsiClient, VM.SelectedCharacter);
+                            ContentFrame.Navigate(typeof(OverviewPage), new object[] { VM.EsiClient, VM.SelectedCharacter });
                         }
                         break;
-                    case "Skill": ContentFrame.Navigate(typeof(SkillPage),VM.Skill); break;
-                    case "Clone": ContentFrame.Navigate(typeof(ClonePage)); break;
+                    case "Skill":
+                        {
+                            ContentFrame.Navigate(typeof(SkillPage), VM.Skill);
+                        }
+                        break;
+                    case "Clone":
+                        {
+                            ContentFrame.Navigate(typeof(ClonePage));
+                        }
+                        break;
                     case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;
                     case "Mail": ContentFrame.Navigate(typeof(MailPage)); break;
                     case "Contract": ContentFrame.Navigate(typeof(ContractPage)); break;
                 }
+                if(_contentPages.ContainsKey(tag))
+                {
+                    _contentPages.Remove(tag);
+                }
+                _contentPages.Add(tag, ContentFrame.Content as Page);
             }
         }
 
@@ -72,6 +85,22 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void ImageEx_CharacterAvatar_ImageExFailed(object sender, CommunityToolkit.WinUI.UI.Controls.ImageExFailedEventArgs e)
         {
             Log.Error(e.ErrorMessage);
+        }
+
+        private void Button_Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            ResetPage();
+            VM.RefreshCommand.Execute(null);
+        }
+        private void ResetPage()
+        {
+            foreach (var item in _contentPages.Values)
+            {
+                (item as ICharacterPage)?.Clear();
+            }
+            _contentPages.Clear();
+            OverviewNavigationViewItem.IsSelected = false;
+            OverviewNavigationViewItem.IsSelected = true;
         }
     }
 }

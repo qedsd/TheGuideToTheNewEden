@@ -219,6 +219,7 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
@@ -294,6 +295,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Strings\zh-CN\Resource.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
