@@ -133,5 +133,8 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern uint GetDpiForWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(IntPtr hWnd, int hWndlnsertAfter, int X, int Y, int cx, int cy, uint Flags);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Windowing;
+﻿using ESI.NET.Models.Opportunities;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -182,9 +183,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 Win32.ShowWindow(targetHandle, 8);
             }
+            Win32.SetWindowPos(targetHandle, -1, 0, 0, 0, 0, 1 | 2);
+            Win32.SetWindowPos(targetHandle, -2, 0, 0, 0, 0, 1 | 2);
             Win32.SetForegroundWindow(targetHandle);
             Win32.BringWindowToTop(targetHandle);
             Win32.AttachThreadInput(dwCurID, dwForeID, false);
+
 
             //EVE-O
             //Win32.SetForegroundWindow(targetHandle);
