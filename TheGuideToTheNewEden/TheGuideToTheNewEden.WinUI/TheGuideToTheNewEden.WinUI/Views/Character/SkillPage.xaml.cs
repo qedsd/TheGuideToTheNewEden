@@ -92,7 +92,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         public void Refresh()
         {
-            
+            Init();
         }
     }
 }

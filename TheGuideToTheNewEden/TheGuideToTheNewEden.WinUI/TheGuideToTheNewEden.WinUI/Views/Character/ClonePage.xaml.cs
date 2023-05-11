@@ -19,6 +19,8 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.Core.Extensions;
 using ESI.NET.Models.Location;
+using ESI.NET.Models.Universe;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -72,20 +74,58 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
                 else
                 {
+                    #region 基地等信息
+                    if(result.Data.HomeLocation.LocationType == "station")
+                    {
+                        var staStation = await Core.Services.DB.StaStationService.QueryAsync((int)result.Data.HomeLocation.LocationId);
+                        if (staStation != null)
+                        {
+                            TextBlock_HomeLocation.Text = staStation.StationName;
+                        }
+                        else
+                        {
+                            TextBlock_HomeLocation.Text = result.Data.HomeLocation.LocationId.ToString();
+                        }
+                    }
+                    else
+                    {
+                        var structureRsp = await _esiClient.Universe.Structure(result.Data.HomeLocation.LocationId);
+                        if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            TextBlock_HomeLocation.Text = structureRsp.Data.Name;
+                        }
+                        else
+                        {
+                            Log.Error(structureRsp?.Message);
+                            _window.ShowError(structureRsp?.Message, true);
+                        }
+                    }
+                    TextBlock_LastStationChangeDate.Text = result.Data.LastStationChangeDate == DateTime.MinValue ? "None" : result.Data.LastStationChangeDate.ToLocalTime().ToString();
+                    TextBlock_JumpClonesCount.Text = (result.Data.JumpClones.Count + 1).ToString();
+                    TextBlock_LastCloneJumpDate.Text = result.Data.LastCloneJumpDate == DateTime.MinValue ? "None" : result.Data.LastCloneJumpDate.ToLocalTime().ToString();
+                    #endregion
+
+
                     var jumpClones = result.Data.JumpClones;
                     var currentCloneImplants = result2.Data;
-
-                    List<Core.Models.Clone.JumpClone> allJumpClones = new List<Core.Models.Clone.JumpClone>();//包含基地和远程的所有克隆
-                    allJumpClones.Add(new Core.Models.Clone.JumpClone()
+                   ;
+                    List<Core.Models.Clone.JumpClone> allJumpClones = new List<Core.Models.Clone.JumpClone>();
+                    if(currentCloneImplants.NotNullOrEmpty())
                     {
-                        Clone = new ESI.NET.Models.Clones.JumpClone()
+                        string activeCloneStr = "Active clone";
+                        if (Application.Current.Resources.TryGetValue("ClonePage_ActiveClone", out var str))
                         {
-                            Implants = currentCloneImplants,
-                            LocationId = result.Data.HomeLocation.LocationId,
-                            LocationType = result.Data.HomeLocation.LocationType
-                        },
-                        IsHome = true,
-                    });
+                            activeCloneStr = str.ToString();
+                        }
+                        allJumpClones.Add(new Core.Models.Clone.JumpClone()
+                        {
+                            Clone = new ESI.NET.Models.Clones.JumpClone()
+                            {
+                                Name = activeCloneStr,
+                                Implants = currentCloneImplants
+                            }
+                        });
+                    }
                     if (jumpClones.NotNullOrEmpty())
                     { 
                         foreach(var jumpClone in jumpClones)
@@ -99,13 +139,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
                     #region 赋值植入体信息
                     List<int> implantsIds = new List<int>();
-                    if(jumpClones.NotNullOrEmpty())
+                    if(allJumpClones.NotNullOrEmpty())
                     {
-                        jumpClones.ForEach(p => implantsIds.AddRange(p.Implants));
-                    }
-                    if(currentCloneImplants.NotNullOrEmpty())
-                    {
-                        implantsIds.AddRange(currentCloneImplants);
+                        allJumpClones.ForEach(p => implantsIds.AddRange(p.Clone.Implants));
                     }
                     if(implantsIds.Any())
                     {
@@ -135,16 +171,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                                     }
                                 }
                             }
-                        }
+                        } 
                     }
                     #endregion
 
                     #region 赋值位置名称
-                    //TODO:空间站和建筑区分
                     if(allJumpClones.Any())
                     {
-                        var stations = allJumpClones.Where(p => p.Clone.LocationType == "0").ToList();
-                        var structures = allJumpClones.Where(p => p.Clone.LocationType == "1").ToList();
+                        var stations = allJumpClones.Where(p => p.Clone.LocationType == "station").ToList();
+                        var structures = allJumpClones.Where(p => p.Clone.LocationType == "structure").ToList();
                         if(stations.NotNullOrEmpty())
                         {
                             var staStations = await Core.Services.DB.StaStationService.QueryAsync(stations.Select(p=>(int)p.Clone.LocationId).ToList());
@@ -162,7 +197,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         }
                         if(structures.NotNullOrEmpty())
                         {
-                            foreach(var structure in  structures)
+                            foreach (var structure in structures)
                             {
                                 var structureRsp = await _esiClient.Universe.Structure(structure.Clone.LocationId);
                                 if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
@@ -171,17 +206,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                                 }
                                 else
                                 {
+                                    structure.LocationName = structure.Clone.LocationId.ToString();
                                     Log.Error(structureRsp?.Message);
+                                    _window.ShowError(structureRsp?.Message, true);
                                 }
                             }
                         }
                     }
                     #endregion
+
+                    ListView_Clones.ItemsSource = allJumpClones;
+                    _window.HideWaiting();
                 }
-                Core.Models.Clone.JumpClone homeClone = new Core.Models.Clone.JumpClone()
-                {
-                    Clone = new ESI.NET.Models.Clones.JumpClone()
-                };
             }
         }
     }

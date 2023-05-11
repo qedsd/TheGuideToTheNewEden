@@ -62,7 +62,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         break;
                     case "Clone":
                         {
-                            ContentFrame.Navigate(typeof(ClonePage));
+                            ContentFrame.Navigate(typeof(ClonePage), VM.EsiClient);
                         }
                         break;
                     case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;
@@ -99,8 +99,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 (item as ICharacterPage)?.Clear();
             }
             _contentPages.Clear();
-            OverviewNavigationViewItem.IsSelected = false;
-            OverviewNavigationViewItem.IsSelected = true;
+            if(OverviewNavigationViewItem.IsSelected)
+            {
+                (ContentFrame.Content as ICharacterPage).Refresh();
+            }
+            else
+            {
+                OverviewNavigationViewItem.IsSelected = true;
+            }
         }
     }
 }

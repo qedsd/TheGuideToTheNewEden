@@ -2,4 +2,11 @@
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
     <x:String x:Key="SkillPage_TrainedSkillLevel">已掌握的等级</x:String>
     <x:String x:Key="SkillPage_SkillpointsInSkill">已训练的技能点</x:String>
+    <x:String x:Key="ClonePage_HomeLocation">基地</x:String>
+    <x:String x:Key="ClonePage_LastStationChangeDate">上一次变更</x:String>
+    <x:String x:Key="ClonePage_LastCloneJumpDate">上一次远克</x:String>
+    <x:String x:Key="ClonePage_JumpCloneCount">克隆数量</x:String>
+    <x:String x:Key="ClonePage_CurrentClone">当前激活克隆</x:String>
+    <x:String x:Key="ClonePage_ImplantCount">脑插数量</x:String>
+    <x:String x:Key="ClonePage_ActiveClone">当前克隆</x:String>
 </ResourceDictionary>
