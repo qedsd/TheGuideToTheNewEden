@@ -177,16 +177,14 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             Win32.AttachThreadInput(dwCurID, dwForeID, true);
             if (Win32.IsIconic(targetHandle))
             {
-                Win32.ShowWindow(targetHandle, 1);
+                Win32.ShowWindowAsync(targetHandle, 1);
             }
             else
             {
-                Win32.ShowWindow(targetHandle, 8);
+                Win32.ShowWindowAsync(targetHandle, 8);
             }
-            Win32.SetWindowPos(targetHandle, -1, 0, 0, 0, 0, 1 | 2);
-            Win32.SetWindowPos(targetHandle, -2, 0, 0, 0, 0, 1 | 2);
             Win32.SetForegroundWindow(targetHandle);
-            Win32.BringWindowToTop(targetHandle);
+            Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
             Win32.AttachThreadInput(dwCurID, dwForeID, false);
 
 
