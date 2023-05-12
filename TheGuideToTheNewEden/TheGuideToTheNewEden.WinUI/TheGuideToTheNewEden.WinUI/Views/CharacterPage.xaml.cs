@@ -65,7 +65,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             ContentFrame.Navigate(typeof(ClonePage), VM.EsiClient);
                         }
                         break;
-                    case "Wallet": ContentFrame.Navigate(typeof(WalletPage)); break;
+                    case "Wallet": ContentFrame.Navigate(typeof(WalletPage), VM.EsiClient); break;
                     case "Mail": ContentFrame.Navigate(typeof(MailPage)); break;
                     case "Contract": ContentFrame.Navigate(typeof(ContractPage)); break;
                 }

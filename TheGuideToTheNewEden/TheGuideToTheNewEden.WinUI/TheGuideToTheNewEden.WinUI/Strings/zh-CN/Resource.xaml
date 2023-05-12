@@ -9,4 +9,22 @@
     <x:String x:Key="ClonePage_CurrentClone">当前激活克隆</x:String>
     <x:String x:Key="ClonePage_ImplantCount">脑插数量</x:String>
     <x:String x:Key="ClonePage_ActiveClone">当前克隆</x:String>
+
+    <x:String x:Key="WalletPage_CharacterJournal">个人-日志</x:String>
+    <x:String x:Key="WalletPage_CharacterTransaction">个人-交易</x:String>
+    <x:String x:Key="WalletPage_CorpJournal">军团-日志</x:String>
+    <x:String x:Key="WalletPage_CorpTransaction">军团-交易</x:String>
+    <x:String x:Key="WalletPage_JournalDate">时间</x:String>
+    <x:String x:Key="WalletPage_JournalAmount">合计</x:String>
+    <x:String x:Key="WalletPage_JournalBalance">钱包余额</x:String>
+    <x:String x:Key="WalletPage_JournalDescription">描述</x:String>
+    <x:String x:Key="WalletPage_JournalReason">原因</x:String>
+    <x:String x:Key="WalletPage_JournalRefType">类型</x:String>
+    <x:String x:Key="WalletPage_TransactionDate">时间</x:String>
+    <x:String x:Key="WalletPage_TransactionType">物品</x:String>
+    <x:String x:Key="WalletPage_TransactionUnitPrice">单位价格</x:String>
+    <x:String x:Key="WalletPage_TransactionQuantity">数量</x:String>
+    <x:String x:Key="WalletPage_TransactionIsBuy">是否买入</x:String>
+    <x:String x:Key="WalletPage_TransactionClient">客户</x:String>
+    <x:String x:Key="WalletPage_TransactionLocation">位置</x:String>
 </ResourceDictionary>
