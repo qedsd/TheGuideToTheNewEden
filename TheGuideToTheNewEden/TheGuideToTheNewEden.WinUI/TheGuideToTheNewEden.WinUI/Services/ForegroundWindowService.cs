@@ -33,7 +33,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 _timer = new Timer()
                 {
                     AutoReset = false,
-                    Interval = 200,
+                    Interval = 100,
                 };
                 _timer.Elapsed += Timer_Elapsed;
             }

@@ -142,7 +142,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
             _UITimer = new DispatcherTimer();
-            _UITimer.Interval = TimeSpan.FromMilliseconds(200);
+            _UITimer.Interval = TimeSpan.FromMilliseconds(100);
             _UITimer.Tick += UITimer_Tick;
             _UITimer.Start();
         }
