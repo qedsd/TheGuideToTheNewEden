@@ -148,8 +148,14 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     foreach (var groupOfOneChannel in groupByChannelName)
                     {
                         var infosOfOneChannel = groupOfOneChannel.ToList();//该频道下所有的文件
-                        var latestInfo = infosOfOneChannel.OrderByDescending(p => p.Date).First();//该频道下最新的文件
-                        var chanelInfo = GetChatChanelInfo(latestInfo.FilePath);
+                        //同一天可能有多个文件
+                        var dateGroup = infosOfOneChannel.GroupBy(p => p.Date).ToList();
+                        var latsetDateGroup = dateGroup.OrderByDescending(p => p.Key).First();//该频道下最新一天的所有文件
+                        foreach(var oneOfLatsetDate in latsetDateGroup)
+                        {
+                            ;
+                        }
+                        var chanelInfo = latsetDateGroup.Select(p=> GetChatChanelInfo(p.FilePath)).OrderByDescending(p=>p.SessionStarted).FirstOrDefault();//该频道下最新的文件
                         //因为文件名的频道名会跟语言相关，所有还需要读取文件内容里唯一的频道ID来判断
                         if (chanelInfo != null)
                         {
