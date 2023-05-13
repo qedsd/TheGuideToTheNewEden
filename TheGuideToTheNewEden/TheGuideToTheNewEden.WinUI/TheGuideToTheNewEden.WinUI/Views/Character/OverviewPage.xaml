@@ -8,7 +8,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
-    NavigationCacheMode="Enabled"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.Resources>
         <Style x:Key="ItemContentStackPanel" TargetType="StackPanel">
@@ -183,22 +183,14 @@
                                 </StackPanel>
                                 <StackPanel Grid.Row="1" Orientation="Horizontal">
                                     <TextBlock Text="{x:Bind Status}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
-                                    <TextBlock
-                                        Width="120"
-                                        Text="{x:Bind RemainTime}" />
+                                    <TextBlock Width="120" Text="{x:Bind RemainTime}" />
                                     <StackPanel
                                         Margin="16,0,0,0"
                                         Orientation="Horizontal"
                                         Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
-                                        <TextBlock
-                                            Width="120"
-                                            Text="{x:Bind StartDateTime.ToString()}" />
-                                        <TextBlock
-                                            Margin="8,0"
-                                            Text="-" />
-                                        <TextBlock
-                                            Width="120"
-                                            Text="{x:Bind FinishDateTime.ToString()}" />
+                                        <TextBlock Width="120" Text="{x:Bind StartDateTime.ToString()}" />
+                                        <TextBlock Margin="8,0" Text="-" />
+                                        <TextBlock Width="120" Text="{x:Bind FinishDateTime.ToString()}" />
                                     </StackPanel>
                                 </StackPanel>
                             </Grid>

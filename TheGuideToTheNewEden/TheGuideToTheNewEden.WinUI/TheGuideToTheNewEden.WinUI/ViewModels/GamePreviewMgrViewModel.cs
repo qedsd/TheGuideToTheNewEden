@@ -630,7 +630,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void UpdateAutoLayout()
         {
-            if (Setting == null)
+            if (Setting == null || Setting.ProcessInfo == null)
             {
                 Window.ShowError("请选择参考进程", true);
                 return;
@@ -672,7 +672,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout1(GamePreviewWindow targetWindow)
         {
-            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
             int startX = targetWinX + targetWinW + PreviewSetting.AutoLayoutSpan;
@@ -684,11 +683,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     continue;
                 }
-                if(startX + win.GetWidth() > allScreenW)//x超出屏幕范围，换行
+                if(!Helpers.WindowHelper.IsInWindow(startX + win.GetWidth(), refY))//x超出屏幕范围，换行
                 {
                     startX = targetWinX;//x回到起始位置
                     int newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;//按默认或上一次换行方向换行后的y
-                    if(newRefY > allScreenH)
+                    if(!Helpers.WindowHelper.IsInWindow(startX + win.GetWidth(), newRefY))
                     {
                         yWrap = -yWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
                         newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;
@@ -711,9 +710,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout2(GamePreviewWindow targetWindow)
         {
-            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
-            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out _, out int targetWinH);
             int startX = targetWinX;
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
@@ -724,11 +722,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     continue;
                 }
                 startX = startX - win.GetWidth() - PreviewSetting.AutoLayoutSpan;
-                if (startX < 0)//x超出屏幕范围，换行
+                if (!Helpers.WindowHelper.IsInWindow(startX,refY))//x超出屏幕范围，换行
                 {
                     startX = targetWinX;//x回到起始位置
                     int newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;//按默认或上一次换行方向换行后的y
-                    if (newRefY > allScreenH)
+                    if (!Helpers.WindowHelper.IsInWindow(startX, newRefY))
                     {
                         yWrap = -yWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
                         newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;
@@ -750,7 +748,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout3(GamePreviewWindow targetWindow)
         {
-            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
             int startY = targetWinY + targetWinH + PreviewSetting.AutoLayoutSpan;
@@ -762,11 +759,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     continue;
                 }
-                if (startY + win.GetHeight() + PreviewSetting.AutoLayoutSpan > allScreenH)//y超出屏幕范围，换行
+                if (!Helpers.WindowHelper.IsInWindow(refX, startY + win.GetHeight() + PreviewSetting.AutoLayoutSpan))//y超出屏幕范围，换行
                 {
                     startY = targetWinY;//y回到起始位置
                     int newRefX = refX + (win.GetWidth() + PreviewSetting.AutoLayoutSpan) * xWrap;//按默认或上一次换行方向换行后的x
-                    if (newRefX > allScreenW)
+                    if (!Helpers.WindowHelper.IsInWindow(newRefX, startY))
                     {
                         xWrap = -xWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
                         newRefX = refX + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * xWrap;
@@ -789,9 +786,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private void SetAutoLayout4(GamePreviewWindow targetWindow)
         {
-            Helpers.WindowHelper.GetAllScreenSize(out int allScreenW, out int allScreenH);
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
-            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
+            targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out _);
             int startY = targetWinY;
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
@@ -802,11 +798,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     continue;
                 }
                 startY = startY - win.GetHeight() - PreviewSetting.AutoLayoutSpan;
-                if (startY < 0)//y超出屏幕范围，换行
+                if (!Helpers.WindowHelper.IsInWindow(refX, startY))//y超出屏幕范围，换行
                 {
                     startY = targetWinY;//y回到起始位置
                     int newRefX = refX + (win.GetWidth() + PreviewSetting.AutoLayoutSpan) * xWrap;//按默认或上一次换行方向换行后的x
-                    if (newRefX > allScreenW)
+                    if (!Helpers.WindowHelper.IsInWindow(newRefX, startY))
                     {
                         xWrap = -xWrap;//超出y范围，调整换行方向，不考虑第三次更换行方向的情况
                         newRefX = refX + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * xWrap;

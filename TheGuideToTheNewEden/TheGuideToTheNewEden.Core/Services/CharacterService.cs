@@ -15,69 +15,6 @@ namespace TheGuideToTheNewEden.Core.Services
 {
     public class CharacterService
     {
-        /// <summary>
-        /// 获取角色的技能情况
-        /// </summary>
-        /// <param name="characterId"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public static async Task<Skill> GetSkillAsync(int characterId, string token)
-        {
-            var result = await HttpHelper.GetAsync(APIService.CharacterSkills(characterId, token));
-            if (!string.IsNullOrEmpty(result))
-            {
-                var skill = JsonConvert.DeserializeObject<Skill>(result);
-                if(skill != null)
-                {
-                    var types = await InvTypeService.QueryTypesAsync(skill.Skills.Select(p => p.Skill_id).ToList());
-                    Dictionary<int, SkillItem> dic = new Dictionary<int, SkillItem>();
-                    skill.Skills.ForEach(p => dic.Add(p.Skill_id, p));
-                    foreach(var type in types)
-                    {
-                        if(dic.TryGetValue(type.TypeID, out var skillItem))
-                        {
-                            skillItem.Skill_name = type.TypeName;
-                            skillItem.Skill_des = type.Description;
-                        }
-                    }
-                    return skill;
-                }
-            }
-            return null;
-        }
-        /// <summary>
-        /// 获取角色的技能情况
-        /// 返回结果包含各技能分组
-        /// </summary>
-        /// <param name="characterId"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public static async Task<Skill> GetSkillWithGroupAsync(int characterId, string token)
-        {
-            var skill = await GetSkillAsync(characterId, token);
-            if (skill != null)
-            {
-                var skillGroup = await InvGroupService.QuerySkillGroupsAsync();
-                if(skillGroup != null)
-                {
-                    foreach(var p in skill.Skills)
-                    {
-                        var group = skillGroup.FirstOrDefault(p2=>p2.SkillIds.Contains(p.Skill_id));
-                        if(group != null)
-                        {
-                            if(group.Skills == null)
-                            {
-                                group.Skills = new List<SkillItem>();
-                            }
-                            group.Skills.Add(p);
-                        }
-                    }
-                }
-                skill.SkillGroups = skillGroup;
-            }
-            return skill;
-        }
-
         public static async Task<double> GetWalletBalanceAsync(int characterId, string token)
         {
             string result = await HttpHelper.GetAsync(APIService.CharacterWallet(characterId, token));
@@ -220,63 +157,6 @@ namespace TheGuideToTheNewEden.Core.Services
                 {
                     return null;
                 }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static async Task<List<Walletjournal>> GetWalletjournalAsync(int characterId, string token, int page)
-        {
-            string result = await HttpHelper.GetAsync(APIService.CharacterWalletJournal(characterId, token, page));
-            if (!string.IsNullOrEmpty(result))
-            {
-                return JsonConvert.DeserializeObject<List<Walletjournal>>(result);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static async Task<List<WalletTransaction>> GetWalletTransactionsAsync(int characterId, string token, int page, bool needClientName = true)
-        {
-            string result = await HttpHelper.GetAsync(APIService.CharacterWalletTransactions(characterId, token, page));
-            if (!string.IsNullOrEmpty(result))
-            {
-                var items = JsonConvert.DeserializeObject<List<WalletTransaction>>(result);
-                if(items != null && items.Count != 0)
-                {
-                    var types = await InvTypeService.QueryTypesAsync(items.Select(p => p.Type_id).ToList());
-                    if (types?.Count != 0)
-                    {
-                        var dic = types.ToDictionary(p => p.TypeID);
-                        foreach (var item in items)
-                        {
-                            if (dic.TryGetValue(item.Type_id, out var invType))
-                            {
-                                item.Type_name = invType.TypeName;
-                            }
-                        }
-                    }
-                    if(needClientName)
-                    {
-                        var names = await UniverseService.SearchNameByIdsAsync(items.Select(p => p.Client_id).ToList());
-                        if(names != null)
-                        {
-                            var dic = names.ToDictionary(p => p.Id);
-                            foreach (var item in items)
-                            {
-                                if (dic.TryGetValue(item.Client_id, out var name))
-                                {
-                                    item.Client_name = name.Name;
-                                }
-                            }
-                        }
-                    }
-                }
-                return items;
             }
             else
             {

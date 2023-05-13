@@ -136,12 +136,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
             Window.ShowWaiting("等待网页授权...");
-            var result = await Services.CharacterService.AddAsync();
+            var result = await Services.CharacterService.GetAuthorizeResultAsync();
             if(result != null)
             {
-                Window.ShowSuccess("添加成功");
-                SelectedCharacter = result;
-                ExistedCharacter = true;
+                Window.ShowWaiting("验证授权中...");
+                var result2 = await Services.CharacterService.HandelProtocolAsync(result);
+                if(result2 != null)
+                {
+                    Window.ShowSuccess("添加成功");
+                    SelectedCharacter = result2;
+                    ExistedCharacter = true;
+                }
+                else
+                {
+                    Window.ShowError("验证授权失败");
+                }
             }
             else
             {

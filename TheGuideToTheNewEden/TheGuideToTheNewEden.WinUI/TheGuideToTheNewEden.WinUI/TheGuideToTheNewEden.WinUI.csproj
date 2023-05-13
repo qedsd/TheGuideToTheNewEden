@@ -219,13 +219,13 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\MailPage.xaml" />
     <None Remove="Views\Character\OverviewPage.xaml" />
-    <None Remove="Views\Character\OverviewPage2.xaml" />
     <None Remove="Views\Character\SkillPage.xaml" />
     <None Remove="Views\Character\WalletPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
@@ -295,13 +295,13 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Strings\zh-CN\Resource.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\OverviewPage2.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml">

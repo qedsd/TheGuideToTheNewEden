@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Windowing;
+﻿using ESI.NET.Models.Opportunities;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -165,6 +166,57 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             w = Win32.GetSystemMetrics(Win32.SM_CXVIRTUALSCREEN);
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
+        }
+
+        public static void SetForegroundWindow(IntPtr targetHandle)
+        {
+            Core.Log.Debug($"激活窗口{targetHandle}");
+            var hForeWnd = Win32.GetForegroundWindow();
+            var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
+            Win32.AttachThreadInput(dwCurID, dwForeID, true);
+            if (Win32.IsIconic(targetHandle))
+            {
+                Win32.ShowWindowAsync(targetHandle, 1);
+            }
+            else
+            {
+                Win32.ShowWindowAsync(targetHandle, 8);
+            }
+            Win32.SetForegroundWindow(targetHandle);
+            Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
+            Win32.AttachThreadInput(dwCurID, dwForeID, false);
+
+
+            //EVE-O
+            //Win32.SetForegroundWindow(targetHandle);
+            //int style = Win32.GetWindowLong(targetHandle, Win32.GWL_STYLE);
+            //if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
+            //{
+            //    Win32.ShowWindowAsync(_sourceHtargetHandleWnd, Win32.SW_RESTORE);
+            //}
+        }
+
+        /// <summary>
+        /// 指定xy位置是否在显示范围内
+        /// 支持多屏幕
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public static bool IsInWindow(int x, int y)
+        {
+            return DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(x, y), DisplayAreaFallback.None) != null;
+        }
+        /// <summary>
+        /// 获取屏幕缩放比例
+        /// eg：1.25
+        /// </summary>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static float GetDpiScale(Window window)
+        {
+            return Win32.GetDpiForWindow(GetWindowHandle(window)) / 96f;
         }
     }
 }

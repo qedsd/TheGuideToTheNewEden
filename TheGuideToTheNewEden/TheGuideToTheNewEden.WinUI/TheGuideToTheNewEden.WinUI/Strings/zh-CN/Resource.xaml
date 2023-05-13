@@ -1,0 +1,30 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
+    <x:String x:Key="SkillPage_TrainedSkillLevel">已掌握的等级</x:String>
+    <x:String x:Key="SkillPage_SkillpointsInSkill">已训练的技能点</x:String>
+    <x:String x:Key="ClonePage_HomeLocation">基地</x:String>
+    <x:String x:Key="ClonePage_LastStationChangeDate">上一次变更</x:String>
+    <x:String x:Key="ClonePage_LastCloneJumpDate">上一次远克</x:String>
+    <x:String x:Key="ClonePage_JumpCloneCount">克隆数量</x:String>
+    <x:String x:Key="ClonePage_CurrentClone">当前激活克隆</x:String>
+    <x:String x:Key="ClonePage_ImplantCount">脑插数量</x:String>
+    <x:String x:Key="ClonePage_ActiveClone">当前克隆</x:String>
+
+    <x:String x:Key="WalletPage_CharacterJournal">个人-日志</x:String>
+    <x:String x:Key="WalletPage_CharacterTransaction">个人-交易</x:String>
+    <x:String x:Key="WalletPage_CorpJournal">军团-日志</x:String>
+    <x:String x:Key="WalletPage_CorpTransaction">军团-交易</x:String>
+    <x:String x:Key="WalletPage_JournalDate">时间</x:String>
+    <x:String x:Key="WalletPage_JournalAmount">合计</x:String>
+    <x:String x:Key="WalletPage_JournalBalance">钱包余额</x:String>
+    <x:String x:Key="WalletPage_JournalDescription">描述</x:String>
+    <x:String x:Key="WalletPage_JournalReason">原因</x:String>
+    <x:String x:Key="WalletPage_JournalRefType">类型</x:String>
+    <x:String x:Key="WalletPage_TransactionDate">时间</x:String>
+    <x:String x:Key="WalletPage_TransactionType">物品</x:String>
+    <x:String x:Key="WalletPage_TransactionUnitPrice">单位价格</x:String>
+    <x:String x:Key="WalletPage_TransactionQuantity">数量</x:String>
+    <x:String x:Key="WalletPage_TransactionIsBuy">是否买入</x:String>
+    <x:String x:Key="WalletPage_TransactionClient">客户</x:String>
+    <x:String x:Key="WalletPage_TransactionLocation">位置</x:String>
+</ResourceDictionary>

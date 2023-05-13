@@ -177,7 +177,7 @@
                                     Height="32"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Command="{x:Bind VM.RefreshCommand}"
+                                    Click="Button_Refresh_Click"
                                     ToolTipService.ToolTip="刷新基本信息">
                                     <Button.Content>
                                         <TextBlock
