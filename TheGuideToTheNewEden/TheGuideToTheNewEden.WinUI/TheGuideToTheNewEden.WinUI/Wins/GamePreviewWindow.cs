@@ -387,6 +387,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void GamePreviewWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
+            //this.Content.Focus(FocusState.Pointer);
+            //this.Content.ReleasePointerCaptures();
             this.Activated -= GamePreviewWindow_Activated;
             Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
         }

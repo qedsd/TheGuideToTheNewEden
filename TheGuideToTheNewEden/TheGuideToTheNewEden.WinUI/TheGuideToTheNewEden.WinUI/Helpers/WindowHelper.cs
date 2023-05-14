@@ -171,21 +171,27 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static void SetForegroundWindow(IntPtr targetHandle)
         {
             Core.Log.Debug($"激活窗口{targetHandle}");
-            var hForeWnd = Win32.GetForegroundWindow();
-            var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
-            Win32.AttachThreadInput(dwCurID, dwForeID, true);
-            if (Win32.IsIconic(targetHandle))
-            {
-                Win32.ShowWindowAsync(targetHandle, 1);
-            }
-            else
-            {
-                Win32.ShowWindowAsync(targetHandle, 8);
-            }
+            //var hForeWnd = Win32.GetForegroundWindow();
+            //var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            //var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
+            //Win32.AttachThreadInput(dwCurID, dwForeID, true);
+            //if (Win32.IsIconic(targetHandle))
+            //{
+            //    Win32.ShowWindowAsync(targetHandle, 1);
+            //}
+            //else
+            //{
+            //    Win32.ShowWindowAsync(targetHandle, 8);
+            //}
+            Win32.ShowWindowAsync(targetHandle, 9);
             Win32.SetForegroundWindow(targetHandle);
+            //Win32.SetFocus(targetHandle);
+            //Win32.SetActiveWindow(targetHandle);
             Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
-            Win32.AttachThreadInput(dwCurID, dwForeID, false);
+            //Win32.SetWindowPos(targetHandle, -1, 0, 0, 0, 0, 1 | 2);
+            //Win32.SetWindowPos(targetHandle, -2, 0, 0, 0, 0, 1 | 2);
+            //Win32.AttachThreadInput(dwCurID, dwForeID, false);
+
 
 
             //EVE-O

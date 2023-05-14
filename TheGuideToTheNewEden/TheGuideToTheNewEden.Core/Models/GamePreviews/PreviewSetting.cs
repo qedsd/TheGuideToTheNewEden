@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => processeKeywords;
             set => SetProperty(ref processeKeywords, value);
         }
-        private string switchHotkey = "Ctrl+Tab";
+        private string switchHotkey = "F4";
         /// <summary>
         /// 切换运行中的窗口对应的源窗口
         /// </summary>
