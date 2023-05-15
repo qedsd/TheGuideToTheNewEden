@@ -18,8 +18,27 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
+        public static async Task<StaStation> QueryAsync(long id)
+        {
+            var type = await DBService.MainDb.Queryable<StaStation>().FirstAsync(p => p.StationID == id);
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranStaStationAsync(type);
+            }
+            return type;
+        }
 
         public static async Task<List<StaStation>> QueryAsync(List<int> ids)
+        {
+            var types = await DBService.MainDb.Queryable<StaStation>().Where(p => ids.Contains(p.StationID)).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranStaStationsAsync(types);
+            }
+            return types;
+        }
+
+        public static async Task<List<StaStation>> QueryAsync(List<long> ids)
         {
             var types = await DBService.MainDb.Queryable<StaStation>().Where(p => ids.Contains(p.StationID)).ToListAsync();
             if (DBService.NeedLocalization)

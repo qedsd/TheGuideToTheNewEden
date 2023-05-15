@@ -11,5 +11,21 @@ namespace TheGuideToTheNewEden.Core.Models.Wallet
             Journal = journalEntry;
         }
         public ESI.NET.Models.Wallet.JournalEntry Journal { get; set; }
+
+        public string Amount
+        {
+            get
+            {
+                var str = Journal?.Amount.ToString("N2");
+                if(str != null && str[0] != '-')
+                {
+                    return '+' + str;
+                }
+                else
+                {
+                    return str;
+                }
+            }
+        }
     }
 }

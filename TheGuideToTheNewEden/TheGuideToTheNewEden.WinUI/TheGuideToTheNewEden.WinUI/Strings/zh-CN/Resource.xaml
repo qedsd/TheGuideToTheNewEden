@@ -23,8 +23,11 @@
     <x:String x:Key="WalletPage_TransactionDate">时间</x:String>
     <x:String x:Key="WalletPage_TransactionType">物品</x:String>
     <x:String x:Key="WalletPage_TransactionUnitPrice">单位价格</x:String>
+    <x:String x:Key="WalletPage_TransactionTotalPrice">总价格</x:String>
     <x:String x:Key="WalletPage_TransactionQuantity">数量</x:String>
-    <x:String x:Key="WalletPage_TransactionIsBuy">是否买入</x:String>
+    <x:String x:Key="WalletPage_TransactionIsBuy">交易类型</x:String>
     <x:String x:Key="WalletPage_TransactionClient">客户</x:String>
     <x:String x:Key="WalletPage_TransactionLocation">位置</x:String>
+    <x:String x:Key="WalletPage_TransactionBuy">买入</x:String>
+    <x:String x:Key="WalletPage_TransactionSell">卖出</x:String>
 </ResourceDictionary>

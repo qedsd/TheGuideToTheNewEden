@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.Core.Models.Wallet
             Transaction = transaction;
         }
         public ESI.NET.Models.Wallet.Transaction Transaction { get; set; }
-        public decimal AutoTotalPrice
+        public decimal TotalPrice
         {
             get => Transaction.Quantity * Transaction.UnitPrice;
         }

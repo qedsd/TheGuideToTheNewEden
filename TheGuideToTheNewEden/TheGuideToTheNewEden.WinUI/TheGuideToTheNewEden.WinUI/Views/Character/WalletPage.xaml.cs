@@ -18,6 +18,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Collections.ObjectModel;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -62,7 +63,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _corpJournalsLoaded = false;
             _characterTransactionsLoaded = false;
             _corpTransactionsLoaded = false;
-            if(MainPivot.SelectedIndex == 0)
+            _characterJournals.Clear();
+            _corpJournals.Clear();
+            _characterTransactions.Clear();
+            _corpTransactions.Clear();
+            if (MainPivot.SelectedIndex == 0)
             {
                 Pivot_SelectionChanged(MainPivot,null);
             }
@@ -73,6 +78,48 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _window.HideWaiting();
         }
 
+        private async Task<List<Core.Models.Wallet.JournalEntry>> GetAllJournalsAsync(bool corp)
+        {
+            List<Core.Models.Wallet.JournalEntry> data = new List<Core.Models.Wallet.JournalEntry>();
+            for(int page = 1; ;page++)
+            {
+                var list = await GetJournalsAsync(corp, page);
+                if(list.NotNullOrEmpty())
+                {
+                    data.AddRange(list);
+                    if(list.Count < 1000)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return data;
+        }
+        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetAllTransactionsAsync(bool corp)
+        {
+            List<Core.Models.Wallet.TransactionEntry> data = new List<Core.Models.Wallet.TransactionEntry>();
+            for (int page = 1; ; page++)
+            {
+                var list = await GetTransactionsAsync(corp, page);
+                if (list.NotNullOrEmpty())
+                {
+                    data.AddRange(list);
+                    if (list.Count < 1000)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return data;
+        }
         private async Task<List<Core.Models.Wallet.JournalEntry>> GetJournalsAsync(bool corp, int page = 1)
         {
             EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse;
@@ -92,7 +139,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
                 else
                 {
-                    _window.ShowError(esiResponse.Message);
                     Log.Error(esiResponse.Message);
                 }
             }
@@ -126,7 +172,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
                 else
                 {
-                    _window.ShowError(esiResponse.Message);
                     Log.Error(esiResponse.Message);
                 }
             }
@@ -163,7 +208,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             var clientIds = transactions.Select(p=>(long)p.Transaction.ClientId).ToList();
             if(clientIds.NotNullOrEmpty())
             {
-                var resp = await _esiClient.Universe.Names(clientIds);
+                var resp = await _esiClient.Universe.Names(clientIds.Distinct().ToList());
                 if(resp != null)
                 {
                     if(resp.StatusCode == System.Net.HttpStatusCode.OK)
@@ -194,8 +239,52 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
 
             //位置
-            //TODO:LocationId是什么
-            //var clientIds = transactions.Select(p => p.Transaction.LocationId).ToList();
+            //LocationId是空间站或者建筑
+            var allLocationIds = transactions.Select(p => p.Transaction.LocationId).ToList();
+            if(allLocationIds.NotNullOrEmpty())
+            {
+                var stations = allLocationIds.Where(p => p > 70000000).ToList();
+                var structures = allLocationIds.Except(stations).ToList();
+                Dictionary<long, string> locationNames = new Dictionary<long, string>();
+                if(stations.NotNullOrEmpty())
+                {
+                    var staStaions = await Core.Services.DB.StaStationService.QueryAsync(stations);
+                    if(staStaions.NotNullOrEmpty())
+                    {
+                        foreach(var staSta in staStaions)
+                        {
+                            locationNames.Add(staSta.StationID, staSta.StationName);
+                        }
+                    }
+                }
+                if(structures.NotNullOrEmpty())
+                {
+                    var structuresResp = await _esiClient.Universe.Names(structures);
+                    if(structuresResp != null && structuresResp.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        foreach (var data in structuresResp.Data)
+                        {
+                            locationNames.Add(data.Id, data.Name);
+                        }
+                    }
+                    else
+                    {
+                        Log.Error(structuresResp?.Message);
+                        _window.ShowError(structuresResp?.Message);
+                    }
+                }
+                foreach(var t in transactions)
+                {
+                    if(locationNames.TryGetValue(t.Transaction.LocationId, out var value))
+                    {
+                        t.LocationName = value;
+                    }
+                    else
+                    {
+                        t.LocationName = t.Transaction.LocationId.ToString();
+                    }
+                }
+            }
         }
 
 
@@ -213,7 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if(!_characterJournalsLoaded)
                         {
                             _characterJournalsLoaded = true;
-                            var data = await GetJournalsAsync(false,1);
+                            var data = await GetAllJournalsAsync(false);
                             if(data.NotNullOrEmpty())
                             {
                                 foreach(var d in data)
@@ -233,7 +322,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_characterTransactionsLoaded)
                         {
                             _characterTransactionsLoaded = true;
-                            var data = await GetTransactionsAsync(false, 1);
+                            var data = await GetAllTransactionsAsync(false);
                             await SetNames(data);
                             if (data.NotNullOrEmpty())
                             {
@@ -254,7 +343,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpJournalsLoaded)
                         {
                             _corpJournalsLoaded = true;
-                            var data = await GetJournalsAsync(true, 1);
+                            var data = await GetAllJournalsAsync(true);
                             if (data.NotNullOrEmpty())
                             {
                                 foreach (var d in data)
@@ -274,7 +363,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpTransactionsLoaded)
                         {
                             _corpTransactionsLoaded = true;
-                            var data = await GetTransactionsAsync(true, 1);
+                            var data = await GetAllTransactionsAsync(true);
                             await SetNames(data);
                             if (data.NotNullOrEmpty())
                             {
