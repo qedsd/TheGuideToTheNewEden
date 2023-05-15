@@ -142,5 +142,8 @@ namespace TheGuideToTheNewEden.WinUI.Common
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern void SwitchToThisWindow(IntPtr hWnd, bool fUnknown);
     }
 }

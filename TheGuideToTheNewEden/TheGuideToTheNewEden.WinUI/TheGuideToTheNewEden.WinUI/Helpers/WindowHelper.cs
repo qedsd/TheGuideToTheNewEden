@@ -171,6 +171,9 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static void SetForegroundWindow(IntPtr targetHandle)
         {
             Core.Log.Debug($"激活窗口{targetHandle}");
+            Win32.SwitchToThisWindow(targetHandle, true);
+            Win32.SetForegroundWindow(targetHandle);
+            return;
             //var hForeWnd = Win32.GetForegroundWindow();
             //var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
             //var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
