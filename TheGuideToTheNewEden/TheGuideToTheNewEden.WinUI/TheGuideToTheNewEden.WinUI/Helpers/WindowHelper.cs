@@ -3,6 +3,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using TheGuideToTheNewEden.WinUI.Common;
 using Windows.UI.WindowManagement;
 
@@ -168,16 +169,19 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
         }
 
-        public static void SetForegroundWindow(IntPtr targetHandle)
+        public static void SetForegroundWindow(IntPtr targetHandle, IntPtr sourceHandle)
         {
             Core.Log.Debug($"激活窗口{targetHandle}");
-            Win32.SwitchToThisWindow(targetHandle, true);
-            Win32.SetForegroundWindow(targetHandle);
-            return;
-            //var hForeWnd = Win32.GetForegroundWindow();
+
+            var dwForeID = Win32.GetWindowThreadProcessId(Win32.GetForegroundWindow(), out _);
             //var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            //var dwForeID = Win32.GetWindowThreadProcessId(hForeWnd, out _);
-            //Win32.AttachThreadInput(dwCurID, dwForeID, true);
+            var dwCurID = Win32.GetWindowThreadProcessId(sourceHandle, out _);
+            //var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
+            //Core.Log.Info(Win32.SetFocus(sourceHandle));
+            Core.Log.Info(Win32.AttachThreadInput(dwForeID, dwCurID, true));
+            Core.Log.Info(Win32.SetForegroundWindow(sourceHandle));
+            Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
+            //Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
             //if (Win32.IsIconic(targetHandle))
             //{
             //    Win32.ShowWindowAsync(targetHandle, 1);
@@ -186,14 +190,23 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             //{
             //    Win32.ShowWindowAsync(targetHandle, 8);
             //}
-            Win32.ShowWindowAsync(targetHandle, 9);
-            Win32.SetForegroundWindow(targetHandle);
+            //Win32.ShowWindowAsync(targetHandle, 9);
+            //Win32.SetForegroundWindow(targetHandle);
+            //Core.Log.Info(Win32.BringWindowToTop(targetHandle));
+            //Thread.Sleep(20);
+            //Core.Log.Info(Win32.AllowSetForegroundWindow(dwForeID));
+            //Core.Log.Info(Win32.SetActiveWindow(sourceHandle));
+            //Core.Log.Info(Win32.SetActiveWindow(targetHandle));
+
+
+            //Win32.SetFocus(targetHandle);
+
             //Win32.SetFocus(targetHandle);
             //Win32.SetActiveWindow(targetHandle);
-            Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
+            //Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
             //Win32.SetWindowPos(targetHandle, -1, 0, 0, 0, 0, 1 | 2);
             //Win32.SetWindowPos(targetHandle, -2, 0, 0, 0, 0, 1 | 2);
-            //Win32.AttachThreadInput(dwCurID, dwForeID, false);
+            Core.Log.Info(Win32.AttachThreadInput(dwForeID, dwCurID,false));
 
 
 

@@ -141,9 +141,21 @@ namespace TheGuideToTheNewEden.WinUI.Common
         public static extern IntPtr SetFocus(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll")]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fUnknown);
+
+        [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+        public static extern int SystemParametersInfo(int uAction, int uParam, IntPtr lpvParam, int fuWinIni);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern long GetLastError();
+
+        [DllImport("user32.dll")]
+        public static extern bool AllowSetForegroundWindow(int dwProcessId);
     }
 }
