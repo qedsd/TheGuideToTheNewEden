@@ -5,6 +5,7 @@
     xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
+    xmlns:mail="using:TheGuideToTheNewEden.Core.Models.Mail"
     xmlns:mails="using:ESI.NET.Models.Mail"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
@@ -12,6 +13,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:UnreadMailVisibilityConverter x:Key="UnreadMailVisibilityConverter" />
+        <converters:MailSubjectForegroundConverter x:Key="MailSubjectForegroundConverter" />
     </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -20,118 +22,101 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <ListBox
-                x:Name="ListBox_Label"
+            <ListView
+                x:Name="ListView_Label"
                 Background="Transparent"
-                SelectionChanged="ListBox_Label_SelectionChanged"
+                SelectionChanged="ListView_Label_SelectionChanged"
                 SelectionMode="Single"
                 Style="{StaticResource StretchListView}">
-                <ListBox.ItemTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate x:DataType="mails:Label">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{x:Bind Name}" />
                             <Grid
                                 Grid.Column="1"
-                                Width="20"
-                                Height="20"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Visibility="{x:Bind UnreadCount, Converter={StaticResource UnreadMailVisibilityConverter}}">
                                 <Rectangle
                                     Grid.Column="1"
                                     Fill="MediumSeaGreen"
                                     Opacity="0.8"
-                                    RadiusX="10"
-                                    RadiusY="10" />
+                                    RadiusX="8"
+                                    RadiusY="8" />
                                 <TextBlock
                                     Grid.Column="1"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    FontSize="12"
                                     Foreground="White"
                                     Text="{x:Bind UnreadCount}"
                                     ToolTipService.ToolTip="{StaticResource MailPage_UnreadCount}" />
                             </Grid>
-
                         </Grid>
 
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Rectangle
+                </ListView.ItemTemplate>
+            </ListView>
+            <!--<Rectangle
                 Height="1"
                 Margin="2,10"
                 Fill="Gray" />
-            <ListBox
-                x:Name="ListBox_MailList"
+            <ListView
+                x:Name="ListView_MailList"
                 Background="Transparent"
-                SelectionChanged="ListBox_MailList_SelectionChanged"
+                SelectionChanged="ListView_MailList_SelectionChanged"
                 SelectionMode="Single"
                 Style="{StaticResource StretchListView}">
-                <ListBox.ItemTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate x:DataType="mails:MailingList">
                         <TextBlock Text="{x:Bind Name}" TextWrapping="WrapWholeWords" />
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+            </ListView>-->
         </StackPanel>
         <Rectangle
             Grid.Column="1"
             Width="1"
             Margin="2,0"
             Fill="{StaticResource SystemAccentColor}" />
-        <ListBox
-            x:Name="ListBox_Mails"
+        <ListView
+            x:Name="ListView_Mails"
             Grid.Column="2"
             Background="Transparent"
-            SelectionChanged="ListBox_Mails_SelectionChanged"
+            SelectionChanged="ListView_Mails_SelectionChanged"
             SelectionMode="Single"
             Style="{StaticResource StretchListView}">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="mails:Header">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="mail:Header">
+                    <Grid Margin="0,6">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="130" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <FontIcon
-                            Grid.RowSpan="2"
-                            Margin="0,0,4,0"
-                            HorizontalAlignment="Left"
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Foreground="{x:Bind IsRead, Converter={StaticResource MailSubjectForegroundConverter}, Mode=OneWay}" Text="{x:Bind Subject}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Text="{x:Bind FromName}"
+                                ToolTipService.ToolTip="{StaticResource MailPage_From}" />
+                        </Grid>
+                        <TextBlock
+                            Grid.Column="1"
                             VerticalAlignment="Center"
-                            FontFamily="Segoe MDL2 Assets"
-                            FontSize="10"
-                            Foreground="MediumSeaGreen"
-                            Glyph="&#xE1F5;"
-                            ToolTipService.ToolTip="{StaticResource MailPage_Unread}"
-                            Visibility="{x:Bind IsRead, Converter={StaticResource TrueToVisibleConverter}}" />
-                        <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Foreground="Gray"
-                            Text="{x:Bind Timestamp}"
-                            ToolTipService.ToolTip="{x:Bind Timestamp, Converter={StaticResource LocalTime}}" />
-                        <TextBlock
-                            Grid.Column="1"
-                            Grid.ColumnSpan="2"
-                            Text="{x:Bind Subject}"
-                            ToolTipService.ToolTip="БъЬт" />
-                        <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="3"
-                            Foreground="Gray"
-                            Text="{x:Bind From}"
-                            ToolTipService.ToolTip="{StaticResource MailPage_From}" />
+                            Text="{x:Bind DateTime}" />
                     </Grid>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>

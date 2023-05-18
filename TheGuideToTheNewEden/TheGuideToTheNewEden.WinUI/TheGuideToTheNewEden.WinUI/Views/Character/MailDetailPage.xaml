@@ -8,5 +8,72 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid />
+    <Grid Margin="12,4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            x:Name="TextBloc_Subject"
+            FontSize="18"
+            FontWeight="Bold"
+            TextWrapping="WrapWholeWords" />
+        <Grid Grid.Row="1" Margin="0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid CornerRadius="24">
+                <Image
+                    x:Name="Image_From"
+                    Width="48"
+                    Height="48" />
+            </Grid>
+            <Grid Grid.Column="1" Margin="8,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="TextBlock_From" ToolTipService.ToolTip="{StaticResource MailPage_From}" />
+                <TextBlock
+                    x:Name="TextBlock_Date"
+                    Grid.Row="1"
+                    FontWeight="Light" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{StaticResource MailPage_Recipients}" />
+            <TextBlock
+                x:Name="TextBlock_Recipients"
+                Grid.Column="1"
+                Margin="4,0,0,0"
+                FontWeight="Light"
+                TextWrapping="WrapWholeWords" />
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{StaticResource MailPage_Label}" />
+            <TextBlock
+                x:Name="TextBlock_Labels"
+                Grid.Column="1"
+                Margin="4,0,0,0"
+                FontWeight="Light"
+                TextWrapping="WrapWholeWords" />
+        </Grid>
+        <WebView2
+            x:Name="WebView2_Content"
+            Grid.Row="4"
+            Margin="0,4"
+            DefaultBackgroundColor="Transparent" />
+    </Grid>
 </Page>

@@ -34,9 +34,12 @@
     <!--  Mail  -->
     <x:String x:Key="Inbox">收件箱</x:String>
     <x:String x:Key="Sent">发件箱</x:String>
-    <x:String x:Key="Corp">军团</x:String>
-    <x:String x:Key="Allian">联盟</x:String>
+    <x:String x:Key="[Corp]">军团</x:String>
+    <x:String x:Key="[Alliance]">联盟</x:String>
     <x:String x:Key="MailPage_UnreadCount">未读邮件</x:String>
     <x:String x:Key="MailPage_Unread">未读</x:String>
     <x:String x:Key="MailPage_From">发件人</x:String>
+    <x:String x:Key="MailPage_Recipients">收件人：</x:String>
+    <x:String x:Key="MailPage_Label">标 签：</x:String>
+    <x:String x:Key="MailPage_Mail">邮件</x:String>
 </ResourceDictionary>

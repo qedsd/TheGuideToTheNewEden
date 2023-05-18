@@ -10,13 +10,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class MailWindow : BaseWindow
     {
-        public MailWindow(EsiClient esiClient, ESI.NET.Models.Mail.Message message) 
+        public MailWindow(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail) 
         {
             SetSmallTitleBar();
-            HideAppDisplayName();
-            SetHeadText(message.Subject);
-            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(400, 600));
-            MainContent = new Views.Character.MailDetailPage(esiClient, message);
+            SetHeadText(Helpers.StringResourcesHelper.GetString("MailPage_Mail"));
+            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(600, 800));
+            MainContent = new Views.Character.MailDetailPage(esiClient, mailDetail);
         }
     }
 }
