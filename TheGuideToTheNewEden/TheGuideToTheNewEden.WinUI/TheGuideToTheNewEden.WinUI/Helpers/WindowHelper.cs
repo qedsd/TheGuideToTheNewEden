@@ -1,9 +1,9 @@
-﻿using ESI.NET.Models.Opportunities;
-using Microsoft.UI.Windowing;
+﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Common;
 using Windows.UI.WindowManagement;
 
@@ -173,14 +173,15 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             Core.Log.Debug($"激活窗口{targetHandle}");
 
-            var dwForeID = Win32.GetWindowThreadProcessId(Win32.GetForegroundWindow(), out _);
+            var dwCurID = Win32.GetWindowThreadProcessId(Win32.GetForegroundWindow(), out _);
             //var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            var dwCurID = Win32.GetWindowThreadProcessId(sourceHandle, out _);
+            var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
             //var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
             //Core.Log.Info(Win32.SetFocus(sourceHandle));
             Core.Log.Info(Win32.AttachThreadInput(dwForeID, dwCurID, true));
-            Core.Log.Info(Win32.SetForegroundWindow(sourceHandle));
+            //Core.Log.Info(Win32.SetForegroundWindow(sourceHandle));
             Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
+            Win32.BringWindowToTop(targetHandle);
             //Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
             //if (Win32.IsIconic(targetHandle))
             //{
@@ -211,12 +212,15 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
 
             //EVE-O
-            //Win32.SetForegroundWindow(targetHandle);
-            //int style = Win32.GetWindowLong(targetHandle, Win32.GWL_STYLE);
-            //if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
+            //Task.Run(() =>
             //{
-            //    Win32.ShowWindowAsync(_sourceHtargetHandleWnd, Win32.SW_RESTORE);
-            //}
+            //    Win32.SetForegroundWindow(targetHandle);
+            //    int style = Win32.GetWindowLong(targetHandle, Win32.GWL_STYLE);
+            //    if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
+            //    {
+            //        Win32.ShowWindowAsync(targetHandle, Win32.SW_RESTORE);
+            //    }
+            //});
         }
 
         /// <summary>
