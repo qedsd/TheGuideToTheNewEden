@@ -171,56 +171,55 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         public static void SetForegroundWindow(IntPtr targetHandle, IntPtr sourceHandle)
         {
-            Core.Log.Debug($"激活窗口{targetHandle}");
-
-            var dwCurID = Win32.GetWindowThreadProcessId(Win32.GetForegroundWindow(), out _);
-            //var dwCurID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
+            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
+            var dwCurID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
             var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
-            //var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
-            //Core.Log.Info(Win32.SetFocus(sourceHandle));
-            Core.Log.Info(Win32.AttachThreadInput(dwForeID, dwCurID, true));
-            //Core.Log.Info(Win32.SetForegroundWindow(sourceHandle));
-            Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
-            Win32.BringWindowToTop(targetHandle);
-            //Core.Log.Info(Win32.SetForegroundWindow(targetHandle));
-            //if (Win32.IsIconic(targetHandle))
-            //{
-            //    Win32.ShowWindowAsync(targetHandle, 1);
-            //}
-            //else
-            //{
-            //    Win32.ShowWindowAsync(targetHandle, 8);
-            //}
-            //Win32.ShowWindowAsync(targetHandle, 9);
-            //Win32.SetForegroundWindow(targetHandle);
-            //Core.Log.Info(Win32.BringWindowToTop(targetHandle));
-            //Thread.Sleep(20);
-            //Core.Log.Info(Win32.AllowSetForegroundWindow(dwForeID));
-            //Core.Log.Info(Win32.SetActiveWindow(sourceHandle));
-            //Core.Log.Info(Win32.SetActiveWindow(targetHandle));
-
-
-            //Win32.SetFocus(targetHandle);
-
-            //Win32.SetFocus(targetHandle);
-            //Win32.SetActiveWindow(targetHandle);
-            //Win32.SetWindowPos(targetHandle, 0, 0, 0, 0, 0, 1 | 2);
-            //Win32.SetWindowPos(targetHandle, -1, 0, 0, 0, 0, 1 | 2);
-            //Win32.SetWindowPos(targetHandle, -2, 0, 0, 0, 0, 1 | 2);
-            Core.Log.Info(Win32.AttachThreadInput(dwForeID, dwCurID,false));
-
-
-
-            //EVE-O
-            //Task.Run(() =>
-            //{
-            //    Win32.SetForegroundWindow(targetHandle);
-            //    int style = Win32.GetWindowLong(targetHandle, Win32.GWL_STYLE);
-            //    if ((style & Win32.WS_MINIMIZE) == Win32.WS_MINIMIZE)
-            //    {
-            //        Win32.ShowWindowAsync(targetHandle, Win32.SW_RESTORE);
-            //    }
-            //});
+            if(!Win32.AttachThreadInput(dwForeID, dwCurID, true))
+            {
+                Core.Log.Debug($"AttachThreadInput失败：{dwForeID}->{dwCurID}");
+                return;
+            }
+            int tryCount = 0;
+            while(tryCount++ < 3 )
+            {
+                if (Win32.SetForegroundWindow(targetHandle))
+                {
+                    if(Win32.GetForegroundWindow() != targetHandle)
+                    {
+                        Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
+                        Thread.Sleep(100);
+                    }
+                    else
+                    {
+                        tryCount = 0;
+                        while (tryCount < 3)
+                        {
+                            if (Win32.BringWindowToTop(targetHandle))
+                            {
+                                if (Win32.AttachThreadInput(dwForeID, dwCurID, false))
+                                {
+                                    Core.Log.Debug($"成功激活窗口{targetHandle}");
+                                    break;
+                                }
+                                else
+                                {
+                                    Core.Log.Debug($"解除AttachThreadInput失败");
+                                }
+                            }
+                            else
+                            {
+                                Core.Log.Debug($"BringWindowToTop失败（{tryCount}）");
+                            }
+                        }
+                        break;
+                    }
+                }
+                else
+                {
+                    Core.Log.Debug($"SetForegroundWindow失败（{tryCount}）");
+                }
+            }
         }
 
         /// <summary>
