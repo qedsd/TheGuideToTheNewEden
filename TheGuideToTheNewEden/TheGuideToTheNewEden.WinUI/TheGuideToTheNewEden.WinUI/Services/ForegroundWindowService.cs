@@ -51,7 +51,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var p = Helpers.ShowWindowHelper.GetForegroundWindow();
                 if (_lastForegroundWindow != p)
                 {
-                    Debug.WriteLine(p);
                     _lastForegroundWindow = p;
                     OnForegroundWindowChanged?.Invoke(_lastForegroundWindow);
                 }

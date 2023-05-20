@@ -279,9 +279,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void InitHotkey()
         {
             //快捷键
-            Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
             if (!string.IsNullOrEmpty(_setting.HotKey))
             {
+                Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
                 var keynames = _setting.HotKey.Split('+');
                 if (keynames.NotNullOrEmpty())
                 {
@@ -302,7 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         return;
                     }
                 }
-                Core.Log.Debug($"捕获到预览窗口激活快捷键{keys.Select(p=>p.Name).ToSeqString(",")}");
+                //Core.Log.Debug($"捕获到预览窗口激活快捷键{keys.Select(p=>p.Name).ToSeqString(",")}");
                 ActiveSourceWindow();
             }
         }

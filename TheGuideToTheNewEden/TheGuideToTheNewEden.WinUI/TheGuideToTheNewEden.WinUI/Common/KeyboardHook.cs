@@ -148,14 +148,14 @@ namespace TheGuideToTheNewEden.WinUI.Common
         private Dictionary<int, KeyboardInfo> pressedKeyDic = new Dictionary<int, KeyboardInfo>();
         private int KeyboardHookProc(int nCode, Int32 wParam, IntPtr lParam)
         {
-            Core.Log.Debug($"按键事件：{nCode}");
+            //Core.Log.Debug($"按键事件：{nCode}");
             if (nCode == 0)
             {
                 EventMsg msg = (EventMsg)Marshal.PtrToStructure(lParam, typeof(EventMsg));
                 int vk = msg.vkCode & 0xff;
                 if (wParam == 0x100)//按下
                 {
-                    Core.Log.Debug($"按下{vk}");
+                    //Core.Log.Debug($"按下{vk}");
                     if (!pressedKeyDic.ContainsKey(vk))
                     {
                         int scanCode = msg.scanCode & 0xff;
@@ -165,17 +165,17 @@ namespace TheGuideToTheNewEden.WinUI.Common
                         {
                             name = strKeyName.ToString().Trim(new char[] { ' ', '\0' });
                         }
-                        Core.Log.Debug($"捕获到新按下按键{name}");
+                        //Core.Log.Debug($"捕获到新按下按键{name}");
                         pressedKeyDic.Add(vk, new KeyboardInfo(vk, scanCode, name));
                         KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
                     }
                 }
                 else if(wParam == 0x101)//松开
                 {
-                    Core.Log.Debug($"松开{vk}");
+                    //Core.Log.Debug($"松开{vk}");
                     if (pressedKeyDic.Remove(vk))
                     {
-                        Core.Log.Debug($"捕获到松开已有按键{vk}");
+                        //Core.Log.Debug($"捕获到松开已有按键{vk}");
                         KeyboardEvent?.Invoke(pressedKeyDic.Values.ToList());
                     }
                 }

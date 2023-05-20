@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private static void _keyboardHook_KeyboardEvent(List<KeyboardInfo> keys)
         {
-            Core.Log.Debug($"HotkeyService监听到按键{keys.Count}");
+            //Core.Log.Debug($"HotkeyService监听到按键{keys.Count}");
             OnKeyboardClicked?.Invoke(keys);
         }
 
