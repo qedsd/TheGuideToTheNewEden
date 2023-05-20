@@ -65,7 +65,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            VM.StopAll();
+            VM.Dispose();
             HotkeyService.Stop();
         }
 

@@ -951,5 +951,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
         #endregion
+
+        public void Dispose()
+        {
+            StopAll();
+            HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+        }
     }
 }

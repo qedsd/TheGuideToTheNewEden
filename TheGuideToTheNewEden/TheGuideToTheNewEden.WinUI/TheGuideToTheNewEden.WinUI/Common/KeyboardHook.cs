@@ -211,8 +211,17 @@ namespace TheGuideToTheNewEden.WinUI.Common
         {
             if (hKeyboardHook != 0)
             {
-                Core.Log.Debug("卸载按键钩子");
-                return UnhookWindowsHookEx(hKeyboardHook);
+                Core.Log.Debug("卸载按键钩子...");
+                if(UnhookWindowsHookEx(hKeyboardHook))
+                {
+                    Core.Log.Debug("卸载按键钩子成功");
+                    hKeyboardHook = 0;
+                    keyboardHookProc = null;
+                }
+                else
+                {
+                    Core.Log.Debug("卸载按键钩子失败");
+                }
             }
             return true;
         }
