@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.Core.Models.Map;
 
 namespace TheGuideToTheNewEden.WinUI.Interfaces
 {
@@ -15,5 +16,6 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
         void Downgrade(List<int> systemIds);
         void Dispose();
         void UpdateUI();
+        void UpdateHome(IntelSolarSystemMap intelMap);
     }
 }

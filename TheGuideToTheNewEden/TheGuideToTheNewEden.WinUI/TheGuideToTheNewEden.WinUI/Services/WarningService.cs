@@ -78,6 +78,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             Current.WarningWindows.Clear();
         }
+        public static void UpdateWindowUI(string listener)
+        {
+            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            {
+                value.UpdateUI();
+            }
+        }
+        public static void UpdateWindowHome(string listener, Core.Models.Map.IntelSolarSystemMap intelMap)
+        {
+            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            {
+                value.UpdateHome(intelMap);
+            }
+        }
+
         public static void NotifyToast(EarlyWarningContent content)
         {
             Notifications.IntelToast.SendToast(content);

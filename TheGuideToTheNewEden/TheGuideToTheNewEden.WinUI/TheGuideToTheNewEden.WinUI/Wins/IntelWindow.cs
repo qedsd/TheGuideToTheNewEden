@@ -27,6 +27,7 @@ using TheGuideToTheNewEden.WinUI.Views;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.UI;
 using TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages;
+using TheGuideToTheNewEden.Core.Models.Map;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -222,6 +223,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     timer.Start();
                 }
             }
+        }
+
+        public void UpdateUI()
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                _intelPage.UpdateUI();
+            });
+        }
+        public void UpdateHome(IntelSolarSystemMap intelMap)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                _intelPage.UpdateHome(intelMap);
+            });
         }
         public void Dispose()
         {

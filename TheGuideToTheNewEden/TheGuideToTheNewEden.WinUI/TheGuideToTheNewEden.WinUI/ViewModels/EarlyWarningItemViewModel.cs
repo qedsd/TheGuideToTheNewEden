@@ -422,10 +422,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i),NameDbs);
                 if(id > 0)
                 {
-                    Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                    Window.DispatcherQueue.TryEnqueue(async() =>
                     {
                         Setting.LocationID = id;
                         SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
+                        IntelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+                        Core.EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
+                        foreach(var item in EarlyWarningItems)
+                        {
+                            item.IntelMap = IntelMap;
+                        }
+                        WarningService.UpdateWindowHome(Setting.Listener, IntelMap);
                     });
                     break;
                 }

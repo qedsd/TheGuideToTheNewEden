@@ -325,5 +325,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 }
             }
         }
+        public void UpdateHome(IntelSolarSystemMap intelMap)
+        {
+            _intelMap = intelMap;
+            UpdateUI();
+        }
     }
 }
