@@ -105,7 +105,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd, _windowHandle);
+            Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd);
         }
         /// <summary>
         /// 显示目标窗口
@@ -387,10 +387,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void GamePreviewWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            //this.Content.ReleasePointerCaptures();
-            //Core.Log.Info((await FocusManager.TryFocusAsync(this.Content, FocusState.Keyboard)).Succeeded);
             this.Activated -= GamePreviewWindow_Activated;
-            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd, _windowHandle);
+            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
         }
     }
 }

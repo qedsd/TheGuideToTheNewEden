@@ -169,7 +169,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
         }
 
-        public static void SetForegroundWindow(IntPtr targetHandle, IntPtr sourceHandle)
+        public static void SetForegroundWindow(IntPtr targetHandle)
         {
             IntPtr curForegroundWindow = Win32.GetForegroundWindow();
             Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
@@ -220,6 +220,20 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                     Core.Log.Debug($"SetForegroundWindow失败（{tryCount}）");
                 }
             }
+        }
+
+
+        public static void SetForegroundWindow2(IntPtr targetHandle)
+        {
+            if (Win32.IsIconic(targetHandle))
+            {
+                Win32.ShowWindow(targetHandle, 4);
+            }
+            else
+            {
+                Win32.ShowWindow(targetHandle, 5);
+            }
+            Win32.SetForegroundWindow(targetHandle);
         }
 
         /// <summary>
