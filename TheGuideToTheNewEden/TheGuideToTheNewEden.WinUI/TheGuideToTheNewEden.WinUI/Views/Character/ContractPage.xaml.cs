@@ -51,6 +51,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             _window?.ShowWaiting();
             var resp = await _esiClient.Contracts.CharacterContracts();
+            if(resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                //TODO:
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                _window.ShowError(resp?.Message);
+            }
             _window?.HideWaiting();
         }
 

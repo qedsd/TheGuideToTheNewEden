@@ -11,6 +11,7 @@
     <StackPanel Margin="8,8" Orientation="Horizontal">
         <NumberBox
             x:Name="PageBox"
+            BorderBrush="{ThemeResource SystemAccentColor}"
             CornerRadius="8"
             SpinButtonPlacementMode="Inline"
             ValueChanged="PageBox_ValueChanged"

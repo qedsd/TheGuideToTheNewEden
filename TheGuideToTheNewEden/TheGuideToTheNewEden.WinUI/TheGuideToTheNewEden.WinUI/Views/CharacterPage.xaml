@@ -207,7 +207,7 @@
                     <NavigationViewItem Content="克隆" Tag="Clone" />
                     <NavigationViewItem Content="钱包" Tag="Wallet" />
                     <NavigationViewItem Content="邮件" Tag="Mail" />
-                    <NavigationViewItem Content="合同" Tag="Contract" />
+                    <!--<NavigationViewItem Content="合同" Tag="Contract" />-->
                 </NavigationView.MenuItems>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>
