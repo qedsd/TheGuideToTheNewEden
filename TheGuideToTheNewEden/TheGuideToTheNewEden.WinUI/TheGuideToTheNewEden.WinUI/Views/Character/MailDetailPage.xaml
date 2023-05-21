@@ -5,11 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="Transparent"
+    Background="{ThemeResource MainBackgroudBrush}"
     mc:Ignorable="d">
 
     <Grid Margin="12,4">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -32,7 +33,10 @@
                     Width="48"
                     Height="48" />
             </Grid>
-            <Grid Grid.Column="1" Margin="8,0,0,0">
+            <Grid
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
@@ -70,9 +74,14 @@
                 FontWeight="Light"
                 TextWrapping="WrapWholeWords" />
         </Grid>
+        <Rectangle
+            Grid.Row="4"
+            Height="1"
+            Margin="0,8"
+            Fill="{ThemeResource SystemAccentColor}" />
         <WebView2
             x:Name="WebView2_Content"
-            Grid.Row="4"
+            Grid.Row="5"
             Margin="0,4"
             DefaultBackgroundColor="Transparent" />
     </Grid>
