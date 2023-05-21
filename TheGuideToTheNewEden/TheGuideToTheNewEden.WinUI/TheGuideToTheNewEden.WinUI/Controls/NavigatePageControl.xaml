@@ -1,0 +1,42 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WinUI.Controls.NavigatePageControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Height="48"
+    mc:Ignorable="d">
+
+    <StackPanel Margin="8,8" Orientation="Horizontal">
+        <NumberBox
+            x:Name="PageBox"
+            CornerRadius="8"
+            SpinButtonPlacementMode="Inline"
+            ValueChanged="PageBox_ValueChanged"
+            Value="1" />
+        <Button
+            x:Name="GoButton"
+            Margin="8,0,0,0"
+            Click="GoButton_Click"
+            Content="Go"
+            CornerRadius="8"
+            Style="{ThemeResource AccentButtonStyle}" />
+        <Button
+            x:Name="PreButton"
+            Height="32"
+            Margin="8,0,0,0"
+            Click="PreButton_Click"
+            CornerRadius="8">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00E;" />
+        </Button>
+        <Button
+            x:Name="NextButton"
+            Height="32"
+            Margin="8,0,0,0"
+            Click="NextButton_Click"
+            CornerRadius="8">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00F;" />
+        </Button>
+    </StackPanel>
+</UserControl>

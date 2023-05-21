@@ -219,6 +219,7 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\NavigatePageControl.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
@@ -269,6 +270,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Controls\NavigatePageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
