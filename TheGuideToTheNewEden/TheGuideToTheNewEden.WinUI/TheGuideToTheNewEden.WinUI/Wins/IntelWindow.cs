@@ -28,6 +28,7 @@ using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.UI;
 using TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages;
 using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.Core.Models.GamePreviews;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -102,8 +103,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            sender.Hide();
+            OnStop?.Invoke();
         }
+
+        public delegate void StopDelegate();
+        public event StopDelegate OnStop;
 
         private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {

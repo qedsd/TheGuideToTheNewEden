@@ -334,10 +334,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     if(Setting.OverlapType != 2)
                     {
-                        WarningService.AddNotifyWindow(Setting, IntelMap);
-                        if(Setting.OverlapType == 0)
+                        var intelWindow = WarningService.AddNotifyWindow(Setting, IntelMap);
+                        if(intelWindow != null)
                         {
-                            WarningService.ShowWindow(Setting.Listener);
+                            intelWindow.OnStop += IntelWindow_OnStop;
+                            if (Setting.OverlapType == 0)
+                            {
+                                WarningService.ShowWindow(Setting.Listener);
+                            }
+                        }
+                        else
+                        {
+                            ShowError("开启预警窗口失败");
                         }
                     }
                     IsRunning = true;
@@ -351,6 +359,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             HideWaiting();
         });
+
+        private void IntelWindow_OnStop()
+        {
+            StopCommand.Execute(null);
+        }
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
