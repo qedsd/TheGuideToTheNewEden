@@ -74,7 +74,22 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
-            if(args.DidPositionChange || args.DidSizeChange)
+            if (args.DidPositionChange)
+            {
+                if (!Helpers.WindowHelper.IsInWindow(sender.Position.X, sender.Position.Y))
+                {
+                    //可能是最小化后不显示在屏幕范围内
+                    sender.IsShownInSwitchers = true;
+                    return;//不保存位置
+                }
+                else if (sender.IsShownInSwitchers)
+                {
+                    //最小化恢复正常显示
+                    sender.IsShownInSwitchers = false;
+                    return;//不保存位置
+                }
+            }
+            if (args.DidPositionChange || args.DidSizeChange)
             {
                 Setting.WinX = sender.Position.X;
                 Setting.WinY = sender.Position.Y;
