@@ -15,13 +15,13 @@
         <converters:UnreadMailVisibilityConverter x:Key="UnreadMailVisibilityConverter" />
         <converters:MailSubjectForegroundConverter x:Key="MailSubjectForegroundConverter" />
     </Page.Resources>
-    <Grid>
+    <Grid Margin="8,8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <StackPanel>
+        <StackPanel Margin="0,0,8,0">
             <ListView
                 x:Name="ListView_Label"
                 Background="Transparent"
