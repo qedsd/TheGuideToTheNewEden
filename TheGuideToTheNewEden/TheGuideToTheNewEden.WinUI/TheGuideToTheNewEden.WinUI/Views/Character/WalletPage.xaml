@@ -5,6 +5,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:wallet="using:TheGuideToTheNewEden.Core.Models.Wallet"
@@ -29,13 +30,56 @@
         <converters:ISKForegroundConverter x:Key="ISKForegroundConverter" />
         <converters:IsBuyDesConverter x:Key="IsBuyDesConverter" />
         <converters:IsBuyForegroundConverter x:Key="IsBuyForegroundConverter" />
+        <Style x:Key="GreenCellStyle" TargetType="dataGrid:GridCell">
+            <Setter Property="Foreground" Value="SeaGreen" />
+        </Style>
+        <Style x:Key="RedCellStyle" TargetType="dataGrid:GridCell">
+            <Setter Property="Foreground" Value="OrangeRed" />
+        </Style>
+        <local:JournalEntryCellStyleSelector x:Key="JournalEntryCellStyleSelector" />
     </Page.Resources>
     <Pivot x:Name="MainPivot">
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="12" Text="{StaticResource WalletPage_CharacterJournal}" />
             </PivotItem.Header>
-            <controls:DataGrid
+            <dataGrid:SfDataGrid
+                x:Name="DataGrid_CharacterJournal"
+                HorizontalAlignment="Stretch"
+                AllowDraggingColumns="True"
+                AllowEditing="False"
+                AllowFiltering="True"
+                AllowGrouping="True"
+                AllowSorting="True"
+                AutoGenerateColumns="False"
+                CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
+                ColumnWidthMode="Auto"
+                GridLinesVisibility="None"
+                GroupDropAreaText="拖拽单元格头至此以分组"
+                HeaderLinesVisibility="Both"
+                SelectionMode="Extended"
+                ShowGroupDropArea="True">
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource WalletPage_JournalDate}"
+                        MappingName="Date" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource WalletPage_JournalAmount}"
+                        MappingName="Amount">
+                        <dataGrid:GridNumericColumn.CellStyle />
+                    </dataGrid:GridNumericColumn>
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource WalletPage_JournalBalance}"
+                        MappingName="Balance" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
+                </dataGrid:SfDataGrid.Columns>
+            </dataGrid:SfDataGrid>
+            <!--<controls:DataGrid
                 x:Name="DataGrid_CharacterJournal"
                 Margin="12"
                 HorizontalAlignment="Stretch"
@@ -96,7 +140,7 @@
                         Header="{StaticResource WalletPage_JournalReason}"
                         Tag="Reason" />
                 </controls:DataGrid.Columns>
-            </controls:DataGrid>
+            </controls:DataGrid>-->
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
@@ -219,7 +263,7 @@
                                 <TextBlock
                                     Margin="4,0"
                                     VerticalAlignment="Center"
-                                    Foreground="{x:Bind Journal.Amount, Converter={StaticResource ISKForegroundConverter}}"
+                                    Foreground="{x:Bind Amount, Converter={StaticResource ISKForegroundConverter}}"
                                     Text="{x:Bind Amount}" />
                             </DataTemplate>
                         </controls:DataGridTemplateColumn.CellTemplate>
@@ -230,7 +274,7 @@
                                 <TextBlock
                                     Margin="4,0"
                                     VerticalAlignment="Center"
-                                    Text="{x:Bind Journal.Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                                    Text="{x:Bind Balance, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
                             </DataTemplate>
                         </controls:DataGridTemplateColumn.CellTemplate>
                     </controls:DataGridTemplateColumn>

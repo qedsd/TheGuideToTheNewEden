@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.Wallet
 {
-    public class JournalEntry
+    public class JournalEntry: ESI.NET.Models.Wallet.JournalEntry
     {
         public JournalEntry(ESI.NET.Models.Wallet.JournalEntry journalEntry) 
         {
-            Journal = journalEntry;
+            this.CopyFrom(journalEntry);
         }
-        public ESI.NET.Models.Wallet.JournalEntry Journal { get; set; }
 
-        public string Amount
+        public string AmountStr
         {
             get
             {
-                var str = Journal?.Amount.ToString("N2");
+                var str = Amount.ToString("N2");
                 if(str != null && str[0] != '-')
                 {
                     return '+' + str;

@@ -230,6 +230,7 @@
     <None Remove="Views\Character\OverviewPage.xaml" />
     <None Remove="Views\Character\SkillPage.xaml" />
     <None Remove="Views\Character\WalletPage.xaml" />
+    <None Remove="Views\ContractPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
@@ -254,6 +255,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="21.2.5" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="21.2.5" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
     <PackageReference Include="WinUIEx" Version="2.1.0" />
     <Manifest Include="$(ApplicationManifest)" />
@@ -300,6 +303,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\ContractPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Character\MailDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
