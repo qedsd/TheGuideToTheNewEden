@@ -31,14 +31,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private ObservableCollection<Core.Models.Wallet.JournalEntry> _corpJournals = new ObservableCollection<Core.Models.Wallet.JournalEntry>();
         private ObservableCollection<Core.Models.Wallet.TransactionEntry> _characterTransactions = new ObservableCollection<Core.Models.Wallet.TransactionEntry>();
         private ObservableCollection<Core.Models.Wallet.TransactionEntry> _corpTransactions = new ObservableCollection<Core.Models.Wallet.TransactionEntry>();
-        public static Style GreenCellStyle;
-        public static Style RedCellStyle;
+
         public WalletPage()
         {
             this.InitializeComponent();
             Loaded += WalletPage_Loaded;
-            GreenCellStyle = this.Resources.FirstOrDefault(p => p.Key.ToString() == "GreenCellStyle").Value as Style;
-            RedCellStyle = this.Resources.FirstOrDefault(p => p.Key.ToString() == "RedCellStyle").Value as Style;
         }
 
         private void WalletPage_Loaded(object sender, RoutedEventArgs e)
@@ -399,11 +396,32 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 if (data.Amount < 0)
                 {
-                    return WalletPage.RedCellStyle;
+                    return Helpers.ResourcesHelper.Get("RedForegroundCellStyle") as Style;
                 }
                 else
                 {
-                    return WalletPage.GreenCellStyle;
+                    return Helpers.ResourcesHelper.Get("GreenForegroundCellStyle") as Style;
+                }
+            }
+            return base.SelectStyleCore(item, container);
+        }
+    }
+    public class TransactionEntryCellStyleSelector : StyleSelector
+    {
+        protected override Style SelectStyleCore(object item, DependencyObject container)
+        {
+            var data = item as Core.Models.Wallet.TransactionEntry;
+            var mappingName = (container as GridCell).ColumnBase.GridColumn.MappingName;
+
+            if (mappingName == "TotalPrice")
+            {
+                if (!data.Transaction.IsBuy)
+                {
+                    return Helpers.ResourcesHelper.Get("RedForegroundCellStyle") as Style;
+                }
+                else
+                {
+                    return Helpers.ResourcesHelper.Get("GreenForegroundCellStyle") as Style;
                 }
             }
             return base.SelectStyleCore(item, container);

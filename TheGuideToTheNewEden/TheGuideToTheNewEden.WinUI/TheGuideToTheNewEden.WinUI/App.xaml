@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Styles/Custom.xaml" />
                 <ResourceDictionary Source="/Strings/zh-CN/Resource.xaml" />
+                <ResourceDictionary Source="/Styles/Syncfusion.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>

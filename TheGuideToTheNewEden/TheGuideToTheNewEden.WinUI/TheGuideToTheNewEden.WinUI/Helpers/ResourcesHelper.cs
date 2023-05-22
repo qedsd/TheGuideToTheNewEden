@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
-    internal static class StringResourcesHelper
+    internal static class ResourcesHelper
     {
         public static string GetString(string key,bool returnKey = true)
         {
@@ -25,6 +25,17 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 {
                     return String.Empty;
                 }
+            }
+        }
+        public static object Get(string key)
+        {
+            if (Application.Current.Resources.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+            else
+            {
+                return null;
             }
         }
     }

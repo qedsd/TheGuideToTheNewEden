@@ -13,7 +13,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public MailWindow(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail) 
         {
             SetSmallTitleBar();
-            SetHeadText(Helpers.StringResourcesHelper.GetString("MailPage_Mail"));
+            SetHeadText(Helpers.ResourcesHelper.GetString("MailPage_Mail"));
             Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(600, 800));
             MainContent = new Views.Character.MailDetailPage(esiClient, mailDetail);
         }

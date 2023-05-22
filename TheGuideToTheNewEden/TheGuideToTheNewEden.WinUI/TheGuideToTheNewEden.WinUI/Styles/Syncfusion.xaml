@@ -1,0 +1,12 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Styles">
+    <Style x:Key="GreenForegroundCellStyle" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="SeaGreen" />
+    </Style>
+    <Style x:Key="RedForegroundCellStyle" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="OrangeRed" />
+    </Style>
+</ResourceDictionary>

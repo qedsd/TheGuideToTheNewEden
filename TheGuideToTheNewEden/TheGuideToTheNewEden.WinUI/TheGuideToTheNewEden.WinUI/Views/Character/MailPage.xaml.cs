@@ -78,7 +78,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 foreach (var label in labels)
                 {
-                    label.Name = Helpers.StringResourcesHelper.GetString(label.Name);
+                    label.Name = Helpers.ResourcesHelper.GetString(label.Name);
                 }
             }
         }
