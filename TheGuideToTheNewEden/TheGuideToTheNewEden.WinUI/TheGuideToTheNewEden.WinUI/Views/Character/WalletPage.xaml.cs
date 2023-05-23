@@ -27,11 +27,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
     {
         private EsiClient _esiClient;
         private BaseWindow _window;
-        private ObservableCollection<Core.Models.Wallet.JournalEntry> _characterJournals = new ObservableCollection<Core.Models.Wallet.JournalEntry>();
-        private ObservableCollection<Core.Models.Wallet.JournalEntry> _corpJournals = new ObservableCollection<Core.Models.Wallet.JournalEntry>();
-        private ObservableCollection<Core.Models.Wallet.TransactionEntry> _characterTransactions = new ObservableCollection<Core.Models.Wallet.TransactionEntry>();
-        private ObservableCollection<Core.Models.Wallet.TransactionEntry> _corpTransactions = new ObservableCollection<Core.Models.Wallet.TransactionEntry>();
-
         public WalletPage()
         {
             this.InitializeComponent();
@@ -65,10 +60,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _corpJournalsLoaded = false;
             _characterTransactionsLoaded = false;
             _corpTransactionsLoaded = false;
-            _characterJournals.Clear();
-            _corpJournals.Clear();
-            _characterTransactions.Clear();
-            _corpTransactions.Clear();
             if (MainPivot.SelectedIndex == 0)
             {
                 Pivot_SelectionChanged(MainPivot,null);
@@ -294,7 +285,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private bool _corpJournalsLoaded = false;
         private bool _characterTransactionsLoaded = false;
         private bool _corpTransactionsLoaded = false;
-        private async void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             _window.ShowWaiting();
             switch((sender as Pivot).SelectedIndex)
@@ -304,19 +295,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if(!_characterJournalsLoaded)
                         {
                             _characterJournalsLoaded = true;
-                            var data = await GetAllJournalsAsync(false);
-                            if(data.NotNullOrEmpty())
-                            {
-                                foreach(var d in data)
-                                {
-                                    _characterJournals.Add(d);
-                                }
-                            }
-                            else
-                            {
-                                _characterJournals.Clear();
-                            }
-                            DataGrid_CharacterJournal.ItemsSource = _characterJournals;
+                            NavigatePageControl_CharacterJournal_OnPageChanged(1);
                         }
                     }break;
                 case 1: 
@@ -324,20 +303,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_characterTransactionsLoaded)
                         {
                             _characterTransactionsLoaded = true;
-                            var data = await GetAllTransactionsAsync(false);
-                            await SetNames(data);
-                            if (data.NotNullOrEmpty())
-                            {
-                                foreach (var d in data)
-                                {
-                                    _characterTransactions.Add(d);
-                                }
-                            }
-                            else
-                            {
-                                _characterTransactions.Clear();
-                            }
-                            DataGrid_CharacterTransaction.ItemsSource = _characterTransactions;
+                            NavigatePageControl_CharacterTransaction_OnPageChanged(1);
                         }
                     } break;
                 case 2: 
@@ -345,19 +311,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpJournalsLoaded)
                         {
                             _corpJournalsLoaded = true;
-                            var data = await GetAllJournalsAsync(true);
-                            if (data.NotNullOrEmpty())
-                            {
-                                foreach (var d in data)
-                                {
-                                    _corpJournals.Add(d);
-                                }
-                            }
-                            else
-                            {
-                                _corpJournals.Clear();
-                            }
-                            DataGrid_CorpJournal.ItemsSource = _corpJournals;
+                            NavigatePageControl_CorpJournal_OnPageChanged(1);
                         }
                     } break;
                 case 3:
@@ -365,24 +319,39 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpTransactionsLoaded)
                         {
                             _corpTransactionsLoaded = true;
-                            var data = await GetAllTransactionsAsync(true);
-                            await SetNames(data);
-                            if (data.NotNullOrEmpty())
-                            {
-                                foreach (var d in data)
-                                {
-                                    _corpTransactions.Add(d);
-                                }
-                            }
-                            else
-                            {
-                                _corpTransactions.Clear();
-                            }
-                            DataGrid_CorpTransaction.ItemsSource = _corpTransactions;
+                            NavigatePageControl_CorpTransaction_OnPageChanged(1);
                         }
                     } break;
             }
             _window.HideWaiting();
+        }
+
+        private async void NavigatePageControl_CharacterJournal_OnPageChanged(int page)
+        {
+            _window?.ShowWaiting();
+            DataGrid_CharacterJournal.ItemsSource = await GetJournalsAsync(false, page);
+            _window?.HideWaiting();
+        }
+
+        private async void NavigatePageControl_CharacterTransaction_OnPageChanged(int page)
+        {
+            _window?.ShowWaiting();
+            DataGrid_CharacterTransaction.ItemsSource = await GetTransactionsAsync(false, page);
+            _window?.HideWaiting();
+        }
+
+        private async void NavigatePageControl_CorpJournal_OnPageChanged(int page)
+        {
+            _window?.ShowWaiting();
+            DataGrid_CorpJournal.ItemsSource = await GetJournalsAsync(true, page);
+            _window?.HideWaiting();
+        }
+
+        private async void NavigatePageControl_CorpTransaction_OnPageChanged(int page)
+        {
+            _window?.ShowWaiting();
+            DataGrid_CorpTransaction.ItemsSource = await GetTransactionsAsync(true, page);
+            _window?.HideWaiting();
         }
     }
     public class JournalEntryCellStyleSelector : StyleSelector

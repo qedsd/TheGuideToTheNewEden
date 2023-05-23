@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
@@ -38,214 +39,260 @@
             <PivotItem.Header>
                 <TextBlock FontSize="12" Text="{StaticResource WalletPage_CharacterJournal}" />
             </PivotItem.Header>
-            <dataGrid:SfDataGrid
-                x:Name="DataGrid_CharacterJournal"
-                HorizontalAlignment="Stretch"
-                AllowDraggingColumns="True"
-                AllowEditing="False"
-                AllowFiltering="True"
-                AllowGrouping="True"
-                AllowSorting="True"
-                AutoGenerateColumns="False"
-                CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
-                ColumnWidthMode="Auto"
-                GridLinesVisibility="Horizontal"
-                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                HeaderLinesVisibility="Both"
-                SelectionMode="Extended"
-                ShowGroupDropArea="True">
-                <dataGrid:SfDataGrid.GroupSummaryRows>
-                    <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
-                        <dataGrid:GridSummaryRow.SummaryColumns>
-                            <dataGrid:GridSummaryColumn
-                                Name="TotalISK"
-                                Format="'{Sum:N2}'"
-                                MappingName="Amount"
-                                SummaryType="DoubleAggregate" />
-                        </dataGrid:GridSummaryRow.SummaryColumns>
-                    </dataGrid:GridSummaryRow>
-                </dataGrid:SfDataGrid.GroupSummaryRows>
-                <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridDateColumn
-                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
-                        HeaderText="{StaticResource WalletPage_JournalDate}"
-                        MappingName="Date" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_JournalAmount}"
-                        MappingName="Amount">
-                        <dataGrid:GridNumericColumn.CellStyle />
-                    </dataGrid:GridNumericColumn>
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_JournalBalance}"
-                        MappingName="Balance" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
-                </dataGrid:SfDataGrid.Columns>
-            </dataGrid:SfDataGrid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <dataGrid:SfDataGrid
+                    x:Name="DataGrid_CharacterJournal"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="Horizontal"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                    <dataGrid:SfDataGrid.GroupSummaryRows>
+                        <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
+                            <dataGrid:GridSummaryRow.SummaryColumns>
+                                <dataGrid:GridSummaryColumn
+                                    Name="TotalISK"
+                                    Format="'{Sum:N2}'"
+                                    MappingName="Amount"
+                                    SummaryType="DoubleAggregate" />
+                            </dataGrid:GridSummaryRow.SummaryColumns>
+                        </dataGrid:GridSummaryRow>
+                    </dataGrid:SfDataGrid.GroupSummaryRows>
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridDateColumn
+                            DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                            HeaderText="{StaticResource WalletPage_JournalDate}"
+                            MappingName="Date" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalAmount}"
+                            MappingName="Amount">
+                            <dataGrid:GridNumericColumn.CellStyle />
+                        </dataGrid:GridNumericColumn>
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalBalance}"
+                            MappingName="Balance" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+                <controls1:NavigatePageControl
+                    x:Name="NavigatePageControl_CharacterJournal"
+                    Grid.Row="1"
+                    HorizontalAlignment="Right"
+                    OnPageChanged="NavigatePageControl_CharacterJournal_OnPageChanged" />
+            </Grid>
+
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="12" Text="{StaticResource WalletPage_CharacterTransaction}" />
             </PivotItem.Header>
-            <dataGrid:SfDataGrid
-                x:Name="DataGrid_CharacterTransaction"
-                HorizontalAlignment="Stretch"
-                AllowDraggingColumns="True"
-                AllowEditing="False"
-                AllowFiltering="True"
-                AllowGrouping="True"
-                AllowSorting="True"
-                AutoGenerateColumns="False"
-                CellStyleSelector="{StaticResource TransactionEntryCellStyleSelector}"
-                ColumnWidthMode="Auto"
-                GridLinesVisibility="None"
-                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                HeaderLinesVisibility="Both"
-                SelectionMode="Extended"
-                ShowGroupDropArea="True">
-                <dataGrid:SfDataGrid.GroupSummaryRows>
-                    <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
-                        <dataGrid:GridSummaryRow.SummaryColumns>
-                            <dataGrid:GridSummaryColumn
-                                Name="TotalISK"
-                                Format="'{Sum:N2}'"
-                                MappingName="TotalPrice"
-                                SummaryType="DoubleAggregate" />
-                        </dataGrid:GridSummaryRow.SummaryColumns>
-                    </dataGrid:GridSummaryRow>
-                </dataGrid:SfDataGrid.GroupSummaryRows>
-                <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridDateColumn
-                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
-                        HeaderText="{StaticResource WalletPage_TransactionDate}"
-                        MappingName="Transaction.Date" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionType}" MappingName="InvType.TypeName" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_TransactionUnitPrice}"
-                        MappingName="Transaction.UnitPrice">
-                        <dataGrid:GridNumericColumn.CellStyle />
-                    </dataGrid:GridNumericColumn>
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource WalletPage_TransactionQuantity}"
-                        MappingName="Transaction.Quantity" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_TransactionTotalPrice}"
-                        MappingName="TotalPrice" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionClient}" MappingName="ClientName" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionLocation}" MappingName="LocationName" />
-                    <dataGrid:GridTextColumn
-                        DisplayBinding="{Binding Transaction.IsBuy, Converter={StaticResource IsBuyDesConverter}}"
-                        HeaderText="{StaticResource WalletPage_TransactionIsBuy}"
-                        MappingName="Transaction.IsBuy" />
-                </dataGrid:SfDataGrid.Columns>
-            </dataGrid:SfDataGrid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <dataGrid:SfDataGrid
+                    x:Name="DataGrid_CharacterTransaction"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    CellStyleSelector="{StaticResource TransactionEntryCellStyleSelector}"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                    <dataGrid:SfDataGrid.GroupSummaryRows>
+                        <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
+                            <dataGrid:GridSummaryRow.SummaryColumns>
+                                <dataGrid:GridSummaryColumn
+                                    Name="TotalISK"
+                                    Format="'{Sum:N2}'"
+                                    MappingName="TotalPrice"
+                                    SummaryType="DoubleAggregate" />
+                            </dataGrid:GridSummaryRow.SummaryColumns>
+                        </dataGrid:GridSummaryRow>
+                    </dataGrid:SfDataGrid.GroupSummaryRows>
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridDateColumn
+                            DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                            HeaderText="{StaticResource WalletPage_TransactionDate}"
+                            MappingName="Transaction.Date" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionType}" MappingName="InvType.TypeName" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_TransactionUnitPrice}"
+                            MappingName="Transaction.UnitPrice">
+                            <dataGrid:GridNumericColumn.CellStyle />
+                        </dataGrid:GridNumericColumn>
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N0"
+                            HeaderText="{StaticResource WalletPage_TransactionQuantity}"
+                            MappingName="Transaction.Quantity" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_TransactionTotalPrice}"
+                            MappingName="TotalPrice" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionClient}" MappingName="ClientName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionLocation}" MappingName="LocationName" />
+                        <dataGrid:GridTextColumn
+                            DisplayBinding="{Binding Transaction.IsBuy, Converter={StaticResource IsBuyDesConverter}}"
+                            HeaderText="{StaticResource WalletPage_TransactionIsBuy}"
+                            MappingName="Transaction.IsBuy" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+                <controls1:NavigatePageControl
+                    x:Name="NavigatePageControl_CharacterTransaction"
+                    Grid.Row="1"
+                    HorizontalAlignment="Right"
+                    OnPageChanged="NavigatePageControl_CharacterTransaction_OnPageChanged" />
+            </Grid>
+
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="12" Text="{StaticResource WalletPage_CorpJournal}" />
             </PivotItem.Header>
-            <dataGrid:SfDataGrid
-                x:Name="DataGrid_CorpJournal"
-                HorizontalAlignment="Stretch"
-                AllowDraggingColumns="True"
-                AllowEditing="False"
-                AllowFiltering="True"
-                AllowGrouping="True"
-                AllowSorting="True"
-                AutoGenerateColumns="False"
-                CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
-                ColumnWidthMode="Auto"
-                GridLinesVisibility="None"
-                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                HeaderLinesVisibility="Both"
-                SelectionMode="Extended"
-                ShowGroupDropArea="True">
-                <dataGrid:SfDataGrid.GroupSummaryRows>
-                    <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
-                        <dataGrid:GridSummaryRow.SummaryColumns>
-                            <dataGrid:GridSummaryColumn
-                                Name="TotalISK"
-                                Format="'{Sum:N2}'"
-                                MappingName="Amount"
-                                SummaryType="DoubleAggregate" />
-                        </dataGrid:GridSummaryRow.SummaryColumns>
-                    </dataGrid:GridSummaryRow>
-                </dataGrid:SfDataGrid.GroupSummaryRows>
-                <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridDateColumn
-                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
-                        HeaderText="{StaticResource WalletPage_JournalDate}"
-                        MappingName="Date" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_JournalAmount}"
-                        MappingName="Amount">
-                        <dataGrid:GridNumericColumn.CellStyle />
-                    </dataGrid:GridNumericColumn>
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_JournalBalance}"
-                        MappingName="Balance" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
-                </dataGrid:SfDataGrid.Columns>
-            </dataGrid:SfDataGrid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <dataGrid:SfDataGrid
+                    x:Name="DataGrid_CorpJournal"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                    <dataGrid:SfDataGrid.GroupSummaryRows>
+                        <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
+                            <dataGrid:GridSummaryRow.SummaryColumns>
+                                <dataGrid:GridSummaryColumn
+                                    Name="TotalISK"
+                                    Format="'{Sum:N2}'"
+                                    MappingName="Amount"
+                                    SummaryType="DoubleAggregate" />
+                            </dataGrid:GridSummaryRow.SummaryColumns>
+                        </dataGrid:GridSummaryRow>
+                    </dataGrid:SfDataGrid.GroupSummaryRows>
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridDateColumn
+                            DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                            HeaderText="{StaticResource WalletPage_JournalDate}"
+                            MappingName="Date" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalAmount}"
+                            MappingName="Amount">
+                            <dataGrid:GridNumericColumn.CellStyle />
+                        </dataGrid:GridNumericColumn>
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalBalance}"
+                            MappingName="Balance" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+                <controls1:NavigatePageControl
+                    x:Name="NavigatePageControl_CorpJournal"
+                    Grid.Row="1"
+                    HorizontalAlignment="Right"
+                    OnPageChanged="NavigatePageControl_CorpJournal_OnPageChanged" />
+            </Grid>
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="12" Text="{StaticResource WalletPage_CorpTransaction}" />
             </PivotItem.Header>
-            <dataGrid:SfDataGrid
-                x:Name="DataGrid_CorpTransaction"
-                HorizontalAlignment="Stretch"
-                AllowDraggingColumns="True"
-                AllowEditing="False"
-                AllowFiltering="True"
-                AllowGrouping="True"
-                AllowSorting="True"
-                AutoGenerateColumns="False"
-                CellStyleSelector="{StaticResource TransactionEntryCellStyleSelector}"
-                ColumnWidthMode="Auto"
-                GridLinesVisibility="None"
-                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                HeaderLinesVisibility="Both"
-                SelectionMode="Extended"
-                ShowGroupDropArea="True">
-                <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridDateColumn
-                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
-                        HeaderText="{StaticResource WalletPage_TransactionDate}"
-                        MappingName="Transaction.Date" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionType}" MappingName="InvType.TypeName" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_TransactionUnitPrice}"
-                        MappingName="Transaction.UnitPrice">
-                        <dataGrid:GridNumericColumn.CellStyle />
-                    </dataGrid:GridNumericColumn>
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource WalletPage_TransactionQuantity}"
-                        MappingName="Transaction.Quantity" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource WalletPage_TransactionTotalPrice}"
-                        MappingName="TotalPrice" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionClient}" MappingName="ClientName" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionLocation}" MappingName="LocationName" />
-                    <dataGrid:GridTextColumn
-                        DisplayBinding="{Binding Transaction.IsBuy, Converter={StaticResource IsBuyDesConverter}}"
-                        HeaderText="{StaticResource WalletPage_TransactionIsBuy}"
-                        MappingName="Transaction.IsBuy" />
-                </dataGrid:SfDataGrid.Columns>
-            </dataGrid:SfDataGrid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <dataGrid:SfDataGrid
+                    x:Name="DataGrid_CorpTransaction"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    CellStyleSelector="{StaticResource TransactionEntryCellStyleSelector}"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridDateColumn
+                            DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                            HeaderText="{StaticResource WalletPage_TransactionDate}"
+                            MappingName="Transaction.Date" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionType}" MappingName="InvType.TypeName" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_TransactionUnitPrice}"
+                            MappingName="Transaction.UnitPrice">
+                            <dataGrid:GridNumericColumn.CellStyle />
+                        </dataGrid:GridNumericColumn>
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N0"
+                            HeaderText="{StaticResource WalletPage_TransactionQuantity}"
+                            MappingName="Transaction.Quantity" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_TransactionTotalPrice}"
+                            MappingName="TotalPrice" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionClient}" MappingName="ClientName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_TransactionLocation}" MappingName="LocationName" />
+                        <dataGrid:GridTextColumn
+                            DisplayBinding="{Binding Transaction.IsBuy, Converter={StaticResource IsBuyDesConverter}}"
+                            HeaderText="{StaticResource WalletPage_TransactionIsBuy}"
+                            MappingName="Transaction.IsBuy" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+                <controls1:NavigatePageControl
+                    x:Name="NavigatePageControl_CorpTransaction"
+                    Grid.Row="1"
+                    HorizontalAlignment="Right"
+                    OnPageChanged="NavigatePageControl_CorpTransaction_OnPageChanged" />
+            </Grid>
         </PivotItem>
     </Pivot>
 </Page>
