@@ -55,7 +55,7 @@
                     AutoGenerateColumns="False"
                     CellStyleSelector="{StaticResource JournalEntryCellStyleSelector}"
                     ColumnWidthMode="Auto"
-                    GridLinesVisibility="Horizontal"
+                    GridLinesVisibility="None"
                     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                     HeaderLinesVisibility="Both"
                     SelectionMode="Extended"
