@@ -51,4 +51,8 @@
     <x:String x:Key="MailPage_Recipients">收件人：</x:String>
     <x:String x:Key="MailPage_Label">标 签：</x:String>
     <x:String x:Key="MailPage_Mail">邮件</x:String>
+
+    <!--  Contract  -->
+    <x:String x:Key="ContractPage_Character">个人</x:String>
+    <x:String x:Key="ContractPage_Corp">军团</x:String>
 </ResourceDictionary>

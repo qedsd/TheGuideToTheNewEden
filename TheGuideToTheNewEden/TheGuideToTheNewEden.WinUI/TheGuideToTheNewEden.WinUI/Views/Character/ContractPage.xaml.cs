@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using ESI.NET;
+using ESI.NET.Models.Opportunities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -54,6 +55,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             if(resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 //TODO:
+                var groups = resp.Data.GroupBy(p => p.Type).ToList();
+                foreach (var group in groups)
+                {
+
+                }
             }
             else
             {
@@ -63,9 +69,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _window?.HideWaiting();
         }
 
-        private void NavigatePageControl_OnPageChanged(int page)
+        private bool _characterLoaded = false;
+        private bool _corpLoaded = false;
+        private void MainPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
+            switch ((sender as Pivot).SelectedIndex)
+            {
+                case 0:
+                    {
+                        if (!_characterLoaded)
+                        {
+                            _characterLoaded = true;
+                            
+                        }
+                    }
+                    break;
+                case 1:
+                    {
+                        if (!_corpLoaded)
+                        {
+                            _corpLoaded = true;
+                        }
+                    }
+                    break;
+            }
         }
+        private async Task<>
     }
 }

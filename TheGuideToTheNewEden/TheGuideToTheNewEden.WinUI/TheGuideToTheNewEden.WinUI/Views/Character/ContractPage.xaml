@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
@@ -11,10 +12,58 @@
     mc:Ignorable="d">
 
     <Grid>
-        <controls:NavigatePageControl
-            x:Name="NavigatePageControl"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            OnPageChanged="NavigatePageControl_OnPageChanged" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Pivot x:Name="MainPivot"
+               SelectionChanged="MainPivot_SelectionChanged">
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="12" Text="{StaticResource ContractPage_Character}" />
+                </PivotItem.Header>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="12" Text="{StaticResource ContractPage_Corp}" />
+                </PivotItem.Header>
+            </PivotItem>
+        </Pivot>
+        <dataGrid:SfDataGrid
+            x:Name="DataGrid_Character"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            AllowDraggingColumns="True"
+            AllowEditing="False"
+            AllowFiltering="True"
+            AllowGrouping="True"
+            AllowSorting="True"
+            AutoGenerateColumns="False"
+            ColumnWidthMode="Auto"
+            GridLinesVisibility="None"
+            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+            HeaderLinesVisibility="Both"
+            SelectionMode="Extended"
+            ShowGroupDropArea="True">
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridDateColumn
+                    DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                    HeaderText="{StaticResource WalletPage_JournalDate}"
+                    MappingName="Date" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource WalletPage_JournalAmount}"
+                    MappingName="Amount">
+                    <dataGrid:GridNumericColumn.CellStyle />
+                </dataGrid:GridNumericColumn>
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource WalletPage_JournalBalance}"
+                    MappingName="Balance" />
+                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
+                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
+                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
+            </dataGrid:SfDataGrid.Columns>
+        </dataGrid:SfDataGrid>
     </Grid>
 </Page>
