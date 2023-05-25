@@ -30,6 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("频道预警","聊天频道手动预警", typeof(EarlyWarningPage)),
                 //new ToolItem("本地预警","本地频道声望自动识别", typeof(LocalIntelPage)),
                 new ToolItem("多开预览","多开时游戏窗口置顶辅助", typeof(GamePreviewMgrPage)),
+                new ToolItem("公开合同","查看星系的公开合同", typeof(ContractPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }

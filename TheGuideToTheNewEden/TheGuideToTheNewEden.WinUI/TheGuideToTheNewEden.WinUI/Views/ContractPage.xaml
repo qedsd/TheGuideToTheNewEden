@@ -2,13 +2,120 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.ContractPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:ContractViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Margin="8,0,0,8" Orientation="Horizontal">
+            <editors:SfComboBox
+                DisplayMemberPath="RegionName"
+                ItemsSource="{x:Bind VM.MapRegions, Mode=OneWay}"
+                SelectedItem="{x:Bind VM.SelectedMapRegionBase, Mode=TwoWay}" />
+            <ComboBox
+                Margin="8,0,0,0"
+                DisplayMemberPath="Text"
+                SelectedIndex="{x:Bind VM.ContractType, Mode=TwoWay}">
+                <TextBlock Text="{StaticResource ContractPage_Type_All}" />
+                <TextBlock Text="{StaticResource ContractPage_Type_Unknown}" />
+                <TextBlock Text="{StaticResource ContractPage_Type_ItemExchange}" />
+                <TextBlock Text="{StaticResource ContractPage_Type_Auction}" />
+                <TextBlock Text="{StaticResource ContractPage_Type_Courier}" />
+                <TextBlock Text="{StaticResource ContractPage_Type_Loan}" />
+            </ComboBox>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <dataGrid:SfDataGrid
+                HorizontalAlignment="Stretch"
+                AllowDraggingColumns="True"
+                AllowEditing="False"
+                AllowFiltering="True"
+                AllowGrouping="True"
+                AllowSorting="True"
+                AutoGenerateColumns="False"
+                ColumnWidthMode="Auto"
+                GridLinesVisibility="None"
+                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                HeaderLinesVisibility="Both"
+                ItemsSource="{x:Bind VM.Contracts, Mode=OneWay}"
+                SelectionMode="Extended"
+                ShowGroupDropArea="True">
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Issuer}" MappingName="IssuerName" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Type}" MappingName="TypeStr" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Title}" MappingName="Title" />
+                    <dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateIssued}"
+                        MappingName="DateIssued" />
+                    <dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateExpired}"
+                        MappingName="DateExpired" />
+                    <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Assignee}" MappingName="AssigneeName" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Acceptor}" MappingName="AcceptorName" />-->
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_StartLocation}" MappingName="StartLocationName" />
 
-    <Grid>
+                    <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Status}" MappingName="Status" />-->
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_ForCorporation}" MappingName="ForCorporation" />
+                    <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Availability}" MappingName="Availability" />-->
 
+                    <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateAccepted}"
+                        MappingName="DateAccepted" />-->
+
+                    <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateCompleted}"
+                        MappingName="DateCompleted" />-->
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Price}"
+                        MappingName="Price" />
+
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Buyout}"
+                        MappingName="Buyout" />
+
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Volume}"
+                        MappingName="Volume" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Reward}"
+                        MappingName="Reward" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Collateral}"
+                        MappingName="Collateral" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_EndLocation}" MappingName="EndLocationName" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_DaysToComplete}" MappingName="DaysToComplete" />
+                </dataGrid:SfDataGrid.Columns>
+            </dataGrid:SfDataGrid>
+            <controls1:NavigatePageControl
+                x:Name="NavigatePageControl"
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                Page="{x:Bind VM.Page, Mode=TwoWay}" />
+        </Grid>
     </Grid>
 </Page>

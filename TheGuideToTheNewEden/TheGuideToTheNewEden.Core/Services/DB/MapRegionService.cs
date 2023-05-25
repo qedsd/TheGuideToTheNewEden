@@ -28,5 +28,14 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+        public static async Task<List<MapRegion>> QueryAllAsync()
+        {
+            var datas = await DBService.MainDb.Queryable<MapRegion>().ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranMapRegionsAsync(datas);
+            }
+            return datas;
+        }
     }
 }

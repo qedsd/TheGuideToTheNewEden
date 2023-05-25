@@ -20,7 +20,7 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
-    public sealed partial class ContractPage : Page,ICharacterPage
+    public sealed partial class ContractPage : Page, ICharacterPage
     {
         private BaseWindow _window;
         private EsiClient _esiClient;
@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             _window?.ShowWaiting();
             var resp = await _esiClient.Contracts.CharacterContracts();
-            if(resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 //TODO:
                 var groups = resp.Data.GroupBy(p => p.Type).ToList();
@@ -80,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_characterLoaded)
                         {
                             _characterLoaded = true;
-                            
+
                         }
                     }
                     break;
@@ -94,6 +94,5 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     break;
             }
         }
-        private async Task<>
     }
 }

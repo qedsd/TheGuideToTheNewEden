@@ -55,4 +55,32 @@
     <!--  Contract  -->
     <x:String x:Key="ContractPage_Character">个人</x:String>
     <x:String x:Key="ContractPage_Corp">军团</x:String>
+    <x:String x:Key="ContractPage_Type_All">所有</x:String>
+    <x:String x:Key="ContractPage_Type_Unknown">未知</x:String>
+    <x:String x:Key="ContractPage_Type_ItemExchange">物品交换</x:String>
+    <x:String x:Key="ContractPage_Type_Auction">拍卖</x:String>
+    <x:String x:Key="ContractPage_Type_Courier">快递</x:String>
+    <x:String x:Key="ContractPage_Type_Loan">Loan</x:String>
+    <x:String x:Key="ContractPage_Region">范围星系</x:String>
+
+    <x:String x:Key="ContractPage_Issuer">发布者</x:String>
+    <x:String x:Key="ContractPage_Assignee">指派给</x:String>
+    <x:String x:Key="ContractPage_Acceptor">接收者</x:String>
+    <x:String x:Key="ContractPage_StartLocation">起始位置</x:String>
+    <x:String x:Key="ContractPage_EndLocation">结束位置</x:String>
+    <x:String x:Key="ContractPage_Type">类型</x:String>
+    <x:String x:Key="ContractPage_Status">状态</x:String>
+    <x:String x:Key="ContractPage_Title">标题</x:String>
+    <x:String x:Key="ContractPage_ForCorporation">军团合同</x:String>
+    <x:String x:Key="ContractPage_Availability">可用性</x:String>
+    <x:String x:Key="ContractPage_DateIssued">发布于</x:String>
+    <x:String x:Key="ContractPage_DateExpired">过期于</x:String>
+    <x:String x:Key="ContractPage_DateAccepted">接受于</x:String>
+    <x:String x:Key="ContractPage_DaysToComplete">完成天数</x:String>
+    <x:String x:Key="ContractPage_DateCompleted">完成于</x:String>
+    <x:String x:Key="ContractPage_Price">价格</x:String>
+    <x:String x:Key="ContractPage_Reward">奖励</x:String>
+    <x:String x:Key="ContractPage_Collateral">押金</x:String>
+    <x:String x:Key="ContractPage_Buyout">一口价</x:String>
+    <x:String x:Key="ContractPage_Volume">体积</x:String>
 </ResourceDictionary>
