@@ -1,0 +1,97 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.ContractDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="InfoTextBlock">
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Title}" />
+                <TextBlock x:Name="TextBlock_Title" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Type}" />
+                <TextBlock x:Name="TextBlock_Type" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Issuer}" />
+                <TextBlock x:Name="TextBlock_Issuer" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Availability}" />
+                <TextBlock x:Name="TextBlock_Availability" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Status}" />
+                <TextBlock x:Name="TextBlock_Status" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_StartLocation}" />
+                <TextBlock x:Name="TextBlock_StartLocation" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DateIssued}" />
+                <TextBlock x:Name="TextBlock_DateIssued" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DateExpired}" />
+                <TextBlock x:Name="TextBlock_DateExpired" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Volume}" />
+                <TextBlock x:Name="TextBlock_Volume" />
+            </StackPanel>
+        </StackPanel>
+        <StackPanel x:Name="StackPanel_Auction" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_StartingBid}" />
+                <TextBlock x:Name="TextBlock_StartingBid" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Buyout}" />
+                <TextBlock x:Name="TextBlock_Buyout" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_CurrentBid}" />
+                <TextBlock x:Name="TextBlock_CurrentBid" />
+            </StackPanel>
+        </StackPanel>
+        <StackPanel x:Name="StackPanel_Courier" Grid.Row="2">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DaysToComplete}" />
+                <TextBlock x:Name="TextBlock_DaysToComplet" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Reward}" />
+                <TextBlock x:Name="TextBlock_Reward" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Collateral}" />
+                <TextBlock x:Name="TextBlock_Collateral" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_EndLocation}" />
+                <TextBlock x:Name="TextBlock_EndLocation" />
+            </StackPanel>
+        </StackPanel>
+        <Expander Grid.Row="3">
+            <ListView x:Name="ListView_WillGet" />
+        </Expander>
+    </Grid>
+</Page>

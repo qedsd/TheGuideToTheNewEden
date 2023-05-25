@@ -83,4 +83,9 @@
     <x:String x:Key="ContractPage_Collateral">押金</x:String>
     <x:String x:Key="ContractPage_Buyout">一口价</x:String>
     <x:String x:Key="ContractPage_Volume">体积</x:String>
+    <x:String x:Key="ContractPage_Detail">合同详情</x:String>
+    <x:String x:Key="ContractPage_StartingBid">起拍价</x:String>
+    <x:String x:Key="ContractPage_CurrentBid">当前出价</x:String>
+    <x:String x:Key="ContractPage_WillGet">买家将获得</x:String>
+    <x:String x:Key="ContractPage_WillPay">买家将给出</x:String>
 </ResourceDictionary>
