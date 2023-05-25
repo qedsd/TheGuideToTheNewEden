@@ -231,6 +231,7 @@
     <None Remove="Views\Character\OverviewPage.xaml" />
     <None Remove="Views\Character\SkillPage.xaml" />
     <None Remove="Views\Character\WalletPage.xaml" />
+    <None Remove="Views\ContractDetailPage.xaml" />
     <None Remove="Views\ContractPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
@@ -304,6 +305,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\ContractDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Styles\Syncfusion.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
