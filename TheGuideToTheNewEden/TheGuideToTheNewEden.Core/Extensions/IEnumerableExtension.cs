@@ -21,6 +21,10 @@ namespace TheGuideToTheNewEden.Core.Extensions
             }
             return sets;
         }
+        public static HashSet<T> ToHashSet2<T>(this IEnumerable<T> ls)
+        {
+            return ls.ToHashSet();
+        }
 
         public static string ToSeqString<T>(this IEnumerable<T> ls, string separator)
         {

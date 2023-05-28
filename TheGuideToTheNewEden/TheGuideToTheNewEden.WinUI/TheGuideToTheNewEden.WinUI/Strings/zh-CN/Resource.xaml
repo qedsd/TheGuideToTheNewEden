@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
-
+    <x:String x:Key="General_Name">名称</x:String>
+    <x:String x:Key="General_Quantity">数量</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -88,4 +89,16 @@
     <x:String x:Key="ContractPage_CurrentBid">当前出价</x:String>
     <x:String x:Key="ContractPage_WillGet">买家将获得</x:String>
     <x:String x:Key="ContractPage_WillPay">买家将给出</x:String>
+
+    <x:String x:Key="ContractPage_IsSingleton">单个物品</x:String>
+
+    <!--  Blueprint  -->
+    <x:String x:Key="Blueprint_MaterialEfficiency">材料效率</x:String>
+    <x:String x:Key="Blueprint_TimeEfficiency">时间效率</x:String>
+    <x:String x:Key="Blueprint_Runs">流程</x:String>
+    <x:String x:Key="Blueprint_Copy">复制图</x:String>
+    <x:String x:Key="Blueprint_Original">原图</x:String>
+    <x:String x:Key="Blueprint_BlueprintType">蓝图类型</x:String>
+    <x:String x:Key="Blueprint_RawQuantity">RawQuantity</x:String>
+    <x:String x:Key="Blueprint_InfiniteRuns">无限流程</x:String>
 </ResourceDictionary>

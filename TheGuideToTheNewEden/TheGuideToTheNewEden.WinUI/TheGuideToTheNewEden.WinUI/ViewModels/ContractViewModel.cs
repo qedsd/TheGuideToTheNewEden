@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -78,6 +79,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 GetAllContracts();
             }
         }
+
+        private Core.Models.Contract.ContractInfo selectedContractInfo;
+        public Core.Models.Contract.ContractInfo SelectedContractInfo
+        {
+            get => selectedContractInfo;
+            set
+            {
+                SetProperty(ref selectedContractInfo, value);
+                if(value!= null)
+                {
+                    LoadDetail(value);
+                }
+            }
+        }
+
         public ContractViewModel() 
         {
             
@@ -138,6 +154,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Contracts = null;
             }
+        }
+
+        private void LoadDetail(Core.Models.Contract.ContractInfo contractInfo)
+        {
+            new ContractDetailWindow(Core.Services.ESIService.Current.EsiClient, contractInfo, 0).Activate();
         }
     }
 }

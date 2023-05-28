@@ -1,4 +1,5 @@
 ﻿using ESI.NET;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,20 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class ContractDetailWindow : BaseWindow
     {
-        public ContractDetailWindow(Core.Models.Contract.ContractInfo contractInfo)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="esiClient"></param>
+        /// <param name="contractInfo"></param>
+        /// <param name="type">0 公开 1 个人 2 军团</param>
+        public ContractDetailWindow(ESI.NET.EsiClient esiClient,Core.Models.Contract.ContractInfo contractInfo, int type)
         {
+            HideAppDisplayName();
             SetSmallTitleBar();
-            SetHeadText(Helpers.ResourcesHelper.GetString("ContractPage_Detail"));
-            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(600, 800));
-            MainContent = new Views.ContractDetailPage();
+            SetHeadText($"{Helpers.ResourcesHelper.GetString("ContractPage_Detail")}-{contractInfo.ContractId}");
+            var appWindow = Helpers.WindowHelper.GetAppWindow(this);
+            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));
+            MainContent = new Views.ContractDetailPage(esiClient, contractInfo, type);
         }
     }
 }

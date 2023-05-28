@@ -54,12 +54,17 @@
                 GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                 HeaderLinesVisibility="Both"
                 ItemsSource="{x:Bind VM.Contracts, Mode=OneWay}"
-                SelectionMode="Extended"
+                SelectedItem="{x:Bind VM.SelectedContractInfo, Mode=TwoWay}"
+                SelectionMode="Single"
                 ShowGroupDropArea="True">
                 <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Issuer}" MappingName="IssuerName" />
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Type}" MappingName="TypeStr" />
                     <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Title}" MappingName="Title" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Type}" MappingName="TypeStr" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource ContractPage_Price}"
+                        MappingName="Price" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Issuer}" MappingName="IssuerName" />
                     <dataGrid:GridDateColumn
                         DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
                         HeaderText="{StaticResource ContractPage_DateIssued}"
@@ -85,10 +90,6 @@
                         DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
                         HeaderText="{StaticResource ContractPage_DateCompleted}"
                         MappingName="DateCompleted" />-->
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource ContractPage_Price}"
-                        MappingName="Price" />
 
                     <dataGrid:GridNumericColumn
                         DisplayNumberFormat="N2"

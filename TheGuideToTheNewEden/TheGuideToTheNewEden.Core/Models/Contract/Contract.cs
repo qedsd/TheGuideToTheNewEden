@@ -58,8 +58,5 @@ namespace TheGuideToTheNewEden.Core.Models.Contract
         /// </summary>
         public string Type { get; set; }
         public double Volume { get; set; }
-
-        public List<ContractBID> ContractBIDs { get; set; }
-        public List<ContractItem> ContractItems { get; set; }
     }
 }

@@ -50,6 +50,7 @@
             <converters:ColorConverter x:Key="DrawColorToUIColorConverter" />
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
             <converters:StringMatchToVisibilityConverter x:Key="StringMatchToVisibleConverter" TrueToVisible="True" />
+            <converters:ZeroToNullConverter x:Key="ZeroToNullConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

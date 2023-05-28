@@ -60,5 +60,28 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 return skillGroups;
             });
         }
+        /// <summary>
+        /// 查询蓝图下的分组
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<List<InvGroup>> QueryBlueprintGroupsAsync()
+        {
+            var groups = await DBService.MainDb.Queryable<InvGroup>().Where(p => p.CategoryID == 9).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranInvGroupsAsync(groups);
+            }
+            return groups;
+        }
+        /// <summary>
+        /// 查询蓝图下的分组id
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<List<int>> QueryBlueprintGroupIdsAsync()
+        {
+            var groups = await DBService.MainDb.Queryable<InvGroup>().Where(p => p.CategoryID == 9).ToListAsync();
+            
+            return groups.Select(p=>p.GroupID).ToList();
+        }
     }
 }
