@@ -14,7 +14,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             SetSmallTitleBar();
             SetHeadText(Helpers.ResourcesHelper.GetString("MailPage_Mail"));
-            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(600, 800));
+            var appWindow = Helpers.WindowHelper.GetAppWindow(this);
+            Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));
             MainContent = new Views.Character.MailDetailPage(esiClient, mailDetail);
         }
     }
