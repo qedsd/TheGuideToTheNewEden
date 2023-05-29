@@ -108,5 +108,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 OverviewNavigationViewItem.IsSelected = true;
             }
         }
+
+        private void RefreshPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            (ContentFrame.Content as ICharacterPage)?.Refresh();
+        }
     }
 }

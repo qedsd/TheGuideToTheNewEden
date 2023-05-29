@@ -3,6 +3,7 @@
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
     <x:String x:Key="General_Name">名称</x:String>
     <x:String x:Key="General_Quantity">数量</x:String>
+    <x:String x:Key="General_Refresh">刷新</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>

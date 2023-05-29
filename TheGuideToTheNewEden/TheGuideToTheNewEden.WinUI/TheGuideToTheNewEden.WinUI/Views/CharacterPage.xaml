@@ -178,7 +178,7 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Click="Button_Refresh_Click"
-                                    ToolTipService.ToolTip="刷新基本信息">
+                                    ToolTipService.ToolTip="{StaticResource General_Refresh}">
                                     <Button.Content>
                                         <TextBlock
                                             FontFamily="Segoe MDL2 Assets"
@@ -211,6 +211,18 @@
                 </NavigationView.MenuItems>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>
+            <Button
+                x:Name="RefreshPageButton"
+                Grid.Column="1"
+                Margin="4,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="RefreshPageButton_Click"
+                ToolTipService.ToolTip="{StaticResource General_Refresh}">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
+            </Button>
         </Grid>
         <Grid Visibility="{x:Bind VM.ExistedCharacter, Converter={StaticResource FalseToVisibleConverter}, Mode=OneWay}">
             <AppBarButton

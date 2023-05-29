@@ -49,7 +49,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         public void Refresh()
         {
-            if(MainPivot.SelectedIndex == 0)
+            _characterLoaded = false;
+            _corpLoaded = false;
+            if (MainPivot.SelectedIndex == 0)
             {
                 GetCharacterContractInfos(1);
             }
@@ -139,11 +141,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private void DataGrid_Character_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
         {
+            if(DataGrid_Character.SelectedItem == null)
+            {
+                return;
+            }
             new Wins.ContractDetailWindow(_esiClient, DataGrid_Character.SelectedItem as Core.Models.Contract.ContractInfo, 1).Activate();
         }
 
         private void DataGrid_Corp_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
         {
+            if (DataGrid_Corp.SelectedItem == null)
+            {
+                return;
+            }
             new Wins.ContractDetailWindow(_esiClient, DataGrid_Corp.SelectedItem as Core.Models.Contract.ContractInfo, 2).Activate();
         }
     }
