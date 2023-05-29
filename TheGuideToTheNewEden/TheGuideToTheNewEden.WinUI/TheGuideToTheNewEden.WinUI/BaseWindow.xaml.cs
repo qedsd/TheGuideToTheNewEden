@@ -89,6 +89,11 @@ namespace TheGuideToTheNewEden.WinUI
         {
             return AppTitleBar.Height;
         }
+        public void SetLargeTitleBar()
+        {
+            SetTitleBarHeight(42);
+            SetAppTitleLeftBorder(20);
+        }
         public void SetSmallTitleBar()
         {
             SetTitleBarHeight(32);
