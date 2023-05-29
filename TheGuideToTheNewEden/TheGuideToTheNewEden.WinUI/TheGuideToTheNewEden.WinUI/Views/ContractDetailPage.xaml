@@ -46,6 +46,10 @@
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Issuer}" />
                 <TextBlock x:Name="TextBlock_Issuer" />
             </StackPanel>
+            <StackPanel x:Name="StackPanel_Acceptor" Style="{StaticResource InfoPanel}">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Acceptor}" />
+                <TextBlock x:Name="TextBlock_Acceptor" />
+            </StackPanel>
             <StackPanel x:Name="StackPanel_Availability" Style="{StaticResource InfoPanel}">
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Availability}" />
                 <TextBlock x:Name="TextBlock_Availability" />
@@ -65,6 +69,10 @@
             <StackPanel Style="{StaticResource InfoPanel}">
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DateExpired}" />
                 <TextBlock x:Name="TextBlock_DateExpired" />
+            </StackPanel>
+            <StackPanel x:Name="StackPanel_DateAccepted" Style="{StaticResource InfoPanel}">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DateAccepted}" />
+                <TextBlock x:Name="TextBlock_DateAccepted" />
             </StackPanel>
             <StackPanel Style="{StaticResource InfoPanel}">
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Volume}" />
@@ -95,10 +103,6 @@
             Margin="0,8"
             Visibility="Collapsed">
             <StackPanel Style="{StaticResource InfoPanel}">
-                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DaysToComplete}" />
-                <TextBlock x:Name="TextBlock_DaysToComplet" />
-            </StackPanel>
-            <StackPanel Style="{StaticResource InfoPanel}">
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_Reward}" />
                 <TextBlock x:Name="TextBlock_Reward" />
             </StackPanel>
@@ -109,6 +113,14 @@
             <StackPanel Style="{StaticResource InfoPanel}">
                 <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_EndLocation}" />
                 <TextBlock x:Name="TextBlock_EndLocation" />
+            </StackPanel>
+            <StackPanel Style="{StaticResource InfoPanel}">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DaysToComplete}" />
+                <TextBlock x:Name="TextBlock_DaysToComplet" />
+            </StackPanel>
+            <StackPanel x:Name="StackPanel_DateCompleted" Style="{StaticResource InfoPanel}">
+                <TextBlock Style="{StaticResource InfoTextBlock}" Text="{StaticResource ContractPage_DateCompleted}" />
+                <TextBlock x:Name="TextBlock_DateCompleted" />
             </StackPanel>
         </StackPanel>
         <StackPanel
@@ -216,57 +228,5 @@
                 </dataGrid:SfDataGrid>
             </PivotItem>
         </Pivot>
-        <!--<ScrollViewer Grid.Row="3" Margin="0,4">
-            <StackPanel>
-                <Expander
-                    x:Name="Expander_WillGet"
-                    Margin="0,4"
-                    HorizontalAlignment="Stretch"
-                    Header="{StaticResource ContractPage_WillGet}"
-                    IsExpanded="True">
-
-                </Expander>
-                <Expander
-                    x:Name="Expander_WillPay"
-                    Margin="0,4"
-                    HorizontalAlignment="Stretch"
-                    Header="{StaticResource ContractPage_WillPay}"
-                    IsExpanded="True">
-                    <dataGrid:SfDataGrid
-                        x:Name="DataGrid_WillPay"
-                        HorizontalAlignment="Stretch"
-                        AllowDraggingColumns="True"
-                        AllowEditing="False"
-                        AllowFiltering="True"
-                        AllowGrouping="True"
-                        AllowSorting="True"
-                        AutoGenerateColumns="False"
-                        ColumnWidthMode="Auto"
-                        GridLinesVisibility="None"
-                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                        HeaderLinesVisibility="Both"
-                        SelectionMode="Multiple"
-                        ShowGroupDropArea="True">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_Name}" MappingName="TypeName" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource General_Quantity}"
-                                MappingName="Quantity" />
-                            <dataGrid:GridTextColumn
-                                DisplayBinding="{Binding IsBlueprintCopy, Converter={StaticResource BlueprintTypeConverter}}"
-                                HeaderText="{StaticResource Blueprint_BlueprintType}"
-                                MappingName="IsBlueprintCopy" />
-
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource Blueprint_Runs}" MappingName="Runs" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource Blueprint_MaterialEfficiency}" MappingName="MaterialEfficiency" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource Blueprint_TimeEfficiency}" MappingName="TimeEfficiency" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_IsSingleton}" MappingName="IsSingleton" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource Blueprint_RawQuantity}" MappingName="RawQuantity" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>-->
     </Grid>
 </Page>

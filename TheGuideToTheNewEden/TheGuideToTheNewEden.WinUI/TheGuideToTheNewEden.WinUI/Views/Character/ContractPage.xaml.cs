@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
 using ESI.NET;
 using ESI.NET.Models.Opportunities;
 using Microsoft.UI.Xaml;
@@ -15,8 +12,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -48,25 +47,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _isLoaded = false;
         }
 
-        public async void Refresh()
+        public void Refresh()
         {
-            _window?.ShowWaiting();
-            var resp = await _esiClient.Contracts.CharacterContracts();
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            if(MainPivot.SelectedIndex == 0)
             {
-                //TODO:
-                var groups = resp.Data.GroupBy(p => p.Type).ToList();
-                foreach (var group in groups)
-                {
-
-                }
+                GetCharacterContractInfos(1);
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                _window.ShowError(resp?.Message);
+                MainPivot.SelectedIndex = 0;
             }
-            _window?.HideWaiting();
         }
 
         private bool _characterLoaded = false;
@@ -80,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_characterLoaded)
                         {
                             _characterLoaded = true;
-
+                            GetCharacterContractInfos(1);
                         }
                     }
                     break;
@@ -89,10 +79,72 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpLoaded)
                         {
                             _corpLoaded = true;
+                            GetCorpContractInfos(1);
                         }
                     }
                     break;
             }
+        }
+
+        private async void GetCharacterContractInfos(int page)
+        {
+            _window?.ShowWaiting();
+            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.CharacterContracts(page);
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
+                if (datas.NotNullOrEmpty())
+                {
+                    await ContractInfoHelper.CompleteinfoAsync(datas);
+                }
+                DataGrid_Character.ItemsSource = datas;
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                _window?.ShowError(resp?.Message, true);
+            }
+            _window?.HideWaiting();
+        }
+        private async void GetCorpContractInfos(int page)
+        {
+            _window?.ShowWaiting();
+            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.CorporationContracts(page);
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
+                if (datas.NotNullOrEmpty())
+                {
+                    await ContractInfoHelper.CompleteinfoAsync(datas);
+                }
+                DataGrid_Corp.ItemsSource = datas;
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                _window?.ShowError(resp?.Message, true);
+            }
+            _window?.HideWaiting();
+        }
+
+        private void NavigatePageControl_Corp_OnPageChanged(int page)
+        {
+            GetCorpContractInfos(page);
+        }
+
+        private void NavigatePageControl_Character_OnPageChanged(int page)
+        {
+            GetCharacterContractInfos(page);
+        }
+
+        private void DataGrid_Character_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
+        {
+            new Wins.ContractDetailWindow(_esiClient, DataGrid_Character.SelectedItem as Core.Models.Contract.ContractInfo, 1).Activate();
+        }
+
+        private void DataGrid_Corp_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
+        {
+            new Wins.ContractDetailWindow(_esiClient, DataGrid_Corp.SelectedItem as Core.Models.Contract.ContractInfo, 2).Activate();
         }
     }
 }

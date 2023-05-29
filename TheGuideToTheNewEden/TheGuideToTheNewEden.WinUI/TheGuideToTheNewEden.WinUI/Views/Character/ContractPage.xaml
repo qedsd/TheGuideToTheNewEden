@@ -12,58 +12,181 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Pivot x:Name="MainPivot"
-               SelectionChanged="MainPivot_SelectionChanged">
+        <Pivot x:Name="MainPivot" SelectionChanged="MainPivot_SelectionChanged">
             <PivotItem>
                 <PivotItem.Header>
                     <TextBlock FontSize="12" Text="{StaticResource ContractPage_Character}" />
                 </PivotItem.Header>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <dataGrid:SfDataGrid
+                        x:Name="DataGrid_Character"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="None"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        SelectionChanged="DataGrid_Character_SelectionChanged"
+                        SelectionMode="Single"
+                        ShowGroupDropArea="True">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Title}" MappingName="Title" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Type}" MappingName="TypeStr" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Price}"
+                                MappingName="Price" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Issuer}" MappingName="IssuerName" />
+                            <dataGrid:GridDateColumn
+                                DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                                HeaderText="{StaticResource ContractPage_DateIssued}"
+                                MappingName="DateIssued" />
+                            <dataGrid:GridDateColumn
+                                DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                                HeaderText="{StaticResource ContractPage_DateExpired}"
+                                MappingName="DateExpired" />
+                            <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Assignee}" MappingName="AssigneeName" />-->
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Acceptor}" MappingName="AcceptorName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_StartLocation}" MappingName="StartLocationName" />
+
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Status}" MappingName="Status" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_ForCorporation}" MappingName="ForCorporation" />
+                            <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Availability}" MappingName="Availability" />-->
+
+                            <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateAccepted}"
+                        MappingName="DateAccepted" />-->
+
+                            <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateCompleted}"
+                        MappingName="DateCompleted" />-->
+
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Buyout}"
+                                MappingName="Buyout" />
+
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Volume}"
+                                MappingName="Volume" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Reward}"
+                                MappingName="Reward" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Collateral}"
+                                MappingName="Collateral" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_EndLocation}" MappingName="EndLocationName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_DaysToComplete}" MappingName="DaysToComplete" />
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                    <controls:NavigatePageControl
+                        x:Name="NavigatePageControl_Character"
+                        Grid.Row="1"
+                        HorizontalAlignment="Right"
+                        OnPageChanged="NavigatePageControl_Character_OnPageChanged" />
+                </Grid>
             </PivotItem>
             <PivotItem>
                 <PivotItem.Header>
                     <TextBlock FontSize="12" Text="{StaticResource ContractPage_Corp}" />
                 </PivotItem.Header>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <dataGrid:SfDataGrid
+                        x:Name="DataGrid_Corp"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="None"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        SelectionChanged="DataGrid_Corp_SelectionChanged"
+                        SelectionMode="Single"
+                        ShowGroupDropArea="True">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Title}" MappingName="Title" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Type}" MappingName="TypeStr" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Price}"
+                                MappingName="Price" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Issuer}" MappingName="IssuerName" />
+                            <dataGrid:GridDateColumn
+                                DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                                HeaderText="{StaticResource ContractPage_DateIssued}"
+                                MappingName="DateIssued" />
+                            <dataGrid:GridDateColumn
+                                DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                                HeaderText="{StaticResource ContractPage_DateExpired}"
+                                MappingName="DateExpired" />
+                            <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Assignee}" MappingName="AssigneeName" />-->
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Acceptor}" MappingName="AcceptorName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_StartLocation}" MappingName="StartLocationName" />
+
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Status}" MappingName="Status" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_ForCorporation}" MappingName="ForCorporation" />
+                            <!--<dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_Availability}" MappingName="Availability" />-->
+
+                            <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateAccepted}"
+                        MappingName="DateAccepted" />-->
+
+                            <!--<dataGrid:GridDateColumn
+                        DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                        HeaderText="{StaticResource ContractPage_DateCompleted}"
+                        MappingName="DateCompleted" />-->
+
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Buyout}"
+                                MappingName="Buyout" />
+
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Volume}"
+                                MappingName="Volume" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Reward}"
+                                MappingName="Reward" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource ContractPage_Collateral}"
+                                MappingName="Collateral" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_EndLocation}" MappingName="EndLocationName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ContractPage_DaysToComplete}" MappingName="DaysToComplete" />
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                    <controls:NavigatePageControl
+                        x:Name="NavigatePageControl_Corp"
+                        Grid.Row="1"
+                        HorizontalAlignment="Right"
+                        OnPageChanged="NavigatePageControl_Corp_OnPageChanged" />
+                </Grid>
             </PivotItem>
         </Pivot>
-        <dataGrid:SfDataGrid
-            x:Name="DataGrid_Character"
-            Grid.Row="1"
-            HorizontalAlignment="Stretch"
-            AllowDraggingColumns="True"
-            AllowEditing="False"
-            AllowFiltering="True"
-            AllowGrouping="True"
-            AllowSorting="True"
-            AutoGenerateColumns="False"
-            ColumnWidthMode="Auto"
-            GridLinesVisibility="None"
-            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-            HeaderLinesVisibility="Both"
-            SelectionMode="Extended"
-            ShowGroupDropArea="True">
-            <dataGrid:SfDataGrid.Columns>
-                <dataGrid:GridDateColumn
-                    DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
-                    HeaderText="{StaticResource WalletPage_JournalDate}"
-                    MappingName="Date" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource WalletPage_JournalAmount}"
-                    MappingName="Amount">
-                    <dataGrid:GridNumericColumn.CellStyle />
-                </dataGrid:GridNumericColumn>
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource WalletPage_JournalBalance}"
-                    MappingName="Balance" />
-                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
-                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
-                <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
-            </dataGrid:SfDataGrid.Columns>
-        </dataGrid:SfDataGrid>
     </Grid>
 </Page>

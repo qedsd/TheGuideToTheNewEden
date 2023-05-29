@@ -82,6 +82,22 @@ namespace TheGuideToTheNewEden.WinUI.Views
             TextBlock_DateIssued.Text = _contractInfo.DateIssued.ToString();
             TextBlock_DateExpired.Text = _contractInfo.DateExpired.ToString();
             TextBlock_Volume.Text = _contractInfo.Volume.ToString("N2");
+            if (_contractInfo.DateAccepted != DateTime.MinValue)
+            {
+                TextBlock_DateAccepted.Text = _contractInfo.DateAccepted.ToString();
+            }
+            else
+            {
+                StackPanel_DateAccepted.Visibility = Visibility.Collapsed;
+            }
+            if (!string.IsNullOrEmpty(_contractInfo.AcceptorName))
+            {
+                TextBlock_Acceptor.Text = _contractInfo.AcceptorName;
+            }
+            else
+            {
+                StackPanel_Acceptor.Visibility = Visibility.Collapsed;
+            }
         }
 
         private async void LoadAuction()
@@ -167,6 +183,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
             TextBlock_Reward.Text = _contractInfo.Reward.ToString("N2");
             TextBlock_Collateral.Text = _contractInfo.Collateral.ToString("N2");
             TextBlock_EndLocation.Text = _contractInfo.EndLocationName;
+            if (_contractInfo.DateCompleted != DateTime.MinValue)
+            {
+                TextBlock_DateCompleted.Text = _contractInfo.DateCompleted.ToString();
+            }
+            else
+            {
+                StackPanel_DateCompleted.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void LoadItemExchange()
@@ -178,69 +202,72 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private async void LoadItems()
         {
             List<ESI.NET.Models.Contracts.ContractItem> items = new List<ESI.NET.Models.Contracts.ContractItem>();
-            int page = 1;
-            switch (_type)
+            if(_contractInfo.Type != ESI.NET.Enumerations.ContractType.Courier)
             {
-                case 0:
-                    {
-                        while (true)
+                int page = 1;
+                switch (_type)
+                {
+                    case 0:
                         {
-                            var esiResponse = await _esiClient.Contracts.ContractItems(_contractInfo.ContractId, page);
-                            if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                            while (true)
                             {
-                                items.AddRange(esiResponse.Data);
-                                if (esiResponse.Data.Count < 5000)
+                                var esiResponse = await _esiClient.Contracts.ContractItems(_contractInfo.ContractId, page);
+                                if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                                {
+                                    items.AddRange(esiResponse.Data);
+                                    if (esiResponse.Data.Count < 5000)
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
                                 {
                                     break;
                                 }
                             }
-                            else
-                            {
-                                break;
-                            }
                         }
-                    }
-                    break;
-                case 1:
-                    {
-                        while (true)
+                        break;
+                    case 1:
                         {
-                            var esiResponse = await _esiClient.Contracts.CharacterContractItems(_contractInfo.ContractId, page);
-                            if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                            while (true)
                             {
-                                items.AddRange(esiResponse.Data);
-                                if (esiResponse.Data.Count < 5000)
+                                var esiResponse = await _esiClient.Contracts.CharacterContractItems(_contractInfo.ContractId, page);
+                                if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                                {
+                                    items.AddRange(esiResponse.Data);
+                                    if (esiResponse.Data.Count < 5000)
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
                                 {
                                     break;
                                 }
                             }
-                            else
-                            {
-                                break;
-                            }
                         }
-                    }
-                    break;
-                case 2:
-                    {
-                        while (true)
+                        break;
+                    case 2:
                         {
-                            var esiResponse = await _esiClient.Contracts.CorporationContractItems(_contractInfo.ContractId, page);
-                            if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                            while (true)
                             {
-                                items.AddRange(esiResponse.Data);
-                                if (esiResponse.Data.Count < 5000)
+                                var esiResponse = await _esiClient.Contracts.CorporationContractItems(_contractInfo.ContractId, page);
+                                if (esiResponse != null && esiResponse.StatusCode == System.Net.HttpStatusCode.OK && esiResponse.Data.NotNullOrEmpty())
+                                {
+                                    items.AddRange(esiResponse.Data);
+                                    if (esiResponse.Data.Count < 5000)
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
                                 {
                                     break;
                                 }
                             }
-                            else
-                            {
-                                break;
-                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
             if (items.Any())
             {

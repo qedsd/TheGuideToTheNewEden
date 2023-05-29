@@ -64,9 +64,9 @@
     <x:String x:Key="ContractPage_Type_Loan">Loan</x:String>
     <x:String x:Key="ContractPage_Region">范围星系</x:String>
 
-    <x:String x:Key="ContractPage_Issuer">发布者</x:String>
+    <x:String x:Key="ContractPage_Issuer">发布人</x:String>
     <x:String x:Key="ContractPage_Assignee">指派给</x:String>
-    <x:String x:Key="ContractPage_Acceptor">接收者</x:String>
+    <x:String x:Key="ContractPage_Acceptor">接收人</x:String>
     <x:String x:Key="ContractPage_StartLocation">起始位置</x:String>
     <x:String x:Key="ContractPage_EndLocation">结束位置</x:String>
     <x:String x:Key="ContractPage_Type">类型</x:String>
@@ -91,7 +91,6 @@
     <x:String x:Key="ContractPage_WillPay">买家将给出</x:String>
 
     <x:String x:Key="ContractPage_IsSingleton">单个物品</x:String>
-
     <!--  Blueprint  -->
     <x:String x:Key="Blueprint_MaterialEfficiency">材料效率</x:String>
     <x:String x:Key="Blueprint_TimeEfficiency">时间效率</x:String>
@@ -101,4 +100,5 @@
     <x:String x:Key="Blueprint_BlueprintType">蓝图类型</x:String>
     <x:String x:Key="Blueprint_RawQuantity">RawQuantity</x:String>
     <x:String x:Key="Blueprint_InfiniteRuns">无限流程</x:String>
+
 </ResourceDictionary>
