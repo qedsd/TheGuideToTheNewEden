@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Wins;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
@@ -145,6 +146,68 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void SettingList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SettingListFlyout.Hide();
+        }
+
+        private void ProcessList_DragEnter(object sender, DragEventArgs e)
+        {
+            e.DragUIOverride.IsGlyphVisible = false;
+        }
+
+        private void ProcessList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            var item = e.Items.First() as Core.Models.GamePreviews.ProcessInfo;
+            e.Data.SetText(item.GUID);
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+
+        private void ProcessList_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        private async void ProcessList_Drop(object sender, DragEventArgs e)
+        {
+            ListView target = (ListView)sender;
+            if (e.DataView.Contains(StandardDataFormats.Text))
+            {
+                DragOperationDeferral def = e.GetDeferral();
+                string guid = await e.DataView.GetTextAsync();
+                var process = VM.Processes.FirstOrDefault(p => p.GUID == guid);
+                if (process == null)
+                {
+                    return;
+                }
+                Windows.Foundation.Point pos = e.GetPosition(target.ItemsPanelRoot);
+                int index = 0;
+                if (target.Items.Count != 0)
+                {
+                    // Get a reference to the first item in the ListView
+                    ListViewItem sampleItem = (ListViewItem)target.ContainerFromIndex(0);
+
+                    // Adjust itemHeight for margins
+                    double itemHeight = sampleItem.ActualHeight + sampleItem.Margin.Top + sampleItem.Margin.Bottom;
+
+                    // Find index based on dividing number of items by height of each item
+                    index = Math.Min(target.Items.Count - 1, (int)(pos.Y / itemHeight));
+
+                    // Find the item being dropped on top of.
+                    ListViewItem targetItem = (ListViewItem)target.ContainerFromIndex(index);
+
+                    // If the drop position is more than half-way down the item being dropped on
+                    //      top of, increment the insertion index so the dropped item is inserted
+                    //      below instead of above the item being dropped on top of.
+                    Windows.Foundation.Point positionInItem = e.GetPosition(targetItem);
+                    if (positionInItem.Y > itemHeight / 2)
+                    {
+                        index++;
+                    }
+
+                    // Don't go out of bounds
+                    index = Math.Min(target.Items.Count, index);
+                }
+                VM.Processes.Remove(process);
+                VM.Processes.Insert(index, process);
+            }
         }
     }
 }

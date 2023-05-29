@@ -43,19 +43,22 @@
                     </Button.Content>
                 </Button>
             </Grid>
-            <ListBox
+            <ListView
                 x:Name="ProcessList"
                 Grid.Row="1"
                 Margin="0,10,0,10"
+                AllowDrop="True"
                 Background="Transparent"
+                CanDragItems="True"
+                CanReorderItems="True"
+                DragEnter="ProcessList_DragEnter"
+                DragItemsStarting="ProcessList_DragItemsStarting"
+                DragOver="ProcessList_DragOver"
+                Drop="ProcessList_Drop"
                 ItemsSource="{x:Bind VM.Processes, Mode=OneWay}"
-                SelectedItem="{x:Bind VM.SelectedProcess, Mode=TwoWay}">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
+                SelectedItem="{x:Bind VM.SelectedProcess, Mode=TwoWay}"
+                Style="{StaticResource StretchListView}">
+                <ListView.ItemTemplate>
                     <DataTemplate x:DataType="gamepreviews:ProcessInfo">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -92,8 +95,8 @@
                         </Grid>
 
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+            </ListView>
             <Rectangle
                 Grid.Row="2"
                 Height="1"

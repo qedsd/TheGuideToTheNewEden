@@ -150,11 +150,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private string _lastProcessGUID;
         private void HotkeyService_OnKeyboardClicked(List<Common.KeyboardHook.KeyboardInfo> keys)
         {
-            //Core.Log.Debug($"预览窗口管理捕获到按键{keys.Select(p => p.Name).ToSeqString(",")}");
             if (keys.NotNullOrEmpty())
             {
-                //Core.Log.Debug($"当前激活的预览窗口数{_runningDic.Count}");
-                //Core.Log.Debug($"全局切换快捷键{PreviewSetting.SwitchHotkey}");
                 if (_runningDic.Count != 0 && !string.IsNullOrEmpty(PreviewSetting.SwitchHotkey))
                 {
                     var keynames = PreviewSetting.SwitchHotkey.Split('+');
@@ -168,38 +165,42 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 return;
                             }
                         }
-                        //Core.Log.Debug($"捕获到有效的全局切换按键");
                         if (_lastProcessGUID == null)
                         {
-                            //Core.Log.Debug($"首次激活第一个{_runningDic.First().Key}");
-                            //Debug.WriteLine($"首次激活第一个{_runningDic.First().Key}");
-                            _runningDic.First().Value.ActiveSourceWindow();
-                            _lastProcessGUID = _runningDic.First().Key;
+                            var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                            if(firstRunning != null)
+                            {
+                                if(_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                                {
+                                    value.ActiveSourceWindow();
+                                    _lastProcessGUID = firstRunning.GUID;
+                                }
+                            }
                         }
                         else
                         {
-                            for (int i = 0; i < _runningDic.Count; i++)
+                            var runnings = Processes.Where(p => p.Running).ToList();
+                            for (int i = 0; i < runnings.Count; i++)
                             {
-                                var item = _runningDic.ElementAt(i);
-                                if (item.Key == _lastProcessGUID)
+                                var item = runnings[i];
+                                if (item.GUID == _lastProcessGUID)
                                 {
-                                    KeyValuePair<string, GamePreviewWindow> show;
-                                    if (i != _runningDic.Count - 1)
+                                    string targetGUID = null;
+                                    if (i != runnings.Count - 1)
                                     {
-                                        show = _runningDic.ElementAt(i + 1);
-                                        //Core.Log.Debug($"激活下一个{show.Key}");
-                                        //Debug.WriteLine($"激活下一个{show.Key}");
+                                        targetGUID = runnings[i + 1].GUID;
                                     }
                                     else
                                     {
-                                        show = _runningDic.First();
-                                        //Core.Log.Debug($"激活下一轮第一个{show.Key}");
-                                        //Debug.WriteLine($"激活下一轮第一个{show.Key}");
+                                        targetGUID = runnings.First().GUID;
                                     }
-                                    if (show.Key != null)
+                                    if (targetGUID != null)
                                     {
-                                        _lastProcessGUID = show.Key;
-                                        show.Value.ActiveSourceWindow();
+                                        if (_runningDic.TryGetValue(targetGUID, out var value))
+                                        {
+                                            value.ActiveSourceWindow();
+                                            _lastProcessGUID = targetGUID;
+                                        }
                                     }
                                     break;
                                 }
