@@ -16,7 +16,8 @@
             x:Name="AppTitleBarGrid"
             Height="42"
             VerticalAlignment="Top"
-            Canvas.ZIndex="1">
+            Canvas.ZIndex="1"
+            Margin="0,0,120,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
