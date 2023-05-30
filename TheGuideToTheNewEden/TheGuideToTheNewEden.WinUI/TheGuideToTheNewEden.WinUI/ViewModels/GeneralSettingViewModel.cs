@@ -14,7 +14,7 @@ using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    public class SettingsViewModel : ObservableObject
+    public class GeneralSettingViewModel : ObservableObject
     {
         private ElementTheme _elementTheme = ThemeSelectorService.Theme;
 
@@ -123,7 +123,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        public SettingsViewModel()
+        public GeneralSettingViewModel()
         {
             InitLocalDb();
         }

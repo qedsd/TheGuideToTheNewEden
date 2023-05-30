@@ -4,6 +4,9 @@
     <x:String x:Key="General_Name">名称</x:String>
     <x:String x:Key="General_Quantity">数量</x:String>
     <x:String x:Key="General_Refresh">刷新</x:String>
+    <x:String x:Key="General_Update">更新</x:String>
+    <x:String x:Key="General_RemoveSelected">删除选中</x:String>
+    <x:String x:Key="General_AddSelected">添加选中</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -102,4 +105,10 @@
     <x:String x:Key="Blueprint_RawQuantity">RawQuantity</x:String>
     <x:String x:Key="Blueprint_InfiniteRuns">无限流程</x:String>
 
+    <!--  StructuresSettingPage  -->
+    <x:String x:Key="StructuresSettingPage_AddedStructureList">已添加建筑</x:String>
+    <x:String x:Key="StructuresSettingPage_AddStructureList">添加新建筑</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay1">方式1：指定建筑ID</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay2">方式2：从个人资产获取建筑列表</x:String>
+    <x:String x:Key="StructuresSettingPage_Character">指定角色</x:String>
 </ResourceDictionary>

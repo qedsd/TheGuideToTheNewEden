@@ -7,29 +7,29 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class BaseViewModel : ObservableObject
+    public class BaseViewModel : ObservableObject
     {
-        internal BaseWindow Window { get; set; }
-        internal BaseViewModel()
+        public BaseWindow Window { get; set; }
+        public BaseViewModel()
         {
         }
-        internal void ShowMsg(string msg, bool autoClose = true)
+        public void ShowMsg(string msg, bool autoClose = true)
         {
             Window?.ShowMsg(msg, autoClose);
         }
-        internal void ShowError(string msg, bool autoClose = true)
+        public void ShowError(string msg, bool autoClose = true)
         {
             Window?.ShowError(msg, autoClose);
         }
-        internal void ShowSuccess(string msg, bool autoClose = true)
+        public void ShowSuccess(string msg, bool autoClose = true)
         {
             Window?.ShowSuccess(msg, autoClose);
         }
-        internal void ShowWaiting()
+        public void ShowWaiting()
         {
             Window?.ShowWaiting();
         }
-        internal void HideWaiting()
+        public void HideWaiting()
         {
             Window?.HideWaiting();
         }

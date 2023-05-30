@@ -1,0 +1,210 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Settings.StructuresSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:universe="using:TheGuideToTheNewEden.Core.Models.Universe"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:StructuresSettingViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Page.Resources>
+        <DataTemplate x:Key="StructureDataTemplate" x:DataType="universe:Structure">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{x:Bind Name}" />
+                <TextBlock Grid.Row="1" Text="{x:Bind Id}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ListView
+                Grid.Row="0"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                ItemTemplate="{StaticResource StructureDataTemplate}"
+                ItemsSource="{x:Bind VM.Structures, Mode=OneWay}"
+                SelectionChanged="StructuresListView_SelectionChanged"
+                SelectionMode="Multiple" />
+            <Button
+                Grid.Row="1"
+                Margin="0,4,0,0"
+                HorizontalAlignment="Stretch"
+                Command="{x:Bind VM.RemoveCommand}"
+                Content="{StaticResource General_RemoveSelected}"
+                Foreground="OrangeRed" />
+            <Grid Grid.Row="2" Margin="8,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="{StaticResource StructuresSettingPage_AddedStructureList}" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1" Margin="8,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid Margin="8,0,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="8,0"
+                        Text="{StaticResource StructuresSettingPage_AddWay1}" />
+                    <Rectangle
+                        Grid.Column="2"
+                        Height="1"
+                        Fill="{ThemeResource SystemAccentColor}" />
+                </Grid>
+                <StackPanel
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <NumberBox Width="200" Value="{x:Bind VM.AddStructureId, Mode=OneWay}" />
+                    <Button Margin="8,0,0,0" Command="{x:Bind VM.AddIDCommand}">
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid Margin="8,0,8,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="8,0"
+                        Text="{StaticResource StructuresSettingPage_AddWay2}" />
+                    <Rectangle
+                        Grid.Column="2"
+                        Height="1"
+                        Fill="{ThemeResource SystemAccentColor}" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource StructuresSettingPage_Character}" />
+                            <ComboBox
+                                Width="200"
+                                Margin="8,0,0,0"
+                                DisplayMemberPath="CharacterName"
+                                ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
+                            <Button
+                                Width="24"
+                                Height="24"
+                                Margin="4,0,0,0"
+                                Padding="0"
+                                BorderThickness="0"
+                                Content="!">
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <TextBlock Text="获取指定角色资产列表中的建筑" />
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                        <Button
+                            Grid.Column="1"
+                            Command="{x:Bind VM.AddCommand}"
+                            Content="{StaticResource General_AddSelected}" />
+                    </Grid>
+                    <dataGrid:SfDataGrid
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="None"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        SelectionChanged="SerachDataGrid_SelectionChanged"
+                        SelectionMode="Multiple"
+                        ShowGroupDropArea="True">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn HeaderText="ID" MappingName="Id" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_Name}" MappingName="Name" />
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="2" Margin="8,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="{StaticResource StructuresSettingPage_AddStructureList}" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

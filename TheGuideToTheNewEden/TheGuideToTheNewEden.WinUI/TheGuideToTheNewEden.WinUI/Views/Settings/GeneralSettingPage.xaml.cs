@@ -13,11 +13,11 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace TheGuideToTheNewEden.WinUI.Views
+namespace TheGuideToTheNewEden.WinUI.Views.Settings
 {
-    public sealed partial class SettingPage : Page
+    public sealed partial class GeneralSettingPage : Page
     {
-        public SettingPage()
+        public GeneralSettingPage()
         {
             this.InitializeComponent();
         }

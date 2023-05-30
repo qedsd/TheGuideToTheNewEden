@@ -243,6 +243,8 @@
     <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
+    <None Remove="Views\Settings\GeneralSettingPage.xaml" />
+    <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -305,6 +307,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\StructuresSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ContractDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -354,6 +359,9 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\IntelOverlapPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\Settings\GeneralSettingPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Windows\IntelWindow.xaml">
