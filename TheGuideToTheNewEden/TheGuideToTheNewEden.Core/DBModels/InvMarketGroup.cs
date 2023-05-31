@@ -8,7 +8,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
     [SugarTable("invMarketGroups")]
     public class InvMarketGroup : InvMarketGroupBase
     {
-        public int ParentGroupID { get; set; }
+        public int? ParentGroupID { get; set; }
         public int IconID { get; set; }
         public bool HasTypes { get; set; }
     }

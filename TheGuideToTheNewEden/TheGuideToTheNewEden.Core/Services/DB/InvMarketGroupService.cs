@@ -28,5 +28,24 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+
+        public static async Task<List<InvMarketGroup>> QueryRootGroupAsync()
+        {
+            var groups = await DBService.MainDb.Queryable<InvMarketGroup>().Where(p => p.ParentGroupID == null).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                //await LocalDbService.TranInvMarketGroupsAsync(groups);
+            }
+            return groups;
+        }
+        public static async Task<List<InvMarketGroup>> QuerySubGroupAsync()
+        {
+            var groups = await DBService.MainDb.Queryable<InvMarketGroup>().Where(p => p.ParentGroupID != null).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                //await LocalDbService.TranInvMarketGroupsAsync(groups);
+            }
+            return groups;
+        }
     }
 }

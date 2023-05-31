@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public int RaceID { get; set; }
         public double BasePrice { get; set; }
         public int Published { get; set; }
-        public int MarketGroupID { get; set; }
+        public int? MarketGroupID { get; set; }
         public int IconID { get; set; }
         public int SoundID { get; set; }
         [SugarColumn()]

@@ -38,5 +38,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+
+        public static async Task<List<InvType>> QueryMarketTypesAsync()
+        {
+            var types = await DBService.MainDb.Queryable<InvType>().Where(p => p.MarketGroupID != null).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranInvTypesAsync(types);
+            }
+            return types;
+        }
     }
 }
