@@ -9,6 +9,7 @@
     <x:String x:Key="General_AddSelected">添加选中</x:String>
     <x:String x:Key="General_SolarSystemName">星系</x:String>
     <x:String x:Key="General_RegionName">星域</x:String>
+    <x:String x:Key="General_Character">角色</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
