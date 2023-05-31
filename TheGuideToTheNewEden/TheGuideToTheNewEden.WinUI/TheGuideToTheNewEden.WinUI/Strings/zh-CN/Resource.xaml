@@ -7,6 +7,8 @@
     <x:String x:Key="General_Update">更新</x:String>
     <x:String x:Key="General_RemoveSelected">删除选中</x:String>
     <x:String x:Key="General_AddSelected">添加选中</x:String>
+    <x:String x:Key="General_SolarSystemName">星系</x:String>
+    <x:String x:Key="General_RegionName">星域</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -109,6 +111,12 @@
     <x:String x:Key="StructuresSettingPage_AddedStructureList">已添加建筑</x:String>
     <x:String x:Key="StructuresSettingPage_AddStructureList">添加新建筑</x:String>
     <x:String x:Key="StructuresSettingPage_AddWay1">方式1：指定建筑ID</x:String>
-    <x:String x:Key="StructuresSettingPage_AddWay2">方式2：从个人资产获取建筑列表</x:String>
-    <x:String x:Key="StructuresSettingPage_Character">指定角色</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay2">方式2：按角色权限搜索建筑列表</x:String>
+    <x:String x:Key="StructuresSettingPage_Character">角色</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchPublic">公开建筑</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchAsset">玩家资产</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchClone">玩家克隆</x:String>
+    <x:String x:Key="StructuresSettingPage_Search">获取列表</x:String>
+    <x:String x:Key="StructuresSettingPage_StructureID">建筑ID</x:String>
+    <x:String x:Key="StructuresSettingPage_CharacterID">角色ID</x:String>
 </ResourceDictionary>

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml.Media.Imaging;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using SqlSugar;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -31,8 +32,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => _selectedStructures;
             set => SetProperty(ref _selectedStructures, value);
         }
-        private ObservableCollection<Structure> _searchStructures;
-        public ObservableCollection<Structure> SearchStructures
+        private List<Structure> _searchStructures;
+        public List<Structure> SearchStructures
         {
             get => _searchStructures;
             set => SetProperty(ref _searchStructures, value);
@@ -51,6 +52,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref _addStructureId, value);
         }
 
+        private bool _searchPublic = true;
+        public bool SearchPublic
+        {
+            get => _searchPublic;
+            set => SetProperty(ref _searchPublic, value);
+        }
+
+        private bool _searchAsset = true;
+        public bool SearchAsset
+        {
+            get => _searchAsset;
+            set => SetProperty(ref _searchAsset, value);
+        }
+
+        private bool _searchClone = true;
+        public bool SearchClone
+        {
+            get => _searchClone;
+            set => SetProperty(ref _searchClone, value);
+        }
+
         public EsiClient EsiClient;
         private ObservableCollection<AuthorizedCharacterData> _characters;
         public ObservableCollection<AuthorizedCharacterData> Characters
@@ -64,8 +86,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => _selectedCharacter;
             set
             {
-                SetSelectedCharacter(value);
-                SetProperty(ref _selectedCharacter, value);
+                if(SetProperty(ref _selectedCharacter, value))
+                {
+                    SetSelectedCharacter(value);
+                }
             }
         }
 
@@ -83,14 +107,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 UserAgent = "TheGuideToTheNewEden",
             });
             EsiClient = new ESI.NET.EsiClient(config);
+            SelectedCharacter = Characters.FirstOrDefault();
         }
         private void SetSelectedCharacter(AuthorizedCharacterData characterData)
         {
             EsiClient.SetCharacterData(characterData);
-            if(characterData != null)
-            {
-                GetStructures();
-            }
         }
         public ICommand AddCommand => new RelayCommand(() =>
         {
@@ -137,32 +158,81 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Services.StructureService.Save();
             }
         });
+        public ICommand SearchCommand => new RelayCommand(() =>
+        {
+            GetStructures();
+        });
         private async void GetStructures()
         {
             Window?.ShowWaiting();
-            if (!SelectedCharacter.IsTokenValid())
+            if (SearchPublic || SearchAsset || SearchClone)
             {
-                if (!await SelectedCharacter.RefreshTokenAsync())
+                if (SelectedCharacter != null)
                 {
-                    Window?.HideWaiting();
-                    Window?.ShowError("Token已过期，尝试刷新失败");
+                    if (!SelectedCharacter.IsTokenValid())
+                    {
+                        if (!await SelectedCharacter.RefreshTokenAsync())
+                        {
+                            Window?.HideWaiting();
+                            Window?.ShowError("Token已过期，尝试刷新失败");
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    Window?.ShowError("请选择角色");
                     return;
                 }
+                SearchStructures = await GetAllStructures();
             }
-            var assets = await GetStructuresByAssets();
+            else
+            {
+                Window?.ShowError("请选择至少一种获取建筑ID方式");
+            }
             Window?.HideWaiting();
         }
-        private async Task<List<Core.Models.Universe.Structure>> GetStructuresByAssets()
+        private async Task<List<Core.Models.Universe.Structure>> GetAllStructures()
+        {
+            List<long> ids = new List<long>();
+            if (SearchPublic)
+            {
+                var ids1 = await GetStructureIdsByPublic();
+                if (ids1.NotNullOrEmpty())
+                {
+                    ids.AddRange(ids1);
+                }
+            }
+            if (SearchAsset)
+            {
+                var ids3 = await GetStructuresByAssets();
+                if (ids3.NotNullOrEmpty())
+                {
+                    ids.AddRange(ids3);
+                }
+            }
+            if (SearchClone)
+            {
+                var ids2 = await GetStructureIdsByClone();
+                if (ids2.NotNullOrEmpty())
+                {
+                    ids.AddRange(ids2);
+                }
+            }
+            return await GetStructures(ids.Distinct().ToList());
+        }
+        private async Task<List<long>> GetStructuresByAssets()
         {
             List<ESI.NET.Models.Assets.Item> assetsItems = new List<ESI.NET.Models.Assets.Item>();
+            int page = 1;
             while (true)
             {
-                var resp = await EsiClient.Assets.ForCharacter();
+                var resp = await EsiClient.Assets.ForCharacter(page++);
                 if (resp != null)
                 {
                     if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        if (!resp.Data.NotNullOrEmpty())
+                        if (resp.Data.NotNullOrEmpty())
                         {
                             assetsItems.AddRange(resp.Data);
                         }
@@ -181,37 +251,114 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             if(assetsItems.Any())
             {
-                var items = assetsItems.Where(p => p.LocationType == "structure").ToList();
+                var items = assetsItems.Where(p => p.LocationId > 70000000).ToList();
                 if(items.NotNullOrEmpty())
                 {
-                    return await GetStructures(items.Select(p=>p.LocationId).ToList());
+                    return items.Select(p => p.LocationId).Distinct().ToList();
                 }
             }
             return null;
         }
-        private async Task<List<Core.Models.Universe.Structure>> GetStructures(List<long> ids)
+        private async Task<List<long>> GetStructureIdsByPublic()
         {
-            List<Structure> list = new List<Structure>();
-            foreach (var id in ids)
+            var resp = await EsiClient.Universe.Structures();
+            if (resp != null)
             {
-                var s = await GetStructure(id);
-                if(s != null)
+                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    list.Add(s);
+                    return resp.Data.ToList();
+                }
+                else
+                {
+                    Window?.ShowError(resp.Message);
+                    Core.Log.Error(resp.Message);
+                    return null;
                 }
             }
-            return list;
+            else
+            {
+                return null;
+            }
+        }
+        private async Task<List<long>> GetStructureIdsByClone()
+        {
+            var resp = await EsiClient.Clones.List();
+            if (resp != null)
+            {
+                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    List<long> ids = new List<long>();
+                    if (resp.Data.HomeLocation.LocationType == "structure")
+                    {
+                        ids.Add(resp.Data.HomeLocation.LocationId);
+                    }
+                    if(resp.Data.JumpClones.NotNullOrEmpty())
+                    {
+                        var structureClones = resp.Data.JumpClones.Where(p => p.LocationType == "structure").ToList();
+                        if(structureClones.NotNullOrEmpty())
+                        {
+                            ids.AddRange(structureClones.Select(p => p.LocationId));
+                        }
+                    }
+                    return ids;
+                }
+                else
+                {
+                    Window?.ShowError(resp.Message);
+                    Core.Log.Error(resp.Message);
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private async Task<List<Core.Models.Universe.Structure>> GetStructures(List<long> ids)
+        {
+            var result = await Core.Helpers.ThreadHelper.RunAsync(ids, GetStructure);
+            var data =  result?.Where(p=>p!=null).ToList();
+            if(data.NotNullOrEmpty())
+            {
+                var systems = await Core.Services.DB.MapSolarSystemService.QueryAsync(data.Select(p=>p.SolarSystemId).Distinct().ToList());
+                if(systems.NotNullOrEmpty())
+                {
+                    var dic = systems.ToDictionary(p => p.SolarSystemID);
+                    foreach(var d in data)
+                    {
+                        if(dic.TryGetValue(d.SolarSystemId, out var value))
+                        {
+                            d.RegionId = value.RegionID;
+                            d.SolarSystemName = value.SolarSystemName;
+                        }
+                    }
+                    var regions = await Core.Services.DB.MapRegionService.QueryAsync(data.Select(p=>p.RegionId).Distinct().ToList());
+                    if(regions.NotNullOrEmpty())
+                    {
+                        var dic2 = regions.ToDictionary(p => p.RegionID);
+                        foreach (var d in data)
+                        {
+                            if (dic2.TryGetValue(d.RegionId, out var value))
+                            {
+                                d.RegionName = value.RegionName;
+                            }
+                        }
+                    }
+                }
+            }
+            return data;
         }
         private async Task<Core.Models.Universe.Structure> GetStructure(long id)
         {
-            var resp = await Core.Services.ESIService.Current.EsiClient.Universe.Structure(12121);
+            var resp = await EsiClient.Universe.Structure(id);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return new Structure()
                 {
                     Id = id,
                     Name = resp.Data.Name,
-                    SolarSystemId = resp.Data.SolarSystemId
+                    SolarSystemId = resp.Data.SolarSystemId,
+                    CharacterId = SelectedCharacter.CharacterID
                 };
             }
             else

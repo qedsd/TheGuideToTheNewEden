@@ -15,13 +15,28 @@
     </Page.DataContext>
     <Page.Resources>
         <DataTemplate x:Key="StructureDataTemplate" x:DataType="universe:Structure">
-            <Grid>
+            <Grid Margin="0,4">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <TextBlock Text="{x:Bind Name}" />
-                <TextBlock Grid.Row="1" Text="{x:Bind Id}" />
+                <TextBlock Text="{x:Bind Name}" ToolTipService.ToolTip="{x:Bind Name}" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        FontWeight="Light"
+                        Text="{x:Bind Id}"
+                        ToolTipService.ToolTip="{StaticResource StructuresSettingPage_StructureID}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        FontWeight="Light"
+                        Text="{x:Bind CharacterId}"
+                        ToolTipService.ToolTip="{StaticResource StructuresSettingPage_CharacterID}" />
+                </Grid>
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -43,7 +58,7 @@
                 ItemTemplate="{StaticResource StructureDataTemplate}"
                 ItemsSource="{x:Bind VM.Structures, Mode=OneWay}"
                 SelectionChanged="StructuresListView_SelectionChanged"
-                SelectionMode="Multiple" />
+                SelectionMode="Extended" />
             <Button
                 Grid.Row="1"
                 Margin="0,4,0,0"
@@ -100,7 +115,7 @@
                     Grid.Row="1"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal">
-                    <NumberBox Width="200" Value="{x:Bind VM.AddStructureId, Mode=OneWay}" />
+                    <NumberBox Width="200" Value="{x:Bind VM.AddStructureId, Mode=TwoWay}" />
                     <Button Margin="8,0,0,0" Command="{x:Bind VM.AddIDCommand}">
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
                     </Button>
@@ -141,24 +156,27 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="{StaticResource StructuresSettingPage_Character}" />
                             <ComboBox
-                                Width="200"
+                                Width="160"
                                 Margin="8,0,0,0"
                                 DisplayMemberPath="CharacterName"
                                 ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
                                 SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
+                            <CheckBox
+                                Margin="8,0,0,0"
+                                Content="{StaticResource StructuresSettingPage_SearchPublic}"
+                                IsChecked="{x:Bind VM.SearchPublic, Mode=TwoWay}" />
+                            <CheckBox
+                                Margin="8,0,0,0"
+                                Content="{StaticResource StructuresSettingPage_SearchAsset}"
+                                IsChecked="{x:Bind VM.SearchAsset, Mode=TwoWay}" />
+                            <CheckBox
+                                Margin="8,0,0,0"
+                                Content="{StaticResource StructuresSettingPage_SearchClone}"
+                                IsChecked="{x:Bind VM.SearchClone, Mode=TwoWay}" />
                             <Button
-                                Width="24"
-                                Height="24"
-                                Margin="4,0,0,0"
-                                Padding="0"
-                                BorderThickness="0"
-                                Content="!">
-                                <Button.Flyout>
-                                    <Flyout>
-                                        <TextBlock Text="获取指定角色资产列表中的建筑" />
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
+                                Margin="8,0,0,0"
+                                Command="{x:Bind VM.SearchCommand}"
+                                Content="{StaticResource StructuresSettingPage_Search}" />
                         </StackPanel>
                         <Button
                             Grid.Column="1"
@@ -167,6 +185,7 @@
                     </Grid>
                     <dataGrid:SfDataGrid
                         Grid.Row="1"
+                        Margin="0,4,0,0"
                         HorizontalAlignment="Stretch"
                         AllowDraggingColumns="True"
                         AllowEditing="False"
@@ -178,12 +197,15 @@
                         GridLinesVisibility="None"
                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                         HeaderLinesVisibility="Both"
+                        ItemsSource="{x:Bind VM.SearchStructures, Mode=OneWay}"
                         SelectionChanged="SerachDataGrid_SelectionChanged"
-                        SelectionMode="Multiple"
+                        SelectionMode="Extended"
                         ShowGroupDropArea="True">
                         <dataGrid:SfDataGrid.Columns>
                             <dataGrid:GridTextColumn HeaderText="ID" MappingName="Id" />
                             <dataGrid:GridTextColumn HeaderText="{StaticResource General_Name}" MappingName="Name" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystemName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="RegionName" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Grid>

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.Core.Helpers
 {
-    static class ThreadHelper
+    public static class ThreadHelper
     {
         /// <summary>
         /// 并行处理集合中的每一项
