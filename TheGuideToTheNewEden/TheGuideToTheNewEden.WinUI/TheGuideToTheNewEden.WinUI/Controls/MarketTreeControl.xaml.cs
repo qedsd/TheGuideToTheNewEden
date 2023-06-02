@@ -22,7 +22,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
     public sealed partial class MarketTreeControl : UserControl
     {
         public List<MarketItem> MarketItems { get; set; }
-        private Dictionary<string, InvType> _typesDic;
         private List<InvType> _types;
         public MarketTreeControl()
         {
@@ -66,7 +65,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                     });
                 }
             }
-            //_typesDic = marketTypes.ToDictionary(p => p.TypeName);
             TreeView_Types.ItemsSource = rootGroup;
         }
         private void TreeView_Types_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
