@@ -48,5 +48,22 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+        public static async Task<List<InvType>> QueryByNameAsync(string name, bool isLike = true)
+        {
+            List<InvType> types;
+            if(isLike)
+            {
+                types = await DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(name)).ToListAsync();
+            }
+            else
+            {
+                types = await DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Equals(name)).ToListAsync();
+            }
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranInvTypesAsync(types);
+            }
+            return types;
+        }
     }
 }
