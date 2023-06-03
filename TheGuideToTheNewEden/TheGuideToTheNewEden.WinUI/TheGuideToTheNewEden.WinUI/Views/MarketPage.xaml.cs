@@ -21,7 +21,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public MarketPage()
         {
             this.InitializeComponent();
-            new MarketTreeControl();
         }
     }
 }
