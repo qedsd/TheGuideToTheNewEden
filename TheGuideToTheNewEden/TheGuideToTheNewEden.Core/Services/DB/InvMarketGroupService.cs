@@ -34,7 +34,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var groups = await DBService.MainDb.Queryable<InvMarketGroup>().Where(p => p.ParentGroupID == null).ToListAsync();
             if (DBService.NeedLocalization)
             {
-                //await LocalDbService.TranInvMarketGroupsAsync(groups);
+                await LocalDbService.TranInvMarketGroupsAsync(groups);
             }
             return groups;
         }
@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var groups = await DBService.MainDb.Queryable<InvMarketGroup>().Where(p => p.ParentGroupID != null).ToListAsync();
             if (DBService.NeedLocalization)
             {
-                //await LocalDbService.TranInvMarketGroupsAsync(groups);
+                await LocalDbService.TranInvMarketGroupsAsync(groups);
             }
             return groups;
         }
