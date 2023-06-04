@@ -21,6 +21,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public MarketPage()
         {
             this.InitializeComponent();
+            Loaded += MarketPage_Loaded;
+        }
+
+        private void MarketPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
     }
 }

@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private void TreeView_Types_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
-            SelectedInvType = args.InvokedItem as InvType;
+            SelectedInvType = (args.InvokedItem as MarketItem)?.InvType;
         }
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {

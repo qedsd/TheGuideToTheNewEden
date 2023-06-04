@@ -10,6 +10,9 @@
     <x:String x:Key="General_SolarSystemName">星系</x:String>
     <x:String x:Key="General_RegionName">星域</x:String>
     <x:String x:Key="General_Character">角色</x:String>
+    <x:String x:Key="General_Region">星域</x:String>
+    <x:String x:Key="General_Structure">建筑</x:String>
+
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -120,4 +123,10 @@
     <x:String x:Key="StructuresSettingPage_Search">获取列表</x:String>
     <x:String x:Key="StructuresSettingPage_StructureID">建筑ID</x:String>
     <x:String x:Key="StructuresSettingPage_CharacterID">角色ID</x:String>
+    <x:String x:Key="StructuresSettingPage_EmptyTip">请前往设置-玩家建筑添加建筑</x:String>
+
+    <!--  MarketPage  -->
+    <x:String x:Key="MarketPage_AllList">列表</x:String>
+    <x:String x:Key="MarketPage_Star">收藏</x:String>
+    <x:String x:Key="MarketPage_SelecteMarket">选择市场</x:String>
 </ResourceDictionary>

@@ -25,19 +25,27 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             get => Current.EsiClient.SSO;
         }
+        /// <summary>
+        /// 公开ESI
+        /// </summary>
         public EsiClient EsiClient { get; private set; }
         public ESIService()
         {
+            EsiClient = GetDefaultEsi();
+        }
+
+        public static EsiClient GetDefaultEsi()
+        {
             IOptions<EsiConfig> config = Options.Create(new EsiConfig()
             {
-                EsiUrl = Config.DefaultGameServer == Enums.GameServerType.Tranquility? "https://esi.evetech.net/": "https://esi.evepc.163.com/",
-                DataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? DataSource.Tranquility: DataSource.Singularity,
+                EsiUrl = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://esi.evepc.163.com/",
+                DataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Singularity,
                 ClientId = Config.ClientId,
                 SecretKey = "Unneeded",
                 CallbackUrl = Config.ESICallback,
                 UserAgent = "TheGuideToTheNewEden",
             });
-            EsiClient = new ESI.NET.EsiClient(config);
+            return new ESI.NET.EsiClient(config);
         }
     }
 }

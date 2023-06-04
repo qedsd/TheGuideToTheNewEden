@@ -223,6 +223,7 @@
     <None Remove="Controls\NavigatePageControl.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
+    <None Remove="Controls\StructureSelectorControl.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
@@ -290,6 +291,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SelecteRegionControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\StructureSelectorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">

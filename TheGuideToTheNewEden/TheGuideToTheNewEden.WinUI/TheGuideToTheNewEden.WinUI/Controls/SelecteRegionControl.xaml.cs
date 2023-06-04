@@ -22,10 +22,12 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         public SelecteRegionControl()
         {
             this.InitializeComponent();
+            Init();
         }
+
         private async void Init()
         {
-            MapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).OrderBy(p=>p.RegionName).ToList();
+            MapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).OrderBy(p=>p.RegionID).ToList();
             ListView_Regions.ItemsSource = MapRegions;
         }
 
@@ -70,10 +72,55 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private static void SelectedItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            (d as SelecteRegionControl).OnSelectedItemChanged?.Invoke(e.NewValue as MapRegion);
+            (d as SelecteRegionControl).SelectedItemChanged?.Invoke(e.NewValue as MapRegion);
+        }
+
+        public static readonly DependencyProperty SelectedIdProperty
+            = DependencyProperty.Register(
+                nameof(SelectedId),
+                typeof(MapRegion),
+                typeof(SelecteRegionControl),
+                new PropertyMetadata(0, new PropertyChangedCallback(SelectedIdPropertyChanged)));
+
+        public int SelectedId
+        {
+            get => (int)GetValue(SelectedIdProperty);
+            set => SetValue(SelectedIdProperty, value);
+        }
+        private static void SelectedIdPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as SelecteRegionControl).SelectedItem = (d as SelecteRegionControl).MapRegions.FirstOrDefault(p=>p.RegionID == (int)e.NewValue);
+        }
+
+        public static readonly DependencyProperty ItemSourceProperty
+            = DependencyProperty.Register(
+                nameof(ItemSource),
+                typeof(List<MapRegion>),
+                typeof(SelecteRegionControl),
+                new PropertyMetadata(null, new PropertyChangedCallback(ItemSourcePropertyChanged)));
+
+        public List<MapRegion> ItemSource
+        {
+            get => (List<MapRegion>)GetValue(ItemSourceProperty);
+            set => SetValue(ItemSourceProperty, value);
+        }
+        private static void ItemSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            
         }
 
         public delegate void SelectedItemChangedEventHandel(MapRegion selectedItem);
-        private SelectedItemChangedEventHandel OnSelectedItemChanged;
+        private SelectedItemChangedEventHandel SelectedItemChanged;
+        public event SelectedItemChangedEventHandel OnSelectedItemChanged
+        {
+            add
+            {
+                SelectedItemChanged += value;
+            }
+            remove
+            {
+                SelectedItemChanged -= value;
+            }
+        }
     }
 }

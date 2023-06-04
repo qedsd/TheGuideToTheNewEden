@@ -10,10 +10,8 @@ namespace TheGuideToTheNewEden.Core.Models.Universe
         public long Id { get; set; }
         public string Name { get; set; }
         public int SolarSystemId { get; set; }
-        [JsonIgnore]
         public string SolarSystemName { get; set; }
         public int RegionId { get;set; }
-        [JsonIgnore]
         public string RegionName { get; set; }
         public int CharacterId { get; set; }
     }
