@@ -1,9 +1,14 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CommunityToolkit.Mvvm.Input;
+using ESI.NET;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Universe;
@@ -62,15 +67,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private int selectedRegionId;
-        public int SelectedRegionId
-        {
-            get => selectedRegionId;
-            set
-            {
-                SetProperty(ref selectedRegionId, value);
-            }
-        }
         private Structure selectedStructure;
         public Structure SelectedStructure
         {
@@ -112,10 +108,84 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+
+        private bool stared = false;
+        public bool Stared
+        {
+            get => stared;
+            set
+            {
+                SetProperty(ref stared, value);
+            }
+        }
+
+        private bool locationFilterH;
+        public bool LocationFilterH { get => locationFilterH; set => SetProperty(ref locationFilterH, value); }
+        private bool locationFilterL;
+        public bool LocationFilterL { get => locationFilterL; set => SetProperty(ref locationFilterL, value); }
+        private bool locationFilterN;
+        public bool LocationFilterN { get => locationFilterN; set => SetProperty(ref locationFilterN, value); }
+
+        private ObservableCollection<Core.Models.Market.Order> sellOrders;
+        public ObservableCollection<Core.Models.Market.Order> SellOrders
+        {
+            get => sellOrders;
+            set => SetProperty(ref sellOrders, value);
+        }
+
+        private ObservableCollection<Core.Models.Market.Order> buyOrders;
+        public ObservableCollection<Core.Models.Market.Order> BuyOrders
+        {
+            get => buyOrders;
+            set => SetProperty(ref buyOrders, value);
+        }
+
+        private double sell5P;
+        public double Sell5P
+        {
+            get => sell5P;
+            set => SetProperty(ref sell5P, value);
+        }
+
+        private double buy5P;
+        public double Buy5P
+        {
+            get => buy5P;
+            set => SetProperty(ref buy5P, value);
+        }
+
+        private double sellMean;
+        public double SellMean
+        {
+            get => sellMean;
+            set => SetProperty(ref sellMean, value);
+        }
+
+        private double buyMean;
+        public double BuyMean
+        {
+            get => buyMean;
+            set => SetProperty(ref buyMean, value);
+        }
+
+        private int sellAmount;
+        public int SellAmount
+        {
+            get => sellAmount;
+            set => SetProperty(ref sellAmount, value);
+        }
+
+        private int buyAmount;
+        public int BuyAmount
+        {
+            get => buyAmount;
+            set => SetProperty(ref buyAmount, value);
+        }
+
         private ESI.NET.EsiClient _esiClient = Core.Services.ESIService.GetDefaultEsi();
         public MarketViewModel() 
         {
-            SelectedRegionId = 10000002;
+            SelectedRegion = Core.Services.DB.MapRegionService.Query(10000002);
         }
         private async void SetSelectedInvType()
         {
@@ -123,8 +193,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 return;
             }
-            ESI.NET.EsiResponse<List<ESI.NET.Models.Market.Order>> resp;
-            ESI.NET.EsiClient esiClient = null;
             if (SelectedRegion == null && SelectedStructure == null)
             {
                 Window.ShowError("未选择市场");
@@ -137,7 +205,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     Window.ShowError("未选择星域");
                     return;
                 }
-                esiClient = Core.Services.ESIService.Current.EsiClient;
+                GetRegionOrders();
             }
             else if(SelectedMarketTypeIndex == 1)
             {
@@ -163,26 +231,213 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         return;
                     }
                 }
-                esiClient = _esiClient;
+                GetSructureOrders();
             }
-            if(esiClient ==null)
-            {
-                Window?.ShowError("ESI为空");
-                return;
-            }
+        }
+
+        private async void GetRegionOrders()
+        {
             Window?.ShowWaiting("获取订单中...");
-            resp = await esiClient.Market.RegionOrders(SelectedRegion.RegionID, ESI.NET.Enumerations.MarketOrderType.All, Page, SelectedInvType.TypeID);
-            Window?.HideWaiting();
+            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            int page = 1;
+            while(true)
+            {
+                var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(SelectedRegion.RegionID, ESI.NET.Enumerations.MarketOrderType.All, page++, SelectedInvType.TypeID);
+                Window?.HideWaiting();
+                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if(resp.Data.Any())
+                    {
+                        orders.AddRange(resp.Data.Select(p=> new Core.Models.Market.Order(p)));
+                        if(orders.Count < 1000)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    Window?.ShowError(resp?.Message);
+                    Core.Log.Error(resp?.Message);
+                    break;
+                }
+            }
+            if(orders.Any())
+            {
+                #region 赋值物品、星系信息
+                //var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(orders.Select(p=>p.TypeId).Distinct().ToList());
+                //var typesDic = types.ToDictionary(p => p.TypeID);
+                var systems = await Core.Services.DB.MapSolarSystemService.QueryAsync(orders.Select(p => (int)p.SystemId).Distinct().ToList());
+                var systemsDic = systems.ToDictionary(p => p.SolarSystemID);
+                foreach(var order in orders)
+                {
+                    //if(typesDic.TryGetValue(order.TypeId, out var type))
+                    //{
+                    //    order.InvType = type;
+                    //}
+                    order.InvType = SelectedInvType;
+                    if (systemsDic.TryGetValue((int)order.SystemId, out var system))
+                    {
+                        order.SolarSystem = system;
+                    }
+                }
+                #endregion
+                #region 赋值空间站、建筑星系
+                var stationOrders = orders.Where(p => p.IsStation).ToList();
+                var structureOrders = orders.Where(p => !p.IsStation).ToList();
+                if(stationOrders.NotNullOrEmpty())
+                {
+                    var stations = await Core.Services.DB.StaStationService.QueryAsync(stationOrders.Select(p=>(int)p.LocationId).ToList());
+                    var stationsDic = stations.ToDictionary(p => p.StationID);
+                    foreach(var order in stationOrders)
+                    {
+                        if (stationsDic.TryGetValue((int)order.LocationId, out var station))
+                        {
+                            order.LocationName = station.StationName;
+                        }
+                    }
+                }
+                if(structureOrders.NotNullOrEmpty())
+                {
+                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p=>p.LocationId), GetStructure);
+                    var data = result?.Where(p => p != null).ToList();
+                    var structuresDic = data.ToDictionary(p => p.Id);
+                    foreach (var order in structureOrders)
+                    {
+                        if (structuresDic.TryGetValue((int)order.LocationId, out var structure))
+                        {
+                            order.LocationName = structure.Name;
+                        }
+                    }
+                }
+                #endregion
+            }
+            BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
+            SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
+            SetOrderStatisticalInfo(BuyOrders, SellOrders);
+        }
+        private async Task<Core.Models.Universe.Structure> GetStructure(long id)
+        {
+            var resp = await Core.Services.ESIService.Current.EsiClient.Universe.Structure(id);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                var buys = resp.Data.Where(p => p.IsBuyOrder)?.ToList();
-                var sells = resp.Data.Where(p => !p.IsBuyOrder)?.ToList();
+                return new Core.Models.Universe.Structure()
+                {
+                    Id = id,
+                    Name = resp.Data.Name,
+                    SolarSystemId = resp.Data.SolarSystemId
+                };
             }
             else
             {
-                Window?.ShowError(resp?.Message);
-                Core.Log.Error(resp?.Message);
+                return null;
             }
         }
+
+        private async void GetSructureOrders()
+        {
+            //TODO:
+            await GetAllStructureOrders();
+        }
+        private async Task<List<Core.Models.Market.Order>> GetAllStructureOrders()
+        {
+            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            int page = 1;
+            while (true)
+            {
+                var resp = await _esiClient.Market.StructureOrders(SelectedStructure.Id, page++);
+                Window?.HideWaiting();
+                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if (resp.Data.Any())
+                    {
+                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
+                        if (orders.Count < 1000)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    Window?.ShowError(resp?.Message);
+                    Core.Log.Error(resp?.Message);
+                    break;
+                }
+            }
+            if (orders.Any())
+            {
+                foreach (var order in orders)
+                {
+                    order.InvType = SelectedInvType;
+                    order.LocationName = SelectedStructure.Name;
+                }
+            }
+            return orders;
+        }
+        private void SetOrderStatisticalInfo(IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders)
+        {
+            if(sellOrders.NotNullOrEmpty())
+            {
+                int top5P = (int)(sellOrders.Count() * 0.05);
+                if(top5P > 1)
+                {
+                    Sell5P = (double)sellOrders.Take(top5P).Average(p => p.Price);
+                }
+                else
+                {
+                    Sell5P = 0;
+                }
+                SellMean = (double)sellOrders.Average(p => p.Price);
+                SellAmount = sellOrders.Sum(p => p.VolumeRemain);
+            }
+            else
+            {
+                Sell5P = 0;
+                SellMean = 0;
+                SellAmount = 0;
+            }
+
+            if (buyOrders.NotNullOrEmpty())
+            {
+                int top5P = (int)(buyOrders.Count() * 0.05);
+                if (top5P > 1)
+                {
+                    Sell5P = (double)buyOrders.Take(top5P).Average(p => p.Price);
+                }
+                else
+                {
+                    Sell5P = 0;
+                }
+                BuyMean = (double)buyOrders.Average(p => p.Price);
+                BuyAmount = buyOrders.Sum(p => p.VolumeRemain);
+            }
+            else
+            {
+                Buy5P = 0;
+                BuyMean = 0;
+                BuyAmount = 0;
+            }
+        }
+        public ICommand StarCommand => new RelayCommand(() =>
+        {
+            //TODO:收藏列表
+            Stared = !Stared;
+        });
+        public ICommand GetSructureOrdersCommand => new RelayCommand(async() =>
+        {
+            //TODO:保存数据库
+            Window?.ShowWaiting("获取建筑订单中...");
+            await GetAllStructureOrders();
+            Window?.HideWaiting();
+        });
     }
 }

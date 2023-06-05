@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:MarketViewModel x:Name="VM" />
@@ -23,13 +25,13 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Pivot>
-                <PivotItem>
+                <PivotItem Margin="-4,0">
                     <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MarketPage_AllList}" />
                     </PivotItem.Header>
                     <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
                 </PivotItem>
-                <PivotItem>
+                <PivotItem Margin="-4,0">
                     <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MarketPage_Star}" />
                     </PivotItem.Header>
@@ -40,27 +42,28 @@
             <Button
                 Grid.Row="1"
                 Height="32"
-                Margin="16,0"
+                Margin="16,4,16,0"
                 HorizontalAlignment="Stretch"
                 Content="{x:Bind VM.SelectedMarketName, Mode=OneWay}">
                 <Button.Flyout>
                     <Flyout>
                         <Grid
+                            x:Name="Flyout_SelecteMarket"
                             Width="300"
-                            Height="600"
+                            Height="400"
                             Margin="-12">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Pivot SelectedIndex="{x:Bind VM.SelectedMarketTypeIndex, Mode=TwoWay}">
-                                <PivotItem>
+                                <PivotItem Margin="-4,0">
                                     <PivotItem.Header>
                                         <TextBlock FontSize="14" Text="{StaticResource General_Region}" />
                                     </PivotItem.Header>
-                                    <controls:SelecteRegionControl SelectedId="{x:Bind VM.SelectedRegionId, Mode=OneWay}" SelectedItem="{x:Bind VM.SelectedRegion, Mode=TwoWay}" />
+                                    <controls:SelecteRegionControl SelectedItem="{x:Bind VM.SelectedRegion, Mode=TwoWay}" />
                                 </PivotItem>
-                                <PivotItem>
+                                <PivotItem Margin="-4,0">
                                     <PivotItem.Header>
                                         <TextBlock FontSize="14" Text="{StaticResource General_Structure}" />
                                     </PivotItem.Header>
@@ -87,6 +90,185 @@
                     </Flyout>
                 </Button.Flyout>
             </Button>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image
+                    Width="32"
+                    Height="32"
+                    Source="{x:Bind VM.SelectedInvType.TypeID, Converter={StaticResource TypeImgConverter32}, Mode=OneWay}" />
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
+                        <Button
+                            Width="24"
+                            Height="24"
+                            Margin="4,0,0,0"
+                            Padding="0"
+                            BorderThickness="0"
+                            Content="!">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <TextBlock Text="{x:Bind VM.SelectedInvType.Description}" />
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind VM.SelectedInvType.Volume, Mode=OneWay}" />
+                        <TextBlock Margin="2,0,0,0" Text="m³" />
+                    </StackPanel>
+                </Grid>
+                <Button
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{x:Bind VM.StarCommand}">
+                    <Grid>
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            Text="&#xE1CE;"
+                            Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                        <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            Text="&#xE1CF;"
+                            Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    </Grid>
+                </Button>
+                <Grid Grid.Column="3" HorizontalAlignment="Right">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="1" Text="5%" />
+                    <TextBlock Grid.Column="2" Text="{StaticResource MarketPage_Mean}" />
+                    <TextBlock Grid.Column="3" Text="{StaticResource MarketPage_Amount}" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Text="{StaticResource MarketPage_Sell}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Text="{x:Bind VM.Sell5P, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Text="{x:Bind VM.SellMean, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        Text="{x:Bind VM.SellAmount, Mode=OneWay}" />
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Text="{StaticResource MarketPage_Buy}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Text="{x:Bind VM.Buy5P, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Text="{x:Bind VM.BuyMean, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="3"
+                        Text="{x:Bind VM.BuyAmount, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+            <Pivot Grid.Row="1">
+                <PivotItem>
+                    <PivotItem.Header>
+                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
+                    </PivotItem.Header>
+                    <dataGrid:SfDataGrid
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="None"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        ItemsSource="{x:Bind VM.SellOrders, Mode=OneWay}"
+                        SelectionMode="Extended"
+                        ShowGroupDropArea="True">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Amount}" MappingName="VolumeRemain" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Price}" MappingName="Price" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="MapSolarSystem.Security" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="SolarSystem.SolarSystemName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Duration}" MappingName="DurationTime" />
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                </PivotItem>
+                <PivotItem>
+                    <PivotItem.Header>
+                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
+                    </PivotItem.Header>
+                    <dataGrid:SfDataGrid
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="None"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        ItemsSource="{x:Bind VM.BuyOrders, Mode=OneWay}"
+                        SelectionMode="Extended"
+                        ShowGroupDropArea="True">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Amount}" MappingName="VolumeRemain" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Price}" MappingName="Price" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="MapSolarSystem.Security" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="SolarSystem.SolarSystemName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_MinVolume}" MappingName="MinVolume" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Duration}" MappingName="DurationTime" />
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                </PivotItem>
+                <PivotItem>
+                    <PivotItem.Header>
+                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                    </PivotItem.Header>
+                </PivotItem>
+            </Pivot>
         </Grid>
     </Grid>
 </Page>

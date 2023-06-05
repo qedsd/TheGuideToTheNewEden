@@ -28,5 +28,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Flyout_SelecteMarket.Height = this.ActualSize.Y * 0.8;
+        }
     }
 }

@@ -18,6 +18,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
+        public static MapRegion Query(int id)
+        {
+            var type = DBService.MainDb.Queryable<MapRegion>().First(p => p.RegionID == id);
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapRegion(type);
+            }
+            return type;
+        }
 
         public static async Task<List<MapRegion>> QueryAsync(List<int> ids)
         {

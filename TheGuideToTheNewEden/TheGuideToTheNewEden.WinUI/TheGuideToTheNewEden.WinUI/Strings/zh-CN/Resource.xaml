@@ -129,4 +129,15 @@
     <x:String x:Key="MarketPage_AllList">列表</x:String>
     <x:String x:Key="MarketPage_Star">收藏</x:String>
     <x:String x:Key="MarketPage_SelecteMarket">选择市场</x:String>
+    <x:String x:Key="MarketPage_Mean">平均</x:String>
+    <x:String x:Key="MarketPage_Amount">数量</x:String>
+    <x:String x:Key="MarketPage_Sell">卖单</x:String>
+    <x:String x:Key="MarketPage_Buy">买单</x:String>
+    <x:String x:Key="MarketPage_History">历史</x:String>
+    <x:String x:Key="MarketPage_Price">价格</x:String>
+    <x:String x:Key="MarketPage_Location">位置</x:String>
+    <x:String x:Key="MarketPage_Security">安全等级</x:String>
+    <x:String x:Key="MarketPage_Duration">过期时间</x:String>
+    <x:String x:Key="MarketPage_Range">范围（跳）</x:String>
+    <x:String x:Key="MarketPage_MinVolume">最小数量</x:String>
 </ResourceDictionary>

@@ -15,14 +15,14 @@
         <AutoSuggestBox
             Name="AutoSuggestBox_Search"
             Margin="8,0"
-            DisplayMemberPath="SolarSystemName"
+            DisplayMemberPath="Name"
             QueryIcon="Find"
             SuggestionChosen="AutoSuggestBox_SuggestionChosen"
             TextChanged="AutoSuggestBox_TextChanged" />
         <ListView
             x:Name="ListView_List"
             Grid.Row="1"
-            DisplayMemberPath="SolarSystemName"
+            DisplayMemberPath="Name"
             SelectionChanged="ListView_List_SelectionChanged" />
         <TextBlock
             x:Name="TextBlock_EmptyTip"

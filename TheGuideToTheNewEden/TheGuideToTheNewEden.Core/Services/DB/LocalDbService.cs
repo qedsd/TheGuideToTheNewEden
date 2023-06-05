@@ -93,6 +93,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<MapRegionBase>().FirstAsync(p => id == p.RegionID);
         }
+        public static MapRegionBase TranMapRegion(int id)
+        {
+            return DBService.LocalDb.Queryable<MapRegionBase>().First(p => id == p.RegionID);
+        }
 
         public static async Task TranMapRegionsAsync(List<MapRegion> items)
         {
@@ -116,6 +120,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task TranMapRegionAsync(MapRegion item)
         {
             var type = await TranMapRegionAsync(item.RegionID);
+            item.RegionName = type?.RegionName;
+        }
+        public static void TranMapRegion(MapRegion item)
+        {
+            var type = TranMapRegion(item.RegionID);
             item.RegionName = type?.RegionName;
         }
         #endregion
