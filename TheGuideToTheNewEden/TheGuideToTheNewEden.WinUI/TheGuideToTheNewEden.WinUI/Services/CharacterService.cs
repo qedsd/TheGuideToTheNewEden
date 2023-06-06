@@ -287,5 +287,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
+
+        public static AuthorizedCharacterData GetCharacter(int id)
+        {
+            return CharacterOauths.FirstOrDefault(p => p.CharacterID == id);
+        }
     }
 }

@@ -19,6 +19,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<InvTypeBase>().FirstAsync(p => invTypeId == p.TypeID);
         }
+        public static InvTypeBase TranInvType(int invTypeId)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().First(p => invTypeId == p.TypeID);
+        }
 
         public static async Task TranInvTypesAsync(List<InvType> invTypes)
         {
@@ -43,6 +47,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task TranInvTypeAsync(InvType invType)
         {
             var type = await TranInvTypeAsync(invType.TypeID);
+            invType.TypeName = type?.TypeName;
+            invType.Description = type?.Description;
+        }
+        public static void TranInvType(InvType invType)
+        {
+            var type = TranInvType(invType.TypeID);
             invType.TypeName = type?.TypeName;
             invType.Description = type?.Description;
         }
@@ -138,11 +148,22 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.LocalDb.Queryable<MapSolarSystemBase>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
         }
+        public static MapSolarSystemBase TranMapSolarSystem(int id)
+        {
+            return DBService.LocalDb.Queryable<MapSolarSystemBase>().First(p => id == p.SolarSystemID);
+        }
         public static async Task<MapSolarSystemBase> TranMapSolarSystemAsync(int id)
         {
             return await DBService.LocalDb.Queryable<MapSolarSystemBase>().FirstAsync(p => id == p.SolarSystemID);
         }
-
+        public static void TranMapSolarSystem(MapSolarSystem item)
+        {
+            var tran = TranMapSolarSystem(item.SolarSystemID);
+            if(tran != null)
+            {
+                item.SolarSystemName = tran.SolarSystemName;
+            }
+        }
         public static async Task TranMapSolarSystemsAsync(List<MapSolarSystem> items)
         {
             Dictionary<int, MapSolarSystem> keyValuePairs = new Dictionary<int, MapSolarSystem>();

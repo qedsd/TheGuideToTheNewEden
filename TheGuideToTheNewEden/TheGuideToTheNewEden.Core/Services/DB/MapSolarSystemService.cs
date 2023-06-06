@@ -37,6 +37,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+        public static MapSolarSystem Query(int id)
+        {
+            var system = DBService.MainDb.Queryable<MapSolarSystem>().First(p => id == p.SolarSystemID);
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapSolarSystem(system);
+            }
+            return system;
+        }
 
         public static async Task<List<MapSolarSystem>> QueryAllAsync()
         {

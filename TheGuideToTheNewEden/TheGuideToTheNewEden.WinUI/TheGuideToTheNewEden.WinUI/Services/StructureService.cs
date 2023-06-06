@@ -41,5 +41,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             File.WriteAllText(FilePath, json);
         }
+
+        public static Structure GetStructure(long id)
+        {
+            return Structures.FirstOrDefault(p => p.Id == id);
+        }
+
+        public static List<Structure> GetStructuresOfRegion(int regionId)
+        {
+            return Structures.Where(p => p.RegionId == regionId).ToList();
+        }
     }
 }

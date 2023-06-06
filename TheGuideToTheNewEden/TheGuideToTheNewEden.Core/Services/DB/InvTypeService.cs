@@ -18,6 +18,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
+        public static InvType QueryType(int id)
+        {
+            var type = DBService.MainDb.Queryable<InvType>().First(p => p.TypeID == id);
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvType(type);
+            }
+            return type;
+        }
 
         public static async Task<List<InvType>> QueryTypesAsync(List<int> ids)
         {
