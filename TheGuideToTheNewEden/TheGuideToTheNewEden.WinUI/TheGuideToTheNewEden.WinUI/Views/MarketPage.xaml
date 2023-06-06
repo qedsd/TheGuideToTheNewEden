@@ -167,7 +167,7 @@
                             Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     </Grid>
                 </Button>
-                <Grid Grid.Column="3" HorizontalAlignment="Right">
+                <Grid Grid.Column="3" HorizontalAlignment="Right" Margin="0,0,8,0">
                     <Grid.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Center" />

@@ -241,84 +241,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private async void GetRegionOrders()
         {
             Window?.ShowWaiting("获取订单中...");
-            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
-            int page = 1;
-            while(true)
-            {
-                var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(SelectedRegion.RegionID, ESI.NET.Enumerations.MarketOrderType.All, page++, SelectedInvType.TypeID);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    if(resp.Data.Any())
-                    {
-                        orders.AddRange(resp.Data.Select(p=> new Core.Models.Market.Order(p)));
-                        if(orders.Count < 1000)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    Window?.ShowError(resp?.Message);
-                    Core.Log.Error(resp?.Message);
-                    break;
-                }
-            }
-            if(orders.Any())
-            {
-                #region 赋值物品、星系信息
-                //var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(orders.Select(p=>p.TypeId).Distinct().ToList());
-                //var typesDic = types.ToDictionary(p => p.TypeID);
-                var systems = await Core.Services.DB.MapSolarSystemService.QueryAsync(orders.Select(p => (int)p.SystemId).Distinct().ToList());
-                var systemsDic = systems.ToDictionary(p => p.SolarSystemID);
-                foreach(var order in orders)
-                {
-                    //if(typesDic.TryGetValue(order.TypeId, out var type))
-                    //{
-                    //    order.InvType = type;
-                    //}
-                    order.InvType = SelectedInvType;
-                    if (systemsDic.TryGetValue((int)order.SystemId, out var system))
-                    {
-                        order.SolarSystem = system;
-                    }
-                }
-                #endregion
-                #region 赋值空间站、建筑星系
-                var stationOrders = orders.Where(p => p.IsStation).ToList();
-                var structureOrders = orders.Where(p => !p.IsStation).ToList();
-                if(stationOrders.NotNullOrEmpty())
-                {
-                    var stations = await Core.Services.DB.StaStationService.QueryAsync(stationOrders.Select(p=>(int)p.LocationId).ToList());
-                    var stationsDic = stations.ToDictionary(p => p.StationID);
-                    foreach(var order in stationOrders)
-                    {
-                        if (stationsDic.TryGetValue((int)order.LocationId, out var station))
-                        {
-                            order.LocationName = station.StationName;
-                        }
-                    }
-                }
-                if(structureOrders.NotNullOrEmpty())
-                {
-                    _esiClient.SetCharacterData(await Services.CharacterService.GetDefaultCharacterAsync());
-                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p=>p.LocationId).Distinct(), GetStructure);
-                    var data = result?.Where(p => p != null).ToList();
-                    var structuresDic = data.ToDictionary(p => p.Id);
-                    foreach (var order in structureOrders)
-                    {
-                        if (structuresDic.TryGetValue(order.LocationId, out var structure))
-                        {
-                            order.LocationName = structure.Name;
-                        }
-                    }
-                }
-                #endregion
-            }
+            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetOnlyRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID); ;
+            
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
