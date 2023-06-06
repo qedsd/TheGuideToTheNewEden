@@ -14,6 +14,8 @@ using TheGuideToTheNewEden.Core.Services;
 using System.Timers;
 using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI.Xaml.Documents;
+using ESI.NET.Models.Character;
+using Microsoft.UI.Xaml;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -255,6 +257,34 @@ namespace TheGuideToTheNewEden.WinUI.Services
             while (_refreshing)
             {
                 await Task.Delay(100);
+            }
+        }
+
+        /// <summary>
+        /// 获取默认角色
+        /// 有当前角色则返回当前角色，无则返回首个
+        /// 保证返回角色Token为可用状态
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<AuthorizedCharacterData> GetDefaultCharacterAsync()
+        {
+            AuthorizedCharacterData characterData = CurrentCharacter != null ? CurrentCharacter : CharacterOauths.FirstOrDefault();
+            if(characterData != null)
+            {
+                if (!characterData.IsTokenValid())
+                {
+                    if (!await characterData.RefreshTokenAsync())
+                    {
+                        Core.Log.Error("获取默认角色失败，刷新Token失败");
+                        return null;
+                    }
+                }
+                return characterData;
+            }
+            else
+            {
+                Core.Log.Error("未添加角色");
+                return null;
             }
         }
     }

@@ -55,6 +55,9 @@
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
             <converters:StringMatchToVisibilityConverter x:Key="StringMatchToVisibleConverter" TrueToVisible="True" />
             <converters:ZeroToNullConverter x:Key="ZeroToNullConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullToVisible="True" />
+            <converters:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullToVisible="False" />
+            <converters:TimeSpanConverter x:Key="TimeSpanConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

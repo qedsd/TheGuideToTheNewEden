@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using ESI.NET;
+using ESI.NET.Models.Character;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -181,7 +182,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => buyAmount;
             set => SetProperty(ref buyAmount, value);
         }
-
+        private BitmapImage selectedInvTypeIcon;
+        public BitmapImage SelectedInvTypeIcon { get => selectedInvTypeIcon; set => SetProperty(ref selectedInvTypeIcon, value); }
         private ESI.NET.EsiClient _esiClient = Core.Services.ESIService.GetDefaultEsi();
         public MarketViewModel() 
         {
@@ -193,6 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 return;
             }
+            SelectedInvTypeIcon = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(SelectedInvType.TypeID, Converters.GameImageConverter.ImgType.Type, 64)));
             if (SelectedRegion == null && SelectedStructure == null)
             {
                 Window.ShowError("未选择市场");
@@ -243,7 +246,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             while(true)
             {
                 var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(SelectedRegion.RegionID, ESI.NET.Enumerations.MarketOrderType.All, page++, SelectedInvType.TypeID);
-                Window?.HideWaiting();
                 if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     if(resp.Data.Any())
@@ -303,12 +305,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 if(structureOrders.NotNullOrEmpty())
                 {
-                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p=>p.LocationId), GetStructure);
+                    _esiClient.SetCharacterData(await Services.CharacterService.GetDefaultCharacterAsync());
+                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p=>p.LocationId).Distinct(), GetStructure);
                     var data = result?.Where(p => p != null).ToList();
                     var structuresDic = data.ToDictionary(p => p.Id);
                     foreach (var order in structureOrders)
                     {
-                        if (structuresDic.TryGetValue((int)order.LocationId, out var structure))
+                        if (structuresDic.TryGetValue(order.LocationId, out var structure))
                         {
                             order.LocationName = structure.Name;
                         }
@@ -318,23 +321,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
-            SetOrderStatisticalInfo(BuyOrders, SellOrders);
+            SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            Window?.HideWaiting();
         }
         private async Task<Core.Models.Universe.Structure> GetStructure(long id)
         {
-            var resp = await Core.Services.ESIService.Current.EsiClient.Universe.Structure(id);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            try
             {
+                var resp = await _esiClient.Universe.Structure(id);
+                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return new Core.Models.Universe.Structure()
+                    {
+                        Id = id,
+                        Name = resp.Data.Name,
+                        SolarSystemId = resp.Data.SolarSystemId
+                    };
+                }
+                else
+                {
+                    return new Core.Models.Universe.Structure()
+                    {
+                        Id = id,
+                        Name = id.ToString(),
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
                 return new Core.Models.Universe.Structure()
                 {
                     Id = id,
-                    Name = resp.Data.Name,
-                    SolarSystemId = resp.Data.SolarSystemId
+                    Name = id.ToString(),
                 };
-            }
-            else
-            {
-                return null;
             }
         }
 
@@ -388,13 +408,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(sellOrders.NotNullOrEmpty())
             {
                 int top5P = (int)(sellOrders.Count() * 0.05);
-                if(top5P > 1)
+                //int top5P = (int)(sellOrders.Sum(p=>p.VolumeRemain) * 0.05);
+                //decimal top5POrdersPrice = 0;
+                //int caledOrders = 0;
+                //foreach (var order in sellOrders)
+                //{
+                //    int remainOrder = top5P - caledOrders;
+                //    int takeOrder = remainOrder > order.VolumeRemain ? order.VolumeRemain : remainOrder;
+                //    caledOrders += takeOrder;
+                //    top5POrdersPrice += takeOrder * order.Price;
+                //    if(caledOrders >= top5P)
+                //    {
+                //        break;
+                //    }
+                //}
+                if (top5P > 1)
                 {
                     Sell5P = (double)sellOrders.Take(top5P).Average(p => p.Price);
                 }
                 else
                 {
-                    Sell5P = 0;
+                    Sell5P = (double)sellOrders.FirstOrDefault()?.Price;
                 }
                 SellMean = (double)sellOrders.Average(p => p.Price);
                 SellAmount = sellOrders.Sum(p => p.VolumeRemain);
@@ -411,11 +445,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 int top5P = (int)(buyOrders.Count() * 0.05);
                 if (top5P > 1)
                 {
-                    Sell5P = (double)buyOrders.Take(top5P).Average(p => p.Price);
+                    Buy5P = (double)buyOrders.Take(top5P).Average(p => p.Price);
                 }
                 else
                 {
-                    Sell5P = 0;
+                    Buy5P = (double)buyOrders.FirstOrDefault()?.Price;
                 }
                 BuyMean = (double)buyOrders.Average(p => p.Price);
                 BuyAmount = buyOrders.Sum(p => p.VolumeRemain);

@@ -11,15 +11,18 @@
     Background="Transparent"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:SystemSecurityCellStyleSelector x:Key="SystemSecurityCellStyleSelector" />
+    </Page.Resources>
     <Page.DataContext>
         <viewmodels:MarketViewModel x:Name="VM" />
     </Page.DataContext>
     <Grid Margin="0,0,0,8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid Width="300" >
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
@@ -29,7 +32,9 @@
                     <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MarketPage_AllList}" />
                     </PivotItem.Header>
-                    <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
+                    <ScrollViewer HorizontalScrollBarVisibility="Visible">
+                        <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
+                    </ScrollViewer>
                 </PivotItem>
                 <PivotItem Margin="-4,0">
                     <PivotItem.Header>
@@ -91,12 +96,12 @@
                 </Button.Flyout>
             </Button>
         </Grid>
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" Margin="8,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid>
+            <Grid Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -104,37 +109,49 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Image
-                    Width="32"
-                    Height="32"
-                    Source="{x:Bind VM.SelectedInvType.TypeID, Converter={StaticResource TypeImgConverter32}, Mode=OneWay}" />
-                <Grid Grid.Column="1">
+                    Width="48"
+                    Height="48"
+                    Source="{x:Bind VM.SelectedInvTypeIcon, Mode=OneWay}" />
+                <Grid Grid.Column="1" Margin="8,0,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Foreground="{ThemeResource SystemAccentColor}" Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource SystemAccentColor}"
+                            Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
                         <Button
                             Width="24"
                             Height="24"
                             Margin="4,0,0,0"
                             Padding="0"
+                            Background="Transparent"
                             BorderThickness="0"
                             Content="!">
                             <Button.Flyout>
                                 <Flyout>
-                                    <TextBlock Text="{x:Bind VM.SelectedInvType.Description}" />
+                                    <TextBlock
+                                        MaxWidth="400"
+                                        Text="{x:Bind VM.SelectedInvType.Description, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
+
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <StackPanel
+                        Grid.Row="1"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <TextBlock Text="{x:Bind VM.SelectedInvType.Volume, Mode=OneWay}" />
                         <TextBlock Margin="2,0,0,0" Text="m³" />
                     </StackPanel>
                 </Grid>
                 <Button
                     Grid.Column="2"
+                    Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
@@ -151,19 +168,34 @@
                     </Grid>
                 </Button>
                 <Grid Grid.Column="3" HorizontalAlignment="Right">
+                    <Grid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                        </Style>
+                    </Grid.Resources>
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="1" Text="5%" />
-                    <TextBlock Grid.Column="2" Text="{StaticResource MarketPage_Mean}" />
-                    <TextBlock Grid.Column="3" Text="{StaticResource MarketPage_Amount}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="8,0"
+                        Text="5%" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="8,0"
+                        Text="{StaticResource MarketPage_Mean}" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Margin="8,0"
+                        Text="{StaticResource MarketPage_Amount}" />
 
                     <TextBlock
                         Grid.Row="1"
@@ -172,15 +204,18 @@
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="1"
-                        Text="{x:Bind VM.Sell5P, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.Sell5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="2"
-                        Text="{x:Bind VM.SellMean, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.SellMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="3"
-                        Text="{x:Bind VM.SellAmount, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.SellAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
 
                     <TextBlock
                         Grid.Row="2"
@@ -189,18 +224,21 @@
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="1"
-                        Text="{x:Bind VM.Buy5P, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.Buy5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="2"
-                        Text="{x:Bind VM.BuyMean, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.BuyMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="3"
-                        Text="{x:Bind VM.BuyAmount, Mode=OneWay}" />
+                        Margin="8,0"
+                        Text="{x:Bind VM.BuyAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
                 </Grid>
             </Grid>
-            <Pivot Grid.Row="1">
+            <Pivot Grid.Row="1" Margin="-10,0">
                 <PivotItem>
                     <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
@@ -214,6 +252,7 @@
                         AllowGrouping="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
+                        CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
                         ColumnWidthMode="Auto"
                         GridLinesVisibility="None"
                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
@@ -222,12 +261,21 @@
                         SelectionMode="Extended"
                         ShowGroupDropArea="True">
                         <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Amount}" MappingName="VolumeRemain" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Price}" MappingName="Price" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="MapSolarSystem.Security" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MarketPage_Amount}"
+                                MappingName="VolumeRemain" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource MarketPage_Price}"
+                                MappingName="Price" />
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="SolarSystem.SolarSystemName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Duration}" MappingName="DurationTime" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                            <dataGrid:GridTextColumn
+                                DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                HeaderText="{StaticResource MarketPage_Duration}"
+                                MappingName="RemainTime" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </PivotItem>
@@ -244,6 +292,7 @@
                         AllowGrouping="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
+                        CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
                         ColumnWidthMode="Auto"
                         GridLinesVisibility="None"
                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
@@ -252,14 +301,26 @@
                         SelectionMode="Extended"
                         ShowGroupDropArea="True">
                         <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Amount}" MappingName="VolumeRemain" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Price}" MappingName="Price" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="MapSolarSystem.Security" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MarketPage_Amount}"
+                                MappingName="VolumeRemain" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource MarketPage_Price}"
+                                MappingName="Price" />
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="SolarSystem.SolarSystemName" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_MinVolume}" MappingName="MinVolume" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Duration}" MappingName="DurationTime" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MarketPage_MinVolume}"
+                                MappingName="MinVolume" />
+                            <dataGrid:GridTextColumn
+                                DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                HeaderText="{StaticResource MarketPage_Duration}"
+                                MappingName="RemainTime" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </PivotItem>

@@ -12,6 +12,10 @@
     <x:String x:Key="General_Character">角色</x:String>
     <x:String x:Key="General_Region">星域</x:String>
     <x:String x:Key="General_Structure">建筑</x:String>
+    <x:String x:Key="General_Day">天</x:String>
+    <x:String x:Key="General_Hour">小时</x:String>
+    <x:String x:Key="General_Minute">分钟</x:String>
+    <x:String x:Key="General_Second">秒</x:String>
 
 
     <!--  Skill  -->
@@ -138,6 +142,7 @@
     <x:String x:Key="MarketPage_Location">位置</x:String>
     <x:String x:Key="MarketPage_Security">安全等级</x:String>
     <x:String x:Key="MarketPage_Duration">过期时间</x:String>
-    <x:String x:Key="MarketPage_Range">范围（跳）</x:String>
+    <x:String x:Key="MarketPage_Range">范围</x:String>
     <x:String x:Key="MarketPage_MinVolume">最小数量</x:String>
+    <x:String x:Key="MarketPage_RemainTimeFormat">剩余时间: 天数.小时:分钟:秒</x:String>
 </ResourceDictionary>

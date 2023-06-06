@@ -12,6 +12,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public Order(ESI.NET.Models.Market.Order order) 
         {
             this.CopyFrom(order);
+            RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
         }
         public InvType InvType { get; set; }
         public MapSolarSystem SolarSystem { get; set; }
@@ -19,9 +20,14 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             get => LocationId < 70000000;
         }
-        public TimeSpan DurationTime
+        public double Security
         {
-            get => TimeSpan.FromTicks(Duration);
+            get => Math.Round(SolarSystem.Security, 1, MidpointRounding.ToEven);
+        }
+        public TimeSpan RemainTimeSpan { get; set; }
+        public string RemainTime
+        {
+            get => RemainTimeSpan.ToString(@"dd\.hh\:mm\:ss");
         }
         public string LocationName { get; set; }
     }

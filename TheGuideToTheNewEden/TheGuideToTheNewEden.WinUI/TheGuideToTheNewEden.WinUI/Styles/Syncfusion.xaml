@@ -9,4 +9,37 @@
     <Style x:Key="RedForegroundCellStyle" TargetType="dataGrid:GridCell">
         <Setter Property="Foreground" Value="OrangeRed" />
     </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle1" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#24d7f9" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle09" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#2dd6c3" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle08" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#02f345" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle07" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#15f100" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle06" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#8ff930" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle05" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#d3d112" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle04" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#e58000" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle03" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#f64d19" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle02" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#eb4909" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle01" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#c4261e" />
+    </Style>
+    <Style x:Key="SystemSecurityForegroundCellStyle00" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="#d10202" />
+    </Style>
 </ResourceDictionary>
