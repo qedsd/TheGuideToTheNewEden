@@ -353,6 +353,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var resp = await EsiClient.Universe.Structure(id);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
+                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(resp.Data.SolarSystemId);
+                if (system != null)
+                {
+                    var region = await Core.Services.DB.MapRegionService.QueryAsync(system.RegionID);
+                    if(region != null)
+                    {
+                        return new Structure()
+                        {
+                            Id = id,
+                            Name = resp.Data.Name,
+                            SolarSystemId = resp.Data.SolarSystemId,
+                            SolarSystemName = system.SolarSystemName,
+                            RegionId = region.RegionID,
+                            RegionName = region.RegionName,
+                            CharacterId = SelectedCharacter.CharacterID
+                        };
+                    }
+                }
                 return new Structure()
                 {
                     Id = id,

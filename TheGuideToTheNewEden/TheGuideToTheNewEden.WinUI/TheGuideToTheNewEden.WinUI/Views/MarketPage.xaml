@@ -22,7 +22,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid Width="300" >
+        <Grid Width="300">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
@@ -167,7 +167,10 @@
                             Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     </Grid>
                 </Button>
-                <Grid Grid.Column="3" HorizontalAlignment="Right" Margin="0,0,8,0">
+                <Grid
+                    Grid.Column="3"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right">
                     <Grid.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -276,6 +279,7 @@
                                 DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
                                 HeaderText="{StaticResource MarketPage_Duration}"
                                 MappingName="RemainTime" />
+                            <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </PivotItem>
@@ -321,6 +325,7 @@
                                 DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
                                 HeaderText="{StaticResource MarketPage_Duration}"
                                 MappingName="RemainTime" />
+                            <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </PivotItem>

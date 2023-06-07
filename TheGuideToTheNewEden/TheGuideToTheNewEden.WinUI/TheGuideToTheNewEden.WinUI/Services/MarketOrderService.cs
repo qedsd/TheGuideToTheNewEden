@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             EsiClient = Core.Services.ESIService.GetDefaultEsi();
         }
 
-        private Dictionary<long, StructureOrder> StructureOrders = new Dictionary<long, StructureOrder>();
+        private ConcurrentDictionary<long, StructureOrder> StructureOrders = new ConcurrentDictionary<long, StructureOrder>();
         /// <summary>
         /// 订单过期时间
         /// 分钟
@@ -72,14 +73,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     var orders = await GetLatestStructureOrdersAsync(structureId);
                     if(orders.NotNullOrEmpty())
                     {
-                        StructureOrders.Remove(structureId);
+                        StructureOrders.TryRemove(structureId,out _);
                         var newOrder = new StructureOrder()
                         {
                             StructureId = structureId,
                             UpdateTime = DateTime.Now,
                             Orders = orders
                         };
-                        StructureOrders.Add(structureId, newOrder);
+                        StructureOrders.TryAdd(structureId, newOrder);
                         Save(newOrder);
                     }
                     return orders;
@@ -103,7 +104,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         {
                             if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
                             {
-                                StructureOrders.Add(structureId, localOrder);
+                                var sturcture = StructureService.GetStructure(structureId);
+                                if(sturcture != null)
+                                {
+                                    var mapSolarSystem = Core.Services.DB.MapSolarSystemService.Query(sturcture.SolarSystemId);
+                                    localOrder.Orders.ForEach(p => p.SolarSystem = mapSolarSystem);
+                                }
+                                StructureOrders.TryAdd(structureId, localOrder);
                                 return localOrder.Orders;
                             }
                             else
@@ -124,7 +131,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         UpdateTime = DateTime.Now,
                         Orders = orders
                     };
-                    StructureOrders.Add(structureId, newOrder);
+                    StructureOrders.TryAdd(structureId, newOrder);
                     Save(newOrder);
                 }
                 return orders;
@@ -207,9 +214,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private static string GetFilePath(long structureId)
         {
-            return System.IO.Path.Combine(FolderPath, structureId.ToString());
+            return System.IO.Path.Combine(FolderPath, $"{structureId}.json");
         }
 
+        /// <summary>
+        /// 获取星域订单
+        /// 买单只包含空间站，卖单可包含建筑
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -285,6 +299,66 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 #endregion
             }
             return orders;
+        }
+
+        /// <summary>
+        /// 获取指定星域下的建筑订单
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int typeId, int regionId)
+        {
+            var strutures = StructureService.GetStructuresOfRegion(regionId);
+            if(strutures.NotNullOrEmpty())
+            {
+                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p=>p.Id), GetStructureOrdersAsync);
+                if(result.NotNullOrEmpty())
+                {
+                    List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                    foreach(var list in result)
+                    {
+                        var targetOrders = list.Where(p => p.TypeId == typeId).ToList();
+                        if(targetOrders.NotNullOrEmpty())
+                        {
+                            orders.AddRange(targetOrders);
+                        }
+                    }
+                    return orders;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 获取星域订单，包含建筑订单
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId)
+        {
+            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId);
+            var structures = await GetOnlyStructureOrdersAsync(typeId, regionId);
+            if(regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
+            {
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                if(regions.NotNullOrEmpty())
+                {
+                    orders.AddRange(regions);
+                }
+                //星域订单买单是包含建筑订单的，需要过滤，优先使用星域订单，因为API刷新时间更短
+                var regionsHashSet = regions.Select(p => p.OrderId).ToHashSet2();
+                foreach (var structureOrder in structures)
+                {
+                    if(!regionsHashSet.Contains(structureOrder.OrderId))
+                    {
+                        orders.Add(structureOrder);
+                    }
+                }
+                return orders;
+            }
+            return null;
         }
         private async Task<Core.Models.Universe.Structure> GetStructure(long id)
         {
