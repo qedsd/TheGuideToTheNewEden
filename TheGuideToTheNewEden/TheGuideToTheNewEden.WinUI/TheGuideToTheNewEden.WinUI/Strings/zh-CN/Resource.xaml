@@ -145,4 +145,13 @@
     <x:String x:Key="MarketPage_Range">范围</x:String>
     <x:String x:Key="MarketPage_MinVolume">最小数量</x:String>
     <x:String x:Key="MarketPage_RemainTimeFormat">剩余时间: 天数.小时:分钟:秒</x:String>
+    <x:String x:Key="MarketPage_StatisticVolume">销量</x:String>
+    <x:String x:Key="MarketPage_StatisticHighest">最高</x:String>
+    <x:String x:Key="MarketPage_StatisticAverage">平均</x:String>
+    <x:String x:Key="MarketPage_StatisticLowest">最低</x:String>
+    <x:String x:Key="MarketPage_History1">最近1个月</x:String>
+    <x:String x:Key="MarketPage_History3">最近3个月</x:String>
+    <x:String x:Key="MarketPage_History6">最近半年</x:String>
+    <x:String x:Key="MarketPage_History12">最近一年</x:String>
+    <x:String x:Key="MarketPage_HistoryAll">全部</x:String>
 </ResourceDictionary>

@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 订单过期时间
         /// 分钟
         /// </summary>
-        private static readonly int OrderDuration = 30;
+        private static readonly int OrderDuration = 60;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
@@ -399,6 +399,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Id = id,
                     Name = id.ToString(),
                 };
+            }
+        }
+
+        public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistory(int typeId, int regionId)
+        {
+            var resp = await EsiClient.Market.TypeHistoryInRegion(regionId, typeId);
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return resp.Data;
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                return null;
             }
         }
 

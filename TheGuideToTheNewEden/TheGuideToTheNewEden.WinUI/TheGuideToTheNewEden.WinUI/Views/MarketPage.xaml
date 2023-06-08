@@ -2,6 +2,7 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.MarketPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chart="using:Syncfusion.UI.Xaml.Charts"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
@@ -333,6 +334,127 @@
                     <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
                     </PivotItem.Header>
+                    <Grid>
+                        <Pivot Margin="-12,-18,-10,0">
+                            <PivotItem>
+                                <PivotItem.Header>
+                                    <TextBlock FontSize="14" Text="{StaticResource MarketPage_Price}" />
+                                </PivotItem.Header>
+                                <chart:SfCartesianChart Margin="0,2,0,0">
+                                    <chart:SfCartesianChart.XAxes>
+                                        <chart:DateTimeAxis
+                                            Interval="1"
+                                            IntervalType="Months"
+                                            PlotOffsetEnd="15"
+                                            PlotOffsetStart="15"
+                                            ShowMajorGridLines="False"
+                                            ShowTrackballLabel="True">
+                                            <chart:DateTimeAxis.LabelStyle>
+                                                <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                            </chart:DateTimeAxis.LabelStyle>
+                                        </chart:DateTimeAxis>
+
+                                    </chart:SfCartesianChart.XAxes>
+
+                                    <chart:SfCartesianChart.YAxes>
+                                        <chart:NumericalAxis ShowTrackballLabel="True">
+                                            <chart:NumericalAxis.LabelStyle>
+                                                <chart:LabelStyle LabelFormat="n2" />
+                                            </chart:NumericalAxis.LabelStyle>
+                                        </chart:NumericalAxis>
+                                    </chart:SfCartesianChart.YAxes>
+
+                                    <chart:FastLineSeries
+                                        EnableAnimation="True"
+                                        EnableTooltip="False"
+                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                        Label="{StaticResource MarketPage_StatisticHighest}"
+                                        XBindingPath="Date"
+                                        YBindingPath="Highest" />
+                                    <chart:FastLineSeries
+                                        EnableAnimation="True"
+                                        EnableTooltip="False"
+                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                        Label="{StaticResource MarketPage_StatisticAverage}"
+                                        XBindingPath="Date"
+                                        YBindingPath="Average" />
+                                    <chart:FastLineSeries
+                                        EnableAnimation="True"
+                                        EnableTooltip="False"
+                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                        Label="{StaticResource MarketPage_StatisticLowest}"
+                                        XBindingPath="Date"
+                                        YBindingPath="Lowest" />
+
+                                    <chart:SfCartesianChart.ZoomPanBehavior>
+                                        <chart:ChartZoomPanBehavior
+                                            EnableMouseWheelZooming="True"
+                                            EnablePanning="True"
+                                            EnablePinchZooming="True"
+                                            ZoomMode="XY" />
+                                    </chart:SfCartesianChart.ZoomPanBehavior>
+                                    <chart:SfCartesianChart.TrackballBehavior>
+                                        <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                    </chart:SfCartesianChart.TrackballBehavior>
+                                </chart:SfCartesianChart>
+                            </PivotItem>
+                            <PivotItem>
+                                <PivotItem.Header>
+                                    <TextBlock FontSize="14" Text="{StaticResource MarketPage_StatisticVolume}" />
+                                </PivotItem.Header>
+                                <chart:SfCartesianChart Margin="0,2,0,0">
+                                    <chart:SfCartesianChart.XAxes>
+                                        <chart:DateTimeAxis
+                                            Interval="1"
+                                            IntervalType="Months"
+                                            PlotOffsetEnd="15"
+                                            PlotOffsetStart="15"
+                                            ShowMajorGridLines="False"
+                                            ShowTrackballLabel="True">
+                                            <chart:DateTimeAxis.LabelStyle>
+                                                <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                            </chart:DateTimeAxis.LabelStyle>
+                                        </chart:DateTimeAxis>
+
+                                    </chart:SfCartesianChart.XAxes>
+
+                                    <chart:SfCartesianChart.YAxes>
+                                        <chart:NumericalAxis ShowTrackballLabel="True">
+                                            <chart:NumericalAxis.LabelStyle>
+                                                <chart:LabelStyle LabelFormat="n2" />
+                                            </chart:NumericalAxis.LabelStyle>
+                                        </chart:NumericalAxis>
+                                    </chart:SfCartesianChart.YAxes>
+
+                                    <chart:FastLineSeries
+                                        EnableAnimation="True"
+                                        EnableTooltip="False"
+                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                        Label="{StaticResource MarketPage_StatisticVolume}"
+                                        XBindingPath="Date"
+                                        YBindingPath="Volume" />
+
+                                    <chart:SfCartesianChart.ZoomPanBehavior>
+                                        <chart:ChartZoomPanBehavior
+                                            EnableMouseWheelZooming="True"
+                                            EnablePanning="True"
+                                            EnablePinchZooming="True"
+                                            ZoomMode="XY" />
+                                    </chart:SfCartesianChart.ZoomPanBehavior>
+                                    <chart:SfCartesianChart.TrackballBehavior>
+                                        <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                    </chart:SfCartesianChart.TrackballBehavior>
+                                </chart:SfCartesianChart>
+                            </PivotItem>
+                        </Pivot>
+                        <ComboBox HorizontalAlignment="Right" SelectedIndex="{x:Bind VM.HistoryRangeIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="{StaticResource MarketPage_History1}" />
+                            <ComboBoxItem Content="{StaticResource MarketPage_History3}" />
+                            <ComboBoxItem Content="{StaticResource MarketPage_History6}" />
+                            <ComboBoxItem Content="{StaticResource MarketPage_History12}" />
+                            <ComboBoxItem Content="{StaticResource MarketPage_HistoryAll}" />
+                        </ComboBox>
+                    </Grid>
                 </PivotItem>
             </Pivot>
         </Grid>

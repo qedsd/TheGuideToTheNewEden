@@ -143,6 +143,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref buyOrders, value);
         }
 
+        private List<ESI.NET.Models.Market.Statistic> statistics;
+        public List<ESI.NET.Models.Market.Statistic> Statistics
+        {
+            get => statistics;
+            set => SetProperty(ref statistics, value);
+        }
+        private List<ESI.NET.Models.Market.Statistic> statisticsForShow;
+        public List<ESI.NET.Models.Market.Statistic> StatisticsForShow
+        {
+            get => statisticsForShow;
+            set => SetProperty(ref statisticsForShow, value);
+        }
+
+        private int historyRangeIndex = 1;
+        /// <summary>
+        /// 0:一个月 1:三个月 2:半年 3:一年 4:全部
+        /// </summary>
+        public int HistoryRangeIndex
+        {
+            get => historyRangeIndex;
+            set
+            {
+                SetProperty(ref historyRangeIndex, value);
+                SetStatistics();
+            }
+        }
+
         private double sell5P;
         public double Sell5P
         {
@@ -220,6 +247,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedRegion.RegionID);
+            SetStatistics();
             Window?.HideWaiting();
         }
 
@@ -230,6 +259,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedStructure.RegionId);
+            SetStatistics();
             Window?.HideWaiting();
         }
         private void SetOrderStatisticalInfo(IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders)
@@ -274,6 +305,36 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Buy5P = 0;
                 BuyMean = 0;
                 BuyAmount = 0;
+            }
+        }
+        private void SetStatistics()
+        {
+            switch(HistoryRangeIndex)
+            {
+                case 0:
+                    {
+                        StatisticsForShow = Statistics.Where(p => p.Date > DateTime.Now.AddMonths(-1)).ToList();
+                    }break;
+                case 1:
+                    {
+                        StatisticsForShow = Statistics.Where(p => p.Date > DateTime.Now.AddMonths(-3)).ToList();
+                    }
+                    break;
+                case 2:
+                    {
+                        StatisticsForShow = Statistics.Where(p => p.Date > DateTime.Now.AddMonths(-6)).ToList();
+                    }
+                    break;
+                case 3:
+                    {
+                        StatisticsForShow = Statistics.Where(p => p.Date > DateTime.Now.AddMonths(-12)).ToList();
+                    }
+                    break;
+                case 4:
+                    {
+                        StatisticsForShow = Statistics;
+                    }
+                    break;
             }
         }
         public ICommand StarCommand => new RelayCommand(() =>
