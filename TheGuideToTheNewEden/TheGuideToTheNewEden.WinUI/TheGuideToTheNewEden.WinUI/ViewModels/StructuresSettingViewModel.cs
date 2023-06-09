@@ -182,6 +182,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 else
                 {
                     Window?.ShowError("请选择角色");
+                    Window?.HideWaiting();
                     return;
                 }
                 SearchStructures = await GetAllStructures();

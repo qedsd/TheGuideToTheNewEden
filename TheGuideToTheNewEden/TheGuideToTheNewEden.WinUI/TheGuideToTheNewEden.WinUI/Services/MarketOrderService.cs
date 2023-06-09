@@ -284,15 +284,26 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 if (structureOrders.NotNullOrEmpty())
                 {
-                    EsiClient.SetCharacterData(await Services.CharacterService.GetDefaultCharacterAsync());
-                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), GetStructure);
-                    var data = result?.Where(p => p != null).ToList();
-                    var structuresDic = data.ToDictionary(p => p.Id);
-                    foreach (var order in structureOrders)
+                    var c = await Services.CharacterService.GetDefaultCharacterAsync();
+                    if(c != null)
                     {
-                        if (structuresDic.TryGetValue(order.LocationId, out var structure))
+                        EsiClient.SetCharacterData(c);
+                        var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), GetStructure);
+                        var data = result?.Where(p => p != null).ToList();
+                        var structuresDic = data.ToDictionary(p => p.Id);
+                        foreach (var order in structureOrders)
                         {
-                            order.LocationName = structure.Name;
+                            if (structuresDic.TryGetValue(order.LocationId, out var structure))
+                            {
+                                order.LocationName = structure.Name;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var order in structureOrders)
+                        {
+                            order.LocationName = order.LocationId.ToString();
                         }
                     }
                 }
@@ -318,10 +329,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                     foreach(var list in result)
                     {
-                        var targetOrders = list.Where(p => p.TypeId == typeId).ToList();
-                        if(targetOrders.NotNullOrEmpty())
+                        if(list != null)
                         {
-                            orders.AddRange(targetOrders);
+                            var targetOrders = list.Where(p => p.TypeId == typeId).ToList();
+                            if (targetOrders.NotNullOrEmpty())
+                            {
+                                orders.AddRange(targetOrders);
+                            }
                         }
                     }
                     return orders;
@@ -347,13 +361,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     orders.AddRange(regions);
                 }
-                //星域订单买单是包含建筑订单的，需要过滤，优先使用星域订单，因为API刷新时间更短
-                var regionsHashSet = regions.Select(p => p.OrderId).ToHashSet2();
-                foreach (var structureOrder in structures)
+                if(structures.NotNullOrEmpty())
                 {
-                    if(!regionsHashSet.Contains(structureOrder.OrderId))
+                    //星域订单买单是包含建筑订单的，需要过滤，优先使用星域订单，因为API刷新时间更短
+                    var regionsHashSet = regions.Select(p => p.OrderId).ToHashSet2();
+                    foreach (var structureOrder in structures)
                     {
-                        orders.Add(structureOrder);
+                        if (!regionsHashSet.Contains(structureOrder.OrderId))
+                        {
+                            orders.Add(structureOrder);
+                        }
                     }
                 }
                 return orders;
