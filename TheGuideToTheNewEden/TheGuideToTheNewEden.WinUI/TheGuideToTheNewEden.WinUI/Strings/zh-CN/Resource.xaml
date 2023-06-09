@@ -6,6 +6,7 @@
     <x:String x:Key="General_Refresh">刷新</x:String>
     <x:String x:Key="General_Update">更新</x:String>
     <x:String x:Key="General_RemoveSelected">删除选中</x:String>
+    <x:String x:Key="General_Remove">删除</x:String>
     <x:String x:Key="General_AddSelected">添加选中</x:String>
     <x:String x:Key="General_SolarSystemName">星系</x:String>
     <x:String x:Key="General_RegionName">星域</x:String>

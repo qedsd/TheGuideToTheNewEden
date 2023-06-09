@@ -41,8 +41,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => _selectedCharacter;
             set
             {
-                SetSelectedCharacter(value);
                 SetProperty(ref _selectedCharacter, value);
+                SetSelectedCharacter(value);
             }
         }
 
@@ -161,6 +161,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand RefreshCommand => new RelayCommand(() =>
         {
             GetBaseInfoAsync(SelectedCharacter);
+        });
+
+        public ICommand RemoveCommand => new RelayCommand<AuthorizedCharacterData>((character) =>
+        {
+            Services.CharacterService.Remove(character);
+            Window.ShowSuccess("已删除角色");
+            if(SelectedCharacter == null)
+            {
+                SelectedCharacter = Characters.FirstOrDefault();
+                if(SelectedCharacter == null)
+                {
+                    ExistedCharacter = false;
+                }
+            }
         });
         private async void GetBaseInfoAsync(AuthorizedCharacterData characterData)
         {

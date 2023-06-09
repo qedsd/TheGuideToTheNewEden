@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sso="using:ESI.NET.Models.SSO"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     NavigationCacheMode="Enabled"
@@ -89,10 +90,31 @@
                                                 <RowDefinition />
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
-                                            <ListBox
-                                                DisplayMemberPath="CharacterName"
+                                            <ListView
                                                 ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                                                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}" />
+                                                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
+                                                Style="{StaticResource StretchListView}">
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="sso:AuthorizedCharacterData">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="{x:Bind CharacterName}" />
+                                                            <Button Grid.Column="1" Click="RemoveButton_Click"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0">
+                                                                <TextBlock
+                                                                    FontFamily="Segoe MDL2 Assets"
+                                                                    Foreground="OrangeRed"
+                                                                    Text="&#xE10A;" />
+                                                            </Button>
+                                                        </Grid>
+
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
                                             <Button
                                                 Grid.Row="1"
                                                 Margin="0,10,0,0"

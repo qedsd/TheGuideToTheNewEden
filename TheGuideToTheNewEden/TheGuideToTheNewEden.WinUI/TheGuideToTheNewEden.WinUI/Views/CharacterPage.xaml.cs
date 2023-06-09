@@ -113,5 +113,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             (ContentFrame.Content as ICharacterPage)?.Refresh();
         }
+
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+        }
+
+        private void RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+        }
     }
 }
