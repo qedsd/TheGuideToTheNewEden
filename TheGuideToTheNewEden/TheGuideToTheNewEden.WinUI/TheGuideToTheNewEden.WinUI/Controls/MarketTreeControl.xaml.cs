@@ -16,6 +16,10 @@ using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.Core.DBModels;
 using ESI.NET.Models.SSO;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Services;
+using System.Collections.ObjectModel;
+using TheGuideToTheNewEden.Core.Extensions;
+using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -66,10 +70,19 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 }
             }
             TreeView_Types.ItemsSource = rootGroup;
+            await InitStar();
+            ListView_Stared.ItemsSource = StaredInvTypes;
         }
+        
+
+
         private void TreeView_Types_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
-            SelectedInvType = (args.InvokedItem as MarketItem)?.InvType;
+            var type = (args.InvokedItem as MarketItem)?.InvType;
+            if(type != null)
+            {
+                SelectedInvType = type;
+            }
         }
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
@@ -112,5 +125,57 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         public delegate void SelectedInvTypeChangedEventHandel(InvType selectedInvType);
         private SelectedInvTypeChangedEventHandel OnSelectedInvTypeChanged;
+
+
+        #region 收藏
+        private async Task InitStar()
+        {
+            MarketStarService.Current.OnStaredTypeIdsChanged += Current_OnStaredTypeIdsChanged;
+            var staredIds = MarketStarService.Current.GetIds();
+            if (staredIds.NotNullOrEmpty())
+            {
+                var types = await Task.Run(()=>_types.Where(p=> staredIds.Contains(p.TypeID)).ToList());
+                if (types.NotNullOrEmpty())
+                {
+                    StaredInvTypes = types.ToObservableCollection();
+                    return;
+                }
+            }
+            StaredInvTypes = new ObservableCollection<InvType>();
+        }
+        private ObservableCollection<InvType> StaredInvTypes;
+        private void ListView_Stared_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedInvType = (sender as ListView).SelectedItem as InvType;
+        }
+
+        private void Current_OnStaredTypeIdsChanged(int id, bool isAdd)
+        {
+            if(isAdd)
+            {
+                var type = _types.FirstOrDefault(p => p.TypeID == id);
+                if(type != null)
+                {
+                    StaredInvTypes.Add(type);
+                }
+                else
+                {
+                    Core.Log.Error("添加收藏时type为null");
+                }
+            }
+            else
+            {
+                var type = StaredInvTypes.FirstOrDefault(p => p.TypeID == id);
+                if (type != null)
+                {
+                    StaredInvTypes.Remove(type);
+                }
+                else
+                {
+                    Core.Log.Error("删除收藏时type为null");
+                }
+            }
+        }
+        #endregion
     }
 }

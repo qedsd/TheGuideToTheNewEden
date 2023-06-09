@@ -9,28 +9,44 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <AutoSuggestBox
-            Name="Search_AutoSuggestBox"
-            Margin="8,0"
-            DisplayMemberPath="TypeName"
-            QueryIcon="Find"
-            SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-            TextChanged="AutoSuggestBox_TextChanged" />
-        <TreeView
-            x:Name="TreeView_Types"
-            Grid.Row="1"
-            ItemInvoked="TreeView_Types_ItemInvoked">
-            <TreeView.ItemTemplate>
-                <DataTemplate x:DataType="market:MarketItem">
-                    <TreeViewItem Content="{x:Bind Name}" ItemsSource="{x:Bind Children}" />
-                </DataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
-    </Grid>
+    <Pivot>
+        <PivotItem Margin="-4,0">
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource MarketPage_AllList}" />
+            </PivotItem.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <AutoSuggestBox
+                    Name="Search_AutoSuggestBox"
+                    Margin="8,0"
+                    DisplayMemberPath="TypeName"
+                    QueryIcon="Find"
+                    SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                    TextChanged="AutoSuggestBox_TextChanged" />
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto">
+                    <TreeView x:Name="TreeView_Types" ItemInvoked="TreeView_Types_ItemInvoked">
+                        <TreeView.ItemTemplate>
+                            <DataTemplate x:DataType="market:MarketItem">
+                                <TreeViewItem Content="{x:Bind Name}" ItemsSource="{x:Bind Children}" />
+                            </DataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </ScrollViewer>
+            </Grid>
+        </PivotItem>
+        <PivotItem Margin="-4,0">
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource MarketPage_Star}" />
+            </PivotItem.Header>
+            <ListView
+                x:Name="ListView_Stared"
+                DisplayMemberPath="TypeName"
+                SelectionChanged="ListView_Stared_SelectionChanged" />
+        </PivotItem>
+    </Pivot>
+
 
 </UserControl>

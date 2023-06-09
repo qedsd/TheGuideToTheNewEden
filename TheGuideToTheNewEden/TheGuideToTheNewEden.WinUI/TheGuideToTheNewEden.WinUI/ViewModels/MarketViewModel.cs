@@ -3,6 +3,7 @@ using ESI.NET;
 using ESI.NET.Models.Character;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +14,7 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Universe;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -94,18 +96,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set
             {
                 if(SetProperty(ref selectedInvType, value))
-                {
-                    SetSelectedInvType();
-                }
-            }
-        }
-        private int page = 1;
-        public int Page
-        {
-            get => page;
-            set
-            {
-                if (SetProperty(ref page, value))
                 {
                     SetSelectedInvType();
                 }
@@ -213,7 +203,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private BitmapImage selectedInvTypeIcon;
         public BitmapImage SelectedInvTypeIcon { get => selectedInvTypeIcon; set => SetProperty(ref selectedInvTypeIcon, value); }
-        private ESI.NET.EsiClient _esiClient = Core.Services.ESIService.GetDefaultEsi();
         public MarketViewModel() 
         {
             SelectedRegion = Core.Services.DB.MapRegionService.Query(10000002);
@@ -238,6 +227,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 GetSructureOrders();
             }
+            Stared = MarketStarService.Current.IsStared(SelectedInvType.TypeID);
         }
 
         private async void GetRegionOrders()
@@ -247,6 +237,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            Window?.ShowWaiting("获取历史记录中...");
             Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedRegion.RegionID);
             SetStatistics();
             Window?.HideWaiting();
@@ -259,6 +250,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            Window?.ShowWaiting("获取历史记录中...");
             Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedStructure.RegionId);
             SetStatistics();
             Window?.HideWaiting();
@@ -337,10 +329,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     break;
             }
         }
+
+        #region 收藏
         public ICommand StarCommand => new RelayCommand(() =>
         {
-            //TODO:收藏列表
-            Stared = !Stared;
+            if(MarketStarService.Current.IsStared(SelectedInvType.TypeID))
+            {
+                if (MarketStarService.Current.Remove(SelectedInvType.TypeID))
+                {
+                    Window.ShowSuccess("已取消收藏");
+                    Stared = false;
+                }
+                else
+                {
+                    Window.ShowError("取消收藏失败");
+                }
+            }
+            else
+            {
+                if (MarketStarService.Current.Add(SelectedInvType.TypeID))
+                {
+                    Window.ShowSuccess("已收藏");
+                    Stared = true;
+                }
+                else
+                {
+                    Window.ShowError("添加收藏失败");
+                }
+            }
         });
+        #endregion
     }
 }

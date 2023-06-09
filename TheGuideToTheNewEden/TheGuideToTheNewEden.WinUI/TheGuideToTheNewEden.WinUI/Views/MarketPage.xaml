@@ -28,23 +28,7 @@
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Pivot>
-                <PivotItem Margin="-4,0">
-                    <PivotItem.Header>
-                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_AllList}" />
-                    </PivotItem.Header>
-                    <ScrollViewer HorizontalScrollBarVisibility="Visible">
-                        <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
-                    </ScrollViewer>
-                </PivotItem>
-                <PivotItem Margin="-4,0">
-                    <PivotItem.Header>
-                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_Star}" />
-                    </PivotItem.Header>
-                    <ListView />
-                </PivotItem>
-            </Pivot>
-
+            <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
             <Button
                 Grid.Row="1"
                 Height="32"
@@ -124,8 +108,8 @@
                             Foreground="{ThemeResource SystemAccentColor}"
                             Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
                         <Button
-                            Width="24"
-                            Height="24"
+                            Width="32"
+                            Height="32"
                             Margin="4,0,0,0"
                             Padding="0"
                             Background="Transparent"
@@ -140,7 +124,27 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-
+                        <Button
+                            Width="32"
+                            Height="32"
+                            Margin="4,0,0,0"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{x:Bind VM.StarCommand}">
+                            <Grid>
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Text="&#xE1CE;"
+                                    Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Foreground="#fed801"
+                                    Text="&#xE1CF;"
+                                    Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                            </Grid>
+                        </Button>
                     </StackPanel>
                     <StackPanel
                         Grid.Row="1"
@@ -150,24 +154,6 @@
                         <TextBlock Margin="2,0,0,0" Text="m³" />
                     </StackPanel>
                 </Grid>
-                <Button
-                    Grid.Column="2"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Command="{x:Bind VM.StarCommand}">
-                    <Grid>
-                        <TextBlock
-                            FontFamily="Segoe MDL2 Assets"
-                            Text="&#xE1CE;"
-                            Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                        <TextBlock
-                            FontFamily="Segoe MDL2 Assets"
-                            Text="&#xE1CF;"
-                            Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                    </Grid>
-                </Button>
                 <Grid
                     Grid.Column="3"
                     Margin="0,0,8,0"
@@ -338,7 +324,7 @@
                         <Pivot Margin="-12,-18,-10,0">
                             <PivotItem>
                                 <PivotItem.Header>
-                                    <TextBlock FontSize="14" Text="{StaticResource MarketPage_Price}" />
+                                    <TextBlock FontSize="13" Text="{StaticResource MarketPage_Price}" />
                                 </PivotItem.Header>
                                 <chart:SfCartesianChart Margin="0,2,0,0">
                                     <chart:SfCartesianChart.XAxes>
@@ -400,7 +386,7 @@
                             </PivotItem>
                             <PivotItem>
                                 <PivotItem.Header>
-                                    <TextBlock FontSize="14" Text="{StaticResource MarketPage_StatisticVolume}" />
+                                    <TextBlock FontSize="13" Text="{StaticResource MarketPage_StatisticVolume}" />
                                 </PivotItem.Header>
                                 <chart:SfCartesianChart Margin="0,2,0,0">
                                     <chart:SfCartesianChart.XAxes>
