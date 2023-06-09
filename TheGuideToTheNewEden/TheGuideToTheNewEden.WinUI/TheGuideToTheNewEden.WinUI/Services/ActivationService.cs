@@ -21,8 +21,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.InitDb();
             CharacterService.Init();
             StructureService.Init();
-            //TODO:仅供测试
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
+        }
+        private static string GetSyncfusionLicense()
+        {
+            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "SyncfusionLicense.txt");
+            if(System.IO.File.Exists(file))
+            {
+                return System.IO.File.ReadAllText(file);
+            }
+            else
+            {
+                //TODO:release
+                return "";
+            }
         }
     }
 }
