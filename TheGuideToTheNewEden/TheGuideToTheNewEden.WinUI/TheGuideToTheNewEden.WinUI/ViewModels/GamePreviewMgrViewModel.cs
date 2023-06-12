@@ -614,6 +614,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         item.Value.Highlight();
                         item.Value.Show2();
                     }
+                    _lastProcessGUID = targetProcess.GUID;
                 }
                 else
                 {
