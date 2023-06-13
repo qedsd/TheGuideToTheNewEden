@@ -13,19 +13,26 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class BusinessPage : Page
     {
+        private BaseWindow Window;
         public BusinessPage()
         {
             this.InitializeComponent();
+            Loaded += BusinessPage_Loaded;
+        }
+
+        private void BusinessPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            VM.Window = Window;
+        }
+
+        private void CharacterOrderPage_OnSelectedItemsChanged(List<Core.Models.Market.Order> orders)
+        {
+            Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
         }
     }
 }

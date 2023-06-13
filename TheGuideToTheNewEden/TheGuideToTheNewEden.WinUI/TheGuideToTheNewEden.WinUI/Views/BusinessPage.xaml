@@ -2,11 +2,38 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.BusinessPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:business="using:TheGuideToTheNewEden.WinUI.Views.Business"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid />
+    <Page.DataContext>
+        <viewmodels:BusinessViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Pivot Margin="0,-10,0,0">
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_CharacterOrders}" />
+            </PivotItem.Header>
+            <business:CharacterOrderPage OnSelectedItemsChanged="CharacterOrderPage_OnSelectedItemsChanged" />
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Scalpers}" />
+            </PivotItem.Header>
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_ShoppingCart}" />
+            </PivotItem.Header>
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_HistoryShopping}" />
+            </PivotItem.Header>
+        </PivotItem>
+    </Pivot>
 </Page>

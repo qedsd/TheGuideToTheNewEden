@@ -155,4 +155,13 @@
     <x:String x:Key="MarketPage_History6">最近半年</x:String>
     <x:String x:Key="MarketPage_History12">最近一年</x:String>
     <x:String x:Key="MarketPage_HistoryAll">全部</x:String>
+
+    <!--  BusinessPage  -->
+    <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>
+    <x:String x:Key="BusinessPage_Character">个人</x:String>
+    <x:String x:Key="BusinessPage_Corp">军团</x:String>
+    <x:String x:Key="BusinessPage_CharacterOrders">个人订单</x:String>
+    <x:String x:Key="BusinessPage_Scalpers">倒货</x:String>
+    <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
+    <x:String x:Key="BusinessPage_HistoryShopping">倒货记录</x:String>
 </ResourceDictionary>

@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private static void SelectedIndexPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as SelecteCharacterControl).CharacterComboBox.SelectedIndex = (int)e.NewValue;
-            (d as SelecteCharacterControl).OnSelectedItemChanged?.Invoke((d as SelecteCharacterControl).CharacterComboBox.SelectedItem as AuthorizedCharacterData);
+            (d as SelecteCharacterControl).SelectedItemChanged?.Invoke((d as SelecteCharacterControl).CharacterComboBox.SelectedItem as AuthorizedCharacterData);
         }
         #endregion
         #region SelectedItem
@@ -62,10 +62,22 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private static void SelectedItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as SelecteCharacterControl).CharacterComboBox.SelectedItem = (AuthorizedCharacterData)e.NewValue;
+            (d as SelecteCharacterControl).SelectedItemChanged?.Invoke((d as SelecteCharacterControl).CharacterComboBox.SelectedItem as AuthorizedCharacterData);
         }
         #endregion
         public delegate void SelectedItemChangedEventHandel(AuthorizedCharacterData selectedItem);
-        private SelectedItemChangedEventHandel OnSelectedItemChanged;
+        private SelectedItemChangedEventHandel SelectedItemChanged;
+        public event SelectedItemChangedEventHandel OnSelectedItemChanged
+        {
+            add
+            {
+                SelectedItemChanged += value;
+            }
+            remove
+            {
+                SelectedItemChanged -= value;
+            }
+        }
 
         private void CharacterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

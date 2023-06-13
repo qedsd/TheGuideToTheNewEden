@@ -227,6 +227,7 @@
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
+    <None Remove="Views\Business\CharacterOrderPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
@@ -324,6 +325,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Business\CharacterOrderPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\StructuresSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

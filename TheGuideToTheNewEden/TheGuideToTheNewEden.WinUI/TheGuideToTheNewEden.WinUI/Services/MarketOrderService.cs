@@ -254,60 +254,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                #region 赋值物品、星系信息
-                var type = Core.Services.DB.InvTypeService.QueryType(typeId);
-                var systems = await Core.Services.DB.MapSolarSystemService.QueryAsync(orders.Select(p => (int)p.SystemId).Distinct().ToList());
-                var systemsDic = systems.ToDictionary(p => p.SolarSystemID);
-                foreach (var order in orders)
-                {
-                    order.InvType = type;
-                    if (systemsDic.TryGetValue((int)order.SystemId, out var system))
-                    {
-                        order.SolarSystem = system;
-                    }
-                }
-                #endregion
-                #region 赋值空间站、建筑星系
-                var stationOrders = orders.Where(p => p.IsStation).ToList();
-                var structureOrders = orders.Where(p => !p.IsStation).ToList();
-                if (stationOrders.NotNullOrEmpty())
-                {
-                    var stations = await Core.Services.DB.StaStationService.QueryAsync(stationOrders.Select(p => (int)p.LocationId).ToList());
-                    var stationsDic = stations.ToDictionary(p => p.StationID);
-                    foreach (var order in stationOrders)
-                    {
-                        if (stationsDic.TryGetValue((int)order.LocationId, out var station))
-                        {
-                            order.LocationName = station.StationName;
-                        }
-                    }
-                }
-                if (structureOrders.NotNullOrEmpty())
-                {
-                    var c = await Services.CharacterService.GetDefaultCharacterAsync();
-                    if(c != null)
-                    {
-                        EsiClient.SetCharacterData(c);
-                        var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), GetStructure);
-                        var data = result?.Where(p => p != null).ToList();
-                        var structuresDic = data.ToDictionary(p => p.Id);
-                        foreach (var order in structureOrders)
-                        {
-                            if (structuresDic.TryGetValue(order.LocationId, out var structure))
-                            {
-                                order.LocationName = structure.Name;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (var order in structureOrders)
-                        {
-                            order.LocationName = order.LocationId.ToString();
-                        }
-                    }
-                }
-                #endregion
+                await SetOrderInfo(orders);
             }
             return orders;
         }
@@ -441,6 +388,199 @@ namespace TheGuideToTheNewEden.WinUI.Services
             public string SaveFilePath
             {
                 get => GetFilePath(StructureId);
+            }
+        }
+
+        #region 个人订单
+        /// <summary>
+        /// 获取个人订单
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId)
+        {
+            var character = CharacterService.GetCharacter(characterId);
+            if (character == null)
+            {
+                Core.Log.Error($"未找到角色{characterId}");
+                return null;
+            }
+            if (!character.IsTokenValid())
+            {
+                if (!await character.RefreshTokenAsync())
+                {
+                    Core.Log.Error("Token已过期，尝试刷新失败");
+                    return null;
+                }
+            }
+            EsiClient.SetCharacterData(character);
+            var resp = await EsiClient.Market.CharacterOrders();
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                if (resp.Data.Any())
+                {
+                    var orders = resp.Data.Select(p => new Core.Models.Market.Order(p)).ToList();
+                    await SetOrderInfo(orders);
+                    return orders;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取角色的军团订单
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId)
+        {
+            var character = CharacterService.GetCharacter(characterId);
+            if (character == null)
+            {
+                Core.Log.Error($"未找到角色{characterId}");
+                return null;
+            }
+            if (!character.IsTokenValid())
+            {
+                if (!await character.RefreshTokenAsync())
+                {
+                    Core.Log.Error("Token已过期，尝试刷新失败");
+                    return null;
+                }
+            }
+            EsiClient.SetCharacterData(character);
+            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            int page = 1;
+            while (true)
+            {
+                var resp = await EsiClient.Market.CorporationOrders(page++);
+                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if (resp.Data.Any())
+                    {
+                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
+                        if (orders.Count < 1000)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    Core.Log.Error(resp?.Message);
+                    break;
+                }
+            }
+            if (orders.Any())
+            {
+                await SetOrderInfo(orders);
+            }
+            return orders;
+        }
+        #endregion
+
+        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders)
+        {
+            if(orders.NotNullOrEmpty())
+            {
+                await SetTypeInfo(orders);
+                await SetSystemInfo(orders);
+                await SetLocationInfo(orders);
+            }
+        }
+        private async Task SetTypeInfo(List<Core.Models.Market.Order> orders)
+        {
+            if (orders.NotNullOrEmpty())
+            {
+                var ids = orders.Select(p => p.TypeId).Distinct().ToList();
+                var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(ids);
+                var typesDic = types.ToDictionary(p => p.TypeID);
+                foreach ( var order in orders)
+                {
+                    if(typesDic.TryGetValue(order.TypeId,out var type))
+                    {
+                        order.InvType = type;
+                    }
+                }
+            }
+        }
+        private void SetTypeInfo(List<Core.Models.Market.Order> orders, int typeId)
+        {
+            if (orders.NotNullOrEmpty())
+            {
+                var type = Core.Services.DB.InvTypeService.QueryType(typeId);
+                foreach (var order in orders)
+                {
+                    order.InvType = type;
+                }
+            }
+        }
+        private async Task SetSystemInfo(List<Core.Models.Market.Order> orders)
+        {
+            if(orders.NotNullOrEmpty())
+            {
+                var systems = await Core.Services.DB.MapSolarSystemService.QueryAsync(orders.Select(p => (int)p.SystemId).Distinct().ToList());
+                var systemsDic = systems.ToDictionary(p => p.SolarSystemID);
+                foreach (var order in orders)
+                {
+                    if (systemsDic.TryGetValue((int)order.SystemId, out var system))
+                    {
+                        order.SolarSystem = system;
+                    }
+                }
+            }
+        }
+        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders)
+        {
+            var stationOrders = orders.Where(p => p.IsStation).ToList();
+            var structureOrders = orders.Where(p => !p.IsStation).ToList();
+            if (stationOrders.NotNullOrEmpty())
+            {
+                var stations = await Core.Services.DB.StaStationService.QueryAsync(stationOrders.Select(p => (int)p.LocationId).ToList());
+                var stationsDic = stations.ToDictionary(p => p.StationID);
+                foreach (var order in stationOrders)
+                {
+                    if (stationsDic.TryGetValue((int)order.LocationId, out var station))
+                    {
+                        order.LocationName = station.StationName;
+                    }
+                }
+            }
+            if (structureOrders.NotNullOrEmpty())
+            {
+                var c = await Services.CharacterService.GetDefaultCharacterAsync();
+                if (c != null)
+                {
+                    EsiClient.SetCharacterData(c);
+                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), GetStructure);
+                    var data = result?.Where(p => p != null).ToList();
+                    var structuresDic = data.ToDictionary(p => p.Id);
+                    foreach (var order in structureOrders)
+                    {
+                        if (structuresDic.TryGetValue(order.LocationId, out var structure))
+                        {
+                            order.LocationName = structure.Name;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var order in structureOrders)
+                    {
+                        order.LocationName = order.LocationId.ToString();
+                    }
+                }
             }
         }
     }
