@@ -9,6 +9,7 @@
     <x:String x:Key="General_Remove">删除</x:String>
     <x:String x:Key="General_AddSelected">添加选中</x:String>
     <x:String x:Key="General_SolarSystemName">星系</x:String>
+    <x:String x:Key="General_SolarSystem">星系</x:String>
     <x:String x:Key="General_RegionName">星域</x:String>
     <x:String x:Key="General_Character">角色</x:String>
     <x:String x:Key="General_Region">星域</x:String>
@@ -161,7 +162,11 @@
     <x:String x:Key="BusinessPage_Character">个人</x:String>
     <x:String x:Key="BusinessPage_Corp">军团</x:String>
     <x:String x:Key="BusinessPage_CharacterOrders">个人订单</x:String>
-    <x:String x:Key="BusinessPage_Scalpers">倒货</x:String>
+    <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
     <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
     <x:String x:Key="BusinessPage_HistoryShopping">倒货记录</x:String>
+    <x:String x:Key="BusinessPage_Setting">设置</x:String>
+    <x:String x:Key="BusinessPage_FilterList">排除列表</x:String>
+    <x:String x:Key="BusinessPage_SourceMarket">源市场</x:String>
+    <x:String x:Key="BusinessPage_DestinationMarket">目的市场</x:String>
 </ResourceDictionary>

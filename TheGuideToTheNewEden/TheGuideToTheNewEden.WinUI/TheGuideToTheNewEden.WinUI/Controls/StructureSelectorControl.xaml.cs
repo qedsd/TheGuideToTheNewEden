@@ -99,10 +99,21 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private static void SelectedItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            (d as StructureSelectorControl).OnSelectedItemChanged?.Invoke(e.NewValue as Structure);
+            (d as StructureSelectorControl).SelectedItemChanged?.Invoke(e.NewValue as Structure);
         }
 
         public delegate void SelectedItemChangedEventHandel(Structure selectedItem);
-        private SelectedItemChangedEventHandel OnSelectedItemChanged;
+        private SelectedItemChangedEventHandel SelectedItemChanged;
+        public event SelectedItemChangedEventHandel OnSelectedItemChanged
+        {
+            add
+            {
+                SelectedItemChanged += value;
+            }
+            remove
+            {
+                SelectedItemChanged -= value;
+            }
+        }
     }
 }

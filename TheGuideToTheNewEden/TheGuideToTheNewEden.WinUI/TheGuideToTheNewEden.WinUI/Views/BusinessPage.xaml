@@ -22,8 +22,9 @@
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Scalpers}" />
+                <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Scalper}" />
             </PivotItem.Header>
+            <business:ScalperPage x:Name="ScalperPage" />
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
