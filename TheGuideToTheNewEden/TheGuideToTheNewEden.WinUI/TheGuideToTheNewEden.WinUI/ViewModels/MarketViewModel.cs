@@ -238,7 +238,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
             Window?.ShowWaiting("获取历史记录中...");
-            Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedRegion.RegionID);
+            Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
             SetStatistics();
             Window?.HideWaiting();
         }
@@ -251,7 +251,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
             Window?.ShowWaiting("获取历史记录中...");
-            Statistics = await Services.MarketOrderService.Current.GetHistory(SelectedInvType.TypeID, SelectedStructure.RegionId);
+            Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedStructure.RegionId);
             SetStatistics();
             Window?.HideWaiting();
         }

@@ -15,6 +15,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             Id = mapSolarSystem.SolarSystemID;
             MarketObj = mapSolarSystem;
             Name = mapSolarSystem.SolarSystemName;
+            RegionId = mapSolarSystem.RegionID;
         }
         public MarketLocation(MapRegion mapRegion)
         {
@@ -22,6 +23,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             Id = mapRegion.RegionID;
             MarketObj = mapRegion;
             Name = mapRegion.RegionName;
+            RegionId = mapRegion.RegionID;
         }
         public MarketLocation(Structure structure)
         {
@@ -29,11 +31,13 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             Id = structure.Id;
             MarketObj = structure;
             Name = structure.Name;
+            RegionId = structure.RegionId;
         }
         public MarketLocationType Type { get; set; }
         public long Id { get; set; }
         public string Name { get; set; }
         public object MarketObj { get; set; }
+        public int RegionId { get; set; }
     }
     public enum MarketLocationType
     {

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
+using static TheGuideToTheNewEden.WinUI.Services.MarketOrderService;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -38,7 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 订单过期时间
         /// 分钟
         /// </summary>
-        private static readonly int OrderDuration = 60;
+        private static readonly int OrderDuration = 600;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
@@ -170,7 +171,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return orders;
         }
 
-        private async Task Save(StructureOrder order)
+        private static async Task Save(StructureOrder order)
         {
             await Task.Run(() =>
             {
@@ -182,7 +183,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 File.WriteAllText(order.SaveFilePath, json);
             });
         }
-        private async Task Save(RegionOrder order)
+        private static async Task Save(RegionOrder order)
         {
             await Task.Run(() =>
             {
@@ -504,7 +505,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistory(int typeId, int regionId)
+        public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistoryAsync(int typeId, int regionId)
         {
             var resp = await EsiClient.Market.TypeHistoryInRegion(regionId, typeId);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
@@ -516,6 +517,36 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Core.Log.Error(resp?.Message);
                 return null;
             }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ids">[0] regionId [1] typeId</param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Statistic>> GetHistory(int[] ids)
+        {
+            var resp = await EsiClient.Market.TypeHistoryInRegion(ids[0], ids[1]);
+            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return resp.Data.Select(p=> new Core.Models.Market.Statistic(p, ids[1])).ToList();
+            }
+            else
+            {
+                Core.Log.Error(resp?.Message);
+                return null;
+            }
+        }
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeId, int regionId)
+        {
+            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId.Select(p=> new int[] { regionId, p}), GetHistory);
+            var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
+            Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
+            foreach(var list in valid)
+            {
+                var key = list.First().InvTypeId;
+                dic.TryAdd(key, list);
+            }
+            return dic;
         }
 
         public class StructureOrder

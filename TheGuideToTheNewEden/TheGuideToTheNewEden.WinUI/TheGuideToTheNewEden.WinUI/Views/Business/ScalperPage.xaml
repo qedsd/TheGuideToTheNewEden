@@ -45,47 +45,58 @@
                                     <Setter Property="Margin" Value="0,4" />
                                 </Style>
                             </StackPanel.Resources>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="48" />
-                                    <RowDefinition Height="48" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center" Text="{StaticResource BusinessPage_SourceMarket}" />
-                                <Button
-                                    Grid.Column="1"
-                                    Height="32"
-                                    Margin="8,0,0,0"
-                                    HorizontalAlignment="Stretch"
-                                    Content="{x:Bind VM.Setting.SourceMarketLocation.Name, Mode=OneWay}">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.SourceMarketLocation, Mode=TwoWay}" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                                <TextBlock
-                                    Grid.Row="1"
-                                    VerticalAlignment="Center"
-                                    Text="{StaticResource BusinessPage_DestinationMarket}" />
-                                <Button
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Height="32"
-                                    Margin="8,0,0,0"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center"
-                                    Content="{x:Bind VM.Setting.DestinationMarketLocation.Name, Mode=OneWay}">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.DestinationMarketLocation, Mode=TwoWay}" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </Grid>
+                            <Expander Header="{StaticResource BusinessPage_BaseSetting}" IsExpanded="True">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="48" />
+                                            <RowDefinition Height="48" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource BusinessPage_SourceMarket}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Content="{x:Bind VM.Setting.SourceMarketLocation.Name, Mode=OneWay}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.SourceMarketLocation, Mode=TwoWay}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource BusinessPage_DestinationMarket}" />
+                                        <Button
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind VM.Setting.DestinationMarketLocation.Name, Mode=OneWay}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.DestinationMarketLocation, Mode=TwoWay}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </Grid>
+                                    <ComboBox
+                                        DisplayMemberPath="MarketGroupName"
+                                        Header="{StaticResource BusinessPage_MarketGroup}"
+                                        ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
+                                        SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
+                                    <CheckBox Content="{StaticResource BusinessPage_NoNoneSourceSellOrder}" IsChecked="{x:Bind VM.Setting.NoNoneSourceSellOrder, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+
                             <Expander Header="{StaticResource BusinessPage_BuyPrice}">
                                 <StackPanel>
                                     <ComboBox

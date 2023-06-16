@@ -30,6 +30,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             get => destinationMarketLocation;
             set => SetProperty(ref destinationMarketLocation, value);
         }
+
+        private int marketGroup = 9;
+        /// <summary>
+        /// 物品类型
+        /// </summary>
+        public int MarketGroup
+        {
+            get => marketGroup; set => SetProperty(ref marketGroup, value);
+        }
         #endregion
 
         #region 买入卖出价格

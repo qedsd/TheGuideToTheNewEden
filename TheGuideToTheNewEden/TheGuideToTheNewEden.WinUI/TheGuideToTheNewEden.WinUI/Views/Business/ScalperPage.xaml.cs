@@ -20,6 +20,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         public ScalperPage()
         {
             this.InitializeComponent();
+            Loaded += ScalperPage_Loaded;
+        }
+
+        private void ScalperPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
     }
 }
