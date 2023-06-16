@@ -34,8 +34,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             EsiClient = Core.Services.ESIService.GetDefaultEsi();
         }
 
-        private ConcurrentDictionary<long, StructureOrder> StructureOrders = new ConcurrentDictionary<long, StructureOrder>();
-        private ConcurrentDictionary<int, RegionOrder> RegionOrders = new ConcurrentDictionary<int, RegionOrder>();
         /// <summary>
         /// 订单过期时间
         /// 分钟
@@ -68,71 +66,42 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId)
         {
-            //if(StructureOrders.TryGetValue(structureId, out StructureOrder order))
-            //{
-            //    if((DateTime.Now - order.UpdateTime).TotalMinutes > OrderDuration)
-            //    {
-            //        var orders = await GetLatestStructureOrdersAsync(structureId);
-            //        if(orders.NotNullOrEmpty())
-            //        {
-            //            StructureOrders.TryRemove(structureId,out _);
-            //            var newOrder = new StructureOrder()
-            //            {
-            //                StructureId = structureId,
-            //                UpdateTime = DateTime.Now,
-            //                Orders = orders
-            //            };
-            //            StructureOrders.TryAdd(structureId, newOrder);
-            //            await Save(newOrder);
-            //        }
-            //        return orders;
-            //    }
-            //    else
-            //    {
-            //        return order.Orders;
-            //    }
-            //}
-            //else
+            //优先从本地加载
+            string filePath = GetFilePath(structureId);
+            if (File.Exists(filePath))
             {
-                //优先从本地加载
-                string filePath = GetFilePath(structureId);
-                if(File.Exists(filePath))
+                var fileText = File.ReadAllText(filePath);
+                if (!string.IsNullOrEmpty(fileText))
                 {
-                    var fileText = File.ReadAllText(filePath);
-                    if(!string.IsNullOrEmpty(fileText))
+                    var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<StructureOrder>(fileText));
+                    if (localOrder != null)//本地存在订单数据
                     {
-                        var localOrder = await Task.Run(()=>JsonConvert.DeserializeObject<StructureOrder>(fileText));
-                        if(localOrder != null)//本地存在订单数据
+                        if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
                         {
-                            if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
-                            {
-                                await SetOrderInfo(localOrder.Orders);
-                                //StructureOrders.TryAdd(structureId, localOrder);
-                                return localOrder.Orders;
-                            }
-                            else
-                            {
-                                //不在有效期内当作本地不存在订单处理
-                            }
+                            await SetOrderInfo(localOrder.Orders);
+                            return localOrder.Orders;
+                        }
+                        else
+                        {
+                            //不在有效期内当作本地不存在订单处理
                         }
                     }
                 }
-
-                //本地不存在或过期或解析失败，重新获取
-                var orders = await GetLatestStructureOrdersAsync(structureId);
-                if (orders.NotNullOrEmpty())
-                {
-                    var newOrder = new StructureOrder()
-                    {
-                        StructureId = structureId,
-                        UpdateTime = DateTime.Now,
-                        Orders = orders
-                    };
-                    //StructureOrders.TryAdd(structureId, newOrder);
-                    await Save(newOrder);
-                }
-                return orders;
             }
+
+            //本地不存在或过期或解析失败，重新获取
+            var orders = await GetLatestStructureOrdersAsync(structureId);
+            if (orders.NotNullOrEmpty())
+            {
+                var newOrder = new StructureOrder()
+                {
+                    StructureId = structureId,
+                    UpdateTime = DateTime.Now,
+                    Orders = orders
+                };
+                await Save(newOrder);
+            }
+            return orders;
         }
 
         /// <summary>
@@ -322,71 +291,42 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId)
         {
-            //if (RegionOrders.TryGetValue(regionId, out RegionOrder order))
-            //{
-            //    if ((DateTime.Now - order.UpdateTime).TotalMinutes > OrderDuration)
-            //    {
-            //        var orders = await GetLatestOnlyRegionOrdersAsync(regionId);
-            //        if (orders.NotNullOrEmpty())
-            //        {
-            //            RegionOrders.TryRemove(regionId, out _);
-            //            var newOrder = new RegionOrder()
-            //            {
-            //                RegionId = regionId,
-            //                UpdateTime = DateTime.Now,
-            //                Orders = orders
-            //            };
-            //            RegionOrders.TryAdd(regionId, newOrder);
-            //            await Save(newOrder);
-            //        }
-            //        return orders;
-            //    }
-            //    else
-            //    {
-            //        return order.Orders;
-            //    }
-            //}
-            //else
+            //优先从本地加载
+            string filePath = GetFilePath(regionId);
+            if (File.Exists(filePath))
             {
-                //优先从本地加载
-                string filePath = GetFilePath(regionId);
-                if (File.Exists(filePath))
+                var fileText = File.ReadAllText(filePath);
+                if (!string.IsNullOrEmpty(fileText))
                 {
-                    var fileText = File.ReadAllText(filePath);
-                    if (!string.IsNullOrEmpty(fileText))
+                    var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<RegionOrder>(fileText));
+                    if (localOrder != null)//本地存在订单数据
                     {
-                        var localOrder = await Task.Run(()=> JsonConvert.DeserializeObject<RegionOrder>(fileText));
-                        if (localOrder != null)//本地存在订单数据
+                        if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
                         {
-                            if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
-                            {
-                                await SetOrderInfo(localOrder.Orders);
-                                //RegionOrders.TryAdd(regionId, localOrder);
-                                return localOrder.Orders;
-                            }
-                            else
-                            {
-                                //不在有效期内当作本地不存在订单处理
-                            }
+                            await SetOrderInfo(localOrder.Orders);
+                            return localOrder.Orders;
+                        }
+                        else
+                        {
+                            //不在有效期内当作本地不存在订单处理
                         }
                     }
                 }
-
-                //本地不存在或过期或解析失败，重新获取
-                var orders = await GetLatestOnlyRegionOrdersAsync(regionId);
-                if (orders.NotNullOrEmpty())
-                {
-                    var newOrder = new RegionOrder()
-                    {
-                        RegionId = regionId,
-                        UpdateTime = DateTime.Now,
-                        Orders = orders
-                    };
-                    //RegionOrders.TryAdd(regionId, newOrder);
-                    await Save(newOrder);
-                }
-                return orders;
             }
+
+            //本地不存在或过期或解析失败，重新获取
+            var orders = await GetLatestOnlyRegionOrdersAsync(regionId);
+            if (orders.NotNullOrEmpty())
+            {
+                var newOrder = new RegionOrder()
+                {
+                    RegionId = regionId,
+                    UpdateTime = DateTime.Now,
+                    Orders = orders
+                };
+                await Save(newOrder);
+            }
+            return orders;
         }
 
         /// <summary>
