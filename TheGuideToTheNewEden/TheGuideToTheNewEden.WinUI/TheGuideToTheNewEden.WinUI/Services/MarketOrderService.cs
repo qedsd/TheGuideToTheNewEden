@@ -14,7 +14,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class MarketOrderService
     {
-        private static readonly string FolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
+        private static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
+        private static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
         private static MarketOrderService current;
         public static MarketOrderService Current
         {
@@ -34,6 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
 
         private ConcurrentDictionary<long, StructureOrder> StructureOrders = new ConcurrentDictionary<long, StructureOrder>();
+        private ConcurrentDictionary<int, RegionOrder> RegionOrders = new ConcurrentDictionary<int, RegionOrder>();
         /// <summary>
         /// 订单过期时间
         /// 分钟
@@ -66,31 +68,31 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId)
         {
-            if(StructureOrders.TryGetValue(structureId, out StructureOrder order))
-            {
-                if((DateTime.Now - order.UpdateTime).TotalMinutes > OrderDuration)
-                {
-                    var orders = await GetLatestStructureOrdersAsync(structureId);
-                    if(orders.NotNullOrEmpty())
-                    {
-                        StructureOrders.TryRemove(structureId,out _);
-                        var newOrder = new StructureOrder()
-                        {
-                            StructureId = structureId,
-                            UpdateTime = DateTime.Now,
-                            Orders = orders
-                        };
-                        StructureOrders.TryAdd(structureId, newOrder);
-                        Save(newOrder);
-                    }
-                    return orders;
-                }
-                else
-                {
-                    return order.Orders;
-                }
-            }
-            else
+            //if(StructureOrders.TryGetValue(structureId, out StructureOrder order))
+            //{
+            //    if((DateTime.Now - order.UpdateTime).TotalMinutes > OrderDuration)
+            //    {
+            //        var orders = await GetLatestStructureOrdersAsync(structureId);
+            //        if(orders.NotNullOrEmpty())
+            //        {
+            //            StructureOrders.TryRemove(structureId,out _);
+            //            var newOrder = new StructureOrder()
+            //            {
+            //                StructureId = structureId,
+            //                UpdateTime = DateTime.Now,
+            //                Orders = orders
+            //            };
+            //            StructureOrders.TryAdd(structureId, newOrder);
+            //            await Save(newOrder);
+            //        }
+            //        return orders;
+            //    }
+            //    else
+            //    {
+            //        return order.Orders;
+            //    }
+            //}
+            //else
             {
                 //优先从本地加载
                 string filePath = GetFilePath(structureId);
@@ -99,18 +101,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     var fileText = File.ReadAllText(filePath);
                     if(!string.IsNullOrEmpty(fileText))
                     {
-                        var localOrder = JsonConvert.DeserializeObject<StructureOrder>(fileText);
+                        var localOrder = await Task.Run(()=>JsonConvert.DeserializeObject<StructureOrder>(fileText));
                         if(localOrder != null)//本地存在订单数据
                         {
                             if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
                             {
-                                var sturcture = StructureService.GetStructure(structureId);
-                                if(sturcture != null)
-                                {
-                                    var mapSolarSystem = Core.Services.DB.MapSolarSystemService.Query(sturcture.SolarSystemId);
-                                    localOrder.Orders.ForEach(p => p.SolarSystem = mapSolarSystem);
-                                }
-                                StructureOrders.TryAdd(structureId, localOrder);
+                                await SetOrderInfo(localOrder.Orders);
+                                //StructureOrders.TryAdd(structureId, localOrder);
                                 return localOrder.Orders;
                             }
                             else
@@ -131,8 +128,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         UpdateTime = DateTime.Now,
                         Orders = orders
                     };
-                    StructureOrders.TryAdd(structureId, newOrder);
-                    Save(newOrder);
+                    //StructureOrders.TryAdd(structureId, newOrder);
+                    await Save(newOrder);
                 }
                 return orders;
             }
@@ -193,28 +190,49 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     break;
                 }
             }
-            var mapSolarSystem = Core.Services.DB.MapSolarSystemService.Query(structure.SolarSystemId);
-            foreach(var order in orders)
+            if (orders.Any())
             {
-                order.LocationName = structure.Name;
-                order.SolarSystem = mapSolarSystem;
+                foreach (var order in orders)
+                {
+                    order.SystemId = structure.SolarSystemId;
+                }
+                await SetOrderInfo(orders);
             }
             return orders;
         }
 
-        private void Save(StructureOrder order)
+        private async Task Save(StructureOrder order)
         {
-            string json = JsonConvert.SerializeObject(order);
-            if (!Directory.Exists(FolderPath))
+            await Task.Run(() =>
             {
-                Directory.CreateDirectory(FolderPath);
-            }
-            File.WriteAllText(order.SaveFilePath, json);
+                string json = JsonConvert.SerializeObject(order);
+                if (!Directory.Exists(StructureOrderFolder))
+                {
+                    Directory.CreateDirectory(StructureOrderFolder);
+                }
+                File.WriteAllText(order.SaveFilePath, json);
+            });
+        }
+        private async Task Save(RegionOrder order)
+        {
+            await Task.Run(() =>
+            {
+                string json = JsonConvert.SerializeObject(order);
+                if (!Directory.Exists(RegionOrderFolder))
+                {
+                    Directory.CreateDirectory(RegionOrderFolder);
+                }
+                File.WriteAllText(order.SaveFilePath, json);
+            });
         }
 
         private static string GetFilePath(long structureId)
         {
-            return System.IO.Path.Combine(FolderPath, $"{structureId}.json");
+            return System.IO.Path.Combine(StructureOrderFolder, $"{structureId}.json");
+        }
+        private static string GetFilePath(int regionId)
+        {
+            return System.IO.Path.Combine(RegionOrderFolder, $"{regionId}.json");
         }
 
         /// <summary>
@@ -258,6 +276,118 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return orders;
         }
+        /// <summary>
+        /// API获取最新星域所有订单
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId)
+        {
+            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            int page = 1;
+            while (true)
+            {
+                var resp = await EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page++);
+                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if (resp.Data.Any())
+                    {
+                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
+                        if (orders.Count < 1000)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    Core.Log.Error(resp?.Message);
+                    break;
+                }
+            }
+            if (orders.Any())
+            {
+                await SetOrderInfo(orders);
+            }
+            return orders;
+        }
+        /// <summary>
+        /// 获取星域所有订单，优先尝试缓存
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId)
+        {
+            //if (RegionOrders.TryGetValue(regionId, out RegionOrder order))
+            //{
+            //    if ((DateTime.Now - order.UpdateTime).TotalMinutes > OrderDuration)
+            //    {
+            //        var orders = await GetLatestOnlyRegionOrdersAsync(regionId);
+            //        if (orders.NotNullOrEmpty())
+            //        {
+            //            RegionOrders.TryRemove(regionId, out _);
+            //            var newOrder = new RegionOrder()
+            //            {
+            //                RegionId = regionId,
+            //                UpdateTime = DateTime.Now,
+            //                Orders = orders
+            //            };
+            //            RegionOrders.TryAdd(regionId, newOrder);
+            //            await Save(newOrder);
+            //        }
+            //        return orders;
+            //    }
+            //    else
+            //    {
+            //        return order.Orders;
+            //    }
+            //}
+            //else
+            {
+                //优先从本地加载
+                string filePath = GetFilePath(regionId);
+                if (File.Exists(filePath))
+                {
+                    var fileText = File.ReadAllText(filePath);
+                    if (!string.IsNullOrEmpty(fileText))
+                    {
+                        var localOrder = await Task.Run(()=> JsonConvert.DeserializeObject<RegionOrder>(fileText));
+                        if (localOrder != null)//本地存在订单数据
+                        {
+                            if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
+                            {
+                                await SetOrderInfo(localOrder.Orders);
+                                //RegionOrders.TryAdd(regionId, localOrder);
+                                return localOrder.Orders;
+                            }
+                            else
+                            {
+                                //不在有效期内当作本地不存在订单处理
+                            }
+                        }
+                    }
+                }
+
+                //本地不存在或过期或解析失败，重新获取
+                var orders = await GetLatestOnlyRegionOrdersAsync(regionId);
+                if (orders.NotNullOrEmpty())
+                {
+                    var newOrder = new RegionOrder()
+                    {
+                        RegionId = regionId,
+                        UpdateTime = DateTime.Now,
+                        Orders = orders
+                    };
+                    //RegionOrders.TryAdd(regionId, newOrder);
+                    await Save(newOrder);
+                }
+                return orders;
+            }
+        }
 
         /// <summary>
         /// 获取指定星域下的建筑订单
@@ -284,6 +414,29 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                 orders.AddRange(targetOrders);
                             }
                         }
+                    }
+                    return orders;
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// 获取指定星域下的建筑订单
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId)
+        {
+            var strutures = StructureService.GetStructuresOfRegion(regionId);
+            if (strutures.NotNullOrEmpty())
+            {
+                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p => p.Id), GetStructureOrdersAsync);
+                if (result.NotNullOrEmpty())
+                {
+                    List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                    foreach (var list in result)
+                    {
+                        orders.AddRange(list);
                     }
                     return orders;
                 }
@@ -321,6 +474,51 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
                 return orders;
+            }
+            return null;
+        }
+        /// <summary>
+        /// 获取星域订单，包含建筑订单
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId)
+        {
+            var regions = await GetOnlyRegionOrdersAsync(regionId);
+            var structures = await GetOnlyStructureOrdersAsync(regionId);
+            if (regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
+            {
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                if (regions.NotNullOrEmpty())
+                {
+                    orders.AddRange(regions);
+                }
+                if (structures.NotNullOrEmpty())
+                {
+                    //星域订单买单是包含建筑订单的，需要过滤，优先使用星域订单，因为API刷新时间更短
+                    var regionsHashSet = regions.Select(p => p.OrderId).ToHashSet2();
+                    foreach (var structureOrder in structures)
+                    {
+                        if (!regionsHashSet.Contains(structureOrder.OrderId))
+                        {
+                            orders.Add(structureOrder);
+                        }
+                    }
+                }
+                return orders;
+            }
+            return null;
+        }
+        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId)
+        {
+            var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(mapSolarSystemId);
+            if(system != null)
+            {
+                var regionOrders = await GetRegionOrdersAsync(system.RegionID);
+                if(regionOrders.NotNullOrEmpty())
+                {
+                    return regionOrders.Where(p => p.SolarSystem.SolarSystemID == mapSolarSystemId).ToList();
+                }
             }
             return null;
         }
@@ -388,6 +586,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
             public string SaveFilePath
             {
                 get => GetFilePath(StructureId);
+            }
+        }
+        public class RegionOrder
+        {
+            public int RegionId { get; set; }
+            public DateTime UpdateTime { get; set; }
+            public List<Core.Models.Market.Order> Orders { get; set; }
+            public string SaveFilePath
+            {
+                get => GetFilePath(RegionId);
             }
         }
 
@@ -537,6 +745,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (systemsDic.TryGetValue((int)order.SystemId, out var system))
                     {
                         order.SolarSystem = system;
+                        order.RegionId = system.RegionID;
                     }
                 }
             }
