@@ -93,7 +93,6 @@
                                         Header="{StaticResource BusinessPage_MarketGroup}"
                                         ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
                                         SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
-                                    <CheckBox Content="{StaticResource BusinessPage_NoNoneSourceSellOrder}" IsChecked="{x:Bind VM.Setting.NoNoneSourceSellOrder, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
 

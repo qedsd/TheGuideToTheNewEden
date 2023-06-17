@@ -11,6 +11,7 @@ using TheGuideToTheNewEden.Core.Models.Market;
 using static TheGuideToTheNewEden.Core.Models.Market.ScalperSetting;
 using TheGuideToTheNewEden.Core.Extensions;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using SqlSugar;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -177,38 +178,78 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             var allSourceOrders = await GetAllSourceOrders();
             var allDestinationOrders = await GetAllDestinationOrders();
-            
-            if(allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
+            if (allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
             {
-                var groups = await GetTypeIdsInGroup();
-                List<int> sourceTypeIds = new List<int>();
-                List<int> destinationTypeIds = new List<int>();
+                var subGroupsOfSelectedInvMarketGroup = await GetSubGroupOfTargetGroup();
+                List<int> sourceTypeIds = null;
+                List<int> destinationTypeIds = null;
+                List<ScalperItem> sourceScalperItems = null;
+                List<ScalperItem> destinationScalperItems = null;
                 await Task.Run(() =>
                 {
-                    var subGroup = groups.Select(p => p.MarketGroupID).ToHashSet2();
-                    foreach (var order in allSourceOrders.Where(p => p.InvType != null && p.InvType.MarketGroupID != null))
-                    {
-                        if (subGroup.Contains((int)order.InvType.MarketGroupID))
-                        {
-                            sourceTypeIds.Add((int)order.TypeId);
-                        }
-                    }
-                    foreach (var order in allDestinationOrders.Where(p => p.InvType != null && p.InvType.MarketGroupID != null))
-                    {
-                        if (subGroup.Contains((int)order.InvType.MarketGroupID))
-                        {
-                            destinationTypeIds.Add((int)order.TypeId);
-                        }
-                    }
+                    var subGroupsIds = subGroupsOfSelectedInvMarketGroup.Select(p => p.MarketGroupID).ToHashSet2();
+                    sourceScalperItems = GetScalperItems(allSourceOrders, subGroupsIds);
+                    destinationScalperItems = GetScalperItems(allDestinationOrders, subGroupsIds);
+                    sourceTypeIds = sourceScalperItems.Select(p=>p.InvType.TypeID).ToList();
+                    destinationTypeIds = destinationScalperItems.Select(p => p.InvType.TypeID).ToList();
                 });
-                
-                var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(sourceTypeIds.Distinct().ToList(), Setting.SourceMarketLocation.RegionId);
-                var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(destinationTypeIds.Distinct().ToList(), Setting.DestinationMarketLocation.RegionId);
+                if(sourceScalperItems.NotNullOrEmpty() && destinationScalperItems.NotNullOrEmpty())
+                {
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(sourceTypeIds.Distinct().ToList(), Setting.SourceMarketLocation.RegionId);
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(destinationTypeIds.Distinct().ToList(), Setting.DestinationMarketLocation.RegionId);
+                    await Task.Run(() =>
+                    {
+                        SetHistory(sourceScalperItems, sourceHistory);
+                        SetHistory(destinationScalperItems, destinationHistory);
+                        sourceScalperItems = sourceScalperItems.Where(p=>p.Statistics .NotNullOrEmpty()).ToList();
+                        destinationScalperItems = destinationScalperItems.Where(p => p.Statistics.NotNullOrEmpty()).ToList();
+                    });
+                }
             }
-            
         }
 
-        private async Task<List<Core.DBModels.InvMarketGroup>> GetTypeIdsInGroup()
+        private List<ScalperItem> GetScalperItems(List<Order> orders, HashSet<int> marketGroupIDs)
+        {
+            try
+            {
+                List<ScalperItem> scalperItems = new List<ScalperItem>();
+                var groups = orders.GroupBy(p => p.TypeId);
+                foreach (var group in groups)
+                {
+                    var list = group.ToList();
+                    var invType = list.First().InvType;
+                    if (invType?.MarketGroupID != null)
+                    {
+                        if (marketGroupIDs.Contains((int)invType.MarketGroupID))
+                        {
+                            scalperItems.Add(new ScalperItem()
+                            {
+                                InvType = list.First().InvType,
+                                SellOrders = list.Where(p => !p.IsBuyOrder).ToList(),
+                                BuyOrders = list.Where(p => p.IsBuyOrder).ToList(),
+                            });
+                        }
+                    }
+                }
+                return scalperItems;
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                return null;
+            }
+        }
+        private void SetHistory(List<ScalperItem> scalperItems, Dictionary<int, List<Core.Models.Market.Statistic>> statisticDic)
+        {
+            foreach(var item in scalperItems)
+            {
+                if(statisticDic.TryGetValue(item.InvType.TypeID, out var value))
+                {
+                    item.Statistics = value;
+                }
+            }
+        }
+        private async Task<List<Core.DBModels.InvMarketGroup>> GetSubGroupOfTargetGroup()
         {
             var subGroups = await Core.Services.DB.InvMarketGroupService.QuerySubGroupAsync();
             return await Task.Run(() =>
