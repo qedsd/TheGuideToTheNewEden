@@ -142,42 +142,74 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 var groupByListener = chatlogFileInfos.GroupBy(p => p.ListenerID).ToList();//按角色划分开
                 foreach (var groupOfOneListener in groupByListener)
                 {
-                    Dictionary<string, ChatChanelInfo> dic = new Dictionary<string, ChatChanelInfo>();//该角色最新的频道日志，key为ChannelID
-                    var infosOfOneListener = groupOfOneListener.ToList();//该角色下所有的文件
-                    var groupByChannelName = infosOfOneListener.GroupBy(p => p.ChannelName).ToList();//按频道名划分
-                    foreach (var groupOfOneChannel in groupByChannelName)
+                    try
                     {
-                        var infosOfOneChannel = groupOfOneChannel.ToList();//该频道下所有的文件
-                        //同一天可能有多个文件
-                        var dateGroup = infosOfOneChannel.GroupBy(p => p.Date).ToList();
-                        var latsetDateGroup = dateGroup.OrderByDescending(p => p.Key).First();//该频道下最新一天的所有文件
-                        var chanelInfo = latsetDateGroup.Select(p=> GetChatChanelInfo(p.FilePath)).OrderByDescending(p=>p.SessionStarted).FirstOrDefault();//该频道下最新的文件
-                        //因为文件名的频道名会跟语言相关，所有还需要读取文件内容里唯一的频道ID来判断
-                        if (chanelInfo != null)
+                        Dictionary<string, ChatChanelInfo> dic = new Dictionary<string, ChatChanelInfo>();//该角色最新的频道日志，key为ChannelID
+                        var infosOfOneListener = groupOfOneListener.ToList();//该角色下所有的文件
+                        var groupByChannelName = infosOfOneListener.GroupBy(p => p.ChannelName).ToList();//按频道名划分
+                        foreach (var groupOfOneChannel in groupByChannelName)
                         {
-                            if(dic.TryGetValue(chanelInfo.ChannelID, out var exist))
+                            var infosOfOneChannel = groupOfOneChannel.ToList();//该频道下所有的文件
+                            //同一天可能有多个文件
+                            var dateGroup = infosOfOneChannel.GroupBy(p => p.Date).ToList();
+                            var latsetDateGroup = dateGroup.OrderByDescending(p => p.Key).First();//该频道下最新一天的所有文件
+                            try
                             {
-                                if(exist.SessionStarted < chanelInfo.SessionStarted)
+                                List<ChatChanelInfo> infos = new List<ChatChanelInfo>();
+                                //存在日志文件内容是空的情况
+                                foreach(var latsetDateGroupFile in latsetDateGroup)
                                 {
-                                    //保留最新的
-                                    dic.Remove(chanelInfo.ChannelID);
-                                    dic.Add(chanelInfo.ChannelID, chanelInfo);
+                                    var info = GetChatChanelInfo(latsetDateGroupFile.FilePath);
+                                    if(info == null)
+                                    {
+                                        Core.Log.Error($"存在不规范文件:{latsetDateGroupFile.FilePath}");
+                                    }
+                                    else
+                                    {
+                                        infos.Add(info);
+                                    }
+                                }
+                                if(infos.Any())
+                                {
+                                    var chanelInfo = infos.OrderByDescending(p => p.SessionStarted).FirstOrDefault();//该频道下最新的文件                                                                                                                                 //因为文件名的频道名会跟语言相关，所有还需要读取文件内容里唯一的频道ID来判断
+                                    if (chanelInfo != null)
+                                    {
+                                        if (dic.TryGetValue(chanelInfo.ChannelID, out var exist))
+                                        {
+                                            if (exist.SessionStarted < chanelInfo.SessionStarted)
+                                            {
+                                                //保留最新的
+                                                dic.Remove(chanelInfo.ChannelID);
+                                                dic.Add(chanelInfo.ChannelID, chanelInfo);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            dic.Add(chanelInfo.ChannelID, chanelInfo);
+                                        }
+                                    }
                                 }
                             }
-                            else
+                            catch(Exception ex)
                             {
-                                dic.Add(chanelInfo.ChannelID, chanelInfo);
+                                Log.Error($"分析日志{groupOfOneChannel.Key}时发生未知异常");
+                                Log.Error(ex);
                             }
                         }
+                        var chanels = dic.Values.ToList();
+                        if (listenerChannelDic.ContainsKey(chanels.First().Listener))
+                        {
+                            Log.Error($"存在相同角色名称但角色ID不同：{chanels.First().Listener}");
+                        }
+                        else
+                        {
+                            listenerChannelDic.Add(chanels.First().Listener, chanels);
+                        }
                     }
-                    var chanels = dic.Values.ToList();
-                    if(listenerChannelDic.ContainsKey(chanels.First().Listener))
+                    catch(Exception ex)
                     {
-                        Log.Error($"存在相同角色名称但角色ID不同：{chanels.First().Listener}");
-                    }
-                    else
-                    {
-                        listenerChannelDic.Add(chanels.First().Listener, chanels);
+                        Log.Error($"分析角色{groupOfOneListener.Key}日志时发生未知异常");
+                        Log.Error(ex);
                     }
                 }
                 return listenerChannelDic;
