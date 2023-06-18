@@ -225,8 +225,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                             scalperItems.Add(new ScalperItem()
                             {
                                 InvType = list.First().InvType,
-                                SellOrders = list.Where(p => !p.IsBuyOrder).ToList(),
-                                BuyOrders = list.Where(p => p.IsBuyOrder).ToList(),
+                                SellOrders = list.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price).ToList(),
+                                BuyOrders = list.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price).ToList(),
                             });
                         }
                     }
@@ -277,6 +277,111 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 return GetTopGroup(subGroups, parent);
             }
+        }
+
+        private async Task Cal(List<ScalperItem> sourceScalperItems, List<ScalperItem> destinationScalperItems)
+        {
+            await Task.Run(() =>
+            { 
+                CalSourceSales(sourceScalperItems);
+                CalDestinationSales(destinationScalperItems);
+            });
+
+        }
+        /// <summary>
+        /// 计算源市场日销量
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalSourceSales(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.Statistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay)).ToList();
+                if(history.NotNullOrEmpty())
+                {
+                    if(history.Count > 3)
+                    {
+                        if (Setting.SourceRemoveExtremum)
+                        {
+                            var order = history.OrderBy(p => p.Volume);
+                            history.Remove(order.First());
+                            history.Remove(order.Last());
+                        }
+                    }
+                    item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                }
+            }
+        }
+        /// <summary>
+        /// 计算源市场日销量
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalDestinationSales(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.Statistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.DestinationSalesDay)).ToList();
+                if (history.NotNullOrEmpty())
+                {
+                    if (history.Count > 3)
+                    {
+                        if (Setting.DestinationRemoveExtremum)
+                        {
+                            var order = history.OrderBy(p => p.Volume);
+                            history.Remove(order.First());
+                            history.Remove(order.Last());
+                        }
+                    }
+                    item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                }
+            }
+        }
+        private void CalSellPrice(List<ScalperItem> items)
+        {
+            CalPrice calPrice;
+            switch(Setting.SellPrice)
+            {
+                case PriceType.SellTop5: calPrice = CalPriceSellTop5;break;
+            }
+        }
+        private delegate double CalPrice(ScalperItem item);
+        /// <summary>
+        /// 卖单前5%最低价格订单平均价格
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private double CalPriceSellTop5(ScalperItem item)
+        {
+            int top5P = (int)(item.SellOrders.Count() * 0.05);
+            if (top5P > 1)
+            {
+                return (double)item.SellOrders.Take(top5P).Average(p => p.Price);
+            }
+            else
+            {
+                return (double)item.SellOrders.FirstOrDefault()?.Price;
+            }
+        }
+        /// <summary>
+        /// 卖单实际数量的相应价格
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private double CalPriceSellAvailable(ScalperItem item)
+        {
+            decimal price = 0;
+            long count = 0;
+            foreach (var order in item.SellOrders)
+            {
+                long takeVolume = count + order.VolumeRemain > item.DestinationSales ? item.DestinationSales - count : order.VolumeRemain;
+                count += takeVolume;
+                price += takeVolume * order.Price;
+                if(count == item.DestinationSales)
+                {
+                    break;
+                }
+            }
+            return (double)price / count;
         }
     }
 }
