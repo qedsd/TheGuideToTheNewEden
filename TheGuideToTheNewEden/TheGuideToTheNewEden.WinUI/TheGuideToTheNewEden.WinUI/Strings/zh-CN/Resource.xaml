@@ -203,4 +203,12 @@
     <x:String x:Key="BusinessPage_BaseSetting">基本设置</x:String>
     <x:String x:Key="BusinessPage_MarketGroup">物品类型</x:String>
     <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">过滤源市场无卖单的物品</x:String>
+    <x:String x:Key="BusinessPage_GetOrders">获取订单</x:String>
+    <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
+
+    <x:String x:Key="BusinessPage_Type">物品</x:String>
+    <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日销量</x:String>
+    <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
+    <x:String x:Key="BusinessPage_DestinationSales">目的市场销量</x:String>
 </ResourceDictionary>

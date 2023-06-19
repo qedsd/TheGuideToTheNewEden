@@ -66,6 +66,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
+        private List<ScalperItem> scalperItems;
+        public List<ScalperItem> ScalperItems
+        {
+            get => scalperItems;
+            set
+            {
+                SetProperty(ref scalperItems, value);
+            }
+        }
+
         public ScalperViewModel()
         {
             Init();
@@ -87,13 +97,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             SelectedInvMarketGroup = InvMarketGroups.FirstOrDefault(p => p.MarketGroupID == Setting.MarketGroup);
         }
 
-        public ICommand StartCommand => new RelayCommand(async() =>
+        public ICommand AnalyseCommand => new RelayCommand(async() =>
         {
             Window?.ShowWaiting();
-            if(IsValid())
+            if (IsValid())
+            {
+                await Cal();
+            }
+            Window?.HideWaiting();
+        });
+        public ICommand GetOrdersCommand => new RelayCommand(async () =>
+        {
+            Window?.ShowWaiting();
+            if (IsValid())
             {
                 SaveSetting();
-                await Start();
+                await GetOrders();
             }
             Window?.HideWaiting();
         });
@@ -174,7 +193,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
             return orders;
         }
-        private async Task Start()
+        private async Task GetOrders()
         {
             var allSourceOrders = await GetAllSourceOrders();
             var allDestinationOrders = await GetAllDestinationOrders();
@@ -197,11 +216,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     {
                         SetHistory(scalperItems, sourceHistory, destinationHistory);
                         scalperItems = scalperItems.Where(p=>p.SourceStatistics .NotNullOrEmpty() && p.DestinationStatistics.NotNullOrEmpty()).ToList();
-                        Cal(scalperItems);
                     });
                 }
+                ScalperItems = scalperItems;
             }
         }
+
 
         /// <summary>
         /// 由源市场目的市场订单和指定物品分组类型生成表示一个物品的实例
@@ -301,11 +321,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private void Cal(List<ScalperItem> scalperItems)
+        private async Task Cal()
         {
-            CalSales(scalperItems);
-            CalSellPrice(scalperItems);
-            CalBuyPrice(scalperItems);
+            var items = ScalperItems.ToList();
+            await Task.Run(() =>
+            {
+                CalSales(items);
+                CalSellPrice(items);
+                CalBuyPrice(items);
+            });
+            ScalperItems = items;
         }
         /// <summary>
         /// 计算市场日销量
