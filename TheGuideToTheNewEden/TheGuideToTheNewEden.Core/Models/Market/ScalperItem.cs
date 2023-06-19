@@ -8,9 +8,12 @@ namespace TheGuideToTheNewEden.Core.Models.Market
     public class ScalperItem
     {
         public InvType InvType { get; set; }
-        public List<Core.Models.Market.Order> SellOrders { get; set; }
-        public List<Core.Models.Market.Order> BuyOrders { get; set; }
-        public List<Core.Models.Market.Statistic> Statistics { get; set; }
+        public List<Core.Models.Market.Order> SourceSellOrders { get; set; }
+        public List<Core.Models.Market.Order> SourceBuyOrders { get; set; }
+        public List<Core.Models.Market.Statistic> SourceStatistics { get; set; }
+        public List<Core.Models.Market.Order> DestinationSellOrders { get; set; }
+        public List<Core.Models.Market.Order> DestinationBuyOrders { get; set; }
+        public List<Core.Models.Market.Statistic> DestinationStatistics { get; set; }
         public double SellPrice { get; set; }
         public double BuyPrice { get; set;}
         /// <summary>

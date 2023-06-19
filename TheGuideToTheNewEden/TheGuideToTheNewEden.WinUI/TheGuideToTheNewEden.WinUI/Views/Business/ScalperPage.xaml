@@ -6,7 +6,7 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -260,6 +260,52 @@
                 </PivotItem.Header>
             </PivotItem>
         </Pivot>
-        <Grid Grid.Column="1" />
+        <Grid Grid.Column="1">
+            <dataGrid:SfDataGrid
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                <dataGrid:SfDataGrid.GroupSummaryRows>
+                    <dataGrid:GridSummaryRow Title="{StaticResource WalletPage_GroupTotalISK}" ShowSummaryInRow="True">
+                        <dataGrid:GridSummaryRow.SummaryColumns>
+                            <dataGrid:GridSummaryColumn
+                                    Name="TotalISK"
+                                    Format="'{Sum:N2}'"
+                                    MappingName="Amount"
+                                    SummaryType="DoubleAggregate" />
+                        </dataGrid:GridSummaryRow.SummaryColumns>
+                    </dataGrid:GridSummaryRow>
+                </dataGrid:SfDataGrid.GroupSummaryRows>
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridDateColumn
+                            DisplayDateFormat="yyyy-MM-dd HH:mm:ss"
+                            HeaderText="{StaticResource WalletPage_JournalDate}"
+                            MappingName="Date" />
+                    <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalAmount}"
+                            MappingName="Amount">
+                        <dataGrid:GridNumericColumn.CellStyle />
+                    </dataGrid:GridNumericColumn>
+                    <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource WalletPage_JournalBalance}"
+                            MappingName="Balance" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalDescription}" MappingName="Description" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalRefType}" MappingName="RefType" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource WalletPage_JournalReason}" MappingName="Reason" />
+                </dataGrid:SfDataGrid.Columns>
+            </dataGrid:SfDataGrid>
+        </Grid>
     </Grid>
 </Page>

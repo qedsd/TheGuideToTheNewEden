@@ -181,40 +181,43 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             if (allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
             {
                 var subGroupsOfSelectedInvMarketGroup = await GetSubGroupOfTargetGroup();
-                List<int> sourceTypeIds = null;
-                List<int> destinationTypeIds = null;
-                List<ScalperItem> sourceScalperItems = null;
-                List<ScalperItem> destinationScalperItems = null;
+                List<int> typeIds = null;
+                List<ScalperItem> scalperItems = null;
                 await Task.Run(() =>
                 {
                     var subGroupsIds = subGroupsOfSelectedInvMarketGroup.Select(p => p.MarketGroupID).ToHashSet2();
-                    sourceScalperItems = GetScalperItems(allSourceOrders, subGroupsIds);
-                    destinationScalperItems = GetScalperItems(allDestinationOrders, subGroupsIds);
-                    sourceTypeIds = sourceScalperItems.Select(p=>p.InvType.TypeID).ToList();
-                    destinationTypeIds = destinationScalperItems.Select(p => p.InvType.TypeID).ToList();
+                    scalperItems = GetScalperItems(allSourceOrders, allDestinationOrders,subGroupsIds);
+                    typeIds = scalperItems.Select(p=>p.InvType.TypeID).ToList().Distinct().ToList();
                 });
-                if(sourceScalperItems.NotNullOrEmpty() && destinationScalperItems.NotNullOrEmpty())
+                if(scalperItems.NotNullOrEmpty())
                 {
-                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(sourceTypeIds.Distinct().ToList(), Setting.SourceMarketLocation.RegionId);
-                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(destinationTypeIds.Distinct().ToList(), Setting.DestinationMarketLocation.RegionId);
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId);
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId);
                     await Task.Run(() =>
                     {
-                        SetHistory(sourceScalperItems, sourceHistory);
-                        SetHistory(destinationScalperItems, destinationHistory);
-                        sourceScalperItems = sourceScalperItems.Where(p=>p.Statistics .NotNullOrEmpty()).ToList();
-                        destinationScalperItems = destinationScalperItems.Where(p => p.Statistics.NotNullOrEmpty()).ToList();
+                        SetHistory(scalperItems, sourceHistory, destinationHistory);
+                        scalperItems = scalperItems.Where(p=>p.SourceStatistics .NotNullOrEmpty() && p.DestinationStatistics.NotNullOrEmpty()).ToList();
+                        Cal(scalperItems);
                     });
                 }
             }
         }
 
-        private List<ScalperItem> GetScalperItems(List<Order> orders, HashSet<int> marketGroupIDs)
+        /// <summary>
+        /// 由源市场目的市场订单和指定物品分组类型生成表示一个物品的实例
+        /// 卖单卖单按最低价最高价顺序排序完毕
+        /// </summary>
+        /// <param name="sourceOrders"></param>
+        /// <param name="destinationOrders"></param>
+        /// <param name="marketGroupIDs"></param>
+        /// <returns></returns>
+        private List<ScalperItem> GetScalperItems(List<Order> sourceOrders, List<Order> destinationOrders, HashSet<int> marketGroupIDs)
         {
             try
             {
                 List<ScalperItem> scalperItems = new List<ScalperItem>();
-                var groups = orders.GroupBy(p => p.TypeId);
-                foreach (var group in groups)
+                var sourceGroups = sourceOrders.GroupBy(p => p.TypeId);
+                foreach (var group in sourceGroups)
                 {
                     var list = group.ToList();
                     var invType = list.First().InvType;
@@ -222,13 +225,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     {
                         if (marketGroupIDs.Contains((int)invType.MarketGroupID))
                         {
-                            scalperItems.Add(new ScalperItem()
+                            var item = new ScalperItem()
                             {
                                 InvType = list.First().InvType,
-                                SellOrders = list.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price).ToList(),
-                                BuyOrders = list.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price).ToList(),
-                            });
+                                SourceSellOrders = list.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList(),
+                                SourceBuyOrders = list.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList(),
+                            };
+                            scalperItems.Add(item);
+                            if(item.SourceSellOrders == null || item.SourceBuyOrders == null)
+                            {
+
+                            }
                         }
+                    }
+                }
+                var dic = destinationOrders.GroupBy(p => p.TypeId).ToDictionary(p => p.Key);
+                foreach (var item in scalperItems)
+                {
+                    if(dic.TryGetValue(item.InvType.TypeID, out var group))
+                    {
+                        var list = group.ToList();
+                        item.DestinationSellOrders = list.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList();
+                        item.DestinationBuyOrders = list.Where(p => p.IsBuyOrder).OrderBy(p => p.Price).ToList();
                     }
                 }
                 return scalperItems;
@@ -239,13 +257,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 return null;
             }
         }
-        private void SetHistory(List<ScalperItem> scalperItems, Dictionary<int, List<Core.Models.Market.Statistic>> statisticDic)
+        private void SetHistory(List<ScalperItem> scalperItems, Dictionary<int, List<Core.Models.Market.Statistic>> sourceStatisticDic, Dictionary<int, List<Core.Models.Market.Statistic>> destinationStatisticDic)
         {
             foreach(var item in scalperItems)
             {
-                if(statisticDic.TryGetValue(item.InvType.TypeID, out var value))
+                if(sourceStatisticDic.TryGetValue(item.InvType.TypeID, out var value1))
                 {
-                    item.Statistics = value;
+                    item.SourceStatistics = value1;
+                }
+                if (destinationStatisticDic.TryGetValue(item.InvType.TypeID, out var value2))
+                {
+                    item.DestinationStatistics = value2;
                 }
             }
         }
@@ -279,24 +301,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private async Task Cal(List<ScalperItem> sourceScalperItems, List<ScalperItem> destinationScalperItems)
+        private void Cal(List<ScalperItem> scalperItems)
         {
-            await Task.Run(() =>
-            { 
-                CalSourceSales(sourceScalperItems);
-                CalDestinationSales(destinationScalperItems);
-            });
-
+            CalSales(scalperItems);
+            CalSellPrice(scalperItems);
+            CalBuyPrice(scalperItems);
         }
         /// <summary>
-        /// 计算源市场日销量
+        /// 计算市场日销量
         /// </summary>
         /// <param name="items"></param>
-        private void CalSourceSales(List<ScalperItem> items)
+        private void CalSales(List<ScalperItem> items)
         {
             foreach (var item in items)
             {
-                var history = item.Statistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay)).ToList();
+                var history = item.SourceStatistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay + 2)).ToList();
                 if(history.NotNullOrEmpty())
                 {
                     if(history.Count > 3)
@@ -310,17 +329,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     }
                     item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
                 }
-            }
-        }
-        /// <summary>
-        /// 计算源市场日销量
-        /// </summary>
-        /// <param name="items"></param>
-        private void CalDestinationSales(List<ScalperItem> items)
-        {
-            foreach (var item in items)
-            {
-                var history = item.Statistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.DestinationSalesDay)).ToList();
+                history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.DestinationSalesDay + 2)).ToList();
                 if (history.NotNullOrEmpty())
                 {
                     if (history.Count > 3)
@@ -332,56 +341,231 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                             history.Remove(order.Last());
                         }
                     }
-                    item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                    item.DestinationSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
                 }
             }
         }
+
         private void CalSellPrice(List<ScalperItem> items)
         {
-            CalPrice calPrice;
-            switch(Setting.SellPrice)
+            CalPrice calPrice = null;
+            bool isBuyOrders = true;
+            switch (Setting.SellPrice)
             {
-                case PriceType.SellTop5: calPrice = CalPriceSellTop5;break;
+                case PriceType.SellTop5: calPrice = CalPriceTop5; isBuyOrders = false; break;
+                case PriceType.SellAvailable: calPrice = CalPriceAvailable; isBuyOrders = false; break;
+                case PriceType.SellTop: calPrice = CalPriceTop; isBuyOrders = false; break;
+                case PriceType.BuyTop5: calPrice = CalPriceTop5; break;
+                case PriceType.BuyAvailable: calPrice = CalPriceAvailable; break;
+                case PriceType.BuyTop: calPrice = CalPriceTop; break;
+                case PriceType.HistoryHighest: calPrice = CalPriceHistoryHighest; break;
+                case PriceType.HistoryAverage: calPrice = CalPriceHistoryAverage; break;
+                case PriceType.HistoryLowest: calPrice = CalPriceHistoryLowest; break;
+            }
+            foreach(var item in items)
+            {
+                try
+                {
+                    item.SellPrice = calPrice(isBuyOrders ? item.DestinationBuyOrders : item.DestinationSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.SellHistoryDay);
+                    if(item.SellPrice <= 0 )
+                    {
+                        item.SellPrice = GetDefaultPrice(item);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    item.SellPrice = GetDefaultPrice(item);
+                }
+                item.SellPrice *= Setting.SellPriceScale;
             }
         }
-        private delegate double CalPrice(ScalperItem item);
-        /// <summary>
-        /// 卖单前5%最低价格订单平均价格
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        private double CalPriceSellTop5(ScalperItem item)
+        private void CalBuyPrice(List<ScalperItem> items)
         {
-            int top5P = (int)(item.SellOrders.Count() * 0.05);
-            if (top5P > 1)
+            CalPrice calPrice = null;
+            bool isBuyOrders = true;
+            switch (Setting.BuyPrice)
             {
-                return (double)item.SellOrders.Take(top5P).Average(p => p.Price);
+                case PriceType.SellTop5: calPrice = CalPriceTop5; isBuyOrders = false; break;
+                case PriceType.SellAvailable: calPrice = CalPriceAvailable; isBuyOrders = false; break;
+                case PriceType.SellTop: calPrice = CalPriceTop; isBuyOrders = false; break;
+                case PriceType.BuyTop5: calPrice = CalPriceTop5; break;
+                case PriceType.BuyAvailable: calPrice = CalPriceAvailable; break;
+                case PriceType.BuyTop: calPrice = CalPriceTop; break;
+                case PriceType.HistoryHighest: calPrice = CalPriceHistoryHighest; break;
+                case PriceType.HistoryAverage: calPrice = CalPriceHistoryAverage; break;
+                case PriceType.HistoryLowest: calPrice = CalPriceHistoryLowest; break;
+            }
+            foreach (var item in items)
+            {
+                try
+                {
+                    item.BuyPrice = calPrice(isBuyOrders ? item.SourceBuyOrders : item.SourceSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.BuyHistoryDay); 
+                    if (item.BuyPrice <= 0)
+                    {
+                        item.BuyPrice = GetDefaultPrice(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    item.BuyPrice = GetDefaultPrice(item);
+                }
+                item.BuyPrice *= Setting.BuyPriceScale;
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orders">源市场或目的市场的卖单或买单</param>
+        /// <param name="statistics">目的市场的历史记录</param>
+        /// <param name="sales">目的市场日销量</param>
+        /// <param name="day">买单/卖单选择为历史价格时计算的历史天数</param>
+        /// <returns></returns>
+        private delegate double CalPrice(List<Order> orders, List<Statistic> statistics, long sales, int day = 0);
+
+        /// <summary>
+        /// 最低/最高价格订单平均价格
+        /// </summary>
+        /// <param name="sellOrders">卖单</param>
+        /// <param name="sales">销量</param>
+        /// <returns></returns>
+        private double CalPriceTop5(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        {
+            if(orders.NotNullOrEmpty())
+            {
+                int top5P = (int)(orders.Count * 0.05);
+                if (top5P > 1)
+                {
+                    return (double)orders.Take(top5P).Average(p => p.Price);
+                }
+                else
+                {
+                    return (double)orders.FirstOrDefault()?.Price;
+                }
             }
             else
             {
-                return (double)item.SellOrders.FirstOrDefault()?.Price;
+                return -1;
             }
         }
         /// <summary>
-        /// 卖单实际数量的相应价格
+        /// 实际数量的相应价格
+        /// </summary>
+        /// <param name="sellOrders"></param>
+        /// <param name="sales"></param>
+        /// <returns></returns>
+        private double CalPriceAvailable(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        {
+            if (orders.NotNullOrEmpty())
+            {
+                decimal price = 0;
+                long count = 0;
+                foreach (var order in orders)
+                {
+                    long takeVolume = count + order.VolumeRemain > sales ? sales - count : order.VolumeRemain;
+                    count += takeVolume;
+                    price += takeVolume * order.Price;
+                    if (count == sales)
+                    {
+                        break;
+                    }
+                }
+                return (double)price / count;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        /// <summary>
+        /// 最低/最高价格
+        /// </summary>
+        /// <param name="sellOrders"></param>
+        /// <param name="sales"></param>
+        /// <returns></returns>
+        private double CalPriceTop(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        {
+            if (orders.NotNullOrEmpty())
+                return (double)orders.First().Price;
+            else
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// 历史最高价格
+        /// </summary>
+        /// <param name="statistics"></param>
+        /// <param name="day"></param>
+        /// <returns></returns>
+        private double CalPriceHistoryHighest(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        {
+            var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
+            if (history.NotNullOrEmpty())
+            {
+                return (long)Math.Ceiling(history.Sum(p => p.Highest) / history.Count);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 历史平均价格
+        /// </summary>
+        /// <param name="statistics"></param>
+        /// <param name="day"></param>
+        /// <returns></returns>
+        private double CalPriceHistoryAverage(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        {
+            var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
+            if (history.NotNullOrEmpty())
+            {
+                return (long)Math.Ceiling(history.Sum(p => p.Average) / history.Count);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 历史最低价格
+        /// </summary>
+        /// <param name="statistics"></param>
+        /// <param name="day"></param>
+        /// <returns></returns>
+        private double CalPriceHistoryLowest(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        {
+            var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
+            if (history.NotNullOrEmpty())
+            {
+                return (long)Math.Ceiling(history.Sum(p => p.Lowest) / history.Count);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 无法计算出优先设定的价格时，使用历史价格代替
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private double CalPriceSellAvailable(ScalperItem item)
+        private double GetDefaultPrice(ScalperItem item)
         {
-            decimal price = 0;
-            long count = 0;
-            foreach (var order in item.SellOrders)
+            if (item.DestinationStatistics.NotNullOrEmpty())
             {
-                long takeVolume = count + order.VolumeRemain > item.DestinationSales ? item.DestinationSales - count : order.VolumeRemain;
-                count += takeVolume;
-                price += takeVolume * order.Price;
-                if(count == item.DestinationSales)
-                {
-                    break;
-                }
+                return (double)item.DestinationStatistics.Last().Average;
             }
-            return (double)price / count;
+            else
+            {
+                return 0;
+            }
         }
     }
 }
