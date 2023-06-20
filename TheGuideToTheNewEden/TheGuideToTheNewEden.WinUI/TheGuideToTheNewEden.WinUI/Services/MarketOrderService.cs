@@ -17,6 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
     {
         private static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
         private static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
+        private static readonly string HistoryOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "HistoryOrders");
         private static MarketOrderService current;
         public static MarketOrderService Current
         {
@@ -40,6 +41,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 分钟
         /// </summary>
         private static readonly int OrderDuration = 600;
+        /// <summary>
+        /// 历史记录过期时间
+        /// 分钟
+        /// </summary>
+        private static readonly int HistoryDuration = 1440;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
@@ -505,11 +511,45 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
+        /// <summary>
+        /// 优先读取缓存
+        /// 缓存存放在Configs/{regionId}/{typeId}.json
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
         public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistoryAsync(int typeId, int regionId)
         {
+            string folder = System.IO.Path.Combine(HistoryOrderFolder, regionId.ToString());
+            string localFile = System.IO.Path.Combine(folder, $"{typeId}.json");
+            if(System.IO.File.Exists(localFile))
+            {
+                var local =  await Task.Run(() =>
+                {
+                    System.IO.FileInfo fileInfo = new FileInfo(localFile);
+                    if ((DateTime.Now - fileInfo.CreationTime).TotalMinutes < HistoryDuration)
+                    {
+                        return JsonConvert.DeserializeObject<List<ESI.NET.Models.Market.Statistic>>(File.ReadAllText(localFile));
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                });
+                if(local.NotNullOrEmpty())
+                {
+                    return local;
+                }
+            }
             var resp = await EsiClient.Market.TypeHistoryInRegion(regionId, typeId);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
+                if(!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+                string json = JsonConvert.SerializeObject(resp.Data);
+                File.WriteAllText(localFile, json);
                 return resp.Data;
             }
             else
@@ -525,14 +565,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Statistic>> GetHistory(int[] ids)
         {
-            var resp = await EsiClient.Market.TypeHistoryInRegion(ids[0], ids[1]);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var data = await GetHistoryAsync(ids[1], ids[0]);
+            if (data.NotNullOrEmpty())
             {
-                return resp.Data.Select(p=> new Core.Models.Market.Statistic(p, ids[1])).ToList();
+                return data.Select(p=> new Core.Models.Market.Statistic(p, ids[1])).ToList();
             }
             else
             {
-                Core.Log.Error(resp?.Message);
+                Core.Log.Error($"获取{ids[0]} {ids[1]}历史记录为空");
                 return null;
             }
         }
