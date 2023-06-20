@@ -207,7 +207,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         #endregion
 
         #region 饱和度
-        private double saturationFluctuation = 20;
+        private double saturationFluctuation = 0.2;
         /// <summary>
         /// 有效订单价格相对于卖出价格的波动范围
         /// </summary>
@@ -218,13 +218,13 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         #endregion
 
         #region 拟卖出销量
-        private double sellPercent = 20;
+        private double salesPercent = 20;
         /// <summary>
         /// 拟卖出销量百分比
         /// </summary>
-        public double SellPercent
+        public double SalesPercent
         {
-            get => sellPercent; set => SetProperty(ref sellPercent, value);
+            get => salesPercent; set => SetProperty(ref salesPercent, value);
         }
         #endregion
 

@@ -99,9 +99,9 @@
                                             Grid.Column="1"
                                             Height="32"
                                             Margin="8,0,0,0"
-                                            HorizontalContentAlignment="Center"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
                                             DisplayMemberPath="MarketGroupName"
                                             ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
                                             SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
@@ -188,6 +188,11 @@
                                             Content="{StaticResource BusinessPage_RemoveExtremum}"
                                             IsChecked="{x:Bind VM.Setting.DestinationRemoveExtremum, Mode=TwoWay}" />
                                     </StackPanel>
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_TargetSalesPercent}"
+                                        Maximum="100"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.Setting.SalesPercent, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
                             <Expander Header="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}">
@@ -222,7 +227,7 @@
                                         Minimum="0"
                                         Value="{x:Bind VM.Setting.SuggestionROI, Mode=TwoWay}" />
                                     <Slider
-                                        Header="{StaticResource BusinessPage_NetProfit}"
+                                        Header="{StaticResource BusinessPage_TargetSalesNetProfit}"
                                         Maximum="100"
                                         Minimum="0"
                                         Value="{x:Bind VM.Setting.SuggestionNetProfit, Mode=TwoWay}" />

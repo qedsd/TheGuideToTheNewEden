@@ -198,7 +198,8 @@
 
     <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
     <x:String x:Key="BusinessPage_ROI">回报率</x:String>
-    <x:String x:Key="BusinessPage_NetProfit">净利润</x:String>
+    <x:String x:Key="BusinessPage_SingleNetProfit">单位净利润</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesNetProfit">目标销量净利润</x:String>
     <x:String x:Key="BusinessPage_Principal">本金</x:String>
     <x:String x:Key="BusinessPage_BaseSetting">基本设置</x:String>
     <x:String x:Key="BusinessPage_MarketGroup">物品类型</x:String>
@@ -214,4 +215,5 @@
     <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
     <x:String x:Key="BusinessPage_Suggestion">推荐度</x:String>
     <x:String x:Key="BusinessPage_Volume">体积</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesPercent">目标销量百分比</x:String>
 </ResourceDictionary>

@@ -62,7 +62,7 @@
                 <TextBlock x:Name="TextBlock_ROI" />
             </StackPanel>
             <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_NetProfit}" />
+                <TextBlock Text="{StaticResource BusinessPage_SingleNetProfit}" />
                 <TextBlock x:Name="TextBlock_NetProfit" />
             </StackPanel>
             <StackPanel>

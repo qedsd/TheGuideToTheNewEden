@@ -25,6 +25,10 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// </summary>
         public long DestinationSales { get; set; }
         /// <summary>
+        /// 目标销量
+        /// </summary>
+        public long TargetSales { get; set; }
+        /// <summary>
         /// 推荐度
         /// </summary>
         public double Suggestion { get; set; }
@@ -33,9 +37,13 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// </summary>
         public double ROI { get; set; }
         /// <summary>
-        /// 净利润
+        /// 单位净利润
         /// </summary>
         public double NetProfit { get; set; }
+        /// <summary>
+        /// 目标销量净利润
+        /// </summary>
+        public double TargetNetProfit { get; set; }
         /// <summary>
         /// 本金
         /// </summary>

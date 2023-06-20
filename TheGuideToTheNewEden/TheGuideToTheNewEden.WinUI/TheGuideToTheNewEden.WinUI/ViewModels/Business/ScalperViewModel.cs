@@ -13,6 +13,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
 using TheGuideToTheNewEden.WinUI.Wins;
+using Syncfusion.UI.Xaml.Data;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -377,7 +378,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             foreach (var item in items)
             {
-                var history = item.SourceStatistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay + 2)).ToList();
+                var history = item.SourceStatistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay - 2)).ToList();
                 if(history.NotNullOrEmpty())
                 {
                     if(history.Count > 3)
@@ -391,7 +392,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     }
                     item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
                 }
-                history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.DestinationSalesDay + 2)).ToList();
+                history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(- Setting.DestinationSalesDay - 2)).ToList();
                 if (history.NotNullOrEmpty())
                 {
                     if (history.Count > 3)
@@ -631,6 +632,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
 
         /// <summary>
+        /// 目标销量
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalTargetSales(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                item.TargetSales = (long)Math.Ceiling(item.DestinationSales * Setting.SalesPercent);
+            }
+        }
+        /// <summary>
         /// 净利润
         /// </summary>
         /// <param name="items"></param>
@@ -639,6 +651,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             foreach(var item in items)
             {
                 item.NetProfit = item.SellPrice - item.BuyPrice;
+                item.TargetNetProfit = item.NetProfit * item.TargetSales;
             }
         }
 
@@ -662,7 +675,57 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             foreach (var item in items)
             {
-                item.Principal = item.BuyPrice / item.BuyPrice;
+                item.Principal = item.BuyPrice * item.TargetSales;
+            }
+        }
+
+        /// <summary>
+        /// 历史价格波动
+        /// 标准差/平均值
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalHistoryPriceFluctuation(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.HistoryPriceFluctuationDay - 2)).ToList();
+                if (history.NotNullOrEmpty())
+                {
+                    var avg = history.Average(p=>p.Average);
+                    var sum = history.Sum(p => Math.Pow((double)(p.Average - avg), 2));
+                    var ret = Math.Sqrt(sum / history.Count);//标准差
+                    item.HistoryPriceFluctuation = ret / (double)avg;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 当前价格波动值
+        /// |(卖出价格 - 历史平均价格)|/历史平均价格
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalNowPriceFluctuation(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.NowPriceFluctuationDay - 2)).ToList();
+                if (history.NotNullOrEmpty())
+                {
+                    var avg = (double)history.Average(p => p.Average);
+                    item.NowPriceFluctuation = Math.Abs(item.SellPrice - avg) / avg;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 饱和度
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalSaturation(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var validPrice = item.SellPrice *= (1 + Setting.SaturationFluctuation);
             }
         }
     }
