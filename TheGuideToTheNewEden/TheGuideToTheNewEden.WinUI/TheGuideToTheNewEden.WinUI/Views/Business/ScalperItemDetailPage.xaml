@@ -1,0 +1,551 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Business.ScalperItemDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chart="using:Syncfusion.UI.Xaml.Charts"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <styleselectors:SystemSecurityCellStyleSelector x:Key="SystemSecurityCellStyleSelector" />
+    </Page.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical">
+            <StackPanel.Resources>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Orientation" Value="Horizontal" />
+                    <Setter Property="Margin" Value="8" />
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Margin" Value="4,0" />
+                    <Setter Property="Width" Value="100" />
+                </Style>
+            </StackPanel.Resources>
+            <Image
+                x:Name="Image_Type"
+                Width="48"
+                Height="48"
+                HorizontalAlignment="Center" />
+            <TextBlock
+                x:Name="TextBlock_TypeName"
+                Width="Auto"
+                HorizontalAlignment="Center"
+                Foreground="{ThemeResource SystemAccentColor}"
+                TextWrapping="WrapWholeWords" />
+            <Rectangle Margin="0,8" />
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_Suggestion}" />
+                <TextBlock x:Name="TextBlock_Suggestion" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_BuyPrice}" />
+                <TextBlock x:Name="TextBlock_BuyPrice" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_SellPrice}" />
+                <TextBlock x:Name="TextBlock_SellPrice" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_DestinationSales}" />
+                <TextBlock x:Name="TextBlock_DestinationSales" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_ROI}" />
+                <TextBlock x:Name="TextBlock_ROI" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_NetProfit}" />
+                <TextBlock x:Name="TextBlock_NetProfit" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_Principal}" />
+                <TextBlock x:Name="TextBlock_Principal" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}" />
+                <TextBlock x:Name="TextBlock_HistoryPriceFluctuation" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}" />
+                <TextBlock x:Name="TextBlock_NowPriceFluctuation" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_SellOrderSaturation}" />
+                <TextBlock x:Name="TextBlock_SellOrderSaturation" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_Volume}" />
+                <TextBlock x:Name="TextBlock_Volume" Width="Auto" />
+                <TextBlock Margin="2,0,0,0" Text="m³" />
+            </StackPanel>
+        </StackPanel>
+        <Pivot Grid.Column="1" Margin="8,-16,0,0">
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource BusinessPage_SourceMarket}" />
+                </PivotItem.Header>
+                <Pivot>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            x:Name="DataGrid_SourceSell"
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            x:Name="DatGrid_SourceBuy"
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_MinVolume}"
+                                    MappingName="MinVolume" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                        </PivotItem.Header>
+                        <PivotItem>
+                            <PivotItem.Header>
+                                <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                            </PivotItem.Header>
+                            <Grid>
+                                <Pivot Margin="-12,-18,-10,0">
+                                    <PivotItem>
+                                        <PivotItem.Header>
+                                            <TextBlock FontSize="13" Text="{StaticResource MarketPage_Price}" />
+                                        </PivotItem.Header>
+                                        <chart:SfCartesianChart Margin="0,2,0,0">
+                                            <chart:SfCartesianChart.XAxes>
+                                                <chart:DateTimeAxis
+                                                    Interval="1"
+                                                    IntervalType="Months"
+                                                    PlotOffsetEnd="15"
+                                                    PlotOffsetStart="15"
+                                                    ShowMajorGridLines="False"
+                                                    ShowTrackballLabel="True">
+                                                    <chart:DateTimeAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                    </chart:DateTimeAxis.LabelStyle>
+                                                </chart:DateTimeAxis>
+
+                                            </chart:SfCartesianChart.XAxes>
+
+                                            <chart:SfCartesianChart.YAxes>
+                                                <chart:NumericalAxis ShowTrackballLabel="True">
+                                                    <chart:NumericalAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="n2" />
+                                                    </chart:NumericalAxis.LabelStyle>
+                                                </chart:NumericalAxis>
+                                            </chart:SfCartesianChart.YAxes>
+
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Source_StatisticHighest"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticHighest}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Highest" />
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Source_StatisticAverage"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticAverage}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Average" />
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Source_StatisticLowest"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticLowest}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Lowest" />
+
+                                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                                <chart:ChartZoomPanBehavior
+                                                    EnableMouseWheelZooming="True"
+                                                    EnablePanning="True"
+                                                    EnablePinchZooming="True"
+                                                    ZoomMode="XY" />
+                                            </chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:SfCartesianChart.TrackballBehavior>
+                                                <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                            </chart:SfCartesianChart.TrackballBehavior>
+                                        </chart:SfCartesianChart>
+                                    </PivotItem>
+                                    <PivotItem>
+                                        <PivotItem.Header>
+                                            <TextBlock FontSize="13" Text="{StaticResource MarketPage_StatisticVolume}" />
+                                        </PivotItem.Header>
+                                        <chart:SfCartesianChart Margin="0,2,0,0">
+                                            <chart:SfCartesianChart.XAxes>
+                                                <chart:DateTimeAxis
+                                                    Interval="1"
+                                                    IntervalType="Months"
+                                                    PlotOffsetEnd="15"
+                                                    PlotOffsetStart="15"
+                                                    ShowMajorGridLines="False"
+                                                    ShowTrackballLabel="True">
+                                                    <chart:DateTimeAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                    </chart:DateTimeAxis.LabelStyle>
+                                                </chart:DateTimeAxis>
+
+                                            </chart:SfCartesianChart.XAxes>
+
+                                            <chart:SfCartesianChart.YAxes>
+                                                <chart:NumericalAxis ShowTrackballLabel="True">
+                                                    <chart:NumericalAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="n2" />
+                                                    </chart:NumericalAxis.LabelStyle>
+                                                </chart:NumericalAxis>
+                                            </chart:SfCartesianChart.YAxes>
+
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Source_StatisticVolume"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticVolume}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Volume" />
+
+                                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                                <chart:ChartZoomPanBehavior
+                                                    EnableMouseWheelZooming="True"
+                                                    EnablePanning="True"
+                                                    EnablePinchZooming="True"
+                                                    ZoomMode="XY" />
+                                            </chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:SfCartesianChart.TrackballBehavior>
+                                                <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                            </chart:SfCartesianChart.TrackballBehavior>
+                                        </chart:SfCartesianChart>
+                                    </PivotItem>
+                                </Pivot>
+                                <ComboBox
+                                    x:Name="ComboBox_Source_HistoryRange"
+                                    HorizontalAlignment="Right"
+                                    SelectedIndex="0"
+                                    SelectionChanged="ComboBox_Source_HistoryRange_SelectionChanged">
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History1}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History3}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History6}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History12}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_HistoryAll}" />
+                                </ComboBox>
+                            </Grid>
+                        </PivotItem>
+                    </PivotItem>
+                </Pivot>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource BusinessPage_DestinationMarket}" />
+                </PivotItem.Header>
+                <Pivot>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            x:Name="DataGrid_DestinationSell"
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            x:Name="DatGrid_DestinationBuy"
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_MinVolume}"
+                                    MappingName="MinVolume" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                        </PivotItem.Header>
+                        <PivotItem>
+                            <PivotItem.Header>
+                                <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                            </PivotItem.Header>
+                            <Grid>
+                                <Pivot Margin="-12,-18,-10,0">
+                                    <PivotItem>
+                                        <PivotItem.Header>
+                                            <TextBlock FontSize="13" Text="{StaticResource MarketPage_Price}" />
+                                        </PivotItem.Header>
+                                        <chart:SfCartesianChart Margin="0,2,0,0">
+                                            <chart:SfCartesianChart.XAxes>
+                                                <chart:DateTimeAxis
+                                                    Interval="1"
+                                                    IntervalType="Months"
+                                                    PlotOffsetEnd="15"
+                                                    PlotOffsetStart="15"
+                                                    ShowMajorGridLines="False"
+                                                    ShowTrackballLabel="True">
+                                                    <chart:DateTimeAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                    </chart:DateTimeAxis.LabelStyle>
+                                                </chart:DateTimeAxis>
+
+                                            </chart:SfCartesianChart.XAxes>
+
+                                            <chart:SfCartesianChart.YAxes>
+                                                <chart:NumericalAxis ShowTrackballLabel="True">
+                                                    <chart:NumericalAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="n2" />
+                                                    </chart:NumericalAxis.LabelStyle>
+                                                </chart:NumericalAxis>
+                                            </chart:SfCartesianChart.YAxes>
+
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Destination_StatisticHighest"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticHighest}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Highest" />
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Destination_StatisticAverage"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticAverage}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Average" />
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Destination_StatisticLowest"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticLowest}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Lowest" />
+
+                                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                                <chart:ChartZoomPanBehavior
+                                                    EnableMouseWheelZooming="True"
+                                                    EnablePanning="True"
+                                                    EnablePinchZooming="True"
+                                                    ZoomMode="XY" />
+                                            </chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:SfCartesianChart.TrackballBehavior>
+                                                <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                            </chart:SfCartesianChart.TrackballBehavior>
+                                        </chart:SfCartesianChart>
+                                    </PivotItem>
+                                    <PivotItem>
+                                        <PivotItem.Header>
+                                            <TextBlock FontSize="13" Text="{StaticResource MarketPage_StatisticVolume}" />
+                                        </PivotItem.Header>
+                                        <chart:SfCartesianChart Margin="0,2,0,0">
+                                            <chart:SfCartesianChart.XAxes>
+                                                <chart:DateTimeAxis
+                                                    Interval="1"
+                                                    IntervalType="Months"
+                                                    PlotOffsetEnd="15"
+                                                    PlotOffsetStart="15"
+                                                    ShowMajorGridLines="False"
+                                                    ShowTrackballLabel="True">
+                                                    <chart:DateTimeAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                    </chart:DateTimeAxis.LabelStyle>
+                                                </chart:DateTimeAxis>
+
+                                            </chart:SfCartesianChart.XAxes>
+
+                                            <chart:SfCartesianChart.YAxes>
+                                                <chart:NumericalAxis ShowTrackballLabel="True">
+                                                    <chart:NumericalAxis.LabelStyle>
+                                                        <chart:LabelStyle LabelFormat="n2" />
+                                                    </chart:NumericalAxis.LabelStyle>
+                                                </chart:NumericalAxis>
+                                            </chart:SfCartesianChart.YAxes>
+
+                                            <chart:FastLineSeries
+                                                x:Name="LineSeries_Destination_StatisticVolume"
+                                                EnableAnimation="True"
+                                                EnableTooltip="False"
+                                                Label="{StaticResource MarketPage_StatisticVolume}"
+                                                XBindingPath="Date"
+                                                YBindingPath="Volume" />
+
+                                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                                <chart:ChartZoomPanBehavior
+                                                    EnableMouseWheelZooming="True"
+                                                    EnablePanning="True"
+                                                    EnablePinchZooming="True"
+                                                    ZoomMode="XY" />
+                                            </chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:SfCartesianChart.TrackballBehavior>
+                                                <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                            </chart:SfCartesianChart.TrackballBehavior>
+                                        </chart:SfCartesianChart>
+                                    </PivotItem>
+                                </Pivot>
+                                <ComboBox
+                                    x:Name="ComboBox_Destination_HistoryRange"
+                                    HorizontalAlignment="Right"
+                                    SelectedIndex="0"
+                                    SelectionChanged="ComboBox_Destination_HistoryRange_SelectionChanged">
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History1}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History3}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History6}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_History12}" />
+                                    <ComboBoxItem Content="{StaticResource MarketPage_HistoryAll}" />
+                                </ComboBox>
+                            </Grid>
+                        </PivotItem>
+                    </PivotItem>
+                </Pivot>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page>

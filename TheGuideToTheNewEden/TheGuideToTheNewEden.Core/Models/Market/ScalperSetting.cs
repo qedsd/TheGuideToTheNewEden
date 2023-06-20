@@ -217,6 +217,17 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         }
         #endregion
 
+        #region 拟卖出销量
+        private double sellPercent = 20;
+        /// <summary>
+        /// 拟卖出销量百分比
+        /// </summary>
+        public double SellPercent
+        {
+            get => sellPercent; set => SetProperty(ref sellPercent, value);
+        }
+        #endregion
+
         #region 推荐度计算
         private double suggestionROI = 40;
         /// <summary>

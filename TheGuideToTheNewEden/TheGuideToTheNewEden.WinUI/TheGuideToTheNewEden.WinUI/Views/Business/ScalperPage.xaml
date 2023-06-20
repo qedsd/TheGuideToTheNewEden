@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:business="using:TheGuideToTheNewEden.WinUI.ViewModels.Business"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
@@ -52,6 +53,7 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="48" />
                                             <RowDefinition Height="48" />
+                                            <RowDefinition Height="48" />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -88,12 +90,23 @@
                                                 </Flyout>
                                             </Button.Flyout>
                                         </Button>
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource BusinessPage_MarketGroup}" />
+                                        <ComboBox
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalContentAlignment="Center"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            DisplayMemberPath="MarketGroupName"
+                                            ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
+                                            SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
                                     </Grid>
-                                    <ComboBox
-                                        DisplayMemberPath="MarketGroupName"
-                                        Header="{StaticResource BusinessPage_MarketGroup}"
-                                        ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
-                                        SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
+
                                 </StackPanel>
                             </Expander>
 
@@ -253,12 +266,14 @@
                         Orientation="Horizontal">
                         <AppBarButton
                             Grid.Row="2"
+                            Margin="8,0"
                             HorizontalAlignment="Center"
                             Command="{x:Bind VM.GetOrdersCommand}"
                             Icon="Download"
                             Label="{StaticResource BusinessPage_GetOrders}" />
                         <AppBarButton
                             Grid.Row="2"
+                            Margin="8,0"
                             HorizontalAlignment="Center"
                             Command="{x:Bind VM.AnalyseCommand}"
                             Icon="Play"
@@ -273,6 +288,10 @@
             </PivotItem>
         </Pivot>
         <Grid Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <dataGrid:SfDataGrid
                 HorizontalAlignment="Stretch"
                 AllowDraggingColumns="True"
@@ -286,6 +305,7 @@
                 GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                 HeaderLinesVisibility="Both"
                 ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
+                SelectedItem="{x:Bind VM.SelectedScalperItem, Mode=TwoWay}"
                 SelectionMode="Extended"
                 ShowGroupDropArea="True">
                 <dataGrid:SfDataGrid.Columns>
@@ -308,6 +328,7 @@
                         MappingName="DestinationSales" />
                 </dataGrid:SfDataGrid.Columns>
             </dataGrid:SfDataGrid>
+
         </Grid>
     </Grid>
 </Page>

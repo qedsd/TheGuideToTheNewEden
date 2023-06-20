@@ -12,6 +12,7 @@ using static TheGuideToTheNewEden.Core.Models.Market.ScalperSetting;
 using TheGuideToTheNewEden.Core.Extensions;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
+using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -76,6 +77,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
+        private ScalperItem selectedScalperItem;
+        public ScalperItem SelectedScalperItem
+        {
+            get => selectedScalperItem;
+            set
+            {
+                if(SetProperty(ref selectedScalperItem, value) && value != null)
+                {
+                    LoadItemDetail();
+                }
+            }
+        }
+
         public ScalperViewModel()
         {
             Init();
@@ -99,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 
         public ICommand AnalyseCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting();
+            Window?.ShowWaiting("计算中");
             if (IsValid())
             {
                 await Cal();
@@ -108,7 +122,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         });
         public ICommand GetOrdersCommand => new RelayCommand(async () =>
         {
-            Window?.ShowWaiting();
+            Window?.ShowWaiting("获取订单中");
             if (IsValid())
             {
                 SaveSetting();
@@ -145,6 +159,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 return false;
             }
             return true;
+        }
+
+        private ScalperItemDetailWindow itemDetailWindow;
+        private void LoadItemDetail()
+        {
+            if(itemDetailWindow == null)
+            {
+                itemDetailWindow = new ScalperItemDetailWindow();
+                itemDetailWindow.Closed += ItemDetailWindow_Closed;
+            }
+            itemDetailWindow.SetItem(SelectedScalperItem);
+            itemDetailWindow.Activate();
+        }
+
+        private void ItemDetailWindow_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+        {
+            itemDetailWindow = null;
         }
 
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
@@ -195,7 +226,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private async Task GetOrders()
         {
+            Window?.ShowWaiting("获取源市场订单中");
             var allSourceOrders = await GetAllSourceOrders();
+            Window?.ShowWaiting("获取目的市场订单中");
             var allDestinationOrders = await GetAllDestinationOrders();
             if (allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
             {
@@ -210,15 +243,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 });
                 if(scalperItems.NotNullOrEmpty())
                 {
+                    Window?.ShowWaiting("获取源市场订单历史中");
                     var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId);
+                    Window?.ShowWaiting("获取目的市场订单历史中");
                     var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId);
+                    Window?.ShowWaiting("匹配订单历史中");
                     await Task.Run(() =>
                     {
                         SetHistory(scalperItems, sourceHistory, destinationHistory);
-                        scalperItems = scalperItems.Where(p=>p.SourceStatistics .NotNullOrEmpty() && p.DestinationStatistics.NotNullOrEmpty()).ToList();
+                        scalperItems = scalperItems.Where(p => p.SourceStatistics.NotNullOrEmpty() && p.DestinationStatistics.NotNullOrEmpty()).ToList();
                     });
                 }
                 ScalperItems = scalperItems;
+                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单");
             }
         }
 
@@ -590,6 +627,42 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             else
             {
                 return 0;
+            }
+        }
+
+        /// <summary>
+        /// 净利润
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalNetProfit(List<ScalperItem> items)
+        {
+            foreach(var item in items)
+            {
+                item.NetProfit = item.SellPrice - item.BuyPrice;
+            }
+        }
+
+        /// <summary>
+        /// 回报率
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalROI(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                item.ROI = item.NetProfit / item.BuyPrice;
+            }
+        }
+
+        /// <summary>
+        /// 本金
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalPrincipal(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                item.Principal = item.BuyPrice / item.BuyPrice;
             }
         }
     }

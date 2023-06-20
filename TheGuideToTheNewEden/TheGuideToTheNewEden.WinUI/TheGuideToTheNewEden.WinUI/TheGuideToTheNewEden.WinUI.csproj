@@ -230,6 +230,7 @@
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\Business\CharacterOrderPage.xaml" />
+    <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
@@ -334,6 +335,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Business\ScalperItemDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Business\ScalperPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

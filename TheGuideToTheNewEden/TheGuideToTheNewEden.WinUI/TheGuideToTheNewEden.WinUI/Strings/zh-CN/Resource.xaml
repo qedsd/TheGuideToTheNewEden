@@ -208,7 +208,10 @@
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
-    <x:String x:Key="BusinessPage_SourceSales">源市场日销量</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日日销量</x:String>
     <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
-    <x:String x:Key="BusinessPage_DestinationSales">目的市场销量</x:String>
+    <x:String x:Key="BusinessPage_DestinationSales">目的市场日销量</x:String>
+    <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
+    <x:String x:Key="BusinessPage_Suggestion">推荐度</x:String>
+    <x:String x:Key="BusinessPage_Volume">体积</x:String>
 </ResourceDictionary>
