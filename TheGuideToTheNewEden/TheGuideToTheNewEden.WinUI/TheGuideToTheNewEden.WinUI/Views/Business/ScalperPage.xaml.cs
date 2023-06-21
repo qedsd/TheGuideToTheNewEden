@@ -12,6 +12,8 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Syncfusion.UI.Xaml.DataGrid;
+using TheGuideToTheNewEden.Core.Models.Market;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -26,6 +28,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         private void ScalperPage_Loaded(object sender, RoutedEventArgs e)
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
+
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            var item = ((sender as MenuFlyoutItem).CommandParameter as Syncfusion.UI.Xaml.DataGrid.GridRecordContextFlyoutInfo)?.Record as ScalperItem;
+            if(item != null)
+            {
+                
+            }
+        }
+
+        private void SfDataGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            VM.SelectedScalperItem = (sender as SfDataGrid).SelectedItem as ScalperItem;
         }
     }
 }

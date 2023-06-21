@@ -84,6 +84,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             get => buyHistoryDay; set => SetProperty(ref buyHistoryDay, value);
         }
 
+        private bool buyPirceRemoveExtremum = true;
+        /// <summary>
+        /// 买价去除极值
+        /// </summary>
+        public bool BuyPirceRemoveExtremum
+        {
+            get => buyPirceRemoveExtremum; set => SetProperty(ref buyPirceRemoveExtremum, value);
+        }
+
         private PriceType sellPrice = PriceType.SellTop5;
         /// <summary>
         /// 卖出价格方式
@@ -124,6 +133,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public int SellHistoryDay
         {
             get => sellHistoryDay; set => SetProperty(ref sellHistoryDay, value);
+        }
+
+        private bool sellPirceRemoveExtremum = true;
+        /// <summary>
+        /// 卖价去除极值
+        /// </summary>
+        public bool SellPirceRemoveExtremum
+        {
+            get => sellPirceRemoveExtremum; set => SetProperty(ref sellPirceRemoveExtremum, value);
         }
         #endregion
 

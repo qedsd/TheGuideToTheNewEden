@@ -30,12 +30,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             _scalperItem = item;
             Image_Type.Source = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(item.InvType.TypeID, Converters.GameImageConverter.ImgType.Type, 64)));
             TextBlock_TypeName.Text = item.InvType.TypeName;
-            TextBlock_Suggestion.Text = item.Suggestion.ToString();
+            TextBlock_Suggestion.Text = item.Suggestion.ToString("N2");
             TextBlock_BuyPrice.Text = item.BuyPrice.ToString("N2");
             TextBlock_SellPrice.Text = item.SellPrice.ToString("N2");
             TextBlock_DestinationSales.Text = item.DestinationSales.ToString("N0");
+            TextBlock_TargetSales.Text = item.TargetSales.ToString("N0");
             TextBlock_ROI.Text = item.ROI.ToString("N2");
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
+            TextBlock_TargetSalesNetProfit.Text = item.TargetNetProfit.ToString("N2");
             TextBlock_Principal.Text = item.Principal.ToString("N2");
             TextBlock_HistoryPriceFluctuation.Text = item.HistoryPriceFluctuation.ToString("N2");
             TextBlock_NowPriceFluctuation.Text = item.NowPriceFluctuation.ToString("N2");

@@ -49,11 +49,21 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task<List<MapSolarSystem>> QueryAllAsync()
         {
-            return await DBService.MainDb.Queryable<MapSolarSystem>().ToListAsync();
+            var list = await DBService.MainDb.Queryable<MapSolarSystem>().ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranMapSolarSystemsAsync(list);
+            }
+            return list;
         }
         public static List<MapSolarSystem> QueryAll()
         {
-            return DBService.MainDb.Queryable<MapSolarSystem>().ToList();
+            var list = DBService.MainDb.Queryable<MapSolarSystem>().ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapSolarSystems(list);
+            }
+            return list;
         }
     }
 }

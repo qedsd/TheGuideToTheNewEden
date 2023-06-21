@@ -226,6 +226,7 @@
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
     <None Remove="Controls\StructureSelectorControl.xaml" />
+    <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
@@ -306,6 +307,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\MarketLocationSelectorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Dialogs\AddToShoppingCartDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">

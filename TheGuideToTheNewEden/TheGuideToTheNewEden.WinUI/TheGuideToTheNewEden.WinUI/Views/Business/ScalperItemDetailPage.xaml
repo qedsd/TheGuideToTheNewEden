@@ -58,12 +58,20 @@
                 <TextBlock x:Name="TextBlock_DestinationSales" />
             </StackPanel>
             <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_ROI}" />
+                <TextBlock Text="{StaticResource BusinessPage_TargetSales}" />
+                <TextBlock x:Name="TextBlock_TargetSales" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_ROIPercent}" />
                 <TextBlock x:Name="TextBlock_ROI" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="{StaticResource BusinessPage_SingleNetProfit}" />
                 <TextBlock x:Name="TextBlock_NetProfit" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="{StaticResource BusinessPage_TargetSalesNetProfit}" />
+                <TextBlock x:Name="TextBlock_TargetSalesNetProfit" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="{StaticResource BusinessPage_Principal}" />

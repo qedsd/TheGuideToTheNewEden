@@ -136,6 +136,12 @@
                                         Header="{StaticResource BusinessPage_PriceScale}"
                                         Minimum="0.1"
                                         Value="{x:Bind VM.Setting.BuyPriceScale, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Margin="8,0,0,4"
+                                        VerticalAlignment="Bottom"
+                                        Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                        IsChecked="{x:Bind VM.Setting.BuyPirceRemoveExtremum, Mode=TwoWay}"
+                                        Visibility="{x:Bind VM.Setting.IsHistoryBuyPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}" />
                                 </StackPanel>
                             </Expander>
                             <Expander Header="{StaticResource BusinessPage_SellPrice}">
@@ -160,6 +166,12 @@
                                         Header="{StaticResource BusinessPage_PriceScale}"
                                         Minimum="0.1"
                                         Value="{x:Bind VM.Setting.SellPriceScale, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Margin="8,0,0,4"
+                                        VerticalAlignment="Bottom"
+                                        Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                        IsChecked="{x:Bind VM.Setting.SellPirceRemoveExtremum, Mode=TwoWay}"
+                                        Visibility="{x:Bind VM.Setting.IsHistorySellPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}" />
                                 </StackPanel>
                             </Expander>
                             <Expander Header="{StaticResource BusinessPage_DaySales}">
@@ -310,11 +322,23 @@
                 GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                 HeaderLinesVisibility="Both"
                 ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
-                SelectedItem="{x:Bind VM.SelectedScalperItem, Mode=TwoWay}"
                 SelectionMode="Extended"
+                DoubleTapped="SfDataGrid_DoubleTapped"
                 ShowGroupDropArea="True">
                 <dataGrid:SfDataGrid.Columns>
                     <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_Suggestion}"
+                        MappingName="Suggestion" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_ROIPercent}"
+                        MappingName="ROI" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_TargetSalesNetProfit}"
+                        MappingName="TargetNetProfit" />
                     <dataGrid:GridNumericColumn
                         DisplayNumberFormat="N2"
                         HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
@@ -331,7 +355,41 @@
                         DisplayNumberFormat="N0"
                         HeaderText="{StaticResource BusinessPage_DestinationSales}"
                         MappingName="DestinationSales" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource BusinessPage_TargetSales}"
+                        MappingName="TargetSales" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_SingleNetProfit}"
+                        MappingName="NetProfit" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_Principal}"
+                        MappingName="Principal" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}"
+                        MappingName="HistoryPriceFluctuation" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}"
+                        MappingName="NowPriceFluctuation" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_SellOrderSaturation}"
+                        MappingName="Saturation" />
                 </dataGrid:SfDataGrid.Columns>
+                <dataGrid:SfDataGrid.RecordContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            Click="MenuFlyoutItem_Click"
+                            Command="{Binding Path=AddToShoppingCartCommand}"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource BusinessPage_AddToShoppingCart}"/>
+                    </MenuFlyout>
+                </dataGrid:SfDataGrid.RecordContextFlyout>
+
             </dataGrid:SfDataGrid>
 
         </Grid>

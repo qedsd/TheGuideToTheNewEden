@@ -383,7 +383,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                     foreach (var list in result)
                     {
-                        orders.AddRange(list);
+                        if (list.NotNullOrEmpty())
+                        {
+                            orders.AddRange(list);
+                        }
                     }
                     return orders;
                 }

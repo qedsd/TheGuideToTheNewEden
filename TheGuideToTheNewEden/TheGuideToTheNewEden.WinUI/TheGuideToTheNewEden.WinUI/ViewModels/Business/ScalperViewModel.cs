@@ -108,18 +108,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
             Setting ??= new ScalperSetting();
+            BuyPriceType = (int)Setting.BuyPrice;
+            SellPriceType = (int)Setting.SellPrice;
             InvMarketGroups = await Core.Services.DB.InvMarketGroupService.QueryRootGroupAsync();
             SelectedInvMarketGroup = InvMarketGroups.FirstOrDefault(p => p.MarketGroupID == Setting.MarketGroup);
         }
 
         public ICommand AnalyseCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting("计算中");
-            if (IsValid())
+            if(ScalperItems.NotNullOrEmpty())
             {
-                await Cal();
+                Window?.ShowWaiting("计算中");
+                if (IsValid())
+                {
+                    SaveSetting();
+                    await Cal();
+                    Window?.ShowSuccess($"完成{ScalperItems.Count}个订单计算");
+                }
+                Window?.HideWaiting();
             }
-            Window?.HideWaiting();
+            else
+            {
+                Window?.ShowError("请先获取订单");
+            }
         });
         public ICommand GetOrdersCommand => new RelayCommand(async () =>
         {
@@ -130,6 +141,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 await GetOrders();
             }
             Window?.HideWaiting();
+        });
+        public ICommand AddToShoppingCartCommand => new RelayCommand<ScalperItem>((item) =>
+        {
+            
         });
         private void SaveSetting()
         {
@@ -364,9 +379,42 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             var items = ScalperItems.ToList();
             await Task.Run(() =>
             {
-                CalSales(items);
-                CalSellPrice(items);
-                CalBuyPrice(items);
+                try
+                {
+                    foreach(var item in items)
+                    {
+                        item.Suggestion = 0;
+                        item.SourceSales = 0;
+                        item.DestinationSales = 0;
+                        item.SellPrice = 0;
+                        item.BuyPrice = 0;
+                        item.TargetSales = 0;
+                        item.NetProfit = 0;
+                        item.TargetNetProfit = 0;
+                        item.ROI = 0;
+                        item.HistoryPriceFluctuation = 0;
+                        item.NowPriceFluctuation = 0;
+                        item.Saturation = 0;
+                    }
+                    CalSales(items);
+                    items = items.Where(p => p.DestinationSales > 0).ToList();
+                    CalTargetSales(items);
+                    CalSellPrice(items);
+                    CalBuyPrice(items);
+                    CalNetProfit(items);
+                    CalROI(items);
+                    CalPrincipal(items);
+                    CalHistoryPriceFluctuation(items);
+                    CalNowPriceFluctuation(items);
+                    CalSaturation(items);
+                    CalSuggestion(items);
+                    items = items.OrderByDescending(p => p.Suggestion).ToList();
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    Window?.ShowError(ex.Message);
+                }
             });
             ScalperItems = items;
         }
@@ -429,7 +477,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 try
                 {
-                    item.SellPrice = calPrice(isBuyOrders ? item.DestinationBuyOrders : item.DestinationSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.SellHistoryDay);
+                    item.SellPrice = calPrice(isBuyOrders ? item.DestinationBuyOrders : item.DestinationSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.SellHistoryDay + 2, Setting.SellPirceRemoveExtremum);
                     if(item.SellPrice <= 0 )
                     {
                         item.SellPrice = GetDefaultPrice(item);
@@ -463,7 +511,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 try
                 {
-                    item.BuyPrice = calPrice(isBuyOrders ? item.SourceBuyOrders : item.SourceSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.BuyHistoryDay); 
+                    item.BuyPrice = calPrice(isBuyOrders ? item.SourceBuyOrders : item.SourceSellOrders, item.DestinationStatistics, item.DestinationSales, Setting.BuyHistoryDay + 2, Setting.BuyPirceRemoveExtremum); 
                     if (item.BuyPrice <= 0)
                     {
                         item.BuyPrice = GetDefaultPrice(item);
@@ -485,7 +533,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="sales">目的市场日销量</param>
         /// <param name="day">买单/卖单选择为历史价格时计算的历史天数</param>
         /// <returns></returns>
-        private delegate double CalPrice(List<Order> orders, List<Statistic> statistics, long sales, int day = 0);
+        private delegate double CalPrice(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum);
 
         /// <summary>
         /// 最低/最高价格订单平均价格
@@ -493,7 +541,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="sellOrders">卖单</param>
         /// <param name="sales">销量</param>
         /// <returns></returns>
-        private double CalPriceTop5(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        private double CalPriceTop5(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             if(orders.NotNullOrEmpty())
             {
@@ -518,7 +566,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="sellOrders"></param>
         /// <param name="sales"></param>
         /// <returns></returns>
-        private double CalPriceAvailable(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        private double CalPriceAvailable(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             if (orders.NotNullOrEmpty())
             {
@@ -547,7 +595,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="sellOrders"></param>
         /// <param name="sales"></param>
         /// <returns></returns>
-        private double CalPriceTop(List<Order> orders, List<Statistic> statistics, long sales, int day = 0)
+        private double CalPriceTop(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             if (orders.NotNullOrEmpty())
                 return (double)orders.First().Price;
@@ -563,12 +611,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="statistics"></param>
         /// <param name="day"></param>
         /// <returns></returns>
-        private double CalPriceHistoryHighest(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        private double CalPriceHistoryHighest(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
             if (history.NotNullOrEmpty())
             {
-                return (long)Math.Ceiling(history.Sum(p => p.Highest) / history.Count);
+                if(removeExtremum)
+                {
+                    return (long)Math.Ceiling((history.Sum(p => p.Highest) - history.Max(p=>p.Highest)) / (history.Count - 1));
+                }
+                else
+                {
+                    return (long)Math.Ceiling(history.Sum(p => p.Highest) / history.Count);
+                }
             }
             else
             {
@@ -582,12 +637,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="statistics"></param>
         /// <param name="day"></param>
         /// <returns></returns>
-        private double CalPriceHistoryAverage(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        private double CalPriceHistoryAverage(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
             if (history.NotNullOrEmpty())
             {
-                return (long)Math.Ceiling(history.Sum(p => p.Average) / history.Count);
+                if(removeExtremum)
+                {
+                    return (long)Math.Ceiling((history.Sum(p => p.Average) - history.Max(p => p.Average)) / (history.Count - 1));
+                }
+                else
+                {
+                    return (long)Math.Ceiling(history.Sum(p => p.Average) / history.Count);
+                }
             }
             else
             {
@@ -601,12 +663,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="statistics"></param>
         /// <param name="day"></param>
         /// <returns></returns>
-        private double CalPriceHistoryLowest(List<Order> orders, List<Statistic> statistics, long sales, int day)
+        private double CalPriceHistoryLowest(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
         {
             var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
             if (history.NotNullOrEmpty())
             {
-                return (long)Math.Ceiling(history.Sum(p => p.Lowest) / history.Count);
+                if (removeExtremum)
+                {
+                    return (long)Math.Ceiling((history.Sum(p => p.Lowest) - history.Max(p => p.Lowest)) / (history.Count - 1));
+                }
+                else
+                {
+                    return (long)Math.Ceiling(history.Sum(p => p.Lowest) / history.Count);
+                }
             }
             else
             {
@@ -639,7 +708,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             foreach (var item in items)
             {
-                item.TargetSales = (long)Math.Ceiling(item.DestinationSales * Setting.SalesPercent);
+                item.TargetSales = (long)Math.Ceiling(item.DestinationSales / 100f * Setting.SalesPercent);
             }
         }
         /// <summary>
@@ -663,7 +732,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             foreach (var item in items)
             {
-                item.ROI = item.NetProfit / item.BuyPrice;
+                item.ROI = item.NetProfit / item.BuyPrice * 100;
             }
         }
 
@@ -719,13 +788,91 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 
         /// <summary>
         /// 饱和度
+        /// 有效价格范围内物品数量/日销量
         /// </summary>
         /// <param name="items"></param>
         private void CalSaturation(List<ScalperItem> items)
         {
             foreach (var item in items)
             {
-                var validPrice = item.SellPrice *= (1 + Setting.SaturationFluctuation);
+                if(item.DestinationSales > 0 && item.DestinationSellOrders.NotNullOrEmpty())
+                {
+                    var validPrice = item.SellPrice * (1 + Setting.SaturationFluctuation / 100);
+                    var validVolume = item.DestinationSellOrders.Where(p => (double)p.Price < validPrice).Sum(p => p.VolumeRemain);
+                    item.Saturation = validVolume / item.DestinationSales;
+                }
+            }
+        }
+
+        private void CalSuggestion(List<ScalperItem> items)
+        {
+            //累计分
+            int i = 1;
+            double c = items.Count;
+            //回报率
+            foreach (var item in  items.OrderBy(p=>p.ROI))
+            {
+                if(item.ROI > 0)
+                {
+                    item.Suggestion = Setting.SuggestionROI * i / c;
+                }
+                i++;
+            }
+            //净利润
+            i = 1;
+            foreach (var item in items.OrderBy(p => p.TargetNetProfit))
+            {
+                if(item.TargetNetProfit > 0)
+                {
+                    item.Suggestion += Setting.SuggestionNetProfit * i / c;
+                }
+                i++;
+            }
+            //本金
+            i = 1;
+            foreach (var item in items.OrderBy(p => p.Principal))
+            {
+                item.Suggestion += Setting.SuggestionPrincipal * i / c;
+                i++;
+            }
+            //销量
+            i = 1;
+            foreach (var item in items.OrderBy(p => p.DestinationSales))
+            {
+                item.Suggestion += Setting.SuggestionSales * i / c;
+                i++;
+            }
+            //历史价格波动
+            i = 1;
+            foreach (var item in items.OrderByDescending(p => p.HistoryPriceFluctuation))
+            {
+                item.Suggestion += Setting.SuggestionHistoryPriceFluctuation * i / c;
+                i++;
+            }
+            //当前价格波动
+            i = 1;
+            foreach (var item in items.OrderByDescending(p => p.NowPriceFluctuation))
+            {
+                item.Suggestion += Setting.SuggestionNowPriceFluctuation * i / c;
+                i++;
+            }
+            //订单饱和度
+            i = 1;
+            foreach (var item in items.OrderByDescending(p => p.Saturation))
+            {
+                if(item.Saturation > 0)
+                {
+                    item.Suggestion += Setting.SuggestionSaturation * i / c;
+                }
+                i++;
+            }
+
+            i = 1;
+            //转成百分比
+            foreach (var item in items.OrderBy(p => p.Suggestion))
+            {
+                item.Suggestion = i / c * 100;
+                i++;
             }
         }
     }
