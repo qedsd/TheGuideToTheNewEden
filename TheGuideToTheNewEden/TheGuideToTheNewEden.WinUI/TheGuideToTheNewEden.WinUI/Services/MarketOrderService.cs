@@ -40,12 +40,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 订单过期时间
         /// 分钟
         /// </summary>
-        private static readonly int OrderDuration = 600;
+        private static readonly int OrderDuration = 600000;
         /// <summary>
         /// 历史记录过期时间
         /// 分钟
         /// </summary>
-        private static readonly int HistoryDuration = 1440;
+        private static readonly int HistoryDuration = 144000;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新

@@ -14,11 +14,20 @@ using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Syncfusion.UI.Xaml.Data;
+using System.Collections.ObjectModel;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
     public class ScalperViewModel:BaseViewModel
     {
+        private ObservableCollection<InvType> filterTypes;
+        public ObservableCollection<InvType> FilterTypes
+        {
+            get => filterTypes;
+            set => SetProperty(ref filterTypes, value);
+        }
+
         private ScalperSetting setting;
         public ScalperSetting Setting
         {
@@ -873,6 +882,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 item.Suggestion = i / c * 100;
                 i++;
+            }
+        }
+
+        public void AddFilterTypes(List<InvType> invTypes)
+        {
+            if(invTypes.NotNullOrEmpty())
+            {
+                foreach(var invType in invTypes)
+                {
+                    FilterTypes.Add(invType);
+                }
             }
         }
     }

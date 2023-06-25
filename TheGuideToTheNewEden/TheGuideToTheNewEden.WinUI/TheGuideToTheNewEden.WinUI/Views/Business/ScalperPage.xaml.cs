@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Syncfusion.UI.Xaml.DataGrid;
 using TheGuideToTheNewEden.Core.Models.Market;
+using TheGuideToTheNewEden.WinUI.Dialogs;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -30,18 +31,41 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
-        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
             var item = ((sender as MenuFlyoutItem).CommandParameter as Syncfusion.UI.Xaml.DataGrid.GridRecordContextFlyoutInfo)?.Record as ScalperItem;
             if(item != null)
             {
-                
+                ScalperShoppingItem scalperShoppingItem = new ScalperShoppingItem(item);
+                if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem))
+                {
+                    AddShoppingItem?.Invoke(scalperShoppingItem);
+                }
             }
         }
 
         private void SfDataGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             VM.SelectedScalperItem = (sender as SfDataGrid).SelectedItem as ScalperItem;
+        }
+
+        public delegate void AddShoppingItemEventHandel(ScalperShoppingItem item);
+        private AddShoppingItemEventHandel AddShoppingItem;
+        public event AddShoppingItemEventHandel OnAddShoppingItem
+        {
+            add
+            {
+                AddShoppingItem += value;
+            }
+            remove
+            {
+                AddShoppingItem -= value;
+            }
+        }
+
+        public void AddToFilter(List<Core.DBModels.InvType> types)
+        {
+            VM.AddFilterTypes(types);
         }
     }
 }

@@ -1,6 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
+using ESI.NET.Models.Opportunities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -13,22 +11,50 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models.Market;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Dialogs
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class AddToShoppingCartDialog : Page
     {
-        public AddToShoppingCartDialog()
+        private ScalperShoppingItem VM;
+        private AddToShoppingCartDialog(ScalperShoppingItem scalperShoppingItem)
         {
             this.InitializeComponent();
+            VM = scalperShoppingItem;
+            //NumberBox_BuyPrice.Value = scalperShoppingItem.BuyPrice;
+            //NumberBox_SellPrice.Value = scalperShoppingItem.SellPrice;
+            //NumberBox_Quantity.Value = scalperShoppingItem.Volume;
+            //TextBlock_ROI.Text = scalperShoppingItem.Volume;
+            //NumberBox_Quantity.Value = scalperShoppingItem.Volume;
+        }
+        public static async Task<bool> ShowAsync(ScalperItem item)
+        {
+            return await ShowAsync(new ScalperShoppingItem(item));
+        }
+        public static async Task<bool> ShowAsync(ScalperShoppingItem scalperShoppingItem)
+        {
+            var copy = scalperShoppingItem.DepthClone<ScalperShoppingItem>();
+            ContentDialog contentDialog = new ContentDialog()
+            {
+                Title = copy.InvType.TypeName,
+                Content = new AddToShoppingCartDialog(copy),
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+            };
+            if(await contentDialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                scalperShoppingItem.CopyFrom(copy);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

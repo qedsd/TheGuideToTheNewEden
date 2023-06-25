@@ -10,8 +10,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Views.Business;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -32,7 +34,18 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void CharacterOrderPage_OnSelectedItemsChanged(List<Core.Models.Market.Order> orders)
         {
-            Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
+            if(orders.NotNullOrEmpty())
+            {
+                var groups = orders.GroupBy(p => p.TypeId).ToList();
+                var types = groups.Select(p => p.First().InvType).ToList();
+                ScalperPage.AddToFilter(types);
+                Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
+            }
+        }
+
+        private void ScalperPage_OnAddShoppingItem(Core.Models.Market.ScalperShoppingItem item)
+        {
+            Window?.ShowSuccess($"已添加{item.InvType.TypeName}到购物车");
         }
     }
 }

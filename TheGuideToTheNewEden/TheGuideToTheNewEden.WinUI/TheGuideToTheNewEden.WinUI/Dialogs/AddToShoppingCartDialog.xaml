@@ -9,6 +9,45 @@
     mc:Ignorable="d">
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{StaticResource BusinessPage_BuyPrice}" />
+        <NumberBox
+            x:Name="NumberBox_BuyPrice"
+            Grid.Column="1"
+            Value="{x:Bind VM.BuyPrice, Mode=TwoWay}" />
+        <TextBlock Grid.Row="1" Text="{StaticResource BusinessPage_SellPrice}" />
+        <NumberBox
+            x:Name="NumberBox_SellPrice"
+            Grid.Row="2"
+            Grid.Column="1"
+            Value="{x:Bind VM.SellPrice, Mode=TwoWay}" />
+        <TextBlock Grid.Row="2" Text="{StaticResource General_Quantity}" />
+        <NumberBox
+            x:Name="NumberBox_Quantity"
+            Grid.Row="2"
+            Grid.Column="1"
+            Value="{x:Bind VM.Volume, Mode=TwoWay}" />
+        <TextBlock Grid.Row="3" Text="{StaticResource BusinessPage_ROIPercent}" />
+        <TextBlock
+            x:Name="TextBlock_ROI"
+            Grid.Row="3"
+            Grid.Column="1"
+            Text="{x:Bind VM.ROI, Mode=TwoWay}" />
+        <TextBlock Grid.Row="4" Text="{StaticResource BusinessPage_NetProfit}" />
+        <TextBlock
+            x:Name="TextBlock_NetProfi"
+            Grid.Row="4"
+            Grid.Column="1"
+            Text="{x:Bind VM.NetProfit, Mode=TwoWay}" />
     </Grid>
 </Page>

@@ -19,6 +19,8 @@
     <x:String x:Key="General_Minute">分钟</x:String>
     <x:String x:Key="General_Second">秒</x:String>
     <x:String x:Key="General_Start">开始</x:String>
+    <x:String x:Key="General_OK">确定</x:String>
+    <x:String x:Key="General_Cancel">取消</x:String>
 
 
     <!--  Skill  -->
@@ -199,6 +201,7 @@
     <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
     <x:String x:Key="BusinessPage_ROI">回报率</x:String>
     <x:String x:Key="BusinessPage_ROIPercent">回报率(%)</x:String>
+    <x:String x:Key="BusinessPage_NetProfit">净利润</x:String>
     <x:String x:Key="BusinessPage_SingleNetProfit">单位净利润</x:String>
     <x:String x:Key="BusinessPage_TargetSalesNetProfit">目标销量净利润</x:String>
     <x:String x:Key="BusinessPage_Principal">本金</x:String>
