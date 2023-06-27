@@ -24,17 +24,19 @@
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Scalper}" />
             </PivotItem.Header>
-            <business:ScalperPage x:Name="ScalperPage" OnAddShoppingItem="ScalperPage_OnAddShoppingItem"/>
+            <business:ScalperPage x:Name="ScalperPage" OnAddShoppingItem="ScalperPage_OnAddShoppingItem" />
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_ShoppingCart}" />
             </PivotItem.Header>
+            <business:ShoppingCartPage x:Name="ShoppingCartPage" />
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_HistoryShopping}" />
             </PivotItem.Header>
+            <business:ShoppingRecordPage OnAddShoppingItems="ShoppingRecordPage_OnAddShoppingItems"/>
         </PivotItem>
     </Pivot>
 </Page>

@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             InvType = scalperItem.InvType;
             SellPrice = scalperItem.SellPrice;
             BuyPrice= scalperItem.BuyPrice;
-            Volume = scalperItem.TargetSales;
+            Quantity = scalperItem.TargetSales;
         }
         public InvType InvType { get; set; }
         private double sellPrice;
@@ -37,14 +37,30 @@ namespace TheGuideToTheNewEden.Core.Models.Market
                 Cal();
             }
         }
+        private double quantity;
+        /// <summary>
+        /// 数量
+        /// </summary>
+        public double Quantity
+        {
+            get => quantity;
+            set
+            {
+                SetProperty(ref quantity, value);
+                Cal();
+                Volume = value * InvType.Volume;
+            }
+        }
         private double volume;
+        /// <summary>
+        /// 体积
+        /// </summary>
         public double Volume
         {
             get => volume;
             set
             {
                 SetProperty(ref volume, value);
-                Cal();
             }
         }
         private double roi;
@@ -63,8 +79,8 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             if(SellPrice != 0 && BuyPrice != 0)
             {
-                ROI = (SellPrice - BuyPrice) / BuyPrice;
-                NetProfit = (SellPrice - BuyPrice) * Volume;
+                ROI = (SellPrice - BuyPrice) / BuyPrice * 100;
+                NetProfit = (SellPrice - BuyPrice) * Quantity;
             }
         }
     }

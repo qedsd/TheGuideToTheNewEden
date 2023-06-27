@@ -24,23 +24,20 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
         private ScalperShoppingItem VM;
         private AddToShoppingCartDialog(ScalperShoppingItem scalperShoppingItem)
         {
-            this.InitializeComponent();
             VM = scalperShoppingItem;
+            this.InitializeComponent();
             //NumberBox_BuyPrice.Value = scalperShoppingItem.BuyPrice;
             //NumberBox_SellPrice.Value = scalperShoppingItem.SellPrice;
             //NumberBox_Quantity.Value = scalperShoppingItem.Volume;
             //TextBlock_ROI.Text = scalperShoppingItem.Volume;
             //NumberBox_Quantity.Value = scalperShoppingItem.Volume;
         }
-        public static async Task<bool> ShowAsync(ScalperItem item)
-        {
-            return await ShowAsync(new ScalperShoppingItem(item));
-        }
-        public static async Task<bool> ShowAsync(ScalperShoppingItem scalperShoppingItem)
+        public static async Task<bool> ShowAsync(ScalperShoppingItem scalperShoppingItem, XamlRoot xamlRoot)
         {
             var copy = scalperShoppingItem.DepthClone<ScalperShoppingItem>();
             ContentDialog contentDialog = new ContentDialog()
             {
+                XamlRoot = xamlRoot,
                 Title = copy.InvType.TypeName,
                 Content = new AddToShoppingCartDialog(copy),
                 PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),

@@ -222,4 +222,8 @@
     <x:String x:Key="BusinessPage_TargetSalesPercent">目标销量百分比</x:String>
     <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
+    <x:String x:Key="BusinessPage_Edit">编辑</x:String>
+    <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
 </ResourceDictionary>

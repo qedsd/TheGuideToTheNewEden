@@ -255,6 +255,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             var allSourceOrders = await GetAllSourceOrders();
             Window?.ShowWaiting("获取目的市场订单中");
             var allDestinationOrders = await GetAllDestinationOrders();
+            if(FilterTypes.NotNullOrEmpty())//移除过滤物品
+            {
+                await Task.Run(() =>
+                {
+                    allSourceOrders = RemoveFilterTypes(allSourceOrders);
+                    allDestinationOrders = RemoveFilterTypes(allDestinationOrders);
+                });
+            }
             if (allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
             {
                 var subGroupsOfSelectedInvMarketGroup = await GetSubGroupOfTargetGroup();
@@ -284,7 +292,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-
+        private List<Order> RemoveFilterTypes(List<Order> orders)
+        {
+            if(FilterTypes.NotNullOrEmpty() && orders.NotNullOrEmpty())
+            {
+                List<Order> newOrders = new List<Order>();
+                var ids = FilterTypes.Select(p => p.TypeID).ToHashSet2();
+                foreach(var o in orders)
+                {
+                    if(!ids.Contains(o.TypeId))
+                    {
+                        newOrders.Add(o);
+                    }
+                }
+                return newOrders;
+            }
+            else
+            {
+                return orders;
+            }
+        }
         /// <summary>
         /// 由源市场目的市场订单和指定物品分组类型生成表示一个物品的实例
         /// 卖单卖单按最低价最高价顺序排序完毕

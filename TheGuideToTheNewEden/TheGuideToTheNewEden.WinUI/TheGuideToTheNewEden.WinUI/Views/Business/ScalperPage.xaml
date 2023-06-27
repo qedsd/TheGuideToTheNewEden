@@ -318,12 +318,12 @@
                 AllowSorting="True"
                 AutoGenerateColumns="False"
                 ColumnWidthMode="Auto"
+                DoubleTapped="SfDataGrid_DoubleTapped"
                 GridLinesVisibility="None"
                 GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                 HeaderLinesVisibility="Both"
                 ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
                 SelectionMode="Extended"
-                DoubleTapped="SfDataGrid_DoubleTapped"
                 ShowGroupDropArea="True">
                 <dataGrid:SfDataGrid.Columns>
                     <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
@@ -386,7 +386,7 @@
                             Click="MenuFlyoutItem_Click"
                             Command="{Binding Path=AddToShoppingCartCommand}"
                             CommandParameter="{Binding}"
-                            Text="{StaticResource BusinessPage_AddToShoppingCart}"/>
+                            Text="{StaticResource BusinessPage_AddToShoppingCart}" />
                     </MenuFlyout>
                 </dataGrid:SfDataGrid.RecordContextFlyout>
 

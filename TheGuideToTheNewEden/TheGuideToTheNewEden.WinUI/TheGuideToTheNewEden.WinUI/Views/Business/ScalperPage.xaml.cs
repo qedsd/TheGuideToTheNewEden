@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             if(item != null)
             {
                 ScalperShoppingItem scalperShoppingItem = new ScalperShoppingItem(item);
-                if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem))
+                if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem,this.XamlRoot))
                 {
                     AddShoppingItem?.Invoke(scalperShoppingItem);
                 }

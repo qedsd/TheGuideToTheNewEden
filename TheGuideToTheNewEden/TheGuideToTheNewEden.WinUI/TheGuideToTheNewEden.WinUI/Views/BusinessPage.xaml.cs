@@ -45,7 +45,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ScalperPage_OnAddShoppingItem(Core.Models.Market.ScalperShoppingItem item)
         {
-            Window?.ShowSuccess($"已添加{item.InvType.TypeName}到购物车");
+            ShoppingCartPage.AddItem(item);
+            Window?.ShowSuccess($"已添加 {item.InvType.TypeName} 到购物车");
+        }
+
+        private void ShoppingRecordPage_OnAddShoppingItems(IEnumerable<Core.Models.Market.ScalperShoppingItem> items)
+        {
+            foreach(var item in items)
+            {
+                ShoppingCartPage.AddItem(item);
+            }
+            Window?.ShowSuccess($"已添加 {items.Count()}个物品到购物车");
         }
     }
 }
