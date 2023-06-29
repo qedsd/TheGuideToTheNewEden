@@ -234,4 +234,10 @@
     <x:String x:Key="SettingPage_General">一般</x:String>
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
+
+    <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
+    <x:String x:Key="ServerPingPage_Times">次数</x:String>
+    <x:String x:Key="ServerPingPage_Span">间隔(ms)</x:String>
+    <x:String x:Key="ServerPingPage_Start">开始</x:String>
+    <x:String x:Key="ServerPingPage_Des">利用TCP握手实现的延迟测试，可以获取到真实的延迟</x:String>
 </ResourceDictionary>

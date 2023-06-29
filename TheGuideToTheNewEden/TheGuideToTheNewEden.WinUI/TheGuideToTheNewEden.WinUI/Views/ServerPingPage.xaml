@@ -1,0 +1,87 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.ServerPingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <ComboBox
+                    x:Name="ComboBox_Host"
+                    MinWidth="200"
+                    Margin="10,0"
+                    BorderThickness="0,0,0,1"
+                    IsEditable="True"
+                    SelectedIndex="0"
+                    ToolTipService.ToolTip="Host">
+                    <ComboBoxItem Content="tranquility.servers.eveonline.com" ToolTipService.ToolTip="{StaticResource ServerPingPage_TranquilityHost}" />
+                </ComboBox>
+                <TextBlock VerticalAlignment="Center" Text=":" />
+                <NumberBox
+                    x:Name="NumberBox_Port"
+                    MinWidth="100"
+                    Margin="10,0"
+                    BorderThickness="0,0,0,1"
+                    Minimum="1"
+                    ToolTipService.ToolTip="Port"
+                    Value="26000" />
+                <NumberBox
+                    x:Name="NumberBox_Times"
+                    Margin="10,0"
+                    BorderThickness="0,0,0,1"
+                    Minimum="1"
+                    ToolTipService.ToolTip="{StaticResource ServerPingPage_Times}"
+                    Value="8" />
+                <NumberBox
+                    x:Name="NumberBox_Span"
+                    Margin="10,0"
+                    BorderThickness="0,0,0,1"
+                    Minimum="100"
+                    ToolTipService.ToolTip="{StaticResource ServerPingPage_Span}"
+                    Value="1500" />
+                <Rectangle
+                    Width="1"
+                    Margin="10,0"
+                    Fill="{ThemeResource SystemAccentColor}" />
+                <Button
+                    x:Name="Button_Start"
+                    Width="100"
+                    Click="Button_Start_Click"
+                    Content="{StaticResource ServerPingPage_Start}" />
+            </StackPanel>
+
+            <Button
+                Grid.Column="1"
+                Background="Transparent"
+                BorderThickness="0"
+                Visibility="Visible">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" />
+                <Button.Flyout>
+                    <Flyout Placement="Bottom">
+                        <TextBlock Text="{StaticResource ServerPingPage_Des}" />
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+        <TextBlock
+            Name="TextBlock_Result"
+            Grid.Row="1"
+            Margin="20"
+            FontSize="16"
+            LineHeight="40"
+            TextWrapping="Wrap" />
+    </Grid>
+</Page>

@@ -254,6 +254,7 @@
     <None Remove="Views\LocalIntelItemPage.xaml" />
     <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
+    <None Remove="Views\ServerPingPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\Settings\GeneralSettingPage.xaml" />
     <None Remove="Views\Settings\MarketSettingPage.xaml" />
@@ -342,6 +343,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\ServerPingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\MarketSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
