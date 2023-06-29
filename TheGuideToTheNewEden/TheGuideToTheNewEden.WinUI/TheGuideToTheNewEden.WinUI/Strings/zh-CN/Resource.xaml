@@ -226,4 +226,12 @@
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>
     <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
+
+    <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
+
+    <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
+    <x:String x:Key="SettingPage_Market">市场</x:String>
 </ResourceDictionary>

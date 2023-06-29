@@ -9,15 +9,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 using static TheGuideToTheNewEden.WinUI.Services.MarketOrderService;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class MarketOrderService
     {
-        private static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
-        private static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
-        private static readonly string HistoryOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "HistoryOrders");
+        private static string StructureOrderFolder => MarketOrderSettingService.StructureOrderFolder;
+        private static string RegionOrderFolder => MarketOrderSettingService.RegionOrderFolder;
+        private static string HistoryOrderFolder => MarketOrderSettingService.HistoryOrderFolder;
         private static MarketOrderService current;
         public static MarketOrderService Current
         {
@@ -40,12 +41,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 订单过期时间
         /// 分钟
         /// </summary>
-        private static readonly int OrderDuration = 600000;
+        private static int OrderDuration => MarketOrderSettingService.OrderDurationValue;
         /// <summary>
         /// 历史记录过期时间
         /// 分钟
         /// </summary>
-        private static readonly int HistoryDuration = 144000;
+        private static int HistoryDuration => MarketOrderSettingService.HistoryDurationValue;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
@@ -302,20 +303,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             string filePath = GetFilePath(regionId);
             if (File.Exists(filePath))
             {
-                var fileText = File.ReadAllText(filePath);
-                if (!string.IsNullOrEmpty(fileText))
+                System.IO.FileInfo fileInfo = new FileInfo(filePath);
+                if ((DateTime.Now - fileInfo.LastWriteTime).TotalMinutes < OrderDuration)//还在有效期内
                 {
-                    var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<RegionOrder>(fileText));
-                    if (localOrder != null)//本地存在订单数据
+                    var fileText = File.ReadAllText(filePath);
+                    if (!string.IsNullOrEmpty(fileText))
                     {
-                        if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
+                        var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<RegionOrder>(fileText));
+                        if (localOrder != null)//本地存在订单数据
                         {
                             await SetOrderInfo(localOrder.Orders);
                             return localOrder.Orders;
-                        }
-                        else
-                        {
-                            //不在有效期内当作本地不存在订单处理
                         }
                     }
                 }
@@ -530,7 +528,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var local =  await Task.Run(() =>
                 {
                     System.IO.FileInfo fileInfo = new FileInfo(localFile);
-                    if ((DateTime.Now - fileInfo.CreationTime).TotalMinutes < HistoryDuration)
+                    if ((DateTime.Now - fileInfo.LastWriteTime).TotalMinutes < HistoryDuration)
                     {
                         return JsonConvert.DeserializeObject<List<ESI.NET.Models.Market.Statistic>>(File.ReadAllText(localFile));
                     }

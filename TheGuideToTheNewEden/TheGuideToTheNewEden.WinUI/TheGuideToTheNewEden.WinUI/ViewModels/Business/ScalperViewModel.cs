@@ -16,6 +16,7 @@ using TheGuideToTheNewEden.WinUI.Wins;
 using Syncfusion.UI.Xaml.Data;
 using System.Collections.ObjectModel;
 using TheGuideToTheNewEden.Core.DBModels;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {

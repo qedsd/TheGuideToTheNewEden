@@ -1,0 +1,46 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Settings.MarketSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:setting="using:TheGuideToTheNewEden.WinUI.ViewModels.Setting"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <setting:MarketSettingViewModel x:Name="VM" />
+    </Page.DataContext>
+    <StackPanel Spacing="4">
+        <StackPanel.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
+            </TransitionCollection>
+        </StackPanel.ChildrenTransitions>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_OrderDuration}">
+            <StackPanel Orientation="Horizontal">
+                <NumberBox Width="128" Value="{x:Bind VM.OrderDuration, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="m" />
+            </StackPanel>
+
+        </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_HistoryDuration}">
+            <StackPanel Orientation="Horizontal">
+                <NumberBox Width="128" Value="{x:Bind VM.HistoryDuration, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="m" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_ClearCache}">
+            <Button Width="100" Command="{x:Bind VM.ClearCacheCommand}">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE107;" />
+            </Button>
+        </controls:ExpandableSettingControl>
+    </StackPanel>
+</Page>

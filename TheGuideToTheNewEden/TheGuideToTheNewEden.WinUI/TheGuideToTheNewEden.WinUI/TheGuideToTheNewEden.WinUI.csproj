@@ -256,6 +256,7 @@
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\Settings\GeneralSettingPage.xaml" />
+    <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
@@ -341,6 +342,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\MarketSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Business\ShoppingRecordPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

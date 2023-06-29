@@ -64,5 +64,11 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 Save();
             });
         }
+        public static void SetValue(string key, string value)
+        {
+            Values.Remove(key);
+            Values.Add(key, value);
+            Save();
+        }
     }
 }

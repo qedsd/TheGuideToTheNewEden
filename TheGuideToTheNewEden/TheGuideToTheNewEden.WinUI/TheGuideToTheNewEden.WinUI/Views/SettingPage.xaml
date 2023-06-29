@@ -14,15 +14,21 @@
     <Pivot Margin="12,0,12,12">
         <PivotItem>
             <PivotItem.Header>
-                <TextBlock FontSize="14" Text="一般" />
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_General}" />
             </PivotItem.Header>
             <settings:GeneralSettingPage />
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
-                <TextBlock FontSize="14" Text="玩家建筑" />
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Structures}" />
             </PivotItem.Header>
             <settings:StructuresSettingPage />
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Market}" />
+            </PivotItem.Header>
+            <settings:MarketSettingPage />
         </PivotItem>
     </Pivot>
 </Page>
