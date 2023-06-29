@@ -87,8 +87,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => selectedProcess;
             set
             {
-                SetProperty(ref selectedProcess, value);
-                SetProcess();
+                if(SetProperty(ref selectedProcess, value))
+                {
+                    SetProcess();
+                }
             }
         }
         private Visibility settingVisible = Visibility.Collapsed;
@@ -339,11 +341,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else //进程未运行中
                 {
-                    var name = SelectedProcess.GetCharacterName();
-                    if (!string.IsNullOrEmpty(name))
+                    var characterName = SelectedProcess.GetCharacterName();
+                    if (!string.IsNullOrEmpty(characterName))
                     {
                         //从保存列表里找出第一个同名且不在运行中的设置
-                        var targetSetting = Settings.FirstOrDefault(p => p.Name == name && p.ProcessInfo == null);
+                        var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
                         if (targetSetting != null)
                         {
                             Setting = targetSetting;
@@ -353,18 +355,39 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             Setting = new PreviewItem()
                             {
-                                Name = SelectedProcess.GetCharacterName()
+                                Name = characterName,
+                                UserName = SelectedProcess.GetUserName()
                             };
                             SelectedSetting = null;
                         }
                     }
-                    else//如果不设置名称，不会保存，直接新建
+                    else
                     {
-                        Setting = new PreviewItem()
+                        var username = SelectedProcess.GetUserName();
+                        if(!string.IsNullOrEmpty(username))//没有角色名则找账号名
                         {
-                            Name = SelectedProcess.GetCharacterName()
-                        };
-                        SelectedSetting = null;
+                            //从保存列表里找出第一个同名且不在运行中的设置
+                            var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
+                            if (targetSetting != null)
+                            {
+                                Setting = targetSetting;
+                                SelectedSetting = targetSetting;
+                            }
+                            else//没有找到则新建
+                            {
+                                Setting = new PreviewItem()
+                                {
+                                    Name = username,
+                                    UserName = username
+                                };
+                                SelectedSetting = null;
+                            }
+                        }
+                        else//如果不设置名称，不会保存，直接新建
+                        {
+                            Setting = new PreviewItem();
+                            SelectedSetting = null;
+                        }
                     }
                 }
             }
@@ -614,6 +637,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         item.Value.Highlight();
                         item.Value.Show2();
                     }
+                    _lastProcessGUID = targetProcess.GUID;
                 }
                 else
                 {
@@ -834,23 +858,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if(!pro.Running)
                 {
                     PreviewItem setting = null;
-                    var name = pro.GetCharacterName();
-                    if (!string.IsNullOrEmpty(name))
+                    var characterName = pro.GetCharacterName();
+                    if (!string.IsNullOrEmpty(characterName))
                     {
                         //从保存列表里找出第一个同名且不在运行中的设置
-                        var targetSetting = Settings.FirstOrDefault(p => p.Name == name && p.ProcessInfo == null);
+                        var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
                         if (targetSetting != null)
                         {
                             setting = targetSetting;
                         }
                         else//没有找到则按加载方式选择
                         {
-                            LoadDefaultSetting(out setting, name);
+                            LoadDefaultSetting(out setting, pro, characterName);
                         }
                     }
                     else//无法找到名称，如中文下
                     {
-                        LoadDefaultSetting(out setting, name);
+                        var username = pro.GetUserName();
+                        if (!string.IsNullOrEmpty(username))//没有角色名则找账号名
+                        {
+                            //从保存列表里找出第一个同名且不在运行中的设置
+                            var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
+                            if (targetSetting != null)
+                            {
+                                setting = targetSetting;
+                            }
+                            else//没有找到则新建
+                            {
+                                LoadDefaultSetting(out setting, pro, characterName);
+                            }
+                        }
+                        else//如果不设置名称，不会保存，直接新建
+                        {
+                            LoadDefaultSetting(out setting, pro, characterName);
+                        }
                     }
                     if(setting != null)
                     {
@@ -903,7 +944,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             #endregion
         });
-        void LoadDefaultSetting(out PreviewItem setting, string name)
+        void LoadDefaultSetting(out PreviewItem setting, ProcessInfo processInfo, string name)
         {
             if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
             {
@@ -918,7 +959,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     //没有不在运行中的配置，新建
                     setting = new PreviewItem()
                     {
-                        Name = name
+                        Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+                        UserName = processInfo.GetUserName()
                     };
                 }
             }
@@ -926,7 +968,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 setting = new PreviewItem()
                 {
-                    Name = name
+                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+                    UserName = processInfo.GetUserName()
                 };
             }
         }

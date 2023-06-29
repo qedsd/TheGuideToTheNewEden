@@ -2,7 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 {
@@ -28,11 +30,35 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 var array = WindowTitle.Split('-');
                 if(array.Length == 2)
                 {
-                    return array[1].Trim();
+                    string name =  array[1].Trim();
+                    return name == "{[character]player.name}" ? null : name;
                 }
             }
             return null;
         }
+        /// <summary>
+        /// 获取账号名称
+        /// </summary>
+        /// <returns></returns>
+        public string GetUserName()
+        {
+            string localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string processesFilePath = System.IO.Path.Combine(localAppDataFolder, "CCP", "EVE", "Launcher", "processes.json");
+            if(System.IO.File.Exists(processesFilePath))
+            {
+                var json = System.IO.File.ReadAllText(processesFilePath);
+                if(!string.IsNullOrEmpty(json))
+                {
+                    var pross = JsonConvert.DeserializeObject<LauncherProcesses>(json);
+                    if(pross != null && pross.Processes.NotNullOrEmpty())
+                    {
+                        return pross.Processes.FirstOrDefault(p => p.Pid == Process.Id)?.Username;
+                    }
+                }
+            }
+            return null;
+        }
+
         private string _guid = Guid.NewGuid().ToString();
 
         private string settingName;
@@ -57,6 +83,18 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         public PreviewItem Setting
         {
             get => setting;set => SetProperty(ref setting, value);
+        }
+
+        private class LauncherProcesses
+        {
+            public List<LauncherProcess> Processes { get; set; }
+        }
+        private class LauncherProcess
+        {
+            public int Pid { get; set; }
+            public string Servername { get; set; }
+            public int UserId { get; set; }
+            public string Username { get; set; }
         }
     }
 }
