@@ -9,6 +9,7 @@
     <x:String x:Key="General_Remove">删除</x:String>
     <x:String x:Key="General_AddSelected">添加选中</x:String>
     <x:String x:Key="General_SolarSystemName">星系</x:String>
+    <x:String x:Key="General_SolarSystem">星系</x:String>
     <x:String x:Key="General_RegionName">星域</x:String>
     <x:String x:Key="General_Character">角色</x:String>
     <x:String x:Key="General_Region">星域</x:String>
@@ -17,6 +18,9 @@
     <x:String x:Key="General_Hour">小时</x:String>
     <x:String x:Key="General_Minute">分钟</x:String>
     <x:String x:Key="General_Second">秒</x:String>
+    <x:String x:Key="General_Start">开始</x:String>
+    <x:String x:Key="General_OK">确定</x:String>
+    <x:String x:Key="General_Cancel">取消</x:String>
 
 
     <!--  Skill  -->
@@ -155,4 +159,79 @@
     <x:String x:Key="MarketPage_History6">最近半年</x:String>
     <x:String x:Key="MarketPage_History12">最近一年</x:String>
     <x:String x:Key="MarketPage_HistoryAll">全部</x:String>
+
+    <!--  BusinessPage  -->
+    <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>
+    <x:String x:Key="BusinessPage_Character">个人</x:String>
+    <x:String x:Key="BusinessPage_Corp">军团</x:String>
+    <x:String x:Key="BusinessPage_CharacterOrders">订单</x:String>
+    <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
+    <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
+    <x:String x:Key="BusinessPage_HistoryShopping">记录</x:String>
+    <x:String x:Key="BusinessPage_Setting">设置</x:String>
+    <x:String x:Key="BusinessPage_FilterList">排除列表</x:String>
+    <x:String x:Key="BusinessPage_SourceMarket">源市场</x:String>
+    <x:String x:Key="BusinessPage_DestinationMarket">目的市场</x:String>
+    <x:String x:Key="BusinessPage_BuyPrice">买入价格</x:String>
+    <x:String x:Key="BusinessPage_SellPrice">卖出价格</x:String>
+    <x:String x:Key="BusinessPage_PriceType">价格类型</x:String>
+    <x:String x:Key="BusinessPage_HistoryDay">历史价格统计天数</x:String>
+    <x:String x:Key="BusinessPage_PriceScale">价格缩放系数</x:String>
+
+    <x:String x:Key="BusinessPage_SellTop5">卖单前5%最低价格订单平均价格</x:String>
+    <x:String x:Key="BusinessPage_SellAvailable">卖单实际数量的相应价格</x:String>
+    <x:String x:Key="BusinessPage_SellTop">卖单最低价格</x:String>
+    <x:String x:Key="BusinessPage_BuyTop5">买单前5%最高价格订单平均价格</x:String>
+    <x:String x:Key="BusinessPage_BuyAvailable">买单实际数量的相应价格</x:String>
+    <x:String x:Key="BusinessPage_BuyTop">买单最高价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighest">历史最高价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverage">历史平均价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowest">历史最低价格</x:String>
+
+    <x:String x:Key="BusinessPage_DaySales">日销量</x:String>
+    <x:String x:Key="BusinessPage_SourceSalesDay">源市场统计天数</x:String>
+    <x:String x:Key="BusinessPage_DestinationSalesDay">目的市场统计天数</x:String>
+    <x:String x:Key="BusinessPage_RemoveExtremum">去极值</x:String>
+    <x:String x:Key="BusinessPage_HistoryPriceFluctuationDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_DestinationHistoryPriceFluctuation">历史价格波动</x:String>
+    <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">当前价格波动</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturation">卖单饱和度</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">有效订单价格波动范围（%）</x:String>
+
+    <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
+    <x:String x:Key="BusinessPage_ROI">回报率</x:String>
+    <x:String x:Key="BusinessPage_ROIPercent">回报率(%)</x:String>
+    <x:String x:Key="BusinessPage_NetProfit">净利润</x:String>
+    <x:String x:Key="BusinessPage_SingleNetProfit">单位净利润</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesNetProfit">目标销量净利润</x:String>
+    <x:String x:Key="BusinessPage_Principal">本金</x:String>
+    <x:String x:Key="BusinessPage_BaseSetting">基本设置</x:String>
+    <x:String x:Key="BusinessPage_MarketGroup">物品类型</x:String>
+    <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">过滤源市场无卖单的物品</x:String>
+    <x:String x:Key="BusinessPage_GetOrders">获取订单</x:String>
+    <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
+
+    <x:String x:Key="BusinessPage_Type">物品</x:String>
+    <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日日销量</x:String>
+    <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
+    <x:String x:Key="BusinessPage_DestinationSales">目的市场日销量</x:String>
+    <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
+    <x:String x:Key="BusinessPage_Suggestion">推荐度</x:String>
+    <x:String x:Key="BusinessPage_Volume">体积</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesPercent">目标销量百分比</x:String>
+    <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
+    <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
+    <x:String x:Key="BusinessPage_Edit">编辑</x:String>
+    <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
+
+    <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
+
+    <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
+    <x:String x:Key="SettingPage_Market">市场</x:String>
 </ResourceDictionary>

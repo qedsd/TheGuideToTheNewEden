@@ -190,6 +190,7 @@
                         AllowEditing="False"
                         AllowFiltering="True"
                         AllowGrouping="True"
+                        AllowResizingColumns="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
                         ColumnWidthMode="Auto"

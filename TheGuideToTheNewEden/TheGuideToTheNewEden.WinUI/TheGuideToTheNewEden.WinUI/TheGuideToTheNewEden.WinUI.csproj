@@ -219,14 +219,22 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\MapSystemSelectorControl.xaml" />
+    <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
     <None Remove="Controls\StructureSelectorControl.xaml" />
+    <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
+    <None Remove="Views\Business\CharacterOrderPage.xaml" />
+    <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
+    <None Remove="Views\Business\ScalperPage.xaml" />
+    <None Remove="Views\Business\ShoppingCartPage.xaml" />
+    <None Remove="Views\Business\ShoppingRecordPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
@@ -248,6 +256,7 @@
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\Settings\GeneralSettingPage.xaml" />
+    <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
@@ -297,6 +306,15 @@
     <Page Update="Controls\StructureSelectorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\MapSystemSelectorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\MarketLocationSelectorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Dialogs\AddToShoppingCartDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -324,6 +342,24 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\MarketSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Business\ShoppingRecordPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Business\ShoppingCartPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Business\ScalperItemDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Business\ScalperPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Business\CharacterOrderPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\StructuresSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -6,14 +6,14 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
-        <local:SystemSecurityCellStyleSelector x:Key="SystemSecurityCellStyleSelector" />
+        <styleselectors:SystemSecurityCellStyleSelector x:Key="SystemSecurityCellStyleSelector" />
     </Page.Resources>
     <Page.DataContext>
         <viewmodels:MarketViewModel x:Name="VM" />
@@ -240,6 +240,7 @@
                         AllowEditing="False"
                         AllowFiltering="True"
                         AllowGrouping="True"
+                        AllowResizingColumns="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
                         CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
@@ -281,6 +282,7 @@
                         AllowEditing="False"
                         AllowFiltering="True"
                         AllowGrouping="True"
+                        AllowResizingColumns="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
                         CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"

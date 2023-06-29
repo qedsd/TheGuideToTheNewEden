@@ -1,0 +1,398 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Business.ScalperPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:business="using:TheGuideToTheNewEden.WinUI.ViewModels.Business"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Page.DataContext>
+        <business:ScalperViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Pivot Margin="-10,-10,0,0">
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Setting}" />
+                </PivotItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0">
+                        <StackPanel Margin="0,0,8,0">
+                            <StackPanel.Resources>
+                                <Style TargetType="Expander">
+                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Margin" Value="0,4" />
+                                </Style>
+                                <Style TargetType="ComboBox">
+                                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                    <Setter Property="Margin" Value="0,4" />
+                                </Style>
+                                <Style TargetType="NumberBox">
+                                    <Setter Property="Margin" Value="0,4" />
+                                </Style>
+                            </StackPanel.Resources>
+                            <Expander Header="{StaticResource BusinessPage_BaseSetting}" IsExpanded="True">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="48" />
+                                            <RowDefinition Height="48" />
+                                            <RowDefinition Height="48" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource BusinessPage_SourceMarket}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            Content="{x:Bind VM.Setting.SourceMarketLocation.Name, Mode=OneWay}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.SourceMarketLocation, Mode=TwoWay}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource BusinessPage_DestinationMarket}" />
+                                        <Button
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind VM.Setting.DestinationMarketLocation.Name, Mode=OneWay}">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <controls:MarketLocationSelectorControl SelectedItem="{x:Bind VM.Setting.DestinationMarketLocation, Mode=TwoWay}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource BusinessPage_MarketGroup}" />
+                                        <ComboBox
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            DisplayMemberPath="MarketGroupName"
+                                            ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
+                                            SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
+                                    </Grid>
+
+                                </StackPanel>
+                            </Expander>
+
+                            <Expander Header="{StaticResource BusinessPage_BuyPrice}">
+                                <StackPanel>
+                                    <ComboBox
+                                        HorizontalAlignment="Stretch"
+                                        Header="{StaticResource BusinessPage_PriceType}"
+                                        SelectedIndex="{x:Bind VM.BuyPriceType, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellTop5}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellAvailable}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellTop}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyTop5}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyAvailable}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyTop}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighest}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverage}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowest}" />
+                                    </ComboBox>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HistoryDay}"
+                                        Minimum="1"
+                                        Visibility="{x:Bind VM.Setting.IsHistoryBuyPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}"
+                                        Value="{x:Bind VM.Setting.BuyHistoryDay, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Margin="0,8"
+                                        Header="{StaticResource BusinessPage_PriceScale}"
+                                        Minimum="0.1"
+                                        Value="{x:Bind VM.Setting.BuyPriceScale, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Margin="8,0,0,4"
+                                        VerticalAlignment="Bottom"
+                                        Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                        IsChecked="{x:Bind VM.Setting.BuyPirceRemoveExtremum, Mode=TwoWay}"
+                                        Visibility="{x:Bind VM.Setting.IsHistoryBuyPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_SellPrice}">
+                                <StackPanel>
+                                    <ComboBox Header="{StaticResource BusinessPage_PriceType}" SelectedIndex="{x:Bind VM.SellPriceType, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellTop5}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellAvailable}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_SellTop}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyTop5}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyAvailable}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_BuyTop}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighest}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverage}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowest}" />
+                                    </ComboBox>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HistoryDay}"
+                                        Minimum="1"
+                                        Visibility="{x:Bind VM.Setting.IsHistorySellPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}"
+                                        Value="{x:Bind VM.Setting.SellHistoryDay, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_PriceScale}"
+                                        Minimum="0.1"
+                                        Value="{x:Bind VM.Setting.SellPriceScale, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Margin="8,0,0,4"
+                                        VerticalAlignment="Bottom"
+                                        Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                        IsChecked="{x:Bind VM.Setting.SellPirceRemoveExtremum, Mode=TwoWay}"
+                                        Visibility="{x:Bind VM.Setting.IsHistorySellPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_DaySales}">
+                                <StackPanel>
+                                    <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
+                                        <NumberBox
+                                            Width="140"
+                                            Header="{StaticResource BusinessPage_SourceSalesDay}"
+                                            Minimum="1"
+                                            Value="{x:Bind VM.Setting.SourceSalesDay, Mode=TwoWay}" />
+                                        <CheckBox
+                                            Margin="8,0,0,4"
+                                            VerticalAlignment="Bottom"
+                                            Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                            IsChecked="{x:Bind VM.Setting.SourceRemoveExtremum, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <NumberBox
+                                            Width="140"
+                                            Header="{StaticResource BusinessPage_DestinationSalesDay}"
+                                            Minimum="1"
+                                            Value="{x:Bind VM.Setting.DestinationSalesDay, Mode=TwoWay}" />
+                                        <CheckBox
+                                            Margin="8,0,0,4"
+                                            VerticalAlignment="Bottom"
+                                            Content="{StaticResource BusinessPage_RemoveExtremum}"
+                                            IsChecked="{x:Bind VM.Setting.DestinationRemoveExtremum, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_TargetSalesPercent}"
+                                        Maximum="100"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.Setting.SalesPercent, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}">
+                                <StackPanel>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HistoryPriceFluctuationDay}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.Setting.HistoryPriceFluctuationDay, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}">
+                                <StackPanel>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HistoryPriceFluctuationDay}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.Setting.NowPriceFluctuationDay, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_SellOrderSaturation}">
+                                <StackPanel>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_SellOrderSaturationFluctuation}"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SaturationFluctuation, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_SuggestionWeight}">
+                                <StackPanel>
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_ROI}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionROI, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_TargetSalesNetProfit}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionNetProfit, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_Principal}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionPrincipal, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_DaySales}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionSales, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionHistoryPriceFluctuation, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionNowPriceFluctuation, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_SellOrderSaturation}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionSaturation, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Rectangle
+                        Grid.Row="1"
+                        Height="1"
+                        Margin="8,8"
+                        Fill="{ThemeResource SystemAccentColor}" />
+                    <StackPanel
+                        Grid.Row="2"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <AppBarButton
+                            Grid.Row="2"
+                            Margin="8,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind VM.GetOrdersCommand}"
+                            Icon="Download"
+                            Label="{StaticResource BusinessPage_GetOrders}" />
+                        <AppBarButton
+                            Grid.Row="2"
+                            Margin="8,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind VM.AnalyseCommand}"
+                            Icon="Play"
+                            Label="{StaticResource BusinessPage_Analyse}" />
+                    </StackPanel>
+                </Grid>
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource BusinessPage_FilterList}" />
+                </PivotItem.Header>
+            </PivotItem>
+        </Pivot>
+        <Grid Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <dataGrid:SfDataGrid
+                HorizontalAlignment="Stretch"
+                AllowDraggingColumns="True"
+                AllowEditing="False"
+                AllowFiltering="True"
+                AllowGrouping="True"
+                AllowResizingColumns="True"
+                AllowSorting="True"
+                AutoGenerateColumns="False"
+                ColumnWidthMode="Auto"
+                DoubleTapped="SfDataGrid_DoubleTapped"
+                GridLinesVisibility="None"
+                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                HeaderLinesVisibility="Both"
+                ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
+                SelectionMode="Extended"
+                ShowGroupDropArea="True">
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_Suggestion}"
+                        MappingName="Suggestion" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_ROIPercent}"
+                        MappingName="ROI" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_TargetSalesNetProfit}"
+                        MappingName="TargetNetProfit" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
+                        MappingName="BuyPrice" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_DestinationSellPrice}"
+                        MappingName="SellPrice" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource BusinessPage_SourceSales}"
+                        MappingName="SourceSales" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource BusinessPage_DestinationSales}"
+                        MappingName="DestinationSales" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource BusinessPage_TargetSales}"
+                        MappingName="TargetSales" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_SingleNetProfit}"
+                        MappingName="NetProfit" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_Principal}"
+                        MappingName="Principal" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}"
+                        MappingName="HistoryPriceFluctuation" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}"
+                        MappingName="NowPriceFluctuation" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_SellOrderSaturation}"
+                        MappingName="Saturation" />
+                </dataGrid:SfDataGrid.Columns>
+                <dataGrid:SfDataGrid.RecordContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            Click="MenuFlyoutItem_Click"
+                            Command="{Binding Path=AddToShoppingCartCommand}"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource BusinessPage_AddToShoppingCart}" />
+                    </MenuFlyout>
+                </dataGrid:SfDataGrid.RecordContextFlyout>
+
+            </dataGrid:SfDataGrid>
+
+        </Grid>
+    </Grid>
+</Page>

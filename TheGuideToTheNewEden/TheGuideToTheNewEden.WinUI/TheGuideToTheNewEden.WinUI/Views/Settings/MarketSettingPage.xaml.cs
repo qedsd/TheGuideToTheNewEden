@@ -1,38 +1,31 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Syncfusion.UI.Xaml.DataGrid;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using TheGuideToTheNewEden.WinUI.Controls;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace TheGuideToTheNewEden.WinUI.Views
+namespace TheGuideToTheNewEden.WinUI.Views.Settings
 {
-    public sealed partial class MarketPage : Page
+    public sealed partial class MarketSettingPage : Page
     {
-        public MarketPage()
+        public MarketSettingPage()
         {
             this.InitializeComponent();
-            Loaded += MarketPage_Loaded;
+            Loaded += MarketSettingPage_Loaded;
         }
 
-        private void MarketPage_Loaded(object sender, RoutedEventArgs e)
+        private void MarketSettingPage_Loaded(object sender, RoutedEventArgs e)
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-        }
-
-        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Flyout_SelecteMarket.Height = this.ActualSize.Y * 0.8;
         }
     }
 }
