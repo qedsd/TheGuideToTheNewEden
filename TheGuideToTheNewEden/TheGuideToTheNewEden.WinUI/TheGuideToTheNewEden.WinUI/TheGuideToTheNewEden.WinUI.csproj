@@ -260,6 +260,7 @@
     <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
+    <None Remove="Views\TranslationPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_32.ico" />
@@ -343,6 +344,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\TranslationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ServerPingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

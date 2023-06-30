@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -73,6 +74,28 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 await LocalDbService.TranInvTypesAsync(types);
             }
             return types;
+        }
+
+        /// <summary>
+        /// 模糊搜索物品名，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static async Task<List<InvType>> SearchTypeAsync(string partName)
+        {
+            return await Task.Run(() =>
+            {
+                var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
+                if (DBService.NeedLocalization)
+                {
+                    var types1 = LocalDbService.SearchInvType(partName);
+                    if (types1.NotNullOrEmpty())
+                    {
+                        types.AddRange(types);
+                    }
+                }
+                return types;
+            });
         }
     }
 }

@@ -24,6 +24,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return DBService.LocalDb.Queryable<InvTypeBase>().First(p => invTypeId == p.TypeID);
         }
 
+        public static List<InvTypeBase> SearchInvType(string partName)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().Where(p => p.TypeName.Contains(partName)).ToList();
+        }
+
         public static async Task TranInvTypesAsync(List<InvType> invTypes)
         {
             Dictionary<int, InvType> keyValuePairs = new Dictionary<int, InvType>();
