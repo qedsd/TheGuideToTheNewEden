@@ -240,4 +240,7 @@
     <x:String x:Key="ServerPingPage_Span">间隔(ms)</x:String>
     <x:String x:Key="ServerPingPage_Start">开始</x:String>
     <x:String x:Key="ServerPingPage_Des">利用TCP握手实现的延迟测试，可以获取到真实的延迟</x:String>
+
+    <x:String x:Key="TranslationPage_EN">英文</x:String>
+    <x:String x:Key="TranslationPage_Local">本地</x:String>
 </ResourceDictionary>

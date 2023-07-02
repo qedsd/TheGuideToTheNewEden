@@ -11,30 +11,56 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <AutoSuggestBox
-            Name="Search_AutoSuggestBox"
-            Margin="8,0"
-            DisplayMemberPath="TypeName"
-            QueryIcon="Find"
-            SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-            TextChanged="AutoSuggestBox_TextChanged" />
-        <Grid Grid.Row="1">
+        <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48" />
                 <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Image x:Name="Image_Type" />
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <TextBlock x:Name="TextBlock_Name_EN" />
-                <TextBlock x:Name="TextBlock_Name_Local" Grid.Row="1" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image x:Name="Image_Type" />
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="TextBlock_Name_EN" />
+                    <TextBlock x:Name="TextBlock_Name_Local" Grid.Row="1" />
+                </Grid>
             </Grid>
+            <AutoSuggestBox
+                Name="Search_AutoSuggestBox"
+                Grid.Column="1"
+                Width="300"
+                Margin="8,0"
+                DisplayMemberPath="TypeName"
+                QueryIcon="Find"
+                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                TextChanged="AutoSuggestBox_TextChanged" />
         </Grid>
+        <RichTextBlock x:Name="RichTextBlock_Desc" Grid.Row="1" />
+        <!--<Pivot Grid.Row="1">
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource TranslationPage_EN}" />
+                </PivotItem.Header>
+                <TextBox
+                    x:Name="TextBox_EN"
+                    Background="Transparent"
+                    IsReadOnly="True"
+                    Style="{ThemeResource AutoSuggestBoxTextBoxStyle}" />
+            </PivotItem>
+            <PivotItem>
+                <PivotItem.Header>
+                    <TextBlock FontSize="14" Text="{StaticResource TranslationPage_Local}" />
+                </PivotItem.Header>
+                <TextBox x:Name="TextBox_Local" IsReadOnly="True" />
+            </PivotItem>
+        </Pivot>-->
     </Grid>
 </Page>

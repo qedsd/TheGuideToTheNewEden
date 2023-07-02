@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -19,10 +20,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
-        public static InvType QueryType(int id)
+        public static InvType QueryType(int id, bool local = true)
         {
             var type = DBService.MainDb.Queryable<InvType>().First(p => p.TypeID == id);
-            if (DBService.NeedLocalization)
+            if (local && DBService.NeedLocalization)
             {
                 LocalDbService.TranInvType(type);
             }
@@ -81,20 +82,25 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<InvType>> SearchTypeAsync(string partName)
+        public static async Task<List<SearchInvType>> SearchTypeAsync(string partName)
         {
             return await Task.Run(() =>
             {
+                List<SearchInvType> searchInvTypes = new List<SearchInvType>();
                 var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
+                if(types.NotNullOrEmpty())
+                {
+                    types.ForEach(p => searchInvTypes.Add(new SearchInvType(p)));
+                }
                 if (DBService.NeedLocalization)
                 {
-                    var types1 = LocalDbService.SearchInvType(partName);
-                    if (types1.NotNullOrEmpty())
+                    var localTypes = LocalDbService.SearchInvType(partName);
+                    if (localTypes.NotNullOrEmpty())
                     {
-                        types.AddRange(types);
+                        localTypes.ForEach(p => searchInvTypes.Add(new SearchInvType(p)));
                     }
                 }
-                return types;
+                return searchInvTypes;
             });
         }
     }
