@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -18,10 +20,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
-        public static MapRegion Query(int id)
+        public static MapRegion Query(int id, bool local = true)
         {
             var type = DBService.MainDb.Queryable<MapRegion>().First(p => p.RegionID == id);
-            if (DBService.NeedLocalization)
+            if (local && DBService.NeedLocalization)
             {
                 LocalDbService.TranMapRegion(type);
             }
@@ -45,6 +47,33 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 await LocalDbService.TranMapRegionsAsync(datas);
             }
             return datas;
+        }
+
+        /// <summary>
+        /// 模糊搜索，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        {
+            return await Task.Run(() =>
+            {
+                List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+                var regions = DBService.MainDb.Queryable<MapRegion>().Where(p => p.RegionName.Contains(partName)).ToList();
+                if (regions.NotNullOrEmpty())
+                {
+                    regions.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                }
+                if (DBService.NeedLocalization)
+                {
+                    var locals = LocalDbService.SearchMapRegion(partName);
+                    if (locals.NotNullOrEmpty())
+                    {
+                        locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    }
+                }
+                return searchs;
+            });
         }
     }
 }

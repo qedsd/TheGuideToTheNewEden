@@ -16,12 +16,14 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Documents;
+using TheGuideToTheNewEden.Core.Extensions;
+using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class TranslationPage : Page
     {
-        private SearchInvType _invType;
+        private TranslationSearchItem _searchItem;
         public TranslationPage()
         {
             this.InitializeComponent();
@@ -29,14 +31,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            _invType = args.SelectedItem as SearchInvType;
-            sender.Text = _invType.TypeName;
+            _searchItem = args.SelectedItem as TranslationSearchItem;
+            sender.Text = _searchItem.Name;
             ShowDetail();
         }
 
         private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (_invType?.TypeName == sender.Text)
+            if (_searchItem?.Name == sender.Text)
             {
                 return;
             }
@@ -46,53 +48,219 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
             else
             {
-                sender.ItemsSource = await Core.Services.DB.InvTypeService.SearchTypeAsync(sender.Text);
+                sender.ItemsSource = await SerachAsync(sender.Text);
             }
         }
         private void ShowDetail()
         {
-            Paragraph paragraph = new Paragraph()
+            RichTextBlock_Desc.Blocks.Clear();
+            Image_Type.Visibility = Visibility.Collapsed;
+            Paragraph enParagraph, localParagraph;
+            string mainName, localName;
+            switch(_searchItem.Type)
             {
-                Margin = new Thickness(0, 8, 0, 8),
-            };
-            Run enRun = new Run();
-            Run localRun = new Run();
-            paragraph.Inlines.Add(enRun);
-            paragraph.Inlines.Add(localRun);
-            Image_Type.Source = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(_invType.TypeID, Converters.GameImageConverter.ImgType.Type, 64)));
-            if(_invType.IsLocal)
+                case TranslationSearchItem.TranslationSearchType.InvType:
+                    {
+                        Image_Type.Source = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(_searchItem.ID, Converters.GameImageConverter.ImgType.Type, 64)));
+                        Image_Type.Visibility = Visibility.Visible;
+                        SearchType(out mainName,out localName, out enParagraph, out localParagraph);
+                    }
+                    break;
+                case TranslationSearchItem.TranslationSearchType.MapRegion:
+                    {
+                        SearchRegion(out mainName, out localName, out enParagraph, out localParagraph);
+                    }
+                    break;
+                case TranslationSearchItem.TranslationSearchType.MapSolarSystem:
+                    {
+                        SearchSystem(out mainName, out localName, out enParagraph, out localParagraph);
+                    }
+                    break;
+                case TranslationSearchItem.TranslationSearchType.StaStation:
+                    {
+                        SearchStation(out mainName, out localName, out enParagraph, out localParagraph);
+                    }
+                    break;
+                default:
+                    {
+                        mainName = null;
+                        localName = null;
+                        enParagraph = null;
+                        localParagraph = null;
+                    }
+                    break;
+            }
+            
+            if (enParagraph != null && localParagraph != null)
             {
-                var mainType = Core.Services.DB.InvTypeService.QueryType(_invType.TypeID, false);
+                localParagraph.Margin = new Thickness(0, 32, 0, 0);
+            }
+            if (enParagraph != null)
+            {
+                RichTextBlock_Desc.Blocks.Add(enParagraph);
+            }
+            if (localParagraph != null)
+            {
+                RichTextBlock_Desc.Blocks.Add(localParagraph);
+            }
+
+            Name_EN.Text = mainName;
+            Name_Local.Text = localName;
+        }
+
+        private void SearchType(out string mainName, out string localName, out Paragraph enParagraph, out Paragraph localParagraph)
+        {
+            if (_searchItem.IsLocal)
+            {
+                var mainType = Core.Services.DB.InvTypeService.QueryType(_searchItem.ID, false);
                 if (mainType != null)
                 {
-                    TextBlock_Name_EN.Text = mainType.TypeName;
-                    enRun.Text = mainType.Description;
+                    mainName = mainType.TypeName;
+                    enParagraph = Helpers.GameTextHelper.ToParagraph(mainType.Description);
                 }
                 else
                 {
-                    TextBlock_Name_EN.Text = string.Empty;
-                    enRun.Text = string.Empty;
+                    mainName = string.Empty;
+                    enParagraph = Helpers.GameTextHelper.ToParagraph(string.Empty);
                 }
-                TextBlock_Name_Local.Text = _invType.TypeName;
-                localRun.Text = _invType.Description;
+                localName = _searchItem.Name;
+                localParagraph = Helpers.GameTextHelper.ToParagraph(_searchItem.Description);
             }
             else
             {
-                var localType = Core.Services.DB.LocalDbService.TranInvType(_invType.TypeID);
+                var localType = Core.Services.DB.LocalDbService.TranInvType(_searchItem.ID);
                 if (localType != null)
                 {
-                    TextBlock_Name_Local.Text = localType.TypeName;
-                    localRun.Text = localType.Description;
+                    localName = localType.TypeName;
+                    localParagraph = Helpers.GameTextHelper.ToParagraph(localType.Description);
                 }
                 else
                 {
-                    TextBlock_Name_Local.Text = string.Empty;
-                    localRun.Text = string.Empty;
+                    localName = string.Empty;
+                    localParagraph = Helpers.GameTextHelper.ToParagraph(string.Empty);
                 }
-                TextBlock_Name_EN.Text = _invType.TypeName;
-                enRun.Text = _invType.Description;
+                mainName = _searchItem.Name;
+                enParagraph = Helpers.GameTextHelper.ToParagraph(_searchItem.Description);
             }
-            RichTextBlock_Desc.Blocks.Add(paragraph);
+        }
+        private void SearchRegion(out string mainName, out string localName, out Paragraph enParagraph, out Paragraph localParagraph)
+        {
+            enParagraph = null;
+            localParagraph = null;
+            if (_searchItem.IsLocal)
+            {
+                var mainType = Core.Services.DB.MapRegionService.Query(_searchItem.ID, false);
+                if (mainType != null)
+                {
+                    mainName = mainType.RegionName;
+                }
+                else
+                {
+                    mainName = string.Empty;
+                }
+                localName = _searchItem.Name;
+            }
+            else
+            {
+                var localType = Core.Services.DB.LocalDbService.TranMapRegion(_searchItem.ID);
+                if (localType != null)
+                {
+                    localName = localType.RegionName;
+                }
+                else
+                {
+                    localName = string.Empty;
+                }
+                mainName = _searchItem.Name;
+            }
+        }
+        private void SearchSystem(out string mainName, out string localName, out Paragraph enParagraph, out Paragraph localParagraph)
+        {
+            enParagraph = null;
+            localParagraph = null;
+            if (_searchItem.IsLocal)
+            {
+                var mainType = Core.Services.DB.MapSolarSystemService.Query(_searchItem.ID, false);
+                if (mainType != null)
+                {
+                    mainName = mainType.SolarSystemName;
+                }
+                else
+                {
+                    mainName = string.Empty;
+                }
+                localName = _searchItem.Name;
+            }
+            else
+            {
+                var localType = Core.Services.DB.LocalDbService.TranMapSolarSystem(_searchItem.ID);
+                if (localType != null)
+                {
+                    localName = localType.SolarSystemName;
+                }
+                else
+                {
+                    localName = string.Empty;
+                }
+                mainName = _searchItem.Name;
+            }
+        }
+        private void SearchStation(out string mainName, out string localName, out Paragraph enParagraph, out Paragraph localParagraph)
+        {
+            enParagraph = null;
+            localParagraph = null;
+            if (_searchItem.IsLocal)
+            {
+                var mainType = Core.Services.DB.StaStationService.Query(_searchItem.ID, false);
+                if (mainType != null)
+                {
+                    mainName = mainType.StationName;
+                }
+                else
+                {
+                    mainName = string.Empty;
+                }
+                localName = _searchItem.Name;
+            }
+            else
+            {
+                var localType = Core.Services.DB.LocalDbService.TranStaStation(_searchItem.ID);
+                if (localType != null)
+                {
+                    localName = localType.StationName;
+                }
+                else
+                {
+                    localName = string.Empty;
+                }
+                mainName = _searchItem.Name;
+            }
+        }
+
+        private async Task<List<TranslationSearchItem>> SerachAsync(string text)
+        {
+            List<TranslationSearchItem> items = new List<TranslationSearchItem>();
+            var types = await Core.Services.DB.InvTypeService.SearchAsync(text);
+            if(types.NotNullOrEmpty())
+            {
+                items.AddRange(types);
+            }
+            var regions = await Core.Services.DB.MapRegionService.SearchAsync(text);
+            if (regions.NotNullOrEmpty())
+            {
+                items.AddRange(regions);
+            }
+            var systems = await Core.Services.DB.MapSolarSystemService.SearchAsync(text);
+            if (systems.NotNullOrEmpty())
+            {
+                items.AddRange(systems);
+            }
+            var stations = await Core.Services.DB.StaStationService.SearchAsync(text);
+            if (stations.NotNullOrEmpty())
+            {
+                items.AddRange(stations);
+            }
+            return items;
         }
     }
 }

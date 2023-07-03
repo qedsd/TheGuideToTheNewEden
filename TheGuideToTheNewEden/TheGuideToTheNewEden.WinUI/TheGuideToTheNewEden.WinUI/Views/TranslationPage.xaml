@@ -8,59 +8,58 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+    <Grid Margin="12">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="48" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Image x:Name="Image_Type" />
-                <Grid Grid.Column="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <TextBlock x:Name="TextBlock_Name_EN" />
-                    <TextBlock x:Name="TextBlock_Name_Local" Grid.Row="1" />
-                </Grid>
+                <StackPanel VerticalAlignment="Center">
+                    <Image x:Name="Image_Type" Width="48" />
+                    <RichTextBlock
+                        Margin="0,8"
+                        HorizontalAlignment="Center"
+                        HorizontalTextAlignment="Center">
+                        <Paragraph>
+                            <Run x:Name="Name_EN" FontSize="26" />
+                        </Paragraph>
+                        <Paragraph>
+                            <Run
+                                x:Name="Name_Local"
+                                FontSize="20"
+                                FontWeight="Light" />
+                        </Paragraph>
+                    </RichTextBlock>
+                </StackPanel>
             </Grid>
-            <AutoSuggestBox
-                Name="Search_AutoSuggestBox"
-                Grid.Column="1"
-                Width="300"
-                Margin="8,0"
-                DisplayMemberPath="TypeName"
-                QueryIcon="Find"
-                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                TextChanged="AutoSuggestBox_TextChanged" />
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.4*" />
+                        <ColumnDefinition Width="0.6*" />
+                    </Grid.ColumnDefinitions>
+                    <AutoSuggestBox
+                        Name="Search_AutoSuggestBox"
+                        Grid.Column="1"
+                        Margin="8,0"
+                        HorizontalAlignment="Stretch"
+                        Background="Transparent"
+                        BorderThickness="0,0,0,1"
+                        DisplayMemberPath="Name"
+                        QueryIcon="Find"
+                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                        TextChanged="AutoSuggestBox_TextChanged" />
+                </Grid>
+                <ScrollViewer Grid.Row="1" Margin="0,8,0,0">
+                    <RichTextBlock x:Name="RichTextBlock_Desc" VerticalAlignment="Center" />
+                </ScrollViewer>
+
+            </Grid>
         </Grid>
-        <RichTextBlock x:Name="RichTextBlock_Desc" Grid.Row="1" />
-        <!--<Pivot Grid.Row="1">
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="14" Text="{StaticResource TranslationPage_EN}" />
-                </PivotItem.Header>
-                <TextBox
-                    x:Name="TextBox_EN"
-                    Background="Transparent"
-                    IsReadOnly="True"
-                    Style="{ThemeResource AutoSuggestBoxTextBoxStyle}" />
-            </PivotItem>
-            <PivotItem>
-                <PivotItem.Header>
-                    <TextBlock FontSize="14" Text="{StaticResource TranslationPage_Local}" />
-                </PivotItem.Header>
-                <TextBox x:Name="TextBox_Local" IsReadOnly="True" />
-            </PivotItem>
-        </Pivot>-->
     </Grid>
 </Page>

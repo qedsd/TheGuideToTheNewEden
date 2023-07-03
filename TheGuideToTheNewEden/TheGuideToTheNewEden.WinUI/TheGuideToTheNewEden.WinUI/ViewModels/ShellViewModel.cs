@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("多开预览","多开时游戏窗口置顶辅助", typeof(GamePreviewMgrPage)),
                 new ToolItem("公开合同","查看星系的公开合同", typeof(ContractPage)),
                 new ToolItem("延迟测试","测试本地与游戏服务器直接延迟", typeof(ServerPingPage)),
-                new ToolItem("物品翻译","查看物品中英互译", typeof(TranslationPage)),
+                new ToolItem("翻译","查看游戏专有名词中英互译", typeof(TranslationPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }

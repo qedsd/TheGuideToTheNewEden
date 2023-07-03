@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -37,10 +39,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
-        public static MapSolarSystem Query(int id)
+        public static MapSolarSystem Query(int id, bool local = true)
         {
             var system = DBService.MainDb.Queryable<MapSolarSystem>().First(p => id == p.SolarSystemID);
-            if (DBService.NeedLocalization)
+            if (local && DBService.NeedLocalization)
             {
                 LocalDbService.TranMapSolarSystem(system);
             }
@@ -64,6 +66,33 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 LocalDbService.TranMapSolarSystems(list);
             }
             return list;
+        }
+
+        /// <summary>
+        /// 模糊搜索，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        {
+            return await Task.Run(() =>
+            {
+                List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+                var systems = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => p.SolarSystemName.Contains(partName)).ToList();
+                if (systems.NotNullOrEmpty())
+                {
+                    systems.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                }
+                if (DBService.NeedLocalization)
+                {
+                    var locals = LocalDbService.SearchMapSolarSystem(partName);
+                    if (locals.NotNullOrEmpty())
+                    {
+                        locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    }
+                }
+                return searchs;
+            });
         }
     }
 }

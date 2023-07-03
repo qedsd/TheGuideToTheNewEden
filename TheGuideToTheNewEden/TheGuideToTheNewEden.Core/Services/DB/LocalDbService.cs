@@ -142,6 +142,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var type = TranMapRegion(item.RegionID);
             item.RegionName = type?.RegionName;
         }
+
+        public static List<MapRegionBase> SearchMapRegion(string partName)
+        {
+            return DBService.LocalDb.Queryable<MapRegionBase>().Where(p => p.RegionName.Contains(partName)).ToList();
+        }
         #endregion
 
         #region solarySystem
@@ -211,6 +216,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var type = await TranMapSolarSystemAsync(item.SolarSystemID);
             item.SolarSystemName = type?.SolarSystemName;
         }
+        public static List<MapSolarSystemBase> SearchMapSolarSystem(string partName)
+        {
+            return DBService.LocalDb.Queryable<MapSolarSystemBase>().Where(p => p.SolarSystemName.Contains(partName)).ToList();
+        }
         #endregion
 
         #region station
@@ -221,6 +230,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task<StaStationBase> TranStaStationAsync(int id)
         {
             return await DBService.LocalDb.Queryable<StaStationBase>().FirstAsync(p => id == p.StationID);
+        }
+        public static StaStationBase TranStaStation(int id)
+        {
+            return DBService.LocalDb.Queryable<StaStationBase>().First(p => id == p.StationID);
         }
 
         public static async Task TranStaStationsAsync(List<StaStation> items)
@@ -246,6 +259,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             var type = await TranStaStationAsync(item.StationID);
             item.StationName = type?.StationName;
+        }
+        public static void TranStaStation(StaStation item)
+        {
+            var type = TranStaStation(item.StationID);
+            item.StationName = type?.StationName;
+        }
+        public static List<StaStationBase> SearchStaStations(string partName)
+        {
+            return DBService.LocalDb.Queryable<StaStationBase>().Where(p => p.StationName.Contains(partName)).ToList();
         }
         #endregion
 

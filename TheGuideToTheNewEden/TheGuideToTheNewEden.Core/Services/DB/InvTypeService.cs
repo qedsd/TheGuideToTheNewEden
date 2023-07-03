@@ -82,22 +82,22 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<SearchInvType>> SearchTypeAsync(string partName)
+        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
         {
             return await Task.Run(() =>
             {
-                List<SearchInvType> searchInvTypes = new List<SearchInvType>();
+                List<TranslationSearchItem> searchInvTypes = new List<TranslationSearchItem>();
                 var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
                 if(types.NotNullOrEmpty())
                 {
-                    types.ForEach(p => searchInvTypes.Add(new SearchInvType(p)));
+                    types.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
                 }
                 if (DBService.NeedLocalization)
                 {
                     var localTypes = LocalDbService.SearchInvType(partName);
                     if (localTypes.NotNullOrEmpty())
                     {
-                        localTypes.ForEach(p => searchInvTypes.Add(new SearchInvType(p)));
+                        localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
                     }
                 }
                 return searchInvTypes;
