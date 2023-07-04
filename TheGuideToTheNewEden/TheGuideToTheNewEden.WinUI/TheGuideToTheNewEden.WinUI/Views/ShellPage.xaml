@@ -13,84 +13,86 @@
     <Page.DataContext>
         <viewmodels:ShellViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="{StaticResource MediumLeftRightMargin}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0.4*" />
-            <RowDefinition Height="0.6*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Border CornerRadius="8">
-            <Border.Background>
-                <ImageBrush
-                    x:Name="BannerImage"
-                    ImageFailed="ImageBrush_ImageFailed"
-                    Opacity="1"
-                    Stretch="UniformToFill" />
-            </Border.Background>
-            <Grid>
-                <StackPanel
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+    <Frame x:Name="ContentFrame">
+        <Grid Margin="{StaticResource MediumLeftRightMargin}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.4*" />
+                <RowDefinition Height="0.6*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border CornerRadius="8">
+                <Border.Background>
+                    <ImageBrush
+                        x:Name="BannerImage"
+                        ImageFailed="ImageBrush_ImageFailed"
+                        Opacity="1"
+                        Stretch="UniformToFill" />
+                </Border.Background>
+                <Grid>
+                    <StackPanel
+                        Margin="0,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                        <TextBlock
+                            x:Uid="AppDisplayNameTextBlock"
+                            FontSize="32"
+                            Foreground="White" />
+                    </StackPanel>
                     <TextBlock
-                        x:Uid="AppDisplayNameTextBlock"
-                        FontSize="32"
-                        Foreground="White" />
-                </StackPanel>
-                <TextBlock
-                    Margin="0,0,10,4"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    FontSize="12"
-                    Foreground="Black"
-                    Text="{x:Bind VM.VersionDescription}" />
+                        Margin="0,0,10,4"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        FontSize="12"
+                        Foreground="Black"
+                        Text="{x:Bind VM.VersionDescription}" />
+                </Grid>
+            </Border>
+            <GridView
+                x:Name="ItemsGridView"
+                Grid.Row="1"
+                Margin="0,16,0,0"
+                IsItemClickEnabled="True"
+                ItemClick="GridView_ItemClick"
+                ItemsSource="{x:Bind VM.ToolItems}"
+                SelectionMode="None">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="4" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ToolItem">
+                        <Grid
+                            Width="300"
+                            Height="70"
+                            Padding="10,4"
+                            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                            CornerRadius="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Text="{x:Bind Title}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Margin="0,0,0,2"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="Thin"
+                                Text="{x:Bind Description}"
+                                Visibility="{x:Bind Description, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+            <Grid Grid.Row="2">
+                <!--  服务器状态  -->
             </Grid>
-        </Border>
-        <GridView
-            x:Name="ItemsGridView"
-            Grid.Row="1"
-            Margin="0,16,0,0"
-            IsItemClickEnabled="True"
-            ItemClick="GridView_ItemClick"
-            ItemsSource="{x:Bind VM.ToolItems}"
-            SelectionMode="None">
-            <GridView.ItemContainerStyle>
-                <Style TargetType="GridViewItem">
-                    <Setter Property="Margin" Value="4" />
-                </Style>
-            </GridView.ItemContainerStyle>
-            <GridView.ItemTemplate>
-                <DataTemplate x:DataType="models:ToolItem">
-                    <Grid
-                        Width="300"
-                        Height="70"
-                        Padding="10,4"
-                        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                        CornerRadius="4">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            FontSize="16"
-                            Text="{x:Bind Title}" />
-                        <TextBlock
-                            Grid.Row="1"
-                            Margin="0,0,0,2"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            FontSize="12"
-                            FontWeight="Thin"
-                            Text="{x:Bind Description}"
-                            Visibility="{x:Bind Description, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
-                    </Grid>
-                </DataTemplate>
-            </GridView.ItemTemplate>
-        </GridView>
-        <Grid Grid.Row="2">
-            <!--  服务器状态  -->
         </Grid>
-    </Grid>
+    </Frame>
 </Page>

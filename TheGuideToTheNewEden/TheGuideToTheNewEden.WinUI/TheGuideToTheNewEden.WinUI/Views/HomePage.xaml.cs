@@ -1,76 +1,68 @@
-Ôªøusing Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
-using TheGuideToTheNewEden.WinUI.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class ShellPage : Page
+    public sealed partial class HomePage : Page
     {
-        private HomePage _homePage;
         private BaseWindow _window;
-        public ShellPage(HomePage homePage)
+        public HomePage()
         {
-            _homePage = homePage;
             this.InitializeComponent();
-            Loaded += ShellPage_Loaded;
-            BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
+            Loaded += HomePage_Loaded;
         }
-
-        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+        private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
+            TabView_AddTabButtonClick(TabView,null);
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             CheckUpdate();
         }
+        #region ∏¸–¬
+        private string GetVersionDescription()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
         private async void CheckUpdate()
         {
-            //List<string> args2 = new List<string>()
-            //                {
-            //                    "V1",
-            //                    "Test",
-            //                    "https://github.com/qedsd/TheGuideToTheNewEden/releases/download/v2.1.0.0/TheGuideToTheNewEden_v2.1.0.zip"
-            //                };
-            //Process pro = Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Updater","TheGuideToTheNewEden.Updater.exe"), args2);
-
-            //return;
             TryMoveUpdater();
             try
             {
-                //‰ºöÂõ†‰∏∫GithubÁöÑËÆøÈóÆÊ¨°Êï∞ÈôêÂà∂ÂØºËá¥Â§±Ë¥•
-                var release = await System.Threading.Tasks.Task.Run(()=>Core.Helpers.GithubHelper.GetLastReleaseInfo());
+                //ª·“ÚŒ™Githubµƒ∑√Œ ¥Œ ˝œﬁ÷∆µº÷¬ ß∞‹
+                var release = await System.Threading.Tasks.Task.Run(() => Core.Helpers.GithubHelper.GetLastReleaseInfo());
                 if (release != null)
                 {
                     var tagName = release.TagName;
                     if (!string.IsNullOrEmpty(tagName))
                     {
                         var lastVersion = tagName.Replace("v", "", StringComparison.OrdinalIgnoreCase);
-                        var curVersion = VM.VersionDescription.Replace("v", "", StringComparison.OrdinalIgnoreCase);
+                        var curVersion = GetVersionDescription().Replace("v", "", StringComparison.OrdinalIgnoreCase);
                         if (lastVersion != curVersion)
                         {
                             ContentDialog contentDialog = new ContentDialog();
-                            contentDialog.Title = "ÊúâÂèØÁî®Êõ¥Êñ∞";
+                            contentDialog.Title = "”–ø…”√∏¸–¬";
                             contentDialog.Content = new TextBlock()
                             {
                                 Text = release.Body,
                                 TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
                             };
                             contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
-                            contentDialog.PrimaryButtonText = "Êõ¥Êñ∞";
-                            contentDialog.SecondaryButtonText = "ÂèñÊ∂à";
+                            contentDialog.PrimaryButtonText = "∏¸–¬";
+                            contentDialog.SecondaryButtonText = "»°œ˚";
                             if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
                             {
                                 List<string> args = new List<string>()
@@ -79,32 +71,32 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                     release.Body,
                                     release.Assets.FirstOrDefault()?.BrowserDownloadUrl
                                 };
-                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater","TheGuideToTheNewEden.Updater.exe"), args);
+                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater", "TheGuideToTheNewEden.Updater.exe"), args);
                             }
                         }
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Core.Log.Error(ex.Message);
-                (WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError("Ëé∑ÂèñÊõ¥Êñ∞Â§±Ë¥•", true);
+                (WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError("ªÒ»°∏¸–¬ ß∞‹", true);
             }
         }
         private void TryMoveUpdater()
         {
             try
             {
-                //Êõ¥Êñ∞Âô®ÈªòËÆ§ÊîæÁΩÆ‰∫éÂêåÁõÆÂΩï‰∏ãÔºåÈúÄË¶ÅÁßªÂä®Âà∞UpdaterÊñá‰ª∂Â§π‰∏ã
-                var updaterFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory).Where(p=>p.Contains(".Updater")).ToList();
-                if(updaterFiles.Any())
+                //∏¸–¬∆˜ƒ¨»œ∑≈÷√”⁄Õ¨ƒø¬ºœ¬£¨–Ë“™“∆∂ØµΩUpdaterŒƒº˛º–œ¬
+                var updaterFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory).Where(p => p.Contains(".Updater")).ToList();
+                if (updaterFiles.Any())
                 {
                     string updaterFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater");
-                    if(!Directory.Exists(updaterFolder))
+                    if (!Directory.Exists(updaterFolder))
                     {
                         Directory.CreateDirectory(updaterFolder);
                     }
-                    foreach(var file in  updaterFiles)
+                    foreach (var file in updaterFiles)
                     {
                         System.IO.File.Copy(file, System.IO.Path.Combine(updaterFolder, System.IO.Path.GetFileName(file)), true);
                         System.IO.File.Delete(file);
@@ -116,25 +108,28 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Core.Log.Error(ex.Message);
             }
         }
-        private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
+        #endregion
 
+        private void TabView_AddTabButtonClick(TabView sender, object args)
+        {
+            TabViewItem item = new TabViewItem()
+            {
+                Header = Helpers.ResourcesHelper.GetString("HomePage_Home"),
+                IsSelected = true,
+            };
+            ShellPage content = new ShellPage(this);
+            item.Content = content;
+            sender.TabItems.Add(item);
         }
 
-        private void GridView_ItemClick(object sender, ItemClickEventArgs e)
+        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
         {
-            var item = e.ClickedItem as ToolItem;
-            if (item != null && item.PageType != null)
-            {
-                if(ContentFrame.Navigate(item.PageType))
-                {
-                    _homePage.SetNavigateTo(item.Title);
-                }
-                else
-                {
-                    _window?.ShowError("ÂØºËà™È°µÈù¢Â§±Ë¥•");
-                }
-            }
+            sender.TabItems.Remove(args.Item);
+        }
+
+        public void SetNavigateTo(string title)
+        {
+            (TabView.SelectedItem as TabViewItem).Header = title;
         }
     }
 }

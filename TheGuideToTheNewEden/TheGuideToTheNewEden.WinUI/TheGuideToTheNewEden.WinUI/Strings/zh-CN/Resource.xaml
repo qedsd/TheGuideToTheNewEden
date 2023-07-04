@@ -249,4 +249,6 @@
 
     <x:String x:Key="TranslationPage_EN">英文</x:String>
     <x:String x:Key="TranslationPage_Local">本地</x:String>
+
+    <x:String x:Key="HomePage_Home">主页</x:String>
 </ResourceDictionary>

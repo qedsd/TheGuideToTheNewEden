@@ -108,6 +108,10 @@ namespace TheGuideToTheNewEden.WinUI
         {
             AppTitleLeftBorder.Width = w;
         }
+        public void SetAppTitleBarLeft(int w)
+        {
+            AppTitleBar.Margin = new Thickness(w, AppTitleBar.Margin.Top, AppTitleBar.Margin.Right, AppTitleBar.Margin.Bottom);
+        }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
             switch (theme)

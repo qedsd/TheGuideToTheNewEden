@@ -64,7 +64,7 @@ namespace TheGuideToTheNewEden.WinUI
             Services.ActivationService.Init();
             m_window = new BaseWindow()
             {
-                MainContent = new Views.ShellPage()
+                MainContent = new Views.HomePage()
             };
             WindowHelper.SetMainWindow(m_window);
             m_window.Activate();
