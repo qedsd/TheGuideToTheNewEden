@@ -236,10 +236,16 @@
     <x:String x:Key="SettingPage_Market">市场</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
+    <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
+    <x:String x:Key="ServerPingPage_Host">域名/IP</x:String>
+    <x:String x:Key="ServerPingPage_Port">端口</x:String>
     <x:String x:Key="ServerPingPage_Times">次数</x:String>
     <x:String x:Key="ServerPingPage_Span">间隔(ms)</x:String>
     <x:String x:Key="ServerPingPage_Start">开始</x:String>
     <x:String x:Key="ServerPingPage_Des">利用TCP握手实现的延迟测试，可以获取到真实的延迟</x:String>
+    <x:String x:Key="ServerPingPage_RTTAverage">平均延迟</x:String>
+    <x:String x:Key="ServerPingPage_RTTFluctuation">延迟波动</x:String>
+    <x:String x:Key="ServerPingPage_PacketLossRate">丢包率</x:String>
 
     <x:String x:Key="TranslationPage_EN">英文</x:String>
     <x:String x:Key="TranslationPage_Local">本地</x:String>

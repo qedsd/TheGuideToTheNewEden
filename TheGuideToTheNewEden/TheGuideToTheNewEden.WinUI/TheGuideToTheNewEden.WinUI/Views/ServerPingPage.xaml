@@ -2,86 +2,161 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.ServerPingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chart="using:Syncfusion.UI.Xaml.Charts"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     mc:Ignorable="d">
-
     <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid Margin="10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel>
                 <ComboBox
                     x:Name="ComboBox_Host"
-                    MinWidth="200"
-                    Margin="10,0"
+                    Margin="0,10"
+                    HorizontalAlignment="Stretch"
                     BorderThickness="0,0,0,1"
-                    IsEditable="True"
-                    SelectedIndex="0"
-                    ToolTipService.ToolTip="Host">
+                    Header="{StaticResource ServerPingPage_Host}"
+                    IsEditable="True">
                     <ComboBoxItem Content="tranquility.servers.eveonline.com" ToolTipService.ToolTip="{StaticResource ServerPingPage_TranquilityHost}" />
+                    <ComboBoxItem Content="42.186.79.5" ToolTipService.ToolTip="{StaticResource ServerPingPage_SerenityHost}" />
                 </ComboBox>
-                <TextBlock VerticalAlignment="Center" Text=":" />
                 <NumberBox
                     x:Name="NumberBox_Port"
-                    MinWidth="100"
-                    Margin="10,0"
+                    Margin="0,10"
                     BorderThickness="0,0,0,1"
+                    Header="{StaticResource ServerPingPage_Port}"
                     Minimum="1"
-                    ToolTipService.ToolTip="Port"
                     Value="26000" />
                 <NumberBox
                     x:Name="NumberBox_Times"
-                    Margin="10,0"
+                    Margin="0,10"
                     BorderThickness="0,0,0,1"
+                    Header="{StaticResource ServerPingPage_Times}"
                     Minimum="1"
-                    ToolTipService.ToolTip="{StaticResource ServerPingPage_Times}"
                     Value="8" />
                 <NumberBox
                     x:Name="NumberBox_Span"
-                    Margin="10,0"
+                    Margin="0,10"
                     BorderThickness="0,0,0,1"
+                    Header="{StaticResource ServerPingPage_Span}"
                     Minimum="100"
-                    ToolTipService.ToolTip="{StaticResource ServerPingPage_Span}"
                     Value="1500" />
-                <Rectangle
-                    Width="1"
-                    Margin="10,0"
-                    Fill="{ThemeResource SystemAccentColor}" />
-                <Button
-                    x:Name="Button_Start"
-                    Width="100"
-                    Click="Button_Start_Click"
-                    Content="{StaticResource ServerPingPage_Start}" />
             </StackPanel>
-
             <Button
-                Grid.Column="1"
-                Background="Transparent"
-                BorderThickness="0"
-                Visibility="Visible">
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" />
-                <Button.Flyout>
-                    <Flyout Placement="Bottom">
-                        <TextBlock Text="{StaticResource ServerPingPage_Des}" />
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
+                x:Name="Button_Start"
+                Grid.Row="1"
+                Width="100"
+                Margin="0,0,0,20"
+                HorizontalAlignment="Center"
+                Click="Button_Start_Click"
+                Content="{StaticResource ServerPingPage_Start}" />
         </Grid>
-        <TextBlock
-            Name="TextBlock_Result"
-            Grid.Row="1"
-            Margin="20"
-            FontSize="16"
-            LineHeight="40"
-            TextWrapping="Wrap" />
+        <Button
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            BorderThickness="0"
+            Visibility="Visible">
+            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11B;" />
+            <Button.Flyout>
+                <Flyout Placement="Bottom">
+                    <TextBlock Text="{StaticResource ServerPingPage_Des}" />
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+        <Grid Grid.Column="1" Margin="10,20,10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <chart:SfCartesianChart Grid.Row="0">
+                <chart:SfCartesianChart.XAxes>
+                    <chart:NumericalAxis
+                        Interval="1"
+                        PlotOffsetEnd="15"
+                        PlotOffsetStart="15"
+                        ShowMajorGridLines="False"
+                        ShowTrackballLabel="True" />
+                </chart:SfCartesianChart.XAxes>
+                <chart:SfCartesianChart.YAxes>
+                    <chart:NumericalAxis ShowTrackballLabel="True">
+                        <chart:NumericalAxis.LabelStyle>
+                            <chart:LabelStyle LabelFormat="n2" />
+                        </chart:NumericalAxis.LabelStyle>
+                    </chart:NumericalAxis>
+                </chart:SfCartesianChart.YAxes>
+
+                <chart:LineSeries
+                    x:Name="LineSeries1"
+                    EnableAnimation="True"
+                    EnableTooltip="False"
+                    XBindingPath="Id"
+                    YBindingPath="Ms" />
+                <chart:SfCartesianChart.TrackballBehavior>
+                    <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                </chart:SfCartesianChart.TrackballBehavior>
+            </chart:SfCartesianChart>
+            <Grid Grid.Row="1" Margin="0,20,0,0">
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                    <Style x:Key="Grid1" TargetType="Grid">
+                        <Setter Property="Background" Value="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}" />
+                        <Setter Property="Height" Value="60" />
+                        <Setter Property="Margin" Value="8,4" />
+                    </Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Orientation" Value="Horizontal" />
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid Style="{StaticResource Grid1}">
+                    <StackPanel>
+                        <TextBlock Text="{StaticResource ServerPingPage_RTTAverage}" />
+                        <TextBlock
+                            x:Name="TextBlock_RTTAverage"
+                            Margin="4,0"
+                            Text="--" />
+                        <TextBlock Text="ms" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Column="1" Style="{StaticResource Grid1}">
+                    <StackPanel>
+                        <TextBlock Text="{StaticResource ServerPingPage_RTTFluctuation}" />
+                        <TextBlock
+                            x:Name="TextBlock_RTTFluctuation"
+                            Margin="4,0"
+                            Text="--" />
+                        <TextBlock Text="%" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Column="2" Style="{StaticResource Grid1}">
+                    <StackPanel>
+                        <TextBlock Text="{StaticResource ServerPingPage_PacketLossRate}" />
+                        <TextBlock
+                            x:Name="TextBlock_PacketLossRate"
+                            Margin="4,0"
+                            Text="--" />
+                        <TextBlock Text="%" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>
