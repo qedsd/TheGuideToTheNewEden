@@ -251,4 +251,12 @@
     <x:String x:Key="TranslationPage_Local">本地</x:String>
 
     <x:String x:Key="HomePage_Home">主页</x:String>
+
+    <x:String x:Key="DEDPage_Drone">无人机</x:String>
+    <x:String x:Key="DEDPage_Serpentis">天蛇</x:String>
+    <x:String x:Key="DEDPage_BloodRaider">血袭者</x:String>
+    <x:String x:Key="DEDPage_Sansha">萨沙</x:String>
+    <x:String x:Key="DEDPage_Angel">天使</x:String>
+    <x:String x:Key="DEDPage_Guristas">古斯塔斯</x:String>
+    <x:String x:Key="DEDPage_UnkownLevel">未定级</x:String>
 </ResourceDictionary>

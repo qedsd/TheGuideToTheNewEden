@@ -33,6 +33,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("公开合同","查看星系的公开合同", typeof(ContractPage)),
                 new ToolItem("延迟测试","测试本地与游戏服务器直接延迟", typeof(ServerPingPage)),
                 new ToolItem("翻译","查看游戏专有名词中英互译", typeof(TranslationPage)),
+                new ToolItem("死亡远征","死亡远征攻略", typeof(DEDPage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }

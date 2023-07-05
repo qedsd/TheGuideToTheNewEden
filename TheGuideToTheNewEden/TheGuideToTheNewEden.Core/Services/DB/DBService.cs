@@ -16,6 +16,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// 本地化数据库
         /// </summary>
         internal static SqlSugarScope LocalDb;
+        /// <summary>
+        /// DED数据库
+        /// </summary>
+        internal static SqlSugarScope DEDDb;
 
         internal static bool ValidFile(string path)
         {
@@ -103,7 +107,42 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 return false;
             }
         }
-
+        internal static bool InitDEDDb(string path)
+        {
+            if (!ValidFile(path))
+            {
+                return false;
+            }
+            try
+            {
+                DEDDb = new SqlSugarScope(new ConnectionConfig()
+                {
+                    ConnectionString = $"DataSource={path}",
+                    DbType = DbType.Sqlite,
+                    IsAutoCloseConnection = true,
+                    ConfigId = Guid.NewGuid(),
+                    ConfigureExternalServices = new ConfigureExternalServices
+                    {
+                        EntityService = (c, p) =>
+                        {
+                            if (c.PropertyType.IsGenericType && c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                            {
+                                p.IsNullable = true;
+                            }
+                        }
+                    },
+                    MoreSettings = new ConnMoreSettings()
+                    {
+                        IsAutoRemoveDataCache = true
+                    }
+                });
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         internal static bool NeedLocalization
         {
             get => LocalDb != null;

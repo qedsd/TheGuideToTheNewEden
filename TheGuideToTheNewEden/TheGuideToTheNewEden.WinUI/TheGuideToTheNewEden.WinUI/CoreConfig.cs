@@ -24,6 +24,7 @@ namespace TheGuideToTheNewEden.WinUI
         #region 文件路径
         public static string MainDbPath { set => Core.Config.DBPath = value; }
         public static string LocalDbPath { set => Core.Config.LocalDBPath = value; }
+        public static string DEDDbPath { set => Core.Config.DEDDBPath = value; }
         public static string SolarSystemMapPath { set=> Core.Config.SolarSystemMapPath = value; }
         #endregion
 
