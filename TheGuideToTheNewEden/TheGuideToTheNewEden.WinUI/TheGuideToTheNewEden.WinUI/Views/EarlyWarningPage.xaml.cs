@@ -26,8 +26,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public EarlyWarningPage()
         {
             this.InitializeComponent();
-            Loaded += EarlyWarningPage_Loaded;
             Loaded += EarlyWarningPage_Loaded2;
+            Loaded += EarlyWarningPage_Loaded;
             if (ViewModels.EarlyWarningItemViewModel.RunningCharacters == null)
             {
                 ViewModels.EarlyWarningItemViewModel.RunningCharacters = new HashSet<string>();

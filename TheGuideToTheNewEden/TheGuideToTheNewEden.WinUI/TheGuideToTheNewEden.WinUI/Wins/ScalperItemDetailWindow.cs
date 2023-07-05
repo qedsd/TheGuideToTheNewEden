@@ -15,6 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public ScalperItemDetailWindow()
         {
             HideAppDisplayName();
+            Title = Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail");
             SetHeadText(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
             _mainContent = new Views.Business.ScalperItemDetailPage();
             MainContent = _mainContent;

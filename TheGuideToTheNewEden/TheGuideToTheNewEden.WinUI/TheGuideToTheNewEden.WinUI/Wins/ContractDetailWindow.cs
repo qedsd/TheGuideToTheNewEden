@@ -21,7 +21,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             HideAppDisplayName();
             SetSmallTitleBar();
-            SetHeadText($"{Helpers.ResourcesHelper.GetString("ContractPage_Detail")}-{contractInfo.ContractId}");
+            Title = $"{Helpers.ResourcesHelper.GetString("ContractPage_Detail")}-{contractInfo.ContractId}";
+            SetHeadText(Title);
             var appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));
             MainContent = new Views.ContractDetailPage(esiClient, contractInfo, type);

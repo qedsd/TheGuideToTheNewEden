@@ -36,6 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _setting = setting;
             SetSmallTitleBar();
             HideAppDisplayName();
+            Title = setting.Name;
             SetHeadText(setting.Name);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             _presenter.IsAlwaysOnTop = true;
