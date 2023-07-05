@@ -34,8 +34,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             HotkeyService.Start();
             this.InitializeComponent();
-            Loaded += GamePreviewMgrPage_Loaded;
             Loaded += GamePreviewMgrPage_Loaded2;
+            Loaded += GamePreviewMgrPage_Loaded;
             //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 

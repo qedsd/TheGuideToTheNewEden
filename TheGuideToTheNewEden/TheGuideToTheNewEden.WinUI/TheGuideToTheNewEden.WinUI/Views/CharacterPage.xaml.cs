@@ -27,8 +27,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public CharacterPage()
         {
             this.InitializeComponent();
-            Loaded += CharacterPage_Loaded;
             Loaded += CharacterPage_Loaded2;
+            Loaded += CharacterPage_Loaded;
         }
         private void CharacterPage_Loaded2(object sender, RoutedEventArgs e)
         {
