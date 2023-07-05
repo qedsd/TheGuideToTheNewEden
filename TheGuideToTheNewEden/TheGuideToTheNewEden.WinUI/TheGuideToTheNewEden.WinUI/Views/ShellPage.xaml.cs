@@ -19,7 +19,7 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class ShellPage : Page
+    public sealed partial class ShellPage : Page, IPage
     {
         private HomePage _homePage;
         private BaseWindow _window;
@@ -54,6 +54,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     _window?.ShowError("导航页面失败");
                 }
             }
+        }
+
+        public void Close()
+        {
+            (ContentFrame.Content as IPage)?.Close();
         }
     }
 }

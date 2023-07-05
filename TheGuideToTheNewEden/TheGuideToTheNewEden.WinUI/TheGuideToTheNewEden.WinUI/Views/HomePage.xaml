@@ -14,11 +14,12 @@
         VerticalAlignment="Stretch"
         AddTabButtonClick="TabView_AddTabButtonClick"
         Background="Transparent"
+        CloseButtonOverlayMode="OnPointerOver"
         TabCloseRequested="TabView_TabCloseRequested">
         <TabView.TabStripHeader>
             <Grid
                 x:Name="ShellTitleBarInset"
-                Width="30"
+                Width="28"
                 Background="Transparent" />
         </TabView.TabStripHeader>
         <TabView.TabStripFooter>

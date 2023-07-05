@@ -28,13 +28,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.InitializeComponent();
             Loaded += CharacterPage_Loaded;
+            Loaded += CharacterPage_Loaded2;
         }
-
-        private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
+        private void CharacterPage_Loaded2(object sender, RoutedEventArgs e)
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
+        private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
+        {
             VM.OnSelectedCharacter += VM_OnSelectedCharacter;
             VM.Init();
+            Loaded -= CharacterPage_Loaded;
         }
 
         private void VM_OnSelectedCharacter()

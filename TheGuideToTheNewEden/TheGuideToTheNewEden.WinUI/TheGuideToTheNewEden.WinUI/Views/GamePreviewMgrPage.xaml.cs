@@ -26,7 +26,7 @@ using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class GamePreviewMgrPage : Page
+    public sealed partial class GamePreviewMgrPage : Page,IPage
     {
         private BaseWindow Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
@@ -35,6 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             HotkeyService.Start();
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded;
+            Loaded += GamePreviewMgrPage_Loaded2;
             //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 
@@ -53,14 +54,22 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
 
         private IntPtr windowHandle = IntPtr.Zero;
-        private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
+        private void GamePreviewMgrPage_Loaded2(object sender, RoutedEventArgs e)
         {
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             (DataContext as GamePreviewMgrViewModel).Window = Window;
-            ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
+            if(AppWindow != null)
+            {
+                AppWindow.Closing -= AppWindow_Closing;
+            }
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
             AppWindow.Closing += AppWindow_Closing;
+        }
+        private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= GamePreviewMgrPage_Loaded;
+            ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
         }
 
@@ -208,6 +217,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 VM.Processes.Remove(process);
                 VM.Processes.Insert(index, process);
             }
+        }
+
+        public void Close()
+        {
+            VM.Dispose();
+            HotkeyService.Stop();
         }
     }
 }

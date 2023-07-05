@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded -= HomePage_Loaded;
         }
         #region 更新
-        private string GetVersionDescription()
+        private static string GetVersionDescription()
         {
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
@@ -85,7 +85,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 (WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError("获取更新失败", true);
             }
         }
-        private void TryMoveUpdater()
+        private static void TryMoveUpdater()
         {
             try
             {
@@ -126,7 +126,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
         {
+            ((args.Item as TabViewItem).Content as IPage)?.Close();
             sender.TabItems.Remove(args.Item);
+            if(!sender.TabItems.Any())
+            {
+                TabView_AddTabButtonClick(sender, null);
+            }
         }
 
         public void SetNavigateTo(string title)

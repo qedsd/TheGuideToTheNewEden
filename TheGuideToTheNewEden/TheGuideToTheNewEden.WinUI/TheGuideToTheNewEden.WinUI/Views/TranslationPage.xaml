@@ -55,7 +55,7 @@
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         TextChanged="AutoSuggestBox_TextChanged" />
                 </Grid>
-                <ScrollViewer Grid.Row="1" Margin="0,8,0,0">
+                <ScrollViewer Grid.Row="1" Margin="0,8,0,40">
                     <RichTextBlock x:Name="RichTextBlock_Desc" VerticalAlignment="Center" />
                 </ScrollViewer>
 

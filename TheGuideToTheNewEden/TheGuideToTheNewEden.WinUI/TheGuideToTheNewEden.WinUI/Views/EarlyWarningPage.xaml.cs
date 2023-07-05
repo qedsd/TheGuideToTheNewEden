@@ -20,15 +20,15 @@ using Windows.UI;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class EarlyWarningPage : Page
+    public sealed partial class EarlyWarningPage : Page, IPage
     {
         private BaseWindow _window;
         public EarlyWarningPage()
         {
             this.InitializeComponent();
-            this.Unloaded += EarlyWarningPage_Unloaded;
             Loaded += EarlyWarningPage_Loaded;
-            if(ViewModels.EarlyWarningItemViewModel.RunningCharacters == null)
+            Loaded += EarlyWarningPage_Loaded2;
+            if (ViewModels.EarlyWarningItemViewModel.RunningCharacters == null)
             {
                 ViewModels.EarlyWarningItemViewModel.RunningCharacters = new HashSet<string>();
             }
@@ -38,16 +38,19 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            TabView_AddTabButtonClick(TabView, null);
-        }
-
-        private void EarlyWarningPage_Unloaded(object sender, RoutedEventArgs e)
+        public void Close()
         {
             MapSolarSystemNameService.ClearCache();
             WarningService.Dispose();
+        }
+        private void EarlyWarningPage_Loaded2(object sender, RoutedEventArgs e)
+        {
+            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
+        private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= EarlyWarningPage_Loaded;
+            TabView_AddTabButtonClick(TabView, null);
         }
 
         private void TabView_AddTabButtonClick(TabView sender, object args)

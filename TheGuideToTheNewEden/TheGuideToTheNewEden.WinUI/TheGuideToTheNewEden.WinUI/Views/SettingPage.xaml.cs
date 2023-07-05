@@ -15,11 +15,16 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class SettingPage : Page
+    public sealed partial class SettingPage : Page, IPage
     {
         public SettingPage()
         {
             this.InitializeComponent();
+        }
+
+        public void Close()
+        {
+            
         }
     }
 }

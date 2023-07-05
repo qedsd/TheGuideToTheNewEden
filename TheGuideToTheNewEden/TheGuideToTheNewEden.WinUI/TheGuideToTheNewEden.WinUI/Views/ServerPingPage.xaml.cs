@@ -24,7 +24,7 @@ using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class ServerPingPage : Page
+    public sealed partial class ServerPingPage : Page,IPage
     {
         private BaseWindow _window;
         private ObservableCollection<PingStatus> _pings = new ObservableCollection<PingStatus>();
@@ -39,12 +39,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             NumberBox_Span.Value = _pingConfig.Span;
             LineSeries1.ItemsSource = _pings;
             Loaded += ServerPingPage_Loaded;
-            Unloaded += ServerPingPage_Unloaded;
-        }
-
-        private void ServerPingPage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Stop();
         }
 
         private void ServerPingPage_Loaded(object sender, RoutedEventArgs e)
@@ -123,7 +117,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 }
             }
             Stop();
-            _window?.ShowSuccess("已完成");
+            _window?.ShowSuccess("已完成延迟测试");
+        }
+
+        public void Close()
+        {
+            Stop();
         }
 
         internal class PingStatus

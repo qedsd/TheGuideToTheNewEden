@@ -21,11 +21,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.InitializeComponent();
             Loaded += ContractPage_Loaded;
+            Loaded += ContractPage_Loaded2;
         }
-
-        private void ContractPage_Loaded(object sender, RoutedEventArgs e)
+        private void ContractPage_Loaded2(object sender, RoutedEventArgs e)
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+        }
+        private void ContractPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= ContractPage_Loaded;
             VM.Init();
         }
     }

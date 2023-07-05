@@ -36,6 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void EarlyWarningItemPage_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= EarlyWarningItemPage_Loaded;
             VM.OnSelectedCharacterChanged += EarlyWarningItemPage_OnSelectedCharacterChanged;
             ChatContents.Blocks.Add(new Paragraph());
             VM.ChatContents.CollectionChanged += ChatContents_CollectionChanged;

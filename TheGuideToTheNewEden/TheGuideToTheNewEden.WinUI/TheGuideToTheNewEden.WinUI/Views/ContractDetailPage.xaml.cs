@@ -41,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ContractDetailPage_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= ContractDetailPage_Loaded;
             LoadDefault();
             switch(_contractInfo.Type)
             {
