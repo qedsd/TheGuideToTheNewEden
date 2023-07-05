@@ -28,7 +28,10 @@
                 Grid.Column="0"
                 Width="10" />
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <StackPanel
+                x:Name="AppTitleContentArea"
+                Grid.Column="1"
+                Orientation="Horizontal">
                 <Grid
                     Grid.Column="1"
                     Height="16"
@@ -72,7 +75,7 @@
                 Height="32"
                 VerticalAlignment="Top" />
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid x:Name="ContentArea" Grid.Row="1">
             <Frame x:Name="ContentFrame" Background="Transparent" />
             <InfoBar
                 x:Name="InfoBar"

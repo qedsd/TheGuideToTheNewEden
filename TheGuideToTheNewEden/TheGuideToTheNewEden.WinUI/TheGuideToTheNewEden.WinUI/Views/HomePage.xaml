@@ -10,8 +10,22 @@
 
     <TabView
         x:Name="TabView"
+        Padding="0,0,0,0"
         VerticalAlignment="Stretch"
         AddTabButtonClick="TabView_AddTabButtonClick"
         Background="Transparent"
-        TabCloseRequested="TabView_TabCloseRequested" />
+        TabCloseRequested="TabView_TabCloseRequested">
+        <TabView.TabStripHeader>
+            <Grid
+                x:Name="ShellTitleBarInset"
+                Width="30"
+                Background="Transparent" />
+        </TabView.TabStripHeader>
+        <TabView.TabStripFooter>
+            <Grid
+                x:Name="CustomDragRegion"
+                MinWidth="150"
+                Background="Transparent" />
+        </TabView.TabStripFooter>
+    </TabView>
 </Page>

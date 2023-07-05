@@ -28,9 +28,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         private void HomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            TabView_AddTabButtonClick(TabView,null);
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            TabView_AddTabButtonClick(TabView, null);
             CheckUpdate();
+            _window.SetTitleBar(CustomDragRegion);
+            Loaded -= HomePage_Loaded;
         }
         #region ¸üÐÂ
         private string GetVersionDescription()

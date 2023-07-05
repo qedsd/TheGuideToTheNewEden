@@ -66,6 +66,7 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 MainContent = new Views.HomePage()
             };
+            (m_window as BaseWindow).SetTavViewHomeMode();
             WindowHelper.SetMainWindow(m_window);
             m_window.Activate();
         }

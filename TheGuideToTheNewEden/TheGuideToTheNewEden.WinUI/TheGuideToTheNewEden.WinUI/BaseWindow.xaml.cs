@@ -112,6 +112,25 @@ namespace TheGuideToTheNewEden.WinUI
         {
             AppTitleBar.Margin = new Thickness(w, AppTitleBar.Margin.Top, AppTitleBar.Margin.Right, AppTitleBar.Margin.Bottom);
         }
+        /// <summary>
+        /// 隐藏标题，不隐藏logo
+        /// </summary>
+        public void HideAppTitleContentArea()
+        {
+            AppDisplayNameTextBlock.Visibility = Visibility.Collapsed;
+            HeadPanel.Visibility = Visibility.Collapsed;
+            InfoBar.Margin = new Thickness(0, 32, 0, 0);
+        }
+        /// <summary>
+        /// 主页模式
+        /// 隐藏标题，显示内容区域上移到标题栏位置
+        /// </summary>
+        public void SetTavViewHomeMode()
+        {
+            ContentArea.SetValue(Grid.RowSpanProperty, 2);
+            ContentArea.SetValue(Grid.RowProperty, 0);
+            HideAppTitleContentArea();
+        }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
             switch (theme)
