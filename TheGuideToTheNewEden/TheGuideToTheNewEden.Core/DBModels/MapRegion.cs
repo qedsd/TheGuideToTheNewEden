@@ -18,8 +18,8 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public double ZMin { get; set; }
         public double ZMax { get; set; }
         public int FactionID { get; set; }
-        public int Nebula { get; set; }
-        public double Radius { get; set; }
+        //public int Nebula { get; set; }
+        //public double Radius { get; set; }
     }
 
     [SugarTable("mapRegions")]

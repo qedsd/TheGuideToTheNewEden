@@ -26,7 +26,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public bool Hub { get; set; }
         public bool International { get; set; }
         public bool Regional { get; set; }
-        public bool Constellation { get; set; }
+        //public bool Constellation { get; set; }
         public double Security { get; set; }
         public int FactionID { get; set; }
         public double Radius { get; set; }
