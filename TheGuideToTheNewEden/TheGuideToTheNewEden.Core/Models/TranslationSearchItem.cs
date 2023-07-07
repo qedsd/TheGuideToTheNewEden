@@ -48,6 +48,7 @@ namespace TheGuideToTheNewEden.Core.Models
             Name = mapRegion.RegionName;
             Description = string.Empty;
             Type = TranslationSearchType.MapRegion;
+            IsLocal = isLocal;
         }
 
         public TranslationSearchItem(MapSolarSystem mapSolarSystem)
@@ -61,6 +62,7 @@ namespace TheGuideToTheNewEden.Core.Models
             ID = mapSolarSystem.SolarSystemID;
             Name = mapSolarSystem.SolarSystemName;
             Type = TranslationSearchType.MapSolarSystem;
+            IsLocal = isLocal;
         }
 
         public TranslationSearchItem(StaStation station)
@@ -74,6 +76,7 @@ namespace TheGuideToTheNewEden.Core.Models
             ID = station.StationID;
             Name = station.StationName;
             Type = TranslationSearchType.StaStation;
+            IsLocal = isLocal;
         }
 
         public enum TranslationSearchType
