@@ -92,13 +92,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 {
                     types.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
                 }
-                if (DBService.NeedLocalization)
+                var localTypes = LocalDbService.SearchInvType(partName);
+                if (localTypes.NotNullOrEmpty())
                 {
-                    var localTypes = LocalDbService.SearchInvType(partName);
-                    if (localTypes.NotNullOrEmpty())
-                    {
-                        localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
-                    }
+                    localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
                 }
                 return searchInvTypes;
             });

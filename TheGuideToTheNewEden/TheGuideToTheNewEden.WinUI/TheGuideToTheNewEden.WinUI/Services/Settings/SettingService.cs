@@ -43,6 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             PlayerStatusService.Initialize();
             ThemeSelectorService.Initialize();
             EVELogsPathSelectorService.Initialize();
+            DBLocalizationSettingService.Initialize();
         }
         public static string GetValue(string key)
         {

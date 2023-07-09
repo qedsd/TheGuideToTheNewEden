@@ -259,4 +259,7 @@
     <x:String x:Key="DEDPage_Angel">天使</x:String>
     <x:String x:Key="DEDPage_Guristas">古斯塔斯</x:String>
     <x:String x:Key="DEDPage_UnkownLevel">未定级</x:String>
+
+    <x:String x:Key="GeneralSettingPage_NeedLocalization">本地化数据库</x:String>
+    
 </ResourceDictionary>

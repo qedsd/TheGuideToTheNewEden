@@ -74,13 +74,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 {
                     stations.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
                 }
-                if (DBService.NeedLocalization)
+                var locals = LocalDbService.SearchStaStations(partName);
+                if (locals.NotNullOrEmpty())
                 {
-                    var locals = LocalDbService.SearchStaStations(partName);
-                    if (locals.NotNullOrEmpty())
-                    {
-                        locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
-                    }
+                    locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
                 }
                 return searchs;
             });

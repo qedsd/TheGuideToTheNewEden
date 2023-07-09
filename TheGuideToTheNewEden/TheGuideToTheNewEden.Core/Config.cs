@@ -20,6 +20,10 @@ namespace TheGuideToTheNewEden.Core
         /// </summary>
         public static string LocalDBPath { get; set; }
         /// <summary>
+        /// 是否需要翻译数据库
+        /// </summary>
+        public static bool NeedLocalization { get; set; }
+        /// <summary>
         /// 死亡远征数据库文件路径
         /// </summary>
         public static string DEDDBPath { get; set; }

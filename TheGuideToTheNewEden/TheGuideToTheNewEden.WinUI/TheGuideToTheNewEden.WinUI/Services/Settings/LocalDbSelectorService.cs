@@ -29,7 +29,15 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 
         private static string LoadFromSettings()
         {
-            return SettingService.GetValue(Key);
+            var setting =  SettingService.GetValue(Key);
+            if(string.IsNullOrEmpty(setting))
+            {
+                return GetAll()?.FirstOrDefault();
+            }
+            else
+            {
+                return setting;
+            }
         }
 
         private static async Task SaveToSettingsAsync(string value)

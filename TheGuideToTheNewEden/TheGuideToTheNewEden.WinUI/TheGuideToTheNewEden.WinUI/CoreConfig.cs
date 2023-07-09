@@ -20,6 +20,7 @@ namespace TheGuideToTheNewEden.WinUI
         public static List<string> Scopes { set => Core.Config.Scopes = value; }
         public static string ESICallback { set => Core.Config.ESICallback = value; }
         public static string PlayerStatusApi { set=>Core.Config.PlayerStatusApi = value; }
+        public static bool NeedLocalization { set => Core.Config.NeedLocalization = value; }
 
         #region 文件路径
         public static string MainDbPath { set => Core.Config.DBPath = value; }

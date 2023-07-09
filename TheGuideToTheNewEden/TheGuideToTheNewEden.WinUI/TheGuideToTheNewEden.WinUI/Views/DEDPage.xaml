@@ -18,7 +18,7 @@
     <Page.DataContext>
         <viewmodels:DEDViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid>
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
@@ -31,7 +31,7 @@
             </Grid.RowDefinitions>
             <AutoSuggestBox
                 Name="Search_AutoSuggestBox"
-                Margin="8,4"
+                Margin="16,4,8,4"
                 HorizontalAlignment="Stretch"
                 Background="Transparent"
                 BorderThickness="0,0,0,1"

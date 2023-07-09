@@ -70,6 +70,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
+        private bool needLocalization = DBLocalizationSettingService.Value;
+        public bool NeedLocalization
+        {
+            get => needLocalization;
+            set
+            {
+                needLocalization = value;
+                _ = DBLocalizationSettingService.SetAsync(needLocalization);
+            }
+        }
+
         private int selectedGameServerIndex = (int)GameServerSelectorService.Value;
         public int SelectedGameServerIndex
         {
@@ -130,16 +141,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void InitLocalDb()
         {
-            List<string> dbs = new List<string>
-            {
-                "None"
-            };
-            var all = LocalDbSelectorService.GetAll();
-            if(all.NotNullOrEmpty())
-            {
-                dbs.AddRange(all);
-            }
-            LocalDbs = dbs;
+            LocalDbs = LocalDbSelectorService.GetAll();
         }
 
         public async Task InitializeAsync()

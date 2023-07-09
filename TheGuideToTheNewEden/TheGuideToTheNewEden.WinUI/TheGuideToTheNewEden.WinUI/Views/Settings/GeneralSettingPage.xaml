@@ -51,6 +51,10 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                    <CheckBox
+                        Margin="8,0,0,0"
+                        Content="{StaticResource GeneralSettingPage_NeedLocalization}"
+                        IsChecked="{x:Bind VM.NeedLocalization, Mode=TwoWay}" />
                 </StackPanel>
             </controls:ExpandableSettingControl>
 

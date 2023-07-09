@@ -21,6 +21,8 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         internal static SqlSugarScope DEDDb;
 
+        internal static bool NeedLocalization => Config.NeedLocalization;
+
         internal static bool ValidFile(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -142,10 +144,6 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             {
                 return false;
             }
-        }
-        internal static bool NeedLocalization
-        {
-            get => LocalDb != null;
         }
     }
 }
