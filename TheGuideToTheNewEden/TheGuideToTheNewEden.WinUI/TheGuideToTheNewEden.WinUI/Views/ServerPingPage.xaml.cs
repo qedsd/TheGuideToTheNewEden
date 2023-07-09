@@ -83,9 +83,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private async void Ping(string host, int port, int times, double span)
         {
             _isStop = false;
+            var result = await TCPingHelper.Ping(host, port);
+            if (_isStop)
+            {
+                return;
+            }
             for (int i = 0; i < times; i++)
             {
-                var result = await TCPingHelper.Ping(host, port);
+                result = await TCPingHelper.Ping(host, port);
                 if (_isStop)
                 {
                     return;
