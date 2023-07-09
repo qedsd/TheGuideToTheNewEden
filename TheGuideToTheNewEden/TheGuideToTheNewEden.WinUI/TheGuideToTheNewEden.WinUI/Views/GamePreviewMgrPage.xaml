@@ -11,7 +11,7 @@
     <Page.DataContext>
         <viewmodels:GamePreviewMgrViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid x:Name="ContentGrid" Margin="20,0,20,10">
+    <Grid x:Name="ContentGrid" Margin="20,10,20,10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="320" />

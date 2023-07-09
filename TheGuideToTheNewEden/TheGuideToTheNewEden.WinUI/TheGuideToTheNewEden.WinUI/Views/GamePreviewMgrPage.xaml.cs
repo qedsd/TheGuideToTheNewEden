@@ -36,7 +36,16 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
+            Unloaded += GamePreviewMgrPage_Unloaded;
             //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+        }
+
+        private void GamePreviewMgrPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (lastThumb != IntPtr.Zero)
+            {
+                WindowCaptureHelper.HideThumb(lastThumb);
+            }
         }
 
         /// <summary>
@@ -57,7 +66,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void GamePreviewMgrPage_Loaded2(object sender, RoutedEventArgs e)
         {
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            (DataContext as GamePreviewMgrViewModel).Window = Window;
+            VM.Window = Window;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             if(AppWindow != null)
             {
@@ -65,6 +74,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
             AppWindow.Closing += AppWindow_Closing;
+            if(lastThumb!= IntPtr.Zero && ProcessList.SelectedItem != null)
+            {
+                lastThumb = WindowCaptureHelper.Show(windowHandle, (ProcessList.SelectedItem as ProcessInfo).MainWindowHandle);
+            }
+            UpdateThumbDestination();
         }
         private void GamePreviewMgrPage_Loaded(object sender, RoutedEventArgs e)
         {
