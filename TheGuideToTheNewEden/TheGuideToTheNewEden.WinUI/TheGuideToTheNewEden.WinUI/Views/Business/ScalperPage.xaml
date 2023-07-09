@@ -309,6 +309,7 @@
                     </Grid.RowDefinitions>
                     <ListView
                         x:Name="ListView_FilterTypes"
+                        SelectionMode="Extended"
                         DisplayMemberPath="TypeName"
                         ItemsSource="{x:Bind VM.FilterTypes, Mode=OneWay}" />
                     <Button
