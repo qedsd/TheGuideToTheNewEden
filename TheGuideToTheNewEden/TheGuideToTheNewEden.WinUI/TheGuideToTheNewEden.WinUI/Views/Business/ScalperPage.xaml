@@ -302,6 +302,23 @@
                 <PivotItem.Header>
                     <TextBlock FontSize="14" Text="{StaticResource BusinessPage_FilterList}" />
                 </PivotItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListView
+                        x:Name="ListView_FilterTypes"
+                        DisplayMemberPath="TypeName"
+                        ItemsSource="{x:Bind VM.FilterTypes, Mode=OneWay}" />
+                    <Button
+                        Grid.Row="1"
+                        Margin="8"
+                        HorizontalAlignment="Stretch"
+                        Click="Button_RemoveSelectedFilterTypes_Click"
+                        Content="{StaticResource General_RemoveSelected}" />
+                </Grid>
+
             </PivotItem>
         </Pivot>
         <Grid Grid.Column="1">

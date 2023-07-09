@@ -67,5 +67,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             VM.AddFilterTypes(types);
         }
+
+        private void Button_RemoveSelectedFilterTypes_Click(object sender, RoutedEventArgs e)
+        {
+            if(ListView_FilterTypes.SelectedItems.Any())
+            {
+                var types = ListView_FilterTypes.SelectedItems.Select(p=> p as Core.DBModels.InvType).ToList();
+                VM.RemoveFilterTypes(types);
+            }
+        }
     }
 }

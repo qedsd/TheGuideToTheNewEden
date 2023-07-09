@@ -22,7 +22,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
     public class ScalperViewModel:BaseViewModel
     {
-        private ObservableCollection<InvType> filterTypes;
+        private ObservableCollection<InvType> filterTypes = new ObservableCollection<InvType>();
         public ObservableCollection<InvType> FilterTypes
         {
             get => filterTypes;
@@ -921,6 +921,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 {
                     FilterTypes.Add(invType);
                 }
+            }
+        }
+
+        public void RemoveFilterTypes(List<InvType> invTypes)
+        {
+            if (invTypes.NotNullOrEmpty())
+            {
+                foreach (var invType in invTypes)
+                {
+                    FilterTypes.Remove(invType);
+                }
+                Window?.ShowSuccess($"已移除{invTypes.Count}个物品");
             }
         }
     }

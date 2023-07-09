@@ -715,8 +715,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if(orders.NotNullOrEmpty())
             {
                 await SetTypeInfo(orders);
-                await SetSystemInfo(orders);
                 await SetLocationInfo(orders);
+                await SetSystemInfo(orders);
             }
         }
         private async Task SetTypeInfo(List<Core.Models.Market.Order> orders)
@@ -775,6 +775,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (stationsDic.TryGetValue((int)order.LocationId, out var station))
                     {
                         order.LocationName = station.StationName;
+                        order.SystemId = station.SolarSystemID;//避免个人订单只有LocationId没有SystemId
                     }
                 }
             }
@@ -792,6 +793,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         if (structuresDic.TryGetValue(order.LocationId, out var structure))
                         {
                             order.LocationName = structure.Name;
+                            order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
                         }
                     }
                 }

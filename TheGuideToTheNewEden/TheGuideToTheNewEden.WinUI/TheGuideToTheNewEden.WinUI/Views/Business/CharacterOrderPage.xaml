@@ -70,6 +70,7 @@
                     SelectionMode="Extended"
                     ShowGroupDropArea="True">
                     <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_Amount}"
@@ -116,6 +117,7 @@
                     SelectionMode="Extended"
                     ShowGroupDropArea="True">
                     <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_Amount}"

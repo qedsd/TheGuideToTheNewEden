@@ -26,7 +26,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         }
         public double Security
         {
-            get => Math.Round(SolarSystem.Security, 1, MidpointRounding.ToEven);
+            get => SolarSystem != null ? Math.Round(SolarSystem.Security, 1, MidpointRounding.ToEven) : 0;
         }
         [JsonIgnore]
         public TimeSpan RemainTimeSpan { get; set; }
