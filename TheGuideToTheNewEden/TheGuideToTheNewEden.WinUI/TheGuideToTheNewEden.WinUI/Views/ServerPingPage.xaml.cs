@@ -106,7 +106,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         double sumP = 0;
                         validPings.ForEach(p => sumP += Math.Abs(p.Ms - average) / average);
                         TextBlock_RTTFluctuation.Text = (sumP / validPings.Count * 100).ToString("F2");
-                        TextBlock_PacketLossRate.Text = ((_pings.Count - validPings.Count) / _pings.Count * 100).ToString("F2");
+                        TextBlock_PacketLossRate.Text = ((_pings.Count - validPings.Count) / (double)_pings.Count * 100).ToString("F2");
                     }
                     else
                     {
