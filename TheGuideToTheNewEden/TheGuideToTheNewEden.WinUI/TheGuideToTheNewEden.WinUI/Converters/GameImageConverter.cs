@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Data;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,19 +18,25 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             {
                 return null;
             }
-            switch (Services.GameServerSelectorService.Value)
-            {
-                case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/{Type}/{value}_{Size}.jpg";
-                default: return string.Empty;
-            }
+            return GetImageUri((int)value, Type, Size);
         }
 
         public static string GetImageUri(int id, ImgType type, int size = 128)
         {
+
             switch (Services.GameServerSelectorService.Value)
             {
-                case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/{type}/{id}_{size}.jpg";
+                case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/{type}/{id}_{size}.{GetImageFormat(type)}";
+                case Core.Enums.GameServerType.Serenity: return $"https://image.evepc.163.com/{type}/{id}_{size}.{GetImageFormat(type)}";
                 default: return string.Empty;
+            }
+        }
+        private static string GetImageFormat(ImgType type)
+        {
+            switch(type) 
+            {
+                case ImgType.Character: return "jpg";
+                default:return "png";
             }
         }
 

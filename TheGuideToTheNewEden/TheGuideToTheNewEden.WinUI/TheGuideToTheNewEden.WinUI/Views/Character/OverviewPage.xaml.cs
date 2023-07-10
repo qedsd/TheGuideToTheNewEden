@@ -20,6 +20,7 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core;
 using ESI.NET.Models.Skills;
+using System.Text.RegularExpressions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -89,6 +90,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         ship = p.Result.Data;
+                        if(ship.ShipName.StartsWith("u'"))
+                        {
+                            ship.ShipName = Regex.Unescape(ship.ShipName.Substring(2,ship.ShipName.Length - 3));
+                        }
                     }
                     else
                     {
@@ -141,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             if (corporation != null)
             {
                 CorpStackPanel.Visibility = Visibility.Visible;
-                Image_Corporation.Source = Converters.GameImageConverter.GetImageUri(_characterData.CorporationID, Converters.GameImageConverter.ImgType.Corporation);
+                Image_Corporation.Source = Converters.GameImageConverter.GetImageUri(_characterData.CorporationID, Converters.GameImageConverter.ImgType.Corporation, 64);
                 TextBlock_CorpName.Visibility = Visibility.Visible;
                 TextBlock_CorpName.Text = corporation.Name;
                 TextBlock_CorpTicker.Text = corporation.Ticker;

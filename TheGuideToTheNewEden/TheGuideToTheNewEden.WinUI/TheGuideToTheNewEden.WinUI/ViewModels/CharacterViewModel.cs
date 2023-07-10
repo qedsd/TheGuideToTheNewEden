@@ -22,6 +22,7 @@ using ESI.NET.Enumerations;
 using Microsoft.Extensions.Options;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Dialogs;
+using TheGuideToTheNewEden.WinUI.Converters;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -43,8 +44,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => _selectedCharacter;
             set
             {
-                SetProperty(ref _selectedCharacter, value);
-                SetSelectedCharacter(value);
+                if(SetProperty(ref _selectedCharacter, value))
+                    SetSelectedCharacter(value);
             }
         }
 
@@ -109,15 +110,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             EsiClient.SetCharacterData(characterData);
             if (_selectedCharacter != null)
             {
-                if (Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility)
-                {
-                    var uri = new System.Uri($"https://imageserver.eveonline.com/Character/{characterData.CharacterID}_{512}.jpg");
-                    CharacterAvatar = new BitmapImage(uri);
-                }
-                else
-                {
-                    CharacterAvatar = null;
-                }
+                var uri = new System.Uri(GameImageConverter.GetImageUri(characterData.CharacterID, GameImageConverter.ImgType.Character, 512));
+                CharacterAvatar = new BitmapImage(uri);
                 GetBaseInfoAsync(characterData);
             }
         }
