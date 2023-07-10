@@ -1,15 +1,29 @@
 ﻿using System.Text;
 
-StringBuilder stringBuilder = new StringBuilder();
-foreach(var arg in args)
+try
 {
-    Console.WriteLine(arg);
-    stringBuilder.Append(arg.ToString());
+    StringBuilder stringBuilder = new StringBuilder();
+    foreach (var arg in args)
+    {
+        Console.WriteLine($"收到信息：{arg}");
+        stringBuilder.Append(arg.ToString());
+    }
+    string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth");
+    if (!Directory.Exists(folder))
+    {
+        Console.WriteLine($"新建文件夹：{folder}");
+        Directory.CreateDirectory(folder);
+    }
+    string filepath = Path.Combine(folder, "msg.txt");
+    Console.WriteLine($"开始写入信息到文件{filepath}");
+    File.WriteAllText(filepath, stringBuilder.ToString());
+    Console.WriteLine("完成，请关闭此窗口");
 }
-string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth");
-if(!Directory.Exists(folder))
+catch (Exception ex)
 {
-    Directory.CreateDirectory(folder);
+    Console.WriteLine(ex.Message);
 }
-string filepath = Path.Combine(folder, "msg.txt");
-File.WriteAllText(filepath,stringBuilder.ToString());
+while(true)
+{
+
+}
