@@ -20,6 +20,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             "esi-wallet.read_corporation_wallet.v1",
             "esi-characters.read_chat_channels.v1"
         };
+        public static string LogoffUrl { get => "https://login.evepc.163.com/account/logoff"; }
         /// <summary>
         /// 模拟一个device_id凑合用着
         /// </summary>

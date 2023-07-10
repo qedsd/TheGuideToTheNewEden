@@ -262,8 +262,11 @@
 
     <x:String x:Key="GeneralSettingPage_NeedLocalization">本地化数据库</x:String>
 
+    <x:String x:Key="AddSerenityAuthDialog_Step0">步骤0：点击下方按钮退出浏览器已登陆的账号，无视页面错误然后开始步骤1</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step0Button">登出</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Title">新增国服玩家角色授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1Button">esi.evepc.163.com</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框并点击确定按钮完成授权</x:String>
+
 </ResourceDictionary>

@@ -12,8 +12,22 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Margin="0,8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddSerenityAuthDialog_Step0}" />
+            <Button
+                Grid.Row="1"
+                Margin="8,8,8,16"
+                HorizontalAlignment="Stretch"
+                Click="Button_Step0_Click"
+                Content="{StaticResource AddSerenityAuthDialog_Step0Button}" />
+        </Grid>
+        <Grid Margin="0,8" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -26,7 +40,7 @@
                 Click="Button_Click"
                 Content="{StaticResource AddSerenityAuthDialog_Step1Button}" />
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

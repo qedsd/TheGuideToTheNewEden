@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
+using ABI.System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -10,11 +11,14 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.Market;
+using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -50,6 +54,15 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             CharacterService.GetAuthorizeByBrower();
+        }
+
+        private void Button_Step0_Click(object sender, RoutedEventArgs e)
+        {
+            var sInfo = new ProcessStartInfo(SerenityAuthHelper.LogoffUrl)
+            {
+                UseShellExecute = true,
+            };
+            Process.Start(sInfo);
         }
     }
 }
