@@ -20,6 +20,8 @@ using ESI.NET;
 using Newtonsoft.Json.Linq;
 using ESI.NET.Enumerations;
 using Microsoft.Extensions.Options;
+using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Dialogs;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -88,16 +90,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public void Init()
         {
-            IOptions<EsiConfig> config = Options.Create(new EsiConfig()
-            {
-                EsiUrl = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://esi.evepc.163.com/",
-                DataSource = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Singularity,
-                ClientId = Core.Config.ClientId,
-                SecretKey = "Unneeded",
-                CallbackUrl = Core.Config.ESICallback,
-                UserAgent = "TheGuideToTheNewEden",
-            });
-            EsiClient = new ESI.NET.EsiClient(config);
+            EsiClient = ESIService.GetDefaultEsi();
             SelectedCharacter = Characters.FirstOrDefault();
             if(!Characters.NotNullOrEmpty())
             {
@@ -130,18 +123,36 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
-            if(!AuthHelper.RegistyProtocol())
+            string result;
+            if (GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
-                Window.ShowError("注册授权服务失败，请使用管理员模式运行");
-                return;
+                if (!AuthHelper.RegistyProtocol())
+                {
+                    Window.ShowError("注册授权服务失败，请使用管理员模式运行");
+                    return;
+                }
+                Window.ShowWaiting("等待网页授权...");
+                result = await Services.CharacterService.GetAuthorizeResultAsync();
             }
-            Window.ShowWaiting("等待网页授权...");
-            var result = await Services.CharacterService.GetAuthorizeResultAsync();
-            if(result != null)
+            else
+            {
+                result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
+                if(string.IsNullOrEmpty(result))
+                {
+                    Window.HideWaiting();
+                    Window.ShowError("未输入授权结果网址");
+                    return;
+                }
+            }
+            await VerifyNewAuth(result);
+        });
+        private async Task VerifyNewAuth(string result)
+        {
+            if (result != null)
             {
                 Window.ShowWaiting("验证授权中...");
                 var result2 = await Services.CharacterService.HandelProtocolAsync(result);
-                if(result2 != null)
+                if (result2 != null)
                 {
                     Window.ShowSuccess("添加成功");
                     SelectedCharacter = result2;
@@ -157,7 +168,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowError("添加失败");
             }
             Window.HideWaiting();
-        });
+        }
         public ICommand RefreshCommand => new RelayCommand(() =>
         {
             GetBaseInfoAsync(SelectedCharacter);

@@ -96,7 +96,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static void Init()
         {
-            CoreConfig.ClientId = ClientId;
+            CoreConfig.ClientId = GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? ClientId : SerenityAuthHelper.ClientId;
             CoreConfig.ESICallback = RedirectUri;
             CoreConfig.Scopes = EsiScopes;
             if (File.Exists(AuthFilePath))
@@ -157,9 +157,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return await AuthHelper.WaitingAuthAsync();
         }
 
-        public static void GetAuthorizeByBrower(Core.Enums.GameServerType server = Core.Enums.GameServerType.Tranquility)
+        public static void GetAuthorizeByBrower()
         {
-            string uri = Core.Services.ESIService.SSO.CreateAuthenticationUrl(EsiScopes, Version);
+            string uri;
+            if (Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
+            {
+                uri = Core.Services.ESIService.SSO.CreateAuthenticationUrl(EsiScopes, Version);
+            }
+            else
+            {
+                uri = SerenityAuthHelper.GetAuthenticationUrl(EsiScopes);
+            }
             var sInfo = new ProcessStartInfo(uri)
             {
                 UseShellExecute = true,

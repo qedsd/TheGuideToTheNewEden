@@ -15,6 +15,7 @@ using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml.Media.Imaging;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
+using TheGuideToTheNewEden.Core.Services;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -97,16 +98,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             Characters = Services.CharacterService.CharacterOauths;
             Structures = Services.StructureService.Structures;
-            IOptions<EsiConfig> config = Options.Create(new EsiConfig()
-            {
-                EsiUrl = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://esi.evepc.163.com/",
-                DataSource = Core.Config.DefaultGameServer == Core.Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Singularity,
-                ClientId = Core.Config.ClientId,
-                SecretKey = "Unneeded",
-                CallbackUrl = Core.Config.ESICallback,
-                UserAgent = "TheGuideToTheNewEden",
-            });
-            EsiClient = new ESI.NET.EsiClient(config);
+            EsiClient = ESIService.GetDefaultEsi();
             SelectedCharacter = Characters.FirstOrDefault();
         }
         private void SetSelectedCharacter(AuthorizedCharacterData characterData)
