@@ -13,7 +13,7 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Margin="0,-20,0,0">
+        <Grid Margin="0,-16,0,0">
             <Canvas x:Name="LineCanvas" Opacity="0.4" />
             <Canvas x:Name="TempCanvas" />
             <Canvas x:Name="MapCanvas" />

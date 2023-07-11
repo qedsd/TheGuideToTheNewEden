@@ -217,8 +217,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             }
             MapCanvas.Children.Clear();
             LineCanvas.Children.Clear();
-            double width = _window.Bounds.Width - 10;
-            double height = _window.Bounds.Height;
+            double width = (MapCanvas.ActualWidth == 0 ? _window.Bounds.Width : MapCanvas.ActualWidth) - 10;
+            double height = MapCanvas.ActualHeight == 0 ? _window.Bounds.Height - 36: MapCanvas.ActualHeight;
             _ellipseDic.Clear();
             var group = _intelMap.GroupByJump();
             var perJumpHeight = height / group.Count;//每层占高度

@@ -299,6 +299,11 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                             sames.ElementAt(i).X += (i * moveSpan);
                         }
                     }
+                    foreach(var item in sames)
+                    {
+                        item.X = item.X > 1 ? 1 : item.X;
+                        item.Y = item.Y > 1 ? 1 : item.Y;
+                    }
                 }
             }
         }

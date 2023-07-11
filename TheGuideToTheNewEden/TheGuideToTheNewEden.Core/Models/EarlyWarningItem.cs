@@ -120,7 +120,7 @@ namespace TheGuideToTheNewEden.Core.Models
                             if(IntelMap != null)
                             {
                                 int jumps = IntelMap.JumpsOf(name.Value);
-                                if(jumps != -1)
+                                if (jumps != -1)
                                 {
                                     return new EarlyWarningContent()
                                     {

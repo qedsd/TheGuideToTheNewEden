@@ -225,8 +225,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             }
             MapCanvas.Children.Clear();
             LineCanvas.Children.Clear();
-            double width = _window.Bounds.Width;
-            double height = _window.Bounds.Height - 42;
+            double width = (MapCanvas.ActualWidth == 0 ? _window.Bounds.Width : MapCanvas.ActualWidth )- 16;
+            double height = MapCanvas.ActualHeight == 0 ? _window.Bounds.Height - 42 : MapCanvas.ActualHeight;
             _ellipseDic.Clear();
             _allSolarSystem = _intelMap.GetAllSolarSystem();
             foreach (var item in _allSolarSystem)
