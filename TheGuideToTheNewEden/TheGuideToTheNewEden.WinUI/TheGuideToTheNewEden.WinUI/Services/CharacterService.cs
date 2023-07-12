@@ -177,17 +177,25 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static async Task<AuthorizedCharacterData> HandelProtocolAsync(string uri)
         {
-            var array = uri.Split(new char[2] { '=', '&' });
-            string code = array[1];
-            var token = await Core.Services.ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.AuthorizationCode, code, Guid.NewGuid().ToString());
-            if (token != null)
+            try
             {
-                var data = await Core.Services.ESIService.SSO.Verify(token);
-                if (data != null)
+                var array = uri.Split(new char[2] { '=', '&' });
+                string code = array[1];
+                var token = await Core.Services.ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.AuthorizationCode, code, Guid.NewGuid().ToString());
+                if (token != null)
                 {
-                    Add(data);
-                    return data;
+                    var data = await Core.Services.ESIService.SSO.Verify(token);
+                    if (data != null)
+                    {
+                        Add(data);
+                        return data;
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                return null;
             }
             return null;
         }
