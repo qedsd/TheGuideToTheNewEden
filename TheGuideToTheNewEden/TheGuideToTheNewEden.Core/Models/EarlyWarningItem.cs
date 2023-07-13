@@ -186,7 +186,7 @@ namespace TheGuideToTheNewEden.Core.Models
                 {
                     foreach (var w in IgnoreWords)
                     {
-                        if (content.Content.Contains(w))
+                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Ignore; break;
                         }
