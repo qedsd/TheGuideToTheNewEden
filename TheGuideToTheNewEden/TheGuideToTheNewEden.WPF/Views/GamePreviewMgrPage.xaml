@@ -1,0 +1,83 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.GamePreviewMgrPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.WPF.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="clr-namespace:TheGuideToTheNewEden.Core.Models;assembly=TheGuideToTheNewEden.Core"
+    xmlns:viewmodels="clr-namespace:TheGuideToTheNewEden.WPF.ViewModels"
+    Title="GamePreviewMgrPage"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:GamePreviewMgrViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid x:Name="ContentGrid" Margin="20,10,20,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Height="32"
+                    FontSize="16"
+                    Text="{Binding ProcessName, Mode=TwoWay}"
+                    ToolTipService.ToolTip="进程关键词" />
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding RefreshProcessListCommand}"
+                    Content="刷新" />
+            </Grid>
+            <ListView
+                x:Name="ProcessList"
+                Grid.Row="1"
+                Margin="0,10,0,10"
+                AllowDrop="True"
+                Background="Transparent"
+                ItemsSource="{Binding Processes, Mode=OneWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="4,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <TextBlock HorizontalAlignment="Stretch" Text="{Binding WindowTitle}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+        <StackPanel
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+            <Button
+                Height="32"
+                Margin="4,0"
+                Command="{Binding StartCommand}"
+                Content="开始" />
+            <Button
+                Grid.Column="2"
+                Height="32"
+                Margin="4,0"
+                Command="{Binding StopAllCommand}"
+                Content="停止"
+                IsEnabled="{Binding Running, Mode=OneWay}" />
+        </StackPanel>
+    </Grid>
+</Page>
