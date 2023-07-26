@@ -70,13 +70,14 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
             ForegroundWindowService.Current.Start();
             ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;
             Init();
+            HotkeyService.Start();
             HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
         #region 切换快捷键
         private string _lastProcessGUID;
         private void HotkeyService_OnKeyboardClicked(List<WinCore.KeyboardHook.KeyboardInfo> keys)
         {
-            if (keys.NotNullOrEmpty())
+            if (keys.NotNullOrEmpty() && Running)
             {
                 if (_runningDic.Count != 0 && !string.IsNullOrEmpty(HotKey))
                 {
@@ -93,7 +94,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
                         }
                         if (_lastProcessGUID == null)
                         {
-                            var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                            var firstRunning = Processes.FirstOrDefault();
                             if(firstRunning != null)
                             {
                                 if(_runningDic.TryGetValue(firstRunning.GUID, out var value))
@@ -105,7 +106,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
                         }
                         else
                         {
-                            var runnings = Processes.Where(p => p.Running).ToList();
+                            var runnings = Processes;
                             for (int i = 0; i < runnings.Count; i++)
                             {
                                 var item = runnings[i];

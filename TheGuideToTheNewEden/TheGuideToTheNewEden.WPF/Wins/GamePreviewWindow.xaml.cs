@@ -23,6 +23,7 @@ namespace TheGuideToTheNewEden.WPF.Wins
     {
         private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
+        private IntPtr _thisHWnd = IntPtr.Zero;
         private string _processId;
         public GamePreviewWindow(string processId)
         {
@@ -64,18 +65,20 @@ namespace TheGuideToTheNewEden.WPF.Wins
             {
                 try
                 {
+                    var targetClientRect = new System.Drawing.Rectangle();
+                    Win32.GetClientRect(_thisHWnd, ref targetClientRect);
                     int left = 0;
                     int top = 0;
-                    int right = (int)this.ActualWidth;
-                    int bottom = (int)this.ActualHeight;
-                    var titleBarHeight = 0;//去掉标题栏高度
+                    int right = targetClientRect.Width;
+                    int bottom = targetClientRect.Height;
+                    var titleBarHeight = WindowCaptureHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度;//去掉标题栏高度
                     int widthMargin = 0;//去掉左边白边及右边显示完整
-                    var clientRect = new System.Drawing.Rectangle();
-                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
+                    var sourceClientRect = new System.Drawing.Rectangle();
+                    Win32.GetClientRect(_sourceHWnd, ref sourceClientRect);//源窗口显示区域分辨率大小
                     //目标窗口显示区域，及GamePreviewWindow
                     WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
                     //源窗口捕获区域，即游戏的窗口
-                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
+                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, sourceClientRect.Right + widthMargin, sourceClientRect.Bottom);
                     WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
                 }
                 catch (Exception ex)
@@ -96,11 +99,13 @@ namespace TheGuideToTheNewEden.WPF.Wins
         {
             _sourceHWnd = sourceHWnd;
             this.Show();
-            _thumbHWnd = WindowCaptureHelper.Show(GetWindowHandle(this), sourceHWnd);
+            _thisHWnd = GetWindowHandle(this);
+            _thumbHWnd = WindowCaptureHelper.Show(_thisHWnd, sourceHWnd);
+            UpdateThumbDestination();
         }
         public void ActiveSourceWindow()
         {
-            Win32.SetForegroundWindow(_sourceHWnd);
+            WindowHelper.SetForegroundWindow(_sourceHWnd);
         }
         /// <summary>
         /// 被动关闭窗口

@@ -213,5 +213,20 @@ namespace TheGuideToTheNewEden.WinCore
             DwmQueryThumbnailSourceSize(thumb, out size);
             return size;
         }
+        /// <summary>
+        /// 标题栏高度
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
+        public static int GetTitleBarHeight(IntPtr hwnd)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            Win32.GetWindowRect(hwnd, ref windowRect);
+            var clientRect = new System.Drawing.Rectangle();
+            Win32.GetClientRect(hwnd, ref clientRect);
+            System.Drawing.Point point = new System.Drawing.Point();
+            Win32.ClientToScreen(hwnd, ref point);
+            return point.Y - windowRect.Top;
+        }
     }
 }

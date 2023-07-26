@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TheGuideToTheNewEden.Core;
 
 namespace TheGuideToTheNewEden.WPF
 {
@@ -22,6 +23,7 @@ namespace TheGuideToTheNewEden.WPF
     {
         public MainWindow()
         {
+            Log.Init();
             InitializeComponent();
         }
     }

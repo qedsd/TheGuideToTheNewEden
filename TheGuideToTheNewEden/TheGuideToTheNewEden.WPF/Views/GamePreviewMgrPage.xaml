@@ -62,22 +62,30 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
-        <StackPanel
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <Button
-                Height="32"
-                Margin="4,0"
-                Command="{Binding StartCommand}"
-                Content="开始" />
-            <Button
-                Grid.Column="2"
-                Height="32"
-                Margin="4,0"
-                Command="{Binding StopAllCommand}"
-                Content="停止"
-                IsEnabled="{Binding Running, Mode=OneWay}" />
+        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+
+            <StackPanel Margin="0,10" Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="快捷键:" />
+                    <TextBox
+                        Width="100"
+                        Height="24"
+                        Text="{Binding HotKey, Mode=TwoWay}" />
+                </StackPanel>
+                <Button
+                    Height="23"
+                    Margin="4,0"
+                    Command="{Binding StartCommand}"
+                    Content="开始" />
+                <Button
+                    Grid.Column="2"
+                    Height="24"
+                    Margin="4,0"
+                    Command="{Binding StopCommand}"
+                    Content="停止"
+                    IsEnabled="{Binding Running, Mode=OneWay}" />
+            </StackPanel>
         </StackPanel>
+
     </Grid>
 </Page>
