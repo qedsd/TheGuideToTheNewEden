@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -63,31 +64,21 @@ namespace TheGuideToTheNewEden.WinCore
             w = Win32.GetSystemMetrics(Win32.SM_CXVIRTUALSCREEN);
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
         }
-
+        [DllImport("kernel32.dll")]
+        static extern uint GetCurrentThreadId();
         public static void SetForegroundWindow(IntPtr targetHandle)
         {
             IntPtr curForegroundWindow = Win32.GetForegroundWindow();
             Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
-            var dwCurID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
-            var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
-            if (!Win32.AttachThreadInput(dwForeID, dwCurID, true))
+            var dwForeID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
+            var dwCurID = (int)GetCurrentThreadId();
+            if (!Win32.AttachThreadInput(dwCurID, dwForeID, true))
             {
-                Core.Log.Debug($"AttachThreadInput失败：{dwForeID}->{dwCurID}");
+                Core.Log.Debug($"AttachThreadInput失败：{dwCurID}->{dwForeID}");
                 return;
             }
             int tryCount = 0;
-            int style = Win32.GetWindowLong(targetHandle, -16);
-            if ((style & 0x20000000) == 0x20000000)
-            {
-                if (Win32.ShowWindowAsync(targetHandle, 9))
-                {
-                    Core.Log.Debug("ShowWindowAsync成功");
-                }
-                else
-                {
-                    Core.Log.Debug("ShowWindowAsync失败");
-                }
-            }  
+            keybd_event((byte)0xA4, 0x45, 0x1 | 0x2, 0);
             while (tryCount++ < 3)
             {
                 if (Win32.GetForegroundWindow() != targetHandle && Win32.SetForegroundWindow(targetHandle))
@@ -95,7 +86,6 @@ namespace TheGuideToTheNewEden.WinCore
                     if (Win32.GetForegroundWindow() != targetHandle)
                     {
                         Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
-                        //Thread.Sleep(100);
                     }
                     else
                     {
@@ -105,7 +95,8 @@ namespace TheGuideToTheNewEden.WinCore
                         {
                             if (Win32.BringWindowToTop(targetHandle))
                             {
-                                if (Win32.AttachThreadInput(dwForeID, dwCurID, false))
+                                Win32.SetFocus(targetHandle);
+                                if (Win32.AttachThreadInput(dwCurID, dwForeID, false))
                                 {
                                     Core.Log.Debug($"成功激活窗口{targetHandle}");
                                     break;
@@ -144,9 +135,31 @@ namespace TheGuideToTheNewEden.WinCore
             Win32.SetForegroundWindow(targetHandle);
         }
 
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+        [DllImport("User32.dll", EntryPoint = "SendMessage")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
         public static void SetForegroundWindow3(IntPtr targetHandle)
         {
-            if(Win32.SetForegroundWindow(targetHandle))
+            keybd_event(0, 0, 0, 0);
+            //if (Win32.GetFocus() == targetHandle)
+            //{
+            //    Core.Log.Debug("已获取到焦点");
+            //}
+            //else
+            //{
+            //    int tryCount = 0;
+            //    while (tryCount++ < 3)
+            //    {
+            //        if (Win32.SetFocus(targetHandle) != IntPtr.Zero)
+            //        {
+            //            Core.Log.Debug("已设置焦点");
+            //            break;
+            //        }
+            //        Core.Log.Debug($"设置焦点失败{tryCount}");
+            //    }
+            //}
+            if (Win32.SetForegroundWindow(targetHandle))
             {
                 Core.Log.Debug("SetForegroundWindow成功");
             }
@@ -154,7 +167,6 @@ namespace TheGuideToTheNewEden.WinCore
             {
                 Core.Log.Debug("SetForegroundWindow失败");
             }
-            Win32.SetFocus(targetHandle);
             int style = Win32.GetWindowLong(targetHandle, -16);
 
             if ((style & 0x20000000) == 0x20000000)
@@ -168,6 +180,7 @@ namespace TheGuideToTheNewEden.WinCore
                     Core.Log.Debug("ShowWindowAsync失败");
                 }
             }
+            Win32.SetFocus(targetHandle);
         }
     }
 }

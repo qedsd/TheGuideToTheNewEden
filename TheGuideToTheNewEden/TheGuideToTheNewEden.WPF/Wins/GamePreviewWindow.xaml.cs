@@ -105,11 +105,7 @@ namespace TheGuideToTheNewEden.WPF.Wins
         }
         public void ActiveSourceWindow()
         {
-            Task.Run(() =>
-            {
-                WindowHelper.SetForegroundWindow3(_sourceHWnd);
-            });
-
+            WindowHelper.SetForegroundWindow3(_sourceHWnd);
         }
         /// <summary>
         /// 被动关闭窗口
