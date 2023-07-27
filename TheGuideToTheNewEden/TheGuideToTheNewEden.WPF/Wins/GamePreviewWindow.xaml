@@ -8,6 +8,7 @@
     Title="GamePreviewWindow"
     Width="800"
     Height="450"
+    Topmost="True"
     mc:Ignorable="d">
     <Grid />
 </Window>
