@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -75,17 +76,30 @@ namespace TheGuideToTheNewEden.WinCore
                 return;
             }
             int tryCount = 0;
+            int style = Win32.GetWindowLong(targetHandle, -16);
+            if ((style & 0x20000000) == 0x20000000)
+            {
+                if (Win32.ShowWindowAsync(targetHandle, 9))
+                {
+                    Core.Log.Debug("ShowWindowAsync成功");
+                }
+                else
+                {
+                    Core.Log.Debug("ShowWindowAsync失败");
+                }
+            }  
             while (tryCount++ < 3)
             {
-                if (Win32.SetForegroundWindow(targetHandle))
+                if (Win32.GetForegroundWindow() != targetHandle && Win32.SetForegroundWindow(targetHandle))
                 {
                     if (Win32.GetForegroundWindow() != targetHandle)
                     {
                         Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
-                        Thread.Sleep(100);
+                        //Thread.Sleep(100);
                     }
                     else
                     {
+                        Core.Log.Debug($"SetForegroundWindow成功且生效（{tryCount}）");
                         tryCount = 0;
                         while (tryCount < 3)
                         {
@@ -128,6 +142,32 @@ namespace TheGuideToTheNewEden.WinCore
                 Win32.ShowWindow(targetHandle, 5);
             }
             Win32.SetForegroundWindow(targetHandle);
+        }
+
+        public static void SetForegroundWindow3(IntPtr targetHandle)
+        {
+            if(Win32.SetForegroundWindow(targetHandle))
+            {
+                Core.Log.Debug("SetForegroundWindow成功");
+            }
+            else
+            {
+                Core.Log.Debug("SetForegroundWindow失败");
+            }
+            Win32.SetFocus(targetHandle);
+            int style = Win32.GetWindowLong(targetHandle, -16);
+
+            if ((style & 0x20000000) == 0x20000000)
+            {
+                if (Win32.ShowWindowAsync(targetHandle, 9))
+                {
+                    Core.Log.Debug("ShowWindowAsync成功");
+                }
+                else
+                {
+                    Core.Log.Debug("ShowWindowAsync失败");
+                }
+            }
         }
     }
 }
