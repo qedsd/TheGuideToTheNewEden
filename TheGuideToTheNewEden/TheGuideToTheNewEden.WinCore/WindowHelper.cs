@@ -182,5 +182,39 @@ namespace TheGuideToTheNewEden.WinCore
             }
             Win32.SetFocus(targetHandle);
         }
+
+        public static void SetForegroundWindow4(IntPtr targetHandle)
+        {
+            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
+            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
+            var dwForeID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
+            var dwCurID = (int)GetCurrentThreadId();
+            if (dwForeID != dwCurID)
+            {
+                Win32.AttachThreadInput(dwForeID, dwCurID, true);
+                Win32.BringWindowToTop(targetHandle);
+                if (Win32.IsIconic(targetHandle))
+                {
+                    Win32.ShowWindow(targetHandle, 4);
+                }
+                else
+                {
+                    Win32.ShowWindow(targetHandle, 5);
+                }
+                Win32.AttachThreadInput(dwForeID, dwCurID, false);
+            }
+            else
+            {
+                Win32.BringWindowToTop(targetHandle);
+                if (Win32.IsIconic(targetHandle))
+                {
+                    Win32.ShowWindow(targetHandle, 4);
+                }
+                else
+                {
+                    Win32.ShowWindow(targetHandle, 5);
+                }
+            }
+        }
     }
 }
