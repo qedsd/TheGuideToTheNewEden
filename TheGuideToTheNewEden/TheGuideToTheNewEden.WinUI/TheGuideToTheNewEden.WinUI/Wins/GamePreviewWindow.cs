@@ -188,7 +188,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
             }
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            UpdateThumbDestination(Setting.ShowTitleBar);
+            UpdateThumbDestination();
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
             _UITimer = new DispatcherTimer();
@@ -235,14 +235,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _isVisible = false;
         }
 
-        private void UpdateThumbDestination(bool showTitleBar)
+        private void UpdateThumbDestination(int bottomMargin = 0)
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
                 try
                 {
                     int left = 0;
-                    int top = showTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
+                    int top = Setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
                     int right = _appWindow.ClientSize.Width;
                     int bottom = _appWindow.ClientSize.Height;
                     var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
@@ -250,7 +250,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     var clientRect = new System.Drawing.Rectangle();
                     Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
                     //目标窗口显示区域，及GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
+                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - bottomMargin);
                     //源窗口捕获区域，即游戏的窗口
                     WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
                     WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
@@ -265,7 +265,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
-                UpdateThumbDestination(Setting.ShowTitleBar);
+                UpdateThumbDestination();
             }
         }
 
@@ -356,36 +356,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void Highlight()
         {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                try
-                {
-                    int left = 0;
-                    int top = _setting.ShowTitleBar ? TitleBarHeight : 0;
-                    int right = _appWindow.ClientSize.Width;
-                    int bottom = _appWindow.ClientSize.Height;
-                    var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
-                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
-                    var clientRect = new System.Drawing.Rectangle();
-                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
-                    //目标窗口显示区域，及GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - 6);
-                    //源窗口捕获区域，即游戏的窗口
-                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
-                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
-            }
+            UpdateThumbDestination(6);
         }
         /// <summary>
         /// 取消高亮
         /// </summary>
         public void CancelHighlight()
         {
-            UpdateThumbDestination(Setting.ShowTitleBar);
+            UpdateThumbDestination();
         }
         /// <summary>
         /// 设置窗口尺寸
