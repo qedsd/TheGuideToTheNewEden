@@ -149,6 +149,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         public static void HideTitleBar(Window window)
         {
+            window.ExtendsContentIntoTitleBar = false;
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);
             presenter.IsAlwaysOnTop = true;
             presenter.IsMinimizable = false;
@@ -156,6 +157,22 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             presenter.IsResizable = false;
             presenter.SetBorderAndTitleBar(false, false);
         }
+
+        /// <summary>
+        /// 使用win32让窗口完全没有边框，包括圆角阴影，不可拖动
+        /// </summary>
+        /// <param name="window"></param>
+        public static void HideTitleBar2(Window window)
+        {
+            var hWnd = GetWindowHandle(window);
+            var styleCurrentWindowStandard = Win32Helper.GetWindowLongPtr(hWnd, -16);
+            var styleNewWindowStandard = styleCurrentWindowStandard & ~0x00040000;
+            if (Win32Helper.SetWindowLongPtr(hWnd, -16, (IntPtr)styleNewWindowStandard) == IntPtr.Zero)
+            {
+                //fail
+            }
+        }
+
 
         /// <summary>
         /// 获取所有屏幕分辨率

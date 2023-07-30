@@ -49,6 +49,11 @@ namespace TheGuideToTheNewEden.WinUI
 
             set => ContentFrame.Content = value;
         }
+        public UIElement MainUIElement
+        {
+            get => MainWindowGrid;
+        }
+
         /// <summary>
         /// 无缩放下的原始标题栏高度
         /// </summary>
