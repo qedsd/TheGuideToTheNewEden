@@ -24,5 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static extern long GetWindowLongPtr(IntPtr hWnd, int nIndex);
         [DllImport("user32")]  
         public static extern IntPtr GetParent(IntPtr hWnd);
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
     }
 }

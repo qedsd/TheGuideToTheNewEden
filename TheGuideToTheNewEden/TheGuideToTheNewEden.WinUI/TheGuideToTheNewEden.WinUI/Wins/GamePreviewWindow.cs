@@ -152,14 +152,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd);
+                ActiveSourceWindow();
         }
         /// <summary>
         /// 显示目标窗口
         /// </summary>
         public void ActiveSourceWindow()
         {
-            _activeWindow = true;
+            Task.Run(() =>
+            {
+                Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
+            });
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;
@@ -189,7 +192,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
             _UITimer = new DispatcherTimer();
-            _UITimer.Interval = TimeSpan.FromMilliseconds(100);
+            _UITimer.Interval = TimeSpan.FromMilliseconds(50);
             _UITimer.Tick += UITimer_Tick;
             _UITimer.Start();
         }
@@ -197,7 +200,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// 与透明度绑定，透明度为0时为不可见
         /// </summary>
         private bool _visible = true;
-        private bool _activeWindow = false;
         private void UITimer_Tick(object sender, object e)
         {
             _UITimer.Stop();
@@ -213,11 +215,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     TransparentWindowHelper.TransparentWindow(this, 0);
                     _visible = false;
                 }
-            }
-            if(_activeWindow)
-            {
-                _activeWindow = false;
-                ShowSourceWindow();
             }
             _UITimer.Start();
         }
@@ -424,18 +421,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public int GetHeight()
         {
             return _appWindow.ClientSize.Height;
-        }
-
-        private void ShowSourceWindow()
-        {
-            this.Activated += GamePreviewWindow_Activated;
-            this.Activate();
-        }
-
-        private void GamePreviewWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            this.Activated -= GamePreviewWindow_Activated;
-            Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
         }
     }
 }

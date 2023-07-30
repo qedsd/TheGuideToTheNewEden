@@ -186,60 +186,6 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             h = Win32.GetSystemMetrics(Win32.SM_CYVIRTUALSCREEN);
         }
 
-        public static void SetForegroundWindow(IntPtr targetHandle)
-        {
-            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
-            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
-            var dwCurID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
-            var dwForeID = Win32.GetWindowThreadProcessId(targetHandle, out _);
-            if(!Win32.AttachThreadInput(dwForeID, dwCurID, true))
-            {
-                Core.Log.Debug($"AttachThreadInput失败：{dwForeID}->{dwCurID}");
-                return;
-            }
-            int tryCount = 0;
-            while(tryCount++ < 3 )
-            {
-                if (Win32.SetForegroundWindow(targetHandle))
-                {
-                    if(Win32.GetForegroundWindow() != targetHandle)
-                    {
-                        Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
-                        Thread.Sleep(100);
-                    }
-                    else
-                    {
-                        tryCount = 0;
-                        while (tryCount < 3)
-                        {
-                            if (Win32.BringWindowToTop(targetHandle))
-                            {
-                                if (Win32.AttachThreadInput(dwForeID, dwCurID, false))
-                                {
-                                    Core.Log.Debug($"成功激活窗口{targetHandle}");
-                                    break;
-                                }
-                                else
-                                {
-                                    Core.Log.Debug($"解除AttachThreadInput失败");
-                                }
-                            }
-                            else
-                            {
-                                Core.Log.Debug($"BringWindowToTop失败（{tryCount}）");
-                            }
-                        }
-                        break;
-                    }
-                }
-                else
-                {
-                    Core.Log.Debug($"SetForegroundWindow失败（{tryCount}）");
-                }
-            }
-        }
-
-
         public static void SetForegroundWindow2(IntPtr targetHandle)
         {
             if (Win32.IsIconic(targetHandle))
@@ -251,6 +197,40 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 Win32.ShowWindow(targetHandle, 5);
             }
             Win32.SetForegroundWindow(targetHandle);
+        }
+
+        public static void SetForegroundWindow(IntPtr targetHandle)
+        {
+            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
+            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
+            var dwForeID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);
+            var dwCurID = (int)Win32Helper.GetCurrentThreadId();
+            if (dwForeID != dwCurID)
+            {
+                Win32.AttachThreadInput(dwForeID, dwCurID, true);
+                Win32.BringWindowToTop(targetHandle);
+                if (Win32.IsIconic(targetHandle))
+                {
+                    Win32.ShowWindow(targetHandle, 4);
+                }
+                else
+                {
+                    Win32.ShowWindow(targetHandle, 5);
+                }
+                Win32.AttachThreadInput(dwForeID, dwCurID, false);
+            }
+            else
+            {
+                Win32.BringWindowToTop(targetHandle);
+                if (Win32.IsIconic(targetHandle))
+                {
+                    Win32.ShowWindow(targetHandle, 4);
+                }
+                else
+                {
+                    Win32.ShowWindow(targetHandle, 5);
+                }
+            }
         }
 
         /// <summary>
