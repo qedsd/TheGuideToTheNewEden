@@ -105,7 +105,10 @@ namespace TheGuideToTheNewEden.WPF.Wins
         }
         public void ActiveSourceWindow()
         {
-            WindowHelper.SetForegroundWindow4(_sourceHWnd);
+            Task.Run(() =>
+            {
+                WindowHelper.SetForegroundWindow4(_sourceHWnd);
+            });
         }
         /// <summary>
         /// 被动关闭窗口

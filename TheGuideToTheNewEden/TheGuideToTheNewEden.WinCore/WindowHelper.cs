@@ -216,5 +216,17 @@ namespace TheGuideToTheNewEden.WinCore
                 }
             }
         }
+        public static void SetForegroundWindow5(IntPtr targetHandle)
+        {
+            Win32.BringWindowToTop(targetHandle);
+            if (Win32.IsIconic(targetHandle))
+            {
+                Win32.ShowWindow(targetHandle, 4);
+            }
+            else
+            {
+                Win32.ShowWindow(targetHandle, 5);
+            }
+        }
     }
 }
