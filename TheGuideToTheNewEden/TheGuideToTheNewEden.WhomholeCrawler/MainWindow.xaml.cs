@@ -60,6 +60,8 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
             {
                 await GetWormholeDetail(solarSystem.SolarSystemName);
             }
+            string json = JsonConvert.SerializeObject(caveModels);
+            System.IO.File.WriteAllText("wormholes.json", json);
         }
         private async void WebView2_NavigationCompleted_WormholeDetail(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
         {
