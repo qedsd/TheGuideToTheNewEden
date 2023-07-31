@@ -91,5 +91,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 return searchs;
             });
         }
+
+        public static async Task<List<MapSolarSystem>> QueryWormholesAsync()
+        {
+            return await DBService.MainDb.Queryable<MapSolarSystem>().Where(p=>p.SolarSystemID > 31000000 && p.SolarSystemName.StartsWith("J")).ToListAsync();
+        }
     }
 }
