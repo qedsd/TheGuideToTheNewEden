@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -20,6 +21,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// DED数据库
         /// </summary>
         internal static SqlSugarScope DEDDb;
+        /// <summary>
+        /// 虫洞数据库
+        /// </summary>
+        internal static SqlSugarScope WormholeDb;
 
         internal static bool NeedLocalization => Config.NeedLocalization;
 
@@ -138,6 +143,45 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                         IsAutoRemoveDataCache = true
                     }
                 });
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        internal static bool InitWormholeDb(string path)
+        {
+            if (!ValidFile(path))
+            {
+                return false;
+            }
+            try
+            {
+                WormholeDb = new SqlSugarScope(new ConnectionConfig()
+                {
+                    ConnectionString = $"DataSource={path}",
+                    DbType = DbType.Sqlite,
+                    IsAutoCloseConnection = true,
+                    ConfigId = Guid.NewGuid(),
+                    ConfigureExternalServices = new ConfigureExternalServices
+                    {
+                        EntityService = (c, p) =>
+                        {
+                            if (c.PropertyType.IsGenericType && c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                            {
+                                p.IsNullable = true;
+                            }
+                        }
+                    },
+                    MoreSettings = new ConnMoreSettings()
+                    {
+                        IsAutoRemoveDataCache = true
+                    }
+                });
+                WormholeDb.DbMaintenance.CreateDatabase();
+                WormholeDb.CodeFirst.InitTables(typeof(WormholePortal));
                 return true;
             }
             catch (Exception)

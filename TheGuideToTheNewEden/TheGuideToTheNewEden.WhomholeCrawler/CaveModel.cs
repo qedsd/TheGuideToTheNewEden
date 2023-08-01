@@ -8,6 +8,7 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
 {
     internal class CaveModel
     {
+        public string Name { get; set; }
         public string Destination { get; set; }
         public string AppearsIn { get; set; }
         public float Lifetime { get; set; }

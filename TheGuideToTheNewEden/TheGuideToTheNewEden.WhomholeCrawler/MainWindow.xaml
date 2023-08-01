@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:TheGuideToTheNewEden.WhomholeCrawler"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-    Title="MainWindow"
+    Title="WhomholeCrawler"
     Width="800"
     Height="450"
     mc:Ignorable="d">

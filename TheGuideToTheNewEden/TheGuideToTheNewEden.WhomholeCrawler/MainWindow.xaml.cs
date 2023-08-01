@@ -16,6 +16,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Helpers;
 
 namespace TheGuideToTheNewEden.WhomholeCrawler
 {
@@ -23,8 +25,8 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
     {
         public MainWindow()
         {
-            string dbPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "main.db");
-            TheGuideToTheNewEden.Core.Config.DBPath = dbPath;
+            TheGuideToTheNewEden.Core.Config.DBPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "main.db");
+            TheGuideToTheNewEden.Core.Config.WormholeDBPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "wormhole.db");
             TheGuideToTheNewEden.Core.Config.InitDb();
             InitializeComponent();
             Loaded += MainWindow_Loaded;
@@ -33,8 +35,10 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             await WebView2.EnsureCoreWebView2Async();
-            GetWormholes();
+            //GetWormholes();
             //GetCaves();
+            //CreateWormholePortalDB();
+            CreateWormholeDB();
         }
         
         private void NavigateTo(string uri)
@@ -52,6 +56,7 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
             return Regex.Unescape(srcText);
         }
 
+        #region 洞
         private List<WormholeModel> wormholeModels = new List<WormholeModel>();
         private async void GetWormholes()
         {
@@ -60,10 +65,10 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
             {
                 await GetWormholeDetail(solarSystem.SolarSystemName);
             }
-            string json = JsonConvert.SerializeObject(caveModels);
+            string json = JsonConvert.SerializeObject(wormholeModels);
             System.IO.File.WriteAllText("wormholes.json", json);
         }
-        private async void WebView2_NavigationCompleted_WormholeDetail(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+        private async void WebView2_NavigationCompleted_WormholeDetail(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
         {
             try
             {
@@ -166,6 +171,7 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
                 await Task.Delay(1000);
             }
         }
+        #endregion
 
         #region 洞口
         private async void GetCaves()
@@ -226,6 +232,7 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
             {
                 var html = await WebView2.CoreWebView2.ExecuteScriptAsync("document.body.innerText");
                 var s = html.Split("\\n");
+
                 var destination = s[2].Split("\\t")[2];
                 var appearsIn = s[3].Split("\\t")[2];
                 appearsIn = appearsIn == "(unknown)" ? null : appearsIn;
@@ -240,6 +247,7 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
                 var massRegen = long.Parse(s[8].Split("\\t")[2].Replace(" kg", string.Empty).Replace(",", string.Empty));
                 caveModels.Add(new CaveModel()
                 {
+                    Name = s[1].Trim(),
                     Destination = destination,
                     AppearsIn = appearsIn,
                     Lifetime = lifetime,
@@ -254,6 +262,123 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
             catch (Exception ex)
             {
 
+            }
+        }
+        #endregion
+
+        #region 生成洞口数据库
+        private List<WormholePortal> GetWormholePortals()
+        {
+            var text = System.IO.File.ReadAllText("caves.json");
+            var items = JsonConvert.DeserializeObject<List<CaveModel>>(text);
+            int id = 0;
+            List<WormholePortal> wormholePortals = new List<WormholePortal>(items.Count);
+            foreach (var item in items)
+            {
+                wormholePortals.Add(new WormholePortal()
+                {
+                    Id = id++,
+                    Name = item.Name,
+                    Lifetime = item.Lifetime,
+                    MaxMassPerJump = item.MaxMassPerJump,
+                    MaxMassPerJumpNote = item.MaxMassPerJumpNote,
+                    TotalJumpMass = item.TotalJumpMass,
+                    TotalJumpMassNote = item.TotalJumpMassNote,
+                    Respawn = item.Respawn,
+                    MassRegen = item.MassRegen,
+                    Destination = GetClasses(item.Destination),
+                    AppearsIn = GetClasses(item.AppearsIn),
+                });
+            }
+            return wormholePortals;
+        }
+        private async void CreateWormholePortalDB()
+        {
+            await Core.Services.DB.WormholeService.InsertAsync(GetWormholePortals());
+        }
+        private string GetClasses(string str)
+        {
+            if(string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach(var item in str.Split(','))
+            {
+                stringBuilder.Append(GetClassId(item.Trim()));
+                stringBuilder.Append(",");
+            }
+            stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            return stringBuilder.ToString();
+        }
+        private int GetClassId(string className)
+        {
+            switch(className)
+            {
+                case "Class 1": return 1;
+                case "Class 2": return 2;
+                case "Class 3": return 3;
+                case "Class 4": return 4;
+                case "Class 5": return 5;
+                case "Class 6": return 6;
+                case "Class 12 (Thera)": return 12;
+                case "Class 13 (Shattered Frigate)": return 13;
+                case "Class 14 (Sentinel Drifter)": return 14;
+                case "Class 15 (Barbican Drifter)": return 15;
+                case "Class 16 (Vidette Drifter)": return 16;
+                case "Class 17 (Conflux Drifter)": return 17;
+                case "Class 18 (Redoubt Drifter)": return 18;
+                case "Highsec": return 100;
+                case "Lowsec": return 101;
+                case "Nullsec": return 102;
+                default:throw new Exception();
+            }
+        }
+        #endregion
+
+        #region 生成虫洞
+        private void CreateWormholeDB()
+        {
+            var text = System.IO.File.ReadAllText("wormholes.json");
+            var items = JsonConvert.DeserializeObject<List<WormholeModel>>(text);
+            var phenomenas = items.Where(p=>p.Phenomena != null).Select(p => p.Phenomena).Distinct().ToList();
+            var portals = GetWormholePortals();
+            List<Wormhole> wormholes = new List<Wormhole>();
+            int id = 0;
+            foreach(var item in items)
+            {
+                wormholes.Add(new Wormhole()
+                {
+                    Id = id++,
+                    Name = item.Name,
+                    Class = item.Class,
+                    Phenomena = string.IsNullOrEmpty(item.Phenomena) ? -1 : phenomenas.IndexOf(item.Phenomena),
+                    Statics = GetPortalIds(item.Statics),
+                    Wanderings = GetPortalIds(item.Wanderings),
+                });
+            }
+            string GetPortalIds(string str)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                if (string.IsNullOrEmpty(str))
+                {
+                    return null;
+                }
+                foreach(var item in str.Split(','))
+                {
+                    var p = portals.FirstOrDefault(p => p.Name == item);
+                    if(p != null)
+                    {
+                        stringBuilder.Append(p.Id);
+                        stringBuilder.Append(',');
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                return stringBuilder.ToString();
             }
         }
         #endregion

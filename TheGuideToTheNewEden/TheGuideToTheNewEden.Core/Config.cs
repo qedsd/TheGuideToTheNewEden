@@ -28,6 +28,10 @@ namespace TheGuideToTheNewEden.Core
         /// </summary>
         public static string DEDDBPath { get; set; }
         /// <summary>
+        /// 虫洞数据库文件路径
+        /// </summary>
+        public static string WormholeDBPath { get; set; }
+        /// <summary>
         /// 星系位置更新文件路径
         /// </summary>
         public static string SolarSystemMapPath { get; set; }
@@ -60,6 +64,7 @@ namespace TheGuideToTheNewEden.Core
             result = DBService.InitMainDb(DBPath) && result;
             //其他必须的数据库
             result = DBService.InitDEDDb(DEDDBPath) && result;
+            result = DBService.InitWormholeDb(WormholeDBPath) && result;
             //...
             //本地化数据库不是必须的
             DBService.InitLocalDb(LocalDBPath);
