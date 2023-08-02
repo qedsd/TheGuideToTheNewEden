@@ -16,11 +16,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
         /// 永联洞
         /// 以,分割
         /// </summary>
+        [SugarColumn(IsNullable = true)]
         public string Statics { get; set; }
         /// <summary>
         /// 随机洞
         /// 以,分割
         /// </summary>
+        [SugarColumn(IsNullable = true)]
         public string Wanderings { get; set; }
     }
 }

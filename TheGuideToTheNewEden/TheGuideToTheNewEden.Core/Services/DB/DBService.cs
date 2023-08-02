@@ -182,6 +182,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 });
                 WormholeDb.DbMaintenance.CreateDatabase();
                 WormholeDb.CodeFirst.InitTables(typeof(WormholePortal));
+                WormholeDb.CodeFirst.InitTables(typeof(Wormhole));
                 return true;
             }
             catch (Exception)

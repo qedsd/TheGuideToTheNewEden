@@ -20,7 +20,24 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
-
+        public static async Task<MapSolarSystem> QueryAsync(string name)
+        {
+            var type = await DBService.MainDb.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemName == name);
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranMapSolarSystemAsync(type);
+            }
+            return type;
+        }
+        public static MapSolarSystem Query(string name)
+        {
+            var type = DBService.MainDb.Queryable<MapSolarSystem>().First(p => p.SolarSystemName == name);
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapSolarSystem(type);
+            }
+            return type;
+        }
         public static async Task<List<MapSolarSystem>> QueryAsync(List<int> ids)
         {
             var types = await DBService.MainDb.Queryable<MapSolarSystem>().Where(p => ids.Contains(p.SolarSystemID)).ToListAsync();

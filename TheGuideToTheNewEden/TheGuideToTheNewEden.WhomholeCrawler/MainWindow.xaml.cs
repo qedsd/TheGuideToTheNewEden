@@ -337,19 +337,18 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
         #endregion
 
         #region 生成虫洞
-        private void CreateWormholeDB()
+        private async void CreateWormholeDB()
         {
             var text = System.IO.File.ReadAllText("wormholes.json");
             var items = JsonConvert.DeserializeObject<List<WormholeModel>>(text);
             var phenomenas = items.Where(p=>p.Phenomena != null).Select(p => p.Phenomena).Distinct().ToList();
             var portals = GetWormholePortals();
             List<Wormhole> wormholes = new List<Wormhole>();
-            int id = 0;
             foreach(var item in items)
             {
                 wormholes.Add(new Wormhole()
                 {
-                    Id = id++,
+                    Id = Core.Services.DB.MapSolarSystemService.Query(item.Name).SolarSystemID,
                     Name = item.Name,
                     Class = item.Class,
                     Phenomena = string.IsNullOrEmpty(item.Phenomena) ? -1 : phenomenas.IndexOf(item.Phenomena),
@@ -380,6 +379,8 @@ namespace TheGuideToTheNewEden.WhomholeCrawler
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
                 return stringBuilder.ToString();
             }
+
+            await Core.Services.DB.WormholeService.InsertAsync(wormholes);
         }
         #endregion
     }

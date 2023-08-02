@@ -12,5 +12,9 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             await DBService.WormholeDb.Insertable(portals).ExecuteCommandAsync();
         }
+        public static async Task InsertAsync(List<Wormhole> wormholes)
+        {
+            await DBService.WormholeDb.Insertable(wormholes).ExecuteCommandAsync();
+        }
     }
 }
