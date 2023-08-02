@@ -25,6 +25,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// 虫洞数据库
         /// </summary>
         internal static SqlSugarScope WormholeDb;
+        /// <summary>
+        /// 死亡远征、虫洞、任务、北背景故事等静态数据库
+        /// </summary>
+        internal static SqlSugarScope StaticDb;
 
         internal static bool NeedLocalization => Config.NeedLocalization;
 
@@ -183,6 +187,43 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 WormholeDb.DbMaintenance.CreateDatabase();
                 WormholeDb.CodeFirst.InitTables(typeof(WormholePortal));
                 WormholeDb.CodeFirst.InitTables(typeof(Wormhole));
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        internal static bool InitStaticDb(string path)
+        {
+            if (!ValidFile(path))
+            {
+                return false;
+            }
+            try
+            {
+                StaticDb = new SqlSugarScope(new ConnectionConfig()
+                {
+                    ConnectionString = $"DataSource={path}",
+                    DbType = DbType.Sqlite,
+                    IsAutoCloseConnection = true,
+                    ConfigId = Guid.NewGuid(),
+                    ConfigureExternalServices = new ConfigureExternalServices
+                    {
+                        EntityService = (c, p) =>
+                        {
+                            if (c.PropertyType.IsGenericType && c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                            {
+                                p.IsNullable = true;
+                            }
+                        }
+                    },
+                    MoreSettings = new ConnMoreSettings()
+                    {
+                        IsAutoRemoveDataCache = true
+                    }
+                });
                 return true;
             }
             catch (Exception)

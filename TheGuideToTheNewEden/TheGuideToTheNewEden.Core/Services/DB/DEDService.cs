@@ -10,11 +10,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
     {
         public static async Task<List<DED>> QueryAllAsync(int type)
         {
-            return await DBService.DEDDb.Queryable<DED>().Where(p=>p.Type == type).ToListAsync();
+            return await DBService.StaticDb.Queryable<DED>().Where(p=>p.Type == type).ToListAsync();
         }
         public static async Task<List<DED>> SearchAsync(string portName)
         {
-            return await DBService.DEDDb.Queryable<DED>().Where(p => p.TitleCN.Contains(portName) || p.TitleEN.Contains(portName)).ToListAsync();
+            return await DBService.StaticDb.Queryable<DED>().Where(p => p.TitleCN.Contains(portName) || p.TitleEN.Contains(portName)).ToListAsync();
         }
     }
 }

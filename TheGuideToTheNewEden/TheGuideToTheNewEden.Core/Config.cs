@@ -31,6 +31,11 @@ namespace TheGuideToTheNewEden.Core
         /// 虫洞数据库文件路径
         /// </summary>
         public static string WormholeDBPath { get; set; }
+
+        /// <summary>
+        /// 死亡远征、虫洞、任务、北背景故事等静态数据库
+        /// </summary>
+        public static string StaticDBPath { get; set; }
         /// <summary>
         /// 星系位置更新文件路径
         /// </summary>
@@ -63,8 +68,9 @@ namespace TheGuideToTheNewEden.Core
             bool result = true;
             result = DBService.InitMainDb(DBPath) && result;
             //其他必须的数据库
-            result = DBService.InitDEDDb(DEDDBPath) && result;
-            result = DBService.InitWormholeDb(WormholeDBPath) && result;
+            //result = DBService.InitDEDDb(DEDDBPath) && result;
+            //result = DBService.InitWormholeDb(WormholeDBPath) && result;
+            result = DBService.InitStaticDb(StaticDBPath) && result;
             //...
             //本地化数据库不是必须的
             DBService.InitLocalDb(LocalDBPath);

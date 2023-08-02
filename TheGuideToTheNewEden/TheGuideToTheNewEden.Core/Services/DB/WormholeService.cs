@@ -16,5 +16,23 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             await DBService.WormholeDb.Insertable(wormholes).ExecuteCommandAsync();
         }
+
+        public static async Task<List<WormholePortal>> QueryPortalAsync()
+        {
+            return await DBService.StaticDb.Queryable<WormholePortal>().ToListAsync();
+        }
+        public static async Task<List<WormholePortal>> QueryPortalAsync(string partName)
+        {
+            return await DBService.StaticDb.Queryable<WormholePortal>().Where(p=>p.Name.Contains(partName)).ToListAsync();
+        }
+
+        public static async Task<List<Wormhole>> QueryWormholeAsync()
+        {
+            return await DBService.StaticDb.Queryable<Wormhole>().ToListAsync();
+        }
+        public static async Task<List<Wormhole>> QueryWormholeAsync(string partName)
+        {
+            return await DBService.StaticDb.Queryable<Wormhole>().Where(p => p.Name.Contains(partName)).ToListAsync();
+        }
     }
 }
