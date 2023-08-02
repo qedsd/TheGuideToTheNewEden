@@ -1,0 +1,78 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.WormholePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="ItemStackPanel" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Margin" Value="0,10" />
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel
+            Margin="0,8,8,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <AutoSuggestBox
+                x:Name="AutoSuggestBox"
+                Width="300"
+                DisplayMemberPath="Name"
+                PlaceholderText="{StaticResource WormholePage_Search}"
+                QueryIcon="Find"
+                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                TextChanged="AutoSuggestBox_TextChanged" />
+        </StackPanel>
+        <Grid
+            x:Name="DetailGrid"
+            Grid.Row="1"
+            Margin="16,0,0,0">
+            <Grid x:Name="WormholeGrid" Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Style="{StaticResource ItemStackPanel}">
+                        <TextBlock
+                            x:Name="TextBlock_WhName"
+                            FontSize="28"
+                            Foreground="{ThemeResource SystemAccentColor}" />
+                    </StackPanel>
+                    <StackPanel Margin="8,16,0,0">
+                        <StackPanel Style="{StaticResource ItemStackPanel}">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Class}" />
+                            <TextBlock
+                                x:Name="TextBlock_WhClass"
+                                Margin="16,0,0,0"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Style="{StaticResource ItemStackPanel}">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Static}" />
+                            <StackPanel x:Name="StackPanel_Static" Orientation="Horizontal" />
+                        </StackPanel>
+                        <StackPanel Style="{StaticResource ItemStackPanel}">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Wandering}" />
+                            <StackPanel x:Name="StackPanel_Wandering" Orientation="Horizontal" />
+                        </StackPanel>
+                        <StackPanel Style="{StaticResource ItemStackPanel}">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Phenomena}" />
+                            <TextBlock
+                                x:Name="TextBlock_Phenomena"
+                                Margin="16,0,0,0"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="WormholePortalGrid" Visibility="Collapsed">
+                <local:WormholePortalPage x:Name="WormholePortalPage" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

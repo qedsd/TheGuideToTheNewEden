@@ -26,6 +26,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return await DBService.StaticDb.Queryable<WormholePortal>().Where(p=>p.Name.Contains(partName)).ToListAsync();
         }
 
+        public static WormholePortal QueryPortal(int id)
+        {
+            return DBService.StaticDb.Queryable<WormholePortal>().First(p => p.Id == id);
+        }
+
         public static async Task<List<Wormhole>> QueryWormholeAsync()
         {
             return await DBService.StaticDb.Queryable<Wormhole>().ToListAsync();

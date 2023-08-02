@@ -269,4 +269,45 @@
     <x:String x:Key="AddSerenityAuthDialog_Step1Button">esi.evepc.163.com</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框并点击确定按钮完成授权</x:String>
 
+    <x:String x:Key="WormholePage_Search">搜索虫洞...</x:String>
+    <x:String x:Key="WormholePage_Home">显示洞口列表</x:String>
+    <x:String x:Key="WormholePage_Class">等级</x:String>
+    <x:String x:Key="WormholePage_Static">永联</x:String>
+    <x:String x:Key="WormholePage_Wandering">随机</x:String>
+    <x:String x:Key="WormholePage_Phenomena">天象</x:String>
+
+    <x:String x:Key="WormholePage_Class_1">c1</x:String>
+    <x:String x:Key="WormholePage_Class_2">c2</x:String>
+    <x:String x:Key="WormholePage_Class_3">c3</x:String>
+    <x:String x:Key="WormholePage_Class_4">c4</x:String>
+    <x:String x:Key="WormholePage_Class_5">c5</x:String>
+    <x:String x:Key="WormholePage_Class_6">c6</x:String>
+    <x:String x:Key="WormholePage_Class_12">希拉</x:String>
+    <x:String x:Key="WormholePage_Class_13">破碎虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_14">流浪者岗哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_15">流浪者碉堡虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_16">流浪者游哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_17">流浪者合流虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_18">流浪者堡垒虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_100">高安</x:String>
+    <x:String x:Key="WormholePage_Class_101">底安</x:String>
+    <x:String x:Key="WormholePage_Class_102">00</x:String>
+
+    <x:String x:Key="WormholePage_Phenomena_0">红巨星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_1">激变变星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_2">磁星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_3">脉冲星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_4">沃尔夫-拉叶星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_5">黑洞</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Destination">通往</x:String>
+    <x:String x:Key="WormholePage_Portal_AppearsIn">位于</x:String>
+    <x:String x:Key="WormholePage_Portal_Lifetime">最大稳定时间</x:String>
+    <x:String x:Key="WormholePage_Portal_MaxMassPerJump">最大跳跃质量</x:String>
+    <x:String x:Key="WormholePage_Portal_TotalJumpMass">最大稳定质量</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn">再生位置</x:String>
+    <x:String x:Key="WormholePage_Portal_MassRegen">再生质量</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Static">固定</x:String>
 </ResourceDictionary>

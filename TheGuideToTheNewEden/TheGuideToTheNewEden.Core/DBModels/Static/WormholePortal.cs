@@ -46,7 +46,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
         [SugarColumn(IsNullable = true)]
         public string TotalJumpMassNote { get; set; }
         /// <summary>
-        /// 重生：固定、随机
+        /// 再生：固定、随机
         /// </summary>
         [SugarColumn(IsNullable = true)]
         public string Respawn { get; set; }

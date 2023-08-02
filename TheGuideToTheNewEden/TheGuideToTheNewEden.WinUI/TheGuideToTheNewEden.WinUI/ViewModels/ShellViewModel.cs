@@ -34,6 +34,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem("延迟测试","测试本地与游戏服务器之间延迟", typeof(ServerPingPage)),
                 new ToolItem("翻译","查看游戏专有名词本地化翻译", typeof(TranslationPage)),
                 new ToolItem("死亡远征","死亡远征攻略", typeof(DEDPage)),
+                new ToolItem("虫洞","虫洞信息查询", typeof(WormholePage)),
                 new ToolItem("设置","", typeof(SettingPage)),
             };
         }

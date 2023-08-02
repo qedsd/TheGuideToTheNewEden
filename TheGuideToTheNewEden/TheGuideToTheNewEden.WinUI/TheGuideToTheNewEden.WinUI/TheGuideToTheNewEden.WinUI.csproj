@@ -264,6 +264,8 @@
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
+    <None Remove="Views\WormholePage.xaml" />
+    <None Remove="Views\WormholePortalPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_32.ico" />
@@ -345,6 +347,9 @@
     <None Update="Resources\Database\main.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Database\static.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\default.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -354,6 +359,12 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\WormholePortalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\WormholePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\DEDPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
