@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -33,6 +34,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             CheckUpdate();
             _window.SetTitleBar(CustomDragRegion);
             Loaded -= HomePage_Loaded;
+            NavigationService.HomePage = this;
         }
         #region ¸üÐÂ
         private static string GetVersionDescription()
@@ -119,7 +121,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Header = Helpers.ResourcesHelper.GetString("HomePage_Home"),
                 IsSelected = true,
             };
-            ShellPage content = new ShellPage(this);
+            ShellPage content = new ShellPage();
             item.Content = content;
             sender.TabItems.Add(item);
         }
@@ -133,7 +135,16 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 TabView_AddTabButtonClick(sender, null);
             }
         }
-
+        public void AddTabViewItem(object content, string title)
+        {
+            TabViewItem item = new TabViewItem()
+            {
+                Header = title,
+                IsSelected = true,
+            };
+            item.Content = content;
+            TabView.TabItems.Add(item);
+        }
         public void SetNavigateTo(string title)
         {
             (TabView.SelectedItem as TabViewItem).Header = title;

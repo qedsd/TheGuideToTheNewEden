@@ -7,71 +7,52 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     mc:Ignorable="d">
-    <Page.Resources>
-        <Style x:Key="ItemStackPanel" TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="Margin" Value="0,10" />
-        </Style>
-    </Page.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <StackPanel
-            Margin="0,8,8,0"
-            HorizontalAlignment="Right"
-            Orientation="Horizontal">
-            <AutoSuggestBox
-                x:Name="AutoSuggestBox"
-                Width="300"
-                DisplayMemberPath="Name"
-                PlaceholderText="{StaticResource WormholePage_Search}"
-                QueryIcon="Find"
-                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                TextChanged="AutoSuggestBox_TextChanged" />
-        </StackPanel>
-        <Grid
-            x:Name="DetailGrid"
-            Grid.Row="1"
-            Margin="16,0,0,0">
-            <Grid x:Name="WormholeGrid" Visibility="Collapsed">
-                <StackPanel>
-                    <StackPanel Style="{StaticResource ItemStackPanel}">
-                        <TextBlock
-                            x:Name="TextBlock_WhName"
-                            FontSize="28"
-                            Foreground="{ThemeResource SystemAccentColor}" />
-                    </StackPanel>
-                    <StackPanel Margin="8,16,0,0">
-                        <StackPanel Style="{StaticResource ItemStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Class}" />
-                            <TextBlock
-                                x:Name="TextBlock_WhClass"
-                                Margin="16,0,0,0"
-                                VerticalAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource ItemStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Static}" />
-                            <StackPanel x:Name="StackPanel_Static" Orientation="Horizontal" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource ItemStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Wandering}" />
-                            <StackPanel x:Name="StackPanel_Wandering" Orientation="Horizontal" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource ItemStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource WormholePage_Phenomena}" />
-                            <TextBlock
-                                x:Name="TextBlock_Phenomena"
-                                Margin="16,0,0,0"
-                                VerticalAlignment="Center" />
-                        </StackPanel>
-                    </StackPanel>
 
-                </StackPanel>
+    <Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="8*" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <RichTextBlock
+                    x:Name="RichTextBlock_Main"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    HorizontalTextAlignment="Center" />
             </Grid>
-            <Grid x:Name="WormholePortalGrid" Visibility="Collapsed">
-                <local:WormholePortalPage x:Name="WormholePortalPage" />
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.4*" />
+                        <ColumnDefinition Width="0.6*" />
+                    </Grid.ColumnDefinitions>
+                    <AutoSuggestBox
+                        Name="Search_AutoSuggestBox"
+                        Grid.Column="1"
+                        Margin="0,8,8,0"
+                        HorizontalAlignment="Stretch"
+                        Background="Transparent"
+                        BorderThickness="0,0,0,1"
+                        DisplayMemberPath="Name"
+                        QueryIcon="Find"
+                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                        TextChanged="AutoSuggestBox_TextChanged" />
+                </Grid>
+                <ScrollViewer Grid.Row="1" Margin="0,8,0,40">
+                    <RichTextBlock x:Name="RichTextBlock_Other" VerticalAlignment="Center" />
+                </ScrollViewer>
+
             </Grid>
         </Grid>
     </Grid>

@@ -15,6 +15,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<InvTypeBase>().Where(p => invTypeIds.Contains(p.TypeID)).ToListAsync();
         }
+        public static List<InvTypeBase> TranInvTypes(List<int> invTypeIds)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().Where(p => invTypeIds.Contains(p.TypeID)).ToList();
+        }
         public static async Task<InvTypeBase> TranInvTypeAsync(int invTypeId)
         {
             return await DBService.LocalDb.Queryable<InvTypeBase>().FirstAsync(p => invTypeId == p.TypeID);
@@ -38,6 +42,25 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             var results = await TranInvTypesAsync(invTypes.Select(p => p.TypeID).ToList());
             foreach(var result in results)
+            {
+                keyValuePairs.TryGetValue(result.TypeID, out var keyValue);
+                {
+                    keyValue.TypeName = result.TypeName;
+                    keyValue.Description = result.Description;
+                }
+            }
+            keyValuePairs.Clear();
+            keyValuePairs = null;
+        }
+        public static void TranInvTypes(List<InvType> invTypes)
+        {
+            Dictionary<int, InvType> keyValuePairs = new Dictionary<int, InvType>();
+            foreach (InvType invType in invTypes)
+            {
+                keyValuePairs.Add(invType.TypeID, invType);
+            }
+            var results = TranInvTypes(invTypes.Select(p => p.TypeID).ToList());
+            foreach (var result in results)
             {
                 keyValuePairs.TryGetValue(result.TypeID, out var keyValue);
                 {

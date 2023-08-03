@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.DBModels.Static;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -30,6 +31,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.StaticDb.Queryable<WormholePortal>().First(p => p.Id == id);
         }
+        public static WormholePortal QueryPortalByName(string name)
+        {
+            return DBService.StaticDb.Queryable<WormholePortal>().First(p => p.Name == name);
+        }
 
         public static async Task<List<Wormhole>> QueryWormholeAsync()
         {
@@ -38,6 +43,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task<List<Wormhole>> QueryWormholeAsync(string partName)
         {
             return await DBService.StaticDb.Queryable<Wormhole>().Where(p => p.Name.Contains(partName)).ToListAsync();
+        }
+
+        public static List<WormholeStellar> QueryWormholeStellar(int wormholeId)
+        {
+            return DBService.StaticDb.Queryable<WormholeStellar>().Where(p=>p.Id == wormholeId).ToList();
         }
     }
 }

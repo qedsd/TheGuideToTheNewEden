@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
+using TheGuideToTheNewEden.WinUI.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -21,11 +22,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ShellPage : Page, IPage
     {
-        private HomePage _homePage;
         private BaseWindow _window;
-        public ShellPage(HomePage homePage)
+        public ShellPage()
         {
-            _homePage = homePage;
             this.InitializeComponent();
             Loaded += ShellPage_Loaded;
             BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
@@ -47,7 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 if(ContentFrame.Navigate(item.PageType))
                 {
-                    _homePage.SetNavigateTo(item.Title);
+                    NavigationService.SetNavigateTo(item.Title);
                 }
                 else
                 {

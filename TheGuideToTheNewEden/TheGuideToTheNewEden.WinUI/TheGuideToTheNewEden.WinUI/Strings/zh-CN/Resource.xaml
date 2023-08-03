@@ -22,6 +22,7 @@
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
 
+    <x:String x:Key="ShellPage_Wormhole">虫洞</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -282,15 +283,15 @@
     <x:String x:Key="WormholePage_Class_4">c4</x:String>
     <x:String x:Key="WormholePage_Class_5">c5</x:String>
     <x:String x:Key="WormholePage_Class_6">c6</x:String>
-    <x:String x:Key="WormholePage_Class_12">希拉</x:String>
-    <x:String x:Key="WormholePage_Class_13">破碎虫洞</x:String>
-    <x:String x:Key="WormholePage_Class_14">流浪者岗哨虫洞</x:String>
-    <x:String x:Key="WormholePage_Class_15">流浪者碉堡虫洞</x:String>
-    <x:String x:Key="WormholePage_Class_16">流浪者游哨虫洞</x:String>
-    <x:String x:Key="WormholePage_Class_17">流浪者合流虫洞</x:String>
-    <x:String x:Key="WormholePage_Class_18">流浪者堡垒虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_12">c12 希拉</x:String>
+    <x:String x:Key="WormholePage_Class_13">c13 破碎虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_14">c14 流浪者岗哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_15">c15 流浪者碉堡虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_16">c16 流浪者游哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_17">c17 流浪者合流虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_18">c18 流浪者堡垒虫洞</x:String>
     <x:String x:Key="WormholePage_Class_100">高安</x:String>
-    <x:String x:Key="WormholePage_Class_101">底安</x:String>
+    <x:String x:Key="WormholePage_Class_101">低安</x:String>
     <x:String x:Key="WormholePage_Class_102">00</x:String>
 
     <x:String x:Key="WormholePage_Phenomena_0">红巨星</x:String>
@@ -308,6 +309,6 @@
     <x:String x:Key="WormholePage_Portal_Respawn">再生位置</x:String>
     <x:String x:Key="WormholePage_Portal_MassRegen">再生质量</x:String>
 
-    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</x:String>
-    <x:String x:Key="WormholePage_Portal_Respawn_Static">固定</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">漫游</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Static">永联</x:String>
 </ResourceDictionary>
