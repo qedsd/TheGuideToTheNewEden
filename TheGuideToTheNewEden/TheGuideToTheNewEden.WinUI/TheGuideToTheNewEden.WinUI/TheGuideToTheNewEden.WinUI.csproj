@@ -265,7 +265,6 @@
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
-    <None Remove="Views\WormholePortalPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_32.ico" />
@@ -359,9 +358,6 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Update="Views\WormholePortalPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\WormholePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
