@@ -9,7 +9,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
-        public BaseWindow Window { get; set; }
+        private BaseWindow window;
+        public BaseWindow Window
+        {
+            get
+            {
+                return window ?? Helpers.WindowHelper.MainWindow as BaseWindow;
+            }
+            set => window = value;
+        }
         public BaseViewModel()
         {
         }

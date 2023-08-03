@@ -230,6 +230,7 @@
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
+    <None Remove="Views\BackstoryPage.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\Business\CharacterOrderPage.xaml" />
     <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
@@ -358,6 +359,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\BackstoryPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\WormholePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

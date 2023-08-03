@@ -9,6 +9,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
     {
         [SugarColumn(IsPrimaryKey = true, ColumnDescription = "索引，主键")]
         public int Id { get; set; }
-        public string Content { get; set; }
+        public string Content_Zh { get; set; }
+        public string Content_En { get; set; }
     }
 }
