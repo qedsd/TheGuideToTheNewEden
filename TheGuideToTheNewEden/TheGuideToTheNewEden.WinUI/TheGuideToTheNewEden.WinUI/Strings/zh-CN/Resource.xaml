@@ -1,4 +1,27 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:String x:Key="AppDisplayName">新伊甸漫游指南</x:String>
+
+    <!--  Setting  -->
+    <x:String x:Key="Setting_Theme_Description">选择要显示的应用主题</x:String>
+    <x:String x:Key="Setting_Theme_Title">主题</x:String>
+    <x:String x:Key="Setting_Theme_Dark">暗</x:String>
+    <x:String x:Key="Setting_Theme_Default">系统默认</x:String>
+    <x:String x:Key="Setting_Theme_Light">亮</x:String>
+    <x:String x:Key="Setting_UILanguage_Description">修改界面语言后，需要重启应用程序</x:String>
+    <x:String x:Key="Setting_UILanguage_Title">界面语言</x:String>
+    <x:String x:Key="Setting_LocalDb_Description">物品数据库显示语言。修改后需要重启软件</x:String>
+    <x:String x:Key="Setting_LocalDb_Title">数据库语言</x:String>
+    <x:String x:Key="Setting_GameServer_Description">修改使用的游戏服务器后，部分功能可能需要重启生效</x:String>
+    <x:String x:Key="Setting_GameServer_Title">游戏服务器</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Description">统计服务器在线人数、贴吧活跃度的API服务器地址</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Title">玩家统计API地址</x:String>
+    <x:String x:Key="Setting_Log_Description">玩家统计记录App异常信息地址</x:String>
+    <x:String x:Key="Setting_Log_Title">App日志</x:String>
+    <x:String x:Key="Setting_Log_Check">查看</x:String>
+    <x:String x:Key="Setting_EVELogsPath_Description">只需选择logs文件夹</x:String>
+    <x:String x:Key="Setting_EVELogsPath_Title">EVE日志路径</x:String>
+    <x:String x:Key="Setting_About_Title">关于</x:String>
+
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
     <x:String x:Key="General_Name">名称</x:String>

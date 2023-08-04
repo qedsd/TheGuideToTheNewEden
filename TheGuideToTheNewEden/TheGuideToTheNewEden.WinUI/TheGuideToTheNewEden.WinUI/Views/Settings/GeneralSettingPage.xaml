@@ -20,17 +20,20 @@
                     <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
-            <controls:ExpandableSettingControl x:Uid="Setting_Theme">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_Theme_Title}" Description="{StaticResource Setting_Theme_Description}">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedThemeIndex, Mode=TwoWay}">
-                        <ComboBoxItem x:Uid="Setting_Theme_Default" />
-                        <ComboBoxItem x:Uid="Setting_Theme_Light" />
-                        <ComboBoxItem x:Uid="Setting_Theme_Dark" />
+                        <ComboBoxItem Content="{StaticResource Setting_Theme_Default}" />
+                        <ComboBoxItem Content="{StaticResource Setting_Theme_Light}" />
+                        <ComboBoxItem Content="{StaticResource Setting_Theme_Dark}" />
                     </ComboBox>
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl x:Uid="Setting_UILanguage" Visibility="Collapsed">
+            <controls:ExpandableSettingControl
+                Title="{StaticResource Setting_UILanguage_Title}"
+                Description="{StaticResource Setting_UILanguage_Description}"
+                Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="中文" />
@@ -39,7 +42,7 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl x:Uid="Setting_LocalDb">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_LocalDb_Title}" Description="{StaticResource Setting_LocalDb_Description}">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox
                         Width="128"
@@ -58,7 +61,7 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl x:Uid="Setting_GameServer">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_GameServer_Title}" Description="{StaticResource Setting_GameServer_Description}">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedGameServerIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="Tranquility" />
@@ -67,29 +70,29 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl x:Uid="Setting_PlayerStatus">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_PlayerStatus_Title}" Description="{StaticResource Setting_PlayerStatus_Description}">
                 <StackPanel Orientation="Horizontal">
                     <TextBox Width="240" Text="{x:Bind VM.PlayerStatusApi, Mode=TwoWay}" />
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl x:Uid="Setting_EVELogsPath">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_EVELogsPath_Title}" Description="{StaticResource Setting_EVELogsPath_Description}">
                 <StackPanel Orientation="Horizontal">
                     <TextBox Width="240" Text="{x:Bind VM.EvelogsPath, Mode=TwoWay}" />
                 </StackPanel>
             </controls:ExpandableSettingControl>
-            <controls:ExpandableSettingControl x:Uid="Setting_Log">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_Log_Title}" Description="{StaticResource Setting_Log_Description}">
                 <StackPanel Orientation="Horizontal">
                     <Button Width="100" Command="{x:Bind VM.CheckLogCommand}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Uid="Setting_Log_Check" />
+                                <TextBlock Text="{StaticResource Setting_Log_Check}" />
                             </StackPanel>
                         </Button.Content>
                     </Button>
                 </StackPanel>
             </controls:ExpandableSettingControl>
-            <controls:ExpandableSettingControl Title="关于">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_About_Title}">
                 <controls:ExpandableSettingControl.ExpandableContent>
                     <RichTextBlock Margin="60,10">
                         <Paragraph>

@@ -237,7 +237,6 @@
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
-    <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\MailDetailPage.xaml" />
@@ -483,12 +482,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\CharacterPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="Views\SettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -516,5 +509,9 @@
     <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Strings\en-US\" />
   </ItemGroup>
 </Project>
