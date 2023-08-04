@@ -25,12 +25,31 @@
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
 
+    <x:String x:Key="ShellPage_Character">角色</x:String>
+    <x:String x:Key="ShellPage_Character_Desc">查看角色技能、邮件、合同等信息</x:String>
+    <x:String x:Key="ShellPage_Market">市场</x:String>
+    <x:String x:Key="ShellPage_Market_Desc">查看市场订单</x:String>
+    <x:String x:Key="ShellPage_Business">商业</x:String>
+    <x:String x:Key="ShellPage_Business_Desc">市场价格对比</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning">频道预警</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning_Desc">聊天频道手动预警</x:String>
+    <x:String x:Key="ShellPage_GamePreview">多开预览</x:String>
+    <x:String x:Key="ShellPage_GamePreview_Desc">多开时游戏窗口置顶辅助</x:String>
+    <x:String x:Key="ShellPage_Contract">公开合同</x:String>
+    <x:String x:Key="ShellPage_Contract_Desc">查看星系的公开合同</x:String>
+    <x:String x:Key="ShellPage_ServerPing">延迟测试</x:String>
+    <x:String x:Key="ShellPage_ServerPing_Desc">测试本地与游戏服务器之间延迟</x:String>
+    <x:String x:Key="ShellPage_Translation">翻译</x:String>
+    <x:String x:Key="ShellPage_Translation_Desc">查看游戏专有名词本地化翻译</x:String>
+    <x:String x:Key="ShellPage_DED">死亡远征</x:String>
+    <x:String x:Key="ShellPage_DED_Desc">死亡远征攻略</x:String>
     <x:String x:Key="ShellPage_Wormhole">虫洞</x:String>
     <x:String x:Key="ShellPage_Wormhole_Desc">虫洞信息查询</x:String>
     <x:String x:Key="ShellPage_Backstory">背景故事</x:String>
     <x:String x:Key="ShellPage_Backstory_Desc">种族、历史、科技、组织</x:String>
     <x:String x:Key="ShellPage_Mission">任务</x:String>
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
+    <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>

@@ -24,20 +24,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             VersionDescription = GetVersionDescription();
             ToolItems = new List<ToolItem>()
             {
-                new ToolItem("角色","查看角色技能、邮件、合同等信息", typeof(CharacterPage)),
-                new ToolItem("市场","查看市场订单", typeof(MarketPage)),
-                new ToolItem("商业","市场价格对比",typeof(BusinessPage)),
-                new ToolItem("频道预警","聊天频道手动预警", typeof(EarlyWarningPage)),
-                //new ToolItem("本地预警","本地频道声望自动识别", typeof(LocalIntelPage)),
-                new ToolItem("多开预览","多开时游戏窗口置顶辅助", typeof(GamePreviewMgrPage)),
-                new ToolItem("公开合同","查看星系的公开合同", typeof(ContractPage)),
-                new ToolItem("延迟测试","测试本地与游戏服务器之间延迟", typeof(ServerPingPage)),
-                new ToolItem("翻译","查看游戏专有名词本地化翻译", typeof(TranslationPage)),
-                new ToolItem("死亡远征","死亡远征攻略", typeof(DEDPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Character"),ResourcesHelper.GetString("ShellPage_Character_Desc"), typeof(CharacterPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_EarlyWarning"),ResourcesHelper.GetString("ShellPage_EarlyWarning_Desc"), typeof(EarlyWarningPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_GamePreview"),ResourcesHelper.GetString("ShellPage_GamePreview_Desc"), typeof(GamePreviewMgrPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Market"),ResourcesHelper.GetString("ShellPage_Market_Desc"), typeof(MarketPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Business"),ResourcesHelper.GetString("ShellPage_Business_Desc"),typeof(BusinessPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Contract"), ResourcesHelper.GetString("ShellPage_Contract_Desc"), typeof(ContractPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_ServerPing"), ResourcesHelper.GetString("ShellPage_ServerPing_Desc"), typeof(ServerPingPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Translation"), ResourcesHelper.GetString("ShellPage_Translation_Desc"), typeof(TranslationPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Wormhole"),ResourcesHelper.GetString("ShellPage_Wormhole_Desc"), typeof(WormholePage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_DED"), ResourcesHelper.GetString("ShellPage_DED_Desc"), typeof(DEDPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Backstory"),ResourcesHelper.GetString("ShellPage_Backstory_Desc"), typeof(BackstoryPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Mission"),ResourcesHelper.GetString("ShellPage_Mission_Desc"), typeof(MissionPage)),
-                new ToolItem("设置","", typeof(SettingPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Setting"),"", typeof(SettingPage)),
             };
         }
         private static string GetVersionDescription()
