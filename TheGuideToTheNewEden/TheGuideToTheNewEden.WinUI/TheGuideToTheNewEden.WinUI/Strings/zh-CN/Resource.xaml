@@ -29,6 +29,8 @@
     <x:String x:Key="ShellPage_Wormhole_Desc">虫洞信息查询</x:String>
     <x:String x:Key="ShellPage_Backstory">背景故事</x:String>
     <x:String x:Key="ShellPage_Backstory_Desc">种族、历史、科技、组织</x:String>
+    <x:String x:Key="ShellPage_Mission">任务</x:String>
+    <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -280,7 +282,7 @@
     <x:String x:Key="WormholePage_Home">显示洞口列表</x:String>
     <x:String x:Key="WormholePage_Class">等级</x:String>
     <x:String x:Key="WormholePage_Static">永联</x:String>
-    <x:String x:Key="WormholePage_Wandering">随机</x:String>
+    <x:String x:Key="WormholePage_Wandering">漫游</x:String>
     <x:String x:Key="WormholePage_Phenomena">天象</x:String>
 
     <x:String x:Key="WormholePage_Class_1">c1</x:String>
@@ -315,11 +317,17 @@
     <x:String x:Key="WormholePage_Portal_Respawn">再生位置</x:String>
     <x:String x:Key="WormholePage_Portal_MassRegen">再生质量</x:String>
 
-    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">漫游</x:String>
-    <x:String x:Key="WormholePage_Portal_Respawn_Static">永联</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Static">固定</x:String>
 
     <x:String x:Key="Backstory_Type_Race">种族</x:String>
     <x:String x:Key="Backstory_Type_History">历史</x:String>
     <x:String x:Key="Backstory_Type_Technology">科技</x:String>
     <x:String x:Key="Backstory_Type_Organization">组织</x:String>
+
+    <x:String x:Key="Mission_Level_1">1级</x:String>
+    <x:String x:Key="Mission_Level_2">2级</x:String>
+    <x:String x:Key="Mission_Level_3">3级</x:String>
+    <x:String x:Key="Mission_Level_4">4级</x:String>
+    <x:String x:Key="Mission_Level_5">5级</x:String>
 </ResourceDictionary>

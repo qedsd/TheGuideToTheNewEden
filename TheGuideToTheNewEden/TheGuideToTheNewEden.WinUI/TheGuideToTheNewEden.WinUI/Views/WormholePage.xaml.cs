@@ -144,7 +144,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 staticsParagraph.Inlines.Add(new Run()
                 {
                     FontSize = defaultFontSize,
-                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Portal_Respawn_Static")}: ",
+                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Static")}: ",
                     FontWeight = new Windows.UI.Text.FontWeight(1)
                 });
                 foreach (var s in wormhole.Statics.Split(','))
@@ -159,7 +159,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 wanderingsParagraph.Inlines.Add(new Run()
                 {
                     FontSize = defaultFontSize,
-                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Portal_Respawn_Wandering")}: ",
+                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Wandering")}: ",
                     FontWeight = new Windows.UI.Text.FontWeight(1)
                 });
                 foreach (var s in wormhole.Wanderings.Split(','))
