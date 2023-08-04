@@ -237,6 +237,7 @@
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
+    <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\MailDetailPage.xaml" />
@@ -359,6 +360,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\CharacterPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\MissionPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
