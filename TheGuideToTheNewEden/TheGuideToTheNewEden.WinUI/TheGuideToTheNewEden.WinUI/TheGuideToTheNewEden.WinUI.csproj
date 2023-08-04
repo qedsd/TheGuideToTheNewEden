@@ -5,517 +5,98 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
+    <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
-    <ApplicationIcon>logo_32.ico</ApplicationIcon>
-    <PackageIcon>logo_180.png</PackageIcon>
-	  <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-	 <!--package需注释掉-->
-	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <WindowsPackageType>None</WindowsPackageType>
-    <AssemblyVersion>2.4.1.0</AssemblyVersion>
-    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
-    <!--package需注释掉-->
+    <EnableMsixTooling>true</EnableMsixTooling>
+	  <ApplicationIcon>logo_32.ico</ApplicationIcon>
+	  <!--package需注释掉-->
+	  <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	  <WindowsPackageType>None</WindowsPackageType>
+	  <AssemblyVersion>2.4.1.0</AssemblyVersion>
+	  <AssemblyName>TheGuideToTheNewEden</AssemblyName>
+	  <!--package需注释掉-->
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\Icon\alliances.png" />
-    <None Remove="Assets\Icon\character.png" />
-    <None Remove="Assets\Icon\corporation.png" />
-    <None Remove="Assets\Icon\earth_128.png" />
-    <None Remove="Assets\Icon\eve-online.png" />
-    <None Remove="Assets\Icon\region.png" />
-    <None Remove="Assets\Icon\ship.png" />
-    <None Remove="Assets\Icon\systems.png" />
-    <None Remove="Assets\Icon\transparent_32.png" />
-    <None Remove="Assets\Icon\WindowIcons\abyssalFilament.png" />
-    <None Remove="Assets\Icon\WindowIcons\accessGroups.png" />
-    <None Remove="Assets\Icon\WindowIcons\achievements.png" />
-    <None Remove="Assets\Icon\WindowIcons\activityTracker.png" />
-    <None Remove="Assets\Icon\WindowIcons\agent.png" />
-    <None Remove="Assets\Icon\WindowIcons\agentfinder.png" />
-    <None Remove="Assets\Icon\WindowIcons\aggression.png" />
-    <None Remove="Assets\Icon\WindowIcons\alliances.png" />
-    <None Remove="Assets\Icon\WindowIcons\assets.png" />
-    <None Remove="Assets\Icon\WindowIcons\assetscorp.png" />
-    <None Remove="Assets\Icon\WindowIcons\attention.png" />
-    <None Remove="Assets\Icon\WindowIcons\attributes.png" />
-    <None Remove="Assets\Icon\WindowIcons\augmentations.png" />
-    <None Remove="Assets\Icon\WindowIcons\basicServices.png" />
-    <None Remove="Assets\Icon\WindowIcons\biography.png" />
-    <None Remove="Assets\Icon\WindowIcons\bleedchannel.png" />
-    <None Remove="Assets\Icon\WindowIcons\bountyoffice.png" />
-    <None Remove="Assets\Icon\WindowIcons\browser.png" />
-    <None Remove="Assets\Icon\WindowIcons\browserbookmarks.png" />
-    <None Remove="Assets\Icon\WindowIcons\calculator.png" />
-    <None Remove="Assets\Icon\WindowIcons\calendar.png" />
-    <None Remove="Assets\Icon\WindowIcons\capitalnavigation.png" />
-    <None Remove="Assets\Icon\WindowIcons\cargo.png" />
-    <None Remove="Assets\Icon\WindowIcons\cargocontainer.png" />
-    <None Remove="Assets\Icon\WindowIcons\cargocontainerlocked.png" />
-    <None Remove="Assets\Icon\WindowIcons\cargoscan.png" />
-    <None Remove="Assets\Icon\WindowIcons\certificates.png" />
-    <None Remove="Assets\Icon\WindowIcons\channeloperator.png" />
-    <None Remove="Assets\Icon\WindowIcons\charactersheet.png" />
-    <None Remove="Assets\Icon\WindowIcons\charcustomization.png" />
-    <None Remove="Assets\Icon\WindowIcons\chatchannel.png" />
-    <None Remove="Assets\Icon\WindowIcons\chatchannels.png" />
-    <None Remove="Assets\Icon\WindowIcons\cloneBay.png" />
-    <None Remove="Assets\Icon\WindowIcons\combatlog.png" />
-    <None Remove="Assets\Icon\WindowIcons\commandcenterhold.png" />
-    <None Remove="Assets\Icon\WindowIcons\comparetool.png" />
-    <None Remove="Assets\Icon\WindowIcons\concord.png" />
-    <None Remove="Assets\Icon\WindowIcons\contacts.png" />
-    <None Remove="Assets\Icon\WindowIcons\container.png" />
-    <None Remove="Assets\Icon\WindowIcons\contractauction.png" />
-    <None Remove="Assets\Icon\WindowIcons\contractcourier.png" />
-    <None Remove="Assets\Icon\WindowIcons\contractitemexchange.png" />
-    <None Remove="Assets\Icon\WindowIcons\contracts.png" />
-    <None Remove="Assets\Icon\WindowIcons\corpdeliveries.png" />
-    <None Remove="Assets\Icon\WindowIcons\corpHangar.png" />
-    <None Remove="Assets\Icon\WindowIcons\corpmap.png" />
-    <None Remove="Assets\Icon\WindowIcons\corporation.png" />
-    <None Remove="Assets\Icon\WindowIcons\corporationdecorations.png" />
-    <None Remove="Assets\Icon\WindowIcons\corporationlocations.png" />
-    <None Remove="Assets\Icon\WindowIcons\corporationmembers.png" />
-    <None Remove="Assets\Icon\WindowIcons\corporationstandings.png" />
-    <None Remove="Assets\Icon\WindowIcons\criminal.png" />
-    <None Remove="Assets\Icon\WindowIcons\criminal.zh.png" />
-    <None Remove="Assets\Icon\WindowIcons\criticalstate.png" />
-    <None Remove="Assets\Icon\WindowIcons\decorations.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryActivities.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryIndustry.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryInventory.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryMarket.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryPersonal.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryServices.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryShip.png" />
-    <None Remove="Assets\Icon\WindowIcons\directorySocial.png" />
-    <None Remove="Assets\Icon\WindowIcons\directoryUtilities.png" />
-    <None Remove="Assets\Icon\WindowIcons\docking.png" />
-    <None Remove="Assets\Icon\WindowIcons\dogtags.png" />
-    <None Remove="Assets\Icon\WindowIcons\dronebay.png" />
-    <None Remove="Assets\Icon\WindowIcons\drones.png" />
-    <None Remove="Assets\Icon\WindowIcons\employmenthistory.png" />
-    <None Remove="Assets\Icon\WindowIcons\evemail.png" />
-    <None Remove="Assets\Icon\WindowIcons\evemailcompose.png" />
-    <None Remove="Assets\Icon\WindowIcons\evemailtag.png" />
-    <None Remove="Assets\Icon\WindowIcons\factionalwarfare.png" />
-    <None Remove="Assets\Icon\WindowIcons\fitting.png" />
-    <None Remove="Assets\Icon\WindowIcons\fittingManagement.png" />
-    <None Remove="Assets\Icon\WindowIcons\fleet.png" />
-    <None Remove="Assets\Icon\WindowIcons\Folder.png" />
-    <None Remove="Assets\Icon\WindowIcons\folder_cargo.png" />
-    <None Remove="Assets\Icon\WindowIcons\forward.png" />
-    <None Remove="Assets\Icon\WindowIcons\fuelbay.png" />
-    <None Remove="Assets\Icon\WindowIcons\gashold.png" />
-    <None Remove="Assets\Icon\WindowIcons\grouplist.png" />
-    <None Remove="Assets\Icon\WindowIcons\help.png" />
-    <None Remove="Assets\Icon\WindowIcons\hidestatus.png" />
-    <None Remove="Assets\Icon\WindowIcons\hidewindows.png" />
-    <None Remove="Assets\Icon\WindowIcons\incursions.png" />
-    <None Remove="Assets\Icon\WindowIcons\Industry.png" />
-    <None Remove="Assets\Icon\WindowIcons\info.png" />
-    <None Remove="Assets\Icon\WindowIcons\insider.png" />
-    <None Remove="Assets\Icon\WindowIcons\insurance.png" />
-    <None Remove="Assets\Icon\WindowIcons\ISIS.png" />
-    <None Remove="Assets\Icon\WindowIcons\itemHangar.png" />
-    <None Remove="Assets\Icon\WindowIcons\items.png" />
-    <None Remove="Assets\Icon\WindowIcons\journal.png" />
-    <None Remove="Assets\Icon\WindowIcons\jukebox.png" />
-    <None Remove="Assets\Icon\WindowIcons\jumpclones.png" />
-    <None Remove="Assets\Icon\WindowIcons\killreport.png" />
-    <None Remove="Assets\Icon\WindowIcons\killrights.png" />
-    <None Remove="Assets\Icon\WindowIcons\limitedengagement.png" />
-    <None Remove="Assets\Icon\WindowIcons\lockedcontainer.png" />
-    <None Remove="Assets\Icon\WindowIcons\log.png" />
-    <None Remove="Assets\Icon\WindowIcons\lpstore.png" />
-    <None Remove="Assets\Icon\WindowIcons\map.png" />
-    <None Remove="Assets\Icon\WindowIcons\market.png" />
-    <None Remove="Assets\Icon\WindowIcons\marketdeliveries.png" />
-    <None Remove="Assets\Icon\WindowIcons\medical.png" />
-    <None Remove="Assets\Icon\WindowIcons\member.png" />
-    <None Remove="Assets\Icon\WindowIcons\memberdelay.png" />
-    <None Remove="Assets\Icon\WindowIcons\mercenary.png" />
-    <None Remove="Assets\Icon\WindowIcons\mercenaryadd.png" />
-    <None Remove="Assets\Icon\WindowIcons\mercenaryally.png" />
-    <None Remove="Assets\Icon\WindowIcons\mercenaryattention.png" />
-    <None Remove="Assets\Icon\WindowIcons\mineralhold.png" />
-    <None Remove="Assets\Icon\WindowIcons\miningLedger.png" />
-    <None Remove="Assets\Icon\WindowIcons\mischold.png" />
-    <None Remove="Assets\Icon\WindowIcons\moonDrill.png" />
-    <None Remove="Assets\Icon\WindowIcons\moonDrillScheduler.png" />
-    <None Remove="Assets\Icon\WindowIcons\mutation.png" />
-    <None Remove="Assets\Icon\WindowIcons\mutualwars.png" />
-    <None Remove="Assets\Icon\WindowIcons\navigation.png" />
-    <None Remove="Assets\Icon\WindowIcons\NES.png" />
-    <None Remove="Assets\Icon\WindowIcons\newspost.png" />
-    <None Remove="Assets\Icon\WindowIcons\note.png" />
-    <None Remove="Assets\Icon\WindowIcons\notegroup.png" />
-    <None Remove="Assets\Icon\WindowIcons\notepad.png" />
-    <None Remove="Assets\Icon\WindowIcons\offices.png" />
-    <None Remove="Assets\Icon\WindowIcons\opportunitiesTree.png" />
-    <None Remove="Assets\Icon\WindowIcons\orehold.png" />
-    <None Remove="Assets\Icon\WindowIcons\other.png" />
-    <None Remove="Assets\Icon\WindowIcons\peopleandplaces.png" />
-    <None Remove="Assets\Icon\WindowIcons\personalDeliveries.png" />
-    <None Remove="Assets\Icon\WindowIcons\personallocations.png" />
-    <None Remove="Assets\Icon\WindowIcons\personalstandings.png" />
-    <None Remove="Assets\Icon\WindowIcons\pilotlicense.png" />
-    <None Remove="Assets\Icon\WindowIcons\planetarycommodities.png" />
-    <None Remove="Assets\Icon\WindowIcons\planets.png" />
-    <None Remove="Assets\Icon\WindowIcons\politics.png" />
-    <None Remove="Assets\Icon\WindowIcons\projectdiscovery.png" />
-    <None Remove="Assets\Icon\WindowIcons\question.png" />
-    <None Remove="Assets\Icon\WindowIcons\reactions.png" />
-    <None Remove="Assets\Icon\WindowIcons\recruitment.png" />
-    <None Remove="Assets\Icon\WindowIcons\redeem.png" />
-    <None Remove="Assets\Icon\WindowIcons\repairshop.png" />
-    <None Remove="Assets\Icon\WindowIcons\reply.png" />
-    <None Remove="Assets\Icon\WindowIcons\replyall.png" />
-    <None Remove="Assets\Icon\WindowIcons\Reprocess.png" />
-    <None Remove="Assets\Icon\WindowIcons\reprocessing.png" />
-    <None Remove="Assets\Icon\WindowIcons\research.png" />
-    <None Remove="Assets\Icon\WindowIcons\restriction.png" />
-    <None Remove="Assets\Icon\WindowIcons\salvagehold.png" />
-    <None Remove="Assets\Icon\WindowIcons\sanctionableactions.png" />
-    <None Remove="Assets\Icon\WindowIcons\satellite.png" />
-    <None Remove="Assets\Icon\WindowIcons\scopeNetwork.png" />
-    <None Remove="Assets\Icon\WindowIcons\searchmarket.png" />
-    <None Remove="Assets\Icon\WindowIcons\securitystatus.png" />
-    <None Remove="Assets\Icon\WindowIcons\Settings.png" />
-    <None Remove="Assets\Icon\WindowIcons\shiphangar.png" />
-    <None Remove="Assets\Icon\WindowIcons\ships.png" />
-    <None Remove="Assets\Icon\WindowIcons\shipscan.png" />
-    <None Remove="Assets\Icon\WindowIcons\skills.png" />
-    <None Remove="Assets\Icon\WindowIcons\skins.png" />
-    <None Remove="Assets\Icon\WindowIcons\smallfolder.png" />
-    <None Remove="Assets\Icon\WindowIcons\sovereignty.png" />
-    <None Remove="Assets\Icon\WindowIcons\standings.png" />
-    <None Remove="Assets\Icon\WindowIcons\station.png" />
-    <None Remove="Assets\Icon\WindowIcons\stationcontainer.png" />
-    <None Remove="Assets\Icon\WindowIcons\stationcontainerlocked.png" />
-    <None Remove="Assets\Icon\WindowIcons\stop.png" />
-    <None Remove="Assets\Icon\WindowIcons\structurebrowser.png" />
-    <None Remove="Assets\Icon\WindowIcons\subSystems.png" />
-    <None Remove="Assets\Icon\WindowIcons\surrender.png" />
-    <None Remove="Assets\Icon\WindowIcons\surrenderattention.png" />
-    <None Remove="Assets\Icon\WindowIcons\systems.png" />
-    <None Remove="Assets\Icon\WindowIcons\terminate.png" />
-    <None Remove="Assets\Icon\WindowIcons\terminate.zh.png" />
-    <None Remove="Assets\Icon\WindowIcons\theAgency.PNG" />
-    <None Remove="Assets\Icon\WindowIcons\tipoftheday.png" />
-    <None Remove="Assets\Icon\WindowIcons\trainingqueue.png" />
-    <None Remove="Assets\Icon\WindowIcons\triglavianRace.png" />
-    <None Remove="Assets\Icon\WindowIcons\triglavians.png" />
-    <None Remove="Assets\Icon\WindowIcons\tutorial.png" />
-    <None Remove="Assets\Icon\WindowIcons\UIHelper.png" />
-    <None Remove="Assets\Icon\WindowIcons\votes.png" />
-    <None Remove="Assets\Icon\WindowIcons\wallet.png" />
-    <None Remove="Assets\Icon\WindowIcons\warning.png" />
-    <None Remove="Assets\Icon\WindowIcons\warreport.png" />
-    <None Remove="Assets\Icon\WindowIcons\wars.png" />
-    <None Remove="BaseWindow.xaml" />
-    <None Remove="Controls\ExpandableSettingControl.xaml" />
-    <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
-    <None Remove="Controls\MapSystemSelectorControl.xaml" />
-    <None Remove="Controls\MarketLocationSelectorControl.xaml" />
-    <None Remove="Controls\MarketTreeControl.xaml" />
-    <None Remove="Controls\NavigatePageControl.xaml" />
-    <None Remove="Controls\SelecteCharacterControl.xaml" />
-    <None Remove="Controls\SelecteRegionControl.xaml" />
-    <None Remove="Controls\StructureSelectorControl.xaml" />
-    <None Remove="Dialogs\AddSerenityAuthDialog.xaml" />
-    <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
-    <None Remove="Strings\zh-CN\Resource.xaml" />
-    <None Remove="Styles\Syncfusion.xaml" />
-    <None Remove="Views\BackstoryPage.xaml" />
-    <None Remove="Views\BusinessPage.xaml" />
-    <None Remove="Views\Business\CharacterOrderPage.xaml" />
-    <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
-    <None Remove="Views\Business\ScalperPage.xaml" />
-    <None Remove="Views\Business\ShoppingCartPage.xaml" />
-    <None Remove="Views\Business\ShoppingRecordPage.xaml" />
-    <None Remove="Views\CharacterPage.xaml" />
-    <None Remove="Views\Character\ClonePage.xaml" />
-    <None Remove="Views\Character\ContractPage.xaml" />
-    <None Remove="Views\Character\MailDetailPage.xaml" />
-    <None Remove="Views\Character\MailPage.xaml" />
-    <None Remove="Views\Character\OverviewPage.xaml" />
-    <None Remove="Views\Character\SkillPage.xaml" />
-    <None Remove="Views\Character\WalletPage.xaml" />
-    <None Remove="Views\ContractDetailPage.xaml" />
-    <None Remove="Views\ContractPage.xaml" />
-    <None Remove="Views\DEDPage.xaml" />
-    <None Remove="Views\EarlyWarningItemPage.xaml" />
-    <None Remove="Views\EarlyWarningPage.xaml" />
-    <None Remove="Views\HomePage.xaml" />
-    <None Remove="Views\IntelOverlapPage.xaml" />
-    <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
-    <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
-    <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
-    <None Remove="Views\LocalIntelItemPage.xaml" />
-    <None Remove="Views\LocalIntelPage.xaml" />
-    <None Remove="Views\MarketPage.xaml" />
-    <None Remove="Views\MissionPage.xaml" />
-    <None Remove="Views\ServerPingPage.xaml" />
-    <None Remove="Views\SettingPage.xaml" />
-    <None Remove="Views\Settings\GeneralSettingPage.xaml" />
-    <None Remove="Views\Settings\MarketSettingPage.xaml" />
-    <None Remove="Views\Settings\StructuresSettingPage.xaml" />
-    <None Remove="Views\ShellPage.xaml" />
-    <None Remove="Views\TranslationPage.xaml" />
-    <None Remove="Views\WormholePage.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="logo_32.ico" />
-  </ItemGroup>
+
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageReference Include="log4net" Version="2.0.15" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230724000" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="22.2.7" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="22.2.7" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="22.2.7" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-    <PackageReference Include="WinUIEx" Version="2.2.0" />
-    <Manifest Include="$(ApplicationManifest)" />
+	  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+	  <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+	  <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+	  <PackageReference Include="log4net" Version="2.0.15" />
+	  <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230724000" />
+	  <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
+	  <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="Syncfusion.Chart.WinUI" Version="22.2.7" />
+	  <PackageReference Include="Syncfusion.Editors.WinUI" Version="22.2.7" />
+	  <PackageReference Include="Syncfusion.Grid.WinUI" Version="22.2.7" />
+	  <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+	  <PackageReference Include="WinUIEx" Version="2.2.0" />
+	  <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="Resources\Images\home.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\NavigatePageControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\SelecteCharacterControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\MarketTreeControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\SelecteRegionControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\StructureSelectorControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\MapSystemSelectorControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Controls\MarketLocationSelectorControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Dialogs\AddToShoppingCartDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Dialogs\AddSerenityAuthDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <None Update="Resources\Configs\ChatSystemContentFormat.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Configs\log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Configs\SpeakerNames.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Configs\SolarSystemMap.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Database\ded.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Database\Local\zh.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Database\main.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Database\static.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\default.mp3">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\home.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\logo_32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Page Update="Views\CharacterPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\MissionPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\BackstoryPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\WormholePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\DEDPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\TranslationPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\ServerPingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Settings\MarketSettingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Business\ShoppingRecordPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Business\ShoppingCartPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Business\ScalperItemDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Business\ScalperPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Business\CharacterOrderPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Settings\StructuresSettingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\ContractDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\Syncfusion.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\ContractPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\MailDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Strings\zh-CN\Resource.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\ContractPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\MailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\WalletPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\ClonePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\SkillPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Character\OverviewPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\LocalIntelItemPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\LocalIntelPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\IntelOverlapPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Views\Settings\GeneralSettingPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="Windows\IntelWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\EarlyWarningItemPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\ExpandableSettingControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\BusinessPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\MarketPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\SettingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\EarlyWarningPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="BaseWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Strings\en-US\" />
-  </ItemGroup>
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+	<ItemGroup>
+	  <Folder Include="Strings\en-US\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="logo_32.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Configs\ChatSystemContentFormat.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Configs\log4net.config">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Configs\SolarSystemMap.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Configs\SpeakerNames.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Database\ded.db">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Database\Local\zh.db">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Database\main.db">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Database\static.db">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\default.mp3">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Images\home.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\Images\logo_32.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

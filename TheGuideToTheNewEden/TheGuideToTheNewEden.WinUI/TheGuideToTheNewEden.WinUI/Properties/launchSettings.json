@@ -1,6 +1,9 @@
-﻿{
+{
   "profiles": {
-    "TheGuideToTheNewEden": {
+    "TheGuideToTheNewEden.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TheGuideToTheNewEden.WinUI (Unpackaged)": {
       "commandName": "Project"
     }
   }
