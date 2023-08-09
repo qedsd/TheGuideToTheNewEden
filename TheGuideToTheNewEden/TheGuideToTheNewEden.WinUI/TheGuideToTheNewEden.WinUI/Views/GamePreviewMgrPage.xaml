@@ -197,6 +197,17 @@
                                             Fill="{ThemeResource SystemAccentColor}" />
                                     </Grid>
                                     <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                                    <ComboBox
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Header="{StaticResource GamePreviewMgrPage_SwitchMode}"
+                                        SelectedIndex="{x:Bind VM.PreviewSetting.SetForegroundWindowMode, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_0}" />
+                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_1}" />
+                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_2}" />
+                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_3}" />
+                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_4}" />
+                                    </ComboBox>
                                 </StackPanel>
                                 <StackPanel Grid.Row="1" Margin="0,24">
                                     <Grid Margin="8,8">

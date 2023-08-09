@@ -53,6 +53,8 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// <returns></returns>
         [DllImport("User32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
         /// <summary>
         /// 最小化
         /// </summary>
@@ -123,8 +125,6 @@ namespace TheGuideToTheNewEden.WinUI.Common
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
         /// <summary>
         /// 获取指定窗口dpi缩放
@@ -157,5 +157,8 @@ namespace TheGuideToTheNewEden.WinUI.Common
 
         [DllImport("user32.dll")]
         public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+        [DllImport("user32.dll")]
+        public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
     }
 }

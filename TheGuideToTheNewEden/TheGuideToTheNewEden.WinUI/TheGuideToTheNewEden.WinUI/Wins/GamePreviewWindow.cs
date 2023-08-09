@@ -31,9 +31,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private readonly PreviewItem _setting;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
-        private OverlappedPresenter _presenter;
-        public GamePreviewWindow(PreviewItem setting):base()
+        private readonly OverlappedPresenter _presenter;
+        private readonly PreviewSetting _previewSetting;
+        public GamePreviewWindow(PreviewItem setting, PreviewSetting previewSetting) :base()
         {
+            _previewSetting = previewSetting;
             _setting = setting;
             SetSmallTitleBar();
             HideAppDisplayName();
@@ -152,7 +154,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                ActiveSourceWindow();
+                WindowHelper.SetForegroundWindow_Click(_sourceHWnd);
         }
         /// <summary>
         /// 显示目标窗口
@@ -161,7 +163,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             Task.Run(() =>
             {
-                Helpers.WindowHelper.SetForegroundWindow(_sourceHWnd);
+                switch(_previewSetting.SetForegroundWindowMode)
+                {
+                    case 0: Helpers.WindowHelper.SetForegroundWindow0(_sourceHWnd); break;
+                    case 1: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd);break;
+                    case 2: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
+                    case 3: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
+                    case 4: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
+                    default: Helpers.WindowHelper.SetForegroundWindow0(_sourceHWnd); break;
+                }
             });
         }
 

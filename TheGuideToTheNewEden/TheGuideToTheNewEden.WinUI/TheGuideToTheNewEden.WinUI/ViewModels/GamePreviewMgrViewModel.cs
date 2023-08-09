@@ -408,7 +408,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting);
+                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting, PreviewSetting);
                     if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
@@ -908,7 +908,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(item);
+                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(item, PreviewSetting);
                     if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;

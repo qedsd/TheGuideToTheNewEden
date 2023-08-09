@@ -123,5 +123,15 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref startAllDefaultLoadType, value);
             }
         }
+
+        private int setForegroundWindowMode = 0;
+        public int SetForegroundWindowMode
+        {
+            get => setForegroundWindowMode;
+            set
+            {
+                SetProperty(ref setForegroundWindowMode, value);
+            }
+        }
     }
 }

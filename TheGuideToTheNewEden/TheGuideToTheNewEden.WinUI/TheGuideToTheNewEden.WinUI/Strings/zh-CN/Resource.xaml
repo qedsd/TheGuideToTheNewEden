@@ -372,4 +372,12 @@
     <x:String x:Key="Mission_Level_3">3级</x:String>
     <x:String x:Key="Mission_Level_4">4级</x:String>
     <x:String x:Key="Mission_Level_5">5级</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode">激活模式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">模式0(初始版本)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">模式1(初始版本修正)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">模式2(2.5.0.0)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式3(EVE-O-P)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式4(触发空键盘事件)</x:String>
 </ResourceDictionary>
