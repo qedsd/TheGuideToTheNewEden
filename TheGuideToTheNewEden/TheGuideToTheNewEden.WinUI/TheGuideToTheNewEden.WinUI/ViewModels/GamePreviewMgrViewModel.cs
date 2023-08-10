@@ -146,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Init();
             Core.Log.Info($"全局切换快捷键{PreviewSetting.SwitchHotkey}");
-            HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+            KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
         #region 切换快捷键
         private string _lastProcessGUID;
@@ -1000,7 +1000,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public void Dispose()
         {
             StopAll();
-            HotkeyService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+            KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
         }
     }
 }

@@ -8,17 +8,17 @@ using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
-    internal class HotkeyService
+    internal class KeyboardService
     {
         private KeyboardHook _keyboardHook;
-        private static HotkeyService current;
-        public static HotkeyService Current
+        private static KeyboardService current;
+        public static KeyboardService Current
         {
             get
             {
                 if(current == null)
                 {
-                    current = new HotkeyService();
+                    current = new KeyboardService();
                 }
                 return current;
             }
