@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -21,15 +22,23 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private const int VK_SPACE = 0x20; //Space
         public struct TagMSG
         {
-            public int hwnd;
-            public uint message;
-            public int wParam;
-            public long lParam;
+            public IntPtr hwnd;
+            public int message;
+            public IntPtr wParam;
+            public IntPtr lParam;
             public uint time;
-            public int pt;
+            public int pointX;
+            public int pointY;
         }
         [DllImport("user32", EntryPoint = "GetMessage")]
-        public static extern bool GetMessage(out TagMSG lpMsg, IntPtr hwnd,int wMsgFilterMin,int wMsgFilterMax);
+        public static extern int GetMessage(out TagMSG lpMsg, IntPtr hwnd,int wMsgFilterMin,int wMsgFilterMax);
+        [DllImport("user32", EntryPoint = "PeekMessageA")]
+        public static extern int PeekMessage(out TagMSG lpMsg, IntPtr hwnd, int wMsgFilterMin, int wMsgFilterMax, int wRemoveMsg);
+        [DllImport("user32.dll")]
+        private static extern bool TranslateMessage(ref TagMSG m);
+        [DllImport("user32.dll")]
+        private static extern bool DispatchMessage(ref TagMSG m);
+
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hwnd, int id, int fsModifiers, int vk);
         [DllImport("user32.dll")]
@@ -55,22 +64,32 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return RegisterID++;
             }
         }
-        public void Register(IntPtr hwnd, int fsModifier, int vk)
+        public async void Register(IntPtr hwnd, int fsModifier, int vk)
         {
-            if(RegisterHotKey(hwnd, GetRegisterID(), fsModifier, vk))
+            if (RegisterHotKey(hwnd, GetRegisterID(), fsModifier, vk))
             {
-                CreateMessageProc(hwnd);
-            }
-        }
-        private void CreateMessageProc(IntPtr hwnd)
-        {
-            Task.Run(() =>
-            {
-                while(GetMessage(out TagMSG lpMsg, hwnd, 0, 0))
+                while (true)
                 {
+                    if (GetMessage(out TagMSG tagMSG, hwnd, 0, 0) == -1)
+                    {
 
+                    }
+                    else
+                    {
+                        Debug.WriteLine(tagMSG.message);
+                        if (tagMSG.message == 786)//Hotkey
+                        {
+                            
+                        }
+                        else
+                        {
+                            TranslateMessage(ref tagMSG);
+                            DispatchMessage(ref tagMSG);
+                        }
+                    }
+                    await Task.Delay(10);
                 }
-            });
+            }
         }
     }
 }
