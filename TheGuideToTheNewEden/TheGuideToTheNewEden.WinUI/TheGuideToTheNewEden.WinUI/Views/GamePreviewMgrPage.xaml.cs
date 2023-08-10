@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
-            KeyboardService.Start();
+            //KeyboardService.Start();
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
