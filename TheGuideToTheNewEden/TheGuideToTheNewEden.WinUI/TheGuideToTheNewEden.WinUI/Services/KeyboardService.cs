@@ -44,8 +44,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static void Stop()
         {
             Core.Log.Debug("停止监听按键");
-            Current._keyboardHook.KeyboardEvent -= _keyboardHook_KeyboardEvent;
-            Current._keyboardHook?.Stop();
+            if(Current._keyboardHook != null)
+            {
+                Current._keyboardHook.KeyboardEvent -= _keyboardHook_KeyboardEvent;
+                Current._keyboardHook?.Stop();
+            }
         }
 
         public delegate void KeyboardDelegate(List<KeyboardInfo> keys);

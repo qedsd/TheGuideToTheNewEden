@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
-            //KeyboardService.Start();
+            KeyboardService.Start();
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
@@ -68,7 +68,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             VM.Window = Window;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
-            if(AppWindow != null)
+            if (HotkeyService.GetHotkeyService(windowHandle).Register(0, 115, out int hotkeyId))
+            {
+                Debug.WriteLine("注册热键成功");
+            }
+            if (AppWindow != null)
             {
                 AppWindow.Closing -= AppWindow_Closing;
             }

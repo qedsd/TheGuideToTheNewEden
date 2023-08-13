@@ -61,7 +61,6 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
         {
-            HotkeyService.Current.Register((sender as Window).GetWindowHandle(), 0, 115);
             m_window.Activated -= M_window_Activated;
             System.Threading.Tasks.Task.Run(() =>
             {

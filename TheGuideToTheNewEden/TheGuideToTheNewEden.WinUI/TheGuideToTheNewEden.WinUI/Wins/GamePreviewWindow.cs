@@ -81,6 +81,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 SetTitleBar(null);
             }
         }
+        //private delegate IntPtr WinProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
+        //private WinProc newWndProc = null;
 
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
