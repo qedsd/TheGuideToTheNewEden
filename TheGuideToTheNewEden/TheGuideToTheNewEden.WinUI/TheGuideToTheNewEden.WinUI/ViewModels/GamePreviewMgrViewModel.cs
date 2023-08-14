@@ -114,7 +114,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
         public GamePreviewMgrViewModel()
         {
-            ForegroundWindowService.Current.Start();
             ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;
             if (System.IO.File.Exists(Path))
             {

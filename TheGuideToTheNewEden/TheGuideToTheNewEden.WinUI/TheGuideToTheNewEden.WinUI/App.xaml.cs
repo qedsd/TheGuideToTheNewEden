@@ -67,6 +67,7 @@ namespace TheGuideToTheNewEden.WinUI
                 notificationManager = new NotificationManager();
                 notificationManager.Init();
             });
+            ForegroundWindowService.Current.Start();
         }
 
         private Window m_window;
