@@ -167,12 +167,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 switch(_previewSetting.SetForegroundWindowMode)
                 {
-                    case 0: Helpers.WindowHelper.SetForegroundWindow0(_sourceHWnd); break;
-                    case 1: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd);break;
-                    case 2: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
-                    case 3: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
-                    case 4: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
-                    default: Helpers.WindowHelper.SetForegroundWindow0(_sourceHWnd); break;
+                    case 0: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
+                    case 1: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd);break;
+                    case 2: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
+                    case 3: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
+                    case 4: Helpers.WindowHelper.SetForegroundWindow5(_sourceHWnd); break;
+                    default: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
                 }
             });
         }

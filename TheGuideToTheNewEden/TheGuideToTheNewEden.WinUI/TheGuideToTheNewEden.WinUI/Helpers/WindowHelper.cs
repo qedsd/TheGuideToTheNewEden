@@ -199,6 +199,22 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             Win32.SetForegroundWindow(targetHandle);
         }
+
+        /// <summary>
+        /// EVE-O-P
+        /// </summary>
+        /// <param name="targetHandle"></param>
+        public static void SetForegroundWindow1(IntPtr targetHandle)
+        {
+            Win32.SetForegroundWindow(targetHandle);
+            Win32.SetFocus(targetHandle);
+            int style = Win32.GetWindowLong(targetHandle, -16);
+            if ((style & 0x20000000) == 0x20000000)
+            {
+                Win32.ShowWindowAsync(targetHandle, 9);
+            }
+        }
+
         /// <summary>
         /// 2.5.0.0
         /// </summary>
@@ -236,66 +252,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
             }
         }
-        /// <summary>
-        /// 原始版本修正
-        /// </summary>
-        /// <param name="targetHandle"></param>
-        public static void SetForegroundWindow1(IntPtr targetHandle)
-        {
-            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
-            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
-            var dwForeID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);//当前前台窗口进程id
-            var dwCurID = (int)Win32Helper.GetCurrentThreadId();//当前进程id
-            if (!Win32.AttachThreadInput(dwCurID, dwForeID,true))
-            {
-                Core.Log.Debug($"AttachThreadInput失败：{dwCurID}->{dwForeID}");
-                return;
-            }
-            int tryCount = 0;
-            while (tryCount++ < 3)
-            {
-                if (Win32.SetForegroundWindow(targetHandle))
-                {
-                    if (Win32.GetForegroundWindow() != targetHandle)
-                    {
-                        Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
-                    }
-                    else
-                    {
-                        tryCount = 0;
-                        while (tryCount < 3)
-                        {
-                            if (Win32.BringWindowToTop(targetHandle))
-                            {
-                                if (Win32.AttachThreadInput(dwCurID, dwForeID, false))
-                                {
-                                    Core.Log.Debug($"成功激活窗口{targetHandle}");
-                                    break;
-                                }
-                                else
-                                {
-                                    Core.Log.Debug($"解除AttachThreadInput失败");
-                                }
-                            }
-                            else
-                            {
-                                Core.Log.Debug($"BringWindowToTop失败（{tryCount}）");
-                            }
-                        }
-                        break;
-                    }
-                }
-                else
-                {
-                    Core.Log.Debug($"SetForegroundWindow失败（{tryCount}）");
-                }
-            }
-        }
+
         /// <summary>
         /// 原始版本
         /// </summary>
         /// <param name="targetHandle"></param>
-        public static void SetForegroundWindow0(IntPtr targetHandle)
+        public static void SetForegroundWindow3(IntPtr targetHandle)
         {
             IntPtr curForegroundWindow = Win32.GetForegroundWindow();
             Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
@@ -347,25 +309,68 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
             }
         }
+
         /// <summary>
-        /// EVE-O-P
+        /// 原始版本修正
         /// </summary>
         /// <param name="targetHandle"></param>
-        public static void SetForegroundWindow3(IntPtr targetHandle)
+        public static void SetForegroundWindow4(IntPtr targetHandle)
         {
-            Win32.SetForegroundWindow(targetHandle);
-            Win32.SetFocus(targetHandle);
-            int style = Win32.GetWindowLong(targetHandle, -16);
-            if ((style & 0x20000000) == 0x20000000)
+            IntPtr curForegroundWindow = Win32.GetForegroundWindow();
+            Core.Log.Debug($"激活窗口 {targetHandle}({curForegroundWindow})");
+            var dwForeID = Win32.GetWindowThreadProcessId(curForegroundWindow, out _);//当前前台窗口进程id
+            var dwCurID = (int)Win32Helper.GetCurrentThreadId();//当前进程id
+            if (!Win32.AttachThreadInput(dwCurID, dwForeID,true))
             {
-                Win32.ShowWindowAsync(targetHandle, 9);
+                Core.Log.Debug($"AttachThreadInput失败：{dwCurID}->{dwForeID}");
+                return;
+            }
+            int tryCount = 0;
+            while (tryCount++ < 3)
+            {
+                if (Win32.SetForegroundWindow(targetHandle))
+                {
+                    if (Win32.GetForegroundWindow() != targetHandle)
+                    {
+                        Core.Log.Debug($"SetForegroundWindow成功但未生效（{tryCount}）");
+                    }
+                    else
+                    {
+                        tryCount = 0;
+                        while (tryCount < 3)
+                        {
+                            if (Win32.BringWindowToTop(targetHandle))
+                            {
+                                if (Win32.AttachThreadInput(dwCurID, dwForeID, false))
+                                {
+                                    Core.Log.Debug($"成功激活窗口{targetHandle}");
+                                    break;
+                                }
+                                else
+                                {
+                                    Core.Log.Debug($"解除AttachThreadInput失败");
+                                }
+                            }
+                            else
+                            {
+                                Core.Log.Debug($"BringWindowToTop失败（{tryCount}）");
+                            }
+                        }
+                        break;
+                    }
+                }
+                else
+                {
+                    Core.Log.Debug($"SetForegroundWindow失败（{tryCount}）");
+                }
             }
         }
+
         /// <summary>
         /// 键盘事件
         /// </summary>
         /// <param name="targetHandle"></param>
-        public static void SetForegroundWindow4(IntPtr targetHandle)
+        public static void SetForegroundWindow5(IntPtr targetHandle)
         {
             Win32.keybd_event(0, 0, 0, 0);//SetForegroundWindow条件之一：The calling process received the last input event.
             SetForegroundWindow_Click(targetHandle);

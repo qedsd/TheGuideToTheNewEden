@@ -375,10 +375,10 @@
 
     <!--  GamePreviewMgrPage  -->
     <x:String x:Key="GamePreviewMgrPage_SwitchMode">激活模式</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">模式0(初始版本)</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">模式1(初始版本修正)</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">模式2(2.5.0.0)</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式3(EVE-O-P)</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式4(触发空键盘事件)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">模式1（EVE-O-P）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">模式2（2.5.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">模式3（2.4.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式4（2.4.0.0修正）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式5（触发空键盘事件，慎用）</x:String>
     <x:String x:Key="GamePreviewMgrPage_SetHotKey">更新</x:String>
 </ResourceDictionary>
