@@ -37,7 +37,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
             Unloaded += GamePreviewMgrPage_Unloaded;
-            //HotkeyService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
         }
 
         private void GamePreviewMgrPage_Unloaded(object sender, RoutedEventArgs e)
@@ -46,20 +45,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 WindowCaptureHelper.HideThumb(lastThumb);
             }
-        }
-
-        /// <summary>
-        /// 测试检测按键
-        /// </summary>
-        /// <param name="keys"></param>
-        private void HotkeyService_OnKeyboardClicked(List<KeyboardInfo> keys)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            keys.ForEach(p => stringBuilder.Append($"{p.Name} "));
-            Window.DispatcherQueue.TryEnqueue(() =>
-            {
-                TestBox.Text = stringBuilder.ToString();
-            });
         }
 
         private IntPtr windowHandle = IntPtr.Zero;

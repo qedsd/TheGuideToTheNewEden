@@ -12,14 +12,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
     {
         private KeyboardHook _keyboardHook;
         private static KeyboardService current;
+        private static int _startCount = 0;
         public static KeyboardService Current
         {
             get
             {
-                if(current == null)
-                {
-                    current = new KeyboardService();
-                }
+                current ??= new KeyboardService();
                 return current;
             }
         }
@@ -33,6 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             Current._keyboardHook.Start();
             Current._keyboardHook.KeyboardEvent += _keyboardHook_KeyboardEvent;
+            System.Threading.Interlocked.Increment(ref _startCount);
         }
 
         private static void _keyboardHook_KeyboardEvent(List<KeyboardInfo> keys)
@@ -44,7 +43,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static void Stop()
         {
             Core.Log.Debug("停止监听按键");
-            if(Current._keyboardHook != null)
+            System.Threading.Interlocked.Decrement(ref _startCount);
+            if (_startCount <= 0 && Current._keyboardHook != null)
             {
                 Current._keyboardHook.KeyboardEvent -= _keyboardHook_KeyboardEvent;
                 Current._keyboardHook?.Stop();
