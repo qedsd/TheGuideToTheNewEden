@@ -1000,6 +1000,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             StopAll();
             KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+            ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
         }
     }
 }
