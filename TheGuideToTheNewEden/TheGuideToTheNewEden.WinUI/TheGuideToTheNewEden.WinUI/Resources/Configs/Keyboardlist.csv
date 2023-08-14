@@ -1,6 +1,6 @@
-鼠标左键,1,
-鼠标右键,2,
-中间鼠标按钮,4,
+LeftMouse,1,
+RightMouse,2,
+MidMouse,4,
 Tab,9,
 Clear,12,清除键
 Enter,13,回车键
@@ -59,7 +59,8 @@ X,88
 Y,89
 Z,90
 Win,91,左边Window键
-Win,92,右边Window键
+LeftWin,91,左边Window键
+RightLeftWin,92,右边Window键
 F1,112
 F2,113
 F3,114

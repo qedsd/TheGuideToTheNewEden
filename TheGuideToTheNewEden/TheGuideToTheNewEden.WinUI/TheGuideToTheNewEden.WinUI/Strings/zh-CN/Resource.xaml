@@ -380,4 +380,5 @@
     <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">模式2(2.5.0.0)</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式3(EVE-O-P)</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式4(触发空键盘事件)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetHotKey">更新</x:String>
 </ResourceDictionary>

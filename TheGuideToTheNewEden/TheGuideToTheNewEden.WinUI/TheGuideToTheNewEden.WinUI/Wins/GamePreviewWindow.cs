@@ -321,6 +321,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 WindowCaptureHelper.HideThumb(_thumbHWnd);
             }
+            HotkeyService.GetHotkeyService(_windowHandle).Unregister(_hotkeyRegisterId);
         }
 
         public delegate void SettingChangedDelegate(PreviewItem previewItem);
@@ -331,6 +332,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
 
         #region 快捷键
+        private int _hotkeyRegisterId;
         private List<string> _keys;
         private void InitHotkey()
         {
@@ -338,11 +340,28 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             if (!string.IsNullOrEmpty(_setting.HotKey))
             {
                 Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
-                var keynames = _setting.HotKey.Split('+');
-                if (keynames.NotNullOrEmpty())
+                if(Services.HotkeyService.TryGetHotkeyVK(_setting.HotKey, out _,out _))
                 {
-                    _keys = keynames.ToList();
-                    KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                    if(Services.HotkeyService.GetHotkeyService(_windowHandle).Register(_setting.HotKey, out _hotkeyRegisterId))
+                    {
+                        Core.Log.Info("注册窗口热键成功");
+                        var keynames = _setting.HotKey.Split('+');
+                        if (keynames.NotNullOrEmpty())
+                        {
+                            _keys = keynames.ToList();
+                            KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                        }
+                    }
+                    else
+                    {
+                        Core.Log.Info($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
+                        (WindowHelper.MainWindow as BaseWindow)?.ShowError($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
+                    }
+                }
+                else
+                {
+                    Core.Log.Error($"不规范热键{_setting.HotKey}");
+                    (WindowHelper.MainWindow as BaseWindow)?.ShowError($"不规范热键{_setting.HotKey}");
                 }
             }
         }

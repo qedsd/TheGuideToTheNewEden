@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -67,7 +68,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
         }
         #endregion
-        private static readonly string KeylistFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Keyboardlist.csv");
+        private static readonly string KeylistFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "Keyboardlist.csv");
         private static Dictionary<IntPtr, HotkeyService> _dic;
         private static Dictionary<string, KeyboardItem> _keyboards;
         public static HotkeyService GetHotkeyService(IntPtr hwnd)
@@ -97,28 +98,35 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (_keyboards == null)
             {
                 _keyboards = new Dictionary<string, KeyboardItem>();
-                if (!File.Exists(KeylistFilePath))
+                if (File.Exists(KeylistFilePath))
                 {
-                    var content = File.ReadAllLines(KeylistFilePath);
-                    if (content != null && content.Any())
+                    try
                     {
-                        var list = content.Select(p => KeyboardItem.FromCsv(p))?.Where(p => p != null).ToList();
-                        if(list != null && list.Any())
+                        var content = File.ReadAllLines(KeylistFilePath);
+                        if (content != null && content.Any())
                         {
-                            foreach (var item in list)
+                            var list = content.Select(p => KeyboardItem.FromCsv(p))?.Where(p => p != null).ToList();
+                            if (list != null && list.Any())
                             {
-                                _keyboards.Add(item.Name.ToLower(), item);
+                                foreach (var item in list)
+                                {
+                                    _keyboards.Add(item.Name.ToLower(), item);
+                                }
+                                Core.Log.Info("已加载键盘映射表");
                             }
-                            Core.Log.Info("已加载键盘映射表");
+                            else
+                            {
+                                Core.Log.Error("键盘映射表为空");
+                            }
                         }
                         else
                         {
                             Core.Log.Error("键盘映射表为空");
                         }
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        Core.Log.Error("键盘映射表为空");
+                        Core.Log.Error(ex);
                     }
                 }
                 else
@@ -144,35 +152,58 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public bool Register(string hotkey, out int registerId)
         {
             registerId = -1;
+            if (TryGetHotkeyVK(hotkey,out int fsModifier, out int vk))
+            {
+                return Register(fsModifier, vk, out registerId);
+            }
+            else
+            {
+                Core.Log.Error("不规范热键");
+                return false;
+            }
+        }
+        public static bool TryGetHotkeyVK(string hotkey,out int fsModifier, out int vk)
+        {
+            fsModifier = 0;
+            vk = 0;
             if (!string.IsNullOrEmpty(hotkey))
             {
                 var keys = hotkey.Split('+').ToArray();
-                int fsModifier = 0;
-                int vk = 0;
+                
                 foreach (var key in keys)
                 {
                     var lKey = key.ToLower();
-                    if(_keyboards.TryGetValue(lKey,out var keyItem))
+                    if (_keyboards.TryGetValue(lKey, out var keyItem))
                     {
-                        if (lKey == "ctrl" || lKey == "alt" || lKey == "shift")
+                        switch(lKey)
                         {
-                            fsModifier |= keyItem.Code;
-                        }
-                        else
-                        {
-                            if(vk != 0)
-                            {
-                                vk = keyItem.Code;
-                            }
-                            else
-                            {
-                                Core.Log.Error("热键存在多个按键");
-                                return false;
-                            }
+                            case "ctrl": fsModifier |= MOD_CONTROL;break;
+                            case "alt": fsModifier |= MOD_ALT; break;
+                            case "shift": fsModifier |= 0x4; break;
+                            default:
+                                {
+                                    if (vk == 0)
+                                    {
+                                        vk = keyItem.Code;
+                                    }
+                                    else
+                                    {
+                                        Core.Log.Error("热键存在多个按键");
+                                        return false;
+                                    }
+                                }break;
                         }
                     }
                 }
-                return Register(fsModifier, vk, out registerId);
+                if (vk == 0)
+                {
+                    Core.Log.Error("不规范热键");
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             else
             {
@@ -195,6 +226,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 bool result = RegisterHotKey(_hwnd, registerId, fsModifier, vk);
                 if (result)
                 {
+                    Core.Log.Info($"已注册热键{_hwnd}_{registerId}");
                     //Start();
                     return true;
                 }
@@ -220,6 +252,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if(UnregisterHotKey(_hwnd, id))
             {
+                Core.Log.Info($"已注销热键{_hwnd}_{id}");
                 _registerIds.Remove(id);
                 if(!_registerIds.Any())
                 {

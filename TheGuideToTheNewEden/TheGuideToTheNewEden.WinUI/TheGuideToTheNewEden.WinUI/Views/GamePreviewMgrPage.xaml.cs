@@ -53,10 +53,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             VM.Window = Window;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
-            if (HotkeyService.GetHotkeyService(windowHandle).Register(0, 115, out int hotkeyId))
-            {
-                Debug.WriteLine("注册热键成功");
-            }
             if (AppWindow != null)
             {
                 AppWindow.Closing -= AppWindow_Closing;

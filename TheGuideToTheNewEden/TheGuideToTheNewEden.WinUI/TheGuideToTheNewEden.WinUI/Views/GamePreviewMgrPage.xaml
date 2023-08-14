@@ -196,7 +196,18 @@
                                             Height="1"
                                             Fill="{ThemeResource SystemAccentColor}" />
                                     </Grid>
-                                    <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Command="{x:Bind VM.SetHotkeyCommand}"
+                                            Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
+                                    </Grid>
+
                                     <ComboBox
                                         Margin="0,8,0,0"
                                         HorizontalAlignment="Stretch"
