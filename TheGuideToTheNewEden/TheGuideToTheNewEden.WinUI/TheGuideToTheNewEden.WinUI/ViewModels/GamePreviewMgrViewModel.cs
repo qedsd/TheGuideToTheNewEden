@@ -112,7 +112,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
         /// </summary>
-        private Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
+        private readonly Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
         public GamePreviewMgrViewModel()
         {
             ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;

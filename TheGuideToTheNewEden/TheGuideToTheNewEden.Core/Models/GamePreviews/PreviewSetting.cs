@@ -155,5 +155,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref setForegroundWindowMode, value);
             }
         }
+
+        public string[] ProcessOrder { get; set; }
     }
 }
