@@ -17,14 +17,23 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => processeKeywords;
             set => SetProperty(ref processeKeywords, value);
         }
-        private string switchHotkey = "F4";
+        private string switchHotkey_Forward = "F5";
         /// <summary>
         /// 切换运行中的窗口对应的源窗口
         /// </summary>
-        public string SwitchHotkey
+        public string SwitchHotkey_Forward
         {
-            get => switchHotkey;
-            set => SetProperty(ref switchHotkey, value);
+            get => switchHotkey_Forward;
+            set => SetProperty(ref switchHotkey_Forward, value);
+        }
+        private string switchHotkey_Backward = "F4";
+        /// <summary>
+        /// 切换运行中的窗口对应的源窗口
+        /// </summary>
+        public string SwitchHotkey_Backward
+        {
+            get => switchHotkey_Backward;
+            set => SetProperty(ref switchHotkey_Backward, value);
         }
         private List<PreviewItem> previewItems = new List<PreviewItem>();
         public List<PreviewItem> PreviewItems

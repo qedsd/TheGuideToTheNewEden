@@ -198,16 +198,38 @@
                                     </Grid>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox PlaceholderText="组合键使用+拼接 eg： Ctrl+Tab" Text="{x:Bind VM.PreviewSetting.SwitchHotkey, Mode=TwoWay}" />
-                                        <Button
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
+                                        <TextBox
                                             Grid.Column="1"
-                                            Command="{x:Bind VM.SetHotkeyCommand}"
+                                            Margin="4,0"
+                                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
+                                            Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{x:Bind VM.SetForwardHotkeyCommand}"
                                             Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
                                     </Grid>
-
+                                    <Grid Margin="0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
+                                        <TextBox
+                                            Grid.Column="1"
+                                            Margin="4,0"
+                                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
+                                            Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{x:Bind VM.SetBackwardHotkeyCommand}"
+                                            Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
+                                    </Grid>
                                     <ComboBox
                                         Margin="0,8,0,0"
                                         HorizontalAlignment="Stretch"

@@ -381,4 +381,6 @@
     <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式4（2.4.0.0修正）</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式5（触发空键盘事件，慎用）</x:String>
     <x:String x:Key="GamePreviewMgrPage_SetHotKey">更新</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Backward">向后</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Forward">向前</x:String>
 </ResourceDictionary>

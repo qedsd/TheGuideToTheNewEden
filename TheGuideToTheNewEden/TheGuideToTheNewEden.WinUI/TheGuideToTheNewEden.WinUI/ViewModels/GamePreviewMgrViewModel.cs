@@ -148,32 +148,69 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             StartHotkey();
         }
         #region 切换快捷键
-        private int _hotkeyRegisterId;
+        private int _forwardHotkeyRegisterId;
+        private int _backwardHotkeyRegisterId;
         private void StartHotkey()
         {
-            Core.Log.Info($"全局切换快捷键{PreviewSetting.SwitchHotkey}");
-            if(HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey, out _hotkeyRegisterId))
+            StartForwardHotkey();
+            StartBackwardHotkey();
+        }
+        private void StartForwardHotkey()
+        {
+            Core.Log.Info($"向前全局切换快捷键{PreviewSetting.SwitchHotkey_Forward}");
+            if(HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Forward, out _forwardHotkeyRegisterId))
             {
                 Core.Log.Info("注册热键成功");
-                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey}成功");
+                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Forward}成功");
                 KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
                 KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
             }
             else
             {
                 Core.Log.Info("注册热键失败");
-                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey}失败，请检查是否按键冲突");
+                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Forward}失败，请检查是否按键冲突");
             }
         }
-        public ICommand SetHotkeyCommand => new RelayCommand(() =>
+        private void StartBackwardHotkey()
         {
-            if(HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey,out _,out _))
+            Core.Log.Info($"向后全局切换快捷键{PreviewSetting.SwitchHotkey_Backward}");
+            if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId))
             {
-                if (_hotkeyRegisterId > 0)//先注销原本热键
+                Core.Log.Info("注册热键成功");
+                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Backward}成功");
+                KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+                KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+            }
+            else
+            {
+                Core.Log.Info("注册热键失败");
+                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Backward}失败，请检查是否按键冲突");
+            }
+        }
+        public ICommand SetForwardHotkeyCommand => new RelayCommand(() =>
+        {
+            if(HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Forward,out _,out _))
+            {
+                if (_forwardHotkeyRegisterId > 0)//先注销原本热键
                 {
-                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
                 }
-                StartHotkey();
+                StartForwardHotkey();
+            }
+            else
+            {
+                Window.ShowError($"不规范热键");
+            }
+        });
+        public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
+        {
+            if (HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Backward, out _, out _))
+            {
+                if (_backwardHotkeyRegisterId > 0)//先注销原本热键
+                {
+                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
+                }
+                StartBackwardHotkey();
             }
             else
             {
@@ -183,27 +220,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private string _lastProcessGUID;
         private void HotkeyService_OnKeyboardClicked(List<Common.KeyboardHook.KeyboardInfo> keys)
         {
+            //限定按键顺序
             if (keys.NotNullOrEmpty())
             {
-                if (_runningDic.Count != 0 && !string.IsNullOrEmpty(PreviewSetting.SwitchHotkey))
+                if (_runningDic.Any())
                 {
-                    var keynames = PreviewSetting.SwitchHotkey.Split('+');
-                    if (keynames.NotNullOrEmpty())
+                    string formatHotkey = keys.First().Name;
+                    foreach(var key in keys.Skip(1))
                     {
-                        var targetkeys = keynames.ToList();
-                        foreach (var key in targetkeys)
-                        {
-                            if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
-                            {
-                                return;
-                            }
-                        }
+                        formatHotkey += '+';
+                        formatHotkey += key.Name;
+                    }
+                    if(PreviewSetting.SwitchHotkey_Forward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向前进切换
+                    {
                         if (_lastProcessGUID == null)
                         {
                             var firstRunning = Processes.FirstOrDefault(p => p.Running);
-                            if(firstRunning != null)
+                            if (firstRunning != null)
                             {
-                                if(_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
                                 {
                                     value.ActiveSourceWindow();
                                     _lastProcessGUID = firstRunning.GUID;
@@ -219,6 +254,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 if (item.GUID == _lastProcessGUID)
                                 {
                                     string targetGUID = null;
+                                    //上一次激活的窗口不是最后一个窗口，则依序激活下一个
+                                    //是最后一个窗口则激活第一个
                                     if (i != runnings.Count - 1)
                                     {
                                         targetGUID = runnings[i + 1].GUID;
@@ -226,6 +263,52 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                     else
                                     {
                                         targetGUID = runnings.First().GUID;
+                                    }
+                                    if (targetGUID != null)
+                                    {
+                                        if (_runningDic.TryGetValue(targetGUID, out var value))
+                                        {
+                                            value.ActiveSourceWindow();
+                                            _lastProcessGUID = targetGUID;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if(PreviewSetting.SwitchHotkey_Backward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向后退切换
+                    {
+                        if (_lastProcessGUID == null)
+                        {
+                            var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                            if (firstRunning != null)
+                            {
+                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                                {
+                                    value.ActiveSourceWindow();
+                                    _lastProcessGUID = firstRunning.GUID;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var runnings = Processes.Where(p => p.Running).ToList();
+                            for (int i = 0; i < runnings.Count; i++)
+                            {
+                                var item = runnings[i];
+                                if (item.GUID == _lastProcessGUID)
+                                {
+                                    string targetGUID = null;
+                                    //上一次激活的窗口第一个窗口，则依序激活上一个
+                                    //是第一个窗口则激活最后一个
+                                    if (i != 0)
+                                    {
+                                        targetGUID = runnings[i - 1].GUID;
+                                    }
+                                    else
+                                    {
+                                        targetGUID = runnings.Last().GUID;
                                     }
                                     if (targetGUID != null)
                                     {
@@ -1033,9 +1116,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             StopAll();
             KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
-            if(_hotkeyRegisterId > 0)
+            if(_forwardHotkeyRegisterId > 0)
             {
-                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
+            }
+            if (_backwardHotkeyRegisterId > 0)
+            {
+                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
             }
         }
     }
