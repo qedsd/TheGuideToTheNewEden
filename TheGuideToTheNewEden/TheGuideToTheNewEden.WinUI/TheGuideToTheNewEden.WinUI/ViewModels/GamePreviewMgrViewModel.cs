@@ -818,16 +818,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void UpdateAutoLayout()
         {
-            if (Setting == null || Setting.ProcessInfo == null)
-            {
-                Window.ShowError("请选择参考进程", true);
-                return;
-            }
-            if (!Running)
-            {
-                Window.ShowError("请先开始当前进程预览", true);
-                return;
-            }
             if(PreviewSetting.AutoLayout < 0)
             {
                 Window.ShowError("请选择对齐方式", true);
@@ -843,17 +833,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowError("请激活至少两个预览窗口", true);
                 return;
             }
-            if(_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))
+
+            if (_runningDic.TryGetValue(Processes.First(p => p.Running).GUID, out var window))
             {
-                switch(PreviewSetting.AutoLayout)
+                switch (PreviewSetting.AutoLayout)
                 {
-                    case 0: SetAutoLayout1(window);break;
+                    case 0: SetAutoLayout1(window); break;
                     case 1: SetAutoLayout2(window); break;
                     case 2: SetAutoLayout3(window); break;
                     case 3: SetAutoLayout4(window); break;
                 }
                 Window.ShowSuccess("已应用对齐布局");
             }
+            else
+            {
+                Window.ShowError("未找到第一个运行窗口");
+            }
+            
         }
         /// <summary>
         /// 左对齐
@@ -865,15 +861,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int startX = targetWinX + targetWinW + PreviewSetting.AutoLayoutSpan;
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
-            int lineCount = 0;
+            int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                lineCount++;
                 if (win == targetWindow)
                 {
                     continue;
                 }
-                if(!Helpers.WindowHelper.IsInWindow(startX + win.GetWidth(), refY) || (PreviewSetting.AutoLayoutCount > 0 && lineCount > PreviewSetting.AutoLayoutCount))//x超出屏幕范围或达到最大个数，换行
+                lineCount++;
+                if (!Helpers.WindowHelper.IsInWindow(startX + win.GetWidth(), refY) || (PreviewSetting.AutoLayoutCount > 0 && lineCount > PreviewSetting.AutoLayoutCount))//x超出屏幕范围或达到最大个数，换行
                 {
                     startX = targetWinX;//x回到起始位置
                     int newRefY = refY + (win.GetHeight() + PreviewSetting.AutoLayoutSpan) * yWrap;//按默认或上一次换行方向换行后的y
@@ -906,14 +902,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int startX = targetWinX;
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
-            int lineCount = 0;
+            int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                lineCount++;
                 if (win == targetWindow)
                 {
                     continue;
                 }
+                lineCount++;
                 startX = startX - win.GetWidth() - PreviewSetting.AutoLayoutSpan;
                 if (!Helpers.WindowHelper.IsInWindow(startX,refY) || (PreviewSetting.AutoLayoutCount > 0 && lineCount > PreviewSetting.AutoLayoutCount))//x超出屏幕范围，换行
                 {
@@ -947,14 +943,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int startY = targetWinY + targetWinH + PreviewSetting.AutoLayoutSpan;
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
-            int lineCount = 0;
+            int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                lineCount++;
                 if (win == targetWindow)
                 {
                     continue;
                 }
+                lineCount++;
                 if (!Helpers.WindowHelper.IsInWindow(refX, startY + win.GetHeight() + PreviewSetting.AutoLayoutSpan) || (PreviewSetting.AutoLayoutCount > 0 && lineCount > PreviewSetting.AutoLayoutCount))//y超出屏幕范围，换行
                 {
                     startY = targetWinY;//y回到起始位置
@@ -988,14 +984,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int startY = targetWinY;
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
-            int lineCount = 0;
+            int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                lineCount++;
                 if (win == targetWindow)
                 {
                     continue;
                 }
+                lineCount++;
                 startY = startY - win.GetHeight() - PreviewSetting.AutoLayoutSpan;
                 if (!Helpers.WindowHelper.IsInWindow(refX, startY) || (PreviewSetting.AutoLayoutCount > 0 && lineCount > PreviewSetting.AutoLayoutCount))//y超出屏幕范围，换行
                 {
