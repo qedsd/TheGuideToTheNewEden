@@ -80,6 +80,19 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
+        private int autoLayoutCount = 10;
+        /// <summary>
+        /// 行/列最大窗口个数
+        /// </summary>
+        public int AutoLayoutCount
+        {
+            get => autoLayoutCount;
+            set
+            {
+                SetProperty(ref autoLayoutCount, value);
+            }
+        }
+
         private int uniformHeight = 300;
         /// <summary>
         /// 统一窗口长度

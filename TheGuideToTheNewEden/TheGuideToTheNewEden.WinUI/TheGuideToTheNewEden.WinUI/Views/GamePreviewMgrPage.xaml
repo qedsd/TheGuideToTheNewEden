@@ -561,6 +561,17 @@
                                             Margin="16,0,0,0"
                                             Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}" />
                                     </Grid>
+                                    <Grid Margin="0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_AutoLayoutCount}" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="16,0,0,0"
+                                            Value="{x:Bind VM.PreviewSetting.AutoLayoutCount, Mode=TwoWay}" />
+                                    </Grid>
                                     <Button
                                         HorizontalAlignment="Stretch"
                                         Command="{x:Bind VM.SetAutoLayoutCommand}"
