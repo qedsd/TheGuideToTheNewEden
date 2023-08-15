@@ -152,43 +152,81 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private int _backwardHotkeyRegisterId;
         private void StartHotkey()
         {
-            StartForwardHotkey();
-            StartBackwardHotkey();
+            bool result1 = StartForwardHotkey();
+            bool result2 = StartBackwardHotkey();
+            if(result1 && result2)
+            {
+                Window.ShowSuccess($"注册切换热键成功");
+            }
+            else if(!result1 && !result2)
+            {
+                Window.ShowSuccess($"注册切换热键失败");
+            }
+            else if(result1)
+            {
+                Window.ShowSuccess($"注册切换热键{PreviewSetting.SwitchHotkey_Forward}成功");
+            }
+            else if(result2)
+            {
+                Window.ShowSuccess($"注册切换热键{PreviewSetting.SwitchHotkey_Backward}成功");
+            }
         }
-        private void StartForwardHotkey()
+        private bool StartForwardHotkey()
         {
             Core.Log.Info($"向前全局切换快捷键{PreviewSetting.SwitchHotkey_Forward}");
+            if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Forward))
+            {
+                return false;
+            }
             if(HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Forward, out _forwardHotkeyRegisterId))
             {
                 Core.Log.Info("注册热键成功");
                 Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Forward}成功");
                 KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
                 KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                return true;
             }
             else
             {
                 Core.Log.Info("注册热键失败");
                 Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Forward}失败，请检查是否按键冲突");
+                return false;
             }
         }
-        private void StartBackwardHotkey()
+        private bool StartBackwardHotkey()
         {
             Core.Log.Info($"向后全局切换快捷键{PreviewSetting.SwitchHotkey_Backward}");
+            if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Backward))
+            {
+                return false;
+            }
             if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId))
             {
                 Core.Log.Info("注册热键成功");
                 Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Backward}成功");
                 KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
                 KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                return true;
             }
             else
             {
                 Core.Log.Info("注册热键失败");
                 Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Backward}失败，请检查是否按键冲突");
+                return false;
             }
         }
         public ICommand SetForwardHotkeyCommand => new RelayCommand(() =>
         {
+            if(string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Forward))
+            {
+                if (_forwardHotkeyRegisterId > 0)//先注销原本热键
+                {
+                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
+                    _forwardHotkeyRegisterId = -1;
+                    Window.ShowSuccess($"已注销热键{PreviewSetting.SwitchHotkey_Forward}");
+                }
+                return;
+            }
             if(HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Forward,out _,out _))
             {
                 if (_forwardHotkeyRegisterId > 0)//先注销原本热键
@@ -204,6 +242,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
         {
+            if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Backward))
+            {
+                if (_backwardHotkeyRegisterId > 0)//先注销原本热键
+                {
+                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
+                    _backwardHotkeyRegisterId = -1;
+                    Window.ShowSuccess($"已注销热键{PreviewSetting.SwitchHotkey_Backward}");
+                }
+                return;
+            }
             if (HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Backward, out _, out _))
             {
                 if (_backwardHotkeyRegisterId > 0)//先注销原本热键
