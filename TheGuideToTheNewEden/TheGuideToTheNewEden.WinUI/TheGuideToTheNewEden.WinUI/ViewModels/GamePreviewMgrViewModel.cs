@@ -76,7 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 //}
             }
         }
-        private ObservableCollection<ProcessInfo> processes;
+        private ObservableCollection<ProcessInfo> processes = new ObservableCollection<ProcessInfo>();
         public ObservableCollection<ProcessInfo> Processes
         {
             get => processes;
@@ -378,12 +378,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private async void Init()
         {
             Window?.ShowWaiting();
+            Processes.CollectionChanged -= Processes_CollectionChanged;
             StopGameMonitor();
             var allProcesses = Process.GetProcesses();
             if(allProcesses.NotNullOrEmpty())
             {
-                ObservableCollection<ProcessInfo> targetProcesses = new ObservableCollection<ProcessInfo>();
+                List<ProcessInfo> targetProcesses = new List<ProcessInfo>();
                 var keywords = PreviewSetting.ProcessKeywords.Split(',');
+                //获取所有目标进程
                 await Task.Run(() =>
                 {
                     foreach (var process in allProcesses)
@@ -409,41 +411,66 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                 });
-                if(Processes.NotNullOrEmpty() && targetProcesses.NotNullOrEmpty())
+                if(targetProcesses.NotNullOrEmpty())
                 {
-                    //保留当前运行中的进程
-                    var runnings = Processes.Where(p => p.Running).ToList();
-                    Processes.Clear();
-                    if (runnings.NotNullOrEmpty())//存在运行中，
+                    List<ProcessInfo> targetProcessesForShow;//最终要显示的目标进程
+                    if (Processes.NotNullOrEmpty())//当前列表不为空，需要保留运行中的进程
                     {
-                        //将运行中从新增里排除
-                        foreach (var running in runnings)
+                        targetProcessesForShow = new List<ProcessInfo>();
+                        var runnings = Processes.Where(p => p.Running).ToList();
+                        if (runnings.NotNullOrEmpty())//存在运行中，
                         {
-                            var item = targetProcesses.FirstOrDefault(p=>p.MainWindowHandle == running.MainWindowHandle);
-                            if(item != null)
+                            //将运行中从新增里排除
+                            foreach (var running in runnings)
                             {
-                                targetProcesses.Remove(item);
+                                var item = targetProcesses.FirstOrDefault(p => p.MainWindowHandle == running.MainWindowHandle);
+                                if (item != null)
+                                {
+                                    targetProcesses.Remove(item);
+                                }
+                                targetProcessesForShow.Add(running);
                             }
-                            Processes.Add(running);
+                        }
+                        if (targetProcesses.Any())//添加未运行中的
+                        {
+                            foreach (var item in targetProcesses)
+                            {
+                                targetProcessesForShow.Add(item);
+                            }
                         }
                     }
-                    if(targetProcesses.Any())
+                    else//当前列表为空，保存显示全部
                     {
-                        foreach(var item in targetProcesses)
+                        targetProcessesForShow = targetProcesses;
+                    }
+                    //排序
+                    if(PreviewSetting.ProcessOrder.NotNullOrEmpty())
+                    {
+                        foreach(var item in targetProcessesForShow)
                         {
-                            Processes.Add(item);
-                        }    
+                            int index = 0;
+                            for (; index < PreviewSetting.ProcessOrder.Length; index++)
+                            {
+                                if (PreviewSetting.ProcessOrder[index] == item.WindowTitle)
+                                {
+                                    break;
+                                }
+                            }
+                            if(index < PreviewSetting.ProcessOrder.Length)
+                            {
+                                item.Sort = index;
+                            }
+                            else
+                            {
+                                item.Sort = int.MaxValue;
+                            }
+                        }
+                        targetProcessesForShow = targetProcessesForShow.OrderBy(p => p.Sort).ToList();
                     }
-                }
-                else
-                {
-                    if(targetProcesses.NotNullOrEmpty())
+                    Processes.Clear();
+                    foreach (var item in targetProcessesForShow)
                     {
-                        Processes = targetProcesses;
-                    }
-                    else
-                    {
-                        TryClearProcesses();
+                        Processes.Add(item);
                     }
                 }
             }
@@ -451,9 +478,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 TryClearProcesses();
             }
+            Processes.CollectionChanged += Processes_CollectionChanged;
             StartGameMonitor();
             Window?.HideWaiting();
         }
+
+        private void Processes_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            {
+                SaveOrder();
+            }
+        }
+
         private void TryClearProcesses()
         {
             if (Processes.NotNullOrEmpty())
@@ -471,10 +508,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Processes.Clear();
                 }
-            }
-            else
-            {
-                Processes = null;
             }
         }
         private GamePreviewWindow _lastHighlightWindow;
@@ -624,10 +657,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
             }
+            PreviewSetting.ProcessOrder = Processes.Select(p => p.WindowTitle).ToArray();
             string json = JsonConvert.SerializeObject(PreviewSetting);
             System.IO.File.WriteAllText(Path,json);
         }
 
+        public void SaveOrder()
+        {
+            SaveSetting();
+        }
         public ICommand StopCommand => new RelayCommand(() =>
         {
             Stop(Setting);
@@ -1170,6 +1208,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public void Dispose()
         {
             StopAll();
+            Processes.CollectionChanged -= Processes_CollectionChanged;
             KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
             if(_forwardHotkeyRegisterId > 0)

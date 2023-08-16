@@ -96,5 +96,8 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             public int UserId { get; set; }
             public string Username { get; set; }
         }
+
+        [JsonIgnore]
+        public int Sort { get; set; } = int.MaxValue;
     }
 }
