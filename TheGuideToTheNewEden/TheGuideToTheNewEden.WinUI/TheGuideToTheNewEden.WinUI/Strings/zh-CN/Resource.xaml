@@ -15,9 +15,12 @@
     <x:String x:Key="Setting_GameServer_Title">游戏服务器</x:String>
     <x:String x:Key="Setting_PlayerStatus_Description">统计服务器在线人数、贴吧活跃度的API服务器地址</x:String>
     <x:String x:Key="Setting_PlayerStatus_Title">玩家统计API地址</x:String>
-    <x:String x:Key="Setting_Log_Description">玩家统计记录App异常信息地址</x:String>
+    <x:String x:Key="Setting_Log_Description">记录App异常信息</x:String>
     <x:String x:Key="Setting_Log_Title">App日志</x:String>
     <x:String x:Key="Setting_Log_Check">查看</x:String>
+    <x:String x:Key="Setting_Config_Title">App配置文件</x:String>
+    <x:String x:Key="Setting_Config_Description">App所有参数配置文件均存放于此文件夹内</x:String>
+    <x:String x:Key="Setting_Config_Check">查看</x:String>
     <x:String x:Key="Setting_EVELogsPath_Description">只需选择logs文件夹</x:String>
     <x:String x:Key="Setting_EVELogsPath_Title">EVE日志路径</x:String>
     <x:String x:Key="Setting_About_Title">关于</x:String>

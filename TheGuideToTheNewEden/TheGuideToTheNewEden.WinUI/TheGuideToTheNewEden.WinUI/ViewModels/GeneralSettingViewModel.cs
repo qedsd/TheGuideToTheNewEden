@@ -153,5 +153,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             System.Diagnostics.Process.Start("explorer.exe", Log.GetLogPath());
         });
+        public ICommand CheckConfigCommand => new RelayCommand(() =>
+        {
+            System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs"));
+        });
     }
 }

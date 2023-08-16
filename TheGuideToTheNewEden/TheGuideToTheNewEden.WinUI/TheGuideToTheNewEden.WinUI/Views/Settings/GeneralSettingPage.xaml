@@ -92,6 +92,17 @@
                     </Button>
                 </StackPanel>
             </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_Config_Title}" Description="{StaticResource Setting_Config_Description}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Width="100" Command="{x:Bind VM.CheckConfigCommand}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource Setting_Config_Check}" />
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
             <controls:ExpandableSettingControl Title="{StaticResource Setting_About_Title}">
                 <controls:ExpandableSettingControl.ExpandableContent>
                     <RichTextBlock Margin="60,10">
