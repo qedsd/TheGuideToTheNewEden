@@ -65,7 +65,10 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
-        <Grid Grid.Column="1" Margin="8">
+        <Grid
+            Grid.Column="1"
+            Margin="8"
+            Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
