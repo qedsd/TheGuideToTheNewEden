@@ -161,6 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         static readonly int DWM_TNP_OPACITY = 0x4;
         static readonly int DWM_TNP_RECTDESTINATION = 0x1;
         static readonly int DWM_TNP_RECTSOURCE = 0x2;
+        static readonly int DWM_TNP_SOURCECLIENTAREAONLY = 0x10;
 
         #endregion
 
@@ -199,6 +200,16 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 DwmUpdateThumbnailProperties(thumb, ref props);
             }
         }
+        public static void UpdateThumbDestination2(IntPtr thumb, Rect rcDestination)
+        {
+            if (thumb != IntPtr.Zero)
+            {
+                DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+                props.rcDestination = rcDestination;//显示的位置大小
+                props.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_RECTDESTINATION;
+                DwmUpdateThumbnailProperties(thumb, ref props);
+            }
+        }
         public static void UpdateThumbDestination(IntPtr thumb, Rect rcDestination, Rect rcSource)
         {
             if (thumb != IntPtr.Zero)
@@ -215,6 +226,24 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             PSIZE size;
             DwmQueryThumbnailSourceSize(thumb, out size);
             return size;
+        }
+
+
+        public static Image GetWholeScreenshot()
+        {
+            WindowHelper.GetAllScreenSize(out int w, out int h);
+            Image img = new Bitmap(w, h);//创建一个和屏幕同样大小的图像
+            Graphics g = Graphics.FromImage(img);//绘制这个图像
+            g.CopyFromScreen(new Point(0, 0), new Point(0, 0), new Size(w,h));
+            return img;
+        }
+
+        public static Image GetScreenshot(int leftTopX, int leftTopY, int w, int h)
+        {
+            Image img = new Bitmap(w, h);//创建一个和屏幕同样大小的图像
+            Graphics g = Graphics.FromImage(img);//绘制这个图像
+            g.CopyFromScreen(new Point(leftTopX, leftTopY), new Point(0, 0), new Size(w, h));
+            return img;
         }
     }
 }

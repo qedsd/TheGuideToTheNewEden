@@ -1,0 +1,85 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Text;
+
+namespace TheGuideToTheNewEden.Core.Models
+{
+    public class LocalIntelSetting : ObservableObject
+    {
+        private int refreshSpan = 100;
+        /// <summary>
+        /// 更新间隔
+        /// 单位毫秒
+        /// </summary>
+        public int RefreshSpan
+        {
+            get => refreshSpan; set => SetProperty(ref refreshSpan, value);
+        }
+        public List<LocalIntelProcSetting> ProcSettings { get; set; } = new List<LocalIntelProcSetting>();
+        public ObservableCollection<LocalIntelStandingSetting> Settings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
+    }
+
+    public class LocalIntelProcSetting : ObservableObject
+    {
+        private string name;
+        public string Name
+        {
+            get => name; set => SetProperty(ref name, value);
+        }
+
+        private int x;
+        public int X
+        {
+            get => x; set => SetProperty(ref x, value);
+        }
+        private int y;
+        public int Y
+        {
+            get => y; set => SetProperty(ref y, value);
+        }
+        private int width;
+        public int Width
+        {
+            get => width; set => SetProperty(ref width, value);
+        }
+        private int height;
+        public int Height
+        {
+            get => height; set => SetProperty(ref height, value);
+        }
+
+        private string notify;
+        public string Notify
+        {
+            get => notify;
+            set => SetProperty(ref notify, value);
+        }
+
+        private string soundFile;
+        public string SoundFile
+        {
+            get => soundFile;
+            set => SetProperty(ref soundFile, value);
+        }
+    }
+
+    public class LocalIntelStandingSetting : ObservableObject
+    {
+        private Color highlightColor = Color.Green;
+        public Color HighlightColor
+        {
+            get => highlightColor;
+            set => SetProperty(ref highlightColor, value);
+        }
+
+        private string name;
+        public string Name
+        {
+            get => name;
+            set => SetProperty(ref name, value);
+        }
+    }
+}

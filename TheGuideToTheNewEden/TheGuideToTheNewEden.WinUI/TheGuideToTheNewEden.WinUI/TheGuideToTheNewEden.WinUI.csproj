@@ -255,7 +255,6 @@
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
-    <None Remove="Views\LocalIntelItemPage.xaml" />
     <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
@@ -449,9 +448,6 @@
     </Page>
     <Page Update="Views\Character\OverviewPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\LocalIntelItemPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\LocalIntelPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

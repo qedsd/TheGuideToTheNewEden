@@ -3,16 +3,159 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gamepreviews="using:TheGuideToTheNewEden.Core.Models.GamePreviews"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:LocalIntelViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid Margin="20,10,20,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="64" />
+            </Grid.RowDefinitions>
+            <ListView
+                x:Name="ProcessList"
+                Margin="0,10,0,10"
+                AllowDrop="True"
+                Background="Transparent"
+                ItemsSource="{x:Bind VM.Processes, Mode=OneWay}"
+                SelectedItem="{x:Bind VM.SelectedProcess, Mode=TwoWay}"
+                Style="{StaticResource StretchListView}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="gamepreviews:ProcessInfo">
+                        <Grid Margin="4,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Stretch"
+                                Text="{x:Bind WindowTitle}"
+                                ToolTipService.ToolTip="{x:Bind WindowTitle}" />
+                            <Rectangle
+                                Grid.Column="1"
+                                Width="10"
+                                Height="10"
+                                Margin="4,0,0,0"
+                                Fill="{ThemeResource SystemAccentColor}"
+                                RadiusX="10"
+                                RadiusY="10"
+                                ToolTipService.ToolTip="{StaticResource LocalIntel_Running}"
+                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                        </Grid>
 
-    <TabView
-        x:Name="TabView"
-        VerticalAlignment="Stretch"
-        AddTabButtonClick="TabView_AddTabButtonClick"
-        Background="Transparent"
-        CloseButtonOverlayMode="OnPointerOver"
-        TabCloseRequested="TabView_TabCloseRequested" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                Margin="8,8"
+                Fill="{ThemeResource SystemAccentColor}" />
+            <StackPanel
+                Grid.Row="2"
+                Margin="8"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
+                <Button
+                    Height="32"
+                    Command="{x:Bind VM.StartAllCommand}"
+                    ToolTipService.ToolTip="{StaticResource LocalIntel_StartAll}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE102;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    Grid.Column="2"
+                    Height="32"
+                    Margin="4,0"
+                    Command="{x:Bind VM.StopAllCommand}"
+                    ToolTipService.ToolTip="{StaticResource LocalIntel_StopAll}"
+                    Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE103;" />
+                    </Button.Content>
+                </Button>
+                <Button
+                    Height="32"
+                    Command="{x:Bind VM.RefreshProcessListCommand}"
+                    ToolTipService.ToolTip="{StaticResource LocalIntel_RefreshProcess}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE149;" />
+                    </Button.Content>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Column="1" Margin="10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Margin="8,0,8,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="{StaticResource LocalIntel_GlobalSetting}" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+            <ScrollViewer Grid.Row="1">
+                <StackPanel x:Name="SettingArea" Margin="8,0">
+                    <Grid Margin="0,8">
+                        <NumberBox Header="{StaticResource LocalIntel_RefreshSpan}" Value="{x:Bind VM.Setting.RefreshSpan, Mode=TwoWay}" />
+                    </Grid>
+                    <ListView
+                        Margin="0,8"
+                        Header="{StaticResource LocalIntel_Standing}"
+                        SelectionMode="None" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <Grid Grid.Column="2" Visibility="{x:Bind VM.SelectedProcess, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid />
+            <Grid Grid.Row="1">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StartCommand}"
+                        Icon="Play"
+                        Label="开始"
+                        Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopCommand}"
+                        Icon="Stop"
+                        Label="停止"
+                        Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
 </Page>

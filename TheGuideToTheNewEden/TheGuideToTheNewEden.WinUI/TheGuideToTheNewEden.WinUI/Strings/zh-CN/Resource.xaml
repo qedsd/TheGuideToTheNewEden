@@ -75,6 +75,8 @@
     <x:String x:Key="ShellPage_Backstory_Desc">种族、历史、科技、组织</x:String>
     <x:String x:Key="ShellPage_Mission">任务</x:String>
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
+    <x:String x:Key="ShellPage_LocalIntel">本地预警</x:String>
+    <x:String x:Key="ShellPage_LocalIntel_Desc">自动对本地频道预警</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -392,4 +394,15 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+
+    <!--  LocalIntel  -->
+    <x:String x:Key="LocalIntel_DefaultNotify">来人了，还不跑？</x:String>
+    <x:String x:Key="LocalIntel_DefaultName">玩家</x:String>
+    <x:String x:Key="LocalIntel_GlobalSetting">全局设置</x:String>
+    <x:String x:Key="LocalIntel_RefreshProcess">刷新进程列表</x:String>
+    <x:String x:Key="LocalIntel_StartAll">开始全部</x:String>
+    <x:String x:Key="LocalIntel_StopAll">停止全部</x:String>
+    <x:String x:Key="LocalIntel_Running">监控中</x:String>
+    <x:String x:Key="LocalIntel_RefreshSpan">刷新间隔（ms）</x:String>
+    <x:String x:Key="LocalIntel_Standing">监控声望</x:String>
 </ResourceDictionary>
