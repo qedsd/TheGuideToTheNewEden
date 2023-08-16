@@ -39,8 +39,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
             MainContent = _imageCropper;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
+            Activated += SelecteCaptureAreaWindow_Activated;
             SizeChanged += SelecteCaptureAreaWindow_SizeChanged;
-            UpdateThumbDestination();
             dispatcherTimer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromMilliseconds(200),
@@ -48,6 +48,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Start();
             Closed += SelecteCaptureAreaWindow_Closed;
+        }
+
+        private void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            UpdateThumbDestination();
         }
 
         private void SelecteCaptureAreaWindow_Closed(object sender, WindowEventArgs args)
@@ -59,14 +64,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void DispatcherTimer_Tick(object sender, object e)
         {
-            double xScale = (double)_sourceClientRect.Width / _imageCropper.Source.PixelWidth;
-            double yScale = (double)_sourceClientRect.Height / _imageCropper.Source.PixelHeight;
-            Rect actullyRect = new Rect();
-            actullyRect.X = xScale * _imageCropper.CroppedRegion.X;
-            actullyRect.Y = yScale * _imageCropper.CroppedRegion.Y;
-            actullyRect.Width = xScale * _imageCropper.CroppedRegion.Width;
-            actullyRect.Height = xScale * _imageCropper.CroppedRegion.Height;
-            CroppedRegionChanged?.Invoke(_imageCropper.CroppedRegion);
+            if(_imageCropper.Source != null)
+            {
+                double xScale = (double)_sourceClientRect.Width / _imageCropper.Source.PixelWidth;
+                double yScale = (double)_sourceClientRect.Height / _imageCropper.Source.PixelHeight;
+                Rect actullyRect = new Rect();
+                actullyRect.X = xScale * _imageCropper.CroppedRegion.X;
+                actullyRect.Y = yScale * _imageCropper.CroppedRegion.Y;
+                actullyRect.Width = xScale * _imageCropper.CroppedRegion.Width;
+                actullyRect.Height = xScale * _imageCropper.CroppedRegion.Height;
+                CroppedRegionChanged?.Invoke(_imageCropper.CroppedRegion);
+            }
         }
 
         private void SelecteCaptureAreaWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
@@ -95,8 +103,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
                     //源窗口捕获区域，即游戏的窗口
                     WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, _sourceClientRect.Right + widthMargin, _sourceClientRect.Bottom);
-                    WindowCaptureHelper.UpdateThumbDestination2(_thumbHWnd, rcD);
-                    var img = Helpers.WindowCaptureHelper.GetScreenshot(_appWindow.Position.X , _appWindow.Position.Y, _appWindow.ClientSize.Width, _appWindow.ClientSize.Height);
+                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                    System.Drawing.Point point = new System.Drawing.Point();
+                    Win32.ClientToScreen(_windowHandle, ref point);
+                    var currentWindowRect = WindowHelper.GetWindowRect(_windowHandle);
+                    var img = Helpers.WindowCaptureHelper.GetScreenshot(point.X, point.Y, _appWindow.ClientSize.Width, _appWindow.ClientSize.Height);
                     WindowCaptureHelper.HideThumb(_thumbHWnd);
                     _imageCropper.Source = Helpers.ImageHelper.ImageConvertToWriteableBitmap(img);
                     //捕获到的图像是根据此窗口调整后的大小，不是源窗口实际大小

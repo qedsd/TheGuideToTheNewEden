@@ -69,10 +69,22 @@ namespace TheGuideToTheNewEden.WinUI.Common
         /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern bool IsZoomed(IntPtr hwnd);
+        /// <summary>
+        /// 获取窗口工作内容区域xy坐标及长宽，不包含标题栏
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern IntPtr GetWindowRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
         [DllImport("user32.dll")]
         public static extern IntPtr GetClientRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
+        /// <summary>
+        /// 获取窗口带标题栏的左上角xy坐标
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="point"></param>
+        /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern IntPtr ClientToScreen(IntPtr hWnd, ref System.Drawing.Point point);
 

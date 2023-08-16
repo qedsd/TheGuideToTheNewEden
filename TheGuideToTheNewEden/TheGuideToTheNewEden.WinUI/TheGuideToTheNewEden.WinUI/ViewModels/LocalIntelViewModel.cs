@@ -103,7 +103,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             };
                             targetProcesses.Add(processInfo);
                         }
-                        break;
                     }
                 });
                 if (targetProcesses.NotNullOrEmpty())

@@ -243,6 +243,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             Image img = new Bitmap(w, h);//创建一个和屏幕同样大小的图像
             Graphics g = Graphics.FromImage(img);//绘制这个图像
             g.CopyFromScreen(new Point(leftTopX, leftTopY), new Point(0, 0), new Size(w, h));
+            g.Dispose();
             return img;
         }
     }
