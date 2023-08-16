@@ -92,6 +92,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 value.UpdateHome(intelMap);
             }
         }
+        public static bool RestoreWindowPos(string listener)
+        {
+            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            {
+                value.RestoreWindowPos();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         public static void NotifyToast(EarlyWarningContent content)
         {

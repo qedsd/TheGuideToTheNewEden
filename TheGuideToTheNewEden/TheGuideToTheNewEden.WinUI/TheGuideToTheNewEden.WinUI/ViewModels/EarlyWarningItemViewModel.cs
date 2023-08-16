@@ -377,7 +377,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             GC.Collect();
         });
 
-        
+        public ICommand RestorePosCommand => new RelayCommand(() =>
+        {
+            if(!string.IsNullOrEmpty(Setting?.Listener))
+            {
+                if(WarningService.RestoreWindowPos(Setting.Listener))
+                {
+                    Window?.ShowSuccess("重置成功");
+                }
+                else
+                {
+                    Window?.ShowError("重置失败");
+                }
+            }
+        });
+
         /// <summary>
         /// 预警更新
         /// </summary>

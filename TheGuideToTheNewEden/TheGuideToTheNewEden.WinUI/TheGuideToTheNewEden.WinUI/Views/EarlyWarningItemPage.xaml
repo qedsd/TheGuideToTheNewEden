@@ -283,20 +283,30 @@
                 Grid.Row="1"
                 Height="1"
                 Fill="{ThemeResource SystemAccentColor}" />
-            <Grid Grid.Row="2">
+            <StackPanel
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
                 <AppBarButton
                     HorizontalAlignment="Center"
                     Command="{x:Bind VM.StartCommand}"
                     Icon="Play"
-                    Label="开始"
+                    Label="{StaticResource EarlyWarningItemPage_Start}"
                     Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
                 <AppBarButton
                     HorizontalAlignment="Center"
                     Command="{x:Bind VM.StopCommand}"
                     Icon="Stop"
-                    Label="停止"
+                    Label="{StaticResource EarlyWarningItemPage_Stop}"
                     Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-            </Grid>
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.RestorePosCommand}"
+                    Icon="Refresh"
+                    Label="{StaticResource EarlyWarningItemPage_RestorePos}"
+                    ToolTipService.ToolTip="重置预警小窗位置到屏幕中心"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+            </StackPanel>
         </Grid>
         <ScrollViewer
             x:Name="ChatContentsScroll"

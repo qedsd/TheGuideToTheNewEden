@@ -387,4 +387,9 @@
     <x:String x:Key="GamePreviewMgrPage_Backward">向后</x:String>
     <x:String x:Key="GamePreviewMgrPage_Forward">向前</x:String>
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">行/列最大窗口个数</x:String>
+
+    <!--  EarlyWarningItemPage  -->
+    <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
 </ResourceDictionary>

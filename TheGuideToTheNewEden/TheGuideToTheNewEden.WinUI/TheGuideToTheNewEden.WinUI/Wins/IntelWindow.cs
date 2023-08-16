@@ -29,6 +29,7 @@ using Windows.UI;
 using TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -265,6 +266,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             Window?.Close();
             autoIntelTimer?.Stop();
             autoIntelTimer = null;
+        }
+
+        public void RestoreWindowPos()
+        {
+            Helpers.WindowHelper.CenterToScreen(Window);
         }
     }
 }
