@@ -398,11 +398,19 @@
     <!--  LocalIntel  -->
     <x:String x:Key="LocalIntel_DefaultNotify">来人了，还不跑？</x:String>
     <x:String x:Key="LocalIntel_DefaultName">玩家</x:String>
+    <x:String x:Key="LocalIntel_ProcessList">游戏进程列表</x:String>
     <x:String x:Key="LocalIntel_GlobalSetting">全局设置</x:String>
+    <x:String x:Key="LocalIntel_CurrentProcessSetting">当前进程设置</x:String>
     <x:String x:Key="LocalIntel_RefreshProcess">刷新进程列表</x:String>
     <x:String x:Key="LocalIntel_StartAll">开始全部</x:String>
     <x:String x:Key="LocalIntel_StopAll">停止全部</x:String>
     <x:String x:Key="LocalIntel_Running">监控中</x:String>
     <x:String x:Key="LocalIntel_RefreshSpan">刷新间隔（ms）</x:String>
     <x:String x:Key="LocalIntel_Standing">监控声望</x:String>
+    <x:String x:Key="LocalIntel_Standing_Name">名称</x:String>
+    <x:String x:Key="LocalIntel_Standing_Color">颜色</x:String>
+    <x:String x:Key="LocalIntel_Standing_Remove">删除</x:String>
+    <x:String x:Key="LocalIntel_Standing_Add">新增监控声望</x:String>
+    <x:String x:Key="LocalIntel_IntelText">预警通知内容</x:String>
+    <x:String x:Key="LocalIntel_IntelSound">预警通知声音</x:String>
 </ResourceDictionary>

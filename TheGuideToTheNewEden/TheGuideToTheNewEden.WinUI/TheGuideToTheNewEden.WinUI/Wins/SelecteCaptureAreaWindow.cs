@@ -19,6 +19,7 @@ using Microsoft.UI.Windowing;
 using System.Diagnostics;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -50,8 +51,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             Closed += SelecteCaptureAreaWindow_Closed;
         }
 
-        private void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private async void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
+            await Task.Delay(100);
             UpdateThumbDestination();
         }
 
@@ -81,7 +83,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
-                UpdateThumbDestination();
+                //UpdateThumbDestination();
             }
         }
         private System.Drawing.Rectangle _sourceClientRect = new System.Drawing.Rectangle();
@@ -96,20 +98,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     int top = 0;
                     int right = _appWindow.ClientSize.Width;
                     int bottom = _appWindow.ClientSize.Height;
-                    var titleBarHeight = 0;//去掉标题栏高度
-                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
                     Win32.GetClientRect(_sourceHWnd, ref _sourceClientRect);//源窗口显示区域分辨率大小
-                    //目标窗口显示区域，即GamePreviewWindow
+                    //目标窗口显示区域
                     WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
-                    //源窗口捕获区域，即游戏的窗口
-                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, _sourceClientRect.Right + widthMargin, _sourceClientRect.Bottom);
-                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                    WindowCaptureHelper.UpdateThumbDestination2(_thumbHWnd, rcD);
                     System.Drawing.Point point = new System.Drawing.Point();
                     Win32.ClientToScreen(_windowHandle, ref point);
-                    var currentWindowRect = WindowHelper.GetWindowRect(_windowHandle);
+                    //不用_appWindow.Position，有偏差
                     var img = Helpers.WindowCaptureHelper.GetScreenshot(point.X, point.Y, _appWindow.ClientSize.Width, _appWindow.ClientSize.Height);
                     WindowCaptureHelper.HideThumb(_thumbHWnd);
                     _imageCropper.Source = Helpers.ImageHelper.ImageConvertToWriteableBitmap(img);
+                    img.Dispose();
                     //捕获到的图像是根据此窗口调整后的大小，不是源窗口实际大小
                 }
                 catch (Exception ex)

@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.Core.Models
             get => refreshSpan; set => SetProperty(ref refreshSpan, value);
         }
         public List<LocalIntelProcSetting> ProcSettings { get; set; } = new List<LocalIntelProcSetting>();
-        public ObservableCollection<LocalIntelStandingSetting> Settings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
+        public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
     }
 
     public class LocalIntelProcSetting : ObservableObject
@@ -68,11 +68,11 @@ namespace TheGuideToTheNewEden.Core.Models
 
     public class LocalIntelStandingSetting : ObservableObject
     {
-        private Color highlightColor = Color.Green;
-        public Color HighlightColor
+        private Color color = Color.Red;
+        public Color Color
         {
-            get => highlightColor;
-            set => SetProperty(ref highlightColor, value);
+            get => color;
+            set => SetProperty(ref color, value);
         }
 
         private string name;

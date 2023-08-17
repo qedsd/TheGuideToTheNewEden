@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using ESI.NET.Models.Fittings;
 using ESI.NET.Models.Fleets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Wins;
 
@@ -35,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (SetProperty(ref selectedProcess, value))
                 {
-                    SetProcess();
+                    ProcSetting = GetProcess(value);
                 }
             }
         }
@@ -78,6 +81,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 Setting = new LocalIntelSetting();
+                Setting.StandingSettings.Add(new LocalIntelStandingSetting()
+                {
+                    Name = "红",
+                    Color = Color.Red,
+                });
+                Setting.StandingSettings.Add(new LocalIntelStandingSetting()
+                {
+                    Name = "蓝",
+                    Color = Color.Blue,
+                });
             }
             GetProcesses();
         }
@@ -149,43 +162,152 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Processes.Clear();
             }
         }
-        private void SetProcess()
+        private LocalIntelProcSetting GetProcess(ProcessInfo processInfo)
         {
-            var target = Setting.ProcSettings.FirstOrDefault(p => p.Name == SelectedProcess.WindowTitle);
-            ProcSetting = target != null ? target : new LocalIntelProcSetting();
+            if(processInfo == null)
+            {
+                return null;
+            }
+            var target = Setting.ProcSettings.FirstOrDefault(p => p.Name == processInfo.WindowTitle);
+            return target ?? new LocalIntelProcSetting()
+            {
+                Name = processInfo.WindowTitle,
+                Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify")
+            };
         }
 
-        private SelecteCaptureAreaWindow _currentSelecteCaptureAreaWindow;
+        
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            _currentSelecteCaptureAreaWindow = new SelecteCaptureAreaWindow(SelectedProcess.MainWindowHandle);
-            _currentSelecteCaptureAreaWindow.Activate();
-            _currentSelecteCaptureAreaWindow.CroppedRegionChanged += SelecteCaptureAreaWindow_CroppedRegionChanged;
+            if(Start(ProcSetting))
+            {
+                Window?.ShowSuccess("已开始监控");
+            }
+            else
+            {
+                Window?.ShowError("请检查选择区域是否规范、是否已启动监控同名进程");
+            }
         });
 
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            _currentSelecteCaptureAreaWindow.Close();
+            Stop(ProcSetting);
         });
 
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
-
+            foreach(var p in Processes.Where(p=>!p.Running).ToList())
+            {
+                Start(GetProcess(p));
+            }
         });
 
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
-            
+            foreach (var p in _runningDic.Select(p=>p.Value).ToList())
+            {
+                Stop(p);
+            }
         });
         public ICommand RefreshProcessListCommand => new RelayCommand(() =>
         {
             GetProcesses();
         });
-
+        public ICommand AddStandingCommand => new RelayCommand(() =>
+        {
+            Setting.StandingSettings.Add(new LocalIntelStandingSetting());
+        });
+        public ICommand PickSoundFileCommand => new RelayCommand(async () =>
+        {
+            var file = await Helpers.PickHelper.PickFileAsync(Window);
+            if (file != null)
+            {
+                ProcSetting.SoundFile = file.Path;
+            }
+        });
+        private SelecteCaptureAreaWindow _currentSelecteCaptureAreaWindow;
+        public ICommand SelectRegionCommand => new RelayCommand(() =>
+        {
+            if(_currentSelecteCaptureAreaWindow == null)
+            {
+                _currentSelecteCaptureAreaWindow = new SelecteCaptureAreaWindow(SelectedProcess.MainWindowHandle);
+                _currentSelecteCaptureAreaWindow.Activate();
+                _currentSelecteCaptureAreaWindow.CroppedRegionChanged += SelecteCaptureAreaWindow_CroppedRegionChanged;
+                _currentSelecteCaptureAreaWindow.Closed += ((s, e) =>
+                {
+                    _currentSelecteCaptureAreaWindow = null;
+                });
+            }
+        });
+        public void RemoveStanding(LocalIntelStandingSetting standingSetting)
+        {
+            if(standingSetting != null)
+            {
+                Setting.StandingSettings.Remove(standingSetting);
+            }
+        }
 
         private void SelecteCaptureAreaWindow_CroppedRegionChanged(Windows.Foundation.Rect rect)
         {
-            Debug.WriteLine($"裁剪区域 {rect.X} {rect.Y} {rect.Width} {rect.Height}");
+            Debug.WriteLine($"裁剪区域 {(int)rect.X} {(int)rect.Y} {(int)rect.Width} {(int)rect.Height}");
+            ProcSetting.X = (int)rect.X;
+            ProcSetting.Y = (int)rect.Y;
+            ProcSetting.Width = (int)rect.Width;
+            ProcSetting.Height = (int)rect.Height;
+        }
+        private bool IsValidRegion(LocalIntelProcSetting setting)
+        {
+            bool result = setting.X > 0 && setting.Y > 0 && setting.Width > 0 && setting.Height > 0;
+            var targetProcess = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
+            Rectangle clientRect = new Rectangle();
+            Win32.GetClientRect(targetProcess.MainWindowHandle, ref clientRect);
+            Point point = new Point();
+            Win32.ClientToScreen(targetProcess.MainWindowHandle, ref point);
+            result &= setting.Width <= clientRect.Width;
+            result &= setting.Height <= clientRect.Height;
+            return result;
+        }
+        private bool Start(LocalIntelProcSetting setting)
+        {
+            if(IsValidRegion(setting))
+            {
+                if(!_runningDic.ContainsKey(setting.Name))
+                {
+                    var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
+                    if (target != null)
+                    {
+                        target.Running = true;
+                        //TODO:添加到监控窗口
+                        _runningDic.Add(setting.Name, setting);
+                        return true;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"未找到目标进程:{setting.Name}");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Core.Log.Error($"已启动同名进程监控:{setting.Name}");
+                    return false;
+                }
+            }
+            else
+            {
+                Core.Log.Error($"不规范区域:{setting.Name}");
+                return false;
+            }
+        }
+        private void Stop(LocalIntelProcSetting setting)
+        {
+            //TODO:从监控窗口移除
+            _runningDic.Remove(setting.Name);
+            var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
+            if (target != null)
+            {
+                target.Running = false;
+            }
         }
     }
 }

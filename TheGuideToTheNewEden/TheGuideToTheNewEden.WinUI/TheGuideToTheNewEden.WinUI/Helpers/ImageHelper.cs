@@ -52,5 +52,13 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 return writeableBitmap;
             }
         }
+        public static WriteableBitmap MemoryStreamConvertToWriteableBitmap(int w, int h, MemoryStream stream)
+        {
+            var writeableBitmap = new WriteableBitmap(w, h);
+            writeableBitmap.SetSource(stream.AsRandomAccessStream());
+            return writeableBitmap;
+        }
+
+        
     }
 }
