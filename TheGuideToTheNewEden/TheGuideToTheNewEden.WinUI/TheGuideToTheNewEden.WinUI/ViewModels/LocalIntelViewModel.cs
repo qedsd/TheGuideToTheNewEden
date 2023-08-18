@@ -81,16 +81,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 Setting = new LocalIntelSetting();
-                Setting.StandingSettings.Add(new LocalIntelStandingSetting()
-                {
-                    Name = "红",
-                    Color = Color.Red,
-                });
-                Setting.StandingSettings.Add(new LocalIntelStandingSetting()
-                {
-                    Name = "蓝",
-                    Color = Color.Blue,
-                });
             }
             GetProcesses();
         }
@@ -172,7 +162,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             return target ?? new LocalIntelProcSetting()
             {
                 Name = processInfo.WindowTitle,
-                Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify")
+                Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify"),
+                StandingSettings = new ObservableCollection<LocalIntelStandingSetting>()
+                {
+                    new LocalIntelStandingSetting()
+                    {
+                        Name = "红",
+                        Color = Color.Red,
+                    },
+                    new LocalIntelStandingSetting()
+                    {
+                        Name = "白",
+                        Color = Color.White,
+                    },
+                }
             };
         }
 
@@ -215,7 +218,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand AddStandingCommand => new RelayCommand(() =>
         {
-            Setting.StandingSettings.Add(new LocalIntelStandingSetting());
+            ProcSetting.StandingSettings.Add(new LocalIntelStandingSetting());
         });
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
         {
@@ -243,7 +246,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(standingSetting != null)
             {
-                Setting.StandingSettings.Remove(standingSetting);
+                ProcSetting.StandingSettings.Remove(standingSetting);
             }
         }
 

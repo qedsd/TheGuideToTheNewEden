@@ -19,7 +19,6 @@ namespace TheGuideToTheNewEden.Core.Models
             get => refreshSpan; set => SetProperty(ref refreshSpan, value);
         }
         public List<LocalIntelProcSetting> ProcSettings { get; set; } = new List<LocalIntelProcSetting>();
-        public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
     }
 
     public class LocalIntelProcSetting : ObservableObject
@@ -64,6 +63,13 @@ namespace TheGuideToTheNewEden.Core.Models
             get => soundFile;
             set => SetProperty(ref soundFile, value);
         }
+        private LocalIntelDetectMode detectMode;
+        public LocalIntelDetectMode DetectMode
+        {
+            get => detectMode;
+            set => SetProperty(ref detectMode, value);
+        }
+        public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
     }
 
     public class LocalIntelStandingSetting : ObservableObject
@@ -81,5 +87,11 @@ namespace TheGuideToTheNewEden.Core.Models
             get => name;
             set => SetProperty(ref name, value);
         }
+    }
+
+    public enum LocalIntelDetectMode
+    {
+        Auto,
+        Fix
     }
 }

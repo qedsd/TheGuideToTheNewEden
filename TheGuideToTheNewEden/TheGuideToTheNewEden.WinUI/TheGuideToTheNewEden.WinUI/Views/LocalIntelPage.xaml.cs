@@ -36,8 +36,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
             Loaded += LocalIntelPage_Loaded;
             Unloaded += LocalIntelPage_Unloaded;
-            Loaded += LocalIntelPage_Loaded1;
-            PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
+            //Loaded += LocalIntelPage_Loaded1;
+            //PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
         }
 
         private void LocalIntelPage_Loaded1(object sender, RoutedEventArgs e)
@@ -86,15 +86,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private IntPtr _thumb;
         private void ProcessList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(_thumb != IntPtr.Zero)
-            {
-                WindowCaptureHelper.HideThumb(_thumb);
-            }
-            if(e.AddedItems?.Count > 0)
-            {
-                _thumb = WindowCaptureHelper.Show(_windowHandle, VM.SelectedProcess.MainWindowHandle);
-                UpdateThumbDestination();
-            }
+            //if(_thumb != IntPtr.Zero)
+            //{
+            //    WindowCaptureHelper.HideThumb(_thumb);
+            //}
+            //if(e.AddedItems?.Count > 0)
+            //{
+            //    _thumb = WindowCaptureHelper.Show(_windowHandle, VM.SelectedProcess.MainWindowHandle);
+            //    UpdateThumbDestination();
+            //}
         }
         private void UpdateThumbDestination()
         {

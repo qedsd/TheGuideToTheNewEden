@@ -17,14 +17,14 @@
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="400" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid Margin="0,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="64" />
+                <RowDefinition Height="68" />
             </Grid.RowDefinitions>
             <ListView
                 x:Name="ProcessList"
@@ -109,38 +109,120 @@
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE149;" />
                     </Button.Content>
                 </Button>
+                <Button Height="32">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel Width="200">
+                                <Grid Margin="0,8">
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_RefreshSpan}"
+                                        Minimum="100"
+                                        Value="{x:Bind VM.Setting.RefreshSpan, Mode=TwoWay}" />
+                                </Grid>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </StackPanel>
         </Grid>
-        <Grid Grid.Column="1" Margin="10,0">
+        <Grid
+            Grid.Column="1"
+            Margin="10,0"
+            Visibility="{x:Bind VM.SelectedProcess, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="56" />
+                <RowDefinition Height="68" />
             </Grid.RowDefinitions>
-            <Grid Grid.Row="1" Margin="8,0,8,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0"
-                    Text="{StaticResource LocalIntel_GlobalSetting}" />
-                <Rectangle
-                    Grid.Column="2"
-                    Height="1"
-                    Fill="{ThemeResource SystemAccentColor}" />
-            </Grid>
             <ScrollViewer Grid.Row="0">
                 <StackPanel x:Name="SettingArea" Margin="8,0">
                     <Grid Margin="0,8">
-                        <NumberBox
-                            Header="{StaticResource LocalIntel_RefreshSpan}"
-                            Minimum="100"
-                            Value="{x:Bind VM.Setting.RefreshSpan, Mode=TwoWay}" />
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="X:" />
+                            <NumberBox
+                                Margin="4,0,0,0"
+                                Minimum="1"
+                                Value="{x:Bind VM.ProcSetting.X, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="Y:" />
+                            <NumberBox
+                                Margin="4,0,0,0"
+                                Minimum="1"
+                                Value="{x:Bind VM.ProcSetting.Y, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="W:" />
+                            <NumberBox
+                                Margin="4,0,0,0"
+                                Minimum="1"
+                                Value="{x:Bind VM.ProcSetting.Width, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="H:" />
+                            <NumberBox
+                                Margin="4,0,0,0"
+                                Minimum="1"
+                                Value="{x:Bind VM.ProcSetting.Height, Mode=TwoWay}" />
+                        </StackPanel>
                     </Grid>
+                    <Grid Grid.Row="1" Margin="0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" Text="{StaticResource LocalIntel_IntelText}" />
+                        <TextBox
+                            Grid.Column="1"
+                            Margin="4,0,8,0"
+                            HorizontalAlignment="Stretch"
+                            Text="{x:Bind VM.ProcSetting.Notify, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" Text="{StaticResource LocalIntel_IntelSound}" />
+                        <TextBox
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            Text="{x:Bind VM.ProcSetting.SoundFile, Mode=TwoWay}" />
+                        <Button
+                            Grid.Column="2"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{x:Bind VM.PickSoundFileCommand}">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE104;" />
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="1" Margin="0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" Text="{StaticResource LocalIntel_DetectMode}" />
+                        <ComboBox
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="{x:Bind VM.ProcSetting.DetectMode, Mode=TwoWay}">
+                            <ComboBoxItem Content="{StaticResource LocalIntel_DetectMode_Auto}" />
+                            <ComboBoxItem Content="{StaticResource LocalIntel_DetectMode_Fix}" />
+                        </ComboBox>
+                    </Grid>
+
                     <Grid Margin="0,8">
                         <TextBlock Text="{StaticResource LocalIntel_Standing}" />
                         <Button
@@ -170,7 +252,7 @@
                         HeadersVisibility="Column"
                         HorizontalScrollBarVisibility="Auto"
                         IsReadOnly="False"
-                        ItemsSource="{x:Bind VM.Setting.StandingSettings}"
+                        ItemsSource="{x:Bind VM.ProcSetting.StandingSettings}"
                         RowDetailsVisibilityMode="Collapsed"
                         SelectionMode="Extended"
                         VerticalScrollBarVisibility="Visible">
@@ -229,114 +311,6 @@
                     </controls:DataGrid>
                 </StackPanel>
             </ScrollViewer>
-        </Grid>
-        <Grid
-            x:Name="PreviewParentGrid"
-            Grid.Column="2"
-            Margin="10,0"
-            Visibility="{x:Bind VM.SelectedProcess, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="64" />
-            </Grid.RowDefinitions>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid x:Name="PreviewGrid">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Image
-                        x:Name="Image1"
-                        Grid.Column="1"
-                        Margin="0,0,0,10"
-                        Stretch="Uniform" />
-                    <Image
-                        x:Name="Image2"
-                        Grid.Column="2"
-                        Margin="0,0,0,10" />
-                </Grid>
-                <Grid Grid.Row="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center" Text="X:" />
-                            <NumberBox
-                                Margin="4,0,0,0"
-                                Minimum="1"
-                                Value="{x:Bind VM.ProcSetting.X, Mode=TwoWay}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center" Text="Y:" />
-                            <NumberBox
-                                Margin="4,0,0,0"
-                                Minimum="1"
-                                Value="{x:Bind VM.ProcSetting.Y, Mode=TwoWay}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center" Text="W:" />
-                            <NumberBox
-                                Margin="4,0,0,0"
-                                Minimum="1"
-                                Value="{x:Bind VM.ProcSetting.Width, Mode=TwoWay}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="3" Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center" Text="H:" />
-                            <NumberBox
-                                Margin="4,0,0,0"
-                                Minimum="1"
-                                Value="{x:Bind VM.ProcSetting.Height, Mode=TwoWay}" />
-                        </StackPanel>
-                    </Grid>
-                    <Grid Grid.Row="1" Margin="0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center" Text="{StaticResource LocalIntel_IntelText}" />
-                        <TextBox
-                            Grid.Column="1"
-                            Margin="4,0,8,0"
-                            HorizontalAlignment="Stretch"
-                            Text="{x:Bind VM.ProcSetting.Notify, Mode=TwoWay}" />
-                    </Grid>
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center" Text="{StaticResource LocalIntel_IntelSound}" />
-                        <TextBox
-                            Grid.Column="1"
-                            Margin="4,0,0,0"
-                            HorizontalAlignment="Stretch"
-                            Text="{x:Bind VM.ProcSetting.SoundFile, Mode=TwoWay}" />
-                        <Button
-                            Grid.Column="2"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Command="{x:Bind VM.PickSoundFileCommand}">
-                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE104;" />
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Grid>
             <Grid Grid.Row="1" Margin="8,8,8,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -353,7 +327,7 @@
                     Height="1"
                     Fill="{ThemeResource SystemAccentColor}" />
             </Grid>
-            <Grid Grid.Row="2" Margin="0,4">
+            <Grid Grid.Row="2" Margin="0,0">
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         HorizontalAlignment="Center"
@@ -374,6 +348,33 @@
                         Label="选择区域"
                         Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
                 </StackPanel>
+            </Grid>
+        </Grid>
+        <Grid
+            x:Name="PreviewParentGrid"
+            Grid.Column="2"
+            Margin="10,0"
+            Visibility="{x:Bind VM.SelectedProcess, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <Grid x:Name="PreviewGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image
+                    x:Name="Image0"
+                    Grid.Column="0"
+                    Margin="0,0,0,10"
+                    Stretch="Uniform" />
+                <Image
+                    x:Name="Image1"
+                    Grid.Column="1"
+                    Margin="0,0,0,10"
+                    Stretch="Uniform" />
+                <Image
+                    x:Name="Image2"
+                    Grid.Column="2"
+                    Margin="0,0,0,10" />
             </Grid>
         </Grid>
     </Grid>
