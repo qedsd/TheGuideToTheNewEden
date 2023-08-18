@@ -111,11 +111,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     Image1.Source = writeableBitmap;
                     OpenCvSharp.Point[][] points;
                     var mat2 = IntelImageHelper.CalStandingRects(edgeMat, out points);
+                    shotImg.Dispose();
+                    edgeMat.Dispose();
                     var writeableBitmap2 = ImageHelper.MemoryStreamConvertToWriteableBitmap(mat2.Width, mat2.Height, mat2.ToMemoryStream());
                     Image2.Source = writeableBitmap2;
                     mat2.Dispose();
-                    shotImg.Dispose();
-                    edgeMat.Dispose();
                 }
             }
         }
