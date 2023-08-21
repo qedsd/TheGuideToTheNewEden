@@ -164,7 +164,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         static readonly int DWM_TNP_SOURCECLIENTAREAONLY = 0x10;
 
         #endregion
-
+        public static IntPtr RegisterThumbnail(IntPtr targetHWnd, IntPtr sourceHWnd)
+        {
+            DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb);
+            return thumb;
+        }
         public static IntPtr Show(IntPtr targetHWnd, IntPtr sourceHWnd)
         {
             DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb);

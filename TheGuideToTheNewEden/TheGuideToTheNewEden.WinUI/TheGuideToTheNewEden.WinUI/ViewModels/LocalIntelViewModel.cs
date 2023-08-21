@@ -2,6 +2,7 @@
 using ESI.NET.Models.Fittings;
 using ESI.NET.Models.Fleets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -51,6 +52,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => procSetting;
             set => SetProperty(ref procSetting, value);
         }
+
+        //private int localIntelDetectMode;
+        //public int LocalIntelDetectMode
+        //{
+        //    get => (int)procSetting?.DetectMode;
+        //    set
+        //    {
+        //        if(SetProperty(ref localIntelDetectMode, value))
+        //        {
+        //            if(procSetting != null)
+        //                procSetting.DetectMode = (Core.Models.LocalIntelDetectMode)value;
+        //        }
+        //    }
+        //}
 
         private bool running;
         public bool Running
@@ -159,24 +174,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return null;
             }
             var target = Setting.ProcSettings.FirstOrDefault(p => p.Name == processInfo.WindowTitle);
-            return target ?? new LocalIntelProcSetting()
+            if(target == null)
             {
-                Name = processInfo.WindowTitle,
-                Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify"),
-                StandingSettings = new ObservableCollection<LocalIntelStandingSetting>()
+                target = new LocalIntelProcSetting()
                 {
-                    new LocalIntelStandingSetting()
+                    Name = processInfo.WindowTitle,
+                    Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify"),
+                    StandingSettings = new ObservableCollection<LocalIntelStandingSetting>()
                     {
-                        Name = "红",
-                        Color = Color.Red,
-                    },
-                    new LocalIntelStandingSetting()
-                    {
-                        Name = "白",
-                        Color = Color.White,
-                    },
-                }
-            };
+                        new LocalIntelStandingSetting()
+                        {
+                            Name = "红",
+                            Color = Color.Red,
+                        },
+                        new LocalIntelStandingSetting()
+                        {
+                            Name = "白",
+                            Color = Color.White,
+                        },
+                    }
+                };
+            }
+            target.HWnd = processInfo.MainWindowHandle;
+            return target;
         }
 
         
@@ -233,7 +253,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(_currentSelecteCaptureAreaWindow == null)
             {
-                _currentSelecteCaptureAreaWindow = new SelecteCaptureAreaWindow(SelectedProcess.MainWindowHandle);
+                _currentSelecteCaptureAreaWindow = new SelecteCaptureAreaWindow(SelectedProcess.MainWindowHandle,new Windows.Foundation.Rect(ProcSetting.X, ProcSetting.Y, ProcSetting.Width, ProcSetting.Height));
                 _currentSelecteCaptureAreaWindow.Activate();
                 _currentSelecteCaptureAreaWindow.CroppedRegionChanged += SelecteCaptureAreaWindow_CroppedRegionChanged;
                 _currentSelecteCaptureAreaWindow.Closed += ((s, e) =>
@@ -260,7 +280,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private bool IsValidRegion(LocalIntelProcSetting setting)
         {
-            bool result = setting.X > 0 && setting.Y > 0 && setting.Width > 0 && setting.Height > 0;
+            bool result = (setting.X + setting.Width) > 0 && (setting.Y + setting.Height) > 0;
             var targetProcess = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
             Rectangle clientRect = new Rectangle();
             Win32.GetClientRect(targetProcess.MainWindowHandle, ref clientRect);
@@ -270,6 +290,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             result &= setting.Height <= clientRect.Height;
             return result;
         }
+
+        private LocalIntelWindow _localIntelWindow;
         private bool Start(LocalIntelProcSetting setting)
         {
             if(IsValidRegion(setting))
@@ -279,10 +301,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
                     if (target != null)
                     {
-                        target.Running = true;
-                        //TODO:添加到监控窗口
-                        _runningDic.Add(setting.Name, setting);
-                        return true;
+                        if(_localIntelWindow == null)
+                        {
+                            _localIntelWindow = new LocalIntelWindow();
+                            _localIntelWindow.Closed += _localIntelWindow_Closed;
+                            _localIntelWindow.Activate();
+                        }
+                        if(_localIntelWindow.Add(setting))
+                        {
+                            _runningDic.Add(setting.Name, setting);
+                            target.Running = true;
+                            return true;
+                        }
+                        else
+                        {
+                            Core.Log.Error($"添加{setting.Name}到监控窗口失败");
+                            Window?.ShowError($"添加{setting.Name}到监控窗口失败");
+                            return false;
+                        }
                     }
                     else
                     {
@@ -302,14 +338,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return false;
             }
         }
+
+        private void _localIntelWindow_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+        {
+            _localIntelWindow = null;
+        }
+
         private void Stop(LocalIntelProcSetting setting)
         {
-            //TODO:从监控窗口移除
-            _runningDic.Remove(setting.Name);
-            var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
-            if (target != null)
+            if(_localIntelWindow.Remve(setting))
             {
-                target.Running = false;
+                _runningDic.Remove(setting.Name);
+                var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
+                if (target != null)
+                {
+                    target.Running = false;
+                }
+            }
+            else
+            {
+                Window.ShowError("停止失败");
             }
         }
     }

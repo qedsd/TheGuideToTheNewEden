@@ -150,28 +150,28 @@
                             <TextBlock VerticalAlignment="Center" Text="X:" />
                             <NumberBox
                                 Margin="4,0,0,0"
-                                Minimum="1"
+                                Minimum="0"
                                 Value="{x:Bind VM.ProcSetting.X, Mode=TwoWay}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="Y:" />
                             <NumberBox
                                 Margin="4,0,0,0"
-                                Minimum="1"
+                                Minimum="0"
                                 Value="{x:Bind VM.ProcSetting.Y, Mode=TwoWay}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="W:" />
                             <NumberBox
                                 Margin="4,0,0,0"
-                                Minimum="1"
+                                Minimum="0"
                                 Value="{x:Bind VM.ProcSetting.Width, Mode=TwoWay}" />
                         </StackPanel>
                         <StackPanel Grid.Column="3" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="H:" />
                             <NumberBox
                                 Margin="4,0,0,0"
-                                Minimum="1"
+                                Minimum="0"
                                 Value="{x:Bind VM.ProcSetting.Height, Mode=TwoWay}" />
                         </StackPanel>
                     </Grid>
@@ -207,7 +207,7 @@
                             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE104;" />
                         </Button>
                     </Grid>
-                    <Grid Grid.Row="1" Margin="0,8">
+                    <!--<Grid Grid.Row="1" Margin="0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition />
@@ -217,11 +217,11 @@
                             Grid.Column="1"
                             Margin="4,0,0,0"
                             HorizontalAlignment="Stretch"
-                            SelectedIndex="{x:Bind VM.ProcSetting.DetectMode, Mode=TwoWay}">
+                            SelectedIndex="{x:Bind VM.LocalIntelDetectMode, Mode=TwoWay}">
                             <ComboBoxItem Content="{StaticResource LocalIntel_DetectMode_Auto}" />
                             <ComboBoxItem Content="{StaticResource LocalIntel_DetectMode_Fix}" />
                         </ComboBox>
-                    </Grid>
+                    </Grid>-->
 
                     <Grid Margin="0,8">
                         <TextBlock Text="{StaticResource LocalIntel_Standing}" />

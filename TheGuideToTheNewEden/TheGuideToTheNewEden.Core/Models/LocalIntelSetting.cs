@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,6 +24,8 @@ namespace TheGuideToTheNewEden.Core.Models
 
     public class LocalIntelProcSetting : ObservableObject
     {
+        [JsonIgnore]
+        public IntPtr HWnd { get; set; }
         private string name;
         public string Name
         {

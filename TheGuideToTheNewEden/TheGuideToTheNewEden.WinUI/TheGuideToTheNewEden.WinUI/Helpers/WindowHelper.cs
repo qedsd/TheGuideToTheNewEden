@@ -152,13 +152,16 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             window.ExtendsContentIntoTitleBar = false;
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);
-            presenter.IsAlwaysOnTop = true;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
             presenter.IsResizable = false;
             presenter.SetBorderAndTitleBar(false, false);
         }
-
+        public static void TopMost(Window window)
+        {
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);
+            presenter.IsAlwaysOnTop = true;
+        }
         /// <summary>
         /// 使用win32让窗口完全没有边框，包括圆角阴影，不可拖动
         /// </summary>

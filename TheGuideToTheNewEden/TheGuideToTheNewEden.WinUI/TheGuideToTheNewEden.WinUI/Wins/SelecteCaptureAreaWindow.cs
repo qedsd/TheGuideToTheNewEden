@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Image _image = new Image();
         private ImageCropper _imageCropper = new ImageCropper();
         private DispatcherTimer dispatcherTimer;
-        public SelecteCaptureAreaWindow(IntPtr sourceHWnd)
+        public SelecteCaptureAreaWindow(IntPtr sourceHWnd,Rect rect = new Rect())
         {
             this.InitializeComponent();
             SetHeadText("选择本地声望区域");
@@ -40,6 +40,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
             MainContent = _imageCropper;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
+            Win32.GetClientRect(_sourceHWnd, ref _sourceClientRect);
+            _appWindow.ResizeClient(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
+            //_appWindow.Resize(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
             Activated += SelecteCaptureAreaWindow_Activated;
             SizeChanged += SelecteCaptureAreaWindow_SizeChanged;
             dispatcherTimer = new DispatcherTimer()
@@ -49,11 +52,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Start();
             Closed += SelecteCaptureAreaWindow_Closed;
+            if(!rect.IsEmpty)
+            {
+                _imageCropper.TrySetCroppedRegion(rect);
+            }
         }
 
         private async void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            await Task.Delay(100);
+            Activated -= SelecteCaptureAreaWindow_Activated;
+            ShowWaiting();
+            await Task.Delay(500);
+            HideWaiting();
             UpdateThumbDestination();
         }
 
@@ -74,8 +84,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 actullyRect.X = xScale * _imageCropper.CroppedRegion.X;
                 actullyRect.Y = yScale * _imageCropper.CroppedRegion.Y;
                 actullyRect.Width = xScale * _imageCropper.CroppedRegion.Width;
-                actullyRect.Height = xScale * _imageCropper.CroppedRegion.Height;
-                CroppedRegionChanged?.Invoke(_imageCropper.CroppedRegion);
+                actullyRect.Height = yScale * _imageCropper.CroppedRegion.Height;
+                CroppedRegionChanged?.Invoke(actullyRect);
             }
         }
 
