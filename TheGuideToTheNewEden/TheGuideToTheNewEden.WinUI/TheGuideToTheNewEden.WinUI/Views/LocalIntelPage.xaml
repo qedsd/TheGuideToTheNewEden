@@ -33,7 +33,6 @@
                 Background="Transparent"
                 ItemsSource="{x:Bind VM.Processes, Mode=OneWay}"
                 SelectedItem="{x:Bind VM.SelectedProcess, Mode=TwoWay}"
-                SelectionChanged="ProcessList_SelectionChanged"
                 Style="{StaticResource StretchListView}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="gamepreviews:ProcessInfo">
@@ -252,7 +251,7 @@
                         HeadersVisibility="Column"
                         HorizontalScrollBarVisibility="Auto"
                         IsReadOnly="False"
-                        ItemsSource="{x:Bind VM.ProcSetting.StandingSettings}"
+                        ItemsSource="{x:Bind VM.ProcSetting.StandingSettings, Mode=OneWay}"
                         RowDetailsVisibilityMode="Collapsed"
                         SelectionMode="Extended"
                         VerticalScrollBarVisibility="Visible">
@@ -353,8 +352,7 @@
         <Grid
             x:Name="PreviewParentGrid"
             Grid.Column="2"
-            Margin="10,0"
-            Visibility="{x:Bind VM.SelectedProcess, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            Margin="10,0">
             <Grid x:Name="PreviewGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -365,6 +363,7 @@
                     x:Name="Image0"
                     Grid.Column="0"
                     Margin="0,0,0,10"
+                    Source="{x:Bind VM.ImageSource1, Mode=OneWay}"
                     Stretch="Uniform" />
                 <Image
                     x:Name="Image1"
@@ -374,7 +373,7 @@
                 <Image
                     x:Name="Image2"
                     Grid.Column="2"
-                    Margin="0,0,0,10" />
+                    Margin="0,0,0,10"/>
             </Grid>
         </Grid>
     </Grid>

@@ -73,6 +73,13 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref detectMode, value);
         }
         public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
+        public void ChangeScreenshot(Bitmap img)
+        {
+            OnScreenshotChanged?.Invoke(img);
+            img.Dispose();
+        }
+        public delegate void ScreenshotChangedDelegate(Bitmap img);
+        public event ScreenshotChangedDelegate OnScreenshotChanged;
     }
 
     public class LocalIntelStandingSetting : ObservableObject

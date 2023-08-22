@@ -17,6 +17,7 @@
        <NoWarn>NU1701</NoWarn>
      </PackageReference>
      <PackageReference Include="System.Data.SQLite" Version="1.0.116" />
+     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
    </ItemGroup>
 
    <ItemGroup>

@@ -7,9 +7,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -30,15 +32,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             public WindowCaptureHelper.Rect ThumbRect;
         }
         private readonly Dictionary<string, LocalIntelWindowItem> _intelDics = new Dictionary<string, LocalIntelWindowItem>();
-        private Microsoft.UI.Windowing.AppWindow _appWindow;
-        private IntPtr _windowHandle;
-        
-        public LocalIntelWindow()
+        private readonly Microsoft.UI.Windowing.AppWindow _appWindow;
+        private readonly IntPtr _windowHandle;
+        private int _refreshSpan;
+
+        public LocalIntelWindow(int refreshSpan)
         {
+            _refreshSpan = refreshSpan;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _windowHandle = WindowHelper.GetWindowHandle(this);
             Helpers.WindowHelper.HideTitleBar(this);
             Helpers.WindowHelper.TopMost(this);
+            _appWindow.IsShownInSwitchers = false;
             EnableRightMouseMove();
         }
         #region 鼠标右键移动窗口
@@ -81,6 +86,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
+
         public bool Add(LocalIntelProcSetting procSetting)
         {
             if(!_intelDics.ContainsKey(procSetting.Name))
@@ -101,9 +107,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                             ThumbRect = new WindowCaptureHelper.Rect(fw, 0, fw + procSetting.Width, procSetting.Height),
                             ThumbHWnd = thumbHWdn
                         };
+                        int widthMargin = WindowHelper.GetBorderWidth(procSetting.HWnd);//去掉左边白边及右边显示完整
                         _intelDics.Add(procSetting.Name, newItem);
                         _appWindow.Resize(new Windows.Graphics.SizeInt32(newItem.ThumbRect.Right, _intelDics.Max(p => p.Value.ThumbRect.Bottom)));
-                        UpdateThumb(thumbHWdn, newItem.ThumbRect, new WindowCaptureHelper.Rect(procSetting.X, procSetting.Y, procSetting.X + procSetting.Width, procSetting.Y + procSetting.Height));
+                        UpdateThumb(thumbHWdn, newItem.ThumbRect, new WindowCaptureHelper.Rect(procSetting.X + widthMargin, procSetting.Y, procSetting.X + procSetting.Width + widthMargin * 2, procSetting.Y + procSetting.Height));
+                        StartScreenshot();
                         return true;
                     }
                     else
@@ -148,6 +156,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 {
                     //没有监控则关闭窗口
                     Close();
+                    StopScreenshot();
                 }
                 return true;
             }
@@ -157,6 +166,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 return false;
             }
         }
+
+        #region 略缩图显示
         private IntPtr RegisterThumb(IntPtr hwdn)
         {
             return WindowCaptureHelper.RegisterThumbnail(_windowHandle, hwdn);
@@ -169,5 +180,56 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             WindowCaptureHelper.HideThumb(hwdn);
         }
+        #endregion
+
+        #region 定期截图
+        private bool _stopScreenshot = true;
+        private void StartScreenshot()
+        {
+            if(!_stopScreenshot)
+            {
+                return;
+            }
+            _stopScreenshot = false;
+            Task.Run(() =>
+            {
+                while(true)
+                {
+                    if(_stopScreenshot)
+                    {
+                        return;
+                    }
+                    try
+                    {
+                        System.Drawing.Point point = new System.Drawing.Point();
+                        Win32.ClientToScreen(_windowHandle, ref point);
+                        //截取整个预警窗口图
+                        var img = Helpers.WindowCaptureHelper.GetScreenshot(point.X, point.Y, _appWindow.ClientSize.Width, _appWindow.ClientSize.Height);
+                        if (img != null)
+                        {
+                            //按进程分割图像
+                            foreach (var item in _intelDics.Values)
+                            {
+                                var cutBitmap = ImageHelper.ImageToBitmap(img, new Rectangle(item.ThumbRect.Left, item.ThumbRect.Top, item.ThumbRect.Right - item.ThumbRect.Left, item.ThumbRect.Bottom - item.ThumbRect.Top));
+                                //ImageHelper.SaveImageToFile(cutBitmap, AppDomain.CurrentDomain.BaseDirectory, item.ProcSetting.Name, System.Drawing.Imaging.ImageFormat.Png);
+                                item.ProcSetting.ChangeScreenshot(cutBitmap.Clone() as Bitmap);
+                                cutBitmap.Dispose();
+                            }
+                            img.Dispose();
+                        }
+                        Thread.Sleep(_refreshSpan);
+                    }
+                    catch(Exception ex)
+                    {
+                        Core.Log.Error(ex);
+                    }
+                }
+            });
+        }
+        private void StopScreenshot()
+        {
+            _stopScreenshot = true;
+        }
+        #endregion
     }
 }

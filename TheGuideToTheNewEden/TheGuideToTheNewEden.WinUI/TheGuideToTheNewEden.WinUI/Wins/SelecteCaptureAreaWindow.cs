@@ -25,26 +25,37 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     public class SelecteCaptureAreaWindow : BaseWindow
     {
-        private IntPtr _sourceHWnd = IntPtr.Zero;
+        private readonly IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
         private readonly AppWindow _appWindow;
-        private Image _image = new Image();
-        private ImageCropper _imageCropper = new ImageCropper();
-        private DispatcherTimer dispatcherTimer;
+        private readonly ImageCropper _imageCropper = new ImageCropper();
+        private readonly DispatcherTimer dispatcherTimer;
+        private Rect _rect;
         public SelecteCaptureAreaWindow(IntPtr sourceHWnd,Rect rect = new Rect())
         {
             this.InitializeComponent();
+            HideAppDisplayName();
             SetHeadText("选择本地声望区域");
             _sourceHWnd = sourceHWnd;
+            _rect = rect;
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
-            MainContent = _imageCropper;
+            Grid mainGrid = new Grid();
+            Button refreshButton = new Button()
+            {
+                Content = "刷新截图",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            refreshButton.Click += RefreshButton_Click;
+            mainGrid.Children.Add(_imageCropper);
+            mainGrid.Children.Add(refreshButton);
+            MainContent = mainGrid;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Win32.GetClientRect(_sourceHWnd, ref _sourceClientRect);
             _appWindow.ResizeClient(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
-            //_appWindow.Resize(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
             Activated += SelecteCaptureAreaWindow_Activated;
-            SizeChanged += SelecteCaptureAreaWindow_SizeChanged;
             dispatcherTimer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromMilliseconds(200),
@@ -52,15 +63,20 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Start();
             Closed += SelecteCaptureAreaWindow_Closed;
-            if(!rect.IsEmpty)
-            {
-                _imageCropper.TrySetCroppedRegion(rect);
-            }
         }
 
-        private async void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshScreenshot();
+        }
+
+        private void SelecteCaptureAreaWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             Activated -= SelecteCaptureAreaWindow_Activated;
+            RefreshScreenshot();
+        }
+        private async void RefreshScreenshot()
+        {
             ShowWaiting();
             await Task.Delay(500);
             HideWaiting();
@@ -70,7 +86,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void SelecteCaptureAreaWindow_Closed(object sender, WindowEventArgs args)
         {
             dispatcherTimer.Tick -= DispatcherTimer_Tick;
-            SizeChanged -= SelecteCaptureAreaWindow_SizeChanged;
             dispatcherTimer.Stop();
         }
 
@@ -89,13 +104,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-        private void SelecteCaptureAreaWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
-        {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                //UpdateThumbDestination();
-            }
-        }
         private System.Drawing.Rectangle _sourceClientRect = new System.Drawing.Rectangle();
         private void UpdateThumbDestination()
         {
@@ -119,6 +127,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     WindowCaptureHelper.HideThumb(_thumbHWnd);
                     _imageCropper.Source = Helpers.ImageHelper.ImageConvertToWriteableBitmap(img);
                     img.Dispose();
+                    if (!_rect.IsEmpty)
+                    {
+                        _imageCropper.TrySetCroppedRegion(_rect);
+                    }
                     //捕获到的图像是根据此窗口调整后的大小，不是源窗口实际大小
                 }
                 catch (Exception ex)

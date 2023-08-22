@@ -50,7 +50,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public LocalIntelProcSetting ProcSetting
         {
             get => procSetting;
-            set => SetProperty(ref procSetting, value);
+            set
+            {
+                ClearImage();
+                if (procSetting != null)
+                {
+                    procSetting.OnScreenshotChanged -= ProcSetting_OnScreenshotChanged;
+                }
+                if(SetProperty(ref procSetting, value))
+                {
+                    value.OnScreenshotChanged += ProcSetting_OnScreenshotChanged;
+                }
+            }
         }
 
         //private int localIntelDetectMode;
@@ -73,6 +84,37 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => running;
             set => SetProperty(ref running, value);
         }
+
+        private Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap imageSource1;
+        /// <summary>
+        /// 声望区域原图
+        /// </summary>
+        public Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap ImageSource1
+        {
+            get => imageSource1;
+            set => SetProperty(ref imageSource1, value);
+        }
+
+        private Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap imageSource2;
+        /// <summary>
+        /// 声望区域轮廓图
+        /// </summary>
+        public Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap ImageSource2
+        {
+            get => imageSource2;
+            set => SetProperty(ref imageSource2, value);
+        }
+
+        private Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap imageSource3;
+        /// <summary>
+        /// 声望区域矩形识别图
+        /// </summary>
+        public Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap ImageSource3
+        {
+            get => imageSource3;
+            set => SetProperty(ref imageSource3, value);
+        }
+
         private readonly Dictionary<string, LocalIntelProcSetting> _runningDic = new Dictionary<string, LocalIntelProcSetting>();
         private static readonly string SettingFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "LocalIntelSetting.json");
         public LocalIntelViewModel()
@@ -194,6 +236,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         },
                     }
                 };
+                Setting.ProcSettings.Add(target);
             }
             target.HWnd = processInfo.MainWindowHandle;
             return target;
@@ -204,6 +247,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(Start(ProcSetting))
             {
+                Save();
                 Window?.ShowSuccess("已开始监控");
             }
             else
@@ -223,6 +267,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Start(GetProcess(p));
             }
+            Save();
         });
 
         public ICommand StopAllCommand => new RelayCommand(() =>
@@ -303,7 +348,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         if(_localIntelWindow == null)
                         {
-                            _localIntelWindow = new LocalIntelWindow();
+                            _localIntelWindow = new LocalIntelWindow(Setting.RefreshSpan);
                             _localIntelWindow.Closed += _localIntelWindow_Closed;
                             _localIntelWindow.Activate();
                         }
@@ -311,6 +356,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             _runningDic.Add(setting.Name, setting);
                             target.Running = true;
+                            Running = true;
                             return true;
                         }
                         else
@@ -359,6 +405,43 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Window.ShowError("停止失败");
             }
+            Running = _runningDic.Count > 0;
+        }
+
+        private void Save()
+        {
+            string dir = System.IO.Path.GetDirectoryName(SettingFilePath);
+            if(!System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+            string json = JsonConvert.SerializeObject(Setting);
+            System.IO.File.WriteAllText(SettingFilePath, json);
+        }
+
+        private void ProcSetting_OnScreenshotChanged(Bitmap img)
+        {
+            var m = img.Clone() as Bitmap;
+            Window?.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (ImageSource1 == null)
+                {
+                    ImageSource1 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(m.Width, m.Height);
+                }
+                else if(ImageSource1.PixelWidth != m.Width || ImageSource1.PixelHeight != m.Height)
+                {
+                    ImageSource1 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(m.Width, m.Height);
+                }
+                ImageHelper.BitmapWriteToWriteableBitmap(ImageSource1, m);
+                m.Dispose();
+            });
+        }
+        private void ClearImage()
+        {
+            //ImageSource1?.(Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap.PixelWidthProperty, 0);
+            //ImageSource1?.SetValue(Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap.PixelHeightProperty, 0);
+            //ImageSource2?.SetSource(null);
+            //ImageSource3?.SetSource(null);
         }
     }
 }
