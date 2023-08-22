@@ -22,6 +22,15 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 return Mat.FromStream(memory, ImreadModes.Unchanged);
             }
         }
+        public static Mat BitmapToMat(System.Drawing.Bitmap img)
+        {
+            using (var memory = new MemoryStream())
+            {
+                img.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+                return Mat.FromStream(memory, ImreadModes.Unchanged);
+            }
+        }
         public static Mat GetGray(Mat input)
         {
             Mat gray = new Mat();
@@ -263,7 +272,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             return output;
         }
-        private static Vec3b GetMainColor(Rect rect, Mat input)
+        public static Vec3b GetMainColor(Rect rect, Mat input)
         {
             //y取中心
             //x取左边往右偏移2像素

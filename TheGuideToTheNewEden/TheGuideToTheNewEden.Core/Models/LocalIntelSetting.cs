@@ -66,6 +66,18 @@ namespace TheGuideToTheNewEden.Core.Models
             get => soundFile;
             set => SetProperty(ref soundFile, value);
         }
+        private bool windowNotify;
+        public bool WindowNotify
+        {
+            get => windowNotify;
+            set => SetProperty(ref windowNotify, value);
+        }
+        private bool toastNotify;
+        public bool ToastNotify
+        {
+            get => toastNotify;
+            set => SetProperty(ref toastNotify, value);
+        }
         private LocalIntelDetectMode detectMode;
         public LocalIntelDetectMode DetectMode
         {
@@ -75,10 +87,10 @@ namespace TheGuideToTheNewEden.Core.Models
         public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
         public void ChangeScreenshot(Bitmap img)
         {
-            OnScreenshotChanged?.Invoke(img);
+            OnScreenshotChanged?.Invoke(this,img);
             img.Dispose();
         }
-        public delegate void ScreenshotChangedDelegate(Bitmap img);
+        public delegate void ScreenshotChangedDelegate(LocalIntelProcSetting sender, Bitmap img);
         public event ScreenshotChangedDelegate OnScreenshotChanged;
     }
 
