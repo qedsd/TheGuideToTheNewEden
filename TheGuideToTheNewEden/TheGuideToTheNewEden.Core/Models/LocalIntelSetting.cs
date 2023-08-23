@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Text;
+using OpenCvSharp;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -106,8 +107,22 @@ namespace TheGuideToTheNewEden.Core.Models
             OnScreenshotChanged?.Invoke(this,img);
             img.Dispose();
         }
+        public void ChangeGrayImg(OpenCvSharp.Mat img)
+        {
+            OnGrayImgChanged?.Invoke(this, img);
+        }
+        public void ChangeStandingRects(OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects)
+        {
+            OnStandingRectsChanged?.Invoke(this, img, rects);
+        }
         public delegate void ScreenshotChangedDelegate(LocalIntelProcSetting sender, Bitmap img);
         public event ScreenshotChangedDelegate OnScreenshotChanged;
+
+        public delegate void GrayImgChangedDelegate(LocalIntelProcSetting sender, OpenCvSharp.Mat img);
+        public event GrayImgChangedDelegate OnGrayImgChanged;
+
+        public delegate void StandingRectsChangedDelegate(LocalIntelProcSetting sender, OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects);
+        public event StandingRectsChangedDelegate OnStandingRectsChanged;
     }
 
     public class LocalIntelStandingSetting : ObservableObject

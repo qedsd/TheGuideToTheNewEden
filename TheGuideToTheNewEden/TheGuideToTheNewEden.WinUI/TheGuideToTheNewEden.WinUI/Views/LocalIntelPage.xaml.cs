@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.InitializeComponent();
             Loaded += LocalIntelPage_Loaded;
-            Test();
+            //Test();
         }
 
 

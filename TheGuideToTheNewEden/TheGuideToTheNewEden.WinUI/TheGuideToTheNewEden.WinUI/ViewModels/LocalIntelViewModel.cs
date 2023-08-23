@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,12 +19,14 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     public class LocalIntelViewModel:BaseViewModel
     {
+        private Services.LocalIntelService _localIntelService = new Services.LocalIntelService();
         private ObservableCollection<ProcessInfo> processes = new ObservableCollection<ProcessInfo>();
         public ObservableCollection<ProcessInfo> Processes
         {
@@ -56,10 +59,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if (procSetting != null)
                 {
                     procSetting.OnScreenshotChanged -= ProcSetting_OnScreenshotChanged;
+                    procSetting.OnGrayImgChanged -= ProcSetting_OnGrayImgChanged;
+                    procSetting.OnStandingRectsChanged -= ProcSetting_OnStandingRectsChanged;
                 }
                 if(SetProperty(ref procSetting, value))
                 {
                     value.OnScreenshotChanged += ProcSetting_OnScreenshotChanged;
+                    value.OnGrayImgChanged += ProcSetting_OnGrayImgChanged;
+                    value.OnStandingRectsChanged += ProcSetting_OnStandingRectsChanged;
                 }
             }
         }
@@ -355,6 +362,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         if(_localIntelWindow.Add(setting))
                         {
                             _runningDic.Add(setting.Name, setting);
+                            _localIntelService.Add(setting);
                             target.Running = true;
                             Running = true;
                             return true;
@@ -395,6 +403,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(_localIntelWindow.Remve(setting))
             {
                 _runningDic.Remove(setting.Name);
+                _localIntelService.Remove(setting);
                 var target = Processes.FirstOrDefault(p => p.WindowTitle == setting.Name);
                 if (target != null)
                 {
@@ -434,6 +443,38 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 ImageHelper.BitmapWriteToWriteableBitmap(ImageSource1, m);
                 m.Dispose();
+            });
+        }
+        private void ProcSetting_OnStandingRectsChanged(LocalIntelProcSetting sender, OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects)
+        {
+            var afterDrawRectMat = IntelImageHelper.DrawRects(img, rects);
+            Window?.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (ImageSource3 == null)
+                {
+                    ImageSource3 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(afterDrawRectMat.Width, afterDrawRectMat.Height);
+                }
+                else if (ImageSource3.PixelWidth != afterDrawRectMat.Width || ImageSource3.PixelHeight != afterDrawRectMat.Height)
+                {
+                    ImageSource3 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(afterDrawRectMat.Width, afterDrawRectMat.Height);
+                }
+                ImageSource3.SetSource(afterDrawRectMat.ToMemoryStream().AsRandomAccessStream());
+            });
+        }
+
+        private void ProcSetting_OnGrayImgChanged(LocalIntelProcSetting sender, OpenCvSharp.Mat img)
+        {
+            Window?.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (ImageSource2 == null)
+                {
+                    ImageSource2 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(img.Width, img.Height);
+                }
+                else if (ImageSource2.PixelWidth != img.Width || ImageSource2.PixelHeight != img.Height)
+                {
+                    ImageSource2 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(img.Width, img.Height);
+                }
+                ImageSource2.SetSource(img.ToMemoryStream().AsRandomAccessStream());
             });
         }
         private void ClearImage()

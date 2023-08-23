@@ -49,12 +49,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Margin = new Thickness(0, 0, 0, 10)
             };
             refreshButton.Click += RefreshButton_Click;
+            _imageCropper.MinCroppedPixelLength = 5;
+            _imageCropper.MinSelectedLength= 5;
             mainGrid.Children.Add(_imageCropper);
             mainGrid.Children.Add(refreshButton);
             MainContent = mainGrid;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Win32.GetClientRect(_sourceHWnd, ref _sourceClientRect);
-            _appWindow.ResizeClient(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
+            //_appWindow.ResizeClient(new Windows.Graphics.SizeInt32(_sourceClientRect.Width, _sourceClientRect.Height));
             Activated += SelecteCaptureAreaWindow_Activated;
             dispatcherTimer = new DispatcherTimer()
             {

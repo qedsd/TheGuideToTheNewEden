@@ -36,7 +36,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var grayMat = IntelImageHelper.GetGray(sourceMat);
             var edgeMat = IntelImageHelper.GetEdge(grayMat);
             var rects = IntelImageHelper.CalStandingRects(edgeMat, 5);
-            if(rects.NotNullOrEmpty())
+            sender.ChangeGrayImg(edgeMat);
+            sender.ChangeStandingRects(sourceMat,rects);
+            if (rects.NotNullOrEmpty())
             {
                 List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>> matchList = new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>();
                 OpenCvSharp.Vec3b[] vec3bs = new OpenCvSharp.Vec3b[rects.Count];
