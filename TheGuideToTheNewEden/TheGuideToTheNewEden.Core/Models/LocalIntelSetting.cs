@@ -78,6 +78,22 @@ namespace TheGuideToTheNewEden.Core.Models
             get => toastNotify;
             set => SetProperty(ref toastNotify, value);
         }
+        private bool soundNotify;
+        public bool SoundNotify
+        {
+            get => soundNotify;
+            set => SetProperty(ref soundNotify, value);
+        }
+
+        private bool notifyDecrease = true;
+        /// <summary>
+        /// 是否提示减少的情况
+        /// </summary>
+        public bool NotifyDecrease
+        {
+            get => notifyDecrease;
+            set => SetProperty(ref notifyDecrease, value);
+        }
         private LocalIntelDetectMode detectMode;
         public LocalIntelDetectMode DetectMode
         {

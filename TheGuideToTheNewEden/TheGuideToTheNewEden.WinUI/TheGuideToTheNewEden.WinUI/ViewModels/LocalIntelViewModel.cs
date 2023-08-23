@@ -419,7 +419,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             System.IO.File.WriteAllText(SettingFilePath, json);
         }
 
-        private void ProcSetting_OnScreenshotChanged(Bitmap img)
+        private void ProcSetting_OnScreenshotChanged(LocalIntelProcSetting sender, Bitmap img)
         {
             var m = img.Clone() as Bitmap;
             Window?.DispatcherQueue.TryEnqueue(() =>
