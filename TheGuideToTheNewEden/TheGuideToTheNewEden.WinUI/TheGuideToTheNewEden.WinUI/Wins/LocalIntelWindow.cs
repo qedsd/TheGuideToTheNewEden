@@ -22,14 +22,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// 每个略缩图中间的间隔
         /// </summary>
         private static readonly int SPAN = 1;
-        struct LocalIntelWindowItem
+        class LocalIntelWindowItem
         {
-            public LocalIntelProcSetting ProcSetting;
-            public IntPtr ThumbHWnd;
+            public LocalIntelProcSetting ProcSetting { get; set; }
+            public IntPtr ThumbHWnd { get; set; }
             /// <summary>
             /// 当前略缩图在预警窗口中的显示位置
             /// </summary>
-            public WindowCaptureHelper.Rect ThumbRect;
+            public WindowCaptureHelper.Rect ThumbRect { get; set; }
         }
         private readonly Dictionary<string, LocalIntelWindowItem> _intelDics = new Dictionary<string, LocalIntelWindowItem>();
         private readonly Microsoft.UI.Windowing.AppWindow _appWindow;
@@ -52,7 +52,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void EnableRightMouseMove()
         {
             MainUIElement.PointerPressed += MainUIElement_PointerPressed;
-            MainUIElement.PointerReleased += MainUIElement_PointerReleased;
             _pointerTimer = new System.Timers.Timer()
             {
                 AutoReset = true,
@@ -71,6 +70,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private void MainUIElement_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
+            MainUIElement.PointerReleased -= MainUIElement_PointerReleased;
+            StartScreenshot();
             _pointerTimer.Stop();
         }
 
@@ -78,6 +79,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (e.GetCurrentPoint(sender as UIElement).Properties.IsRightButtonPressed)
             {
+                MainUIElement.PointerReleased += MainUIElement_PointerReleased;
+                StopScreenshot();
                 System.Drawing.Point lpPoint = new System.Drawing.Point();
                 Helpers.Win32Helper.GetCursorPos(ref lpPoint);
                 xOffset = lpPoint.X - _appWindow.Position.X - _appWindow.Size.Width / 2;
@@ -110,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         int widthMargin = WindowHelper.GetBorderWidth(procSetting.HWnd);//去掉左边白边及右边显示完整
                         _intelDics.Add(procSetting.Name, newItem);
                         _appWindow.Resize(new Windows.Graphics.SizeInt32(newItem.ThumbRect.Right, _intelDics.Max(p => p.Value.ThumbRect.Bottom)));
-                        UpdateThumb(thumbHWdn, newItem.ThumbRect, new WindowCaptureHelper.Rect(procSetting.X + widthMargin, procSetting.Y, procSetting.X + procSetting.Width + widthMargin * 2, procSetting.Y + procSetting.Height));
+                        UpdateThumb(thumbHWdn, newItem.ThumbRect, new WindowCaptureHelper.Rect(procSetting.X + widthMargin, procSetting.Y, procSetting.X + procSetting.Width + widthMargin, procSetting.Y + procSetting.Height));
                         StartScreenshot();
                         return true;
                     }
@@ -145,12 +148,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     for (int i = 0; i < items.Length; i++)
                     {
                         var item = items[i];
-                        item.ThumbRect.Left = w;
-                        item.ThumbRect.Right = w + item.ProcSetting.Width;
+                        item.ThumbRect = new WindowCaptureHelper.Rect()
+                        {
+                            Left = w,
+                            Right = w + item.ProcSetting.Width,
+                            Top = item.ThumbRect.Top,
+                            Bottom = item.ThumbRect.Bottom,
+                        };
                         w = item.ThumbRect.Right + SPAN;
-                        UpdateThumb(item.ThumbHWnd, item.ThumbRect, new WindowCaptureHelper.Rect(item.ProcSetting.X, item.ProcSetting.Y, item.ProcSetting.X + item.ProcSetting.Width, procSetting.Y + item.ProcSetting.Height));
+                        int widthMargin = WindowHelper.GetBorderWidth(procSetting.HWnd);//去掉左边白边及右边显示完整
+                        UpdateThumb(item.ThumbHWnd, item.ThumbRect, new WindowCaptureHelper.Rect(item.ProcSetting.X + widthMargin, item.ProcSetting.Y, item.ProcSetting.X + item.ProcSetting.Width + widthMargin, procSetting.Y + item.ProcSetting.Height));
                     }
-                    _appWindow.Resize(new Windows.Graphics.SizeInt32(w - SPAN, _appWindow.Size.Height));
+                    _appWindow.Resize(new Windows.Graphics.SizeInt32(w - SPAN, _intelDics.Max(p => p.Value.ThumbRect.Bottom)));
                 }
                 else
                 {

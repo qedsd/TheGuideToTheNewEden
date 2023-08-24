@@ -54,32 +54,25 @@ namespace TheGuideToTheNewEden.Core.Models
             get => height; set => SetProperty(ref height, value);
         }
 
-        private string notify;
-        public string Notify
-        {
-            get => notify;
-            set => SetProperty(ref notify, value);
-        }
-
         private string soundFile;
         public string SoundFile
         {
             get => soundFile;
             set => SetProperty(ref soundFile, value);
         }
-        private bool windowNotify;
+        private bool windowNotify = true;
         public bool WindowNotify
         {
             get => windowNotify;
             set => SetProperty(ref windowNotify, value);
         }
-        private bool toastNotify;
+        private bool toastNotify = true;
         public bool ToastNotify
         {
             get => toastNotify;
             set => SetProperty(ref toastNotify, value);
         }
-        private bool soundNotify;
+        private bool soundNotify = true;
         public bool SoundNotify
         {
             get => soundNotify;

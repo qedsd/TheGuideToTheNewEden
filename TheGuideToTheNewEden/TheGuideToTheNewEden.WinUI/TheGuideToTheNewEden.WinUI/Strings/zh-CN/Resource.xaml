@@ -413,7 +413,12 @@
     <x:String x:Key="LocalIntel_Standing_Add">新增监控声望</x:String>
     <x:String x:Key="LocalIntel_IntelText">预警通知内容</x:String>
     <x:String x:Key="LocalIntel_IntelSound">预警通知声音</x:String>
-    <x:String x:Key="LocalIntel_DetectMode">声望区域定位模式</x:String>
-    <x:String x:Key="LocalIntel_DetectMode_Auto">自动动态调整</x:String>
-    <x:String x:Key="LocalIntel_DetectMode_Fix">人为固定</x:String>
+    <x:String x:Key="LocalIntel_Rect">声望区域</x:String>
+    <x:String x:Key="LocalIntel_NotifyMode">通知方式</x:String>
+    <x:String x:Key="LocalIntel_NotifyMode_Toast">系统通知</x:String>
+    <x:String x:Key="LocalIntel_NotifyMode_Sound">声音</x:String>
+    <x:String x:Key="LocalIntel_NotifyMode_Window">弹窗</x:String>
+    <x:String x:Key="LocalIntel_NotifyDecrease">预警声望减少时通知</x:String>
+    <x:String x:Key="LocalIntel_AdvancedSettings">进阶设置</x:String>
+    <x:String x:Key="LocalIntel_AdvancedSettings_Desc">自定义声望识别相关算法参数</x:String>
 </ResourceDictionary>

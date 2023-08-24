@@ -23,7 +23,6 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
                 .BuildNotification();
             appNotification.Expiration = DateTime.Now.AddMinutes(1);
             AppNotificationManager.Default.Show(appNotification);
-
             return appNotification.Id != 0;
         }
 

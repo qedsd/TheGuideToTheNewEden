@@ -64,26 +64,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 if(SetProperty(ref procSetting, value))
                 {
-                    value.OnScreenshotChanged += ProcSetting_OnScreenshotChanged;
-                    value.OnGrayImgChanged += ProcSetting_OnGrayImgChanged;
-                    value.OnStandingRectsChanged += ProcSetting_OnStandingRectsChanged;
+                    if(value != null)
+                    {
+                        value.OnScreenshotChanged += ProcSetting_OnScreenshotChanged;
+                        value.OnGrayImgChanged += ProcSetting_OnGrayImgChanged;
+                        value.OnStandingRectsChanged += ProcSetting_OnStandingRectsChanged;
+                    }
                 }
             }
         }
-
-        //private int localIntelDetectMode;
-        //public int LocalIntelDetectMode
-        //{
-        //    get => (int)procSetting?.DetectMode;
-        //    set
-        //    {
-        //        if(SetProperty(ref localIntelDetectMode, value))
-        //        {
-        //            if(procSetting != null)
-        //                procSetting.DetectMode = (Core.Models.LocalIntelDetectMode)value;
-        //        }
-        //    }
-        //}
 
         private bool running;
         public bool Running
@@ -157,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 //获取所有目标进程
                 await Task.Run(() =>
                 {
-                    foreach (var process in allProcesses.Where(p => p.ProcessName == "exefile").ToList())
+                    foreach (var process in allProcesses.Where(p => p.ProcessName == "mspaint").ToList())
                     {
                         if (process.MainWindowHandle != IntPtr.Zero)
                         {
@@ -228,7 +217,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 target = new LocalIntelProcSetting()
                 {
                     Name = processInfo.WindowTitle,
-                    Notify = Helpers.ResourcesHelper.GetString("LocalIntel_DefaultNotify"),
                     StandingSettings = new ObservableCollection<LocalIntelStandingSetting>()
                     {
                         new LocalIntelStandingSetting()

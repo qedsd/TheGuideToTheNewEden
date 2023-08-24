@@ -63,7 +63,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Interval = TimeSpan.FromMilliseconds(200),
             };
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            dispatcherTimer.Start();
             Closed += SelecteCaptureAreaWindow_Closed;
         }
 
@@ -79,10 +78,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private async void RefreshScreenshot()
         {
+            dispatcherTimer.Stop();
             ShowWaiting();
             await Task.Delay(500);
             HideWaiting();
             UpdateThumbDestination();
+            dispatcherTimer.Start();
         }
 
         private void SelecteCaptureAreaWindow_Closed(object sender, WindowEventArgs args)
@@ -131,7 +132,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     img.Dispose();
                     if (!_rect.IsEmpty)
                     {
-                        _imageCropper.TrySetCroppedRegion(_rect);
+                        //此时的_rect为原分辨率大小，而_imageCropper.Source是当前窗口大小，需要做缩放
+                        double xScale = (double)_sourceClientRect.Width / _imageCropper.Source.PixelWidth;
+                        double yScale = (double)_sourceClientRect.Height / _imageCropper.Source.PixelHeight;
+                        Rect scaleRect = new Rect();
+                        scaleRect.X = _rect.X / xScale;
+                        scaleRect.Y = _rect.Y / yScale;
+                        scaleRect.Width = _rect.Width / xScale;
+                        scaleRect.Height = _rect.Height / yScale;
+                        _imageCropper.TrySetCroppedRegion(scaleRect);
                     }
                     //捕获到的图像是根据此窗口调整后的大小，不是源窗口实际大小
                 }

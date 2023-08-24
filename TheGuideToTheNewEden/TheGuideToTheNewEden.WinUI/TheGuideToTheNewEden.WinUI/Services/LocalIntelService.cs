@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.WinUI.Notifications;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -118,31 +119,48 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else//总匹配的声望和上回不一样，提示变化
                 {
-                    if(!(_lastStandings.Count < matchList.Count && sender.NotifyDecrease))
+                    if(!(_lastStandings.Count > matchList.Count && !sender.NotifyDecrease))
                     {
                         List<StandingChange> standingChanges = new List<StandingChange>();
-                        var lastGroup = _lastStandings.GroupBy(p => p.Item2);
-                        foreach (var group in lastGroup)
+                        if(_lastStandings.Count == 0)
                         {
-                            var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
-                            standingChanges.Add(new StandingChange()
+                            var groups = matchList.GroupBy(p=>p.Item2).ToList();
+                            foreach(var group in groups)
                             {
-                                Setting = group.Key,
-                                Change = sameMath.Count - group.Count()
-                            });
+                                standingChanges.Add(new StandingChange()
+                                {
+                                    Setting = group.Key,
+                                    Change = group.Count()
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var lastGroup = _lastStandings.GroupBy(p => p.Item2);
+                            foreach (var group in lastGroup)
+                            {
+                                var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
+                                standingChanges.Add(new StandingChange()
+                                {
+                                    Setting = group.Key,
+                                    Change = sameMath.Count - group.Count()
+                                });
+                            }
                         }
                         SendNotify(sender, standingChanges);
                     }
                 }
+                _lastStandings.Clear();
+                _lastStandings.AddRange(matchList);
             }
         }
-        private bool IsMatch(System.Drawing.Color refColor, OpenCvSharp.Vec3b targetColor, int threshold = 10)
+        private bool IsMatch(System.Drawing.Color refColor, OpenCvSharp.Vec3b targetColor, float threshold = 0.2f)
         {
-            if (Math.Abs(targetColor.Item0 - refColor.R) / refColor.R < threshold)
+            if ((float)Math.Abs(targetColor.Item0 - refColor.R) / (refColor.R == 0 ? 255: refColor.R) < threshold)
             {
-                if (Math.Abs(targetColor.Item1 - refColor.G) / refColor.G < threshold)
+                if ((float)Math.Abs(targetColor.Item1 - refColor.G) / (refColor.G == 0 ? 255 : refColor.G) < threshold)
                 {
-                    if (Math.Abs(targetColor.Item2 - refColor.B) / refColor.B < threshold)
+                    if ((float)Math.Abs(targetColor.Item2 - refColor.B) / (refColor.B == 0 ? 255 : refColor.B) < threshold)
                     {
                         return true;
                     }
@@ -150,13 +168,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return false;
         }
-        private bool IsMatch(OpenCvSharp.Vec3b refColor, OpenCvSharp.Vec3b targetColor, int threshold = 10)
+        private bool IsMatch(OpenCvSharp.Vec3b refColor, OpenCvSharp.Vec3b targetColor, float threshold = 0.2f)
         {
-            if(Math.Abs(targetColor.Item0 - refColor.Item0) / refColor.Item0 < threshold)
+            if((float)Math.Abs(targetColor.Item0 - refColor.Item0) / (refColor.Item0 == 0 ? 255 : refColor.Item0) < threshold)
             {
-                if (Math.Abs(targetColor.Item1 - refColor.Item1) / refColor.Item1 < threshold)
+                if ((float)Math.Abs(targetColor.Item1 - refColor.Item1) / (refColor.Item1 == 0 ? 255 : refColor.Item1) < threshold)
                 {
-                    if (Math.Abs(targetColor.Item2 - refColor.Item2) / refColor.Item2 < threshold)
+                    if ((float)Math.Abs(targetColor.Item2 - refColor.Item2) / (refColor.Item2 == 0 ? 255 : refColor.Item2) < threshold)
                     {
                         return true;
                     }
@@ -188,7 +206,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if(setting.WindowNotify)
                 SendWindowNotify(msg);
             if(setting.ToastNotify)
-                SendToastNotify(msg);
+                SendToastNotify(setting.Name, msg);
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
@@ -197,9 +215,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
 
         }
-        private void SendToastNotify(string msg)
+        private void SendToastNotify(string title, string msg)
         {
-
+            LocalIntelToast.SendToast(title,msg);
         }
         private void SendSoundNotify(string file)
         {
