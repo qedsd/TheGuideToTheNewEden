@@ -170,7 +170,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             var hWnd = GetWindowHandle(window);
             var styleCurrentWindowStandard = Win32Helper.GetWindowLongPtr(hWnd, -16);
-            var styleNewWindowStandard = styleCurrentWindowStandard & ~0x00040000;
+            var styleNewWindowStandard = styleCurrentWindowStandard & ~(0x00040000 | 0xc00000 | 0x80000 | 0x10000 | 0x20000);
             if (Win32Helper.SetWindowLongPtr(hWnd, -16, (IntPtr)styleNewWindowStandard) == IntPtr.Zero)
             {
                 //fail

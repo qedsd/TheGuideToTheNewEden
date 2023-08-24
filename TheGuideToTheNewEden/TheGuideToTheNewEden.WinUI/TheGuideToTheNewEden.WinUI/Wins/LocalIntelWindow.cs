@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _refreshSpan = refreshSpan;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _windowHandle = WindowHelper.GetWindowHandle(this);
-            Helpers.WindowHelper.HideTitleBar(this);
+            Helpers.WindowHelper.HideTitleBar2(this);
             Helpers.WindowHelper.TopMost(this);
             _appWindow.IsShownInSwitchers = false;
             EnableRightMouseMove();

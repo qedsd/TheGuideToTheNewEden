@@ -146,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 //获取所有目标进程
                 await Task.Run(() =>
                 {
-                    foreach (var process in allProcesses.Where(p => p.ProcessName == "mspaint").ToList())
+                    foreach (var process in allProcesses.Where(p => p.ProcessName == "exefile").ToList())
                     {
                         if (process.MainWindowHandle != IntPtr.Zero)
                         {
