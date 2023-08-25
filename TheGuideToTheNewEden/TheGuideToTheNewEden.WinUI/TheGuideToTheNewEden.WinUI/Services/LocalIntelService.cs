@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Notifications;
+using Microsoft.UI.Xaml.Controls;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -16,18 +17,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
     /// </summary>
     internal class LocalIntelService
     {
+        private BaseWindow _window;
         class StandingChange
         {
             public LocalIntelStandingSetting Setting;
             public int Change;
         }
-        private readonly List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>> _lastStandings = new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>();
+        private readonly Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>> _lastStandingsDic = new Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>>();
         public void Add(LocalIntelProcSetting item)
         {
+            _lastStandingsDic.Add(item.Name, new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>());
             item.OnScreenshotChanged += Item_OnScreenshotChanged;
         }
         public void Remove(LocalIntelProcSetting item)
         {
+            _lastStandingsDic.Remove(item.Name);
             item.OnScreenshotChanged -= Item_OnScreenshotChanged;
         }
 
@@ -35,47 +39,73 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             var sourceMat = IntelImageHelper.BitmapToMat(img);
             var grayMat = IntelImageHelper.GetGray(sourceMat);
-            var edgeMat = IntelImageHelper.GetEdge(grayMat);
-            var rects = IntelImageHelper.CalStandingRects(edgeMat, 5);
-            sender.ChangeGrayImg(edgeMat);
+            var edgeMat = IntelImageHelper.GetEdge(grayMat, sender.AlgorithmParameter.BlurSizeW, 
+                sender.AlgorithmParameter.BlurSizeH, sender.AlgorithmParameter.CannyThreshold1, sender.AlgorithmParameter.CannyThreshold2);
+
+            var rects = IntelImageHelper.CalStandingRects(edgeMat, sender.AlgorithmParameter.FillThresholdV,
+                sender.AlgorithmParameter.FillThresholdH, sender.AlgorithmParameter.SpanLineV,
+                sender.AlgorithmParameter.MinHeight, sender.AlgorithmParameter.MinWidth);
+
+            sender.ChangeEdgeImg(edgeMat);
             sender.ChangeStandingRects(sourceMat,rects);
             if (rects.NotNullOrEmpty())
             {
-                List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>> matchList = new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>();
-                OpenCvSharp.Vec3b[] vec3bs = new OpenCvSharp.Vec3b[rects.Count];
-                for(int i = 0; i < rects.Count;i++)
+                if(_lastStandingsDic.TryGetValue(sender.Name, out var lastStandings))
                 {
-                    vec3bs[i] = IntelImageHelper.GetMainColor(rects[i], sourceMat);
-                }
-                for (int i = 0; i < vec3bs.Length; i++)
-                {
-                    foreach(var refColors in sender.StandingSettings)
+                    List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>> matchList = new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>();
+                    OpenCvSharp.Vec3b[] vec3bs = new OpenCvSharp.Vec3b[rects.Count];
+                    for (int i = 0; i < rects.Count; i++)
                     {
-                        if(IsMatch(refColors.Color, vec3bs[i]))
+                        vec3bs[i] = IntelImageHelper.GetMainColor(rects[i], sourceMat, sender.AlgorithmParameter.MainColorSpan);
+                    }
+                    for (int i = 0; i < vec3bs.Length; i++)
+                    {
+                        foreach (var refColors in sender.StandingSettings)
                         {
-                            matchList.Add(new Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>(rects[i], refColors));
-                            break;
+                            if (IsMatch(refColors.Color, vec3bs[i]))
+                            {
+                                matchList.Add(new Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>(rects[i], refColors));
+                                break;
+                            }
                         }
                     }
-                }
-                if(_lastStandings.Count == matchList.Count)//总匹配的声望和上一回一样，需要排除位置不同
-                {
-                    for(int i = 0;i< _lastStandings.Count; i++)
+                    if (lastStandings.Count == matchList.Count)//总匹配的声望和上一回一样，需要排除位置不同
                     {
-                        var centerY1 = _lastStandings[i].Item1.Top + _lastStandings[i].Item1.Height / 2;
-                        var centerY2 = matchList[i].Item1.Top + matchList[i].Item1.Height / 2;
-                        if (Math.Abs(centerY1 - centerY2) < _lastStandings[i].Item1.Height * 0.2)//位置误差在高度的20%算相同位置
+                        for (int i = 0; i < lastStandings.Count; i++)
                         {
-                            if(_lastStandings[i].Item2.Equals(matchList[i].Item2))//位置相同颜色也相同
+                            var centerY1 = lastStandings[i].Item1.Top + lastStandings[i].Item1.Height / 2;
+                            var centerY2 = matchList[i].Item1.Top + matchList[i].Item1.Height / 2;
+                            if (Math.Abs(centerY1 - centerY2) < lastStandings[i].Item1.Height * 0.2)//位置误差在高度的20%算相同位置
                             {
-                                continue;
+                                if (lastStandings[i].Item2.Equals(matchList[i].Item2))//位置相同颜色也相同
+                                {
+                                    continue;
+                                }
+                                else//只要出现位置相同颜色不同就是有变化，需要预警
+                                {
+                                    //找出变化
+                                    List<StandingChange> standingChanges = new List<StandingChange>();
+                                    var lastGroup = lastStandings.Skip(i).GroupBy(p => p.Item2);
+                                    foreach (var group in lastGroup)
+                                    {
+                                        var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
+                                        standingChanges.Add(new StandingChange()
+                                        {
+                                            Setting = group.Key,
+                                            Change = sameMath.Count - group.Count()
+                                        });
+                                    }
+                                    SendNotify(sender, standingChanges);
+                                    break;
+                                }
                             }
-                            else//只要出现位置相同颜色不同就是有变化，需要预警
+                            else
                             {
+                                //位置发生了变化，先检查声望有没有变化，有则提示声望变化，没则提示注意预警
                                 //找出变化
                                 List<StandingChange> standingChanges = new List<StandingChange>();
-                                var lastGroup = _lastStandings.Skip(i).GroupBy(p => p.Item2);
-                                foreach(var group in lastGroup)
+                                var lastGroup = lastStandings.GroupBy(p => p.Item2);
+                                foreach (var group in lastGroup)
                                 {
                                     var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
                                     standingChanges.Add(new StandingChange()
@@ -84,74 +114,60 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                         Change = sameMath.Count - group.Count()
                                     });
                                 }
-                                SendNotify(sender, standingChanges);
+                                if (standingChanges.FirstOrDefault(p => p.Change != 0) != null)
+                                {
+                                    //有声望变化，提示声望变化
+                                    SendNotify(sender, standingChanges);
+                                }
+                                else
+                                {
+                                    //无声望变化，提示注意预警
+                                    SendNotify(sender, "声望区域定位波动，请注意");
+                                }
                                 break;
                             }
                         }
-                        else
+                    }
+                    else//总匹配的声望和上回不一样，提示变化
+                    {
+                        if (!(lastStandings.Count > matchList.Count && !sender.NotifyDecrease))
                         {
-                            //位置发生了变化，先检查声望有没有变化，有则提示声望变化，没则提示注意预警
-                            //找出变化
                             List<StandingChange> standingChanges = new List<StandingChange>();
-                            var lastGroup = _lastStandings.GroupBy(p => p.Item2);
-                            foreach (var group in lastGroup)
+                            if (lastStandings.Count == 0)
                             {
-                                var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
-                                standingChanges.Add(new StandingChange()
+                                var groups = matchList.GroupBy(p => p.Item2).ToList();
+                                foreach (var group in groups)
                                 {
-                                    Setting = group.Key,
-                                    Change = sameMath.Count - group.Count()
-                                });
-                            }
-                            if(standingChanges.FirstOrDefault(p=>p.Change !=0) != null)
-                            {
-                                //有声望变化，提示声望变化
-                                SendNotify(sender, standingChanges);
+                                    standingChanges.Add(new StandingChange()
+                                    {
+                                        Setting = group.Key,
+                                        Change = group.Count()
+                                    });
+                                }
                             }
                             else
                             {
-                                //无声望变化，提示注意预警
-                                SendNotify(sender, "声望区域定位波动，请注意");
+                                var lastGroup = lastStandings.GroupBy(p => p.Item2);
+                                foreach (var group in lastGroup)
+                                {
+                                    var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
+                                    standingChanges.Add(new StandingChange()
+                                    {
+                                        Setting = group.Key,
+                                        Change = sameMath.Count - group.Count()
+                                    });
+                                }
                             }
-                            break;
+                            SendNotify(sender, standingChanges);
                         }
                     }
+                    lastStandings.Clear();
+                    lastStandings.AddRange(matchList);
                 }
-                else//总匹配的声望和上回不一样，提示变化
+                else
                 {
-                    if(!(_lastStandings.Count > matchList.Count && !sender.NotifyDecrease))
-                    {
-                        List<StandingChange> standingChanges = new List<StandingChange>();
-                        if(_lastStandings.Count == 0)
-                        {
-                            var groups = matchList.GroupBy(p=>p.Item2).ToList();
-                            foreach(var group in groups)
-                            {
-                                standingChanges.Add(new StandingChange()
-                                {
-                                    Setting = group.Key,
-                                    Change = group.Count()
-                                });
-                            }
-                        }
-                        else
-                        {
-                            var lastGroup = _lastStandings.GroupBy(p => p.Item2);
-                            foreach (var group in lastGroup)
-                            {
-                                var sameMath = matchList.Where(p => p.Item2.Color == group.Key.Color).ToList();
-                                standingChanges.Add(new StandingChange()
-                                {
-                                    Setting = group.Key,
-                                    Change = sameMath.Count - group.Count()
-                                });
-                            }
-                        }
-                        SendNotify(sender, standingChanges);
-                    }
+                    throw new Exception($"LocalIntelService：未找到{sender.Name}的上一次声望记录");
                 }
-                _lastStandings.Clear();
-                _lastStandings.AddRange(matchList);
             }
         }
         private bool IsMatch(System.Drawing.Color refColor, OpenCvSharp.Vec3b targetColor, float threshold = 0.2f)
@@ -204,20 +220,48 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private void SendNotify(LocalIntelProcSetting setting, string msg)
         {
             if(setting.WindowNotify)
-                SendWindowNotify(msg);
+                SendWindowNotify(setting.Name,msg);
             if(setting.ToastNotify)
                 SendToastNotify(setting.Name, msg);
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
 
-        private void SendWindowNotify(string msg)
+        private TextBlock _nameTextBlock;
+        private TextBlock _msgTextBlock;
+        private void SendWindowNotify(string name, string msg)
         {
-
+            if(_window == null)
+            {
+                _window = new BaseWindow();
+                _window.HideAppDisplayName();
+                _window.Head = "本地预警通知";
+                StackPanel stackPanel = new StackPanel();
+                _nameTextBlock = new TextBlock()
+                {
+                    FontSize = 18,
+                    Margin = new Microsoft.UI.Xaml.Thickness(16)
+                };
+                _msgTextBlock = new TextBlock();
+                stackPanel.Children.Add(_nameTextBlock);
+                stackPanel.Children.Add(_msgTextBlock);
+                _window.MainContent = stackPanel;
+                Helpers.WindowHelper.GetAppWindow(_window).Closing += AppWindow_Closing;
+            }
+            _nameTextBlock.Text = name;
+            _msgTextBlock.Text = msg;
+            _window.Activate();
         }
-        private void SendToastNotify(string title, string msg)
+
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            LocalIntelToast.SendToast(title,msg);
+            args.Cancel = true;
+            sender.Hide();
+        }
+
+        private async void SendToastNotify(string title, string msg)
+        {
+            await LocalIntelToast.SendToast(title,msg);
         }
         private void SendSoundNotify(string file)
         {

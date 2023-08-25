@@ -225,7 +225,6 @@
                             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE104;" />
                         </Button>
                     </Grid>
-
                     <Grid Margin="0,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -319,15 +318,61 @@
                             </controls:DataGrid.Columns>
                         </controls:DataGrid>
                     </Grid>
-
-                    <controls1:ExpandableSettingControl
-                        Title="{StaticResource LocalIntel_AdvancedSettings}"
-                        Margin="0,16"
-                        Description="{StaticResource LocalIntel_AdvancedSettings_Desc}">
-                        <controls1:ExpandableSettingControl.ExpandableContent>
-                            <Grid />
-                        </controls1:ExpandableSettingControl.ExpandableContent>
-                    </controls1:ExpandableSettingControl>
+                    <Button
+                        Margin="10,10"
+                        HorizontalAlignment="Center"
+                        Content="{StaticResource LocalIntel_AdvancedSettings}">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Margin="8">
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_BlurSizeW}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.BlurSizeW, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_BlurSizeH}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.BlurSizeH, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_CannyThreshold1}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.CannyThreshold1, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_CannyThreshold2}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.CannyThreshold2, Mode=TwoWay}" />
+                                    <NumberBox
+                                        x:Name="NumberBox_FillThresholdV"
+                                        Header="{StaticResource LocalIntel_Param_FillThresholdV}"
+                                        Maximum="1"
+                                        Minimum="0.1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.FillThresholdV, Mode=TwoWay}" />
+                                    <NumberBox
+                                        x:Name="NumberBox_FillThresholdH"
+                                        Header="{StaticResource LocalIntel_Param_FillThresholdH}"
+                                        Maximum="1"
+                                        Minimum="0.1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.FillThresholdH, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_SpanLineV}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.SpanLineV, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_MinHeight}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.MinHeight, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_MinWidth}"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.MinWidth, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource LocalIntel_Param_MainColorSpan}"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.ProcSetting.AlgorithmParameter.MainColorSpan, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </ScrollViewer>
             <Grid Grid.Row="1" Margin="8,8,8,0">
@@ -379,6 +424,7 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                     <ColumnDefinition />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Image
                     x:Name="Image0"
@@ -397,6 +443,10 @@
                     Grid.Column="2"
                     Margin="0,0,0,10"
                     Source="{x:Bind VM.ImageSource3, Mode=OneWay}" />
+                <Image
+                    Grid.Column="3"
+                    Margin="0,0,0,10"
+                    Source="{x:Bind VM.ImageSource4, Mode=OneWay}" />
             </Grid>
         </Grid>
     </Grid>

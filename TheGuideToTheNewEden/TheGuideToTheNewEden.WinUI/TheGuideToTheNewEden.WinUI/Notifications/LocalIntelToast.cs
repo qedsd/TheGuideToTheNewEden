@@ -10,18 +10,17 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
 {
     internal class LocalIntelToast
     {
+        public const string GroupId = "LocalIntel";
         public const int ScenarioId = 1;
 
-        public static bool SendToast(string title, string msg)
+        public static async Task<bool> SendToast(string title, string msg)
         {
+            await AppNotificationManager.Default.RemoveByGroupAsync(title);
             var appNotification = new AppNotificationBuilder()
-                .AddArgument("action", "ToastClick")
-                .AddArgument(Common.scenarioTag, ScenarioId.ToString())
-                .SetAppLogoOverride(new System.Uri("file://" + App.GetFullPathToAsset("Square150x150Logo.png")), AppNotificationImageCrop.Circle)
                 .AddText($"本地预警-{title}")
                 .AddText(msg)
+                .SetGroup(title)
                 .BuildNotification();
-            appNotification.Expiration = DateTime.Now.AddMinutes(1);
             AppNotificationManager.Default.Show(appNotification);
             return appNotification.Id != 0;
         }

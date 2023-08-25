@@ -88,21 +88,23 @@ namespace TheGuideToTheNewEden.Core.Models
             get => notifyDecrease;
             set => SetProperty(ref notifyDecrease, value);
         }
-        private LocalIntelDetectMode detectMode;
-        public LocalIntelDetectMode DetectMode
+
+        private LocalIntelAlgorithmParameter algorithmParameter = new LocalIntelAlgorithmParameter();
+        public LocalIntelAlgorithmParameter AlgorithmParameter
         {
-            get => detectMode;
-            set => SetProperty(ref detectMode, value);
+            get => algorithmParameter;
+            set => SetProperty(ref algorithmParameter, value);
         }
+
         public ObservableCollection<LocalIntelStandingSetting> StandingSettings { get; set; } = new ObservableCollection<LocalIntelStandingSetting>();
         public void ChangeScreenshot(Bitmap img)
         {
             OnScreenshotChanged?.Invoke(this,img);
             img.Dispose();
         }
-        public void ChangeGrayImg(OpenCvSharp.Mat img)
+        public void ChangeEdgeImg(OpenCvSharp.Mat img)
         {
-            OnGrayImgChanged?.Invoke(this, img);
+            OnEdgeImgChanged?.Invoke(this, img);
         }
         public void ChangeStandingRects(OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects)
         {
@@ -111,8 +113,8 @@ namespace TheGuideToTheNewEden.Core.Models
         public delegate void ScreenshotChangedDelegate(LocalIntelProcSetting sender, Bitmap img);
         public event ScreenshotChangedDelegate OnScreenshotChanged;
 
-        public delegate void GrayImgChangedDelegate(LocalIntelProcSetting sender, OpenCvSharp.Mat img);
-        public event GrayImgChangedDelegate OnGrayImgChanged;
+        public delegate void EdgeImgChangedDelegate(LocalIntelProcSetting sender, OpenCvSharp.Mat img);
+        public event EdgeImgChangedDelegate OnEdgeImgChanged;
 
         public delegate void StandingRectsChangedDelegate(LocalIntelProcSetting sender, OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects);
         public event StandingRectsChangedDelegate OnStandingRectsChanged;
@@ -134,10 +136,109 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref name, value);
         }
     }
-
-    public enum LocalIntelDetectMode
+    /// <summary>
+    /// 声望区域识别相关算法参数
+    /// </summary>
+    public class LocalIntelAlgorithmParameter : ObservableObject
     {
-        Auto,
-        Fix
+        private int blurSizeW = 3;
+        /// <summary>
+        /// 高斯模糊Size参数Width
+        /// </summary>
+        public int BlurSizeW
+        {
+            get => blurSizeW;
+            set => SetProperty(ref blurSizeW, value);
+        }
+
+        private int blurSizeH = 3;
+        /// <summary>
+        /// 高斯模糊Size参数Height
+        /// </summary>
+        public int BlurSizeH
+        {
+            get => blurSizeH;
+            set => SetProperty(ref blurSizeH, value);
+        }
+
+        private int cannyThreshold1 = 100;
+        /// <summary>
+        /// Canny算子阈值1
+        /// </summary>
+        public int CannyThreshold1
+        {
+            get => cannyThreshold1;
+            set => SetProperty(ref cannyThreshold1, value);
+        }
+
+        private int cannyThreshold2 = 100;
+        /// <summary>
+        /// Canny算子阈值2
+        /// </summary>
+        public int CannyThreshold2
+        {
+            get => cannyThreshold2;
+            set => SetProperty(ref cannyThreshold2, value);
+        }
+
+        private double fillThresholdV = 0.1f;
+        /// <summary>
+        /// 垂直方向直线最小有效像素百分比
+        /// </summary>
+        public double FillThresholdV
+        {
+            get => fillThresholdV;
+            set => SetProperty(ref fillThresholdV, value);
+        }
+
+        private double fillThresholdH = 0.1f;
+        /// <summary>
+        /// 水平方向直线最小有效像素百分比
+        /// </summary>
+        public double FillThresholdH
+        {
+            get => fillThresholdH;
+            set => SetProperty(ref fillThresholdH, value);
+        }
+
+        private int spanLineV = 5;
+        /// <summary>
+        /// 垂直方向最小有效空白像素行数
+        /// </summary>
+        public int SpanLineV
+        {
+            get => spanLineV;
+            set => SetProperty(ref spanLineV, value);
+        }
+
+        private int minHeight = 5;
+        /// <summary>
+        /// 声望矩形最小高度
+        /// </summary>
+        public int MinHeight
+        {
+            get => minHeight;
+            set => SetProperty(ref minHeight, value);
+        }
+
+        private int minWidth = 5;
+        /// <summary>
+        /// 声望矩形最小宽度
+        /// </summary>
+        public int MinWidth
+        {
+            get => minWidth;
+            set => SetProperty(ref minWidth, value);
+        }
+
+        private int mainColorSpan = 2;
+        /// <summary>
+        /// 声望主颜色识别区域距边缘像素
+        /// </summary>
+        public int MainColorSpan
+        {
+            get => mainColorSpan;
+            set => SetProperty(ref mainColorSpan, value);
+        }
     }
 }

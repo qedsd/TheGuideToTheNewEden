@@ -1,4 +1,5 @@
-﻿using OpenCvSharp;
+﻿using Microsoft.UI.Xaml.Documents;
+using OpenCvSharp;
 using Syncfusion.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
@@ -37,136 +38,14 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             Cv2.CvtColor(input, gray, ColorConversionCodes.RGB2GRAY);
             return gray;
         }
-        public static Mat GetEdge(Mat input)
+        public static Mat GetEdge(Mat input, int blurSizeW = 3, int blurSizeH = 3, int cannyThreshold1 = 100, int cannyThreshold2 = 100)
         {
             Mat afterBlur = new Mat();
-            Cv2.GaussianBlur(input, afterBlur, new Size(3, 3), 0);
+            Cv2.GaussianBlur(input, afterBlur, new Size(blurSizeW, blurSizeH), 0);
             Mat afterCanny = new Mat();
-            Cv2.Canny(afterBlur, afterCanny, 100, 100);
+            Cv2.Canny(afterBlur, afterCanny, cannyThreshold1, cannyThreshold2);
             afterBlur.Dispose();
             return afterCanny;
-        }
-
-        public static Mat CalStandingRects(Mat input,out Point[][] points)
-        {
-            Mat output = Mat.Zeros(input.Rows, input.Cols, MatType.CV_8UC3);
-            points = null;
-            int lineThreshold = (int)(input.Cols * 0.1);//每一行颜色超过此阈值才判断为有颜色
-            int[] rowFill = new int[input.Rows];//表示每一行是否有颜色
-            for (int i = 0; i < input.Rows; i++)
-            {
-                int count = 0;
-                for (int j = 0; j < input.Cols; j++)
-                {
-                    var p = input.At<byte>(i, j);
-                    if(p != 0)
-                    {
-                        count++;
-                        if(count >= lineThreshold)
-                        {
-                            rowFill[i] = 1;
-                            break;
-                        }
-                    }
-                }
-            }
-            bool foundStartLine = false;//是否已找到当前矩形开始行
-            int startRow = -1;//当前矩形最上方所在行数
-            int lastFillRow = -1;//最后一次找到有颜色一行的行数
-            int fillLineSpanThreshold = 5;//连续空白多少行才结束一个矩形
-            int emptyLines = 0;
-            List<Point> rects = new List<Point>();//使用xy来分别表示矩形最上面和最下面行数
-            List<int> rectHeights = new List<int>();
-            for (int i = 0; i < rowFill.Length; i++)
-            {
-                if (rowFill[i] == 1)
-                {
-                    if(!foundStartLine)
-                    {
-                        startRow = i;
-                        foundStartLine = true;
-                    }
-                    lastFillRow = i;
-                    emptyLines = 0;
-                }
-                else
-                {
-                    emptyLines++;
-                    if (foundStartLine && startRow != lastFillRow && emptyLines > fillLineSpanThreshold)
-                    {
-                        //结束当前矩形
-                        rects.Add(new Point(startRow, lastFillRow));
-                        rectHeights.Add(lastFillRow - startRow);
-                        foundStartLine = false;
-                        startRow = -1;
-                        lastFillRow = -1;
-                    }
-                }
-            }
-            int rectHeight = 0;
-            if(rectHeights.Any())
-            {
-                if(rectHeights.Count == 1)
-                {
-                    //只有一个则以这个为参考
-                    rectHeight = rectHeights[0];
-                }
-                else if(rectHeights.Count == 2)
-                {
-                    //有两个则看是否相差太大，太大就取大的，相差不大则取平均
-                    if ((double)Math.Abs(rectHeights[1] - rectHeights[0]) /  Math.Max(rectHeights[0], rectHeights[1]) > 0.3)
-                    {
-                        rectHeight = Math.Max(rectHeights[0], rectHeights[1]);
-                    }
-                    else
-                    {
-                        rectHeight = rectHeights.Sum() / rectHeights.Count;
-                    }
-                }
-                else if(rects.Count >= 3)
-                {
-                    //有三个以上去最大最小值求平均
-                    rectHeight = (rectHeights.Sum() - rectHeights.Max() - rectHeights.Min()) / (rectHeights.Count - 2);
-                }
-
-                //重新定位每个矩形上下边
-                foreach(var rect in rects)
-                {
-                    var centerY = (rect.Y + rect.X) / 2;
-                    var topY = centerY - rectHeight / 2;
-                    topY = topY < 0 ? 0 : topY;
-                    var bottomY = centerY + rectHeight / 2;
-                    for (int k = 0; k < input.Cols; k++)
-                    {
-                        output.At<Vec3b>(topY, k) = new Vec3b(255, 0, 0);
-                        output.At<Vec3b>(bottomY, k) = new Vec3b(255, 0, 0);
-                    }
-                }
-
-                int[] colFillCount = new int[input.Cols];
-                for (int i = 0; i < colFillCount.Length; i++)
-                {
-                    for(int j = 0; j < input.Rows; j++)
-                    {
-                        var p = input.At<byte>(j, i);
-                        if (p != 0)
-                        {
-                            colFillCount[i]++;
-                        }
-                    }
-                }
-                //将从左到右开始的首个有颜色的像素占比大于30%的列判断为起始列
-                //最后一个有颜色的像素占比大于30%的列判断为结束列
-                int startCol = colFillCount.IndexOf(colFillCount.FirstOrDefault(p => p > input.Rows * 0.1));
-                int endCol = colFillCount.IndexOf(colFillCount.LastOrDefault(p => p > input.Rows * 0.1));
-                //绘制起始结束列
-                for (int k = 0; k < input.Rows; k++)
-                {
-                    output.At<Vec3b>(k, startCol) = new Vec3b(0, 255, 0);
-                    output.At<Vec3b>(k, endCol) = new Vec3b(0, 255, 0);
-                }
-            }
-            return output;
         }
         /// <summary>
         /// 
@@ -174,9 +53,22 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         /// <param name="input"></param>
         /// <param name="spanLine">连续空白多少行才结束一个矩形</param>
         /// <returns></returns>
-        public static List<Rect> CalStandingRects(Mat input, int spanLine = 5)
+        public static List<Rect> CalStandingRects(Mat input, double fillThresholdV = 0.1f, double fillThresholdH = 0.1f,int spanLineV = 5, int minHeight = 5, int minWidth = 5)
         {
-            int lineThreshold = (int)(input.Cols * 0.1);//每一行颜色超过此阈值才判断为有颜色
+            var rectsV = FindVerticalRect(input, fillThresholdH, spanLineV, minHeight);
+            if(rectsV.Any())
+            {
+                var rectsH = FindHorizontalRect(input, rectsV, fillThresholdV, minWidth);
+                return rectsH;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private static List<Rect> FindVerticalRect(Mat input, double fillThreshold, int spanLine, int minHeight)
+        {
+            int lineThreshold = (int)(input.Cols * fillThreshold);//每一行颜色超过此阈值才判断为有颜色
             int[] rowFill = new int[input.Rows];//表示每一行是否有颜色
             for (int i = 0; i < input.Rows; i++)
             {
@@ -216,52 +108,114 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 else
                 {
                     emptyLines++;
-                    if (foundStartLine && startRow != lastFillRow && emptyLines > spanLine)
+                    if (foundStartLine && emptyLines > spanLine)
                     {
-                        //结束当前矩形
-                        Rect rect = new Rect()
+                        if (lastFillRow - startRow >= minHeight)
                         {
-                            Top = startRow,
-                            Height = lastFillRow - startRow,
-                        };
-                        //找最左边颜色起始位置
-                        int centerRow = (lastFillRow + startRow) / 2;//从区域上下中心找左右范围
-                        for (int j = 0; j < input.Cols; j++)
-                        {
-                            var p = input.At<byte>(centerRow, j);
-                            if (p != 0)
+                            //只有矩形高在最小范围内才当作声望区域
+                            //结束当前矩形
+                            Rect rect = new Rect()
                             {
-                                rect.Left = j;
-                                break;
-                            }
+                                Top = startRow,
+                                Height = lastFillRow - startRow,
+                                Left = 0,
+                                Width = input.Cols
+                            };
+                            rects.Add(rect);
+                            rectHeights.Add(lastFillRow - startRow);
                         }
-                        //找最右边颜色结束区域
-                        for (int j = input.Cols - 1; j >= 0; j--)
-                        {
-                            var p = input.At<byte>(centerRow, j);
-                            if (p != 0)
-                            {
-                                rect.Width = j - rect.Left;
-                                break;
-                            }
-                        }
-                        rects.Add(rect);
-                        rectHeights.Add(lastFillRow - startRow);
                         foundStartLine = false;
                         startRow = -1;
                         lastFillRow = -1;
                     }
                 }
             }
+            //最后一个声望刚好没完全截取的情况下
+            if(foundStartLine && emptyLines < spanLine)
+            {
+                if (lastFillRow - startRow >= minHeight)//只有矩形高在最小范围内才当作声望区域
+                {
+                    Rect rect = new Rect()
+                    {
+                        Top = startRow,
+                        Height = lastFillRow - startRow,
+                        Left = 0,
+                        Width = input.Cols
+                    };
+                    rects.Add(rect);
+                    rectHeights.Add(lastFillRow - startRow);
+                }
+            }
             return rects;
         }
+        private static List<Rect> FindHorizontalRect(Mat input, List<Rect> vRects, double fillThreshold, int minWidth)
+        {
+            int lineThreshold = (int)(input.Cols * fillThreshold);//每一列颜色超过此阈值才判断为有颜色
+            List<Rect> outputRects = new List<Rect>();
+            foreach(var rect in vRects)
+            {
+                int left = 0;
+                int right = 0;
+                //找最左边第一列满足的
+                for (int x = rect.Left; x <= rect.Right; x++)
+                {
+                    int count = 0;
+                    int y = rect.Top;
+                    for (; y <= rect.Bottom; y++)
+                    {
+                        var p = input.At<byte>(y, x);
+                        if (p != 0)
+                        {
+                            count++;
+                            if (count >= lineThreshold)
+                            {
+                                left = x;
+                                break;
+                            }
+                        }
+                    }
+                    if(y <= rect.Bottom)
+                    {
+                        break;
+                    }
+                }
+                //找最右边最后一列满足的
+                for (int x = rect.Right; x >= rect.Left; x--)
+                {
+                    int count = 0;
+                    int y = rect.Top;
+                    for (; y <= rect.Bottom; y++)
+                    {
+                        var p = input.At<byte>(y, x);
+                        if (p != 0)
+                        {
+                            count++;
+                            if (count >= lineThreshold)
+                            {
+                                right = x;
+                                break;
+                            }
+                        }
+                    }
+                    if (y <= rect.Bottom)
+                    {
+                        break;
+                    }
+                }
+                if(right - left >= minWidth)
+                {
+                    outputRects.Add(new Rect(left, rect.Top, right - left, rect.Height));
+                }
+            }
+            return outputRects;
+        }
 
-        public static Mat DrawRects(Mat input, List<Rect> rects)
+        public static Mat DrawRects(Mat input, List<Rect> rects, int span = 2)
         {
             Mat output = Mat.Zeros(input.Rows, input.Cols, MatType.CV_8UC3);
             foreach (var rect in rects)
             {
-                var sourceVev3b = GetMainColor(rect, input);
+                var sourceVev3b = GetMainColor(rect, input, span);
                 for (int i = rect.Top;i<rect.Bottom;i++)
                 {
                     for (int j = rect.Left; j < rect.Right; j++)
@@ -272,13 +226,123 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             return output;
         }
-        public static Vec3b GetMainColor(Rect rect, Mat input)
+        public static Mat DrawMainColorPos(Mat input, List<Rect> rects, int span = 2)
         {
-            //y取中心
-            //x取左边往右偏移2像素
-            int y = rect.Top + rect.Height / 2;
-            int x = rect.Left + 2;
-            return input.At<Vec3b>(y, x);
+            Mat output = input.Clone();
+            foreach (var rect in rects)
+            {
+                var poss = GetMainColorPos(rect, span);
+                foreach(var pos in poss)
+                {
+                    output.At<Vec3b>(pos.Y, pos.X) = new Vec3b(0, 255, 0);
+                }
+            }
+            return output;
+        }
+        public static Vec3b GetMainColor(Rect rect, Mat input, int span = 2)
+        {
+            var poss = GetMainColorPos(rect, span);
+            if(poss.Count == 1)
+            {
+                return input.At<Vec3b>(poss[0].Y, poss[0].X);
+            }
+            else
+            {
+                int r = 0;
+                int g = 0;
+                int b = 0;
+                byte maxR = byte.MinValue;
+                byte maxG = byte.MinValue;
+                byte maxB = byte.MinValue;
+                byte minR = byte.MaxValue;
+                byte minG = byte.MaxValue;
+                byte minB = byte.MaxValue;
+                foreach (var pos in poss)
+                {
+                    var rgb = input.At<Vec3b>(pos.Y, pos.X);
+                    r += rgb.Item0;
+                    g += rgb.Item1;
+                    b += rgb.Item2;
+                    if (maxR < rgb.Item0)
+                    {
+                        maxR = rgb.Item0;
+                    }
+                    if (maxG < rgb.Item1)
+                    {
+                        maxG = rgb.Item1;
+                    }
+                    if (maxB < rgb.Item2)
+                    {
+                        maxB = rgb.Item2;
+                    }
+                    if (minR > rgb.Item0)
+                    {
+                        minR = rgb.Item0;
+                    }
+                    if (minG < rgb.Item1)
+                    {
+                        minG = rgb.Item1;
+                    }
+                    if (minB < rgb.Item2)
+                    {
+                        minB = rgb.Item2;
+                    }
+                }
+                //移除最大最小值
+                r -= maxR;
+                g -= maxG;
+                b -= maxB;
+                r -= minR;
+                g -= minG;
+                b -= minB;
+                int actullyCount = poss.Count - 2;
+                return new Vec3b((byte)(r / actullyCount), (byte)(g / actullyCount), (byte)(b / actullyCount));
+            }
+        }
+        /// <summary>
+        /// 获取左右上下各距离指定像素处的矩形框作为颜色判断区
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        private static List<Point> GetMainColorPos(Rect rect, int span = 2)
+        {
+            if(span * 2 >= rect.Width ||  span * 2 > rect.Height)
+            {
+                //范围太小只取一个点
+                return new List<Point>()
+                {
+                    new Point(rect.Left + span, rect.Top + rect.Height / 2),
+                };
+            }
+            else
+            {
+                List<Point> points = new List<Point>();
+                //左边
+                int leftX = rect.Left + span;
+                int topY = rect.Top + span;
+                int rightX = rect.Right - span;
+                int bottomY = rect.Bottom - span;
+                for (int y = topY; y <= bottomY; y++)
+                {
+                    points.Add(new Point(leftX, y));
+                }
+                //上边
+                for (int x = leftX; x <= rightX; x++)
+                {
+                    points.Add(new Point(x, topY));
+                }
+                //右边
+                for (int y = topY; y <= bottomY; y++)
+                {
+                    points.Add(new Point(rightX, y));
+                }
+                //下边
+                for (int x = rightX; x >= leftX; x--)
+                {
+                    points.Add(new Point(x, bottomY));
+                }
+                return points;
+            }
         }
     }
 }

@@ -59,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if (procSetting != null)
                 {
                     procSetting.OnScreenshotChanged -= ProcSetting_OnScreenshotChanged;
-                    procSetting.OnGrayImgChanged -= ProcSetting_OnGrayImgChanged;
+                    procSetting.OnEdgeImgChanged -= ProcSetting_OnEdgeImgChanged;
                     procSetting.OnStandingRectsChanged -= ProcSetting_OnStandingRectsChanged;
                 }
                 if(SetProperty(ref procSetting, value))
@@ -67,7 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if(value != null)
                     {
                         value.OnScreenshotChanged += ProcSetting_OnScreenshotChanged;
-                        value.OnGrayImgChanged += ProcSetting_OnGrayImgChanged;
+                        value.OnEdgeImgChanged += ProcSetting_OnEdgeImgChanged;
                         value.OnStandingRectsChanged += ProcSetting_OnStandingRectsChanged;
                     }
                 }
@@ -111,6 +111,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref imageSource3, value);
         }
 
+        private Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap imageSource4;
+        /// <summary>
+        /// 声望区域取色位置图
+        /// </summary>
+        public Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap ImageSource4
+        {
+            get => imageSource4;
+            set => SetProperty(ref imageSource4, value);
+        }
+
         private readonly Dictionary<string, LocalIntelProcSetting> _runningDic = new Dictionary<string, LocalIntelProcSetting>();
         private static readonly string SettingFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "LocalIntelSetting.json");
         public LocalIntelViewModel()
@@ -146,7 +156,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 //获取所有目标进程
                 await Task.Run(() =>
                 {
-                    foreach (var process in allProcesses.Where(p => p.ProcessName == "exefile").ToList())
+                    foreach (var process in allProcesses.Where(p => p.ProcessName == "mspaint").ToList())
                     {
                         if (process.MainWindowHandle != IntPtr.Zero)
                         {
@@ -436,6 +446,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private void ProcSetting_OnStandingRectsChanged(LocalIntelProcSetting sender, OpenCvSharp.Mat img, List<OpenCvSharp.Rect> rects)
         {
             var afterDrawRectMat = IntelImageHelper.DrawRects(img, rects);
+            var afterDrawMainColorPos = IntelImageHelper.DrawMainColorPos(img, rects, sender.AlgorithmParameter.MainColorSpan);
             Window?.DispatcherQueue.TryEnqueue(() =>
             {
                 if (ImageSource3 == null)
@@ -447,10 +458,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     ImageSource3 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(afterDrawRectMat.Width, afterDrawRectMat.Height);
                 }
                 ImageSource3.SetSource(afterDrawRectMat.ToMemoryStream().AsRandomAccessStream());
+
+                if (ImageSource4 == null)
+                {
+                    ImageSource4 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(afterDrawMainColorPos.Width, afterDrawMainColorPos.Height);
+                }
+                else if (ImageSource4.PixelWidth != afterDrawMainColorPos.Width || ImageSource4.PixelHeight != afterDrawMainColorPos.Height)
+                {
+                    ImageSource4 = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(afterDrawMainColorPos.Width, afterDrawMainColorPos.Height);
+                }
+                ImageSource4.SetSource(afterDrawMainColorPos.ToMemoryStream().AsRandomAccessStream());
             });
         }
 
-        private void ProcSetting_OnGrayImgChanged(LocalIntelProcSetting sender, OpenCvSharp.Mat img)
+        private void ProcSetting_OnEdgeImgChanged(LocalIntelProcSetting sender, OpenCvSharp.Mat img)
         {
             Window?.DispatcherQueue.TryEnqueue(() =>
             {
@@ -467,10 +488,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private void ClearImage()
         {
-            //ImageSource1?.(Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap.PixelWidthProperty, 0);
-            //ImageSource1?.SetValue(Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap.PixelHeightProperty, 0);
-            //ImageSource2?.SetSource(null);
-            //ImageSource3?.SetSource(null);
         }
     }
 }
