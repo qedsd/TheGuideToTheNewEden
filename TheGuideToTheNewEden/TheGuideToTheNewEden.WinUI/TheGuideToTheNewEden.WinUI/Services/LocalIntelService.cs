@@ -8,6 +8,8 @@ using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -35,6 +37,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void Dispose()
         {
+            foreach (var m in MediaSourceDic.Values)
+            {
+                m.Dispose();
+            }
+            MediaSourceDic.Clear();
+            DefaultMediaSource?.Dispose();
+            DefaultMediaSource = null;
+            if (mediaPlayer != null)
+            {
+                mediaPlayer.Dispose();
+            }
             Helpers.WindowHelper.GetAppWindow(_window).Closing -= AppWindow_Closing;
             _window?.Close();
         }
@@ -266,9 +279,53 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             await LocalIntelToast.SendToast(title,msg);
         }
-        private void SendSoundNotify(string file)
-        {
 
+        private Dictionary<string, MediaSource> MediaSourceDic = new Dictionary<string, MediaSource>();
+        private MediaSource DefaultMediaSource;
+        private MediaPlayer mediaPlayer;
+        private MediaPlayer MediaPlayer
+        {
+            get
+            {
+                if (mediaPlayer == null)
+                {
+                    mediaPlayer = new MediaPlayer();
+                }
+                return mediaPlayer;
+            }
+        }
+        private void SendSoundNotify(string filepath)
+        {
+            MediaPlayer.Pause();
+            if (!string.IsNullOrEmpty(filepath))
+            {
+                if (MediaSourceDic.TryGetValue(filepath, out var mediaSourc))
+                {
+                    MediaPlayer.Source = mediaSourc;
+                }
+                else
+                {
+                    var m = MediaSource.CreateFromUri(new Uri(filepath));
+                    if (m != null)
+                    {
+                        MediaPlayer.Source = m;
+                        MediaSourceDic.Add(filepath, m);
+                    }
+                }
+                MediaPlayer.Play();
+            }
+            else
+            {
+                if (DefaultMediaSource == null)
+                {
+                    DefaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
+                }
+                if (DefaultMediaSource != null)
+                {
+                    MediaPlayer.Source = DefaultMediaSource;
+                    MediaPlayer.Play();
+                }
+            }
         }
         #endregion
     }
