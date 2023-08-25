@@ -27,7 +27,7 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class LocalIntelPage : Page
+    public sealed partial class LocalIntelPage : Page, IPage
     {
         public LocalIntelPage()
         {
@@ -57,6 +57,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void Button_RemoveStanding_Click(object sender, RoutedEventArgs e)
         {
             VM.RemoveStanding((sender as Button).DataContext as LocalIntelStandingSetting);
+        }
+
+        public void Close()
+        {
+            VM.Dispose();
         }
     }
 }

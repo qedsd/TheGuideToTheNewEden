@@ -489,5 +489,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private void ClearImage()
         {
         }
+
+        public void Dispose()
+        {
+            _localIntelService.Dispose();
+        }
     }
 }

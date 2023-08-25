@@ -17,7 +17,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
     /// </summary>
     internal class LocalIntelService
     {
-        private BaseWindow _window;
         class StandingChange
         {
             public LocalIntelStandingSetting Setting;
@@ -34,7 +33,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _lastStandingsDic.Remove(item.Name);
             item.OnScreenshotChanged -= Item_OnScreenshotChanged;
         }
-
+        public void Dispose()
+        {
+            Helpers.WindowHelper.GetAppWindow(_window).Closing -= AppWindow_Closing;
+            _window?.Close();
+        }
         private void Item_OnScreenshotChanged(LocalIntelProcSetting sender, System.Drawing.Bitmap img)
         {
             var sourceMat = IntelImageHelper.BitmapToMat(img);
@@ -226,7 +229,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
-
+        private BaseWindow _window;
         private TextBlock _nameTextBlock;
         private TextBlock _msgTextBlock;
         private void SendWindowNotify(string name, string msg)
