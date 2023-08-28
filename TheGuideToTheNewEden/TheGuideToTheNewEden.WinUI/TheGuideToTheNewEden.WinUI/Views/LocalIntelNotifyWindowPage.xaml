@@ -1,0 +1,39 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.LocalIntelNotifyWindowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:TheGuideToTheNewEden.Core.Models"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <ListView x:Name="ListView" Margin="4">
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="models:LocalIntelNotify">
+                <Grid Margin="4" DoubleTapped="Grid_DoubleTapped">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{x:Bind Name}" />
+                        <TextBlock Grid.Row="1" Text="{x:Bind Time}" />
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Foreground="OrangeRed"
+                            Text="{x:Bind Msg}" />
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</Page>

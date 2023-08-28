@@ -213,14 +213,17 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static Mat DrawRects(Mat input, List<Rect> rects, int span = 2)
         {
             Mat output = Mat.Zeros(input.Rows, input.Cols, MatType.CV_8UC3);
-            foreach (var rect in rects)
+            if(rects != null && rects.Any())
             {
-                var sourceVev3b = GetMainColor(rect, input, span);
-                for (int i = rect.Top;i<rect.Bottom;i++)
+                foreach (var rect in rects)
                 {
-                    for (int j = rect.Left; j < rect.Right; j++)
+                    var sourceVev3b = GetMainColor(rect, input, span);
+                    for (int i = rect.Top; i < rect.Bottom; i++)
                     {
-                        output.At<Vec3b>(i, j) = sourceVev3b;
+                        for (int j = rect.Left; j < rect.Right; j++)
+                        {
+                            output.At<Vec3b>(i, j) = sourceVev3b;
+                        }
                     }
                 }
             }
@@ -229,12 +232,15 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static Mat DrawMainColorPos(Mat input, List<Rect> rects, int span = 2)
         {
             Mat output = input.Clone();
-            foreach (var rect in rects)
+            if(rects != null && rects.Any())
             {
-                var poss = GetMainColorPos(rect, span);
-                foreach(var pos in poss)
+                foreach (var rect in rects)
                 {
-                    output.At<Vec3b>(pos.Y, pos.X) = new Vec3b(0, 255, 0);
+                    var poss = GetMainColorPos(rect, span);
+                    foreach (var pos in poss)
+                    {
+                        output.At<Vec3b>(pos.Y, pos.X) = new Vec3b(0, 255, 0);
+                    }
                 }
             }
             return output;
