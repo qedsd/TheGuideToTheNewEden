@@ -241,4 +241,19 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref mainColorSpan, value);
         }
     }
+
+    public class LocalIntelNotify
+    {
+        public LocalIntelNotify(IntPtr hwnd, string name, string msg)
+        {
+            HWnd = hwnd;
+            Name = name;
+            Msg = msg;
+            Time = DateTime.Now;
+        }
+        public IntPtr HWnd { get; set; }
+        public string Name { get; set; }
+        public string Msg { get; set; }
+        public DateTime Time { get; set; }
+    }
 }

@@ -304,5 +304,10 @@ namespace TheGuideToTheNewEden.WinUI
             WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             WaitingProgressRing.IsActive = false;
         }
+
+        public void Hide()
+        {
+            this.Hide();
+        }
     }
 }

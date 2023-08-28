@@ -10,6 +10,8 @@ using TheGuideToTheNewEden.WinUI.Notifications;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Microsoft.UI;
+using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -25,6 +27,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             public int Change;
         }
         private readonly Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>> _lastStandingsDic = new Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>>();
+        public LocalIntelService()
+        {
+            _window = new LocalIntelNotifyWindow();
+        }
         public void Add(LocalIntelProcSetting item)
         {
             _lastStandingsDic.Add(item.Name, new List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>());
@@ -34,6 +40,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             _lastStandingsDic.Remove(item.Name);
             item.OnScreenshotChanged -= Item_OnScreenshotChanged;
+            if(!_lastStandingsDic.Any())
+            {
+                _window?.Hide();
+            }
         }
         public void Dispose()
         {
@@ -48,8 +58,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 mediaPlayer.Dispose();
             }
-            Helpers.WindowHelper.GetAppWindow(_window).Closing -= AppWindow_Closing;
-            _window?.Close();
+            
+            _window?.Dispose();
         }
         private void Item_OnScreenshotChanged(LocalIntelProcSetting sender, System.Drawing.Bitmap img)
         {
@@ -215,6 +225,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return false;
         }
 
+
         #region 通知
         private void SendNotify(LocalIntelProcSetting setting, List<StandingChange> standingChanges)
         {
@@ -235,45 +246,27 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private void SendNotify(LocalIntelProcSetting setting, string msg)
         {
-            if(setting.WindowNotify)
-                SendWindowNotify(setting.Name,msg);
+            string name = setting.Name;
+            if(name.Contains('-'))
+            {
+                var index = name.IndexOf('-');
+                name = name.Substring(index + 1, name.Length - index - 1);
+            }
+            if (setting.WindowNotify)
+                SendWindowNotify(setting.HWnd, name, msg);
             if(setting.ToastNotify)
-                SendToastNotify(setting.Name, msg);
+                SendToastNotify(name, msg);
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
-        private BaseWindow _window;
-        private TextBlock _nameTextBlock;
-        private TextBlock _msgTextBlock;
-        private void SendWindowNotify(string name, string msg)
+        private readonly LocalIntelNotifyWindow _window;
+        private readonly TextBlock _msgTextBlock;
+        private void SendWindowNotify(IntPtr hwnd, string name, string msg)
         {
-            if(_window == null)
-            {
-                _window = new BaseWindow();
-                _window.HideAppDisplayName();
-                _window.Head = "本地预警通知";
-                StackPanel stackPanel = new StackPanel();
-                _nameTextBlock = new TextBlock()
-                {
-                    FontSize = 18,
-                    Margin = new Microsoft.UI.Xaml.Thickness(16)
-                };
-                _msgTextBlock = new TextBlock();
-                stackPanel.Children.Add(_nameTextBlock);
-                stackPanel.Children.Add(_msgTextBlock);
-                _window.MainContent = stackPanel;
-                Helpers.WindowHelper.GetAppWindow(_window).Closing += AppWindow_Closing;
-            }
-            _nameTextBlock.Text = name;
-            _msgTextBlock.Text = msg;
-            _window.Activate();
+            _window.Add(new LocalIntelNotify(hwnd, name, msg));
         }
 
-        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
-        {
-            args.Cancel = true;
-            sender.Hide();
-        }
+       
 
         private async void SendToastNotify(string title, string msg)
         {
