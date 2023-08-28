@@ -44,12 +44,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             MediaSourceDic.Clear();
             DefaultMediaSource?.Dispose();
             DefaultMediaSource = null;
-            if (mediaPlayer != null)
+            mediaPlayer?.Dispose();
+            if(_window != null)
             {
-                mediaPlayer.Dispose();
+                Helpers.WindowHelper.GetAppWindow(_window).Closing -= AppWindow_Closing;
+                _window?.Close();
             }
-            Helpers.WindowHelper.GetAppWindow(_window).Closing -= AppWindow_Closing;
-            _window?.Close();
         }
         private void Item_OnScreenshotChanged(LocalIntelProcSetting sender, System.Drawing.Bitmap img)
         {
