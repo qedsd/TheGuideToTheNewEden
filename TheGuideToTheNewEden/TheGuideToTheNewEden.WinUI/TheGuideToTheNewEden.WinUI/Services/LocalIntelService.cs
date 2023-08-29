@@ -57,11 +57,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             DefaultMediaSource?.Dispose();
             DefaultMediaSource = null;
             mediaPlayer?.Dispose();
-            if(_window != null)
-            {
-                mediaPlayer.Dispose();
-            }
-            
             _window?.Dispose();
         }
         private void Item_OnScreenshotChanged(LocalIntelProcSetting sender, System.Drawing.Bitmap img)
@@ -265,11 +260,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private void SendNotify(LocalIntelProcSetting setting, string changedMsg, string remainMsg)
         {
             string name = setting.Name;
-            //if(name.Contains('-'))
-            //{
-            //    var index = name.IndexOf('-');
-            //    name = name.Substring(index + 1, name.Length - index - 1);
-            //}
+            if (name.Contains('-'))
+            {
+                var index = name.IndexOf('-');
+                name = name.Substring(index + 1, name.Length - index - 1);
+            }
             if (setting.WindowNotify)
                 SendWindowNotify(setting.HWnd, name, changedMsg, remainMsg);
             if(setting.ToastNotify)

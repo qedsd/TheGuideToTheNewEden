@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
         {
             await AppNotificationManager.Default.RemoveByGroupAsync(title);
             var appNotification = new AppNotificationBuilder()
-                .AddText($"本地预警-{title}")
+                .AddText($"本地预警 - {title.Trim()}")
                 .AddText(changedMsg)
                 .AddText(remainMsg)
                 .SetGroup(title)

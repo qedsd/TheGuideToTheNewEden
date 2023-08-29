@@ -232,12 +232,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         new LocalIntelStandingSetting()
                         {
                             Name = "红",
-                            Color = Color.Red,
+                            Color = Color.FromArgb(145, 2, 2),
                         },
                         new LocalIntelStandingSetting()
                         {
                             Name = "白",
-                            Color = Color.White,
+                            Color = Color.FromArgb(136,136,136),
                         },
                     }
                 };
@@ -288,7 +288,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand AddStandingCommand => new RelayCommand(() =>
         {
-            ProcSetting.StandingSettings.Add(new LocalIntelStandingSetting());
+            ProcSetting.StandingSettings.Add(new LocalIntelStandingSetting()
+            {
+                Name = "红",
+                Color = Color.FromArgb(145, 2, 2)
+            });
         });
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
         {
