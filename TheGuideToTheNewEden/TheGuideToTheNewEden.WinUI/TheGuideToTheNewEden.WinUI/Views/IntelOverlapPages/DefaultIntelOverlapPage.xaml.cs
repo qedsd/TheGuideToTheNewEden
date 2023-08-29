@@ -139,7 +139,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         /// 已降过级的星系
         /// </summary>
         private HashSet<int> _downgradeds = new HashSet<int>();
-        void IIntelOverlapPage.Intel(EarlyWarningContent content)
+        public void Intel(EarlyWarningContent content)
         {
             InfoTextBlock.Text = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
             if (_ellipseDic.TryGetValue(content.SolarSystemId, out var value))
@@ -175,7 +175,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 _downgradeds.Remove(content.SolarSystemId);
             }
         }
-        void IIntelOverlapPage.Clear(List<int> systemIds)
+        public void Clear(List<int> systemIds)
         {
             foreach (var item in systemIds)
             {
@@ -198,13 +198,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             }
         }
 
-        void IIntelOverlapPage.Dispose()
+        public void Dispose()
         {
             _ellipseDic.Clear();
             _allSolarSystem.Clear();
         }
 
-        void IIntelOverlapPage.Downgrade(List<int> systemIds)
+        public void Downgrade(List<int> systemIds)
         {
             foreach (var item in systemIds)
             {
@@ -252,6 +252,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 MapCanvas.Children.Add(ellipse);
                 ellipse.PointerEntered += Ellipse_PointerEntered;
                 ellipse.PointerExited += Ellipse_PointerExited;
+                ellipse.RightTapped += Ellipse_RightTapped;
                 Canvas.SetLeft(ellipse, width * item.X);
                 Canvas.SetTop(ellipse, height * item.Y);
             }
@@ -315,6 +316,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                     Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (_intelScale.X - 1) / 2);
                     Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (_intelScale.Y - 1) / 2);
                 }
+            }
+        }
+
+        private void Ellipse_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var map = (sender as Ellipse).Tag as Core.Models.Map.IntelSolarSystemMap;
+            if(map != null)
+            {
+                if (_intelings.Contains(map.SolarSystemID))
+                {
+                    CancelSelected();
+                    Clear(new List<int>() { map.SolarSystemID });
+                }   
             }
         }
 
