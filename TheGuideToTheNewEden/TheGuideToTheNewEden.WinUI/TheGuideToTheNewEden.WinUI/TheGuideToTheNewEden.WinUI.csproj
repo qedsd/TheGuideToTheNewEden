@@ -255,7 +255,7 @@
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
-    <None Remove="Views\LocalIntelItemPage.xaml" />
+    <None Remove="Views\LocalIntelNotifyWindowPage.xaml" />
     <None Remove="Views\LocalIntelPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
@@ -281,6 +281,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="OpenCvSharp4" Version="4.8.0.20230708" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.8.0.20230708" />
     <PackageReference Include="Syncfusion.Chart.WinUI" Version="22.2.7" />
     <PackageReference Include="Syncfusion.Editors.WinUI" Version="22.2.7" />
     <PackageReference Include="Syncfusion.Grid.WinUI" Version="22.2.7" />
@@ -363,6 +365,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\LocalIntelNotifyWindowPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\CharacterPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -449,9 +454,6 @@
     </Page>
     <Page Update="Views\Character\OverviewPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\LocalIntelItemPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\LocalIntelPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>

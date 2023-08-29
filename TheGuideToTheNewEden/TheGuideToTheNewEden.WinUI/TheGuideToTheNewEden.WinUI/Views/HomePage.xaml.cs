@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -31,7 +32,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             TabView_AddTabButtonClick(TabView, null);
-            CheckUpdate();
+            TryMoveUpdater();
+            if (AutoUpdateService.Value)
+            {
+                CheckUpdate();
+            }
             _window.SetTitleBar(CustomDragRegion);
             Loaded -= HomePage_Loaded;
             NavigationService.HomePage = this;
@@ -43,7 +48,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         private async void CheckUpdate()
         {
-            TryMoveUpdater();
             try
             {
                 //会因为Github的访问次数限制导致失败

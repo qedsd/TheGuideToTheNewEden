@@ -70,9 +70,9 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl Title="{StaticResource Setting_PlayerStatus_Title}" Description="{StaticResource Setting_PlayerStatus_Description}">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_Update_Update}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBox Width="240" Text="{x:Bind VM.PlayerStatusApi, Mode=TwoWay}" />
+                    <CheckBox Content="{StaticResource Setting_Update_AutoUpdate}" IsChecked="{x:Bind VM.AutoUpdate, Mode=TwoWay}" />
                 </StackPanel>
             </controls:ExpandableSettingControl>
 

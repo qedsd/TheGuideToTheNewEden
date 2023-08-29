@@ -103,6 +103,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
+        private bool autoUpdate = AutoUpdateService.Value;
+        public bool AutoUpdate
+        {
+            get => autoUpdate;
+            set
+            {
+                autoUpdate = value;
+                _ = AutoUpdateService.SetAsync(value);
+            }
+        }
+
         private string evelogsPath = EVELogsPathSelectorService.Value;
         public string EvelogsPath
         {

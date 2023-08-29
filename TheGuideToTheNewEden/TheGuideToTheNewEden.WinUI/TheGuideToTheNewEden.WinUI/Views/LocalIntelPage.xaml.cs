@@ -1,4 +1,5 @@
-﻿using Microsoft.UI;
+﻿using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -8,57 +9,59 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.ViewModels;
-using Windows.Foundation;
+using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Foundation.Collections;
+using Windows.Globalization.NumberFormatting;
 using Windows.UI;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class LocalIntelPage : Page
+    public sealed partial class LocalIntelPage : Page, IPage
     {
-        private BaseWindow _window;
         public LocalIntelPage()
         {
             this.InitializeComponent();
-            this.Unloaded += LocalIntelPage_Unloaded;
             Loaded += LocalIntelPage_Loaded;
         }
 
         private void LocalIntelPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            TabView_AddTabButtonClick(TabView,null);
+            Loaded -= LocalIntelPage_Loaded;
+            SetNumberBoxNumberFormatter();
+        }
+        private void SetNumberBoxNumberFormatter()
+        {
+            IncrementNumberRounder rounder = new IncrementNumberRounder();
+            rounder.Increment = 0.01;
+            rounder.RoundingAlgorithm = RoundingAlgorithm.RoundHalfUp;
+
+            DecimalFormatter formatter = new DecimalFormatter();
+            formatter.IntegerDigits = 1;
+            formatter.FractionDigits = 2;
+            formatter.NumberRounder = rounder;
+            NumberBox_FillThresholdV.NumberFormatter = formatter;
+            NumberBox_FillThresholdH.NumberFormatter = formatter;
         }
 
-        private void LocalIntelPage_Unloaded(object sender, RoutedEventArgs e)
+        private void Button_RemoveStanding_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-        private int inteIndex = 1;
-        private void TabView_AddTabButtonClick(TabView sender, object args)
-        {
-            TabViewItem item = new TabViewItem()
-            {
-                Header = $"本地预警{inteIndex++}",
-                IsSelected = true,
-            };
-            LocalIntelItemPage content = new LocalIntelItemPage();
-            (content.DataContext as BaseViewModel).SetWindow(_window);
-            item.Content = content;
-            sender.TabItems.Add(item);
+            VM.RemoveStanding((sender as Button).DataContext as LocalIntelStandingSetting);
         }
 
-        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        public void Close()
         {
-            ((args.Item as TabViewItem).Content as LocalIntelItemPage).Stop();
-            sender.TabItems.Remove(args.Item);
+            VM.Dispose();
         }
     }
 }
