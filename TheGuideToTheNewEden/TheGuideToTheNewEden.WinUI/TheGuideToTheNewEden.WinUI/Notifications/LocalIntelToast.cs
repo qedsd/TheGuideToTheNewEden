@@ -10,9 +10,6 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
 {
     internal class LocalIntelToast
     {
-        public const string GroupId = "LocalIntel";
-        public const int ScenarioId = 1;
-
         public static async Task<bool> SendToast(string title, string changedMsg, string remainMsg)
         {
             await AppNotificationManager.Default.RemoveByGroupAsync(title);
