@@ -39,6 +39,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             sender.Hide();
         }
 
+        public void ClearMsg()
+        {
+            _localIntelNotifyWindowPage.ClearMsg();
+        }
+
         public void Dispose()
         {
             Helpers.WindowHelper.GetAppWindow(this).Closing -= AppWindow_Closing;

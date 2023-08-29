@@ -431,4 +431,6 @@
     <x:String x:Key="LocalIntel_Param_MinWidth">声望矩形最小宽度</x:String>
     <x:String x:Key="LocalIntel_Param_MainColorSpan">声望主颜色识别区域距边缘像素</x:String>
     <x:String x:Key="LocalIntel_WindowNotifyTitle">本地预警通知</x:String>
+    <x:String x:Key="LocalIntel_ProcessName">进程名称</x:String>
+    <x:String x:Key="LocalIntel_RefreshProcessList">刷新列表</x:String>
 </ResourceDictionary>

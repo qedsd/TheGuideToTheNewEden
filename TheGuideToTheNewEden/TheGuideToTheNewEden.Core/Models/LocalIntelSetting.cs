@@ -11,6 +11,11 @@ namespace TheGuideToTheNewEden.Core.Models
 {
     public class LocalIntelSetting : ObservableObject
     {
+        private string processName = "exefile";
+        public string ProcessName
+        {
+            get => processName; set => SetProperty(ref processName, value);
+        }
         private int refreshSpan = 100;
         /// <summary>
         /// 更新间隔
@@ -244,16 +249,18 @@ namespace TheGuideToTheNewEden.Core.Models
 
     public class LocalIntelNotify
     {
-        public LocalIntelNotify(IntPtr hwnd, string name, string msg)
+        public LocalIntelNotify(IntPtr hwnd, string name, string changedMsg, string remainMsg)
         {
             HWnd = hwnd;
             Name = name;
-            Msg = msg;
+            ChangedMsg = changedMsg;
+            RemainMsg = remainMsg;
             Time = DateTime.Now;
         }
         public IntPtr HWnd { get; set; }
         public string Name { get; set; }
-        public string Msg { get; set; }
+        public string ChangedMsg { get; set; }
+        public string RemainMsg { get; set; }
         public DateTime Time { get; set; }
     }
 }

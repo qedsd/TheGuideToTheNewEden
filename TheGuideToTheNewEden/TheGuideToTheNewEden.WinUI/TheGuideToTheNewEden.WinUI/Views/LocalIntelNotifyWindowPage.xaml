@@ -12,10 +12,10 @@
     <ListView x:Name="ListView" Margin="4">
         <ListView.ItemTemplate>
             <DataTemplate x:DataType="models:LocalIntelNotify">
-                <Grid Margin="4" DoubleTapped="Grid_DoubleTapped">
+                <Grid Margin="4,8" DoubleTapped="Grid_DoubleTapped">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -26,11 +26,20 @@
                         <TextBlock Grid.Row="1" Text="{x:Bind Time}" />
                     </Grid>
                     <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
                         <TextBlock
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Foreground="OrangeRed"
-                            Text="{x:Bind Msg}" />
+                            Text="{x:Bind ChangedMsg}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind RemainMsg}" />
                     </Grid>
                 </Grid>
             </DataTemplate>

@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             public LocalIntelStandingSetting Setting;
             public int Change;
+            public int Remain;
         }
         private readonly Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>> _lastStandingsDic = new Dictionary<string, List<Tuple<OpenCvSharp.Rect, LocalIntelStandingSetting>>>();
         public LocalIntelService()
@@ -42,6 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             item.OnScreenshotChanged -= Item_OnScreenshotChanged;
             if(!_lastStandingsDic.Any())
             {
+                _window?.ClearMsg();
                 _window?.Hide();
             }
         }
@@ -119,7 +121,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                         standingChanges.Add(new StandingChange()
                                         {
                                             Setting = group.Key,
-                                            Change = sameMath.Count - group.Count()
+                                            Change = sameMath.Count - group.Count(),
+                                            Remain = sameMath.Count
                                         });
                                     }
                                     SendNotify(sender, standingChanges);
@@ -138,7 +141,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                     standingChanges.Add(new StandingChange()
                                     {
                                         Setting = group.Key,
-                                        Change = sameMath.Count - group.Count()
+                                        Change = sameMath.Count - group.Count(),
+                                        Remain = sameMath.Count
                                     });
                                 }
                                 if (standingChanges.FirstOrDefault(p => p.Change != 0) != null)
@@ -149,7 +153,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                 else
                                 {
                                     //无声望变化，提示注意预警
-                                    SendNotify(sender, "声望区域定位波动，请注意");
+                                    SendNotify(sender, "声望区域定位波动，请注意", string.Empty);
                                 }
                                 break;
                             }
@@ -168,7 +172,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                     standingChanges.Add(new StandingChange()
                                     {
                                         Setting = group.Key,
-                                        Change = group.Count()
+                                        Change = group.Count(),
+                                        Remain = group.Count()
                                     });
                                 }
                             }
@@ -181,7 +186,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                                     standingChanges.Add(new StandingChange()
                                     {
                                         Setting = group.Key,
-                                        Change = sameMath.Count - group.Count()
+                                        Change = sameMath.Count - group.Count(),
+                                        Remain = sameMath.Count
                                     });
                                 }
                             }
@@ -243,35 +249,43 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     stringBuilder.Append(change.Change);
                 }
             }
-            SendNotify(setting, stringBuilder.ToString());
+            var changedMsg = stringBuilder.ToString();
+            stringBuilder.Clear();
+            foreach (var change in standingChanges)
+            {
+                stringBuilder.Append(change.Setting.Name);
+                stringBuilder.Append('：');
+                stringBuilder.Append(change.Remain);
+                stringBuilder.Append(' ');
+            }
+            stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            var remainMsg = stringBuilder.ToString();
+            SendNotify(setting, changedMsg, remainMsg);
         }
-        private void SendNotify(LocalIntelProcSetting setting, string msg)
+        private void SendNotify(LocalIntelProcSetting setting, string changedMsg, string remainMsg)
         {
             string name = setting.Name;
-            if(name.Contains('-'))
-            {
-                var index = name.IndexOf('-');
-                name = name.Substring(index + 1, name.Length - index - 1);
-            }
+            //if(name.Contains('-'))
+            //{
+            //    var index = name.IndexOf('-');
+            //    name = name.Substring(index + 1, name.Length - index - 1);
+            //}
             if (setting.WindowNotify)
-                SendWindowNotify(setting.HWnd, name, msg);
+                SendWindowNotify(setting.HWnd, name, changedMsg, remainMsg);
             if(setting.ToastNotify)
-                SendToastNotify(name, msg);
+                SendToastNotify(name, changedMsg, remainMsg);
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
         private readonly LocalIntelNotifyWindow _window;
-        private readonly TextBlock _msgTextBlock;
-        private void SendWindowNotify(IntPtr hwnd, string name, string msg)
+        private void SendWindowNotify(IntPtr hwnd, string name, string changedMsg, string remainMsg)
         {
-            _window.Add(new LocalIntelNotify(hwnd, name, msg));
+            _window.Add(new LocalIntelNotify(hwnd, name, changedMsg, remainMsg));
         }
 
-       
-
-        private async void SendToastNotify(string title, string msg)
+        private async void SendToastNotify(string title, string changedMsg, string remainMsg)
         {
-            await LocalIntelToast.SendToast(title,msg);
+            await LocalIntelToast.SendToast(title, changedMsg, remainMsg);
         }
 
         private Dictionary<string, MediaSource> MediaSourceDic = new Dictionary<string, MediaSource>();

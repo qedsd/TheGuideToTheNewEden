@@ -40,5 +40,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Helpers.WindowHelper.SetForegroundWindow_Click(data.HWnd);
             }
         }
+
+        public void ClearMsg()
+        {
+            _localIntelNotifies.Clear();
+        }
     }
 }
