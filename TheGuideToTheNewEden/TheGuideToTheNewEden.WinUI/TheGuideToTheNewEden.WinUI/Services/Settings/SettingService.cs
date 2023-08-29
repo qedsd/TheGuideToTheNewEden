@@ -44,6 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             ThemeSelectorService.Initialize();
             EVELogsPathSelectorService.Initialize();
             DBLocalizationSettingService.Initialize();
+            AutoUpdateService.Initialize();
         }
         public static string GetValue(string key)
         {

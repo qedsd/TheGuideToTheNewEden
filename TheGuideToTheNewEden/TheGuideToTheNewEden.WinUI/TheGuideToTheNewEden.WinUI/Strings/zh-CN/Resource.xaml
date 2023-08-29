@@ -24,6 +24,8 @@
     <x:String x:Key="Setting_EVELogsPath_Description">只需选择logs文件夹</x:String>
     <x:String x:Key="Setting_EVELogsPath_Title">EVE日志路径</x:String>
     <x:String x:Key="Setting_About_Title">关于</x:String>
+    <x:String x:Key="Setting_Update_Update">APP更新</x:String>
+    <x:String x:Key="Setting_Update_AutoUpdate">自动检查更新</x:String>
 
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
