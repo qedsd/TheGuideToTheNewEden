@@ -597,6 +597,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
                 Setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
+                Setting.NameDbs = SelectedNameDbs.ToList();
                 IntelSettingService.SetValue(Setting);
             }
         }
