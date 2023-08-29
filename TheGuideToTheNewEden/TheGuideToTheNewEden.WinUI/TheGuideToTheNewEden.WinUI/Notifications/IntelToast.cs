@@ -7,16 +7,11 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
 {
     internal class IntelToast
     {
-        public const int ScenarioId = 1;
-
-        public static bool SendToast(EarlyWarningContent earlyWarningContent)
+        public static bool SendToast(string chanel, EarlyWarningContent earlyWarningContent)
         {
             var appNotification = new AppNotificationBuilder()
-                .AddArgument("action", "ToastClick")
-                .AddArgument(Common.scenarioTag, ScenarioId.ToString())
-                .SetAppLogoOverride(new System.Uri("file://" + App.GetFullPathToAsset("Square150x150Logo.png")), AppNotificationImageCrop.Circle)
                 .AddText($"频道预警：{earlyWarningContent.SolarSystemName} {earlyWarningContent.Jumps}跳")
-                .AddText(earlyWarningContent.Content)
+                .AddText($"{chanel}: {earlyWarningContent.Content}")
                 .BuildNotification();
             appNotification.Expiration = DateTime.Now.AddMinutes(1);
             AppNotificationManager.Default.Show(appNotification);

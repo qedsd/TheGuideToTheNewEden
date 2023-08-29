@@ -105,9 +105,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        public static void NotifyToast(EarlyWarningContent content)
+        public static void NotifyToast(string chanel, EarlyWarningContent content)
         {
-            Notifications.IntelToast.SendToast(content);
+            Notifications.IntelToast.SendToast(chanel, content);
         }
 
         private Dictionary<string, MediaSource> MediaSourceDic = new Dictionary<string, MediaSource>();
