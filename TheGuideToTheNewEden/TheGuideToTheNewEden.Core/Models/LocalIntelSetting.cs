@@ -206,7 +206,7 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref fillThresholdH, value);
         }
 
-        private int spanLineV = 5;
+        private int spanLineV = 3;
         /// <summary>
         /// 垂直方向最小有效空白像素行数
         /// </summary>
