@@ -496,6 +496,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public void Dispose()
         {
+            _localIntelWindow?.Close();
             _localIntelService.Dispose();
         }
     }
