@@ -412,7 +412,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if (Setting.SystemNotify)
                     {
-                        WarningService.NotifyToast(earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                        WarningService.NotifyToast(earlyWarningItem.ChatChanelInfo.Listener, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
                     }
                     if (Setting.MakeSound)
                     {

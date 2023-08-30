@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.WinUI
 {
     public partial class App : Application
     {
-        //private NotificationManager notificationManager;
+        private NotificationManager notificationManager;
         public App()
         {
             this.InitializeComponent();
@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
-            //notificationManager.Unregister();
+            notificationManager.Unregister();
             ForegroundWindowService.Current.Stop();
         }
 
@@ -62,11 +62,11 @@ namespace TheGuideToTheNewEden.WinUI
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
         {
             m_window.Activated -= M_window_Activated;
-            //System.Threading.Tasks.Task.Run(() =>
-            //{
-            //    notificationManager = new NotificationManager();
-            //    notificationManager.Init();
-            //});
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                notificationManager = new NotificationManager();
+                notificationManager.Init();
+            });
             ForegroundWindowService.Current.Start();
         }
 

@@ -268,7 +268,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (setting.WindowNotify)
                 SendWindowNotify(setting.HWnd, name, changedMsg, remainMsg);
             if(setting.ToastNotify)
-                SendToastNotify(name, changedMsg, remainMsg);
+                SendToastNotify(setting.HWnd, name, changedMsg, remainMsg);
             if (setting.SoundNotify)
                 SendSoundNotify(setting.SoundFile);
         }
@@ -278,9 +278,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _window.Add(new LocalIntelNotify(hwnd, name, changedMsg, remainMsg));
         }
 
-        private async void SendToastNotify(string title, string changedMsg, string remainMsg)
+        private async void SendToastNotify(IntPtr hwnd, string title, string changedMsg, string remainMsg)
         {
-            await LocalIntelToast.SendToast(title, changedMsg, remainMsg);
+            await LocalIntelToast.SendToast(hwnd, title, changedMsg, remainMsg);
         }
 
         private Dictionary<string, MediaSource> MediaSourceDic = new Dictionary<string, MediaSource>();
