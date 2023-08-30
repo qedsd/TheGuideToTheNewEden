@@ -13,7 +13,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
         {
             switch((int)value)
             {
-                case 0: return Helpers.ResourcesHelper.GetString("DEDPage_Guristas");
+                case 0: return Helpers.ResourcesHelper.GetString("DEDPage_Drone");
                 case 1: return Helpers.ResourcesHelper.GetString("DEDPage_Serpentis");
                 case 2: return Helpers.ResourcesHelper.GetString("DEDPage_BloodRaider");
                 case 3: return Helpers.ResourcesHelper.GetString("DEDPage_Sansha");
