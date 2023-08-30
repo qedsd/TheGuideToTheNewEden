@@ -153,5 +153,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             (TabView.SelectedItem as TabViewItem).Header = title;
         }
+
+        public void Dispose()
+        {
+            if(TabView.TabItems.Any())
+            {
+                foreach(var item in TabView.TabItems)
+                {
+                    var ipage = (item as TabViewItem).Content as IPage;
+                    if(ipage != null)
+                    {
+                        ipage.Close();
+                    }
+                }
+            }
+        }
     }
 }

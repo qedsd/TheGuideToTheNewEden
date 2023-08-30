@@ -53,10 +53,16 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 MainContent = new Views.HomePage()
             };
+            m_window.AppWindow.Closing += AppWindow_Closing;
             (m_window as BaseWindow).SetTavViewHomeMode();
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();
+        }
+
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
+        {
+            ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
