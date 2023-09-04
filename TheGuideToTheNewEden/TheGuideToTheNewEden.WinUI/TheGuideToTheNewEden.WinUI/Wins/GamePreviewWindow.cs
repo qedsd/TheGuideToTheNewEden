@@ -21,12 +21,12 @@ using System.Threading;
 using System.Reflection.Metadata;
 using Microsoft.UI.Xaml.Input;
 using System.Timers;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow: BaseWindow
     {
-        //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
         public PreviewItem Setting { get => _setting; }
         private readonly PreviewItem _setting;
         private readonly AppWindow _appWindow;
@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             SetHeadText(setting.Name);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             _presenter.IsAlwaysOnTop = true;
-            TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
+            //TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _windowHandle = Helpers.WindowHelper.GetWindowHandle(this);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _appWindow.IsShownInSwitchers = false;
@@ -55,14 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
             };
-            content.Children.Add(new TextBlock()
-            {
-                Text = "不支持最小化游戏窗口",
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            });
             MainContent = content;
             MainUIElement.PointerReleased += Content_PointerReleased;
             content.PointerWheelChanged += Content_PointerWheelChanged;
@@ -80,9 +73,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 SetTitleBar(null);
             }
+            TransparentWindow();
         }
-        //private delegate IntPtr WinProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
-        //private WinProc newWndProc = null;
 
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -140,6 +132,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinH = _appWindow.Size.Height;
                 _setting.WinX = _appWindow.Position.X;
                 _setting.WinY = _appWindow.Position.Y;
+                _thumbnailWindow?.Move(_setting.WinX, _setting.WinY);
                 OnSettingChanged?.Invoke(_setting);
             }
         }
@@ -178,11 +171,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         private IntPtr _sourceHWnd = IntPtr.Zero;
-        private IntPtr _thumbHWnd = IntPtr.Zero;
+        private GamePreviewThumbnailWindow _thumbnailWindow;
         public void Start(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
-            _thumbHWnd = WindowCaptureHelper.Show(_windowHandle, sourceHWnd);
+            var top = Setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
+            _thumbnailWindow = new GamePreviewThumbnailWindow(sourceHWnd, top, _setting.HighlightColor);
             SizeChanged += GamePreviewWindow_SizeChanged;
             Closed += GamePreviewWindow_Closed;
             if (_setting.WinW == 0 || _setting.WinH == 0)
@@ -200,14 +194,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
             }
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            UpdateThumbDestination();
+            _thumbnailWindow.Start();
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
             _UITimer = new DispatcherTimer();
             _UITimer.Interval = TimeSpan.FromMilliseconds(50);
             _UITimer.Tick += UITimer_Tick;
-            _UITimer.Start();
+            //_UITimer.Start();
         }
+
         /// <summary>
         /// 与透明度绑定，透明度为0时为不可见
         /// </summary>
@@ -249,36 +244,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void UpdateThumbDestination(int bottomMargin = 0)
         {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                try
-                {
-                    int left = 0;
-                    int top = Setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
-                    int right = _appWindow.ClientSize.Width;
-                    int bottom = _appWindow.ClientSize.Height;
-                    var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
-                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
-                    var clientRect = new System.Drawing.Rectangle();
-                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
-                    //目标窗口显示区域，及GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - bottomMargin);
-                    //源窗口捕获区域，即游戏的窗口
-                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
-                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
-                }
-                catch(Exception ex)
-                {
-                    Log.Error(ex);
-                }
-            }
+            _thumbnailWindow?.UpdateThumbDestination(bottomMargin);
         }
         private void GamePreviewWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                UpdateThumbDestination();
-            }
+            _thumbnailWindow.Resize(_setting.WinW, _setting.WinH);
         }
 
 
@@ -299,11 +269,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Stop()
         {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                WindowCaptureHelper.HideThumb(_thumbHWnd);
-                _thumbHWnd = IntPtr.Zero;
-            }
+            _thumbnailWindow?.Stop();
             SizeChanged -= GamePreviewWindow_SizeChanged;
             Closed -= GamePreviewWindow_Closed;
             _appWindow.Closing -= AppWindow_Closing;
@@ -317,10 +283,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void GamePreviewWindow_Closed(object sender, WindowEventArgs args)
         {
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                WindowCaptureHelper.HideThumb(_thumbHWnd);
-            }
+            _thumbnailWindow?.Stop();
             HotkeyService.GetHotkeyService(_windowHandle).Unregister(_hotkeyRegisterId);
         }
 
@@ -382,6 +345,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
+
         /// <summary>
         /// 高亮
         /// </summary>
@@ -431,5 +395,41 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             return _appWindow.ClientSize.Height;
         }
+
+        #region 透明
+        private ComCtl32.SUBCLASSPROC wndProcHandler;
+        private void TransparentWindow()
+        {
+            Helpers.TransparentWindowHelper.TransparentWindowVisual(this);
+            wndProcHandler = new ComCtl32.SUBCLASSPROC(WndProc);
+            ComCtl32.SetWindowSubclass(WindowHelper.GetWindowHandle(this), wndProcHandler, 1, IntPtr.Zero);
+        }
+        private unsafe IntPtr WndProc(HWND hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, nuint uIdSubclass, IntPtr dwRefData)
+        {
+            if (uMsg == (uint)User32.WindowMessage.WM_ERASEBKGND)
+            {
+                if (User32.GetClientRect(hWnd, out var rect))
+                {
+                    using var brush = Gdi32.CreateSolidBrush(new COLORREF(0, 0, 0));
+                    User32.FillRect(wParam, rect, brush);
+                    return new IntPtr(1);
+                }
+            }
+            else if (uMsg == (uint)User32.WindowMessage.WM_DWMCOMPOSITIONCHANGED)
+            {
+                DwmApi.DwmExtendFrameIntoClientArea(hWnd, new DwmApi.MARGINS(0));
+                using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
+                DwmApi.DwmEnableBlurBehindWindow(hWnd, new DwmApi.DWM_BLURBEHIND(true)
+                {
+                    dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
+                    hRgnBlur = rgn
+                });
+
+                return IntPtr.Zero;
+            }
+
+            return ComCtl32.DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        }
+        #endregion
     }
 }

@@ -9,6 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI;
+using Microsoft.UI.Composition;
+using WinRT;
+using System.Drawing;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -69,6 +73,32 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             long nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
             SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
             SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
+        }
+
+        public static void TransparentWindowVisual(Window window)
+        {
+            using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
+            DwmApi.DwmEnableBlurBehindWindow(WindowHelper.GetWindowHandle(window), new DwmApi.DWM_BLURBEHIND(true)
+            {
+                dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
+                hRgnBlur = rgn
+            });
+            SetTransparent(window, true);
+        }
+
+        private static void SetTransparent(Window window, bool isTransparent)
+        {
+            var brushHolder = window.As<ICompositionSupportsSystemBackdrop>();
+
+            if (isTransparent)
+            {
+                var colorBrush = WindowsCompositionHelper.Compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
+                brushHolder.SystemBackdrop = colorBrush;
+            }
+            else
+            {
+                brushHolder.SystemBackdrop = null;
+            }
         }
     }
 }
