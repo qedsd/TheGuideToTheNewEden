@@ -77,8 +77,6 @@
     <x:String x:Key="ShellPage_Backstory_Desc">种族、历史、科技、组织</x:String>
     <x:String x:Key="ShellPage_Mission">任务</x:String>
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
-    <x:String x:Key="ShellPage_LocalIntel">本地预警</x:String>
-    <x:String x:Key="ShellPage_LocalIntel_Desc">自动对本地频道预警</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -396,43 +394,4 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
-
-    <!--  LocalIntel  -->
-    <x:String x:Key="LocalIntel_DefaultNotify">来人了，还不跑？</x:String>
-    <x:String x:Key="LocalIntel_DefaultName">玩家</x:String>
-    <x:String x:Key="LocalIntel_ProcessList">游戏进程列表</x:String>
-    <x:String x:Key="LocalIntel_GlobalSetting">全局设置</x:String>
-    <x:String x:Key="LocalIntel_CurrentProcessSetting">当前进程设置</x:String>
-    <x:String x:Key="LocalIntel_RefreshProcess">刷新进程列表</x:String>
-    <x:String x:Key="LocalIntel_StartAll">开始全部</x:String>
-    <x:String x:Key="LocalIntel_StopAll">停止全部</x:String>
-    <x:String x:Key="LocalIntel_Running">监控中</x:String>
-    <x:String x:Key="LocalIntel_RefreshSpan">刷新间隔（ms）</x:String>
-    <x:String x:Key="LocalIntel_Standing">监控声望</x:String>
-    <x:String x:Key="LocalIntel_Standing_Name">名称</x:String>
-    <x:String x:Key="LocalIntel_Standing_Color">颜色</x:String>
-    <x:String x:Key="LocalIntel_Standing_Remove">删除</x:String>
-    <x:String x:Key="LocalIntel_Standing_Add">新增监控声望</x:String>
-    <x:String x:Key="LocalIntel_IntelText">预警通知内容</x:String>
-    <x:String x:Key="LocalIntel_IntelSound">预警通知声音</x:String>
-    <x:String x:Key="LocalIntel_Rect">声望区域</x:String>
-    <x:String x:Key="LocalIntel_NotifyMode">通知方式</x:String>
-    <x:String x:Key="LocalIntel_NotifyMode_Toast">系统通知</x:String>
-    <x:String x:Key="LocalIntel_NotifyMode_Sound">声音</x:String>
-    <x:String x:Key="LocalIntel_NotifyMode_Window">弹窗</x:String>
-    <x:String x:Key="LocalIntel_NotifyDecrease">预警声望减少时通知</x:String>
-    <x:String x:Key="LocalIntel_AdvancedSettings">算法参数进阶设置</x:String>
-    <x:String x:Key="LocalIntel_Param_BlurSizeW">高斯模糊Size参数Width</x:String>
-    <x:String x:Key="LocalIntel_Param_BlurSizeH">高斯模糊Size参数Height</x:String>
-    <x:String x:Key="LocalIntel_Param_CannyThreshold1">Canny算子阈值1</x:String>
-    <x:String x:Key="LocalIntel_Param_CannyThreshold2">Canny算子阈值2</x:String>
-    <x:String x:Key="LocalIntel_Param_FillThresholdV">垂直方向直线最小有效像素百分比</x:String>
-    <x:String x:Key="LocalIntel_Param_FillThresholdH">水平方向直线最小有效像素百分比</x:String>
-    <x:String x:Key="LocalIntel_Param_SpanLineV">垂直方向最小有效空白像素行数</x:String>
-    <x:String x:Key="LocalIntel_Param_MinHeight">声望矩形最小高度</x:String>
-    <x:String x:Key="LocalIntel_Param_MinWidth">声望矩形最小宽度</x:String>
-    <x:String x:Key="LocalIntel_Param_MainColorSpan">声望主颜色识别区域距边缘像素</x:String>
-    <x:String x:Key="LocalIntel_WindowNotifyTitle">本地预警通知</x:String>
-    <x:String x:Key="LocalIntel_ProcessName">进程名称</x:String>
-    <x:String x:Key="LocalIntel_RefreshProcessList">刷新列表</x:String>
 </ResourceDictionary>

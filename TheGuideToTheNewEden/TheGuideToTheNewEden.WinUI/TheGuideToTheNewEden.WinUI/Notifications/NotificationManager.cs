@@ -21,7 +21,6 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
             c_notificationHandlers = new Dictionary<int, Action<AppNotificationActivatedEventArgs>>
             {
                 { IntelToast.ScenarioId, IntelToast.NotificationReceived },
-                { LocalIntelToast.ScenarioId, LocalIntelToast.NotificationReceived }
             };
         }
 
