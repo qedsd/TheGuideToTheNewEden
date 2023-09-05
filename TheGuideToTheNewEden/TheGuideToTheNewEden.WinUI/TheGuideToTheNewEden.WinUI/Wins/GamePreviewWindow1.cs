@@ -1,39 +1,34 @@
-﻿using Microsoft.UI;
-using Microsoft.UI.Input;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
-using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
-using TheGuideToTheNewEden.Core.Extensions;
-using WinUIEx;
-using TheGuideToTheNewEden.WinUI.Services;
-using TheGuideToTheNewEden.Core;
-using System.Threading;
-using System.Reflection.Metadata;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 using Microsoft.UI.Xaml.Input;
+using System.Diagnostics;
 using System.Timers;
+using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.WinUI.Common;
+using TheGuideToTheNewEden.WinUI.Services;
+using Microsoft.UI.Input;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class GamePreviewWindow2 : BaseWindow
+    internal class GamePreviewWindow1 : BaseWindow, IGamePreviewWindow
     {
-        //TODO:监控源窗口大小变化自带修改目标窗口显示，目前只有监控目标窗口变化
-        public PreviewItem Setting { get => _setting; }
         private readonly PreviewItem _setting;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
         private readonly PreviewSetting _previewSetting;
-        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base()
+        public GamePreviewWindow1(PreviewItem setting, PreviewSetting previewSetting) : base()
         {
             _previewSetting = previewSetting;
             _setting = setting;
@@ -76,13 +71,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Interval = 10,
             };
             pointerTimer.Elapsed += PointerTimer_Elapsed;
-            if (!Setting.ShowTitleBar)
+            if (!_setting.ShowTitleBar)
             {
                 SetTitleBar(null);
             }
         }
-        //private delegate IntPtr WinProc(IntPtr hWnd, PInvoke.User32.WindowMessage Msg, IntPtr wParam, IntPtr lParam);
-        //private WinProc newWndProc = null;
 
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -113,7 +106,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
-            if (!Setting.ShowTitleBar && (_presenter.State == OverlappedPresenterState.Minimized || _presenter.State == OverlappedPresenterState.Maximized))
+            if (!_setting.ShowTitleBar && (_presenter.State == OverlappedPresenterState.Minimized || _presenter.State == OverlappedPresenterState.Maximized))
             {
                 //不显示标题栏时屏蔽标题栏的最大化最小化功能
                 _presenter.Restore();
@@ -200,61 +193,33 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
             }
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            UpdateThumbDestination();
+            UpdateThumbnail();
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
-            _UITimer = new DispatcherTimer();
-            _UITimer.Interval = TimeSpan.FromMilliseconds(50);
-            _UITimer.Tick += UITimer_Tick;
-            _UITimer.Start();
         }
-        /// <summary>
-        /// 与透明度绑定，透明度为0时为不可见
-        /// </summary>
-        private bool _visible = true;
-        private void UITimer_Tick(object sender, object e)
+        public void ShowWindow()
         {
-            _UITimer.Stop();
-            if (_isVisible != _visible)
+            this.DispatcherQueue.TryEnqueue(() =>
             {
-                if (_isVisible)
-                {
-                    TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
-                    _visible = true;
-                }
-                else
-                {
-                    TransparentWindowHelper.TransparentWindow(this, 0);
-                    _visible = false;
-                }
-            }
-            _UITimer.Start();
+                TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
+            });
         }
-        /// <summary>
-        /// 在UI线程执行的timer
-        /// </summary>
-        private DispatcherTimer _UITimer;
-        /// <summary>
-        /// 标记当前窗口需不需要显示
-        /// </summary>
-        private bool _isVisible = true;
-        public void Show2()
+        public void HideWindow()
         {
-            _isVisible = true;
-        }
-        public void Hide2()
-        {
-            _isVisible = false;
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                TransparentWindowHelper.TransparentWindow(this, 0);
+            });
         }
 
-        private void UpdateThumbDestination(int bottomMargin = 0)
+        public void UpdateThumbnail(int bottomMargin = 0)
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
                 try
                 {
                     int left = 0;
-                    int top = Setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
+                    int top = _setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0;
                     int right = _appWindow.ClientSize.Width;
                     int bottom = _appWindow.ClientSize.Height;
                     var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
@@ -277,7 +242,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (_thumbHWnd != IntPtr.Zero)
             {
-                UpdateThumbDestination();
+                UpdateThumbnail();
             }
         }
 
@@ -311,7 +276,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             (MainContent as UIElement).PointerReleased -= Content_PointerReleased;
             (MainContent as UIElement).PointerWheelChanged -= Content_PointerWheelChanged;
-            _UITimer.Stop();
             Close();
         }
 
@@ -323,13 +287,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
             HotkeyService.GetHotkeyService(_windowHandle).Unregister(_hotkeyRegisterId);
         }
-
-        public delegate void SettingChangedDelegate(PreviewItem previewItem);
-        public event SettingChangedDelegate OnSettingChanged;
-
-        public delegate void StopDelegate(PreviewItem previewItem);
-        public event StopDelegate OnStop;
-
 
         #region 快捷键
         private int _hotkeyRegisterId;
@@ -387,14 +344,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void Highlight()
         {
-            UpdateThumbDestination(6);
+            UpdateThumbnail(6);
         }
         /// <summary>
         /// 取消高亮
         /// </summary>
         public void CancelHighlight()
         {
-            UpdateThumbDestination();
+            UpdateThumbnail();
         }
         /// <summary>
         /// 设置窗口尺寸
@@ -431,5 +388,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             return _appWindow.ClientSize.Height;
         }
+
+        public bool IsHideOnForeground()
+        {
+            return _setting.HideOnForeground;
+        }
+        public bool IsHighlight()
+        {
+            return _setting.Highlight;
+        }
+
+        public event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
+        public event IGamePreviewWindow.StopDelegate OnStop;
     }
 }

@@ -27,6 +27,7 @@ using System.Timers;
 using System.Xml.Linq;
 using TheGuideToTheNewEden.Core;
 using WinUIEx;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -112,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
         /// </summary>
-        private readonly Dictionary<string, GamePreviewWindow> _runningDic = new Dictionary<string, GamePreviewWindow>();
+        private readonly Dictionary<string, IGamePreviewWindow> _runningDic = new Dictionary<string, IGamePreviewWindow>();
         public GamePreviewMgrViewModel()
         {
             ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;
@@ -510,7 +511,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private GamePreviewWindow _lastHighlightWindow;
+        private IGamePreviewWindow _lastHighlightWindow;
         /// <summary>
         /// 加载相应设置
         /// </summary>
@@ -603,7 +604,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(Setting, PreviewSetting);
+                    IGamePreviewWindow gamePreviewWindow = new GamePreviewWindow1(Setting, PreviewSetting);
                     if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
@@ -827,22 +828,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (targetProcess != null && item.Key == targetProcess.GUID)
                 {
-                    if (item.Value.Setting.HideOnForeground)
+                    if (item.Value.IsHideOnForeground())
                     {
-                        item.Value.Hide2();
+                        item.Value.HideWindow();
                     }
-                    else if (item.Value.Setting.Highlight)
+                    else if (item.Value.IsHighlight())
                     {
                         _lastHighlightWindow = item.Value;
                         item.Value.Highlight();
-                        item.Value.Show2();
+                        item.Value.ShowWindow();
                     }
                     _lastProcessGUID = targetProcess.GUID;
                 }
                 else
                 {
                     item.Value.CancelHighlight();
-                    item.Value.Show2();
+                    item.Value.ShowWindow();
                 }
             }
         }
@@ -892,7 +893,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// 左对齐
         /// </summary>
-        private void SetAutoLayout1(GamePreviewWindow targetWindow)
+        private void SetAutoLayout1(IGamePreviewWindow targetWindow)
         {
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
@@ -933,7 +934,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// 右对齐
         /// </summary>
-        private void SetAutoLayout2(GamePreviewWindow targetWindow)
+        private void SetAutoLayout2(IGamePreviewWindow targetWindow)
         {
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out _, out int targetWinH);
@@ -974,7 +975,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// 上对齐
         /// </summary>
-        private void SetAutoLayout3(GamePreviewWindow targetWindow)
+        private void SetAutoLayout3(IGamePreviewWindow targetWindow)
         {
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out int targetWinH);
@@ -1015,7 +1016,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <summary>
         /// 下对齐
         /// </summary>
-        private void SetAutoLayout4(GamePreviewWindow targetWindow)
+        private void SetAutoLayout4(IGamePreviewWindow targetWindow)
         {
             //换行仅适配主屏幕位于所有屏幕左上角位置的情况
             targetWindow.GetSizeAndPos(out int targetWinX, out int targetWinY, out int targetWinW, out _);
@@ -1116,7 +1117,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    GamePreviewWindow gamePreviewWindow = new GamePreviewWindow(item, PreviewSetting);
+                    IGamePreviewWindow gamePreviewWindow = new GamePreviewWindow1(item, PreviewSetting);
                     if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
