@@ -1,11 +1,18 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using Vanara.PInvoke;
@@ -21,27 +28,160 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly PreviewItem _setting;
         private readonly PreviewSetting _previewSetting;
+        private readonly OverlappedPresenter _presenter;
+        /// <summary>
+        /// 必须放到全局变量，避免被GC回收
+        /// </summary>
+        private ComCtl32.SUBCLASSPROC _wndProcHandler;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting)
         {
             _previewSetting = previewSetting;
             _setting = setting;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
-            //_appWindow.IsShownInSwitchers = false;
+            _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
+            ExtendsContentIntoTitleBar = true;
+            _appWindow.IsShownInSwitchers = false;
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
-            Helpers.WindowHelper.HideTitleBar(this);
             this.SetIsAlwaysOnTop(true);
+            Helpers.TransparentWindowHelper.TransparentWindowVisual(this);
+            _wndProcHandler = new ComCtl32.SUBCLASSPROC(Helpers.TransparentWindowHelper.WndProc);
+            ComCtl32.SetWindowSubclass(WindowHelper.GetWindowHandle(this), _wndProcHandler, 1, IntPtr.Zero);
+            StopTitlebarOp();
+            InitUI(_setting.Name);
+            MonitorWindow();
         }
+        #region UI
+        private TextBlock _TitleTextBlock;
+        private void InitUI(string title)
+        {
+            _pointerTimer = new System.Timers.Timer()
+            {
+                AutoReset = true,
+                Interval = 10,
+            };
+            _pointerTimer.Elapsed += PointerTimer_Elapsed;
+            var content = new Microsoft.UI.Xaml.Controls.Grid()
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
+            };
+            content.PointerPressed += Content_PointerPressed;
+            content.PointerReleased += Content_PointerReleased;
+            content.PointerReleased += Content_PointerReleased1;
+            _TitleTextBlock = new TextBlock()
+            {
+                Margin = new Thickness(10),
+                FontSize = 16,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                Text = title
+            };
+            content.Children.Add(_TitleTextBlock);
+            this.Content = content;
+        }
+        private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            System.Drawing.Point lpPoint = new System.Drawing.Point();
+            Helpers.Win32Helper.GetCursorPos(ref lpPoint);
+            _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
+        }
+
+        private System.Timers.Timer _pointerTimer;
+        private void Content_PointerReleased1(object sender, PointerRoutedEventArgs e)
+        {
+            _pointerTimer.Stop();
+        }
+        private int xOffset, yOffset;
+        private void Content_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as UIElement).Properties.IsRightButtonPressed)
+            {
+                System.Drawing.Point lpPoint = new System.Drawing.Point();
+                Helpers.Win32Helper.GetCursorPos(ref lpPoint);
+                xOffset = lpPoint.X - _appWindow.Position.X - _appWindow.Size.Width / 2;
+                yOffset = lpPoint.Y - _appWindow.Position.Y - _appWindow.Size.Height / 2;
+                _pointerTimer.Start();
+            }
+        }
+        private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == Microsoft.UI.Input.PointerUpdateKind.LeftButtonReleased)
+                WindowHelper.SetForegroundWindow_Click(_sourceHWnd);
+        }
+        #endregion
+        #region 屏蔽标题栏操作
+        private void StopTitlebarOp()
+        {
+            _appWindow.Closing += AppWindow_Closing;
+            _appWindow.Changed += AppWindow_Changed;
+        }
+        private void RestoreTitlebarOp()
+        {
+            _appWindow.Closing -= AppWindow_Closing;
+            _appWindow.Changed -= AppWindow_Changed;
+        }
+        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+        {
+            args.Cancel = true;//取消关闭
+            OnStop?.Invoke(_setting);//交给调用者处理关闭
+        }
+        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if (_presenter.State == OverlappedPresenterState.Minimized || _presenter.State == OverlappedPresenterState.Maximized)
+            {
+                //不显示标题栏时屏蔽标题栏的最大化最小化功能
+                _presenter.Restore();
+                return;
+            }
+        }
+        #endregion
+        #region 检测窗口大小、位置更新
+        private void MonitorWindow()
+        {
+            _appWindow.Changed += AppWindow_Changed2;
+        }
+
+        private void AppWindow_Changed2(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if (args.DidPositionChange || args.DidSizeChange)
+            {
+                _setting.WinW = _appWindow.Size.Width;
+                _setting.WinH = _appWindow.Size.Height;
+                _setting.WinX = _appWindow.Position.X;
+                _setting.WinY = _appWindow.Position.Y;
+                //显示窗口是由用户鼠标控制，修改大小位置后需同步修改_thumbnailWindow
+                _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
+                _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
+                OnSettingChanged?.Invoke(_setting);
+                UpdateThumbnail();
+            }
+        }
+        #endregion
         public void HideWindow()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                TransparentWindowHelper.TransparentWindow(this, 0);
+                RestoreTitlebarOp();
+                _thumbnailWindow?.Hide();
+                this.Hide();
+                StopTitlebarOp();
+                UpdateThumbnail();
             });
         }
-
+        public void ShowWindow()
+        {
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                RestoreTitlebarOp();
+                _thumbnailWindow?.Show();
+                this.Show();
+                StopTitlebarOp();
+                UpdateThumbnail();
+            });
+        }
         public bool IsHideOnForeground()
         {
             return _setting.HideOnForeground;
@@ -52,17 +192,35 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             return _setting.Highlight;
         }
 
-        public void ShowWindow()
-        {
-            this.DispatcherQueue.TryEnqueue(() =>
-            {
-                TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
-            });
-        }
-
+        private readonly object _updateThumbnailLocker = new object();
         public void UpdateThumbnail(int bottomMargin = 0)
         {
-            
+            lock(_updateThumbnailLocker)
+            {
+                if (_thumbHWnd != IntPtr.Zero)
+                {
+                    try
+                    {
+                        int left = 0;
+                        int top = 0;
+                        int right = _thumbnailWindow.AppWindow.ClientSize.Width;
+                        int bottom = _thumbnailWindow.AppWindow.ClientSize.Height;
+                        var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
+                        int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
+                        var clientRect = new System.Drawing.Rectangle();
+                        Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
+                                                                         //目标窗口显示区域，及GamePreviewWindow
+                        WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - bottomMargin);
+                        //源窗口捕获区域，即游戏的窗口
+                        WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
+                        WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
+                }
+            }
         }
 
         public void ActiveSourceWindow()
@@ -98,17 +256,37 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _setting.WinH = (int)(_setting.WinW / (float)clientSize.Width * clientSize.Height);
             }
             _sourceHWnd = sourceHWnd;
-            _thumbnailWindow = new Window();
-            _thumbnailWindow.SetIsShownInSwitchers(false);
-            _thumbnailWindow.SetIsAlwaysOnTop(true);
-            _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
-            _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            //_thumbnailWindow.MoveAndResize(_setting.WinX, _setting.WinY, _setting.WinW, _setting.WinH);
+
+            CreateThumbnailWindow();
             _thumbHWnd = WindowCaptureHelper.Show(_thumbnailWindow.GetWindowHandle(), sourceHWnd);
             _thumbnailWindow.Activate();
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
             UpdateThumbnail();
             this.Activate();
+        }
+        private void CreateThumbnailWindow()
+        {
+            var content = new Microsoft.UI.Xaml.Controls.Grid()
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
+            };
+            content.Children.Add(new TextBlock()
+            {
+                Text = "不支持最小化游戏窗口",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            _thumbnailWindow = new Window()
+            {
+                Content = content
+            };
+            _thumbnailWindow.ExtendsContentIntoTitleBar = true;
+            _thumbnailWindow.SetIsShownInSwitchers(false);
+            _thumbnailWindow.SetIsAlwaysOnTop(true);
+            _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
+            _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
         }
 
         public void Stop()
