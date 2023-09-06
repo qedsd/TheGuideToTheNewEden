@@ -18,11 +18,14 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Services;
 using Microsoft.UI.Input;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow1 : BaseWindow, IGamePreviewWindow
     {
+        private IntPtr _sourceHWnd = IntPtr.Zero;
+        private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly PreviewItem _setting;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
@@ -32,10 +35,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             _previewSetting = previewSetting;
             _setting = setting;
-            SetSmallTitleBar();
-            HideAppDisplayName();
-            Title = setting.Name;
-            SetHeadText(setting.Name);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             _presenter.IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
@@ -46,6 +45,31 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
+            InitHotkey();
+            InitUI();
+            StopTitlebarOp();
+        }
+
+        #region UI
+        private System.Timers.Timer _pointerTimer;
+        private void InitUI()
+        {
+            SetSmallTitleBar();
+            HideAppDisplayName();
+            Title = _setting.Name;
+            SetHeadText(_setting.Name);
+            _pointerTimer = new System.Timers.Timer()
+            {
+                AutoReset = true,
+                Interval = 10,
+            };
+            _pointerTimer.Elapsed += PointerTimer_Elapsed;
+            _pointerTimer = new System.Timers.Timer()
+            {
+                AutoReset = true,
+                Interval = 10,
+            };
+            _pointerTimer.Elapsed += PointerTimer_Elapsed;
             var content = new Microsoft.UI.Xaml.Controls.Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -64,19 +88,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             MainUIElement.PointerPressed += Content_PointerPressed;
             MainUIElement.PointerReleased += Content_PointerReleased1;
             _appWindow.Closing += AppWindow_Closing;
-            InitHotkey();
-            pointerTimer = new System.Timers.Timer()
-            {
-                AutoReset = true,
-                Interval = 10,
-            };
-            pointerTimer.Elapsed += PointerTimer_Elapsed;
-            if (!_setting.ShowTitleBar)
-            {
-                SetTitleBar(null);
-            }
         }
-
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             System.Drawing.Point lpPoint = new System.Drawing.Point();
@@ -85,11 +97,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
 
         }
-
-        private System.Timers.Timer pointerTimer;
+        
         private void Content_PointerReleased1(object sender, PointerRoutedEventArgs e)
         {
-            pointerTimer.Stop();
+            _pointerTimer.Stop();
         }
         private int xOffset, yOffset;
         private void Content_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -100,18 +111,29 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Helpers.Win32Helper.GetCursorPos(ref lpPoint);
                 xOffset = lpPoint.X - _appWindow.Position.X - _appWindow.Size.Width / 2;
                 yOffset = lpPoint.Y - _appWindow.Position.Y - _appWindow.Size.Height / 2;
-                pointerTimer.Start();
+                _pointerTimer.Start();
             }
         }
 
+        private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+                WindowHelper.SetForegroundWindow_Click(_sourceHWnd);
+        }
+        #endregion
+        #region 屏蔽标题栏操作
+        private void StopTitlebarOp()
+        {
+            _appWindow.Closing += AppWindow_Closing;
+            _appWindow.Changed += AppWindow_Changed;
+        }
+        private void RestoreTitlebarOp()
+        {
+            _appWindow.Closing -= AppWindow_Closing;
+            _appWindow.Changed -= AppWindow_Changed;
+        }
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
-            if (!_setting.ShowTitleBar && (_presenter.State == OverlappedPresenterState.Minimized || _presenter.State == OverlappedPresenterState.Maximized))
-            {
-                //不显示标题栏时屏蔽标题栏的最大化最小化功能
-                _presenter.Restore();
-                return;
-            }
             if (args.DidPositionChange)
             {
                 if (!Helpers.WindowHelper.IsInWindow(_appWindow.Position.X, _appWindow.Position.Y))
@@ -140,17 +162,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;//预览窗口不自动处理关闭
-            if (_setting.ShowTitleBar)
-            {
-                OnStop?.Invoke(_setting);//交给调用者处理关闭
-            }
+            OnStop?.Invoke(_setting);//交给调用者处理关闭
         }
 
-        private void Content_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                WindowHelper.SetForegroundWindow_Click(_sourceHWnd);
-        }
+        #endregion
         /// <summary>
         /// 显示目标窗口
         /// </summary>
@@ -169,9 +184,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             });
         }
-
-        private IntPtr _sourceHWnd = IntPtr.Zero;
-        private IntPtr _thumbHWnd = IntPtr.Zero;
         public void Start(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
@@ -197,18 +209,24 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Activate();
             _appWindow.Changed += AppWindow_Changed;
         }
-        public void ShowWindow()
-        {
-            this.DispatcherQueue.TryEnqueue(() =>
-            {
-                TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
-            });
-        }
         public void HideWindow()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                TransparentWindowHelper.TransparentWindow(this, 0);
+                RestoreTitlebarOp();
+                this.Hide();
+                StopTitlebarOp();
+                UpdateThumbnail();
+            });
+        }
+        public void ShowWindow()
+        {
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                RestoreTitlebarOp();
+                this.Show();
+                StopTitlebarOp();
+                UpdateThumbnail();
             });
         }
 
@@ -245,7 +263,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             }
         }
-
 
         private void Content_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
