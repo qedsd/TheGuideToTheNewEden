@@ -341,6 +341,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
             _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
+            TransparentWindowHelper.TransparentWindow(_thumbnailWindow, _setting.OverlapOpacity);
         }
 
         public void Stop()
