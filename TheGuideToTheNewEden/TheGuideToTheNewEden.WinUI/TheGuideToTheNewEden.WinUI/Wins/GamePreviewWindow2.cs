@@ -11,10 +11,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
+using TheGuideToTheNewEden.WinUI.Services;
 using Vanara.PInvoke;
 using WinUIEx;
 
@@ -52,6 +54,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             StopTitlebarOp();
             InitUI(_setting.Name);
             MonitorWindow();
+            InitHotkey();
         }
         #region UI
         private TextBlock _TitleTextBlock;
@@ -157,6 +160,57 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
                 OnSettingChanged?.Invoke(_setting);
                 UpdateThumbnail();
+            }
+        }
+        #endregion
+        #region 快捷键
+        private int _hotkeyRegisterId;
+        private List<string> _keys;
+        private void InitHotkey()
+        {
+            //快捷键
+            if (!string.IsNullOrEmpty(_setting.HotKey))
+            {
+                Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
+                if (Services.HotkeyService.TryGetHotkeyVK(_setting.HotKey, out _, out _))
+                {
+                    if (Services.HotkeyService.GetHotkeyService(this.GetWindowHandle()).Register(_setting.HotKey, out _hotkeyRegisterId))
+                    {
+                        Core.Log.Info("注册窗口热键成功");
+                        var keynames = _setting.HotKey.Split('+');
+                        if (keynames.NotNullOrEmpty())
+                        {
+                            _keys = keynames.ToList();
+                            KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                        }
+                    }
+                    else
+                    {
+                        Core.Log.Info($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
+                        (WindowHelper.MainWindow as BaseWindow)?.ShowError($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
+                    }
+                }
+                else
+                {
+                    Core.Log.Error($"不规范热键{_setting.HotKey}");
+                    (WindowHelper.MainWindow as BaseWindow)?.ShowError($"不规范热键{_setting.HotKey}");
+                }
+            }
+        }
+
+        private void HotkeyService_OnKeyboardClicked(List<KeyboardHook.KeyboardInfo> keys)
+        {
+            if (keys.Count != 0)
+            {
+                foreach (var key in _keys)
+                {
+                    if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        return;
+                    }
+                }
+                //Core.Log.Debug($"捕获到预览窗口激活快捷键{keys.Select(p=>p.Name).ToSeqString(",")}");
+                ActiveSourceWindow();
             }
         }
         #endregion
@@ -297,7 +351,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow.Close();
                 _thumbHWnd = IntPtr.Zero;
             }
-            
+            KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+            RestoreTitlebarOp();
             this.Close();
         }
 
