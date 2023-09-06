@@ -75,6 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerPressed += Content_PointerPressed;
             content.PointerReleased += Content_PointerReleased;
             content.PointerReleased += Content_PointerReleased1;
+            content.PointerWheelChanged += Content_PointerWheelChanged;
             _TitleTextBlock = new TextBlock()
             {
                 Margin = new Thickness(10),
@@ -85,6 +86,23 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.Children.Add(_TitleTextBlock);
             this.Content = content;
         }
+
+        private void Content_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            var properties = e.GetCurrentPoint(sender as Grid).Properties;
+            if (properties != null)
+            {
+                if (properties.MouseWheelDelta > 0)
+                {
+                    _appWindow.Resize(new Windows.Graphics.SizeInt32((int)(_appWindow.Size.Width * 1.05), (int)(_appWindow.Size.Height * 1.05)));
+                }
+                else
+                {
+                    _appWindow.Resize(new Windows.Graphics.SizeInt32((int)(_appWindow.Size.Width * 0.95), (int)(_appWindow.Size.Height * 0.95)));
+                }
+            }
+        }
+
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             System.Drawing.Point lpPoint = new System.Drawing.Point();
