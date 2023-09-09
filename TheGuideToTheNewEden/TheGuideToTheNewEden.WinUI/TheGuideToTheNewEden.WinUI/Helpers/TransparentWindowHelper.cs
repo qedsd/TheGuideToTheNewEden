@@ -9,6 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI;
+using Microsoft.UI.Composition;
+using WinRT;
+using System.Drawing;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -70,5 +74,60 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
             SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
         }
+
+
+        #region 仅背景透明，内容不透明
+        public static void TransparentWindowVisual(Window window)
+        {
+            using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
+            DwmApi.DwmEnableBlurBehindWindow(WindowHelper.GetWindowHandle(window), new DwmApi.DWM_BLURBEHIND(true)
+            {
+                dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
+                hRgnBlur = rgn
+            });
+            SetTransparent(window, true);
+        }
+
+        private static void SetTransparent(Window window, bool isTransparent)
+        {
+            var brushHolder = window.As<ICompositionSupportsSystemBackdrop>();
+
+            if (isTransparent)
+            {
+                var colorBrush = WindowsCompositionHelper.Compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
+                brushHolder.SystemBackdrop = colorBrush;
+            }
+            else
+            {
+                brushHolder.SystemBackdrop = null;
+            }
+        }
+        public static unsafe IntPtr WndProc(HWND hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, nuint uIdSubclass, IntPtr dwRefData)
+        {
+            if (uMsg == (uint)User32.WindowMessage.WM_ERASEBKGND)
+            {
+                if (User32.GetClientRect(hWnd, out var rect))
+                {
+                    using var brush = Gdi32.CreateSolidBrush(new COLORREF(0, 0, 0));
+                    User32.FillRect(wParam, rect, brush);
+                    return new IntPtr(1);
+                }
+            }
+            else if (uMsg == (uint)User32.WindowMessage.WM_DWMCOMPOSITIONCHANGED)
+            {
+                DwmApi.DwmExtendFrameIntoClientArea(hWnd, new DwmApi.MARGINS(0));
+                using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
+                DwmApi.DwmEnableBlurBehindWindow(hWnd, new DwmApi.DWM_BLURBEHIND(true)
+                {
+                    dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
+                    hRgnBlur = rgn
+                });
+
+                return IntPtr.Zero;
+            }
+
+            return ComCtl32.DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        }
+        #endregion
     }
 }

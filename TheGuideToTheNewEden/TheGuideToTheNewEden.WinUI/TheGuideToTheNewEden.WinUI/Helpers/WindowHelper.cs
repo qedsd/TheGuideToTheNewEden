@@ -157,6 +157,19 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             presenter.IsResizable = false;
             presenter.SetBorderAndTitleBar(false, false);
         }
+        /// <summary>
+        /// 隐藏标题栏，可拖动，有边框，顶上会有个白条
+        /// </summary>
+        /// <param name="window"></param>
+        public static void HideTitleBar3(Window window)
+        {
+            window.ExtendsContentIntoTitleBar = false;
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);
+            presenter.IsMinimizable = false;
+            presenter.IsMaximizable = false;
+            presenter.IsResizable = true;
+            presenter.SetBorderAndTitleBar(true, false);
+        }
         public static void TopMost(Window window)
         {
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(window);

@@ -10,13 +10,14 @@
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>logo_32.ico</ApplicationIcon>
     <PackageIcon>logo_180.png</PackageIcon>
-	  <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-	 <!--package需注释掉-->
+	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<AssemblyVersion>2.5.1.1</AssemblyVersion>
+	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
+	<!--package需注释掉-->
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
-    <AssemblyVersion>2.5.1.1</AssemblyVersion>
-    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
     <!--package需注释掉-->
   </PropertyGroup>
   <ItemGroup>
@@ -283,6 +284,9 @@
     <PackageReference Include="Syncfusion.Editors.WinUI" Version="22.2.7" />
     <PackageReference Include="Syncfusion.Grid.WinUI" Version="22.2.7" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.16" />
+    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.16" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.16" />
     <PackageReference Include="WinUIEx" Version="2.2.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
