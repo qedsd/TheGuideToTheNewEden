@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
         void ActiveSourceWindow();
         void Start(IntPtr sourceHWnd);
         void Stop();
-        void ShowWindow();
+        void ShowWindow(bool hHighlight = false);
         void HideWindow();
         void UpdateThumbnail(int bottomMargin = 0);
         void Highlight();

@@ -219,14 +219,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             });
         }
-        public void ShowWindow()
+        public void ShowWindow(bool hHighlight = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 RestoreTitlebarOp();
                 this.Show();
                 StopTitlebarOp();
-                UpdateThumbnail();
+                UpdateThumbnail(hHighlight ? 6 : 0);
             });
         }
 
@@ -361,7 +361,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public void Highlight()
         {
-            UpdateThumbnail(6);
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                UpdateThumbnail(6);
+            });
         }
         /// <summary>
         /// 取消高亮

@@ -825,27 +825,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
         {
-            var targetProcess = Processes?.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
-            foreach (var item in _runningDic)
+            if(_lastHighlightWindow != null)
             {
-                if (targetProcess != null && item.Key == targetProcess.GUID)
+                _lastHighlightWindow.CancelHighlight();
+                _lastHighlightWindow = null;
+            }
+            var targetProcess = Processes?.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
+            if(targetProcess != null)
+            {
+                if(_runningDic.TryGetValue(targetProcess.GUID, out var item))
                 {
-                    if (item.Value.IsHideOnForeground())
-                    {
-                        item.Value.HideWindow();
-                    }
-                    else if (item.Value.IsHighlight())
-                    {
-                        _lastHighlightWindow = item.Value;
-                        item.Value.Highlight();
-                        item.Value.ShowWindow();
-                    }
                     _lastProcessGUID = targetProcess.GUID;
-                }
-                else
-                {
-                    item.Value.CancelHighlight();
-                    item.Value.ShowWindow();
+                    if (item.IsHideOnForeground())
+                    {
+                        item.HideWindow();
+                    }
+                    else if (item.IsHighlight())
+                    {
+                        _lastHighlightWindow = item;
+                        item.ShowWindow(true);
+                    }
                 }
             }
         }

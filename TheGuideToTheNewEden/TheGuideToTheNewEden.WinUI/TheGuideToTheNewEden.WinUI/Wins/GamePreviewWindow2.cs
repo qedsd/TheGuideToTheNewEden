@@ -243,7 +243,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             });
         }
-        public void ShowWindow()
+        public void ShowWindow(bool hHighlight = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -251,7 +251,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow?.Show();
                 this.Show();
                 StopTitlebarOp();
-                UpdateThumbnail();
+                UpdateThumbnail(hHighlight ? 6 : 0);
             });
         }
         public bool IsHideOnForeground()
@@ -382,7 +382,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void CancelHighlight()
         {
-            UpdateThumbnail();
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                UpdateThumbnail();
+            });
         }
 
         public void SetSize(int w, int h)
