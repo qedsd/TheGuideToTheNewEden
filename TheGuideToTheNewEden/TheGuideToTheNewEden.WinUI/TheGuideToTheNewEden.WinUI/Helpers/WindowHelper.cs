@@ -353,7 +353,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                     else
                     {
                         tryCount = 0;
-                        while (tryCount < 3)
+                        while (tryCount++ < 3)
                         {
                             if (Win32.BringWindowToTop(targetHandle))
                             {
