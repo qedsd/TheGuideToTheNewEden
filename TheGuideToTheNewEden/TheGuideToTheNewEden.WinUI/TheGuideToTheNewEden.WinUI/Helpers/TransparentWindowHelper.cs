@@ -68,8 +68,6 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             WindowId myWndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow apw = AppWindow.GetFromWindowId(myWndId);
-            OverlappedPresenter presenter = apw.Presenter as OverlappedPresenter;
-            presenter.SetBorderAndTitleBar(false, false);
             long nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
             SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
             SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
