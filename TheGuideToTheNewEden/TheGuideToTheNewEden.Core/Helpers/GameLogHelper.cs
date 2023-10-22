@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,6 +12,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class GameLogHelper
     {
+        #region 聊天频道
         /// <summary>
         /// 获取聊天频道基本信息
         /// 因为是打开文件流读取，资源消耗较大，不要在高频操作下使用
@@ -253,5 +256,205 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 return null;
             }
         }
+        #endregion
+
+        #region 游戏日志
+        /// <summary>
+        /// 获取游戏日志基本信息
+        /// 因为是打开文件流读取，资源消耗较大，不要在高频操作下使用
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static GameLogInfo GetGameLogInfo(string file)
+        {
+            try
+            {
+                if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    var nameArray = file.Split('_');
+                    int listenerId = 0;
+                    if (nameArray.Length != 3 && int.TryParse(nameArray[2], out listenerId))
+                    {
+                        return null;
+                    }
+                    List<string> headContents = null;//包含频道信息的内容
+                    using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        byte[] b = new byte[1024];
+                        if (fs.Read(b, 0, b.Length) > 0)
+                        {
+                            var content = Encoding.Unicode.GetString(b);
+                            var contents = content.Split('\n', '\r');
+                            if (contents.NotNullOrEmpty())
+                            {
+                                foreach (var line in contents)
+                                {
+                                    if (line.EndsWith("------------------------------------------------------------"))
+                                    {
+                                        if (headContents.NotNullOrEmpty())
+                                        {
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            headContents = new List<string>();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (headContents != null && !string.IsNullOrEmpty(line))
+                                        {
+                                            headContents.Add(line);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (headContents.NotNullOrEmpty())
+                    {
+                        GameLogInfo info = new GameLogInfo();
+                        info.ListenerID = listenerId;
+                        info.FilePath = file;
+                        foreach (var c in headContents)
+                        {
+                            string content = c.TrimStart();
+                            if (content != null)
+                            {
+                                int index = content.IndexOf(':');
+                                if (index != -1 && index != content.Length - 1)
+                                {
+                                    string key = content.Substring(0, index);
+                                    string value = content.Substring(index + 1).Trim();
+                                    //头内容只有收听者和时间
+                                    if (DateTime.TryParse(value, out var time))
+                                    {
+                                        info.StartTime = time;
+                                    }
+                                    else
+                                    {
+                                        info.ListenerName = value;
+                                    }
+                                }
+                            }
+                        }
+                        return info.IsValid() ? info : null;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取游戏日志文件名信息
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static GameLogFileInfo GetGameLogFileInfo(string file)
+        {
+            try
+            {
+                if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    var nameArray = file.Split('_');
+                    int listenerId = 0;
+                    if (nameArray.Length != 3 && int.TryParse(nameArray[2], out listenerId))
+                    {
+                        return null;
+                    }
+                    GameLogFileInfo info = new GameLogFileInfo() { ListenerID = listenerId, FilePath = file };
+                    DateTimeFormatInfo dfInfo = new DateTimeFormatInfo();
+                    dfInfo.ShortDatePattern = "yyyyMMdd hhmmss";
+                    info.StartTime = Convert.ToDateTime($"{nameArray[0]} {nameArray[1]}", dfInfo);
+                    return info;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return null;
+            }
+        }
+        public static List<GameLogFileInfo> GetGameLogFileInfos(string folder)
+        {
+            var allFiles = System.IO.Directory.GetFiles(folder);
+            if (allFiles.NotNullOrEmpty())
+            {
+                List<GameLogFileInfo> infos = new List<GameLogFileInfo>();
+                foreach (var file in allFiles)
+                {
+                    var info = GetGameLogFileInfo(file);
+                    if(info != null)
+                    {
+                        infos.Add(info);
+                    }
+                }
+                return infos;
+            }
+            else
+            {
+                Log.Error("无游戏日志文件");
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取每个角色最新的日志
+        /// </summary>
+        /// <param name="infos"></param>
+        /// <returns></returns>
+        public static List<GameLogFileInfo> GetLatestGameLogFileInfos(List<GameLogFileInfo> infos)
+        {
+            if(infos.NotNullOrEmpty())
+            {
+                List<GameLogFileInfo> values = new List<GameLogFileInfo>();
+                var group = infos.GroupBy(p => p.ListenerID).ToList();
+                foreach (var s in group)
+                {
+                    values.Add(s.OrderByDescending(p => p.StartTime).First());
+                }
+                return values;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 从指定文件夹获取每个角色最新的日志文件
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        public static List<GameLogInfo> GetLatestGameLogInfos(string folder)
+        {
+            var allFileInfos = GetGameLogFileInfos(folder);
+            var latestFileInfos = GetLatestGameLogFileInfos(allFileInfos);
+            if(latestFileInfos.NotNullOrEmpty())
+            {
+                List<GameLogInfo> infos = new List<GameLogInfo>();
+                foreach(var latestFileInfo in latestFileInfos)
+                {
+                    var info = GetGameLogInfo(latestFileInfo.FilePath);
+                    if(info != null)
+                    {
+                        infos.Add(info);
+                    }
+                }
+                return infos;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
     }
 }
