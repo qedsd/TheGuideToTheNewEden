@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
-    public class GameLogInfoSetting : ObservableObject
+    public class GameLogSetting : ObservableObject
     {
         public int ListenerID { get; set; }
         private bool windowNotify = true;
@@ -18,6 +18,11 @@ namespace TheGuideToTheNewEden.Core.Models
         public bool SoundNotify
         {
             get => soundNotify; set => SetProperty(ref soundNotify, value);
+        }
+        private string soundFile;
+        public string SoundFile
+        {
+            get => soundFile; set => SetProperty(ref soundFile, value);
         }
         private bool systemNotify = true;
         public bool SystemNotify

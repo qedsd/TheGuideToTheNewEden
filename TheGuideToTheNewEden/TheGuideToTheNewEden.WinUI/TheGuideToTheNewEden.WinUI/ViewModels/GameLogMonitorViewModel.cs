@@ -1,11 +1,14 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -22,9 +25,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(SetProperty(ref _selectedGameLogInfo, value))
                 {
-
+                    if(value != null)
+                    {
+                        var setting = Services.Settings.GameLogInfoSettingService.GetValue(value.ListenerID);
+                        GameLogSetting = setting ?? new GameLogSetting() { ListenerID = value.ListenerID };
+                    }
+                    else
+                    {
+                        GameLogSetting = null;
+                    }
                 }
             }
+        }
+        private GameLogSetting gameLogSetting;
+        public GameLogSetting GameLogSetting
+        {
+            get => gameLogSetting;
+            set => SetProperty(ref  gameLogSetting, value);
         }
         internal GameLogMonitorViewModel()
         {
@@ -33,6 +50,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private async void InitAsync()
         {
+            var runningDic = GameLogInfos.Where(p => p.Running).ToDictionary(p=>p.ListenerID);
             GameLogInfos.Clear();
             if (System.IO.Directory.Exists(_logPath))
             {
@@ -41,13 +59,45 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 HideWaiting();
                 if (infos != null)
                 {
-                    foreach (var item in infos)
+                    foreach (var info in infos)
                     {
-                        GameLogInfos.Add(item);
+                        if(runningDic.TryGetValue(info.ListenerID, out var running))
+                        {
+                            GameLogInfos.Add(running);
+                        }
+                        else
+                        {
+                            GameLogInfos.Add(info);
+                        }
                     }
                 }
                 SelectedGameLogInfo = null;
             }
         }
+
+        public ICommand StartCommand => new RelayCommand(() =>
+        {
+            Core.Models.GameLogItem gameLogItem = new GameLogItem(SelectedGameLogInfo, GameLogSetting);
+            Core.Services.ObservableFileService.Add(gameLogItem);
+            gameLogItem.OnContentUpdate += GameLogItem_OnContentUpdate;
+        });
+        public delegate void ContentUpdate(GameLogItem item, IEnumerable<ChatContent> news);
+        /// <summary>
+        /// 消息更新
+        /// </summary>
+        public event ContentUpdate OnContentUpdate;
+        private void GameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.ChatContent> news)
+        {
+            OnContentUpdate?.Invoke(item, news);
+            foreach(var msg in news)
+            {
+
+            }
+        }
+
+        public ICommand AddKeysCommand => new RelayCommand(() =>
+        {
+            GameLogSetting.keys.Add("系统消息");
+        });
     }
 }
