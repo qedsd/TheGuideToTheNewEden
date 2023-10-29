@@ -30,10 +30,19 @@ namespace TheGuideToTheNewEden.Core.Models
             get => systemNotify; set => SetProperty(ref systemNotify, value);
         }
 
-        public ObservableCollection<string> keys;
-        public ObservableCollection<string> Keys
+        private ObservableCollection<GameLogMonityKey> keys = new ObservableCollection<GameLogMonityKey>();
+        public ObservableCollection<GameLogMonityKey> Keys
         {
             get => keys; set => SetProperty(ref keys, value);
         }
+    }
+    public class GameLogMonityKey : ObservableObject
+    {
+        public GameLogMonityKey(string pattern)
+        {
+            Pattern = pattern;
+        }
+        private string pattern;
+        public string Pattern { get => pattern; set => SetProperty(ref pattern, value);}
     }
 }

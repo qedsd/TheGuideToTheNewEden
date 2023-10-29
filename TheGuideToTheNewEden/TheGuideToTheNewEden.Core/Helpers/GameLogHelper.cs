@@ -271,9 +271,9 @@ namespace TheGuideToTheNewEden.Core.Helpers
             {
                 if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 {
-                    var nameArray = file.Split('_');
+                    var nameArray = Path.GetFileNameWithoutExtension(file).Split('_');
                     int listenerId = 0;
-                    if (nameArray.Length != 3 && int.TryParse(nameArray[2], out listenerId))
+                    if (nameArray.Length != 3 || !int.TryParse(nameArray[2], out listenerId))
                     {
                         return null;
                     }
@@ -283,7 +283,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                         byte[] b = new byte[1024];
                         if (fs.Read(b, 0, b.Length) > 0)
                         {
-                            var content = Encoding.Unicode.GetString(b);
+                            var content = Encoding.Default.GetString(b);
                             var contents = content.Split('\n', '\r');
                             if (contents.NotNullOrEmpty())
                             {
@@ -361,16 +361,16 @@ namespace TheGuideToTheNewEden.Core.Helpers
             {
                 if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 {
-                    var nameArray = file.Split('_');
+                    var nameArray = Path.GetFileNameWithoutExtension(file).Split('_');
                     int listenerId = 0;
-                    if (nameArray.Length != 3 && int.TryParse(nameArray[2], out listenerId))
+                    if (nameArray.Length != 3 || !int.TryParse(nameArray[2], out listenerId) || nameArray[1].Length != 6 || nameArray[0].Length != 8)
                     {
                         return null;
                     }
                     GameLogFileInfo info = new GameLogFileInfo() { ListenerID = listenerId, FilePath = file };
                     DateTimeFormatInfo dfInfo = new DateTimeFormatInfo();
-                    dfInfo.ShortDatePattern = "yyyyMMdd hhmmss";
-                    info.StartTime = Convert.ToDateTime($"{nameArray[0]} {nameArray[1]}", dfInfo);
+                    dfInfo.ShortDatePattern = "yyyyMMdd hh:mm:ss";
+                    info.StartTime = DateTime.Parse($"{nameArray[0].Substring(0,4)}.{nameArray[0].Substring(4, 2)}.{nameArray[0].Substring(6, 2)} {nameArray[1].Substring(0, 2)}:{nameArray[1].Substring(2, 2)}:{nameArray[1].Substring(4, 2)}");
                     return info;
                 }
                 else

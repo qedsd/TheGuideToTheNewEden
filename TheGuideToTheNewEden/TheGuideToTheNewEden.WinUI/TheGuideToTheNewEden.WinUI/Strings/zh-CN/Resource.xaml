@@ -47,6 +47,7 @@
     <x:String x:Key="General_Minute">分钟</x:String>
     <x:String x:Key="General_Second">秒</x:String>
     <x:String x:Key="General_Start">开始</x:String>
+    <x:String x:Key="General_Stop">停止</x:String>
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
 
@@ -77,6 +78,8 @@
     <x:String x:Key="ShellPage_Backstory_Desc">种族、历史、科技、组织</x:String>
     <x:String x:Key="ShellPage_Mission">任务</x:String>
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor">日志监控</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor_Desc">监控游戏日志</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -394,4 +397,23 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+
+    <!--  GameLogMonitorPage  -->
+    <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
+    <x:String x:Key="GameLogMonitorPage_Running">监控中</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddKey">添加关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_Start">开始</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify">清除通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify_Tip">停止播放通知声等</x:String>
+    <x:String x:Key="GameLogMonitorPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_WindowNotify">弹窗通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_CharacterList">角色列表</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundNotify">声音通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_Default">默认</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey">监控关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
+    <x:String x:Key="GameLogMonitorPage_Setting">设置</x:String>
+    <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
+    <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
+    <x:String x:Key="GameLogMonitorPage_Regex">正则表达式</x:String>
 </ResourceDictionary>

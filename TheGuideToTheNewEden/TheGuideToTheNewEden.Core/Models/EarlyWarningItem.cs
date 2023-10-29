@@ -53,7 +53,7 @@ namespace TheGuideToTheNewEden.Core.Models
             {
                 try
                 {
-                    var newLines = Helpers.FileHelper.ReadLines(ChatChanelInfo.FilePath, FileStreamOffset, out int readOffset);
+                    var newLines = Helpers.FileHelper.ReadLines(ChatChanelInfo.FilePath, FileStreamOffset,Encoding.Unicode, out int readOffset);
                     FileStreamOffset += readOffset;
                     if (newLines.NotNullOrEmpty())
                     {

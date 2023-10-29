@@ -1,17 +1,19 @@
-﻿using System;
+﻿using ESI.NET.Models.PlanetaryInteraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Media.Core;
+using Windows.Media.Playback;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     internal class GameLogMonitorNotifyService
     {
         private static GameLogMonitorNotifyService current;
-        private static GameLogMonitorNotifyService Current
+        public static GameLogMonitorNotifyService Current
         {
             get
             {
@@ -23,12 +25,22 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private Dictionary<int, MessageWindow> NotifyWindows = new Dictionary<int, MessageWindow>();
-        private Dictionary<int, MediaSource> NotifyMediaSources = new Dictionary<int, MediaSource>();
-        public bool Add(Core.Models.GameLogSetting setting)
+        private Dictionary<int, MediaPlayer> NotifyMediaPlayers = new Dictionary<int, MediaPlayer>();
+        public bool Add(Core.Models.GameLogSetting setting, string title)
         {
             if(setting.WindowNotify)
             {
-                if(!NotifyWindows.TryAdd(setting.ListenerID, new MessageWindow()))
+                if(!NotifyWindows.ContainsKey(setting.ListenerID))
+                {
+                    MessageWindow messageWindow = new MessageWindow()
+                    {
+                        Tag = setting.ListenerID
+                    };
+                    messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_GameLogMonitor")} - {title}");
+                    messageWindow.OnHided += MessageWindow_OnHided;
+                    NotifyWindows.Add(setting.ListenerID, messageWindow);
+                }
+                else
                 {
                     Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
                     return false;
@@ -36,13 +48,66 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if(setting.SoundNotify)
             {
-                if(!NotifyMediaSources.TryAdd(setting.ListenerID, MediaSource.CreateFromUri(new Uri(setting.SoundFile))))
+                if (!NotifyMediaPlayers.TryAdd(setting.ListenerID, new MediaPlayer()
+                {
+                    Source = MediaSource.CreateFromUri(new Uri(string.IsNullOrEmpty(setting.SoundFile) ?
+                    System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3") :
+                    setting.SoundFile)),
+                }))
                 {
                     Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
+                    NotifyWindows.Remove(setting.ListenerID);
                     return false;
                 }
             }
             return true;
+        }
+
+        private void MessageWindow_OnHided(MessageWindow messageWindow)
+        {
+            if(NotifyMediaPlayers.TryGetValue((int)(messageWindow.Tag),out var mediaPlayer))
+            {
+                mediaPlayer.Pause();
+            }
+        }
+
+        public void Remove(int id)
+        {
+            if(NotifyWindows.TryGetValue(id,out var messageWindow))
+            {
+                messageWindow.Close();
+                NotifyWindows.Remove(id);
+            }
+            if(NotifyMediaPlayers.TryGetValue(id, out var mediaPlayer))
+            {
+                (mediaPlayer.Source as MediaSource).Dispose();
+                mediaPlayer.Dispose();
+                NotifyMediaPlayers.Remove(id);
+            }
+        }
+
+        public void Notify(int id, string content)
+        {
+            if(NotifyWindows.TryGetValue(id, out var messageWindow))
+            {
+                messageWindow.Show(content);
+            }
+            if(NotifyMediaPlayers.TryGetValue(id, out var mediaPlayer))
+            {
+                mediaPlayer.Pause();
+                mediaPlayer.Play();
+            }
+        }
+        public void Stop(int id)
+        {
+            if (NotifyWindows.TryGetValue(id, out var messageWindow))
+            {
+                messageWindow.Hide();
+            }
+            if (NotifyMediaPlayers.TryGetValue(id, out var mediaPlayer))
+            {
+                mediaPlayer.Pause();
+            }
         }
     }
 }

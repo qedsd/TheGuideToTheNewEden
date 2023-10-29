@@ -87,6 +87,17 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
             }
         }
+        public static void Remove(string filePath)
+        {
+            if (ItemsDic.Remove(filePath))
+            {
+                string folder = Path.GetDirectoryName(filePath);
+                if (FileWatcherDic.TryGetValue(folder, out var watcher))
+                {
+                    watcher.RemoveFile(filePath);
+                }
+            }
+        }
         private static void Watcher_Changed(string file)
         {
             if (ItemsDic.TryGetValue(file, out var item))

@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.Core.Models
         public GameLogSetting Setting { get; private set; }
         public string FilePath => Info.FilePath;
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Created;
-        public delegate void ContentUpdate(GameLogItem item, IEnumerable<ChatContent> news);
+        public delegate void ContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news);
         /// <summary>
         /// 消息更新
         /// </summary>
@@ -31,9 +31,9 @@ namespace TheGuideToTheNewEden.Core.Models
             Info = gameLogInfo;
             Setting = gameLogSetting;
             _fileStreamOffset = FileHelper.GetStreamLength(FilePath);
-            foreach (var pattern in Setting.keys)
+            foreach (var key in Setting.Keys)
             {
-                _regexes.Add(new Regex(pattern));
+                _regexes.Add(new Regex(key.Pattern));
             }
         }
 
@@ -49,14 +49,14 @@ namespace TheGuideToTheNewEden.Core.Models
             {
                 try
                 {
-                    var newLines = Helpers.FileHelper.ReadLines(FilePath, _fileStreamOffset, out int readOffset);
+                    var newLines = Helpers.FileHelper.ReadLines(FilePath, _fileStreamOffset,Encoding.Default, out int readOffset);
                     _fileStreamOffset += readOffset;
                     if (newLines.NotNullOrEmpty())
                     {
-                        List<ChatContent> newContents = new List<ChatContent>();
+                        List<GameLogContent> newContents = new List<GameLogContent>();
                         foreach (var line in newLines)
                         {
-                            var chatContent = ChatContent.Create(line);
+                            var chatContent = GameLogContent.Create(line);
                             if (chatContent != null)
                             {
                                 newContents.Add(chatContent);

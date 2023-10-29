@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
         /// <param name="offset"></param>
         /// <param name="readOffset"></param>
         /// <returns></returns>
-        public static List<string> ReadLines(string path, long offset, out int readOffset)
+        public static List<string> ReadLines(string path, long offset, Encoding encoding, out int readOffset)
         {
             List<string> newLines = null;
             readOffset = 0;
@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 while ((curReadCount = fs.Read(b, 0, b.Length)) > 0)
                 {
                     readOffset += curReadCount;
-                    var content = Encoding.Unicode.GetString(b, 0, curReadCount);
+                    var content = encoding.GetString(b, 0, curReadCount);
                     stringBuilder.Append(content);
                 }
                 if (stringBuilder.Length > 0)

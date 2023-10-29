@@ -251,6 +251,7 @@
     <None Remove="Views\DEDPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
+    <None Remove="Views\GameLogMonitorPage.xaml" />
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
@@ -365,6 +366,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\GameLogMonitorPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\CharacterPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,0 +1,309 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.GameLogMonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:TheGuideToTheNewEden.Core.Models"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:GameLogMonitorViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ListView
+                Grid.Row="0"
+                Margin="0,10,0,0"
+                AllowDrop="True"
+                Background="Transparent"
+                CanDragItems="True"
+                CanReorderItems="True"
+                ItemsSource="{x:Bind VM.GameLogInfos, Mode=OneWay}"
+                SelectedItem="{x:Bind VM.SelectedGameLogInfo, Mode=TwoWay}"
+                Style="{StaticResource StretchListView}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:GameLogInfo">
+                        <Grid Margin="4,8">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_LogFile_Click" Text="{StaticResource GameLogMonitorPage_OpenLogFile}" />
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <TextBlock
+                                        HorizontalAlignment="Stretch"
+                                        Text="{x:Bind ListenerName}"
+                                        ToolTipService.ToolTip="{x:Bind ListenerName}" />
+                                </Grid>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,4,0,0"
+                                    Text="{x:Bind StartTime, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_StartTime}" />
+                            </Grid>
+                            <Rectangle
+                                Grid.Column="1"
+                                Width="10"
+                                Height="10"
+                                Margin="4,0,0,0"
+                                Fill="{ThemeResource SystemAccentColor}"
+                                RadiusX="10"
+                                RadiusY="10"
+                                ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_Running}"
+                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                        </Grid>
+
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Grid Grid.Row="1" Margin="8,8,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="{StaticResource GameLogMonitorPage_CharacterList}" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+            <StackPanel
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal">
+                <AppBarButton
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{x:Bind VM.RefreshCommand}"
+                    Icon="Refresh"
+                    Label="{StaticResource General_Update}" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid Margin="0" Visibility="{x:Bind VM.SelectedGameLogInfo, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ScrollViewer IsEnabled="{x:Bind VM.SelectedGameLogInfo.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                    <StackPanel Margin="10,0">
+                        <Grid Margin="0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Content="{StaticResource GameLogMonitorPage_SystemNotify}" IsChecked="{x:Bind VM.GameLogSetting.SystemNotify, Mode=TwoWay}" />
+                            <CheckBox
+                                Grid.Column="1"
+                                Content="{StaticResource GameLogMonitorPage_WindowNotify}"
+                                IsChecked="{x:Bind VM.GameLogSetting.WindowNotify, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Grid Margin="0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <CheckBox Content="{StaticResource GameLogMonitorPage_SoundNotify}" IsChecked="{x:Bind VM.GameLogSetting.SoundNotify, Mode=TwoWay}" />
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox
+                                    IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}"
+                                    PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
+                                    Text="{x:Bind VM.GameLogSetting.SoundFile, Mode=TwoWay}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Command="{x:Bind VM.PickSoundFileCommand}"
+                                    Content="+"
+                                    IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}" />
+                            </Grid>
+                        </Grid>
+
+                        <Grid Margin="0,20,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GameLogMonitorPage_NotifyKey}" />
+                                <Button
+                                    Width="24"
+                                    Height="24"
+                                    Margin="4,0,0,0"
+                                    Padding="0"
+                                    BorderThickness="0"
+                                    Content="!">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyKey_Tip}" />
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                            <Button
+                                Grid.Column="1"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{x:Bind VM.AddKeysCommand}"
+                                ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_AddKey}">
+                                <Button.Content>
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+                        <controls:DataGrid
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            AlternatingRowBackground="Transparent"
+                            AreRowDetailsFrozen="False"
+                            AreRowGroupHeadersFrozen="True"
+                            AutoGenerateColumns="False"
+                            CanUserReorderColumns="True"
+                            CanUserResizeColumns="True"
+                            CanUserSortColumns="False"
+                            ColumnHeaderHeight="32"
+                            FrozenColumnCount="0"
+                            GridLinesVisibility="None"
+                            HeadersVisibility="Column"
+                            HorizontalScrollBarVisibility="Auto"
+                            IsReadOnly="False"
+                            ItemsSource="{x:Bind VM.GameLogSetting.Keys, Mode=OneWay}"
+                            RowDetailsVisibilityMode="Collapsed"
+                            SelectionMode="Extended"
+                            VerticalScrollBarVisibility="Visible">
+                            <controls:DataGrid.Columns>
+                                <controls:DataGridTextColumn
+                                    Width="220"
+                                    Binding="{Binding Pattern}"
+                                    Header="{StaticResource GameLogMonitorPage_Regex}" />
+                                <controls:DataGridTemplateColumn Header="{StaticResource General_Remove}">
+                                    <controls:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button
+                                                Grid.Column="1"
+                                                Padding="4"
+                                                HorizontalAlignment="Stretch"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Click="Button_DeleteKey_Click"
+                                                Foreground="OrangeRed">
+                                                <Button.Content>
+                                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" />
+                                                </Button.Content>
+                                            </Button>
+                                        </DataTemplate>
+                                    </controls:DataGridTemplateColumn.CellTemplate>
+                                </controls:DataGridTemplateColumn>
+                            </controls:DataGrid.Columns>
+                        </controls:DataGrid>
+                        <!--<ListView ItemsSource="{x:Bind VM.GameLogSetting.Keys, Mode=OneWay}" SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Text="{Binding Value, Mode=TwoWay}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Click="Button_DeleteKey_Click">
+                                            <TextBlock
+                                                FontFamily="Segoe MDL2 Assets"
+                                                FontSize="12"
+                                                Foreground="OrangeRed"
+                                                Text="&#xE10A;" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>-->
+                    </StackPanel>
+                </ScrollViewer>
+                <Grid Grid.Row="1" Margin="8,8,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="8,0"
+                        Text="{StaticResource GameLogMonitorPage_Setting}" />
+                    <Rectangle
+                        Grid.Column="2"
+                        Height="1"
+                        Fill="{ThemeResource SystemAccentColor}" />
+                </Grid>
+                <StackPanel
+                    Grid.Row="2"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StartCommand}"
+                        Icon="Play"
+                        Label="{StaticResource General_Start}"
+                        Visibility="{x:Bind VM.SelectedGameLogInfo.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopCommand}"
+                        Icon="Stop"
+                        Label="{StaticResource General_Stop}"
+                        Visibility="{x:Bind VM.SelectedGameLogInfo.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopNotifyCommand}"
+                        Icon="Refresh"
+                        Label="{StaticResource GameLogMonitorPage_StopNotify}"
+                        ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_StopNotify_Tip}"
+                        Visibility="{x:Bind VM.SelectedGameLogInfo.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                </StackPanel>
+            </Grid>
+            <ScrollViewer
+                x:Name="GameLogContentsScroll"
+                Grid.Column="2"
+                Margin="8">
+                <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="False" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

@@ -309,7 +309,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                WindowHelper.GetAppWindow(this).Hide();
+                WindowHelper.GetAppWindow(this)?.Hide();
             });
         }
     }
