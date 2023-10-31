@@ -124,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(msg.Important)
                 {
-                    GameLogMonitorNotifyService.Current.Notify(item.Setting.ListenerID, msg.SourceContent);
+                    GameLogMonitorNotifyService.Current.Notify(item, msg.SourceContent);
                 }
             }
         }

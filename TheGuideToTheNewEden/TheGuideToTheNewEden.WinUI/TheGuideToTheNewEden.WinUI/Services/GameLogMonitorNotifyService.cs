@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -86,16 +88,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        public void Notify(int id, string content)
+        public void Notify(GameLogItem gameLog, string content)
         {
-            if(NotifyWindows.TryGetValue(id, out var messageWindow))
+            if(NotifyWindows.TryGetValue(gameLog.Info.ListenerID, out var messageWindow))
             {
                 messageWindow.Show(content);
             }
-            if(NotifyMediaPlayers.TryGetValue(id, out var mediaPlayer))
+            if(NotifyMediaPlayers.TryGetValue(gameLog.Info.ListenerID, out var mediaPlayer))
             {
                 mediaPlayer.Pause();
                 mediaPlayer.Play();
+            }
+            if(gameLog.Setting.SystemNotify)
+            {
+                GameLogMonitorToast.SendToast(gameLog.Info.ListenerID, gameLog.Info.ListenerName, content);
             }
         }
         public void Stop(int id)

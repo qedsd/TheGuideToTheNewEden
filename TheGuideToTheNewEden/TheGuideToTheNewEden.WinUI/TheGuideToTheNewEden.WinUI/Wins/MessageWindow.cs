@@ -28,6 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 Margin = new Microsoft.UI.Xaml.Thickness(10)
             };
+            _mainContent.DoubleTapped += _mainContent_DoubleTapped;
             _scrollViewer.Content = _mainContent;
             _scrollViewer.LayoutUpdated += ScrollViewer_LayoutUpdated;
             _window.HideAppDisplayName();
@@ -38,6 +39,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _window.SetIsAlwaysOnTop(true);
             Helpers.WindowHelper.CenterToScreen(_window);
         }
+
+        private void _mainContent_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            
+        }
+
         private bool _isAdded = false;
         private void ScrollViewer_LayoutUpdated(object sender, object e)
         {
