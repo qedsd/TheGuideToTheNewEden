@@ -58,6 +58,8 @@
             <converters:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullToVisible="True" />
             <converters:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullToVisible="False" />
             <converters:TimeSpanConverter x:Key="TimeSpanConverter" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToCollapsedConverter" ZeroToVisible="False" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibleConverter" ZeroToVisible="True" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

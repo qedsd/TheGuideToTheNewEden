@@ -26,20 +26,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return current;
             }
         }
-        private Dictionary<int, MessageWindow> NotifyWindows = new Dictionary<int, MessageWindow>();
+        private Dictionary<int, GaemLogMsgWindow> NotifyWindows = new Dictionary<int, GaemLogMsgWindow>();
         private Dictionary<int, MediaPlayer> NotifyMediaPlayers = new Dictionary<int, MediaPlayer>();
-        public bool Add(Core.Models.GameLogSetting setting, string title)
+        public bool Add(Core.Models.GameLogInfo info, Core.Models.GameLogSetting setting, string title)
         {
             if(setting.WindowNotify)
             {
                 if(!NotifyWindows.ContainsKey(setting.ListenerID))
                 {
-                    MessageWindow messageWindow = new MessageWindow()
+                    GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.ListenerID, info.ListenerName)
                     {
                         Tag = setting.ListenerID
                     };
                     messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_GameLogMonitor")} - {title}");
                     messageWindow.OnHided += MessageWindow_OnHided;
+                    messageWindow.OnShowGameButtonClick += MessageWindow_OnShowGameButtonClick;
                     NotifyWindows.Add(setting.ListenerID, messageWindow);
                 }
                 else
@@ -65,7 +66,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return true;
         }
 
-        private void MessageWindow_OnHided(MessageWindow messageWindow)
+        private void MessageWindow_OnShowGameButtonClick(GaemLogMsgWindow gaemLogMsgWindow)
+        {
+            var hwnd = Helpers.WindowHelper.GetGameHwndByCharacterName(gaemLogMsgWindow.ListenerName);
+            if (hwnd != IntPtr.Zero)
+            {
+                Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
+                Stop(gaemLogMsgWindow.ListenerID);
+            }
+        }
+
+        private void MessageWindow_OnHided(GaemLogMsgWindow messageWindow)
         {
             if(NotifyMediaPlayers.TryGetValue((int)(messageWindow.Tag),out var mediaPlayer))
             {

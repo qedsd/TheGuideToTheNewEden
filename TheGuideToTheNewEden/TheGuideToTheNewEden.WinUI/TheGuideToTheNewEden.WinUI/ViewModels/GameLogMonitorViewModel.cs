@@ -99,7 +99,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError"));
                 return;
             }
-            if(GameLogMonitorNotifyService.Current.Add(GameLogSetting, SelectedGameLogInfo.ListenerName))
+            if(GameLogMonitorNotifyService.Current.Add(SelectedGameLogInfo, GameLogSetting, SelectedGameLogInfo.ListenerName))
             {
                 Core.Models.GameLogItem gameLogItem = new GameLogItem(SelectedGameLogInfo, GameLogSetting);
                 Core.Services.ObservableFileService.Add(gameLogItem);

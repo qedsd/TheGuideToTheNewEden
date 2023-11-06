@@ -40,25 +40,10 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
             }
             if (notificationActivatedEventArgs.Arguments.TryGetValue("listener", out string listener))
             {
-                var process = Process.GetProcessesByName("exefile");
-                if (process != null && process.Any())
+                var hwnd = Helpers.WindowHelper.GetGameHwndByCharacterName(listener);
+                if (hwnd != IntPtr.Zero)
                 {
-                    var targetProc = process.FirstOrDefault(p => p.MainWindowTitle.Contains(listener));
-                    if (targetProc != null)
-                    {
-                        if (targetProc.MainWindowHandle != IntPtr.Zero)
-                        {
-                            Helpers.WindowHelper.SetForegroundWindow_Click(targetProc.MainWindowHandle);
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Error($"无法找到{listener}的游戏窗口");
-                    }
-                }
-                else
-                {
-                    Core.Log.Error("无法找到exefile进程");
+                    Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
                 }
             }
         }

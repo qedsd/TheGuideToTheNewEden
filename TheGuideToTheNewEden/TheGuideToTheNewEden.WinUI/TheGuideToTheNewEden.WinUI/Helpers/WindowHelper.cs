@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
@@ -412,6 +413,40 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static float GetDpiScale(Window window)
         {
             return Win32.GetDpiForWindow(GetWindowHandle(window)) / 96f;
+        }
+
+        /// <summary>
+        /// 依据游戏角色名称获取窗口句柄
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static IntPtr GetGameHwndByCharacterName(string name)
+        {
+            var process = System.Diagnostics.Process.GetProcessesByName("exefile");
+            if (process != null && process.Any())
+            {
+                var targetProc = process.FirstOrDefault(p => p.MainWindowTitle.Contains(name));
+                if (targetProc != null)
+                {
+                    if(targetProc.MainWindowHandle != IntPtr.Zero)
+                    {
+                        return targetProc.MainWindowHandle;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"寻找{name}的窗口句柄返回空");
+                    }
+                }
+                else
+                {
+                    Core.Log.Error($"无法找到{name}的游戏窗口");
+                }
+            }
+            else
+            {
+                Core.Log.Error("无法找到exefile进程");
+            }
+            return IntPtr.Zero;
         }
     }
 }

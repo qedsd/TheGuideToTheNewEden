@@ -416,4 +416,9 @@
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
     <x:String x:Key="GameLogMonitorPage_Regex">正则表达式</x:String>
+    <x:String x:Key="GameLogMonitorPage_ShowGame">显示游戏窗口</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode">监控模式</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_0">出现关键词时通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_1">停止出现关键词后通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_DisappearDelay">判定时间间隔（s）</x:String>
 </ResourceDictionary>

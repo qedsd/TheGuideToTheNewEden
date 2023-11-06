@@ -8,35 +8,61 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class MessageWindow
+    internal class GaemLogMsgWindow
     {
         public object Tag { get; set; }
         private readonly BaseWindow _window = new BaseWindow();
         private RichTextBlock _mainContent;
         private ScrollViewer _scrollViewer;
-        public delegate void HideDelegate(MessageWindow messageWindow);
+        public delegate void HideDelegate(GaemLogMsgWindow messageWindow);
         public event HideDelegate OnHided;
-        public MessageWindow()
+        public delegate void ShowGameButtonDelegate(GaemLogMsgWindow gaemLogMsgWindow);
+        public event ShowGameButtonDelegate OnShowGameButtonClick;
+        public int ListenerID { get; private set; }
+        public string ListenerName { get; private set; }
+        public GaemLogMsgWindow(int listenerID, string listenerName)
         {
-            _scrollViewer = new ScrollViewer();
+            ListenerID = listenerID;
+            ListenerName = listenerName;
             _mainContent = new RichTextBlock()
             {
                 Margin = new Microsoft.UI.Xaml.Thickness(10)
             };
+            Grid grid = new Grid();
+            _scrollViewer = new ScrollViewer()
+            {
+                Margin = new Thickness(0,0,0,32)
+            };
             _scrollViewer.Content = _mainContent;
             _scrollViewer.LayoutUpdated += ScrollViewer_LayoutUpdated;
+            grid.Children.Add(_scrollViewer);
+            Button button = new Button()
+            {
+                Content = Helpers.ResourcesHelper.GetString("GameLogMonitorPage_ShowGame"),
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+            button.Click += Button_Click;
+            grid.Children.Add(button);
+
             _window.HideAppDisplayName();
             _window.SetSmallTitleBar();
             _window.AppWindow.Closing += AppWindow_Closing;
-            _window.MainContent = _scrollViewer;
-            _window.SetWindowSize(400,300);
+            _window.MainContent = grid;
+            _window.SetWindowSize(400, 300);
             _window.SetIsAlwaysOnTop(true);
             Helpers.WindowHelper.CenterToScreen(_window);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            OnShowGameButtonClick?.Invoke(this);
         }
 
         private bool _isAdded = false;
@@ -48,7 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _scrollViewer.ScrollToVerticalOffset(_scrollViewer.ScrollableHeight);
             }
         }
-        
+
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
@@ -78,9 +104,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 };
                 paragraph.Inlines.Add(contentRun);
                 var lastParagraph = _mainContent.Blocks.LastOrDefault() as Paragraph;
-                if(lastParagraph != null)
+                if (lastParagraph != null)
                 {
-                    foreach(var run in lastParagraph.Inlines )
+                    foreach (var run in lastParagraph.Inlines)
                     {
                         run.FontWeight = FontWeights.Normal;
                     }

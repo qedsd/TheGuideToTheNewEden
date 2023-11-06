@@ -30,6 +30,25 @@ namespace TheGuideToTheNewEden.Core.Models
             get => systemNotify; set => SetProperty(ref systemNotify, value);
         }
 
+        private int monitorMode = 0;
+        /// <summary>
+        /// 0:出现关键词通知
+        /// 1:停止出现关键词通知
+        /// </summary>
+        public int MonitorMode
+        {
+            get => monitorMode; set => SetProperty(ref monitorMode, value);
+        }
+
+        private double disappearDelay = 10;
+        /// <summary>
+        /// 停止出现关键词延时
+        /// </summary>
+        public double DisappearDelay
+        {
+            get => disappearDelay; set => SetProperty(ref disappearDelay, value);
+        }
+
         private ObservableCollection<GameLogMonityKey> keys = new ObservableCollection<GameLogMonityKey>();
         public ObservableCollection<GameLogMonityKey> Keys
         {
