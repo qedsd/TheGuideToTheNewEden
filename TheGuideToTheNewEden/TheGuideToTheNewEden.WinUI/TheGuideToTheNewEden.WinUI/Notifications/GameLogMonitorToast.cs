@@ -18,7 +18,10 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
         {
             var appNotification = new AppNotificationBuilder()
                 .AddArgument("action", "ToastClick")
-                .AddArgument(Common.scenarioTag, (new Random()).Next().ToString())
+                .AddArgument(Common.scenarioTag, ScenarioId.ToString())
+                //.AddButton(new AppNotificationButton("显示游戏窗口")
+                //.AddArgument("action", "ShowGame")
+                //.AddArgument(Common.scenarioTag, ScenarioId.ToString()))
                 .AddArgument("id", id.ToString())
                 .AddArgument("listener", listener)
                 .AddText($"日志监控 - {listener}")
