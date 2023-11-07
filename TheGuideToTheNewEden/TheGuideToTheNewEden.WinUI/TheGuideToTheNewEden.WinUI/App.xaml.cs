@@ -62,6 +62,7 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
+
             ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
         }
 

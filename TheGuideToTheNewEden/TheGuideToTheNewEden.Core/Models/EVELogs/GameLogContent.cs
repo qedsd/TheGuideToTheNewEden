@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Helpers;
 
 namespace TheGuideToTheNewEden.Core.Models.EVELogs
 {
@@ -28,7 +29,7 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
                                 {
                                     EVETime = eveTime,
                                     Content = content2,
-                                    SourceContent = content
+                                    SourceContent = GameLogHelper.RemoveHtmlTag(content)
                                 };
                             }
                         }

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models;
 
@@ -456,5 +458,31 @@ namespace TheGuideToTheNewEden.Core.Helpers
             }
         }
         #endregion
+
+        /// <summary>
+        /// 正则表达式去除HTML标记
+        /// </summary>
+        /// <param name="inStr"></param>
+        /// <returns></returns>
+        public static string RemoveHtmlTag(string inStr)
+        {
+            //先把<b>77</b>这种移除掉
+            Regex regHtml2 = new Regex(@"\<b.+?\b>", RegexOptions.IgnoreCase);
+            StringBuilder str2 = new StringBuilder();
+            str2.Append(inStr);
+            Match cMatch2;
+            for (cMatch2 = regHtml2.Match(str2.ToString()); cMatch2.Success; cMatch2 = cMatch2.NextMatch())
+                str2.Replace(cMatch2.Groups[0].Value.ToString(), "");
+
+            //再移除其他正常的标签
+            Regex regHtml = new Regex(@"\<.+?\>", RegexOptions.IgnoreCase);
+            StringBuilder str = new StringBuilder();
+            str.Append(str2.ToString());
+            Match cMatch;
+            for (cMatch = regHtml.Match(str.ToString()); cMatch.Success; cMatch = cMatch.NextMatch())
+                str.Replace(cMatch.Groups[0].Value.ToString(), "");
+
+            return str.ToString();
+        }
     }
 }

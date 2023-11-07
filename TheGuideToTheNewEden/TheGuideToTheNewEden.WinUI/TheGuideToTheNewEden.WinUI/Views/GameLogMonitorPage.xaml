@@ -171,6 +171,7 @@
                                     Text="{x:Bind VM.GameLogSetting.SoundFile, Mode=TwoWay}" />
                                 <Button
                                     Grid.Column="1"
+                                    Margin="4,0,0,0"
                                     Command="{x:Bind VM.PickSoundFileCommand}"
                                     Content="+"
                                     IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}" />

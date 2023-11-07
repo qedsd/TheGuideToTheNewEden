@@ -12,6 +12,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -37,7 +38,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 ListenerID = value.ListenerID
                             };
                             GameLogSetting.Keys.Add(new GameLogMonityKey("combat"));
-                            Services.Settings.GameLogInfoSettingService.SetValue(GameLogSetting);
                         }
                         else
                         {
@@ -57,6 +57,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => gameLogSetting;
             set => SetProperty(ref  gameLogSetting, value);
         }
+
+        private Core.Services.GameLogDelayMonitorService _gameLogDelayMonitorService;
+        private readonly Dictionary<int, Core.Models.GameLogItem> _gameLogItems = new Dictionary<int, GameLogItem>();
         internal GameLogMonitorViewModel()
         {
             InitAsync();
@@ -102,32 +105,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(GameLogMonitorNotifyService.Current.Add(SelectedGameLogInfo, GameLogSetting, SelectedGameLogInfo.ListenerName))
             {
                 Core.Models.GameLogItem gameLogItem = new GameLogItem(SelectedGameLogInfo, GameLogSetting);
+                _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);
+                _gameLogItems.Add(SelectedGameLogInfo.ListenerID, gameLogItem);
                 Core.Services.ObservableFileService.Add(gameLogItem);
                 gameLogItem.OnContentUpdate += GameLogItem_OnContentUpdate;
                 SelectedGameLogInfo.Running = true;
-                Services.Settings.GameLogInfoSettingService.Save();
+                Services.Settings.GameLogInfoSettingService.SetValue(GameLogSetting);
+                if(GameLogSetting.MonitorMode == 1)
+                {
+                    if(_gameLogDelayMonitorService == null)
+                    {
+                        _gameLogDelayMonitorService = new Core.Services.GameLogDelayMonitorService();
+                        _gameLogDelayMonitorService.OnGameLogDelayExpire += GameLogDelayMonitorService_OnGameLogDelayExpire;
+                    }
+                }
             }
             else
             {
                 ShowError("添加通知服务失败",false);
             }
         });
-        public delegate void ContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news);
-        /// <summary>
-        /// 消息更新
-        /// </summary>
-        public event ContentUpdate OnContentUpdate;
-        private void GameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
-        {
-            OnContentUpdate?.Invoke(item, news);
-            foreach(var msg in news)
-            {
-                if(msg.Important)
-                {
-                    GameLogMonitorNotifyService.Current.Notify(item, msg.SourceContent);
-                }
-            }
-        }
 
         public ICommand AddKeysCommand => new RelayCommand(() =>
         {
@@ -143,6 +140,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             GameLogMonitorNotifyService.Current.Remove(GameLogSetting.ListenerID);
             Core.Services.ObservableFileService.Remove(SelectedGameLogInfo.FilePath);
             SelectedGameLogInfo.Running = false;
+            _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);
         });
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
         {
@@ -162,5 +160,43 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 p.Running = false;
             });
         }
+
+        #region 消息处理
+        public delegate void ContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news);
+        /// <summary>
+        /// 消息更新
+        /// </summary>
+        public event ContentUpdate OnContentUpdate;
+        private void GameLogDelayMonitorService_OnGameLogDelayExpire(int id)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                GameLogMonitorNotifyService.Current.Notify(_gameLogItems[id], Helpers.ResourcesHelper.GetString("GameLogMonitorPage_DelayExpireTip"));
+            });
+        }
+        private void GameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
+        {
+            OnContentUpdate?.Invoke(item, news);
+            foreach (var msg in news)
+            {
+                if (msg.Important)
+                {
+                    TryNotify(item, msg);
+                }
+            }
+        }
+        
+        private void TryNotify(GameLogItem item, Core.Models.EVELogs.GameLogContent msg)
+        {
+            if(item.Setting.MonitorMode == 0)//立即通知
+            {
+                GameLogMonitorNotifyService.Current.Notify(item, msg.SourceContent);
+            }
+            else//只更新时间
+            {
+                _gameLogDelayMonitorService.Update(item.Info.ListenerID, DateTime.Now.AddSeconds(item.Setting.DisappearDelay));
+            }
+        }
+        #endregion
     }
 }
