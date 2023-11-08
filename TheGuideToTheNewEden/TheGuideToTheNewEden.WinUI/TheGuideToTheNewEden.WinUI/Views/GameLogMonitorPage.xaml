@@ -141,44 +141,63 @@
                                 Value="{x:Bind VM.GameLogSetting.DisappearDelay, Mode=TwoWay}" />
                         </Grid>
 
-
-                        <Grid Margin="0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Content="{StaticResource GameLogMonitorPage_SystemNotify}" IsChecked="{x:Bind VM.GameLogSetting.SystemNotify, Mode=TwoWay}" />
-                            <CheckBox
-                                Grid.Column="1"
-                                Content="{StaticResource GameLogMonitorPage_WindowNotify}"
-                                IsChecked="{x:Bind VM.GameLogSetting.WindowNotify, Mode=TwoWay}" />
-                        </Grid>
-
                         <Grid Margin="0,10">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
                             </Grid.RowDefinitions>
-                            <CheckBox Content="{StaticResource GameLogMonitorPage_SoundNotify}" IsChecked="{x:Bind VM.GameLogSetting.SoundNotify, Mode=TwoWay}" />
-                            <Grid Grid.Row="1">
+                            <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyMode}" />
+                            <Grid Grid.Row="1" Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBox
-                                    IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}"
-                                    PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
-                                    Text="{x:Bind VM.GameLogSetting.SoundFile, Mode=TwoWay}" />
-                                <Button
+                                <CheckBox Content="{StaticResource GameLogMonitorPage_SystemNotify}" IsChecked="{x:Bind VM.GameLogSetting.SystemNotify, Mode=TwoWay}" />
+                                <CheckBox
                                     Grid.Column="1"
-                                    Margin="4,0,0,0"
-                                    Command="{x:Bind VM.PickSoundFileCommand}"
-                                    Content="+"
-                                    IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}" />
+                                    Content="{StaticResource GameLogMonitorPage_WindowNotify}"
+                                    IsChecked="{x:Bind VM.GameLogSetting.WindowNotify, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid Grid.Row="2" Margin="0,4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Content="{StaticResource GameLogMonitorPage_SoundNotify}" IsChecked="{x:Bind VM.GameLogSetting.SoundNotify, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        Content="{StaticResource GameLogMonitorPage_RepeatSound}"
+                                        IsChecked="{x:Bind VM.GameLogSetting.RepeatSound, Mode=TwoWay}"
+                                        Visibility="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                </Grid>
+
+                                <Grid
+                                    Grid.Row="1"
+                                    Margin="0,4,0,0"
+                                    Visibility="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
+                                        IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}"
+                                        PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
+                                        Text="{x:Bind VM.GameLogSetting.SoundFile, Mode=TwoWay}" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Margin="4,0,0,0"
+                                        Command="{x:Bind VM.PickSoundFileCommand}"
+                                        Content="+"
+                                        IsEnabled="{x:Bind VM.GameLogSetting.SoundNotify, Mode=OneWay}" />
+                                </Grid>
                             </Grid>
                         </Grid>
-
-
 
                         <Grid Margin="0,20,0,4">
                             <Grid.ColumnDefinitions>

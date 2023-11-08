@@ -49,6 +49,12 @@ namespace TheGuideToTheNewEden.Core.Models
             get => disappearDelay; set => SetProperty(ref disappearDelay, value);
         }
 
+        private bool repeatSound = false;
+        public bool RepeatSound
+        {
+            get => repeatSound; set => SetProperty(ref repeatSound, value);
+        }
+
         private ObservableCollection<GameLogMonityKey> keys = new ObservableCollection<GameLogMonityKey>();
         public ObservableCollection<GameLogMonityKey> Keys
         {

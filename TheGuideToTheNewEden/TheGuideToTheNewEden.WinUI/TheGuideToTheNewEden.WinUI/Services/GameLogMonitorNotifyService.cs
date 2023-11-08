@@ -56,6 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Source = MediaSource.CreateFromUri(new Uri(string.IsNullOrEmpty(setting.SoundFile) ?
                     System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3") :
                     setting.SoundFile)),
+                    IsLoopingEnabled = setting.RepeatSound
                 }))
                 {
                     Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
@@ -101,19 +102,23 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void Notify(GameLogItem gameLog, string content)
         {
-            if(NotifyWindows.TryGetValue(gameLog.Info.ListenerID, out var messageWindow))
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                messageWindow.Show(content);
-            }
-            if(NotifyMediaPlayers.TryGetValue(gameLog.Info.ListenerID, out var mediaPlayer))
-            {
-                mediaPlayer.Pause();
-                mediaPlayer.Play();
-            }
-            if(gameLog.Setting.SystemNotify)
-            {
-                GameLogMonitorToast.SendToast(gameLog.Info.ListenerID, gameLog.Info.ListenerName, content);
-            }
+                if (NotifyWindows.TryGetValue(gameLog.Info.ListenerID, out var messageWindow))
+                {
+                    messageWindow.Show(content);
+                }
+                if (NotifyMediaPlayers.TryGetValue(gameLog.Info.ListenerID, out var mediaPlayer))
+                {
+                    mediaPlayer.Pause();
+                    mediaPlayer.Position = TimeSpan.Zero;
+                    mediaPlayer.Play();
+                }
+                if (gameLog.Setting.SystemNotify)
+                {
+                    GameLogMonitorToast.SendToast(gameLog.Info.ListenerID, gameLog.Info.ListenerName, content);
+                }
+            });
         }
         public void Stop(int id)
         {
@@ -124,6 +129,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (NotifyMediaPlayers.TryGetValue(id, out var mediaPlayer))
             {
                 mediaPlayer.Pause();
+                mediaPlayer.Position = TimeSpan.Zero;
             }
         }
     }

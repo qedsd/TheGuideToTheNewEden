@@ -422,4 +422,6 @@
     <x:String x:Key="GameLogMonitorPage_MonitorMode_1">停止出现关键词后通知</x:String>
     <x:String x:Key="GameLogMonitorPage_DisappearDelay">判定时间间隔（s）</x:String>
     <x:String x:Key="GameLogMonitorPage_DelayExpireTip">已停止触发关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_RepeatSound">循环播放</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
 </ResourceDictionary>
