@@ -50,6 +50,7 @@
     <x:String x:Key="General_Stop">停止</x:String>
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
+    <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -293,6 +294,7 @@
     <x:String x:Key="SettingPage_General">一般</x:String>
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
+    <x:String x:Key="SettingPage_Test">测试</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
@@ -424,4 +426,22 @@
     <x:String x:Key="GameLogMonitorPage_DelayExpireTip">已停止触发关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_RepeatSound">循环播放</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Desc">检测系统是否支持系统通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_SendToast">发送通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSetting">检测环境</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Enabled">应用通知已启用</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForApplication">用户定义的应用设置阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForUser">用户定义的全局设置会阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByGroupPolicy">组策略阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByManifest">应用通知被清单中的设置阻止。 此值仅适用于打包的应用程序</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Unsupported">应用通知不支持</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSettingResult">系统通知检测结果</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer">声音播放</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Desc">检测系统声音播放是否正常</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
 </ResourceDictionary>

@@ -264,6 +264,7 @@
     <None Remove="Views\Settings\GeneralSettingPage.xaml" />
     <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
+    <None Remove="Views\Settings\TestSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
@@ -366,6 +367,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\TestSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\GameLogMonitorPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

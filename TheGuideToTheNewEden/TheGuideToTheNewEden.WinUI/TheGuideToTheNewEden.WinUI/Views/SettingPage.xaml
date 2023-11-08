@@ -30,5 +30,11 @@
             </PivotItem.Header>
             <settings:MarketSettingPage />
         </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Test}" />
+            </PivotItem.Header>
+            <settings:TestSettingPage />
+        </PivotItem>
     </Pivot>
 </Page>
