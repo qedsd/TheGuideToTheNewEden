@@ -37,8 +37,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void GameLogContentsScroll_LayoutUpdated(object sender, object e)
         {
-            GameLogContentsScroll.ScrollToVerticalOffset(GameLogContentsScroll.ScrollableHeight);
+            if (isAdded)
+            {
+                isAdded = false;
+                GameLogContentsScroll.ScrollToVerticalOffset(GameLogContentsScroll.ScrollableHeight);
+            }
         }
+        private bool isAdded = false;
 
         private void VM_OnContentUpdate(Core.Models.GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
         {
@@ -70,6 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     paragraph.Inlines.Add(contentRun);
                     GameLogContents.Blocks.Add(paragraph);
                 }
+                isAdded = true;
             });
         }
 
