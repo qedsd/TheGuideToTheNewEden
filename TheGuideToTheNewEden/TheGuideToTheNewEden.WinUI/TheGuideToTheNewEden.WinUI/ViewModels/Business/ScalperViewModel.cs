@@ -190,15 +190,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
 
         private ScalperItemDetailWindow itemDetailWindow;
-        private void LoadItemDetail()
+        private async void LoadItemDetail()
         {
-            if(itemDetailWindow == null)
+            if(SelectedScalperItem != null)
             {
-                itemDetailWindow = new ScalperItemDetailWindow();
-                itemDetailWindow.Closed += ItemDetailWindow_Closed;
+                if (itemDetailWindow == null)
+                {
+                    itemDetailWindow = new ScalperItemDetailWindow();
+                    itemDetailWindow.Closed += ItemDetailWindow_Closed;
+                }
+                await Task.Delay(100);
+                itemDetailWindow.SetItem(SelectedScalperItem);
+                itemDetailWindow.Activate();
             }
-            itemDetailWindow.SetItem(SelectedScalperItem);
-            itemDetailWindow.Activate();
         }
 
         private void ItemDetailWindow_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
@@ -207,7 +211,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private void GetSourceOrdersPageCallBack(int page, string tag)
         {
-            Debug.WriteLine($"{tag} {page}");
             Window.DispatcherQueue.TryEnqueue(() =>
             {
                 Window?.ShowWaiting($"获取源市场订单中（{page}页）");
@@ -215,10 +218,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private void GetDestinationOrdersPageCallBack(int page, string tag)
         {
-            Debug.WriteLine($"{tag} {page}");
             Window.DispatcherQueue.TryEnqueue(() =>
             {
                 Window?.ShowWaiting($"获取目的市场订单中（{page}页）");
+            });
+        }
+        private void GetSourceHistoryPageCallBack(int page, string tag)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                Window?.ShowWaiting($"获取源市场订单历史中（{page}物品）");
+            });
+        }
+        private void GetDestinationHistoryPageCallBack(int page, string tag)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                Window?.ShowWaiting($"获取目的市场订单历史中（{page}物品）");
             });
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
@@ -269,6 +285,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private async Task GetOrders()
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             Window?.ShowWaiting("获取源市场订单中");
             var allSourceOrders = await GetAllSourceOrders();
             Window?.ShowWaiting("获取目的市场订单中");
@@ -295,9 +313,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if(scalperItems.NotNullOrEmpty())
                 {
                     Window?.ShowWaiting("获取源市场订单历史中");
-                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId);
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
                     Window?.ShowWaiting("获取目的市场订单历史中");
-                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId);
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
                     Window?.ShowWaiting("匹配订单历史中");
                     await Task.Run(() =>
                     {
@@ -306,7 +324,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     });
                 }
                 ScalperItems = scalperItems;
-                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单");
+                stopwatch.Stop();
+                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟)",false);
             }
         }
 

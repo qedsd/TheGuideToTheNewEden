@@ -47,6 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 分钟
         /// </summary>
         private static int HistoryDuration => MarketOrderSettingService.HistoryDurationValue;
+        private static int MaxThread => MarketOrderSettingService.ThreadValue;
 
         /// <summary>
         /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
@@ -269,6 +270,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             int page = 0;
             while (true)
             {
+                page++;
                 var resp = await EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page);
                 if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -351,7 +353,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if(strutures.NotNullOrEmpty())
             {
-                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p=>p.Id), GetStructureOrdersAsync);
+                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p=>p.Id), MaxThread, GetStructureOrdersAsync);
                 if(result.NotNullOrEmpty())
                 {
                     List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -385,7 +387,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return await GetStructureOrdersAsync(id, pageCallBack);
                 }
-                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p => p.Id), getStructureOrdersAsync);
+                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p => p.Id), MaxThread, getStructureOrdersAsync);
                 if (result.NotNullOrEmpty())
                 {
                     List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -576,20 +578,53 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Statistic>> GetHistory(int[] ids)
         {
-            var data = await GetHistoryAsync(ids[1], ids[0]);
-            if (data.NotNullOrEmpty())
+            try
             {
-                return data.Select(p=> new Core.Models.Market.Statistic(p, ids[1])).ToList();
+                var data = await GetHistoryAsync(ids[1], ids[0]);
+                if (data.NotNullOrEmpty())
+                {
+                    return data.Select(p => new Core.Models.Market.Statistic(p, ids[1])).ToList();
+                }
+                else
+                {
+                    Core.Log.Error($"获取{ids[0]} {ids[1]}历史记录为空");
+                    return null;
+                }
             }
-            else
+            catch(Exception ex)
             {
-                Core.Log.Error($"获取{ids[0]} {ids[1]}历史记录为空");
+                Core.Log.Error(ex);
                 return null;
             }
         }
-        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeId, int regionId)
+        public async Task<List<Core.Models.Market.Statistic>> GetHistory(int typeId, int regionId)
         {
-            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId.Select(p=> new int[] { regionId, p}), GetHistory);
+            var data = await GetHistoryAsync(regionId, typeId);
+            if (data.NotNullOrEmpty())
+            {
+                return data.Select(p => new Core.Models.Market.Statistic(p, typeId)).ToList();
+            }
+            else
+            {
+                Core.Log.Error($"获取{regionId} {typeId}历史记录为空");
+                return null;
+            }
+        }
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
+        {
+            int doneCount = 0;
+            object locker = new object();
+            async Task<List<Core.Models.Market.Statistic>> getHistory(int[] parms)
+            {
+                var result =  await GetHistory(parms);
+                lock(locker)
+                {
+                    doneCount++;
+                    pageCallBack?.Invoke(doneCount, "History");
+                }
+                return result;
+            }
+            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId.Select(p=> new int[] { regionId, p}), MaxThread, getHistory);
             var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
             Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
             foreach(var list in valid)
@@ -795,7 +830,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (c != null)
                 {
                     EsiClient.SetCharacterData(c);
-                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), GetStructure);
+                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), MaxThread, GetStructure);
                     var data = result?.Where(p => p != null).ToList();
                     var structuresDic = data.ToDictionary(p => p.Id);
                     foreach (var order in structureOrders)

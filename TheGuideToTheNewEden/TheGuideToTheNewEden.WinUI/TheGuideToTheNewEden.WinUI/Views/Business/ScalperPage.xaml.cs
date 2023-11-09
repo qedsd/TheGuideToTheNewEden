@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Syncfusion.UI.Xaml.DataGrid;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WinUI.Dialogs;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {

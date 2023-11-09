@@ -38,6 +38,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             }
         }
 
+        private double maxThread = MarketOrderSettingService.ThreadValue;
+        public double MaxThread
+        {
+            get => maxThread;
+            set
+            {
+                if (SetProperty(ref maxThread, value))
+                {
+                    MarketOrderSettingService.ThreadValue = (int)value;
+                }
+            }
+        }
+
         public ICommand ClearCacheCommand => new RelayCommand(() =>
         {
             if(System.IO.Directory.Exists(MarketOrderSettingService.StructureOrderFolder))

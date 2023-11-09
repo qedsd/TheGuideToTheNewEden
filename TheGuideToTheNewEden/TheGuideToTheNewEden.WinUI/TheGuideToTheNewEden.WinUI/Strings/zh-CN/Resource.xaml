@@ -289,6 +289,8 @@
 
     <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread">ESI查询线程数</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread_Desc">理论上越大越快，但过快会触发ESI请求限制</x:String>
     <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>

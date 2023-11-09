@@ -40,6 +40,22 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
             set => SettingService.SetValue(HistoryDurationKey, value.ToString());
         }
+        private const string ThreadKey = "Thread";
+        public static int ThreadValue
+        {
+            get
+            {
+                if (int.TryParse(SettingService.GetValue(ThreadKey), out var result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return 4;
+                }
+            }
+            set => SettingService.SetValue(ThreadKey, value.ToString());
+        }
 
         public static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
         public static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
