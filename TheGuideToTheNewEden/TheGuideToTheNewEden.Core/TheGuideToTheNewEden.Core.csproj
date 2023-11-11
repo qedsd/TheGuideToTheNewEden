@@ -7,7 +7,7 @@
 
    <ItemGroup>
      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
-     <PackageReference Include="ESI.NET" Version="2023.2.11" />
+     <PackageReference Include="ESI.NET" Version="2023.11.1" />
      <PackageReference Include="log4net" Version="2.0.15" />
      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
      <PackageReference Include="Octokit" Version="5.0.4" />

@@ -49,7 +49,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 _=Task.Run(() =>
                 {
-                    var nameResp =  _esiClient.Universe.Names(_mailDetail.Message.Recipients.Select(p => (long)p.RecipientId).ToList()).Result;
+                    var nameResp =  _esiClient.Universe.Names(_mailDetail.Message.Recipients.Select(p => p.RecipientId).ToList()).Result;
                     if(nameResp != null && nameResp.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         StringBuilder stringBuilder = new StringBuilder();

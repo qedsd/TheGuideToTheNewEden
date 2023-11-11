@@ -198,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
             }
             //赋值卖家信息
-            var clientIds = transactions.Select(p=>(long)p.Transaction.ClientId).ToList();
+            var clientIds = transactions.Select(p=>p.Transaction.ClientId).ToList();
             if(clientIds.NotNullOrEmpty())
             {
                 var resp = await _esiClient.Universe.Names(clientIds.Distinct().ToList());
@@ -252,7 +252,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
                 if(structures.NotNullOrEmpty())
                 {
-                    var structuresResp = await _esiClient.Universe.Names(structures);
+                    var structuresResp = await _esiClient.Universe.Names(structures.Select(p => (int)p).ToList());
                     if(structuresResp != null && structuresResp.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         foreach (var data in structuresResp.Data)

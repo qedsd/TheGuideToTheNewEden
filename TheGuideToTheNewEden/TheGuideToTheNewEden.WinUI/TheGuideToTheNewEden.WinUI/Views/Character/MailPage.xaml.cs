@@ -96,7 +96,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     if (headers != null && headers.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var list = headers.Data.Select(p => new Core.Models.Mail.Header(p)).ToList();
-                        var nameResp = await _esiClient.Universe.Names(headers.Data.Select(p=>(long)p.From).Distinct().ToList());
+                        var nameResp = await _esiClient.Universe.Names(headers.Data.Select(p=>p.From).Distinct().ToList());
                         if (nameResp != null && nameResp.StatusCode == System.Net.HttpStatusCode.OK && nameResp.Data.NotNullOrEmpty())
                         {
                             var namesDic = nameResp.Data.ToDictionary(p => p.Id);

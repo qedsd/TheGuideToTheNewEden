@@ -16,18 +16,18 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static async Task CompleteinfoAsync(List<Core.Models.Contract.ContractInfo> datas)
         {
             #region name
-            List<long> nameIds = new List<long>();
-            var list = datas.Select(p => (long)p.IssuerId).ToList();
+            List<int> nameIds = new List<int>();
+            var list = datas.Select(p => p.IssuerId).ToList();
             if (list.NotNullOrEmpty())
             {
                 nameIds.AddRange(list);
             }
-            list = datas.Select(p => (long)p.AssigneeId).ToList();
+            list = datas.Select(p => p.AssigneeId).ToList();
             if (list.NotNullOrEmpty())
             {
                 nameIds.AddRange(list);
             }
-            list = datas.Select(p => (long)p.AcceptorId).ToList();
+            list = datas.Select(p => p.AcceptorId).ToList();
             if (list.NotNullOrEmpty())
             {
                 nameIds.AddRange(list);
@@ -109,7 +109,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
                 if (structures.NotNullOrEmpty())
                 {
-                    var structuresResp = await Core.Services.ESIService.Current.EsiClient.Universe.Names(structures);
+                    var structuresResp = await Core.Services.ESIService.Current.EsiClient.Universe.Names(structures.Select(p => (int)p).ToList());
                     if (structuresResp != null && structuresResp.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         foreach (var data in structuresResp.Data)

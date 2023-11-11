@@ -185,7 +185,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (token != null)
                 {
                     var data = await Core.Services.ESIService.SSO.Verify(token);
-                    if (data != null)
+                    if (data?.Token != null)
                     {
                         Add(data);
                         return data;
