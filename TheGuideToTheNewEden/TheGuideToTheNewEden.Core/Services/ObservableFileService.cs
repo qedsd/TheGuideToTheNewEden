@@ -14,6 +14,8 @@ namespace TheGuideToTheNewEden.Core.Services
 {
     public static class ObservableFileService
     {
+        public delegate void Added(string file);
+        public static event Added OnAdded;
         /// <summary>
         /// 同一个文件夹下的文件由一个watcher监控
         /// key为文件夹路径
@@ -107,7 +109,7 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         private static void Watcher_OnAdded(string file)
         {
-            foreach(var item in ItemsDic)
+            foreach(var item in ItemsDic.ToList())
             {
                 if(item.Value.IsReplaced(file))
                 {
@@ -116,7 +118,9 @@ namespace TheGuideToTheNewEden.Core.Services
                     item.Value.Update();
                     break;
                 }
+                item.Value.CreatedFile(file);
             }
+            OnAdded?.Invoke(file);
         }
     }
 
@@ -151,23 +155,16 @@ namespace TheGuideToTheNewEden.Core.Services
             FileSystemWatcher = new FileSystemWatcher()
             {
                 Path = folder,
+                NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                Filter = "*.txt",
+                EnableRaisingEvents = true
             };
             FileSystemWatcher.Created += FileSystemWatcher_Created;
         }
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            var files = System.IO.Directory.GetFiles(Folder);//耗性能，不能频繁使用
-            if (files.NotNullOrEmpty())
-            {
-                foreach (var file in files)
-                {
-                    if (!AllFiles.Contains(file))
-                    {
-                        OnAdded?.Invoke(file);
-                    }
-                }
-            }
+            OnAdded?.Invoke(e.FullPath);
         }
 
         public void Start()

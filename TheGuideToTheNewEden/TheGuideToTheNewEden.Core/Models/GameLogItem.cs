@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Interfaces;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.Core.Services;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -26,6 +27,8 @@ namespace TheGuideToTheNewEden.Core.Models
         public event ContentUpdate OnContentUpdate;
         private long _fileStreamOffset = 0;
         private readonly List<Regex> _regexes = new List<Regex>();
+        private GameLogItem _threadErrorGameLogItem;
+
         public GameLogItem(GameLogInfo gameLogInfo, GameLogSetting gameLogSetting)
         {
             Info = gameLogInfo;
@@ -37,7 +40,51 @@ namespace TheGuideToTheNewEden.Core.Models
             }
         }
 
-        
+        public void InitThreadErrorLog()
+        {
+            if (!GameLogHelper.GetGameLogDateAndThreadId(FilePath, out int dateInt, out int threadId))
+            {
+                Core.Log.Error($"获取{Path.GetFileNameWithoutExtension(FilePath)}的日期及进程ID错误");
+            }
+            else
+            {
+                CreateThreadLog(dateInt, threadId);
+            }
+        }
+        private bool CreateThreadLog(int dateInt, int threadId)
+        {
+            string threadFile = Path.Combine(Path.GetDirectoryName(FilePath), $"{dateInt}_{threadId}.txt");
+            if (File.Exists(threadFile))
+            {
+                if (Setting.ThreadErrorKeys.NotNullOrEmpty())
+                {
+                    GameLogSetting errorSetting = new GameLogSetting();
+                    foreach (var r in Setting.ThreadErrorKeys)
+                    {
+                        errorSetting.Keys.Add(r.DepthClone<GameLogMonityKey>());
+                    }
+                    var errorInfo = Info.DepthClone<GameLogInfo>();
+                    errorInfo.FilePath = threadFile;
+                    GameLogItem threadGameLogItem = new GameLogItem(errorInfo, errorSetting);
+                    ObservableFileService.Add(threadGameLogItem);
+                    threadGameLogItem.OnContentUpdate += ThreadGameLogItem_OnContentUpdate;
+                    Core.Log.Info($"已创建{Path.GetFileNameWithoutExtension(FilePath)}的进程日志监控");
+                    _threadErrorGameLogItem = threadGameLogItem;
+                    return true;
+                }
+                else
+                {
+                    Core.Log.Error($"创建{Path.GetFileNameWithoutExtension(FilePath)}的进程日志监控时，ErrorRegex为空");
+                }
+            }
+            return false;
+        }
+
+        private void ThreadGameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news)
+        {
+            OnContentUpdate?.Invoke(this, news);
+        }
+
         public bool IsReplaced(string newfile)
         {
             return false;
@@ -89,6 +136,44 @@ namespace TheGuideToTheNewEden.Core.Models
                 }
             }
             return false;
+        }
+
+        public void CreatedFile(string newfile)
+        {
+            if(Setting.MonitorThreadError)
+            {
+                if (!GameLogHelper.GetGameLogDateAndThreadId(FilePath, out int dateInt, out int threadId))
+                {
+                    Core.Log.Error($"获取{Path.GetFileNameWithoutExtension(FilePath)}的日期及进程ID错误");
+                }
+                else
+                {
+                    if (GameLogHelper.GetGameLogDateAndThreadId(newfile, out int newDateInt, out int newThreadId))
+                    {
+                        if(dateInt == newDateInt && threadId == newThreadId)
+                        {
+                            if(CreateThreadLog(dateInt, threadId))
+                            {
+                                _threadErrorGameLogItem.ResetFileStreamOffset();
+                                _threadErrorGameLogItem.Update();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void ResetFileStreamOffset()
+        {
+            _fileStreamOffset = 0;
+        }
+
+        public void Dispose()
+        {
+            if(_threadErrorGameLogItem != null)
+            {
+                ObservableFileService.Remove(_threadErrorGameLogItem.FilePath);
+            }
         }
     }
 }

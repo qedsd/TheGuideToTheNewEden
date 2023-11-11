@@ -205,5 +205,10 @@ namespace TheGuideToTheNewEden.Core.Models
             }
         }
         #endregion
+
+        public void CreatedFile(string newfile)
+        {
+            
+        }
     }
 }

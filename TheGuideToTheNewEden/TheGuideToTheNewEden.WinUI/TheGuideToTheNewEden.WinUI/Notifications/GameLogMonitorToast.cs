@@ -26,10 +26,10 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
                 .AddArgument("listener", listener)
                 .AddText($"日志监控 - {listener}")
                 .AddText(content)
+                .SetGroup(id.ToString())
                 .BuildNotification();
 
             AppNotificationManager.Default.Show(appNotification);
-
             return appNotification.Id != 0;
         }
         public static void NotificationReceived(AppNotificationActivatedEventArgs notificationActivatedEventArgs)

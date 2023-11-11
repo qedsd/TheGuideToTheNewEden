@@ -21,5 +21,7 @@ namespace TheGuideToTheNewEden.Core.Interfaces
         /// <param name="newfile"></param>
         /// <returns></returns>
         bool IsReplaced(string newfile);
+
+        void CreatedFile(string newfile);
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models
@@ -40,7 +41,7 @@ namespace TheGuideToTheNewEden.Core.Models
             get => monitorMode; set => SetProperty(ref monitorMode, value);
         }
 
-        private double disappearDelay = 10;
+        private double disappearDelay = 30;
         /// <summary>
         /// 停止出现关键词延时
         /// </summary>
@@ -59,6 +60,18 @@ namespace TheGuideToTheNewEden.Core.Models
         public ObservableCollection<GameLogMonityKey> Keys
         {
             get => keys; set => SetProperty(ref keys, value);
+        }
+
+        private bool monitorThreadError = true;
+        public bool MonitorThreadError
+        {
+            get => monitorThreadError; set => SetProperty(ref monitorThreadError, value);
+        }
+
+        private ObservableCollection<GameLogMonityKey> threadErrorKeys = new ObservableCollection<GameLogMonityKey>();
+        public ObservableCollection<GameLogMonityKey> ThreadErrorKeys
+        {
+            get => threadErrorKeys; set => SetProperty(ref threadErrorKeys, value);
         }
     }
     public class GameLogMonityKey : ObservableObject

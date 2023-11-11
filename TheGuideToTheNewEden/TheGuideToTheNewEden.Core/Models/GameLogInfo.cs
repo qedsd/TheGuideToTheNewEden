@@ -17,6 +17,8 @@ namespace TheGuideToTheNewEden.Core.Models
             get => running;
             set => SetProperty(ref running, value);
         }
+
+        public List<Core.Models.EVELogs.GameLogContent> LogContents { get; set; } = new List<EVELogs.GameLogContent>();
         public string Folder()
         {
             return System.IO.Path.GetDirectoryName(FilePath);

@@ -457,6 +457,33 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 return null;
             }
         }
+
+        public static bool GetGameLogDateAndThreadId(string file, out int date, out int threadId)
+        {
+            date = -1;
+            threadId = -1;
+            try
+            {
+                if (file.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    var nameArray = Path.GetFileNameWithoutExtension(file).Split('_');
+                    if (nameArray.Length > 3 || nameArray[0].Length != 8 || !int.TryParse(nameArray[0], out date) || nameArray[1].Length != 6 || !int.TryParse(nameArray[1], out threadId))
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return false;
+            }
+        }
         #endregion
 
         /// <summary>

@@ -12,7 +12,7 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
-using Vanara.PInvoke;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -38,6 +38,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 ListenerID = value.ListenerID
                             };
                             GameLogSetting.Keys.Add(new GameLogMonityKey("combat"));
+                            var errorRegex = ReadErrorRegex();
+                            if (errorRegex.NotNullOrEmpty())
+                            {
+                                foreach (var regex in errorRegex)
+                                {
+                                    GameLogSetting.ThreadErrorKeys.Add(new GameLogMonityKey(regex));
+                                }
+                            }
                         }
                         else
                         {
@@ -109,6 +117,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _gameLogItems.Add(SelectedGameLogInfo.ListenerID, gameLogItem);
                 Core.Services.ObservableFileService.Add(gameLogItem);
                 gameLogItem.OnContentUpdate += GameLogItem_OnContentUpdate;
+                if(GameLogSetting.MonitorThreadError)
+                {
+                    gameLogItem.InitThreadErrorLog();
+                }
                 SelectedGameLogInfo.Running = true;
                 Services.Settings.GameLogInfoSettingService.SetValue(GameLogSetting);
                 if(GameLogSetting.MonitorMode == 1)
@@ -139,6 +151,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             GameLogMonitorNotifyService.Current.Stop(GameLogSetting.ListenerID);
             GameLogMonitorNotifyService.Current.Remove(GameLogSetting.ListenerID);
             Core.Services.ObservableFileService.Remove(SelectedGameLogInfo.FilePath);
+            if(_gameLogItems.TryGetValue(SelectedGameLogInfo.ListenerID,out var item))
+            {
+                item.Dispose();
+            }
             SelectedGameLogInfo.Running = false;
             _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);
         });
@@ -150,6 +166,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 GameLogSetting.SoundFile = file.Path;
             }
         });
+
+        public ICommand AddThreadErrorKeysCommand => new RelayCommand(() =>
+        {
+            GameLogSetting.ThreadErrorKeys.Add(new GameLogMonityKey("接口被关闭了"));
+        });
         public void Dispose()
         {
             GameLogInfos.Where(p => p.Running).ToList().ForEach(p =>
@@ -159,6 +180,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Core.Services.ObservableFileService.Remove(p.FilePath);
                 p.Running = false;
             });
+            foreach(var item in _gameLogItems)
+            {
+                item.Value.Dispose();
+            }
         }
 
         #region 消息处理
@@ -176,7 +201,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private void GameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
         {
-            OnContentUpdate?.Invoke(item, news);
+            if(SelectedGameLogInfo != null && item.Info.ListenerID == SelectedGameLogInfo.ListenerID)
+            {
+                OnContentUpdate?.Invoke(item, news);
+            }
+            item.Info.LogContents.AddRange(news);
             foreach (var msg in news)
             {
                 if (msg.Important)
@@ -198,5 +227,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
         #endregion
+        private string[] ReadErrorRegex()
+        {
+            return System.IO.File.ReadAllLines(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "GameThreadErrorLogRegex.txt"));
+        }
     }
 }

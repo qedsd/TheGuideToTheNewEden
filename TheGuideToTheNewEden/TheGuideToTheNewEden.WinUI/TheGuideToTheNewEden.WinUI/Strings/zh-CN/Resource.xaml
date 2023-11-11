@@ -428,6 +428,8 @@
     <x:String x:Key="GameLogMonitorPage_DelayExpireTip">已停止触发关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_RepeatSound">循环播放</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>

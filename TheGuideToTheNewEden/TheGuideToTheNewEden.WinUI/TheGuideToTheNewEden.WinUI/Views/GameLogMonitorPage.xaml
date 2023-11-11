@@ -276,6 +276,79 @@
                                 </controls:DataGridTemplateColumn>
                             </controls:DataGrid.Columns>
                         </controls:DataGrid>
+
+                        <Grid Margin="0,20,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox Content="{StaticResource GameLogMonitorPage_MonitorThreadError}" IsChecked="{x:Bind VM.GameLogSetting.MonitorThreadError, Mode=TwoWay}" />
+                                </StackPanel>
+                                <Button
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{x:Bind VM.AddThreadErrorKeysCommand}"
+                                    ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_AddThreadErrorKey}">
+                                    <Button.Content>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+                            <controls:DataGrid
+                                Grid.Row="1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                AlternatingRowBackground="Transparent"
+                                AreRowDetailsFrozen="False"
+                                AreRowGroupHeadersFrozen="True"
+                                AutoGenerateColumns="False"
+                                CanUserReorderColumns="True"
+                                CanUserResizeColumns="True"
+                                CanUserSortColumns="False"
+                                ColumnHeaderHeight="32"
+                                FrozenColumnCount="0"
+                                GridLinesVisibility="None"
+                                HeadersVisibility="Column"
+                                HorizontalScrollBarVisibility="Auto"
+                                IsReadOnly="False"
+                                ItemsSource="{x:Bind VM.GameLogSetting.ThreadErrorKeys, Mode=OneWay}"
+                                RowDetailsVisibilityMode="Collapsed"
+                                SelectionMode="Extended"
+                                VerticalScrollBarVisibility="Visible"
+                                Visibility="{x:Bind VM.GameLogSetting.MonitorThreadError, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                <controls:DataGrid.Columns>
+                                    <controls:DataGridTextColumn
+                                        Width="220"
+                                        Binding="{Binding Pattern}"
+                                        Header="{StaticResource GameLogMonitorPage_Regex}" />
+                                    <controls:DataGridTemplateColumn Header="{StaticResource General_Remove}">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Padding="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Click="Button_DeleteThreadErrorKey_Click"
+                                                    Foreground="OrangeRed">
+                                                    <Button.Content>
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" />
+                                                    </Button.Content>
+                                                </Button>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                </controls:DataGrid.Columns>
+                            </controls:DataGrid>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
                 <Grid Grid.Row="1" Margin="8,8,8,0">

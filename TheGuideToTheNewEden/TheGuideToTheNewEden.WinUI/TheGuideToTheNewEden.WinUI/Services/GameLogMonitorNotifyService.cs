@@ -1,4 +1,5 @@
 ﻿using ESI.NET.Models.PlanetaryInteraction;
+using Microsoft.Windows.AppNotifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,16 +74,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (hwnd != IntPtr.Zero)
             {
                 Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
-                Stop(gaemLogMsgWindow.ListenerID);
             }
+            Stop(gaemLogMsgWindow.ListenerID);
         }
 
         private void MessageWindow_OnHided(GaemLogMsgWindow messageWindow)
         {
-            if(NotifyMediaPlayers.TryGetValue((int)(messageWindow.Tag),out var mediaPlayer))
+            if (NotifyMediaPlayers.TryGetValue(messageWindow.ListenerID, out var mediaPlayer))
             {
                 mediaPlayer.Pause();
+                mediaPlayer.Position = TimeSpan.Zero;
             }
+            _ = AppNotificationManager.Default.RemoveByGroupAsync(messageWindow.ListenerID.ToString());
         }
 
         public void Remove(int id)
@@ -131,6 +134,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 mediaPlayer.Pause();
                 mediaPlayer.Position = TimeSpan.Zero;
             }
+            _=AppNotificationManager.Default.RemoveByGroupAsync(id.ToString());
         }
     }
 }
