@@ -51,6 +51,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
+        public static void Clear()
+        {
+            Current._keyboardHook.Clear();
+        }
+
         public delegate void KeyboardDelegate(List<KeyboardInfo> keys);
         public static event KeyboardDelegate OnKeyboardClicked;
     }

@@ -282,6 +282,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     if(PreviewSetting.SwitchHotkey_Forward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向前进切换
                     {
+                        KeyboardService.Clear();
                         if (_lastProcessGUID == null)
                         {
                             var firstRunning = Processes.FirstOrDefault(p => p.Running);
@@ -328,6 +329,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else if(PreviewSetting.SwitchHotkey_Backward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向后退切换
                     {
+                        KeyboardService.Clear();
                         if (_lastProcessGUID == null)
                         {
                             var firstRunning = Processes.FirstOrDefault(p => p.Running);
@@ -818,7 +820,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             gameMonitor.Start();
         }
         #endregion
-
+        private IGamePreviewWindow _lastHideWindow;
         /// <summary>
         /// 当前活动窗口变化
         /// </summary>
@@ -830,6 +832,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _lastHighlightWindow.CancelHighlight();
                 _lastHighlightWindow = null;
             }
+            if(_lastHideWindow != null)
+            {
+                _lastHideWindow.ShowWindow();
+                _lastHideWindow = null;
+            }
             var targetProcess = Processes?.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
             if(targetProcess != null)
             {
@@ -839,6 +846,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if (item.IsHideOnForeground())
                     {
                         item.HideWindow();
+                        _lastHideWindow = item;
                     }
                     else if (item.IsHighlight())
                     {

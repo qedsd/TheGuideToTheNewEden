@@ -225,5 +225,10 @@ namespace TheGuideToTheNewEden.WinUI.Common
             }
             return true;
         }
+
+        public void Clear()
+        {
+            pressedKeyDic.Clear();
+        }
     }
 }
