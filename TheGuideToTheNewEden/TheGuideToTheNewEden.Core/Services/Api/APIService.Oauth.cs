@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.Core.Services.Api
             if (server == GameServerType.Tranquility)
                 return $"https://esi.evetech.net/verify/?user_agent={client_id}&datasource=tranquility&token={token}";
             else
-                return $"https://esi.evepc.163.com/verify/?user_agent={client_id}&datasource=tranquility&token={token}";
+                return $"https://ali-esi.evepc.163.com/verify/?user_agent={client_id}&datasource=tranquility&token={token}";
         }
     }
 }

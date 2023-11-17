@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             IOptions<EsiConfig> config = Options.Create(new EsiConfig()
             {
-                EsiUrl = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://esi.evepc.163.com/",
+                EsiUrl = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? "https://esi.evetech.net/" : "https://ali-esi.evepc.163.com/",
                 DataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Serenity,
                 ClientId = Config.ClientId,
                 SecretKey = "Unneeded",
