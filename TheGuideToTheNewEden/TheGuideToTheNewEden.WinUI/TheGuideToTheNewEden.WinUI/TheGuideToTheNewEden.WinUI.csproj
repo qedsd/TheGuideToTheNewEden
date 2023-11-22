@@ -331,6 +331,9 @@
     <Page Update="Dialogs\AddSerenityAuthDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <None Update="ESI.NET.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
