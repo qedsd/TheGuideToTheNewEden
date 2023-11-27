@@ -381,7 +381,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(!string.IsNullOrEmpty(Setting?.Listener))
             {
-                if(WarningService.RestoreWindowPos(Setting.Listener))
+                if(WarningService.Current.RestoreWindowPos(Setting.Listener))
                 {
                     Window?.ShowSuccess("重置成功");
                 }
@@ -401,23 +401,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach(var ch in news)
             {
-                if(Setting.OverlapType != 2)
-                {
-                    Window.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        WarningService.NotifyWindow(Setting.Listener, ch);
-                    });
-                }
                 if(ch.IntelType == Core.Enums.IntelChatType.Intel)
                 {
-                    if (Setting.SystemNotify)
-                    {
-                        WarningService.NotifyToast(earlyWarningItem.ChatChanelInfo.Listener, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
-                    }
-                    if (Setting.MakeSound)
-                    {
-                        WarningService.NotifySound(Setting.SoundFilePath);
-                    }
+                    WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, Setting.SoundFilePath, Setting.MakeSound, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
                 }
             }
         }
@@ -459,7 +445,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             item.IntelMap = IntelMap;
                         }
-                        WarningService.UpdateWindowHome(Setting.Listener, IntelMap);
+                        WarningService.Current.UpdateWindowHome(Setting.Listener, IntelMap);
                     });
                     break;
                 }
