@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public void Close()
         {
             MapSolarSystemNameService.ClearCache();
-            WarningService.Dispose();
+            WarningService.Current.Dispose();
         }
         private void EarlyWarningPage_Loaded2(object sender, RoutedEventArgs e)
         {

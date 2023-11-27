@@ -42,12 +42,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 一个音源绑定一个MediaSource
         /// </summary>
         private Dictionary<string, MediaSource> MediaSources = new Dictionary<string, MediaSource>();
-        private MediaSource DefaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
-        public void NotifyWindow(string listener, EarlyWarningContent content)
+        private MediaSource defaultMediaSource;
+        private MediaSource DefaultMediaSource
         {
-            if(Current.WarningWindows.TryGetValue(listener,out var value))
+            get
             {
-                value.Intel(content);
+                if(defaultMediaSource == null)
+                {
+                    defaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
+                }
+                return defaultMediaSource;
             }
         }
         public bool Add(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
@@ -104,6 +108,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return true;
         }
+        public IntelWindow GetIntelWindow(string listener)
+        {
+            if(WarningWindows.TryGetValue(listener, out var value))
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
         public bool Notify(string listener,string soundFile, bool sendToast, string chanel, EarlyWarningContent content)
         {
             try
@@ -111,6 +126,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (WarningWindows.TryGetValue(listener, out var value))
                 {
                     value.Show();
+                    value.Intel(content);
                 }
                 if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
                 {
@@ -205,6 +221,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             MediaSources.Clear();
             DefaultMediaSource?.Dispose();
+            defaultMediaSource = null;
         }
     }
 }

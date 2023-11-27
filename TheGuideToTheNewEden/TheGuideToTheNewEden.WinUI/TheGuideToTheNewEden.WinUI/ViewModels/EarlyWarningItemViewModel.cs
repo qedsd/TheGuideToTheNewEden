@@ -332,21 +332,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             }
                         }
                     }
-                    if(Setting.OverlapType != 2)
+                    WarningService.Current.Add(Setting, IntelMap);
+                    var intelWindow = WarningService.Current.GetIntelWindow(Setting.Listener);
+                    if (intelWindow != null)
                     {
-                        var intelWindow = WarningService.AddNotifyWindow(Setting, IntelMap);
-                        if(intelWindow != null)
-                        {
-                            intelWindow.OnStop += IntelWindow_OnStop;
-                            if (Setting.OverlapType == 0)
-                            {
-                                WarningService.ShowWindow(Setting.Listener);
-                            }
-                        }
-                        else
-                        {
-                            ShowError("开启预警窗口失败");
-                        }
+                        intelWindow.OnStop += IntelWindow_OnStop;
                     }
                     IsRunning = true;
                     RunningCharacters.Add(SelectedCharacter);
@@ -372,7 +362,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChatContents.Clear();
             IsRunning = false;
             LocalEarlyWarningItem = null;
-            Services.WarningService.RemoveWindow(Setting.Listener);
+            Services.WarningService.Current.Remove(Setting.Listener);
             RunningCharacters.Remove(SelectedCharacter);
             GC.Collect();
         });
@@ -403,7 +393,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(ch.IntelType == Core.Enums.IntelChatType.Intel)
                 {
-                    WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, Setting.SoundFilePath, Setting.MakeSound, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                    Window.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, Setting.SoundFilePath, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                    });
+                    
                 }
             }
         }
