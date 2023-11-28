@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using TheGuideToTheNewEden.Core.Enums;
 
@@ -88,6 +89,8 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => soundFilePath; set => SetProperty(ref soundFilePath, value);
         }
+
+        public ObservableCollection<string> SoundFiles { get; set; } = new ObservableCollection<string>();
 
         private bool systemNotify = true;
         /// <summary>

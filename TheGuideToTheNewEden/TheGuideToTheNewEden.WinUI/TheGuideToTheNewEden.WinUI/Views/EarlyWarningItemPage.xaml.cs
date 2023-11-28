@@ -173,5 +173,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 VM.SearchMapSolarSystems = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains((sender as TextBox).Text)).ToList();
             }
         }
+
+        private void NumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            int diff = (int)(args.NewValue - args.OldValue);
+            for(int i = 0;i<diff;i++)
+            {
+                VM.Setting.SoundFiles.RemoveAt(VM.Setting.SoundFiles.Count - 1);
+            }
+        }
     }
 }
