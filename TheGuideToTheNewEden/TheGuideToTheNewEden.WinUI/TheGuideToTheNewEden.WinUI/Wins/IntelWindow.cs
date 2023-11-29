@@ -101,7 +101,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            OnStop?.Invoke();
+            Window.Hide();
         }
 
         public delegate void StopDelegate();

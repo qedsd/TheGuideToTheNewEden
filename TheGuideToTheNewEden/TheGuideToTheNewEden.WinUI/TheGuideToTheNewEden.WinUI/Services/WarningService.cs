@@ -119,7 +119,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
-        public bool Notify(string listener,string soundFile, bool sendToast, string chanel, EarlyWarningContent content)
+        public bool Notify(string listener, WarningSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
         {
             try
             {
@@ -130,34 +130,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
                 {
-                    if (string.IsNullOrEmpty(soundFile))
-                    {
-                        mediaPlayer.Source = DefaultMediaSource;
-                    }
-                    else
-                    {
-                        if (MediaSources.TryGetValue(soundFile, out var mediaSource))
-                        {
-                            mediaPlayer.Source = mediaSource;
-                        }
-                        else
-                        {
-                            var m = MediaSource.CreateFromUri(new Uri(soundFile));
-                            if (m != null)
-                            {
-                                MediaSources.Add(soundFile, m);
-                                mediaPlayer.Source = m;
-                            }
-                            else
-                            {
-                                Core.Log.Error($"创建{soundFile}MediaSource失败");
-                                mediaPlayer.Source = mediaSource;
-                            }
-                        }
-                    }
-                    mediaPlayer.Pause();
-                    mediaPlayer.Position = TimeSpan.Zero;
-                    mediaPlayer.Play();
+                    PlaySound(mediaPlayer, soundSetting);
                 }
                 if(sendToast)
                 {
@@ -170,6 +143,40 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Core.Log.Error(ex);
                 return false;
             }
+        }
+        private void PlaySound(MediaPlayer mediaPlayer, WarningSoundSetting soundSetting)
+        {
+            string soundFile = soundSetting?.FilePath ?? string.Empty;
+            if (string.IsNullOrEmpty(soundFile))
+            {
+                mediaPlayer.Source = DefaultMediaSource;
+            }
+            else
+            {
+                if (MediaSources.TryGetValue(soundFile, out var mediaSource))
+                {
+                    mediaPlayer.Source = mediaSource;
+                }
+                else
+                {
+                    var m = MediaSource.CreateFromUri(new Uri(soundFile));
+                    if (m != null)
+                    {
+                        MediaSources.Add(soundFile, m);
+                        mediaPlayer.Source = m;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"创建{soundFile}MediaSource失败");
+                        mediaPlayer.Source = mediaSource;
+                    }
+                }
+            }
+            mediaPlayer.Volume = soundSetting?.Volume ?? 100;
+            mediaPlayer.IsLoopingEnabled = soundSetting?.Loop ?? false;
+            mediaPlayer.Pause();
+            mediaPlayer.Position = TimeSpan.Zero;
+            mediaPlayer.Play();
         }
         public void ClearWindow()
         {
@@ -205,7 +212,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return false;
             }
         }
-
+        public void StopSound(string listener)
+        {
+            if (!string.IsNullOrEmpty(listener) && MediaPlayers.TryGetValue(listener, out var mediaPlayer))
+            {
+                mediaPlayer.Pause();
+                mediaPlayer.Position = TimeSpan.Zero;
+            }
+        }
         public void Dispose()
         {
             ClearWindow();

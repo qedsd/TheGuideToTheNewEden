@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ESI.NET.Models.Fleets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -90,7 +91,12 @@ namespace TheGuideToTheNewEden.Core.Models
             get => soundFilePath; set => SetProperty(ref soundFilePath, value);
         }
 
-        public ObservableCollection<string> SoundFiles { get; set; } = new ObservableCollection<string>();
+        private ObservableCollection<WarningSoundSetting> sounds = new ObservableCollection<WarningSoundSetting>();
+        public ObservableCollection<WarningSoundSetting> Sounds
+        {
+            get => sounds;
+            set => SetProperty(ref sounds, value);
+        }
 
         private bool systemNotify = true;
         /// <summary>
@@ -204,6 +210,37 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             get => winH;
             set => SetProperty(ref winH, value);
+        }
+    }
+
+    public class WarningSoundSetting : ObservableObject
+    {
+        private int id;
+        public int Id
+        {
+            get => id;
+            set => SetProperty(ref id, value);
+        }
+
+        private string filePath;
+        public string FilePath
+        {
+            get => filePath;
+            set => SetProperty(ref filePath, value);
+        }
+
+        private int volume = 100;
+        public int Volume
+        {
+            get => volume;
+            set => SetProperty(ref volume, value);
+        }
+
+        private bool loop;
+        public bool Loop
+        {
+            get => loop;
+            set => SetProperty(ref loop, value);
         }
     }
 }

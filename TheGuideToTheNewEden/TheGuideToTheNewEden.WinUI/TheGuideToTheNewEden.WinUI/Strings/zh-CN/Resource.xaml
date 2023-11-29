@@ -401,7 +401,13 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">重置预警小窗位置到屏幕中心</x:String>
     <x:String x:Key="EarlyWarningItemPage_SoundFilePath">音频文件</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">跳数</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Volume">音量</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Loop">循环</x:String>
+    <x:String x:Key="EarlyWarningItemPage_DefaultFile">默认</x:String>
+    <x:String x:Key="EarlyWarningItemPage_StopSound">停止声音</x:String>
 
     <!--  GameLogMonitorPage  -->
     <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>

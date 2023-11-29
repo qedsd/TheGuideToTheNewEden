@@ -50,8 +50,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => selectedCharacter;
             set
             {
-                SetProperty(ref selectedCharacter, value);
-                UpdateSelectedCharacter();
+                if(SetProperty(ref selectedCharacter, value))
+                {
+                    UpdateSelectedCharacter();
+                }
             }
         }
 
@@ -139,7 +141,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 LocationSolarSystem = value?.SolarSystemName;
             }
         }
-        private Core.Models.EarlyWarningSetting setting = new Core.Models.EarlyWarningSetting();
+        private Core.Models.EarlyWarningSetting setting;
         public Core.Models.EarlyWarningSetting Setting
         {
             get => setting;
@@ -214,17 +216,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
             var setting = Services.Settings.IntelSettingService.GetValue(selectedCharacter);
-            if(setting == null)
-            {
-                Setting = Setting.DepthClone<Core.Models.EarlyWarningSetting>();
-                Setting.Listener = SelectedCharacter;
-            }
-            else
-            {
-                Setting = setting;
-            }
+            setting ??= new Core.Models.EarlyWarningSetting();
+            setting.Listener = SelectedCharacter;
+            Setting = setting;
             LoadSetting();
-            if(Setting.AutoUpdateLocaltion)
+            FixSoundSetting();
+            if (Setting.AutoUpdateLocaltion)
             {
                 UpdateCharacterLocation();
             }
@@ -247,23 +244,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-
-        public ICommand PickLogFolderCommand => new RelayCommand(async() =>
-        {
-            var folder = await Helpers.PickHelper.PickFolderAsync(Helpers.WindowHelper.CurrentWindow());
-            if(folder != null)
-            {
-                LogPath = folder.Path;
-            }
-        });
-        public ICommand PickSoundFileCommand => new RelayCommand(async () =>
-        {
-            var file = await Helpers.PickHelper.PickFileAsync(Window);
-            if (file != null)
-            {
-                Setting.SoundFilePath= file.Path;
-            }
-        });
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
@@ -382,6 +362,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
 
+        public ICommand StopSoundCommand => new RelayCommand(() =>
+        {
+            if (!string.IsNullOrEmpty(Setting?.Listener))
+            {
+                WarningService.Current.StopSound(Setting.Listener);
+            }
+        });
+
         /// <summary>
         /// 预警更新
         /// </summary>
@@ -393,11 +381,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(ch.IntelType == Core.Enums.IntelChatType.Intel)
                 {
+                    Core.Models.WarningSoundSetting soundSetting = null;
+                    if(Setting.Sounds.Count >= ch.Jumps)
+                    {
+                        soundSetting = Setting.Sounds[ch.Jumps];
+                    }
                     Window.DispatcherQueue.TryEnqueue(() =>
                     {
-                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, Setting.SoundFilePath, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
                     });
-                    
                 }
             }
         }
@@ -570,7 +562,34 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-
+        private void FixSoundSetting()
+        {
+            if (Setting != null)
+            {
+                int diff = Setting.IntelJumps + 1 - Setting.Sounds.Count;
+                if(diff != 0)
+                {
+                    if (diff < 0)
+                    {
+                        for (int i = 0; i < -diff; i++)
+                        {
+                            Setting.Sounds.RemoveAt(Setting.Sounds.Count - 1);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < diff; i++)
+                        {
+                            Setting.Sounds.Add(new Core.Models.WarningSoundSetting()
+                            {
+                                Id = Setting.Sounds.Count
+                            });
+                        }
+                    }
+                }
+                
+            }
+        }
         private void SaveSetting()
         {
             if (Setting != null)

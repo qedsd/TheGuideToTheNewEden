@@ -18,7 +18,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="340" />
+            <ColumnDefinition Width="400" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid x:Name="ChatSelectArea" Margin="8">
@@ -249,16 +249,58 @@
                                 HeadersVisibility="Column"
                                 HorizontalScrollBarVisibility="Auto"
                                 IsReadOnly="False"
-                                ItemsSource="{x:Bind VM.Setting.SoundFiles, Mode=OneWay}"
+                                ItemsSource="{x:Bind VM.Setting.Sounds, Mode=OneWay}"
                                 RowDetailsVisibilityMode="Collapsed"
                                 SelectionMode="Extended"
                                 VerticalScrollBarVisibility="Visible"
                                 Visibility="{x:Bind VM.Setting.MakeSound, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                 <controls:DataGrid.Columns>
-                                    <controls:DataGridTextColumn
-                                        Width="220"
-                                        Binding="{Binding}"
-                                        Header="{StaticResource EarlyWarningItemPage_SoundFilePath}" />
+                                    <controls:DataGridTemplateColumn Header="{StaticResource EarlyWarningItemPage_Jump}" IsReadOnly="True">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding Id, Mode=OneWay}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="{StaticResource EarlyWarningItemPage_Volume}">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Slider Margin="0,0,0,0" Value="{Binding Volume, Mode=TwoWay}" />
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="{StaticResource EarlyWarningItemPage_Loop}">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="20">
+                                                    <CheckBox IsChecked="{Binding Loop, Mode=TwoWay}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+                                    <controls:DataGridTemplateColumn Header="{StaticResource EarlyWarningItemPage_SoundFilePath}">
+                                        <controls:DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,0,4,0" Orientation="Horizontal">
+                                                    <TextBox
+                                                        x:Name="TextBox_FilePath"
+                                                        Width="200"
+                                                        PlaceholderText="{StaticResource EarlyWarningItemPage_DefaultFile}"
+                                                        Text="{Binding FilePath, Mode=TwoWay}" />
+                                                    <Button
+                                                        Click="Button_PickSoundFile_Click"
+                                                        Content="+"
+                                                        Tag="{Binding ElementName=TextBox_FilePath}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </controls:DataGridTemplateColumn.CellTemplate>
+                                    </controls:DataGridTemplateColumn>
+
                                 </controls:DataGrid.Columns>
                             </controls:DataGrid>
                         </Grid>
@@ -335,7 +377,13 @@
                     Command="{x:Bind VM.RestorePosCommand}"
                     Icon="Refresh"
                     Label="{StaticResource EarlyWarningItemPage_RestorePos}"
-                    ToolTipService.ToolTip="重置预警小窗位置到屏幕中心"
+                    ToolTipService.ToolTip="{StaticResource EarlyWarningItemPage_RestorePos_Desc}"
+                    Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StopSoundCommand}"
+                    Icon="Stop"
+                    Label="{StaticResource EarlyWarningItemPage_StopSound}"
                     Visibility="{x:Bind VM.IsRunning, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
             </StackPanel>
         </Grid>

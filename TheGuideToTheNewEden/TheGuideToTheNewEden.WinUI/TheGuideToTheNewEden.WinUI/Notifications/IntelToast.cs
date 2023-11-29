@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.Notifications
 {
@@ -29,6 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
         {
             if (notificationActivatedEventArgs.Arguments.TryGetValue("listener", out string listener))
             {
+                WarningService.Current.StopSound(listener);
                 var process = Process.GetProcessesByName("exefile");
                 if (process != null && process.Any())
                 {
