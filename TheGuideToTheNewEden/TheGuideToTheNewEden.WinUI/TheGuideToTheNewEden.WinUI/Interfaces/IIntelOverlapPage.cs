@@ -13,6 +13,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
         void Init(BaseWindow window, Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap);
         void Intel(EarlyWarningContent content);
         void Clear(List<int> systemIds);
+        void Clear();
         void Downgrade(List<int> systemIds);
         void Dispose();
         void UpdateUI();
