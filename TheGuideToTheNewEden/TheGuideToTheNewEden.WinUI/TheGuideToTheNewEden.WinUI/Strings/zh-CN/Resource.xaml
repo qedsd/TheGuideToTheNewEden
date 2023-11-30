@@ -455,4 +455,13 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
 </ResourceDictionary>

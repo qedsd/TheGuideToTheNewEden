@@ -112,5 +112,33 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => highlightColor;
             set => SetProperty(ref highlightColor, value);
         }
+
+        private double highlightMarginLeft = 2;
+        public double HighlightMarginLeft
+        {
+            get => highlightMarginLeft;
+            set => SetProperty(ref highlightMarginLeft, value);
+        }
+
+        private double highlightMarginTop = 2;
+        public double HighlightMarginTop
+        {
+            get => highlightMarginTop;
+            set => SetProperty(ref highlightMarginTop, value);
+        }
+
+        private double highlightMarginRight = 2;
+        public double HighlightMarginRight
+        {
+            get => highlightMarginRight;
+            set => SetProperty(ref highlightMarginRight, value);
+        }
+
+        private double highlightMarginBottom = 2;
+        public double HighlightMarginBottom
+        {
+            get => highlightMarginBottom;
+            set => SetProperty(ref highlightMarginBottom, value);
+        }
     }
 }
