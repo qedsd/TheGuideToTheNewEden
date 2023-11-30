@@ -342,7 +342,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChatContents.Clear();
             IsRunning = false;
             LocalEarlyWarningItem = null;
-            Services.WarningService.Current.Remove(Setting.Listener);
+            Services.WarningService.Current.Remove(Setting?.Listener);
             RunningCharacters.Remove(SelectedCharacter);
             GC.Collect();
         });

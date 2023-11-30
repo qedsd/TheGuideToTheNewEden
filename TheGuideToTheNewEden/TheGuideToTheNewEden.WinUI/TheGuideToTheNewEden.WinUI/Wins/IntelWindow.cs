@@ -78,6 +78,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void IntelBasePage_OnClearButtonClicked(object sender, EventArgs e)
         {
             _intelPage.Clear();
+            Services.WarningService.Current.StopSound(Setting.Listener);
         }
 
         private void IntelBasePage_OnStopSoundButtonClicked(object sender, EventArgs e)

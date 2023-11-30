@@ -172,7 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
             }
-            mediaPlayer.Volume = soundSetting?.Volume ?? 100;
+            mediaPlayer.Volume = (soundSetting?.Volume ?? 100) / 100.0;
             mediaPlayer.IsLoopingEnabled = soundSetting?.Loop ?? false;
             mediaPlayer.Pause();
             mediaPlayer.Position = TimeSpan.Zero;
