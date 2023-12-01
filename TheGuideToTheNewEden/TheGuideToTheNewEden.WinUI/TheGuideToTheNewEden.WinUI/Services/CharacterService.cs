@@ -299,7 +299,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else
             {
-                Core.Log.Error("未添加角色");
+                Core.Log.Info("未添加角色");
                 return null;
             }
         }
