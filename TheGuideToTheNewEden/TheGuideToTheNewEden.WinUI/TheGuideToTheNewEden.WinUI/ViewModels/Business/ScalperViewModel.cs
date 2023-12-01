@@ -239,49 +239,67 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch(Setting.SourceMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.SourceMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch (Setting.DestinationMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.DestinationMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task GetOrders()
         {
