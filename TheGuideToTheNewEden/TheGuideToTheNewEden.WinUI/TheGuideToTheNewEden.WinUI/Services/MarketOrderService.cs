@@ -485,7 +485,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var regionOrders = await GetRegionOrdersAsync(system.RegionID, pageCallBack);
                 if(regionOrders.NotNullOrEmpty())
                 {
-                    return regionOrders.Where(p => p.SolarSystem.SolarSystemID == mapSolarSystemId).ToList();
+                    return regionOrders.Where(p => p.SystemId == mapSolarSystemId).ToList();
                 }
             }
             return null;
