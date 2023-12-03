@@ -39,6 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private AppWindow AppWindow;
         private Interfaces.IIntelOverlapPage _intelPage;
         private HashSet<int> _allSolarSystem = new HashSet<int>();
+        private IntelBasePage _intelBasePage;
         public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             _intelPage = null;
@@ -48,7 +49,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 case Core.Enums.IntelOverlapStyle.SMT: _intelPage = new SMTIntelOverlapPage();break;
                 case Core.Enums.IntelOverlapStyle.Near2: _intelPage = new Near2IntelOverlapPage(); break;
             }
-            Window.MainContent = _intelPage;
+            _intelBasePage = new IntelBasePage(_intelPage);
+            _intelBasePage.OnIntelInfoButtonClicked += IntelBasePage_OnIntelInfoButtonClicked;
+            _intelBasePage.OnStopSoundButtonClicked += IntelBasePage_OnStopSoundButtonClicked;
+            _intelBasePage.OnClearButtonClicked += IntelBasePage_OnClearButtonClicked;
+            Window.MainContent = _intelBasePage;
             Window.HideAppDisplayName();
             Window.SetSmallTitleBar();
             IntelMap = intelMap;
@@ -67,8 +72,27 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             AppWindow.IsShownInSwitchers = false;
             (AppWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
             TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
-
             Init(Setting, IntelMap);
+        }
+
+        private void IntelBasePage_OnClearButtonClicked(object sender, EventArgs e)
+        {
+            _intelPage.Clear();
+            Services.WarningService.Current.StopSound(Setting.Listener);
+        }
+
+        private void IntelBasePage_OnStopSoundButtonClicked(object sender, EventArgs e)
+        {
+            Services.WarningService.Current.StopSound(Setting.Listener);
+        }
+
+        private void IntelBasePage_OnIntelInfoButtonClicked(object sender, EventArgs e)
+        {
+            var hwnd = Helpers.WindowHelper.GetGameHwndByCharacterName(Setting.Listener);
+            if (hwnd != IntPtr.Zero)
+            {
+                Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
+            }
         }
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
@@ -101,7 +125,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
-            OnStop?.Invoke();
+            Services.WarningService.Current.StopSound(Setting.Listener);
+            Window.Hide();
         }
 
         public delegate void StopDelegate();
@@ -144,6 +169,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Intel(EarlyWarningContent content)
         {
             _intelPage.Intel(content);
+            string intelInfo = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
+            _intelBasePage.SetIntelInfo(intelInfo);
             if (_allSolarSystem.Contains(content.SolarSystemId))
             {
                 if(content.IntelType == Core.Enums.IntelChatType.Intel)

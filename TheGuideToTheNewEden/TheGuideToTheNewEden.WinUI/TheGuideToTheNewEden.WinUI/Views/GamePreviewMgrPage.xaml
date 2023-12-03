@@ -102,11 +102,22 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle
-                Grid.Row="2"
-                Height="1"
-                Margin="8,8"
-                Fill="{ThemeResource SystemAccentColor}" />
+            <Grid Grid.Row="2" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="游戏列表" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
             <StackPanel
                 Grid.Row="3"
                 Margin="8"
@@ -588,31 +599,11 @@
             Margin="10,0"
             Visibility="{x:Bind VM.SettingVisible, Mode=OneWay}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid Margin="8,0,8,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0"
-                    Text="预览设置" />
-                <Rectangle
-                    Grid.Column="2"
-                    Height="1"
-                    Fill="{ThemeResource SystemAccentColor}" />
-            </Grid>
-            <Pivot Grid.Row="1" />
-            <ScrollViewer Grid.Row="1" IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+            <ScrollViewer Grid.Row="0" IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
                 <StackPanel x:Name="SettingArea" Margin="8,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -695,6 +686,131 @@
                     <Grid Margin="0,8">
                         <CheckBox Content="显示标题栏" IsChecked="{x:Bind VM.Setting.ShowTitleBar, Mode=TwoWay}" />
                     </Grid>
+
+                    <Grid Margin="0,8">
+                        <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Grid Margin="0,8" Visibility="{x:Bind VM.Setting.HideOnForeground, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <CheckBox Content="激活窗口时高亮" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" />
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="0,4,0,0"
+                            Visibility="{x:Bind VM.Setting.Highlight, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                            <StackPanel>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{StaticResource GamePreviewMgrPage_HighlightMargin}"
+                                    Visibility="Collapsed" />
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Left}" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            Minimum="0"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Compact"
+                                            Value="{x:Bind VM.Setting.HighlightMarginLeft, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="8,0,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Right}" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            Minimum="0"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Compact"
+                                            Value="{x:Bind VM.Setting.HighlightMarginRight, Mode=TwoWay}" />
+                                    </Grid>
+                                </Grid>
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Top}" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            Minimum="0"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Compact"
+                                            Value="{x:Bind VM.Setting.HighlightMarginTop, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="8,0,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Bottom}" />
+                                        <NumberBox
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            Minimum="0"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Compact"
+                                            Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
+                                    </Grid>
+                                </Grid>
+                            </StackPanel>
+
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightColor}" />
+                                <Button
+                                    Grid.Column="1"
+                                    Padding="4"
+                                    HorizontalAlignment="Stretch">
+                                    <Button.Flyout>
+                                        <Flyout Placement="Left">
+                                            <ColorPicker
+                                                ColorSpectrumShape="Box"
+                                                IsAlphaEnabled="True"
+                                                IsAlphaSliderVisible="True"
+                                                IsAlphaTextInputVisible="True"
+                                                IsColorChannelTextInputVisible="True"
+                                                IsColorSliderVisible="True"
+                                                IsHexInputVisible="True"
+                                                IsMoreButtonVisible="False"
+                                                Color="{x:Bind VM.Setting.HighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
+                                        </Flyout>
+                                    </Button.Flyout>
+                                    <Button.Content>
+                                        <Rectangle
+                                            Width="170"
+                                            Height="24"
+                                            Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
                     <Grid Margin="0,8">
                         <Slider
                             Header="窗口透明度"
@@ -702,56 +818,33 @@
                             Minimum="1"
                             Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
                     </Grid>
+
                     <Grid Margin="0,8">
                         <TextBox
                             Header="激活快捷键"
                             PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
                             Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}" />
                     </Grid>
-                    <Grid Margin="0,8">
-                        <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
-                    </Grid>
-                    <Grid Margin="0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <CheckBox Content="激活窗口时高亮" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" />
-                        <Button
-                            Grid.Column="1"
-                            Margin="10,0,0,0"
-                            Padding="4"
-                            HorizontalAlignment="Right">
-                            <Button.Flyout>
-                                <Flyout Placement="Left">
-                                    <ColorPicker
-                                        ColorSpectrumShape="Box"
-                                        IsAlphaEnabled="True"
-                                        IsAlphaSliderVisible="True"
-                                        IsAlphaTextInputVisible="True"
-                                        IsColorChannelTextInputVisible="True"
-                                        IsColorSliderVisible="True"
-                                        IsHexInputVisible="True"
-                                        IsMoreButtonVisible="False"
-                                        Color="{x:Bind VM.Setting.HighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
-                                </Flyout>
-                            </Button.Flyout>
-                            <Button.Content>
-                                <Rectangle
-                                    Width="100"
-                                    Height="24"
-                                    Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
-                            </Button.Content>
-                        </Button>
-                    </Grid>
+
                 </StackPanel>
             </ScrollViewer>
-            <Rectangle
-                Grid.Row="4"
-                Height="1"
-                Margin="8,8"
-                Fill="{ThemeResource SystemAccentColor}" />
-            <Grid Grid.Row="5">
+            <Grid Grid.Row="1" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0"
+                    Text="预览设置" />
+                <Rectangle
+                    Grid.Column="2"
+                    Height="1"
+                    Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+            <Grid Grid.Row="2">
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         HorizontalAlignment="Center"

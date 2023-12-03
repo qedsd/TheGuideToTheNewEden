@@ -251,7 +251,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow?.Show();
                 this.Show();
                 StopTitlebarOp();
-                UpdateThumbnail(hHighlight ? 6 : 0);
+                if (hHighlight)
+                {
+                    UpdateThumbnail((int)_setting.HighlightMarginLeft, (int)_setting.HighlightMarginRight,
+                        (int)_setting.HighlightMarginTop, (int)_setting.HighlightMarginBottom);
+                }
+                else
+                {
+                    UpdateThumbnail();
+                }
             });
         }
         public bool IsHideOnForeground()
@@ -265,7 +273,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         private readonly object _updateThumbnailLocker = new object();
-        public void UpdateThumbnail(int bottomMargin = 0)
+        public void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
         {
             lock(_updateThumbnailLocker)
             {
@@ -273,16 +281,16 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 {
                     try
                     {
-                        int left = 0;
-                        int top = 0;
-                        int right = _thumbnailWindow.AppWindow.ClientSize.Width;
-                        int bottom = _thumbnailWindow.AppWindow.ClientSize.Height;
+                        int left = left1;
+                        int top = top1;
+                        int right = _thumbnailWindow.AppWindow.ClientSize.Width - right1;
+                        int bottom = _thumbnailWindow.AppWindow.ClientSize.Height - bottom1;
                         var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
                         int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
                         var clientRect = new System.Drawing.Rectangle();
                         Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
                                                                          //目标窗口显示区域，及GamePreviewWindow
-                        WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom - bottomMargin);
+                        WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
                         //源窗口捕获区域，即游戏的窗口
                         WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
                         WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);

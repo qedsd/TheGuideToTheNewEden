@@ -239,52 +239,72 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch(Setting.SourceMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.SourceMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch (Setting.DestinationMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.DestinationMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task GetOrders()
         {
+            long errorCount = Core.Log.GetErrorCount();
+            long infoCount = Core.Log.GetInfoCount();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             Window?.ShowWaiting("获取源市场订单中");
@@ -325,8 +345,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
                 ScalperItems = scalperItems;
                 stopwatch.Stop();
-                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟)",false);
+                long errorCount2 = Core.Log.GetErrorCount();
+                long infoCount2 = Core.Log.GetInfoCount();
+                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时：{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟  错误：{errorCount2 - errorCount}  异常：{infoCount2 - infoCount})",false);
             }
+            else
+            {
+                Window?.ShowError("未获取到有效订单");
+            }
+            Window?.HideWaiting();
         }
 
         private List<Order> RemoveFilterTypes(List<Order> orders)

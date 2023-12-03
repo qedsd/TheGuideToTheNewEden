@@ -44,7 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             TextBlock_SellOrderSaturation.Text = item.Saturation.ToString("N2");
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
-            TextBlock_Volume.Text = item.InvType.Volume.ToString("N2");
+            TextBlock_Volume.Text = item.InvType.PackagedVolume.ToString("N2");
 
             DataGrid_SourceSell.ItemsSource = item.SourceSellOrders;
             DatGrid_SourceBuy.ItemsSource = item.SourceBuyOrders;

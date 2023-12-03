@@ -21,6 +21,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI;
 using System.Reflection;
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -171,6 +172,48 @@ namespace TheGuideToTheNewEden.WinUI.Views
             else
             {
                 VM.SearchMapSolarSystems = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains((sender as TextBox).Text)).ToList();
+            }
+        }
+
+        private void NumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            if(!double.IsNaN(args.OldValue))
+            {
+                int diff = (int)(args.NewValue - args.OldValue);
+                if (diff < 0)
+                {
+                    for (int i = 0; i < -diff; i++)
+                    {
+                        VM.Setting.Sounds.RemoveAt(VM.Setting.Sounds.Count - 1);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < diff; i++)
+                    {
+                        VM.Setting.Sounds.Add(new Core.Models.WarningSoundSetting()
+                        {
+                            Id = VM.Setting.Sounds.Count
+                        });
+                    }
+                }
+            }
+        }
+
+        private async void Button_PickSoundFile_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var file = await Helpers.PickHelper.PickFileAsync(Helpers.WindowHelper.GetWindowForElement(this));
+                if (file != null)
+                {
+                    ((sender as FrameworkElement).DataContext as WarningSoundSetting).FilePath = file.Path;
+                }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError(ex.Message);
             }
         }
     }

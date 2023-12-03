@@ -287,22 +287,28 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void ShowWaiting(string tip = null)
         {
-            if(string.IsNullOrEmpty(tip))
+            this.DispatcherQueue.TryEnqueue(() =>
             {
-                WaitingText.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                WaitingText.Visibility = Visibility.Visible;
-                WaitingText.Text = tip;
-            }
-            WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-            WaitingProgressRing.IsActive = true;
+                if (string.IsNullOrEmpty(tip))
+                {
+                    WaitingText.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    WaitingText.Visibility = Visibility.Visible;
+                    WaitingText.Text = tip;
+                }
+                WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                WaitingProgressRing.IsActive = true;
+            });
         }
         public void HideWaiting()
         {
-            WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            WaitingProgressRing.IsActive = false;
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                WaitingProgressRing.IsActive = false;
+            });
         }
 
         public void Hide()

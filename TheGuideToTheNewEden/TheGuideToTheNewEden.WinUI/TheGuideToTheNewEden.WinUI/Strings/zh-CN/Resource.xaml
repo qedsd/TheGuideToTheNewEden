@@ -329,7 +329,7 @@
     <x:String x:Key="AddSerenityAuthDialog_Step0Button">登出</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Title">新增国服玩家角色授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</x:String>
-    <x:String x:Key="AddSerenityAuthDialog_Step1Button">esi.evepc.163.com</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框并点击确定按钮完成授权</x:String>
 
     <x:String x:Key="WormholePage_Search">搜索虫洞...</x:String>
@@ -401,6 +401,13 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="EarlyWarningItemPage_SoundFilePath">音频文件</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">跳数</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Volume">音量</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Loop">循环</x:String>
+    <x:String x:Key="EarlyWarningItemPage_DefaultFile">默认</x:String>
+    <x:String x:Key="EarlyWarningItemPage_StopSound">停止声音</x:String>
 
     <!--  GameLogMonitorPage  -->
     <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
@@ -448,4 +455,13 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
 </ResourceDictionary>

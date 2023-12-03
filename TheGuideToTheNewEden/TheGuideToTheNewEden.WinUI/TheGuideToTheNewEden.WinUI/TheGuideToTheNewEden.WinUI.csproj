@@ -12,7 +12,7 @@
     <PackageIcon>logo_180.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.6.1.0</AssemblyVersion>
+	<AssemblyVersion>2.6.2.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<!--package需注释掉-->
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -255,6 +255,7 @@
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
+    <None Remove="Views\IntelOverlapPages\IntelBasePage.xaml" />
     <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
@@ -331,6 +332,9 @@
     <Page Update="Dialogs\AddSerenityAuthDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <None Update="ESI.NET.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -370,6 +374,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\IntelOverlapPages\IntelBasePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\TestSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

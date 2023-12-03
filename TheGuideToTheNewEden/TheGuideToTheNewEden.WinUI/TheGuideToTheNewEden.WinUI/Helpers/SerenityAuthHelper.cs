@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         private static readonly string host = "https://login.evepc.163.com/v2/oauth/authorize";
         private static readonly string client_id = "bc90aa496a404724a93f41b4f4e97761";
         public static string ClientId { get => client_id; }
-        private static readonly string redirect_uri = "https://esi.evepc.163.com/ui/oauth2-redirect.html";
+        private static readonly string redirect_uri = "https://ali-esi.evepc.163.com/ui/oauth2-redirect.html";
         private static readonly string state = "test";
         private static readonly string realm = "ESI";
         private static readonly string response_type = "code";

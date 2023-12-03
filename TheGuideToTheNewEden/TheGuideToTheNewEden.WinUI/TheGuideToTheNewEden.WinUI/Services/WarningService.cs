@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
     internal class WarningService
     {
         private static WarningService current;
-        private static WarningService Current
+        public static WarningService Current
         {
             get
             {
@@ -34,43 +34,151 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 一个角色绑定一个通知窗口
         /// </summary>
         private Dictionary<string, IntelWindow> WarningWindows = new Dictionary<string, IntelWindow>();
-        
-        public static void NotifyWindow(string listener, EarlyWarningContent content)
+        /// <summary>
+        /// 一个角色绑定一个MediaSource
+        /// </summary>
+        private Dictionary<string, MediaPlayer> MediaPlayers = new Dictionary<string, MediaPlayer>();
+        /// <summary>
+        /// 一个音源绑定一个MediaSource
+        /// </summary>
+        private Dictionary<string, MediaSource> MediaSources = new Dictionary<string, MediaSource>();
+        private MediaSource defaultMediaSource;
+        private MediaSource DefaultMediaSource
         {
-            if(Current.WarningWindows.TryGetValue(listener,out var value))
+            get
             {
-                value.Intel(content);
+                if(defaultMediaSource == null)
+                {
+                    defaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
+                }
+                return defaultMediaSource;
             }
         }
-        public static IntelWindow AddNotifyWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public bool Add(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            if (Current.WarningWindows.ContainsKey(setting.Listener))
+            if(setting.OverlapType != 2)//初始化小窗
             {
-                return null;
+                if (WarningWindows.ContainsKey(setting.Listener))
+                {
+                    Core.Log.Error("存在相同角色名称WarningWindow");
+                    return false;
+                }
+                else
+                {
+                    IntelWindow intelWindow = new IntelWindow(setting, intelMap);
+                    WarningWindows.Add(setting.Listener, intelWindow);
+                    if(setting.OverlapType == 0)
+                    {
+                        intelWindow.Show();
+                    }
+                }
+            }
+            if(setting.MakeSound)
+            {
+                if (MediaPlayers.ContainsKey(setting.Listener))
+                {
+                    Core.Log.Error("存在相同角色名称MediaPlayer");
+                    return false;
+                }
+                else
+                {
+                    MediaPlayer mediaPlayer = new MediaPlayer()
+                    {
+                        Source = DefaultMediaSource
+                    };
+                    MediaPlayers.Add(setting.Listener, mediaPlayer);
+                }
+            }
+            return true;
+        }
+        public bool Remove(string listener)
+        {
+            if(!string.IsNullOrEmpty(listener))
+            {
+                if(WarningWindows.TryGetValue(listener, out var window))
+                {
+                    window.Dispose();
+                }
+                WarningWindows.Remove(listener);
+                if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
+                {
+                    mediaPlayer.Dispose();
+                }
+                MediaPlayers.Remove(listener);
+            }
+            return true;
+        }
+        public IntelWindow GetIntelWindow(string listener)
+        {
+            if(WarningWindows.TryGetValue(listener, out var value))
+            {
+                return value;
             }
             else
             {
-                IntelWindow intelWindow = new IntelWindow(setting, intelMap);
-                Current.WarningWindows.Add(setting.Listener, intelWindow);
-                return intelWindow;
+                return null;
             }
         }
-        public static void ShowWindow(string listener)
+        public bool Notify(string listener, WarningSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
         {
-            if (Current.WarningWindows.TryGetValue(listener, out var value))
+            try
             {
-                value.Show();
+                if (WarningWindows.TryGetValue(listener, out var value))
+                {
+                    value.Show();
+                    value.Intel(content);
+                }
+                if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
+                {
+                    PlaySound(mediaPlayer, soundSetting);
+                }
+                if(sendToast)
+                {
+                    Notifications.IntelToast.SendToast(listener, chanel, content);
+                }
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                return false;
             }
         }
-        public static void RemoveWindow(string listener)
+        private void PlaySound(MediaPlayer mediaPlayer, WarningSoundSetting soundSetting)
         {
-            if (listener != null && Current.WarningWindows.TryGetValue(listener, out var value))
+            string soundFile = soundSetting?.FilePath ?? string.Empty;
+            if (string.IsNullOrEmpty(soundFile))
             {
-                value.Dispose();
-                Current.WarningWindows.Remove(listener);
+                mediaPlayer.Source = DefaultMediaSource;
             }
+            else
+            {
+                if (MediaSources.TryGetValue(soundFile, out var mediaSource))
+                {
+                    mediaPlayer.Source = mediaSource;
+                }
+                else
+                {
+                    var m = MediaSource.CreateFromUri(new Uri(soundFile));
+                    if (m != null)
+                    {
+                        MediaSources.Add(soundFile, m);
+                        mediaPlayer.Source = m;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"创建{soundFile}MediaSource失败");
+                        mediaPlayer.Source = mediaSource;
+                    }
+                }
+            }
+            mediaPlayer.Volume = (soundSetting?.Volume ?? 100) / 100.0;
+            mediaPlayer.IsLoopingEnabled = soundSetting?.Loop ?? false;
+            mediaPlayer.Pause();
+            mediaPlayer.Position = TimeSpan.Zero;
+            mediaPlayer.Play();
         }
-        public static void ClearWindow()
+        public void ClearWindow()
         {
             foreach(var item in Current.WarningWindows.Values)
             {
@@ -78,21 +186,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             Current.WarningWindows.Clear();
         }
-        public static void UpdateWindowUI(string listener)
+        public void UpdateWindowUI(string listener)
         {
             if (Current.WarningWindows.TryGetValue(listener, out var value))
             {
                 value.UpdateUI();
             }
         }
-        public static void UpdateWindowHome(string listener, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public void UpdateWindowHome(string listener, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             if (Current.WarningWindows.TryGetValue(listener, out var value))
             {
                 value.UpdateHome(intelMap);
             }
         }
-        public static bool RestoreWindowPos(string listener)
+        public bool RestoreWindowPos(string listener)
         {
             if (Current.WarningWindows.TryGetValue(listener, out var value))
             {
@@ -104,75 +212,30 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return false;
             }
         }
-
-        public static void NotifyToast(string listener, string chanel, EarlyWarningContent content)
+        public void StopSound(string listener)
         {
-            Notifications.IntelToast.SendToast(listener, chanel, content);
-        }
-
-        private Dictionary<string, MediaSource> MediaSourceDic = new Dictionary<string, MediaSource>();
-        private MediaSource DefaultMediaSource;
-        private MediaPlayer mediaPlayer;
-        private MediaPlayer MediaPlayer
-        {
-            get
+            if (!string.IsNullOrEmpty(listener) && MediaPlayers.TryGetValue(listener, out var mediaPlayer))
             {
-                if(mediaPlayer == null)
-                {
-                    mediaPlayer = new MediaPlayer();
-                }
-                return mediaPlayer;
+                mediaPlayer.Pause();
+                mediaPlayer.Position = TimeSpan.Zero;
             }
         }
-        public static void NotifySound(string filepath)
-        {
-            Current.MediaPlayer.Pause();
-            if (!string.IsNullOrEmpty(filepath))
-            {
-                if (Current.MediaSourceDic.TryGetValue(filepath,out var mediaSourc))
-                {
-                    Current.MediaPlayer.Source = mediaSourc;
-                }
-                else
-                {
-                    var m = MediaSource.CreateFromUri(new Uri(filepath));
-                    if(m != null)
-                    {
-                        Current.MediaPlayer.Source = m;
-                        Current.MediaSourceDic.Add(filepath,m);
-                    }
-                }
-                Current.MediaPlayer.Play();
-            }
-            else
-            {
-                if(Current.DefaultMediaSource == null)
-                {
-                    Current.DefaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
-                }
-                if (Current.DefaultMediaSource != null)
-                {
-                    Current.MediaPlayer.Source = Current.DefaultMediaSource;
-                    Current.MediaPlayer.Play();
-                }
-            }
-        }
-
-        public static void Dispose()
+        public void Dispose()
         {
             ClearWindow();
-            foreach(var m in Current.MediaSourceDic.Values)
+            foreach(var player in MediaPlayers.Values)
+            {
+                player.Pause();
+                player.Dispose();
+            }
+            MediaPlayers.Clear();
+            foreach (var m in MediaSources.Values)
             {
                 m.Dispose();
             }
-            Current.MediaSourceDic.Clear();
-            Current.DefaultMediaSource?.Dispose();
-            Current.DefaultMediaSource = null;
-            if(Current.mediaPlayer != null)
-            {
-                Current.mediaPlayer.Dispose();
-            }
-            Current.mediaPlayer = null;
+            MediaSources.Clear();
+            DefaultMediaSource?.Dispose();
+            defaultMediaSource = null;
         }
     }
 }
