@@ -218,9 +218,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var setting = Services.Settings.IntelSettingService.GetValue(selectedCharacter);
             setting ??= new Core.Models.EarlyWarningSetting();
             setting.Listener = SelectedCharacter;
+            FixSoundSetting(setting);
             Setting = setting;
             LoadSetting();
-            FixSoundSetting();
+            
             if (Setting.AutoUpdateLocaltion)
             {
                 UpdateCharacterLocation();
@@ -562,27 +563,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private void FixSoundSetting()
+        private static void FixSoundSetting(Core.Models.EarlyWarningSetting setting)
         {
-            if (Setting != null)
+            if (setting != null)
             {
-                int diff = Setting.IntelJumps + 1 - Setting.Sounds.Count;
+                int diff = setting.IntelJumps + 1 - setting.Sounds.Count;
                 if(diff != 0)
                 {
                     if (diff < 0)
                     {
                         for (int i = 0; i < -diff; i++)
                         {
-                            Setting.Sounds.RemoveAt(Setting.Sounds.Count - 1);
+                            setting.Sounds.RemoveAt(setting.Sounds.Count - 1);
                         }
                     }
                     else
                     {
                         for (int i = 0; i < diff; i++)
                         {
-                            Setting.Sounds.Add(new Core.Models.WarningSoundSetting()
+                            setting.Sounds.Add(new Core.Models.WarningSoundSetting()
                             {
-                                Id = Setting.Sounds.Count
+                                Id = setting.Sounds.Count
                             });
                         }
                     }
