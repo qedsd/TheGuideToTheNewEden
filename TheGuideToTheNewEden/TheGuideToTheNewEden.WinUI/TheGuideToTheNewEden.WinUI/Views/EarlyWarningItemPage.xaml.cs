@@ -207,7 +207,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 var file = await Helpers.PickHelper.PickFileAsync(Helpers.WindowHelper.GetWindowForElement(this));
                 if (file != null)
                 {
-                    ((sender as FrameworkElement).DataContext as WarningSoundSetting).FilePath = file.Path;
+                    ((sender as FrameworkElement).Tag as TextBox).Text = file.Path;
                 }
             }
             catch(Exception ex)
