@@ -231,6 +231,22 @@
                                         Value="{x:Bind VM.Setting.SaturationFluctuation, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
+                            <Expander Header="{StaticResource BusinessPage_HeadValue}">
+                                <StackPanel>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HeadValueDay}"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Value="{x:Bind VM.Setting.HeatValueDay, Mode=TwoWay}" />
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_HeatValueThreshold}"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Value="{x:Bind VM.Setting.HeatValueThreshold, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Expander>
                             <Expander Header="{StaticResource BusinessPage_SuggestionWeight}">
                                 <StackPanel>
                                     <Slider
@@ -268,6 +284,11 @@
                                         Maximum="100"
                                         Minimum="0"
                                         Value="{x:Bind VM.Setting.SuggestionSaturation, Mode=TwoWay}" />
+                                    <Slider
+                                        Header="{StaticResource BusinessPage_HeadValue}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind VM.Setting.SuggestionHeatValue, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
                         </StackPanel>
@@ -382,6 +403,10 @@
                         DisplayNumberFormat="N2"
                         HeaderText="{StaticResource BusinessPage_SingleNetProfit}"
                         MappingName="NetProfit" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_HeadValue}"
+                        MappingName="HeatValue" />
                     <dataGrid:GridNumericColumn
                         DisplayNumberFormat="N2"
                         HeaderText="{StaticResource BusinessPage_Principal}"

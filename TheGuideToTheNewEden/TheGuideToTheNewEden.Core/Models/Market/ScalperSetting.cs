@@ -246,6 +246,25 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         }
         #endregion
 
+        #region 热力值
+        private int heatValueDay = 30;
+        /// <summary>
+        /// 热力值计算天数
+        /// </summary>
+        public int HeatValueDay
+        {
+            get => heatValueDay; set => SetProperty(ref heatValueDay, value);
+        }
+        private int heatValueThreshold = 1;
+        /// <summary>
+        /// 热力值销量判断界限
+        /// </summary>
+        public int HeatValueThreshold
+        {
+            get => heatValueThreshold; set => SetProperty(ref heatValueThreshold, value);
+        }
+        #endregion
+
         #region 推荐度计算
         private double suggestionROI = 40;
         /// <summary>
@@ -316,6 +335,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public double SuggestionSaturation
         {
             get => suggestionSaturation; set => SetProperty(ref suggestionSaturation, value);
+        }
+
+        private double suggestionHeatValue = 30;
+        /// <summary>
+        /// 热力值
+        /// </summary>
+        public double SuggestionHeatValue
+        {
+            get => suggestionHeatValue; set => SetProperty(ref suggestionHeatValue, value);
         }
         #endregion
 

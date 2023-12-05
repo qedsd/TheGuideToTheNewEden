@@ -495,6 +495,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                         item.HistoryPriceFluctuation = 0;
                         item.NowPriceFluctuation = 0;
                         item.Saturation = 0;
+                        item.HeatValue = 0;
                     }
                     CalSales(items);
                     items = items.Where(p => p.DestinationSales > 0).ToList();
@@ -507,6 +508,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     CalHistoryPriceFluctuation(items);
                     CalNowPriceFluctuation(items);
                     CalSaturation(items);
+                    CalHeatValue(items);
                     CalSuggestion(items);
                     items = items.OrderByDescending(p => p.Suggestion).ToList();
                 }
@@ -903,6 +905,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
+        /// <summary>
+        /// 计算热力值
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalHeatValue(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.HeatValueDay - 2)).ToList();
+                if (history.NotNullOrEmpty())
+                {
+                    foreach(var his in history)
+                    {
+                        item.HeatValue += his.Volume >= Setting.HeatValueThreshold ? 1 : -1;
+                    }
+                }
+            }
+        }
 
         private void CalSuggestion(List<ScalperItem> items)
         {
@@ -963,6 +983,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if(item.Saturation > 0)
                 {
                     item.Suggestion += Setting.SuggestionSaturation * i / c;
+                }
+                i++;
+            }
+            //热力值
+            i = 1;
+            foreach (var item in items.OrderBy(p => p.HeatValue))
+            {
+                if (item.Saturation > 0)
+                {
+                    item.Suggestion += Setting.SuggestionHeatValue * i / c;
                 }
                 i++;
             }
