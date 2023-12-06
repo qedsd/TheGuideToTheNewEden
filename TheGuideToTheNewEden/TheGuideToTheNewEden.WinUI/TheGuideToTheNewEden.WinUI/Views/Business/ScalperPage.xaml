@@ -231,10 +231,10 @@
                                         Value="{x:Bind VM.Setting.SaturationFluctuation, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
-                            <Expander Header="{StaticResource BusinessPage_HeadValue}">
+                            <Expander Header="{StaticResource BusinessPage_HeatValue}">
                                 <StackPanel>
                                     <NumberBox
-                                        Header="{StaticResource BusinessPage_HeadValueDay}"
+                                        Header="{StaticResource BusinessPage_HeatValueDay}"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
@@ -285,7 +285,7 @@
                                         Minimum="0"
                                         Value="{x:Bind VM.Setting.SuggestionSaturation, Mode=TwoWay}" />
                                     <Slider
-                                        Header="{StaticResource BusinessPage_HeadValue}"
+                                        Header="{StaticResource BusinessPage_HeatValue}"
                                         Maximum="100"
                                         Minimum="0"
                                         Value="{x:Bind VM.Setting.SuggestionHeatValue, Mode=TwoWay}" />
@@ -405,7 +405,7 @@
                         MappingName="NetProfit" />
                     <dataGrid:GridNumericColumn
                         DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_HeadValue}"
+                        HeaderText="{StaticResource BusinessPage_HeatValue}"
                         MappingName="HeatValue" />
                     <dataGrid:GridNumericColumn
                         DisplayNumberFormat="N2"

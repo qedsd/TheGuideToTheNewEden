@@ -257,8 +257,8 @@
     <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">当前价格波动</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturation">卖单饱和度</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">有效订单价格波动范围（%）</x:String>
-    <x:String x:Key="BusinessPage_HeadValue">热力值</x:String>
-    <x:String x:Key="BusinessPage_HeadValueDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_HeatValue">热力值</x:String>
+    <x:String x:Key="BusinessPage_HeatValueDay">历史价格天数</x:String>
     <x:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</x:String>
 
     <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>

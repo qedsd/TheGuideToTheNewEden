@@ -38,6 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             TextBlock_ROI.Text = item.ROI.ToString("N2");
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
             TextBlock_TargetSalesNetProfit.Text = item.TargetNetProfit.ToString("N2");
+            TextBlock_HeatValue.Text = item.HeatValue.ToString("N2");
             TextBlock_Principal.Text = item.Principal.ToString("N2");
             TextBlock_HistoryPriceFluctuation.Text = item.HistoryPriceFluctuation.ToString("N2");
             TextBlock_NowPriceFluctuation.Text = item.NowPriceFluctuation.ToString("N2");
