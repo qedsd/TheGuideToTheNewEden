@@ -201,13 +201,12 @@
                             </Expander>
                             <Expander Header="{StaticResource BusinessPage_DestinationSales}">
                                 <StackPanel>
-                                    <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
-                                        <NumberBox
-                                            Width="140"
-                                            Header="{StaticResource BusinessPage_SalesDay}"
-                                            Minimum="1"
-                                            Value="{x:Bind VM.Setting.DestinationSalesDay, Mode=TwoWay}" />
-                                    </StackPanel>
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_SalesDay}"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Value="{x:Bind VM.Setting.DestinationSalesDay, Mode=TwoWay}" />
                                     <StackPanel Orientation="Horizontal">
                                         <ComboBox
                                             Width="140"
