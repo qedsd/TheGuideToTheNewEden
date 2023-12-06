@@ -81,6 +81,8 @@
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor">日志监控</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor_Desc">监控游戏日志</x:String>
+    <x:String x:Key="ShellPage_Links">友情链接</x:String>
+    <x:String x:Key="ShellPage_Links_Desc">常用的官方、第三方网站、工具链接</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -472,4 +474,13 @@
     <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
     <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+
+    <!--  LinksPage  -->
+    <x:String x:Key="LinksPage_Name">名字</x:String>
+    <x:String x:Key="LinksPage_Url">链接</x:String>
+    <x:String x:Key="LinksPage_Description">描述</x:String>
+    <x:String x:Key="LinksPage_Notes">备注</x:String>
+    <x:String x:Key="LinksPage_Platforms">平台</x:String>
+    <x:String x:Key="LinksPage_Categories">分类</x:String>
+    <x:String x:Key="LinksPage_CopyUrl">复制链接</x:String>
 </ResourceDictionary>

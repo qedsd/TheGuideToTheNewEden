@@ -258,6 +258,7 @@
     <None Remove="Views\IntelOverlapPages\IntelBasePage.xaml" />
     <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
+    <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -344,6 +345,9 @@
     <None Update="Resources\Configs\Keyboardlist.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Configs\Links.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Configs\log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -374,6 +378,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\LinksPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\IntelOverlapPages\IntelBasePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

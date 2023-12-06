@@ -1,0 +1,39 @@
+﻿[
+	{
+		"Name": "EVE-HR",
+		"Url": "https://eve-hr.com/",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "EVE-HR is a web browser based management interface that handles most of the corporations daily routines, it has a great amount of the most important management features that are needed, such as ESI checking, buy-back, recruitment, logistics, loyalty system, fleet up integration, and more features & functions being added in an intense interval.",
+		"Categories": [
+			"角色管理"
+		],
+		"Notes": "Does work with ESI. Has Discord integration functionality, Fleet-Up notifications Integrated, Slack notifications are BEING integrated."
+	},
+	{
+		"Name": "Alliance Auth",
+		"Url": "https://gitlab.com/allianceauth/allianceauth",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "\tAlliance Auth (AA) is a web site that helps EVE Online organizations efficiently manage access to applications and services.",
+		"Categories": [
+			"联盟管理"
+		],
+		"Notes": "Used to access EVE University services."
+	},
+	{
+		"Name": "Torsten Feld EVE Online",
+		"Url": "https://www.amazon.com/Torsten-Feld-EVE-Online/dp/B08ZDV7BR5",
+		"Platforms": [
+			"Alexa Skill"
+		],
+		"Description": "Allows one to ask Alexa various questions pertaining to EVE. Integrates with ESI.",
+		"Categories": [
+			"综合",
+			"ESI"
+		],
+		"Notes": "Amazon Alexa has privacy concerns"
+	}
+]
