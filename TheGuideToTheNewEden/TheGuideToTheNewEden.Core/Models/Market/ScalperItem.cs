@@ -60,5 +60,9 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// 订单饱和度
         /// </summary>
         public double Saturation { get; set; }
+        /// <summary>
+        /// 热力值
+        /// </summary>
+        public int HeatValue { get; set; }
     }
 }

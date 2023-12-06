@@ -257,6 +257,9 @@
     <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">当前价格波动</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturation">卖单饱和度</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">有效订单价格波动范围（%）</x:String>
+    <x:String x:Key="BusinessPage_HeatValue">热力值</x:String>
+    <x:String x:Key="BusinessPage_HeatValueDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</x:String>
 
     <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
     <x:String x:Key="BusinessPage_ROI">回报率</x:String>
@@ -273,7 +276,7 @@
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
-    <x:String x:Key="BusinessPage_SourceSales">源市场日日销量</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日销量</x:String>
     <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
     <x:String x:Key="BusinessPage_DestinationSales">目的市场日销量</x:String>
     <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
@@ -286,6 +289,11 @@
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>
     <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
+    <x:String x:Key="BusinessPage_SalesType">销量计算方式</x:String>
+    <x:String x:Key="BusinessPage_SalesDay">统计历史天数</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighestSalse">历史最高销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverageSalse">历史平均销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowestSalse">历史最低销量</x:String>
 
     <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
