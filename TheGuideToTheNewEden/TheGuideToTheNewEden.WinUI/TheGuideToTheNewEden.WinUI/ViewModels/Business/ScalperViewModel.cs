@@ -988,11 +988,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
             //热力值
             i = 1;
-            foreach (var item in items.OrderBy(p => p.HeatValue))
+            var groups = items.GroupBy(p => p.HeatValue).ToList();
+            int groupCount = groups.Count;
+            foreach (var group in groups.OrderBy(p => p.Key))
             {
-                if (item.Saturation > 0)
+                double s = Setting.SuggestionHeatValue * i / groupCount;
+                foreach (var item in group)
                 {
-                    item.Suggestion += Setting.SuggestionHeatValue * i / c;
+                    item.Suggestion += s;
                 }
                 i++;
             }
