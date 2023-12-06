@@ -174,26 +174,49 @@
                                         Visibility="{x:Bind VM.Setting.IsHistorySellPrice, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}" />
                                 </StackPanel>
                             </Expander>
-                            <Expander Header="{StaticResource BusinessPage_DaySales}">
+                            <Expander Header="{StaticResource BusinessPage_SourceSales}">
                                 <StackPanel>
-                                    <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
-                                        <NumberBox
+                                    <NumberBox
+                                        Header="{StaticResource BusinessPage_SalesDay}"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Value="{x:Bind VM.Setting.SourceSalesDay, Mode=TwoWay}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <ComboBox
                                             Width="140"
-                                            Header="{StaticResource BusinessPage_SourceSalesDay}"
-                                            Minimum="1"
-                                            Value="{x:Bind VM.Setting.SourceSalesDay, Mode=TwoWay}" />
+                                            Header="{StaticResource BusinessPage_SalesType}"
+                                            SelectedIndex="{x:Bind VM.SourceSalesType, Mode=TwoWay}">
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowestSalse}" />
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighestSalse}" />
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverageSalse}" />
+                                        </ComboBox>
                                         <CheckBox
                                             Margin="8,0,0,4"
                                             VerticalAlignment="Bottom"
                                             Content="{StaticResource BusinessPage_RemoveExtremum}"
                                             IsChecked="{x:Bind VM.Setting.SourceRemoveExtremum, Mode=TwoWay}" />
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="{StaticResource BusinessPage_DestinationSales}">
+                                <StackPanel>
+                                    <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
                                         <NumberBox
                                             Width="140"
-                                            Header="{StaticResource BusinessPage_DestinationSalesDay}"
+                                            Header="{StaticResource BusinessPage_SalesDay}"
                                             Minimum="1"
                                             Value="{x:Bind VM.Setting.DestinationSalesDay, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ComboBox
+                                            Width="140"
+                                            Header="{StaticResource BusinessPage_SalesType}"
+                                            SelectedIndex="{x:Bind VM.DestinationSalesType, Mode=TwoWay}">
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowestSalse}" />
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighestSalse}" />
+                                            <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverageSalse}" />
+                                        </ComboBox>
                                         <CheckBox
                                             Margin="8,0,0,4"
                                             VerticalAlignment="Bottom"
@@ -201,6 +224,7 @@
                                             IsChecked="{x:Bind VM.Setting.DestinationRemoveExtremum, Mode=TwoWay}" />
                                     </StackPanel>
                                     <Slider
+                                        Margin="0,8,0,0"
                                         Header="{StaticResource BusinessPage_TargetSalesPercent}"
                                         Maximum="100"
                                         Minimum="1"

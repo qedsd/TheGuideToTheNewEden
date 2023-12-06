@@ -60,6 +60,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
+        private int sourceSalesType;
+        public int SourceSalesType
+        {
+            get => sourceSalesType;
+            set
+            {
+                if(SetProperty(ref sourceSalesType, value))
+                {
+                    Setting.SourceSalesType = (SalesType)value;
+                }
+            }
+        }
+
+        private int destinationSalesType;
+        public int DestinationSalesType
+        {
+            get => destinationSalesType;
+            set
+            {
+                if (SetProperty(ref destinationSalesType, value))
+                {
+                    Setting.DestinationSalesType = (SalesType)value;
+                }
+            }
+        }
+
         private List<Core.DBModels.InvMarketGroup> invMarketGroups;
         public List<Core.DBModels.InvMarketGroup> InvMarketGroups
         {
@@ -122,6 +148,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             Setting ??= new ScalperSetting();
             BuyPriceType = (int)Setting.BuyPrice;
             SellPriceType = (int)Setting.SellPrice;
+            SourceSalesType = (int)Setting.SourceSalesType;
+            DestinationSalesType = (int)Setting.DestinationSalesType;
             InvMarketGroups = await Core.Services.DB.InvMarketGroupService.QueryRootGroupAsync();
             SelectedInvMarketGroup = InvMarketGroups.FirstOrDefault(p => p.MarketGroupID == Setting.MarketGroup);
         }
@@ -531,30 +559,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 var history = item.SourceStatistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay - 2)).ToList();
                 if(history.NotNullOrEmpty())
                 {
-                    if(history.Count > 3)
+                    history = history.OrderBy(p => p.Volume).ToList();
+                    if (history.Count > 3)
                     {
                         if (Setting.SourceRemoveExtremum)
                         {
-                            var order = history.OrderBy(p => p.Volume);
-                            history.Remove(order.First());
-                            history.Remove(order.Last());
+                            history.RemoveAt(0);
+                            history.RemoveAt(history.Count - 1);
                         }
                     }
-                    item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                    switch(Setting.SourceSalesType)
+                    {
+                        case SalesType.HistoryLowest: item.SourceSales = history.FirstOrDefault().Volume; break;
+                        case SalesType.HistoryHighest: item.SourceSales = history.LastOrDefault().Volume; break;
+                        case SalesType.HistoryAverage: item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count); break;
+                    }
                 }
                 history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(- Setting.DestinationSalesDay - 2)).ToList();
                 if (history.NotNullOrEmpty())
                 {
+                    history = history.OrderBy(p => p.Volume).ToList();
                     if (history.Count > 3)
                     {
                         if (Setting.DestinationRemoveExtremum)
                         {
-                            var order = history.OrderBy(p => p.Volume);
-                            history.Remove(order.First());
-                            history.Remove(order.Last());
+                            history.RemoveAt(0);
+                            history.RemoveAt(history.Count - 1);
                         }
                     }
-                    item.DestinationSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                    switch (Setting.DestinationSalesType)
+                    {
+                        case SalesType.HistoryLowest: item.DestinationSales = history.FirstOrDefault().Volume; break;
+                        case SalesType.HistoryHighest: item.DestinationSales = history.LastOrDefault().Volume; break;
+                        case SalesType.HistoryAverage: item.DestinationSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count); break;
+                    }
                 }
             }
         }

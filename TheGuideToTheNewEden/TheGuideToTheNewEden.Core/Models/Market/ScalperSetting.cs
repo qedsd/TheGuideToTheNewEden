@@ -164,6 +164,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             get => sourceRemoveExtremum; set => SetProperty(ref sourceRemoveExtremum, value);
         }
 
+        private SalesType sourceSalesType = SalesType.HistoryLowest;
+        /// <summary>
+        /// 原市场销量计算方式
+        /// </summary>
+        public SalesType SourceSalesType
+        {
+            get => sourceSalesType; set => SetProperty(ref sourceSalesType, value);
+        }
+
         private int destinationSalesDay = 7;
         /// <summary>
         /// 目的市场销量计算天数
@@ -180,6 +189,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public bool DestinationRemoveExtremum
         {
             get => destinationRemoveExtremum; set => SetProperty(ref destinationRemoveExtremum, value);
+        }
+
+        private SalesType destinationSalesType = SalesType.HistoryLowest;
+        /// <summary>
+        /// 目的市场销量计算方式
+        /// </summary>
+        public SalesType DestinationSalesType
+        {
+            get => destinationSalesType; set => SetProperty(ref destinationSalesType, value);
         }
         #endregion
 
@@ -369,6 +387,16 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             HistoryAverage,
             [Description("历史最低价格")]
             HistoryLowest,
+        }
+
+        public enum SalesType
+        {
+            [Description("历史最低")]
+            HistoryLowest,
+            [Description("历史最高")]
+            HistoryHighest,
+            [Description("历史平均")]
+            HistoryAverage,
         }
     }
 }
