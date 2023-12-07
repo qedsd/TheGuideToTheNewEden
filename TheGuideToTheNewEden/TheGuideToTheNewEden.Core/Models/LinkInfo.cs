@@ -12,5 +12,6 @@ namespace TheGuideToTheNewEden.Core.Models
         public string Notes { get; set; }
         public string[] Platforms { get; set; }
         public string[] Categories { get; set; }
+        public string IconUrl { get; set; }
     }
 }

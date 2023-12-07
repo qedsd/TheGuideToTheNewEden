@@ -6,41 +6,69 @@
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:TheGuideToTheNewEden.Core.Models"
     Background="Transparent"
     mc:Ignorable="d">
 
-    <dataGrid:SfDataGrid
-        x:Name="DataGrid"
-        HorizontalAlignment="Stretch"
-        AllowDraggingColumns="True"
-        AllowEditing="False"
-        AllowFiltering="True"
-        AllowGrouping="True"
-        AllowResizingColumns="True"
-        AllowSorting="True"
-        AutoGenerateColumns="False"
-        ColumnWidthMode="Auto"
-        GridLinesVisibility="None"
-        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-        HeaderLinesVisibility="Both"
-        SelectionMode="Extended"
-        ShowGroupDropArea="True">
-        <dataGrid:SfDataGrid.Columns>
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Name}" MappingName="Name" />
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Url}" MappingName="Url" />
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Description}" MappingName="Description" />
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Notes}" MappingName="Notes" />
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Platforms}" MappingName="Platforms" />
-            <dataGrid:GridTextColumn HeaderText="{StaticResource LinksPage_Categories}" MappingName="Categories" />
-        </dataGrid:SfDataGrid.Columns>
-        <dataGrid:SfDataGrid.RecordContextFlyout>
-            <MenuFlyout>
-                <MenuFlyoutItem
-                    Click="Copy_Click"
-                    CommandParameter="{Binding}"
-                    Text="{StaticResource LinksPage_CopyUrl}" />
-            </MenuFlyout>
-        </dataGrid:SfDataGrid.RecordContextFlyout>
-
-    </dataGrid:SfDataGrid>
+    <ScrollViewer>
+        <Grid>
+            <GridView
+                x:Name="GridView"
+                Grid.Row="1"
+                IsItemClickEnabled="True"
+                ItemClick="GridView_ItemClick"
+                SelectionMode="None">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="4" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:LinkInfo">
+                        <Grid
+                            Width="360"
+                            Height="90"
+                            Padding="10,4"
+                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                            CornerRadius="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Image
+                                Width="48"
+                                Height="48"
+                                Loaded="Image_Loaded" />
+                            <Grid
+                                Grid.Column="1"
+                                Margin="0,4"
+                                VerticalAlignment="Center">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    Text="{x:Bind Name}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Thin"
+                                    Text="{x:Bind Description}"
+                                    TextTrimming="WordEllipsis"
+                                    TextWrapping="WrapWholeWords"
+                                    Visibility="{x:Bind Description, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+    </ScrollViewer>
 </Page>

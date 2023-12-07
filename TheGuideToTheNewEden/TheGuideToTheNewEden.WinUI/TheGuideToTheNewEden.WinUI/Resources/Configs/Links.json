@@ -1,39 +1,57 @@
 ﻿[
 	{
-		"Name": "EVE-HR",
-		"Url": "https://eve-hr.com/",
+		"Name": "国际服ESI",
+		"Url": "https://esi.evetech.net/ui/",
+		"IconUrl": "ccp.png",
 		"Platforms": [
 			"Web"
 		],
-		"Description": "EVE-HR is a web browser based management interface that handles most of the corporations daily routines, it has a great amount of the most important management features that are needed, such as ESI checking, buy-back, recruitment, logistics, loyalty system, fleet up integration, and more features & functions being added in an intense interval.",
+		"Description": "EVE国际服ESI Swagger",
 		"Categories": [
-			"角色管理"
+			"ESI",
+			"开发者工具"
 		],
-		"Notes": "Does work with ESI. Has Discord integration functionality, Fleet-Up notifications Integrated, Slack notifications are BEING integrated."
+		"Notes": ""
 	},
 	{
-		"Name": "Alliance Auth",
-		"Url": "https://gitlab.com/allianceauth/allianceauth",
+		"Name": "国服ESI",
+		"Url": "https://ali-esi.evepc.163.com/ui",
+		"IconUrl": "ccp.png",
 		"Platforms": [
 			"Web"
 		],
-		"Description": "\tAlliance Auth (AA) is a web site that helps EVE Online organizations efficiently manage access to applications and services.",
+		"Description": "EVE国服ESI Swagger",
 		"Categories": [
-			"联盟管理"
+			"ESI",
+			"开发者工具"
 		],
-		"Notes": "Used to access EVE University services."
+		"Notes": ""
 	},
 	{
-		"Name": "Torsten Feld EVE Online",
-		"Url": "https://www.amazon.com/Torsten-Feld-EVE-Online/dp/B08ZDV7BR5",
+		"Name": "Evanova",
+		"Url": "https://play.google.com/store/apps/details?id=com.tlabs.android.evanova&hl=en",
+		"IconUrl": "Evanova.jpg",
 		"Platforms": [
-			"Alexa Skill"
+			"Android"
 		],
-		"Description": "Allows one to ask Alexa various questions pertaining to EVE. Integrates with ESI.",
+		"Description": "综合性App，查看角色、装配、路线规划等",
 		"Categories": [
 			"综合",
 			"ESI"
 		],
-		"Notes": "Amazon Alexa has privacy concerns"
+		"Notes": ""
+	},
+	{
+		"Name": "Pyfa",
+		"Url": "https://github.com/pyfa-org/Pyfa",
+		"IconUrl": "",
+		"Platforms": [
+			"Windows"
+		],
+		"Description": "最强大的装配软件",
+		"Categories": [
+			"装配"
+		],
+		"Notes": ""
 	}
 ]

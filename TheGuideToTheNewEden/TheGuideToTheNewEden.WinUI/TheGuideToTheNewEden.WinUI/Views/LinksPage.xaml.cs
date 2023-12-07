@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json;
 using System;
@@ -17,19 +18,14 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class LinksPage : Page
     {
         public LinksPage()
         {
             this.InitializeComponent();
+            //ImageBrush_Backgroud.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
             Init();
         }
         private void Init()
@@ -41,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 if(!string.IsNullOrEmpty(str))
                 {
                     var links = JsonConvert.DeserializeObject<List<Core.Models.LinkInfo>>(str);
-                    DataGrid.ItemsSource = links;
+                    GridView.ItemsSource = links;
                 }
                 else
                 {
@@ -53,9 +49,29 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Core.Log.Error($"Links.json is not exist: {filePath}");
             }
         }
-        private void Copy_Click(object sender, RoutedEventArgs e)
+
+        private void GridView_ItemClick(object sender, ItemClickEventArgs e)
         {
 
+        }
+
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            var image = sender as Image;
+            var info = image.DataContext as Core.Models.LinkInfo;
+            if(!string.IsNullOrEmpty(info.IconUrl))
+            {
+                string url;
+                if(info.IconUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    url = info.IconUrl;
+                }
+                else
+                {
+                    url = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "LinkIcons", info.IconUrl);
+                }
+                image.Source = new BitmapImage(new Uri(url));
+            }
         }
     }
 }
