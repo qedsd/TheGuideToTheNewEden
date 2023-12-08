@@ -6,12 +6,15 @@
 		"Platforms": [
 			"Web"
 		],
-		"Description": "EVE国际服ESI Swagger",
+		"ShortDescription": "EVE国际服ESI Swagger",
+		"Description": "国际服官方API接口开发文档，开发者必备",
 		"Categories": [
 			"ESI",
 			"开发者工具"
 		],
-		"Notes": ""
+		"Langs": [
+			"en"
+		]
 	},
 	{
 		"Name": "国服ESI",
@@ -20,12 +23,15 @@
 		"Platforms": [
 			"Web"
 		],
-		"Description": "EVE国服ESI Swagger",
+		"ShortDescription": "EVE国服ESI Swagger",
+		"Description": "国服官方API接口开发文档网站，开发者必备",
 		"Categories": [
 			"ESI",
 			"开发者工具"
 		],
-		"Notes": ""
+		"Langs": [
+			"zh"
+		]
 	},
 	{
 		"Name": "Evanova",
@@ -34,24 +40,57 @@
 		"Platforms": [
 			"Android"
 		],
-		"Description": "综合性App，查看角色、装配、路线规划等",
+		"Description": "安卓上比较好用的角色、军团信息查看软件，可以看技能、钱包日志、克隆、工业项目等，并且带了个简单的新建装配功能，以及路线规划功能。",
+		"ShortDescription": "综合性App，查看角色、装配、路线规划等",
 		"Categories": [
 			"综合",
 			"ESI"
 		],
-		"Notes": ""
+		"Langs": [
+			"en",
+			"zh"
+		]
 	},
 	{
 		"Name": "Pyfa",
 		"Url": "https://github.com/pyfa-org/Pyfa",
 		"IconUrl": "",
 		"Platforms": [
-			"Windows"
+			"Windows",
+			"Linux",
+			"Mac"
 		],
-		"Description": "最强大的装配软件",
+		"Description": "最强大的装配软件，且支持伤害曲线计算等进阶功能",
+		"ShortDescription": "最强大的装配软件",
 		"Categories": [
 			"装配"
 		],
-		"Notes": ""
+		"Langs": [
+			"en",
+			"zh",
+			"fr",
+			"it",
+			"ja",
+			"ko",
+			"ru",
+			"es",
+			"tr"
+		]
+	},
+	{
+		"Name": "Zkillboard",
+		"Url": "https://zkillboard.com/",
+		"IconUrl": "zkb.jpg",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "国际服最受欢迎的击杀榜网站，可以查看玩家、军团、联盟、地点的击杀记录",
+		"ShortDescription": "国际服击杀榜",
+		"Categories": [
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
 	}
 ]

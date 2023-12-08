@@ -2,6 +2,7 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.LinksPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
@@ -26,18 +27,23 @@
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="models:LinkInfo">
                         <Grid
-                            Width="360"
-                            Height="90"
+                            Width="320"
+                            Height="80"
                             Padding="10,4"
                             Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                             CornerRadius="8">
+                            <ToolTipService.ToolTip>
+                                <Grid>
+                                    <controls:LinkInfoControl LinkInfo="{Binding}" />
+                                </Grid>
+                            </ToolTipService.ToolTip>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="60" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <Image
-                                Width="48"
-                                Height="48"
+                                Width="32"
+                                Height="32"
                                 Loaded="Image_Loaded" />
                             <Grid
                                 Grid.Column="1"
@@ -60,7 +66,7 @@
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     FontWeight="Thin"
-                                    Text="{x:Bind Description}"
+                                    Text="{x:Bind ShortDescription}"
                                     TextTrimming="WordEllipsis"
                                     TextWrapping="WrapWholeWords"
                                     Visibility="{x:Bind Description, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />

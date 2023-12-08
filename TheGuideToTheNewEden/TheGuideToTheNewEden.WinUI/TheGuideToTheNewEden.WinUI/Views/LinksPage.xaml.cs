@@ -59,19 +59,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             var image = sender as Image;
             var info = image.DataContext as Core.Models.LinkInfo;
-            if(!string.IsNullOrEmpty(info.IconUrl))
+            string url;
+            if (string.IsNullOrEmpty(info.IconUrl))
             {
-                string url;
-                if(info.IconUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    url = info.IconUrl;
-                }
-                else
-                {
-                    url = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "LinkIcons", info.IconUrl);
-                }
-                image.Source = new BitmapImage(new Uri(url));
+                url = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "LinkIcons", "default.png");
             }
+            else if (info.IconUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                url = info.IconUrl;
+            }
+            else
+            {
+                url = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "LinkIcons", info.IconUrl);
+            }
+            image.Source = new BitmapImage(new Uri(url));
         }
     }
 }

@@ -479,7 +479,7 @@
     <x:String x:Key="LinksPage_Name">名字</x:String>
     <x:String x:Key="LinksPage_Url">链接</x:String>
     <x:String x:Key="LinksPage_Description">描述</x:String>
-    <x:String x:Key="LinksPage_Notes">备注</x:String>
+    <x:String x:Key="LinksPage_Lang">语言</x:String>
     <x:String x:Key="LinksPage_Platforms">平台</x:String>
     <x:String x:Key="LinksPage_Categories">分类</x:String>
     <x:String x:Key="LinksPage_CopyUrl">复制链接</x:String>

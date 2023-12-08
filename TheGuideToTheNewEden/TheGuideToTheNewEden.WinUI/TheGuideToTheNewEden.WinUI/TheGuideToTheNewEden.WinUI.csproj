@@ -220,6 +220,7 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\LinkInfoControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
@@ -333,6 +334,9 @@
     <Page Update="Dialogs\AddSerenityAuthDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\LinkInfoControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="ESI.NET.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -346,7 +350,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\Links.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -378,7 +382,13 @@
     <None Update="Resources\Images\LinkIcons\ccp.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\LinkIcons\default.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\LinkIcons\Evanova.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\LinkIcons\zkb.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Images\logo_32.png">
