@@ -391,6 +391,9 @@
     <None Update="Resources\Images\LinkIcons\Evanova.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\LinkIcons\sov.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\LinkIcons\zkb.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
