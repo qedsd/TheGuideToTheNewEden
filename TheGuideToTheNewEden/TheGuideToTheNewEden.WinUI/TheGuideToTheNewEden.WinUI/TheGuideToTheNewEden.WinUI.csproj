@@ -379,6 +379,9 @@
     <None Update="Resources\Images\home.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\LinkIcons\br.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\LinkIcons\ccp.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

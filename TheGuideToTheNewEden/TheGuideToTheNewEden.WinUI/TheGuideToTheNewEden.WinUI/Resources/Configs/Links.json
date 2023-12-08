@@ -92,5 +92,37 @@
 		"Langs": [
 			"en"
 		]
+	},
+	{
+		"Name": "BR",
+		"Url": "https://br.evetools.org/recent-brs",
+		"IconUrl": "br.jpg",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "国际服最常用的战斗报告网站，统计分析每场战斗参与人员、损失情况等",
+		"ShortDescription": "国际服最常用的战斗报告网站",
+		"Categories": [
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "SOV",
+		"Url": "https://sov.space/",
+		"IconUrl": "sov.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "统计分析各个主权势力范围",
+		"ShortDescription": "主权地图",
+		"Categories": [
+			"主权"
+		],
+		"Langs": [
+			"en"
+		]
 	}
 ]
