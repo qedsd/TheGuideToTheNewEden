@@ -81,8 +81,8 @@
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor">日志监控</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor_Desc">监控游戏日志</x:String>
-    <x:String x:Key="ShellPage_Links">友情链接</x:String>
-    <x:String x:Key="ShellPage_Links_Desc">常用的官方、第三方网站、工具链接</x:String>
+    <x:String x:Key="ShellPage_Links">快速链接</x:String>
+    <x:String x:Key="ShellPage_Links_Desc">常用的官方、第三方网站链接</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->

@@ -52,7 +52,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void GridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-
+            var info = e.ClickedItem as Core.Models.LinkInfo;
+            if(info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+            }
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
