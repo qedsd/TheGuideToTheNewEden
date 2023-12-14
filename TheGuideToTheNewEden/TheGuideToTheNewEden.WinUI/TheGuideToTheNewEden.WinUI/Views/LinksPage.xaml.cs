@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Dialogs;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -25,19 +26,35 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public LinksPage()
         {
             this.InitializeComponent();
-            //ImageBrush_Backgroud.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
+            //this.Background = new ImageBrush()
+            //{
+            //    ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")))
+            //};
             Init();
         }
+        private List<Core.Models.LinkInfo> _linkInfos;
         private void Init()
         {
-            var filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources","Configs", "Links.json");
+            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory,"Configs", "Links.json");
+            if (!File.Exists(filePath))
+            {
+                var defaultFile = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "Links.json");
+                if (File.Exists(defaultFile))
+                {
+                    File.Copy(defaultFile, filePath, true);
+                }
+                else
+                {
+                    Core.Log.Error("Default Links.json file not found");
+                }
+            }
             if(File.Exists(filePath))
             {
                 string str = File.ReadAllText(filePath);
                 if(!string.IsNullOrEmpty(str))
                 {
-                    var links = JsonConvert.DeserializeObject<List<Core.Models.LinkInfo>>(str);
-                    GridView.ItemsSource = links;
+                    _linkInfos = JsonConvert.DeserializeObject<List<Core.Models.LinkInfo>>(str);
+                    GridView.ItemsSource = _linkInfos;
                 }
                 else
                 {
@@ -77,6 +94,50 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 url = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "LinkIcons", info.IconUrl);
             }
             image.Source = new BitmapImage(new Uri(url));
+        }
+
+        private void Save()
+        {
+            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "Links.json");
+            string json = JsonConvert.SerializeObject(_linkInfos);
+            File.WriteAllText(filePath, json);
+            (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowSuccess("ÒÑ±£´æ");
+        }
+
+        private async void MenuFlyoutItem_Edit_Click(object sender, RoutedEventArgs e)
+        {
+            if(await EditLinkInfoDialog.EditAsync(((sender as FrameworkElement).DataContext as Core.Models.LinkInfo), this.XamlRoot))
+            {
+                Save();
+                GridView.ItemsSource = null;
+                GridView.ItemsSource = _linkInfos;
+            }
+        }
+
+        private async void MenuFlyoutItem_Add_Click(object sender, RoutedEventArgs e)
+        {
+            var info = await EditLinkInfoDialog.AddAsync(this.XamlRoot);
+            if (info != null)
+            {
+                _linkInfos.Add(info);
+                Save();
+                GridView.ItemsSource = null;
+                GridView.ItemsSource = _linkInfos;
+            }
+        }
+
+        private void MenuFlyoutItem_Open_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as FrameworkElement).DataContext as Core.Models.LinkInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+            }
+        }
+
+        private void MenuFlyoutItem_Copy_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

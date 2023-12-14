@@ -478,9 +478,19 @@
     <!--  LinksPage  -->
     <x:String x:Key="LinksPage_Name">名字</x:String>
     <x:String x:Key="LinksPage_Url">链接</x:String>
+    <x:String x:Key="LinksPage_ShortDescription">概述</x:String>
     <x:String x:Key="LinksPage_Description">描述</x:String>
     <x:String x:Key="LinksPage_Lang">语言</x:String>
+    <x:String x:Key="LinksPage_Lang_Tip">多个语言使用,分割</x:String>
     <x:String x:Key="LinksPage_Platforms">平台</x:String>
+    <x:String x:Key="LinksPage_Platforms_Tip">多个平台使用,分割</x:String>
     <x:String x:Key="LinksPage_Categories">分类</x:String>
+    <x:String x:Key="LinksPage_Categories_Tip">多个分类使用,分割</x:String>
     <x:String x:Key="LinksPage_CopyUrl">复制链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl">图标链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl_Tip">支持网络链接</x:String>
+    <x:String x:Key="LinksPage_Open">打开链接</x:String>
+    <x:String x:Key="LinksPage_Add">新建链接</x:String>
+    <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
+    <x:String x:Key="LinksPage_Sum">个快速链接</x:String>
 </ResourceDictionary>

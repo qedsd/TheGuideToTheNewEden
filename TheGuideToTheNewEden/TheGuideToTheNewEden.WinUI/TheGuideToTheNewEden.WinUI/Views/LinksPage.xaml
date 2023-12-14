@@ -11,8 +11,34 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <ScrollViewer>
-        <Grid>
+    <Grid>
+        <!--<Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>-->
+        <!--<Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="TextBlock_Sum" />
+                <TextBlock Text="{StaticResource LinksPage_Sum}" />
+            </StackPanel>
+            <Button
+                x:Name="Button_Add"
+                Grid.Column="1"
+                Margin="0,0,16,0"
+                HorizontalAlignment="Right"
+                Click="Button_Add_Click"
+                Content="+" />
+        </Grid>-->
+        <Grid.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem Text="{StaticResource LinksPage_Add}" Click="MenuFlyoutItem_Add_Click"/>
+            </MenuFlyout>
+        </Grid.ContextFlyout>
+        <ScrollViewer Grid.Row="1">
             <GridView
                 x:Name="GridView"
                 Grid.Row="1"
@@ -32,6 +58,13 @@
                             Padding="10,4"
                             Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                             CornerRadius="8">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="{StaticResource LinksPage_Open}" Click="MenuFlyoutItem_Open_Click"/>
+                                    <MenuFlyoutItem Text="{StaticResource LinksPage_CopyUrl}" Click="MenuFlyoutItem_Copy_Click"/>
+                                    <MenuFlyoutItem Text="{StaticResource LinksPage_Edit}" Click="MenuFlyoutItem_Edit_Click"/>
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
                             <ToolTipService.ToolTip>
                                 <Grid>
                                     <controls:LinkInfoControl LinkInfo="{Binding}" />
@@ -75,6 +108,7 @@
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
-        </Grid>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
+
 </Page>

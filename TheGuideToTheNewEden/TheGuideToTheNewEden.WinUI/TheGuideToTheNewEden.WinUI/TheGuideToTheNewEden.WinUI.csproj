@@ -230,6 +230,7 @@
     <None Remove="Controls\StructureSelectorControl.xaml" />
     <None Remove="Dialogs\AddSerenityAuthDialog.xaml" />
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
+    <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
@@ -335,6 +336,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\LinkInfoControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Dialogs\EditLinkInfoDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">
