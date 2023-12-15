@@ -1,0 +1,394 @@
+﻿[
+	{
+		"Name": "国际服ESI",
+		"Url": "https://esi.evetech.net/ui/",
+		"IconUrl": "ccp.png",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "EVE国际服ESI Swagger",
+		"Description": "国际服官方API接口开发文档，开发者必备",
+		"Categories": [
+			"ESI",
+			"开发者工具"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "国服ESI",
+		"Url": "https://ali-esi.evepc.163.com/ui",
+		"IconUrl": "ccp.png",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "EVE国服ESI Swagger",
+		"Description": "国服官方API接口开发文档网站，开发者必备",
+		"Categories": [
+			"ESI",
+			"开发者工具"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "国际服开发者中心",
+		"Url": "https://developers.eveonline.com/",
+		"IconUrl": "ccp.png",
+		"Platforms": [
+			"Web"
+		],
+		"ShortDescription": "开发日志、资源、应用授权管理",
+		"Description": "可以获取到最新的游戏各种UI、物品等图标，最新的游戏数据库SDE，以及第三方开发者应用ESI管理",
+		"Categories": [
+			"ESI",
+			"开发者工具"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Evanova",
+		"Url": "https://play.google.com/store/apps/details?id=com.tlabs.android.evanova&hl=en",
+		"IconUrl": "Evanova.jpg",
+		"Platforms": [
+			"Android"
+		],
+		"Description": "安卓上比较好用的角色、军团信息查看软件，可以看技能、钱包日志、克隆、工业项目等，并且带了个简单的新建装配功能，以及路线规划功能。",
+		"ShortDescription": "综合性App，查看角色、装配、路线规划等",
+		"Categories": [
+			"综合",
+			"ESI"
+		],
+		"Langs": [
+			"en",
+			"zh"
+		]
+	},
+	{
+		"Name": "Pyfa",
+		"Url": "https://github.com/pyfa-org/Pyfa",
+		"IconUrl": "pyfa.png",
+		"Platforms": [
+			"Windows",
+			"Linux",
+			"Mac"
+		],
+		"Description": "最强大的装配软件，且支持伤害曲线计算等进阶功能",
+		"ShortDescription": "最强大的装配软件",
+		"Categories": [
+			"装配"
+		],
+		"Langs": [
+			"en",
+			"zh",
+			"fr",
+			"it",
+			"ja",
+			"ko",
+			"ru",
+			"es",
+			"tr"
+		]
+	},
+	{
+		"Name": "Zkillboard",
+		"Url": "https://zkillboard.com/",
+		"IconUrl": "zkb.jpg",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "国际服最受欢迎的击杀榜网站，可以查看玩家、军团、联盟、地点的击杀记录",
+		"ShortDescription": "国际服击杀榜",
+		"Categories": [
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "BR",
+		"Url": "https://br.evetools.org/recent-brs",
+		"IconUrl": "br.jpg",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "国际服最常用的战斗报告网站，统计分析每场战斗参与人员、损失情况等",
+		"ShortDescription": "国际服最常用的战斗报告网站",
+		"Categories": [
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "SOV",
+		"Url": "https://sov.space/",
+		"IconUrl": "sov.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "统计分析各个主权势力范围",
+		"ShortDescription": "主权地图",
+		"Categories": [
+			"主权"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Dotlan",
+		"Url": "https://evemaps.dotlan.net/",
+		"IconUrl": "dotlan.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "查看星系主权信息、击杀统计、导航规划等",
+		"ShortDescription": "地理信息统计、导航规划",
+		"Categories": [
+			"主权",
+			"导航规划"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE University",
+		"Url": "https://wiki.eveuniversity.org/Main_Page",
+		"IconUrl": "eveuniversity.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "几乎全覆盖的EVE百科，如任务、死亡、远征、NPC伤害、游戏名称解释等",
+		"ShortDescription": "最全的EVE百科",
+		"Categories": [
+			"百科"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE中文百科",
+		"Url": "https://eve.huijiwiki.com/wiki/",
+		"IconUrl": "evehuijiwiki.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "尽管内容没有EVE University齐全，但胜在全中文，两个百科结合起来使用更佳",
+		"ShortDescription": "最全的中文EVE百科",
+		"Categories": [
+			"百科"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "Anoikis",
+		"Url": "http://anoik.is/",
+		"IconUrl": "anoikis.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "国际服比较好用的综合虫洞查询网站，查看虫洞等级、永联漫游洞等，且结合了zkb显示最近击杀活动、活跃的军团人物",
+		"ShortDescription": "国际服虫洞查询",
+		"Categories": [
+			"虫洞"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE蓝图计算器",
+		"Url": "http://www.ceve-industry.cn/",
+		"IconUrl": "ceveindustry.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "支持国服和国际服的工业计算网站，功能包括蓝图利润计算、合同/仓库估价、化矿计算等",
+		"ShortDescription": "蓝图工业计算",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"zh"
+		]
+	},
+	{
+		"Name": "Neocom II",
+		"Url": "https://apps.apple.com/us/app/neocom-ii-for-eve-online/id1257353838",
+		"IconUrl": "neocom2.png",
+		"Platforms": [
+			"IOS",
+			"Mac"
+		],
+		"Description": "苹果上比较好用的综合性APP",
+		"ShortDescription": "综合性App，查看角色、装配等",
+		"Categories": [
+			"综合",
+			"ESI"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "SMT",
+		"Url": "https://github.com/Slazanger/SMT",
+		"IconUrl": "smt.png",
+		"Platforms": [
+			"Windows"
+		],
+		"Description": "除开频道预警外，还有结合了zkb的战略地图，可以实时各个星系最新击杀",
+		"ShortDescription": "国际服比较流行的频道预警软件",
+		"Categories": [
+			"预警",
+			"kb"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Dscan",
+		"Url": "https://dscan.info/",
+		"IconUrl": "dscan.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "可以快速统计频道玩家势力归属，且支持链接分享给他人，00玩家必备",
+		"ShortDescription": "国际服最常用的频道玩家统计网站",
+		"Categories": [
+			"预警"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Fuzzwork",
+		"Url": "https://www.fuzzwork.co.uk/",
+		"IconUrl": "fuzzwork.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "真正的综合网站，功能众多，覆盖面广，且还提供各种数据库格式的SDE，居家旅行必备好网站",
+		"ShortDescription": "国际服非常好用的偏工业计算的综合网站，蓝图、市场、工业、行星开发、估价、LP兑换等",
+		"Categories": [
+			"综合",
+			"LP",
+			"市场",
+			"工业",
+			"估价"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE Isk per Hour",
+		"Url": "https://eveiph.github.io/",
+		"IconUrl": "iph.png",
+		"Platforms": [
+			"Windows"
+		],
+		"Description": "功能涵盖制造、挖矿、反应、发明等",
+		"ShortDescription": "国际服老牌工业计算软件",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE SDE Database Builder",
+		"Url": "https://github.com/EVEIPH/EVE-SDE-Database-Builder",
+		"IconUrl": "EVE SDE Database Builder.png",
+		"Platforms": [
+			"Windows"
+		],
+		"Description": "EVE Isk per Hour开发者的一个小工具，用于将官方的SDE文件转换到各种格式的数据库，如sqlserver，sqlite等",
+		"ShortDescription": "SDE数据库构建工具",
+		"Categories": [
+			"开发者"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Adam4EVE",
+		"Url": "https://www.adam4eve.eu/",
+		"IconUrl": "adam4eve.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "市场订单、合同价格、制造花费、行星开发等计算，国际服一个很经典的网站，网站风格也是十分的复古风",
+		"ShortDescription": "商业、工业计算网站",
+		"Categories": [
+			"工业",
+			"商业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Eve Industry",
+		"Url": "https://eve-industry.org/",
+		"IconUrl": "",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "相对简单易用的制造网站，支持自定义发明、行星开发来计算利润",
+		"ShortDescription": "蓝图制造利润计算网站",
+		"Categories": [
+			"工业"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "Eve-Offline",
+		"Url": "https://eve-offline.net/",
+		"IconUrl": "eveoffline.png",
+		"Platforms": [
+			"Web"
+		],
+		"Description": "支持国际服和国服当前服务器状态查询与玩家在线历史记录查询",
+		"ShortDescription": "游戏服务器状态查询与统计",
+		"Categories": [
+			"服务器"
+		],
+		"Langs": [
+			"en"
+		]
+	},
+	{
+		"Name": "EVE-O Preview",
+		"Url": "https://github.com/EveOPlus/eve-o-preview",
+		"IconUrl": "eve-o-preview.png",
+		"Platforms": [
+			"Windows"
+		],
+		"Description": "将游戏画面以小窗口置顶显示，支持鼠标点击、键盘快捷键切换显示游戏窗口",
+		"ShortDescription": "最好用的多开预览工具",
+		"Categories": [
+			"多开预览"
+		],
+		"Langs": [
+			"en"
+		]
+	}
+]
