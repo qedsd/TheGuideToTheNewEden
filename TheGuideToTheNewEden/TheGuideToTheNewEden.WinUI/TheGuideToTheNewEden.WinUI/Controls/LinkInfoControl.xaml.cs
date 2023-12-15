@@ -41,41 +41,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 {
                     TextBlock_Name.Text = value.Name;
                     TextBlock_Desc.Text = value.Description;
-                    StringBuilder stringBuilder = new StringBuilder();
-                    foreach(var c in  value.Categories)
-                    {
-                        stringBuilder.Append(c);
-                        stringBuilder.Append(' ');
-                    }
-                    if(stringBuilder.Length > 1)
-                    {
-                        stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                    }
-                    TextBlock_Categories.Text = stringBuilder.ToString();
-
-                    stringBuilder.Clear();
-                    foreach (var c in value.Platforms)
-                    {
-                        stringBuilder.Append(c);
-                        stringBuilder.Append(' ');
-                    }
-                    if (stringBuilder.Length > 1)
-                    {
-                        stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                    }
-                    TextBlock_Platforms.Text = stringBuilder.ToString();
-
-                    stringBuilder.Clear();
-                    foreach (var c in value.Langs)
-                    {
-                        stringBuilder.Append(c);
-                        stringBuilder.Append(' ');
-                    }
-                    if (stringBuilder.Length > 1)
-                    {
-                        stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                    }
-                    TextBlock_Lang.Text = stringBuilder.ToString();
+                    TextBlock_Categories.Text = value.GetCategories(' ');
+                    TextBlock_Platforms.Text = value.GetPlatforms(' ');
+                    TextBlock_Lang.Text = value.GetLangs(' ');
                 }
             }
         }

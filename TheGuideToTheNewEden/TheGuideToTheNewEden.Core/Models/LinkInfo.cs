@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models
 {
@@ -18,45 +19,66 @@ namespace TheGuideToTheNewEden.Core.Models
 
         public string GetLangs(char symbol)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (var c in Langs)
+            if(Langs.NotNullOrEmpty())
             {
-                stringBuilder.Append(c);
-                stringBuilder.Append(symbol);
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var c in Langs)
+                {
+                    stringBuilder.Append(c);
+                    stringBuilder.Append(symbol);
+                }
+                if (stringBuilder.Length > 1)
+                {
+                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                }
+                return stringBuilder.ToString();
             }
-            if (stringBuilder.Length > 1)
+            else
             {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                return string.Empty;
             }
-            return stringBuilder.ToString();
         }
         public string GetPlatforms(char symbol)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (var c in Platforms)
+            if (Platforms.NotNullOrEmpty())
             {
-                stringBuilder.Append(c);
-                stringBuilder.Append(symbol);
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var c in Platforms)
+                {
+                    stringBuilder.Append(c);
+                    stringBuilder.Append(symbol);
+                }
+                if (stringBuilder.Length > 1)
+                {
+                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                }
+                return stringBuilder.ToString();
             }
-            if (stringBuilder.Length > 1)
+            else
             {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                return string.Empty;
             }
-            return stringBuilder.ToString();
         }
         public string GetCategories(char symbol)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (var c in Categories)
+            if (Categories.NotNullOrEmpty())
             {
-                stringBuilder.Append(c);
-                stringBuilder.Append(symbol);
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var c in Categories)
+                {
+                    stringBuilder.Append(c);
+                    stringBuilder.Append(symbol);
+                }
+                if (stringBuilder.Length > 1)
+                {
+                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                }
+                return stringBuilder.ToString();
             }
-            if (stringBuilder.Length > 1)
+            else
             {
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                return string.Empty;
             }
-            return stringBuilder.ToString();
         }
     }
 }

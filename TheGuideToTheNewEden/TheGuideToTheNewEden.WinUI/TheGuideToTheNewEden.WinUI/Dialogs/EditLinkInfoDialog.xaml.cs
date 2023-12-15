@@ -43,15 +43,21 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             _linkInfo.ShortDescription = TextBox_ShortDescription.Text;
             _linkInfo.Description = TextBox_Description.Text;
             _linkInfo.IconUrl = TextBox_IconUrl.Text;
-            _linkInfo.Langs = TextBox_Langs.Text.Split(',');
-            _linkInfo.Platforms = TextBox_Platforms.Text.Split(',');
-            _linkInfo.Categories = TextBox_Categories.Text.Split(',');
+            _linkInfo.Langs = string.IsNullOrEmpty(TextBox_Langs.Text) ? null : TextBox_Langs.Text.Split(',');
+            _linkInfo.Platforms = string.IsNullOrEmpty(TextBox_Platforms.Text) ? null : TextBox_Platforms.Text.Split(',');
+            _linkInfo.Categories = string.IsNullOrEmpty(TextBox_Categories.Text) ? null : TextBox_Categories.Text.Split(',');
         }
         public static async Task<LinkInfo> AddAsync(XamlRoot xamlRoot)
         {
-            LinkInfo linkInfo = null;
-            await ShowAsync(linkInfo, xamlRoot);
-            return linkInfo;
+            LinkInfo linkInfo = new LinkInfo();
+            if(await ShowAsync(linkInfo, xamlRoot))
+            {
+                return linkInfo;
+            }
+            else
+            {
+                return null;
+            }
         }
         public static async Task<bool> EditAsync(LinkInfo linkInfo, XamlRoot xamlRoot)
         {

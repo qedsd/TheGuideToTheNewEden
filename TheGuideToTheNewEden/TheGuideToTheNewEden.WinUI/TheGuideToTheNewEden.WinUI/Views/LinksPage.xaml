@@ -12,30 +12,9 @@
     mc:Ignorable="d">
 
     <Grid>
-        <!--<Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>-->
-        <!--<Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="TextBlock_Sum" />
-                <TextBlock Text="{StaticResource LinksPage_Sum}" />
-            </StackPanel>
-            <Button
-                x:Name="Button_Add"
-                Grid.Column="1"
-                Margin="0,0,16,0"
-                HorizontalAlignment="Right"
-                Click="Button_Add_Click"
-                Content="+" />
-        </Grid>-->
         <Grid.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Text="{StaticResource LinksPage_Add}" Click="MenuFlyoutItem_Add_Click"/>
+                <MenuFlyoutItem Click="MenuFlyoutItem_Add_Click" Text="{StaticResource LinksPage_Add}" />
             </MenuFlyout>
         </Grid.ContextFlyout>
         <ScrollViewer Grid.Row="1">
@@ -60,9 +39,10 @@
                             CornerRadius="8">
                             <Grid.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="{StaticResource LinksPage_Open}" Click="MenuFlyoutItem_Open_Click"/>
-                                    <MenuFlyoutItem Text="{StaticResource LinksPage_CopyUrl}" Click="MenuFlyoutItem_Copy_Click"/>
-                                    <MenuFlyoutItem Text="{StaticResource LinksPage_Edit}" Click="MenuFlyoutItem_Edit_Click"/>
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Open_Click" Text="{StaticResource LinksPage_Open}" />
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Copy_Click" Text="{StaticResource LinksPage_CopyUrl}" />
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Edit_Click" Text="{StaticResource LinksPage_Edit}" />
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Remove_Click" Text="{StaticResource LinksPage_Remove}" />
                                 </MenuFlyout>
                             </Grid.ContextFlyout>
                             <ToolTipService.ToolTip>

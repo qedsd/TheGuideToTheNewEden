@@ -8,49 +8,55 @@
     Background="Transparent"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBox x:Name="TextBox_Name" Header="{StaticResource LinksPage_Name}" />
-        <TextBox
-            x:Name="TextBox_Url"
-            Grid.Row="1"
-            Header="{StaticResource LinksPage_Url}" />
-        <TextBox
-            x:Name="TextBox_ShortDescription"
-            Grid.Row="2"
-            Header="{StaticResource LinksPage_ShortDescription}" />
-        <TextBox
-            x:Name="TextBox_Description"
-            Grid.Row="3"
-            Header="{StaticResource LinksPage_Description}" />
-        <TextBox
-            x:Name="TextBox_IconUrl"
-            Grid.Row="4"
-            Header="{StaticResource LinksPage_IconUrl}"
-            PlaceholderText="{StaticResource LinksPage_IconUrl_Tip}" />
-        <TextBox
-            x:Name="TextBox_Langs"
-            Grid.Row="5"
-            Header="{StaticResource LinksPage_Lang}"
-            PlaceholderText="{StaticResource LinksPage_Lang_Tip}" />
-        <TextBox
-            x:Name="TextBox_Platforms"
-            Grid.Row="6"
-            Header="{StaticResource LinksPage_Platforms}"
-            PlaceholderText="{StaticResource LinksPage_Platforms_Tip}" />
-        <TextBox
-            x:Name="TextBox_Categories"
-            Grid.Row="7"
-            Header="{StaticResource LinksPage_Categories}"
-            PlaceholderText="{StaticResource LinksPage_Categories_Tip}" />
-    </Grid>
+    <ScrollViewer>
+        <Grid Width="400" Margin="8,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBox x:Name="TextBox_Name" Header="{StaticResource LinksPage_Name}" />
+            <TextBox
+                x:Name="TextBox_Url"
+                Grid.Row="1"
+                Header="{StaticResource LinksPage_Url}" />
+            <TextBox
+                x:Name="TextBox_ShortDescription"
+                Grid.Row="2"
+                AcceptsReturn="True"
+                Header="{StaticResource LinksPage_ShortDescription}"
+                TextWrapping="Wrap" />
+            <TextBox
+                x:Name="TextBox_Description"
+                Grid.Row="3"
+                AcceptsReturn="True"
+                Header="{StaticResource LinksPage_Description}"
+                TextWrapping="Wrap" />
+            <TextBox
+                x:Name="TextBox_IconUrl"
+                Grid.Row="4"
+                Header="{StaticResource LinksPage_IconUrl}"
+                PlaceholderText="{StaticResource LinksPage_IconUrl_Tip}" />
+            <TextBox
+                x:Name="TextBox_Langs"
+                Grid.Row="5"
+                Header="{StaticResource LinksPage_Lang}"
+                PlaceholderText="{StaticResource LinksPage_Lang_Tip}" />
+            <TextBox
+                x:Name="TextBox_Platforms"
+                Grid.Row="6"
+                Header="{StaticResource LinksPage_Platforms}"
+                PlaceholderText="{StaticResource LinksPage_Platforms_Tip}" />
+            <TextBox
+                x:Name="TextBox_Categories"
+                Grid.Row="7"
+                Header="{StaticResource LinksPage_Categories}"
+                PlaceholderText="{StaticResource LinksPage_Categories_Tip}" />
+        </Grid>
+    </ScrollViewer>
 </Page>

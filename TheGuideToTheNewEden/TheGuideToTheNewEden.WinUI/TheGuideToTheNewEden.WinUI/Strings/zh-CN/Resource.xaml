@@ -492,5 +492,5 @@
     <x:String x:Key="LinksPage_Open">打开链接</x:String>
     <x:String x:Key="LinksPage_Add">新建链接</x:String>
     <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
-    <x:String x:Key="LinksPage_Sum">个快速链接</x:String>
+    <x:String x:Key="LinksPage_Remove">删除链接</x:String>
 </ResourceDictionary>

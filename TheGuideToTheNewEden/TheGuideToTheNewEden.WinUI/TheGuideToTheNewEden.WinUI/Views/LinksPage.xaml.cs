@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Dialogs;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -137,7 +138,24 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void MenuFlyoutItem_Copy_Click(object sender, RoutedEventArgs e)
         {
+            var info = (sender as FrameworkElement).DataContext as Core.Models.LinkInfo;
+            DataPackage dataPackage = new DataPackage();
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            dataPackage.SetText(info.Url);
+            Clipboard.SetContent(dataPackage);
+            (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowSuccess("ÒÑ¸´ÖÆ");
+        }
 
+        private void MenuFlyoutItem_Remove_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as FrameworkElement).DataContext as Core.Models.LinkInfo;
+            if (info != null)
+            {
+                _linkInfos.Remove(info);
+                GridView.ItemsSource = null;
+                GridView.ItemsSource = _linkInfos;
+                Save();
+            }
         }
     }
 }
