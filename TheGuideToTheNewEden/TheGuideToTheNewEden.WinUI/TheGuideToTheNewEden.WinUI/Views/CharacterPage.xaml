@@ -102,9 +102,11 @@
                                                                 <ColumnDefinition Width="Auto" />
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Text="{x:Bind CharacterName}" />
-                                                            <Button Grid.Column="1" Click="RemoveButton_Click"
-                                                                    Background="Transparent"
-                                                                    BorderThickness="0">
+                                                            <Button
+                                                                Grid.Column="1"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Click="RemoveButton_Click">
                                                                 <TextBlock
                                                                     FontFamily="Segoe MDL2 Assets"
                                                                     Foreground="OrangeRed"
