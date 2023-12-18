@@ -42,7 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             LocalDbSelectorService.Initialize();
             PlayerStatusService.Initialize();
             ThemeSelectorService.Initialize();
-            EVELogsPathSelectorService.Initialize();
+            EVELogsSettingService.Initialize();
             DBLocalizationSettingService.Initialize();
             AutoUpdateService.Initialize();
         }

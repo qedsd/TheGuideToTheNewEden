@@ -114,14 +114,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        private string evelogsPath = EVELogsPathSelectorService.Value;
+        private string evelogsPath = EVELogsSettingService.EVELogsPathValue;
         public string EvelogsPath
         {
             get => evelogsPath;
             set
             {
                 evelogsPath = value;
-                _ = EVELogsPathSelectorService.SetAsync(value);
+                EVELogsSettingService.SetValue(EVELogsSettingService.EVELogsPathKey, value);
             }
         }
 
