@@ -21,11 +21,13 @@
     <x:String x:Key="Setting_Config_Title">App配置文件</x:String>
     <x:String x:Key="Setting_Config_Description">App所有参数配置文件均存放于此文件夹内</x:String>
     <x:String x:Key="Setting_Config_Check">查看</x:String>
-    <x:String x:Key="Setting_EVELogsPath_Description">只需选择logs文件夹</x:String>
-    <x:String x:Key="Setting_EVELogsPath_Title">EVE日志路径</x:String>
     <x:String x:Key="Setting_About_Title">关于</x:String>
     <x:String x:Key="Setting_Update_Update">APP更新</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">自动检查更新</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Description">只需选择logs文件夹</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Title">游戏日志路径</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Title">聊天频道文件有效天数</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Description">查找聊天频道时，仅查找现在往前多少天内的文件，避免过多频道文件导致查找缓慢</x:String>
 
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
@@ -304,6 +306,7 @@
     <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
     <x:String x:Key="SettingPage_Test">测试</x:String>

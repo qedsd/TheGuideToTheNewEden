@@ -20,6 +20,12 @@
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_GameLog}" />
+            </PivotItem.Header>
+            <settings:GameLogSettingPage />
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource SettingPage_Structures}" />
             </PivotItem.Header>
             <settings:StructuresSettingPage />

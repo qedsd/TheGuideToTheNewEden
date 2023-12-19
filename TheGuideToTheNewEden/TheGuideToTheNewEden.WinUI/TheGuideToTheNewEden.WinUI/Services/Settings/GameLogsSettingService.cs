@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
-    internal static class EVELogsSettingService
+    internal static class GameLogsSettingService
     {
         public const string EVELogsPathKey = "EVELogsPath";
         public static string EVELogsPathValue { get; set; }

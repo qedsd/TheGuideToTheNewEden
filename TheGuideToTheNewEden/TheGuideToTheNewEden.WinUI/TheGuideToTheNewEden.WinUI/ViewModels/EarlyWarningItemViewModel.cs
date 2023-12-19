@@ -150,7 +150,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public Core.Models.Map.IntelSolarSystemMap IntelMap { get; set; }
         internal EarlyWarningItemViewModel()
         {
-            LogPath = System.IO.Path.Combine(EVELogsSettingService.EVELogsPathValue, "Chatlogs");
+            LogPath = System.IO.Path.Combine(GameLogsSettingService.EVELogsPathValue, "Chatlogs");
             InitNameDbs();
             InitSolarSystems();
         }

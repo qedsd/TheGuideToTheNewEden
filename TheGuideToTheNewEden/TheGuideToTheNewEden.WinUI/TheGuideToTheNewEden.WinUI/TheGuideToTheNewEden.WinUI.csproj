@@ -266,6 +266,7 @@
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
+    <None Remove="Views\Settings\GameLogSettingPage.xaml" />
     <None Remove="Views\Settings\GeneralSettingPage.xaml" />
     <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
@@ -453,6 +454,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\GameLogSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ChannelMonitorPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

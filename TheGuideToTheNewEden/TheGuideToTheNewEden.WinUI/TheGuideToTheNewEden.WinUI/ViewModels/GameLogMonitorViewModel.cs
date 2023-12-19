@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class GameLogMonitorViewModel : BaseViewModel
     {
-        private readonly string _logPath = System.IO.Path.Combine(EVELogsSettingService.Value, "Gamelogs");
+        private readonly string _logPath = System.IO.Path.Combine(GameLogsSettingService.EVELogsPathKey, "Gamelogs");
         public ObservableCollection<GameLogInfo> GameLogInfos { get; } = new ObservableCollection<GameLogInfo>();
         private GameLogInfo _selectedGameLogInfo;
         public GameLogInfo SelectedGameLogInfo

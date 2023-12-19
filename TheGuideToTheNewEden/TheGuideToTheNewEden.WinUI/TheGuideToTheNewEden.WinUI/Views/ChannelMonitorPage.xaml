@@ -23,7 +23,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <controls:SelecteCharacterControl SelectedItem="" />
+            <controls:SelecteCharacterControl />
         </Grid>
     </Grid>
 </Page>

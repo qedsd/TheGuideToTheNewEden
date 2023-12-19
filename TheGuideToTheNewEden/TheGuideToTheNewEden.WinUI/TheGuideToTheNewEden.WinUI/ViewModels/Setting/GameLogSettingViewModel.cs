@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
+
+namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
+{
+    public class GameLogSettingViewModel : BaseViewModel
+    {
+        private int channelDuration = GameLogsSettingService.EVELogsChannelDurationValue;
+        public int ChannelDuration
+        {
+            get => channelDuration;
+            set
+            {
+                if (SetProperty(ref channelDuration, value))
+                {
+                    GameLogsSettingService.SetValue(GameLogsSettingService.EVELogsChannelDurationKey, value.ToString());
+                }
+            }
+        }
+        private string evelogsPath = GameLogsSettingService.EVELogsPathValue;
+        public string EvelogsPath
+        {
+            get => evelogsPath;
+            set
+            {
+                if(SetProperty(ref evelogsPath, value))
+                {
+                    GameLogsSettingService.SetValue(GameLogsSettingService.EVELogsPathKey, value);
+                }
+            }
+        }
+    }
+}
