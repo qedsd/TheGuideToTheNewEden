@@ -173,7 +173,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    var dic = GameLogHelper.GetChatChanelInfos(LogPath);
+                    var dic = GameLogHelper.GetChatChanelInfos(LogPath, Services.Settings.GameLogsSettingService.EVELogsChannelDurationValue);
                     if(dic != null)
                     {
                         foreach(var item in dic)

@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             {
                 if (SetProperty(ref channelDuration, value))
                 {
-                    GameLogsSettingService.SetValue(GameLogsSettingService.EVELogsChannelDurationKey, value.ToString());
+                    GameLogsSettingService.SetValue(GameLogsSettingService.GameLogKey.EVELogsChannelDuration, value.ToString());
                 }
             }
         }
@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             {
                 if(SetProperty(ref evelogsPath, value))
                 {
-                    GameLogsSettingService.SetValue(GameLogsSettingService.EVELogsPathKey, value);
+                    GameLogsSettingService.SetValue(GameLogsSettingService.GameLogKey.EVELogsPath, value);
                 }
             }
         }

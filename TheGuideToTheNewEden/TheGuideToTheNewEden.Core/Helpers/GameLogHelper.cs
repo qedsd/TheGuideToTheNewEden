@@ -246,12 +246,20 @@ namespace TheGuideToTheNewEden.Core.Helpers
         /// </summary>
         /// <param name="folder"></param>
         /// <returns></returns>
-        public static Dictionary<string, List<ChatChanelInfo>> GetChatChanelInfos(string folder)
+        public static Dictionary<string, List<ChatChanelInfo>> GetChatChanelInfos(string folder, int duration)
         {
             var infos = GetChatlogFileInfos(folder);
             if (infos.NotNullOrEmpty())
             {
-                return GetChatChanelInfos(infos);
+                if(duration > 0)
+                {
+                    var inDuration = infos.Where(p => (DateTime.Now - p.Date).TotalDays <= duration)?.ToList();
+                    return GetChatChanelInfos(inDuration);
+                }
+                else
+                {
+                    return GetChatChanelInfos(infos);
+                }
             }
             else
             {

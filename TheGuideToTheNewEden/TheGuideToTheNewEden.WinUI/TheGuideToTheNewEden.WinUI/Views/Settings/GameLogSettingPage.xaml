@@ -27,7 +27,7 @@
             <StackPanel Orientation="Horizontal">
                 <NumberBox
                     Width="240"
-                    Minimum="1"
+                    Minimum="0"
                     SmallChange="1"
                     SpinButtonPlacementMode="Inline"
                     Value="{x:Bind VM.ChannelDuration, Mode=TwoWay}" />

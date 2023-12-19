@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.Core.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -20,6 +21,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public ChannelMonitorPage()
         {
             this.InitializeComponent();
+        }
+
+        private void MenuFlyoutItem_OpenFile_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
+            }
+        }
+
+        private void Button_DeleteKey_Click(object sender, RoutedEventArgs e)
+        {
+            VM.SelectedCharacter.Setting.Keys.Remove((sender as Button).DataContext as ChannelMonitorKey);
         }
     }
 }

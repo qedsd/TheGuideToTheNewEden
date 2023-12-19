@@ -37,7 +37,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Backstory"),ResourcesHelper.GetString("ShellPage_Backstory_Desc"), typeof(BackstoryPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Mission"),ResourcesHelper.GetString("ShellPage_Mission_Desc"), typeof(MissionPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_GameLogMonitor"),ResourcesHelper.GetString("ShellPage_GameLogMonitor_Desc"), typeof(GameLogMonitorPage)),
-                 new ToolItem(ResourcesHelper.GetString("ShellPage_Links"),ResourcesHelper.GetString("ShellPage_Links_Desc"), typeof(LinksPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_ChannelMonitor"),ResourcesHelper.GetString("ShellPage_ChannelMonitor_Desc"), typeof(ChannelMonitorPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Links"),ResourcesHelper.GetString("ShellPage_Links_Desc"), typeof(LinksPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Setting"),"", typeof(SettingPage)),
             };
         }

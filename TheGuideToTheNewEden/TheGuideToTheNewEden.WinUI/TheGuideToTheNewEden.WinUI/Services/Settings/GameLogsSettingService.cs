@@ -8,21 +8,23 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
     internal static class GameLogsSettingService
     {
-        public const string EVELogsPathKey = "EVELogsPath";
+        internal enum GameLogKey
+        {
+            EVELogsPath,
+            EVELogsChannelDuration
+        }
         public static string EVELogsPathValue { get; set; }
-
-        public const string EVELogsChannelDurationKey = "EVELogsChannelDuration";
         public static int EVELogsChannelDurationValue { get; set; }
 
 
         public static void Initialize()
         {
-            EVELogsPathValue = SettingService.GetValue(EVELogsPathKey);
+            EVELogsPathValue = SettingService.GetValue(GameLogKey.EVELogsPath.ToString());
             if(string.IsNullOrEmpty(EVELogsPathValue))
             {
                 EVELogsPathValue = GetDefaultLogsPath();
             }
-            if (int.TryParse(SettingService.GetValue(EVELogsChannelDurationKey), out int duration))
+            if (int.TryParse(SettingService.GetValue(GameLogKey.EVELogsChannelDuration.ToString()), out int duration))
             {
                 EVELogsChannelDurationValue = duration;
             }
@@ -32,12 +34,12 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
         }
 
-        public static void SetValue(string key, string value)
+        public static void SetValue(GameLogKey key, string value)
         {
             switch(key)
             {
-                case EVELogsPathKey: EVELogsPathValue = value; break;
-                case EVELogsChannelDurationKey:
+                case GameLogKey.EVELogsPath: EVELogsPathValue = value; break;
+                case GameLogKey.EVELogsChannelDuration:
                     {
                         if(int.TryParse(value, out int v))
                         {
@@ -50,12 +52,30 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                         break;
                     }
             }
-            SettingService.SetValue(key, value);
+            SettingService.SetValue(key.ToString(), value);
         }
 
         public static string GetDefaultLogsPath()
         {
             return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "EVE", "logs");
         }
+
+        /// <summary>
+        /// 获取聊天频道日志文件夹路径
+        /// </summary>
+        /// <returns></returns>
+        public static string GetChatlogsPath()
+        {
+            return System.IO.Path.Combine(EVELogsPathValue, "Chatlogs");
+        }
+        /// <summary>
+        /// 获取游戏日志文件夹路径
+        /// </summary>
+        /// <returns></returns>
+        public static string GetGamelogsPath()
+        {
+            return System.IO.Path.Combine(EVELogsPathValue, "Gamelogs");
+        }
     }
+    
 }

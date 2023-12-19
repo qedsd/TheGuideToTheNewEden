@@ -53,6 +53,7 @@
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
+    <x:String x:Key="General_OpenFile">打开文件</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -85,6 +86,8 @@
     <x:String x:Key="ShellPage_GameLogMonitor_Desc">监控游戏日志</x:String>
     <x:String x:Key="ShellPage_Links">快速链接</x:String>
     <x:String x:Key="ShellPage_Links_Desc">常用的官方、第三方网站链接</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor">频道监控</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor_Desc">监控聊天频道日志</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -496,4 +499,8 @@
     <x:String x:Key="LinksPage_Add">新建链接</x:String>
     <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
     <x:String x:Key="LinksPage_Remove">删除链接</x:String>
+
+    <!--  LinksPage  -->
+    <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
+    <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
 </ResourceDictionary>
