@@ -150,6 +150,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
+            if(SelectedCharacter.Setting.Keys.Any())
+            {
+
+            }
             SelectedCharacter.Running = true;
         });
     }

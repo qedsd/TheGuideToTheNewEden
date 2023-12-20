@@ -24,11 +24,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public event HideDelegate OnHided;
         public delegate void ShowGameButtonDelegate(GaemLogMsgWindow gaemLogMsgWindow);
         public event ShowGameButtonDelegate OnShowGameButtonClick;
-        public int ListenerID { get; private set; }
         public string ListenerName { get; private set; }
-        public GaemLogMsgWindow(int listenerID, string listenerName)
+        public GaemLogMsgWindow(string listenerName, object tag)
         {
-            ListenerID = listenerID;
+            Tag = tag;
             ListenerName = listenerName;
             _mainContent = new RichTextBlock()
             {
