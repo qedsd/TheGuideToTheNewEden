@@ -54,6 +54,7 @@
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
     <x:String x:Key="General_OpenFile">打开文件</x:String>
+    <x:String x:Key="General_Clear">清除</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -500,7 +501,9 @@
     <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
     <x:String x:Key="LinksPage_Remove">删除链接</x:String>
 
-    <!--  LinksPage  -->
+    <!--  ChannelMonitorPage  -->
     <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
     <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
+    <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
 </ResourceDictionary>

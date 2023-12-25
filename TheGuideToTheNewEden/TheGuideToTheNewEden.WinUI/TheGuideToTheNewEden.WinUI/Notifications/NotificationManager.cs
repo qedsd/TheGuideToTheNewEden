@@ -23,6 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
                 { IntelToast.ScenarioId, IntelToast.NotificationReceived },
                 { GameLogMonitorToast.ScenarioId, GameLogMonitorToast.NotificationReceived },
                 { TestToast.ScenarioId, TestToast.NotificationReceived },
+                { ChannelMonitorToast.ScenarioId, ChannelMonitorToast.NotificationReceived },
             };
         }
 

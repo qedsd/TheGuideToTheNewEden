@@ -29,10 +29,22 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             Tag = tag;
             ListenerName = listenerName;
-            _mainContent = new RichTextBlock()
+            var contextFlyout = new MenuFlyout();
+            MenuFlyoutItem menuFlyoutItem = new MenuFlyoutItem()
             {
-                Margin = new Microsoft.UI.Xaml.Thickness(10)
+                Text = Helpers.ResourcesHelper.GetString("General_Clear")
             };
+            contextFlyout.Items.Add(menuFlyoutItem);
+            RichTextBlock richTextBlock = new RichTextBlock()
+            {
+                Margin = new Microsoft.UI.Xaml.Thickness(10),
+                ContextFlyout = contextFlyout
+            };
+            _mainContent = richTextBlock;
+            menuFlyoutItem.Click += ((s, e) =>
+            {
+                richTextBlock.Blocks.Clear();
+            });
             Grid grid = new Grid();
             _scrollViewer = new ScrollViewer()
             {

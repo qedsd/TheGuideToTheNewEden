@@ -23,7 +23,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -227,7 +226,7 @@
                             <controls:DataGrid.Columns>
                                 <controls:DataGridTextColumn
                                     Width="220"
-                                    Binding="{Binding Pattern}"
+                                    Binding="{Binding Pattern, Mode=TwoWay}"
                                     Header="{StaticResource GameLogMonitorPage_Regex}" />
                                 <controls:DataGridTemplateColumn Header="{StaticResource General_Remove}">
                                     <controls:DataGridTemplateColumn.CellTemplate>
@@ -292,12 +291,18 @@
                         Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                 </StackPanel>
             </Grid>
-            <ScrollViewer
-                x:Name="GameLogContentsScroll"
-                Grid.Column="2"
-                Margin="8">
-                <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="False" />
-            </ScrollViewer>
+
+            <Grid Grid.Column="1">
+                <ScrollViewer x:Name="GameLogContentsScroll" Margin="8">
+                    <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="True">
+                        <RichTextBlock.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                            </MenuFlyout>
+                        </RichTextBlock.ContextFlyout>
+                    </RichTextBlock>
+                </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
