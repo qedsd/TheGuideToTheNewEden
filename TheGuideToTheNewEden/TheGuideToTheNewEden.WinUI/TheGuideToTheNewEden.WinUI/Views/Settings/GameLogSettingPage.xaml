@@ -33,5 +33,15 @@
                     Value="{x:Bind VM.ChannelDuration, Mode=TwoWay}" />
             </StackPanel>
         </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource Setting_GameLog_MaxShowItems_Title}" Description="{StaticResource Setting_GameLog_MaxShowItems_Description}">
+            <StackPanel Orientation="Horizontal">
+                <NumberBox
+                    Width="240"
+                    Minimum="0"
+                    SmallChange="1"
+                    SpinButtonPlacementMode="Inline"
+                    Value="{x:Bind VM.MaxShowItems, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
     </StackPanel>
 </Page>

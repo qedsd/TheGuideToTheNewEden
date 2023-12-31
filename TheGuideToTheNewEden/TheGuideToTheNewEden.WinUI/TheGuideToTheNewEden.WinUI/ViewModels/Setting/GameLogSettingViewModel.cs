@@ -33,5 +33,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
                 }
             }
         }
+
+        private int maxShowItems = GameLogsSettingService.MaxShowItems;
+        public int MaxShowItems
+        {
+            get => maxShowItems;
+            set
+            {
+                if (SetProperty(ref maxShowItems, value))
+                {
+                    GameLogsSettingService.SetValue(GameLogsSettingService.GameLogKey.MaxShowItems, value.ToString());
+                }
+            }
+        }
     }
 }

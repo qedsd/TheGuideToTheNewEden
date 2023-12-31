@@ -11,10 +11,12 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         internal enum GameLogKey
         {
             EVELogsPath,
-            EVELogsChannelDuration
+            EVELogsChannelDuration,
+            MaxShowItems,
         }
         public static string EVELogsPathValue { get; set; }
         public static int EVELogsChannelDurationValue { get; set; }
+        public static int MaxShowItems { get; set; }
 
 
         public static void Initialize()
@@ -24,6 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             {
                 EVELogsPathValue = GetDefaultLogsPath();
             }
+
             if (int.TryParse(SettingService.GetValue(GameLogKey.EVELogsChannelDuration.ToString()), out int duration))
             {
                 EVELogsChannelDurationValue = duration;
@@ -31,6 +34,15 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             else
             {
                 EVELogsChannelDurationValue = 7;
+            }
+
+            if (int.TryParse(SettingService.GetValue(GameLogKey.MaxShowItems.ToString()), out int maxShowItems))
+            {
+                MaxShowItems = maxShowItems;
+            }
+            else
+            {
+                MaxShowItems = 100;
             }
         }
 
@@ -44,6 +56,18 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                         if(int.TryParse(value, out int v))
                         {
                             EVELogsChannelDurationValue = v;
+                        }
+                        else
+                        {
+                            Core.Log.Error($"Set {key} invalid data type of {value}");
+                        }
+                        break;
+                    }
+                case GameLogKey.MaxShowItems:
+                    {
+                        if (int.TryParse(value, out int v))
+                        {
+                            MaxShowItems = v;
                         }
                         else
                         {

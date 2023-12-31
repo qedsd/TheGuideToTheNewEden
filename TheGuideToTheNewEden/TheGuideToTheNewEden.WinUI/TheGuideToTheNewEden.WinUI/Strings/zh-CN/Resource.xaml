@@ -28,6 +28,8 @@
     <x:String x:Key="Setting_GameLog_EVELogsPath_Title">游戏日志路径</x:String>
     <x:String x:Key="Setting_GameLog_ChannelDuration_Title">聊天频道文件有效天数</x:String>
     <x:String x:Key="Setting_GameLog_ChannelDuration_Description">查找聊天频道时，仅查找现在往前多少天内的文件，避免过多频道文件导致查找缓慢</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Title">日志显示数量</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Description">频道预警、频道监控、日志监控等会实时显示日志信息的功能最多显示多少条信息，显示越多对电脑CPU、内存占用越多</x:String>
 
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
