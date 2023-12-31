@@ -67,6 +67,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             if(e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
             {
+                //删除超出显示数量的
+                if (Services.Settings.GameLogsSettingService.MaxShowItems > 0)
+                {
+                    int removeCount = ChatContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + e.NewItems.Count;
+                    for (int i = 0; i < removeCount; i++)
+                    {
+                        ChatContents.Blocks.RemoveAt(0);
+                    }
+                }
                 foreach (var item in e.NewItems)
                 {
                     var chatContent = item as IntelChatContent;

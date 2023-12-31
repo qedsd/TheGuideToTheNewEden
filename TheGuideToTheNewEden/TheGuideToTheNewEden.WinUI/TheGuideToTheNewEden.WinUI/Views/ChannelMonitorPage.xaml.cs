@@ -61,6 +61,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 {
                     _lastRun.FontWeight = FontWeights.Normal;
                 }
+                //删除超出显示数量的
+                if(Services.Settings.GameLogsSettingService.MaxShowItems > 0 )
+                {
+                    int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + importants.Count;
+                    for(int i = 0;i < removeCount; i++)
+                    {
+                        GameLogContents.Blocks.RemoveAt(0);
+                    }
+                }
                 foreach (var chatContent in importants)
                 {
                     Paragraph paragraph = new Paragraph()
