@@ -8,7 +8,7 @@ namespace ZKB.Net.Test
         {
             try
             {
-                Test();
+                TestKillStream();
             }
             catch (Exception ex)
             {
@@ -31,13 +31,32 @@ namespace ZKB.Net.Test
             //var obj = await ZKB.NET.ZKB.GetKillmaillAsync(ParamModifier.CorporationID, "98330748",
             //    TypeModifier.W_space);
 
-            var obj = await ZKB.NET.ZKB.GetKillmaillAsync(
-                new ParamModifierData[]
-                {
-                    new ParamModifierData(ParamModifier.CharacterID, "2113475379"),
-                    new ParamModifierData(ParamModifier.Page, "3"),
-                },
-                TypeModifier.Kills);
+            //var obj = await ZKB.NET.ZKB.GetKillmaillAsync(
+            //    new ParamModifierData[]
+            //    {
+            //        new ParamModifierData(ParamModifier.CharacterID, "2113475379"),
+            //        new ParamModifierData(ParamModifier.Page, "3"),
+            //    },
+            //    TypeModifier.Kills);
+
+            
+        }
+        private static async void TestKillStream()
+        {
+            try
+            {
+                var killStream = await ZKB.NET.ZKB.SubKillStreamAsync();
+                killStream.OnMessage += KillStream_OnMessage;
+                Console.WriteLine("Sub KillStream succeed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        private static void KillStream_OnMessage(object sender, NET.Models.KillStream.SKBDetail detail, string sourceData)
+        {
+            Console.WriteLine($"[{detail.KillmailTime}]{detail.KillmailId} {detail.Zkb.TotalValue}ISK {detail.Zkb.Url}");
         }
     }
 }
