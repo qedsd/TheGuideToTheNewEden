@@ -34,11 +34,18 @@ namespace ZKB.NET
             KillStream killStream = new KillStream(Config.WWS);
             await killStream.ConnectAsync();
             string filterStr = ToStartLower(filter.ToString());
-            object filterObj = string.IsNullOrEmpty(id) ? filterStr :
-                                new
-                                {
-                                    filterStr = id
-                                };
+            object filterObj;
+            if(string.IsNullOrEmpty(id))
+            {
+                filterObj = filterStr;
+            }
+            else
+            {
+                filterObj = new
+                {
+                    filterStr = id
+                };
+            }
             object msg = new
             {
                 action = "sub",
