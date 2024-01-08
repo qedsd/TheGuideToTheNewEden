@@ -54,7 +54,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                     {
                         GroupId = group.GroupID,
                         GroupName = group.GroupName,
-                        SkillIds = types.Select(p=>p.TypeID).ToHashSet()
+                        SkillIds = types.Select(p=>p.TypeID).ToHashSet2()
                     });
                 }
                 return skillGroups;
