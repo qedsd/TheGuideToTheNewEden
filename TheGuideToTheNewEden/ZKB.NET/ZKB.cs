@@ -17,5 +17,13 @@ namespace ZKB.NET
         {
             return char.ToLower(str[0]) + str.Substring(1);
         }
+
+        public static async void Test()
+        {
+            string html = await HttpHelper.GetAsync("https://zkillboard.com/");
+            //var p = WebCrawlerHelper.GetLabelContent(html,"div", "class=col-lg-2 pull-left");
+            var p = WebCrawlerHelper.GetLabelContent(html, "div");
+            var s = WebCrawlerHelper.GetLabelContent(p[0], "a", "href");
+        }
     }
 }
