@@ -302,6 +302,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+    <ProjectReference Include="..\..\ZKB.NET\ZKB.NET.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -346,6 +347,9 @@
     </Page>
     <None Update="ESI.NET.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="logo_32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

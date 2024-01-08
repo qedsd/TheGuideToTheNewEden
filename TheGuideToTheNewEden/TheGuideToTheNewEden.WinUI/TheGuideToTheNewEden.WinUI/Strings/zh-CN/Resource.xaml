@@ -92,6 +92,8 @@
     <x:String x:Key="ShellPage_ChannelMonitor">频道监控</x:String>
     <x:String x:Key="ShellPage_ChannelMonitor_Desc">监控聊天频道日志</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
+    <x:String x:Key="ShellPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="ShellPage_ZKB_Desc">Zkillboard青春版</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -508,4 +510,8 @@
     <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
     <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
     <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
+
+    <!--  ZKBHomePage  -->
+    <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
+    <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
 </ResourceDictionary>

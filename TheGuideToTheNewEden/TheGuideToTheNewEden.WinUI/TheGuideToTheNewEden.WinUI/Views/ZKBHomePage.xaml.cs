@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -20,6 +21,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public ZKBHomePage()
         {
             this.InitializeComponent();
+            Loaded += ZKBHomePage_Loaded;
+        }
+
+        private async void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
+            await VM.InitAsync();
+            this.GetBaseWindow()?.HideWaiting();
         }
     }
 }

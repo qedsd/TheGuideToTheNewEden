@@ -22,6 +22,10 @@
    </ItemGroup>
 
    <ItemGroup>
+     <ProjectReference Include="..\ZKB.NET\ZKB.NET.csproj" />
+   </ItemGroup>
+
+   <ItemGroup>
      <None Update="log4net.config">
        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
      </None>
