@@ -37,6 +37,11 @@ namespace TheGuideToTheNewEden.Core
         /// </summary>
         public static string StaticDBPath { get; set; }
         /// <summary>
+        /// 缓存数据库路径
+        /// 如名字id
+        /// </summary>
+        public static string CacheDBPath { get; set; }
+        /// <summary>
         /// 星系位置更新文件路径
         /// </summary>
         public static string SolarSystemMapPath { get; set; }
@@ -71,6 +76,7 @@ namespace TheGuideToTheNewEden.Core
             //result = DBService.InitDEDDb(DEDDBPath) && result;
             //result = DBService.InitWormholeDb(WormholeDBPath) && result;
             result = DBService.InitStaticDb(StaticDBPath) && result;
+            result = DBService.InitCacheDb(CacheDBPath) && result;
             //...
             //本地化数据库不是必须的
             DBService.InitLocalDb(LocalDBPath);

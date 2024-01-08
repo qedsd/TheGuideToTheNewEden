@@ -27,9 +27,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             }
         }
 
-        private void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
+        private async void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
-            
+            var info = await Core.Helpers.KBHelpers.CreateKBItemInfoAsync(detail);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using TheGuideToTheNewEden.Core.DBModels;
 
@@ -17,6 +18,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// 本地化数据库
         /// </summary>
         internal static SqlSugarScope LocalDb;
+        /// <summary>
+        /// 缓存数据库
+        /// </summary>
+        internal static SqlSugarScope CacheDb;
+
+
         /// <summary>
         /// DED数据库
         /// </summary>
@@ -224,6 +231,49 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                         IsAutoRemoveDataCache = true
                     }
                 });
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        internal static bool InitCacheDb(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+            try
+            {
+                CacheDb = new SqlSugarScope(new ConnectionConfig()
+                {
+                    ConnectionString = $"DataSource={path}",
+                    DbType = DbType.Sqlite,
+                    IsAutoCloseConnection = true,
+                    ConfigId = Guid.NewGuid(),
+                    ConfigureExternalServices = new ConfigureExternalServices
+                    {
+                        EntityService = (c, p) =>
+                        {
+                            if (c.PropertyType.IsGenericType && c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                            {
+                                p.IsNullable = true;
+                            }
+                        }
+                    },
+                    MoreSettings = new ConnMoreSettings()
+                    {
+                        IsAutoRemoveDataCache = true
+                    }
+                });
+                if (!File.Exists(path))//不存在数据库自动创建
+                {
+                    CacheDb.DbMaintenance.CreateDatabase();
+                    CacheDb.CodeFirst.InitTables(typeof(DBModels.IdName));
+                    //其他需要自动创建的表...
+                }
                 return true;
             }
             catch (Exception)
