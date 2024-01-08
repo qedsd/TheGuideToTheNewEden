@@ -114,17 +114,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        private string evelogsPath = EVELogsPathSelectorService.Value;
-        public string EvelogsPath
-        {
-            get => evelogsPath;
-            set
-            {
-                evelogsPath = value;
-                _ = EVELogsPathSelectorService.SetAsync(value);
-            }
-        }
-
         private ICommand _switchThemeCommand;
 
         public ICommand SwitchThemeCommand

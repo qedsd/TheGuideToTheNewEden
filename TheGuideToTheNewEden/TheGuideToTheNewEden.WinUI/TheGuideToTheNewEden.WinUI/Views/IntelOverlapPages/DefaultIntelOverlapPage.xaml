@@ -23,11 +23,5 @@
                 VerticalAlignment="Top"
                 Visibility="Collapsed" />
         </Grid>
-        <TextBlock
-            x:Name="InfoTextBlock"
-            Grid.Row="1"
-            Margin="10,2"
-            HorizontalAlignment="Center"
-            Visibility="Visible" />
     </Grid>
 </Page>

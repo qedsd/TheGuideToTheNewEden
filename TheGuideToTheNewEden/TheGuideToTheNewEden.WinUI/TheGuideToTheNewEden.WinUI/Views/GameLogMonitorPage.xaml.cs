@@ -17,6 +17,7 @@ using TheGuideToTheNewEden.Core.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -75,6 +76,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 foreach (var run in lastParagraph.Inlines)
                 {
                     run.FontWeight = FontWeights.Normal;
+                }
+            }
+            //删除超出显示数量的
+            if (Services.Settings.GameLogsSettingService.MaxShowItems > 0)
+            {
+                int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + news.Count();
+                for (int i = 0; i < removeCount; i++)
+                {
+                    GameLogContents.Blocks.RemoveAt(0);
                 }
             }
             Run lastRun = null;

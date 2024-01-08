@@ -60,6 +60,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
+        private int sourceSalesType;
+        public int SourceSalesType
+        {
+            get => sourceSalesType;
+            set
+            {
+                if(SetProperty(ref sourceSalesType, value))
+                {
+                    Setting.SourceSalesType = (SalesType)value;
+                }
+            }
+        }
+
+        private int destinationSalesType;
+        public int DestinationSalesType
+        {
+            get => destinationSalesType;
+            set
+            {
+                if (SetProperty(ref destinationSalesType, value))
+                {
+                    Setting.DestinationSalesType = (SalesType)value;
+                }
+            }
+        }
+
         private List<Core.DBModels.InvMarketGroup> invMarketGroups;
         public List<Core.DBModels.InvMarketGroup> InvMarketGroups
         {
@@ -122,6 +148,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             Setting ??= new ScalperSetting();
             BuyPriceType = (int)Setting.BuyPrice;
             SellPriceType = (int)Setting.SellPrice;
+            SourceSalesType = (int)Setting.SourceSalesType;
+            DestinationSalesType = (int)Setting.DestinationSalesType;
             InvMarketGroups = await Core.Services.DB.InvMarketGroupService.QueryRootGroupAsync();
             SelectedInvMarketGroup = InvMarketGroups.FirstOrDefault(p => p.MarketGroupID == Setting.MarketGroup);
         }
@@ -239,52 +267,72 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch(Setting.SourceMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.SourceMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
         {
-            List<Core.Models.Market.Order> orders = null;
-            switch (Setting.DestinationMarketLocation.Type)
+            try
             {
-                case MarketLocationType.Region:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.SolarSystem:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
-                case MarketLocationType.Structure:
-                    {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                    }
-                    break;
+                List<Core.Models.Market.Order> orders = null;
+                switch (Setting.DestinationMarketLocation.Type)
+                {
+                    case MarketLocationType.Region:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.SolarSystem:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                    case MarketLocationType.Structure:
+                        {
+                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        }
+                        break;
+                }
+                return orders;
             }
-            return orders;
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+                return null;
+            }
         }
         private async Task GetOrders()
         {
+            long errorCount = Core.Log.GetErrorCount();
+            long infoCount = Core.Log.GetInfoCount();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             Window?.ShowWaiting("获取源市场订单中");
@@ -325,8 +373,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
                 ScalperItems = scalperItems;
                 stopwatch.Stop();
-                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟)",false);
+                long errorCount2 = Core.Log.GetErrorCount();
+                long infoCount2 = Core.Log.GetInfoCount();
+                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时：{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟  错误：{errorCount2 - errorCount}  异常：{infoCount2 - infoCount})",false);
             }
+            else
+            {
+                Window?.ShowError("未获取到有效订单");
+            }
+            Window?.HideWaiting();
         }
 
         private List<Order> RemoveFilterTypes(List<Order> orders)
@@ -468,6 +523,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                         item.HistoryPriceFluctuation = 0;
                         item.NowPriceFluctuation = 0;
                         item.Saturation = 0;
+                        item.HeatValue = 0;
                     }
                     CalSales(items);
                     items = items.Where(p => p.DestinationSales > 0).ToList();
@@ -480,6 +536,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     CalHistoryPriceFluctuation(items);
                     CalNowPriceFluctuation(items);
                     CalSaturation(items);
+                    CalHeatValue(items);
                     CalSuggestion(items);
                     items = items.OrderByDescending(p => p.Suggestion).ToList();
                 }
@@ -502,30 +559,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 var history = item.SourceStatistics.Where(p=>p.Date > DateTime.Now.AddDays(- Setting.SourceSalesDay - 2)).ToList();
                 if(history.NotNullOrEmpty())
                 {
-                    if(history.Count > 3)
+                    history = history.OrderBy(p => p.Volume).ToList();
+                    if (history.Count > 3)
                     {
                         if (Setting.SourceRemoveExtremum)
                         {
-                            var order = history.OrderBy(p => p.Volume);
-                            history.Remove(order.First());
-                            history.Remove(order.Last());
+                            history.RemoveAt(0);
+                            history.RemoveAt(history.Count - 1);
                         }
                     }
-                    item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                    switch(Setting.SourceSalesType)
+                    {
+                        case SalesType.HistoryLowest: item.SourceSales = history.FirstOrDefault().Volume; break;
+                        case SalesType.HistoryHighest: item.SourceSales = history.LastOrDefault().Volume; break;
+                        case SalesType.HistoryAverage: item.SourceSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count); break;
+                    }
                 }
                 history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(- Setting.DestinationSalesDay - 2)).ToList();
                 if (history.NotNullOrEmpty())
                 {
+                    history = history.OrderBy(p => p.Volume).ToList();
                     if (history.Count > 3)
                     {
                         if (Setting.DestinationRemoveExtremum)
                         {
-                            var order = history.OrderBy(p => p.Volume);
-                            history.Remove(order.First());
-                            history.Remove(order.Last());
+                            history.RemoveAt(0);
+                            history.RemoveAt(history.Count - 1);
                         }
                     }
-                    item.DestinationSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count);
+                    switch (Setting.DestinationSalesType)
+                    {
+                        case SalesType.HistoryLowest: item.DestinationSales = history.FirstOrDefault().Volume; break;
+                        case SalesType.HistoryHighest: item.DestinationSales = history.LastOrDefault().Volume; break;
+                        case SalesType.HistoryAverage: item.DestinationSales = (long)Math.Ceiling(history.Sum(p => p.Volume) / (decimal)history.Count); break;
+                    }
                 }
             }
         }
@@ -876,6 +943,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
+        /// <summary>
+        /// 计算热力值
+        /// </summary>
+        /// <param name="items"></param>
+        private void CalHeatValue(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                var history = item.DestinationStatistics.Where(p => p.Date > DateTime.Now.AddDays(-Setting.HeatValueDay - 2)).ToList();
+                if (history.NotNullOrEmpty())
+                {
+                    foreach(var his in history)
+                    {
+                        item.HeatValue += his.Volume >= Setting.HeatValueThreshold ? 1 : -1;
+                    }
+                }
+            }
+        }
 
         private void CalSuggestion(List<ScalperItem> items)
         {
@@ -936,6 +1021,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if(item.Saturation > 0)
                 {
                     item.Suggestion += Setting.SuggestionSaturation * i / c;
+                }
+                i++;
+            }
+            //热力值
+            i = 1;
+            var groups = items.GroupBy(p => p.HeatValue).ToList();
+            int groupCount = groups.Count;
+            foreach (var group in groups.OrderBy(p => p.Key))
+            {
+                double s = Setting.SuggestionHeatValue * i / groupCount;
+                foreach (var item in group)
+                {
+                    item.Suggestion += s;
                 }
                 i++;
             }

@@ -86,10 +86,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (!string.IsNullOrEmpty(fileText))
                 {
                     var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<StructureOrder>(fileText));
-                    if (localOrder != null)//本地存在订单数据
+                    if (localOrder != null && localOrder.Orders.NotNullOrEmpty())//本地存在订单数据
                     {
                         if ((DateTime.Now - localOrder.UpdateTime).TotalMinutes < OrderDuration)//还在有效期内
                         {
+                            await Task.Run(() =>
+                            {
+                                localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
+                            });
                             await SetOrderInfo(localOrder.Orders);
                             return localOrder.Orders;
                         }
@@ -318,8 +322,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (!string.IsNullOrEmpty(fileText))
                     {
                         var localOrder = await Task.Run(() => JsonConvert.DeserializeObject<RegionOrder>(fileText));
-                        if (localOrder != null)//本地存在订单数据
+                        if (localOrder != null && localOrder.Orders.NotNullOrEmpty())//本地存在订单数据
                         {
+                            await Task.Run(() =>
+                            {
+                                localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
+                            });
                             await SetOrderInfo(localOrder.Orders);
                             return localOrder.Orders;
                         }
@@ -477,7 +485,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var regionOrders = await GetRegionOrdersAsync(system.RegionID, pageCallBack);
                 if(regionOrders.NotNullOrEmpty())
                 {
-                    return regionOrders.Where(p => p.SolarSystem.SolarSystemID == mapSolarSystemId).ToList();
+                    return regionOrders.Where(p => p.SystemId == mapSolarSystemId).ToList();
                 }
             }
             return null;
@@ -587,7 +595,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    Core.Log.Error($"获取{ids[0]} {ids[1]}历史记录为空");
+                    Core.Log.Info($"获取{ids[0]} {ids[1]}历史记录为空");
                     return null;
                 }
             }
@@ -606,7 +614,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else
             {
-                Core.Log.Error($"获取{regionId} {typeId}历史记录为空");
+                Core.Log.Info($"获取{regionId} {typeId}历史记录为空");
                 return null;
             }
         }

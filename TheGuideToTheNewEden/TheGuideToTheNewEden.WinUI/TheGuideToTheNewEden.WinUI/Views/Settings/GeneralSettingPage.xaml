@@ -76,11 +76,6 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
-            <controls:ExpandableSettingControl Title="{StaticResource Setting_EVELogsPath_Title}" Description="{StaticResource Setting_EVELogsPath_Description}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBox Width="240" Text="{x:Bind VM.EvelogsPath, Mode=TwoWay}" />
-                </StackPanel>
-            </controls:ExpandableSettingControl>
             <controls:ExpandableSettingControl Title="{StaticResource Setting_Log_Title}" Description="{StaticResource Setting_Log_Description}">
                 <StackPanel Orientation="Horizontal">
                     <Button Width="100" Command="{x:Bind VM.CheckLogCommand}">

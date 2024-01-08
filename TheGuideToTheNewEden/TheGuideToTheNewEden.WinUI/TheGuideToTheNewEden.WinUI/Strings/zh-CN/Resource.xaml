@@ -21,11 +21,15 @@
     <x:String x:Key="Setting_Config_Title">App配置文件</x:String>
     <x:String x:Key="Setting_Config_Description">App所有参数配置文件均存放于此文件夹内</x:String>
     <x:String x:Key="Setting_Config_Check">查看</x:String>
-    <x:String x:Key="Setting_EVELogsPath_Description">只需选择logs文件夹</x:String>
-    <x:String x:Key="Setting_EVELogsPath_Title">EVE日志路径</x:String>
     <x:String x:Key="Setting_About_Title">关于</x:String>
     <x:String x:Key="Setting_Update_Update">APP更新</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">自动检查更新</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Description">只需选择logs文件夹</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Title">游戏日志路径</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Title">聊天频道文件有效天数</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Description">查找聊天频道时，仅查找现在往前多少天内的文件，避免过多频道文件导致查找缓慢</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Title">日志显示数量</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Description">频道预警、频道监控、日志监控等会实时显示日志信息的功能最多显示多少条信息，显示越多对电脑CPU、内存占用越多</x:String>
 
     <!--  General  -->
     <x:String x:Key="General_GroupDropAreaText">拖拽单元格头至此以分组</x:String>
@@ -51,6 +55,8 @@
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
+    <x:String x:Key="General_OpenFile">打开文件</x:String>
+    <x:String x:Key="General_Clear">清除</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -81,6 +87,10 @@
     <x:String x:Key="ShellPage_Mission_Desc">上古EVEWiki攻略</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor">日志监控</x:String>
     <x:String x:Key="ShellPage_GameLogMonitor_Desc">监控游戏日志</x:String>
+    <x:String x:Key="ShellPage_Links">快速链接</x:String>
+    <x:String x:Key="ShellPage_Links_Desc">常用的官方、第三方网站链接</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor">频道监控</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor_Desc">监控聊天频道日志</x:String>
     <x:String x:Key="ShellPage_Setting">设置</x:String>
 
     <!--  Skill  -->
@@ -257,6 +267,9 @@
     <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">当前价格波动</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturation">卖单饱和度</x:String>
     <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">有效订单价格波动范围（%）</x:String>
+    <x:String x:Key="BusinessPage_HeatValue">热力值</x:String>
+    <x:String x:Key="BusinessPage_HeatValueDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</x:String>
 
     <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
     <x:String x:Key="BusinessPage_ROI">回报率</x:String>
@@ -273,7 +286,7 @@
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
-    <x:String x:Key="BusinessPage_SourceSales">源市场日日销量</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日销量</x:String>
     <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
     <x:String x:Key="BusinessPage_DestinationSales">目的市场日销量</x:String>
     <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
@@ -286,6 +299,11 @@
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>
     <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
+    <x:String x:Key="BusinessPage_SalesType">销量计算方式</x:String>
+    <x:String x:Key="BusinessPage_SalesDay">统计历史天数</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighestSalse">历史最高销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverageSalse">历史平均销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowestSalse">历史最低销量</x:String>
 
     <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
@@ -294,6 +312,7 @@
     <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
     <x:String x:Key="SettingPage_Test">测试</x:String>
@@ -401,6 +420,13 @@
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
     <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="EarlyWarningItemPage_SoundFilePath">音频文件</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">跳数</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Volume">音量</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Loop">循环</x:String>
+    <x:String x:Key="EarlyWarningItemPage_DefaultFile">默认</x:String>
+    <x:String x:Key="EarlyWarningItemPage_StopSound">停止声音</x:String>
 
     <!--  GameLogMonitorPage  -->
     <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
@@ -448,4 +474,38 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+
+    <!--  LinksPage  -->
+    <x:String x:Key="LinksPage_Name">名字</x:String>
+    <x:String x:Key="LinksPage_Url">链接</x:String>
+    <x:String x:Key="LinksPage_ShortDescription">概述</x:String>
+    <x:String x:Key="LinksPage_Description">描述</x:String>
+    <x:String x:Key="LinksPage_Lang">语言</x:String>
+    <x:String x:Key="LinksPage_Lang_Tip">多个语言使用,分割</x:String>
+    <x:String x:Key="LinksPage_Platforms">平台</x:String>
+    <x:String x:Key="LinksPage_Platforms_Tip">多个平台使用,分割</x:String>
+    <x:String x:Key="LinksPage_Categories">分类</x:String>
+    <x:String x:Key="LinksPage_Categories_Tip">多个分类使用,分割</x:String>
+    <x:String x:Key="LinksPage_CopyUrl">复制链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl">图标链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl_Tip">支持网络链接</x:String>
+    <x:String x:Key="LinksPage_Open">打开链接</x:String>
+    <x:String x:Key="LinksPage_Add">新建链接</x:String>
+    <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
+    <x:String x:Key="LinksPage_Remove">删除链接</x:String>
+
+    <!--  ChannelMonitorPage  -->
+    <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
+    <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
+    <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
 </ResourceDictionary>

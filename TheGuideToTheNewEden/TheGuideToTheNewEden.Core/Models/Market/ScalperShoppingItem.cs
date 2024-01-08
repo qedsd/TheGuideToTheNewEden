@@ -48,7 +48,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             {
                 SetProperty(ref quantity, value);
                 Cal();
-                Volume = value * InvType.Volume;
+                Volume = value * InvType.PackagedVolume;
             }
         }
         private double volume;

@@ -35,10 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 if(!NotifyWindows.ContainsKey(setting.ListenerID))
                 {
-                    GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.ListenerID, info.ListenerName)
-                    {
-                        Tag = setting.ListenerID
-                    };
+                    GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.ListenerName, setting.ListenerID);
                     messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_GameLogMonitor")} - {title}");
                     messageWindow.OnHided += MessageWindow_OnHided;
                     messageWindow.OnShowGameButtonClick += MessageWindow_OnShowGameButtonClick;
@@ -75,17 +72,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
             }
-            Stop(gaemLogMsgWindow.ListenerID);
+            Stop((int)gaemLogMsgWindow.Tag);
         }
 
         private void MessageWindow_OnHided(GaemLogMsgWindow messageWindow)
         {
-            if (NotifyMediaPlayers.TryGetValue(messageWindow.ListenerID, out var mediaPlayer))
+            if (NotifyMediaPlayers.TryGetValue((int)messageWindow.Tag, out var mediaPlayer))
             {
                 mediaPlayer.Pause();
                 mediaPlayer.Position = TimeSpan.Zero;
             }
-            _ = AppNotificationManager.Default.RemoveByGroupAsync(messageWindow.ListenerID.ToString());
+            _ = AppNotificationManager.Default.RemoveByGroupAsync(messageWindow.Tag.ToString());
         }
 
         public void Remove(int id)

@@ -10,6 +10,6 @@
     <ComboBox
         x:Name="CharacterComboBox"
         Margin="8,0,0,0"
-        DisplayMemberPath="CharacterName" 
-        SelectionChanged="CharacterComboBox_SelectionChanged"/>
+        DisplayMemberPath="CharacterName"
+        SelectionChanged="CharacterComboBox_SelectionChanged" />
 </UserControl>

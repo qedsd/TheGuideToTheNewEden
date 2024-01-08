@@ -164,6 +164,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             get => sourceRemoveExtremum; set => SetProperty(ref sourceRemoveExtremum, value);
         }
 
+        private SalesType sourceSalesType = SalesType.HistoryLowest;
+        /// <summary>
+        /// 原市场销量计算方式
+        /// </summary>
+        public SalesType SourceSalesType
+        {
+            get => sourceSalesType; set => SetProperty(ref sourceSalesType, value);
+        }
+
         private int destinationSalesDay = 7;
         /// <summary>
         /// 目的市场销量计算天数
@@ -180,6 +189,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public bool DestinationRemoveExtremum
         {
             get => destinationRemoveExtremum; set => SetProperty(ref destinationRemoveExtremum, value);
+        }
+
+        private SalesType destinationSalesType = SalesType.HistoryLowest;
+        /// <summary>
+        /// 目的市场销量计算方式
+        /// </summary>
+        public SalesType DestinationSalesType
+        {
+            get => destinationSalesType; set => SetProperty(ref destinationSalesType, value);
         }
         #endregion
 
@@ -243,6 +261,25 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public double SalesPercent
         {
             get => salesPercent; set => SetProperty(ref salesPercent, value);
+        }
+        #endregion
+
+        #region 热力值
+        private int heatValueDay = 30;
+        /// <summary>
+        /// 热力值计算天数
+        /// </summary>
+        public int HeatValueDay
+        {
+            get => heatValueDay; set => SetProperty(ref heatValueDay, value);
+        }
+        private int heatValueThreshold = 1;
+        /// <summary>
+        /// 热力值销量判断界限
+        /// </summary>
+        public int HeatValueThreshold
+        {
+            get => heatValueThreshold; set => SetProperty(ref heatValueThreshold, value);
         }
         #endregion
 
@@ -317,6 +354,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             get => suggestionSaturation; set => SetProperty(ref suggestionSaturation, value);
         }
+
+        private double suggestionHeatValue = 30;
+        /// <summary>
+        /// 热力值
+        /// </summary>
+        public double SuggestionHeatValue
+        {
+            get => suggestionHeatValue; set => SetProperty(ref suggestionHeatValue, value);
+        }
         #endregion
 
         public enum PriceType
@@ -341,6 +387,16 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             HistoryAverage,
             [Description("历史最低价格")]
             HistoryLowest,
+        }
+
+        public enum SalesType
+        {
+            [Description("历史最低")]
+            HistoryLowest,
+            [Description("历史最高")]
+            HistoryHighest,
+            [Description("历史平均")]
+            HistoryAverage,
         }
     }
 }

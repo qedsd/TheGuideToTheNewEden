@@ -134,7 +134,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private HashSet<int> _downgradeds = new HashSet<int>();
         public void Intel(EarlyWarningContent content)
         {
-            InfoTextBlock.Text = $"{content.SolarSystemName}({content.Jumps} Jumps):{content.Content}";
             if (_ellipseDic.TryGetValue(content.SolarSystemId, out var value))
             {
                 if (content.IntelType == Core.Enums.IntelChatType.Intel)
@@ -218,7 +217,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             MapCanvas.Children.Clear();
             LineCanvas.Children.Clear();
             double width = (MapCanvas.ActualWidth == 0 ? _window.Bounds.Width : MapCanvas.ActualWidth) - 10;
-            double height = MapCanvas.ActualHeight == 0 ? _window.Bounds.Height - 36: MapCanvas.ActualHeight;
+            double height = MapCanvas.ActualHeight == 0 ? _window.Bounds.Height - 36 - 32 : MapCanvas.ActualHeight;
             _ellipseDic.Clear();
             var group = _intelMap.GroupByJump();
             var perJumpHeight = height / group.Count;//每层占高度
@@ -340,6 +339,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         {
             _intelMap = intelMap;
             UpdateUI();
+        }
+
+        public void Clear()
+        {
+            foreach (var id in _intelings)
+            {
+                if (_ellipseDic.TryGetValue(id, out var value))
+                {
+                    value.Scale = new System.Numerics.Vector3(1, 1, 1);
+                    Canvas.SetLeft(value, value.ActualOffset.X + value.Width / 4);
+                    Canvas.SetTop(value, value.ActualOffset.Y + value.Height / 4);
+                    if (id == _setting.LocationID)
+                    {
+                        value.Fill = _homeBrush;
+                    }
+                    else
+                    {
+                        value.Fill = _defaultBrush;
+                    }
+                }
+            }
+            _intelings.Clear();
+            _downgradeds.Clear();
         }
     }
 }

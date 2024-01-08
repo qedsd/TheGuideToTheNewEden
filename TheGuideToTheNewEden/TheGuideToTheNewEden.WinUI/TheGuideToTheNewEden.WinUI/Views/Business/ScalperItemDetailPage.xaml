@@ -18,83 +18,89 @@
             <ColumnDefinition Width="240" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <StackPanel Orientation="Vertical">
-            <StackPanel.Resources>
-                <Style TargetType="StackPanel">
-                    <Setter Property="Orientation" Value="Horizontal" />
-                    <Setter Property="Margin" Value="8" />
-                </Style>
-                <Style TargetType="TextBlock">
-                    <Setter Property="Margin" Value="4,0" />
-                    <Setter Property="Width" Value="100" />
-                </Style>
-            </StackPanel.Resources>
-            <Image
-                x:Name="Image_Type"
-                Width="48"
-                Height="48"
-                HorizontalAlignment="Center" />
-            <TextBlock
-                x:Name="TextBlock_TypeName"
-                Width="Auto"
-                HorizontalAlignment="Center"
-                Foreground="{ThemeResource SystemAccentColor}"
-                TextWrapping="WrapWholeWords" />
-            <Rectangle Margin="0,8" />
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_Suggestion}" />
-                <TextBlock x:Name="TextBlock_Suggestion" />
+        <ScrollViewer>
+            <StackPanel Orientation="Vertical">
+                <StackPanel.Resources>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Orientation" Value="Horizontal" />
+                        <Setter Property="Margin" Value="8" />
+                    </Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="4,0" />
+                        <Setter Property="Width" Value="100" />
+                    </Style>
+                </StackPanel.Resources>
+                <Image
+                    x:Name="Image_Type"
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center" />
+                <TextBlock
+                    x:Name="TextBlock_TypeName"
+                    Width="Auto"
+                    HorizontalAlignment="Center"
+                    Foreground="{ThemeResource SystemAccentColor}"
+                    TextWrapping="WrapWholeWords" />
+                <Rectangle Margin="0,8" />
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_Suggestion}" />
+                    <TextBlock x:Name="TextBlock_Suggestion" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_BuyPrice}" />
+                    <TextBlock x:Name="TextBlock_BuyPrice" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_SellPrice}" />
+                    <TextBlock x:Name="TextBlock_SellPrice" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_DestinationSales}" />
+                    <TextBlock x:Name="TextBlock_DestinationSales" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_TargetSales}" />
+                    <TextBlock x:Name="TextBlock_TargetSales" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_ROIPercent}" />
+                    <TextBlock x:Name="TextBlock_ROI" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_SingleNetProfit}" />
+                    <TextBlock x:Name="TextBlock_NetProfit" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_TargetSalesNetProfit}" />
+                    <TextBlock x:Name="TextBlock_TargetSalesNetProfit" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_HeatValue}" />
+                    <TextBlock x:Name="TextBlock_HeatValue" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_Principal}" />
+                    <TextBlock x:Name="TextBlock_Principal" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}" />
+                    <TextBlock x:Name="TextBlock_HistoryPriceFluctuation" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}" />
+                    <TextBlock x:Name="TextBlock_NowPriceFluctuation" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_SellOrderSaturation}" />
+                    <TextBlock x:Name="TextBlock_SellOrderSaturation" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{StaticResource BusinessPage_Volume}" />
+                    <TextBlock x:Name="TextBlock_Volume" Width="Auto" />
+                    <TextBlock Margin="2,0,0,0" Text="m³" />
+                </StackPanel>
             </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_BuyPrice}" />
-                <TextBlock x:Name="TextBlock_BuyPrice" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_SellPrice}" />
-                <TextBlock x:Name="TextBlock_SellPrice" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_DestinationSales}" />
-                <TextBlock x:Name="TextBlock_DestinationSales" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_TargetSales}" />
-                <TextBlock x:Name="TextBlock_TargetSales" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_ROIPercent}" />
-                <TextBlock x:Name="TextBlock_ROI" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_SingleNetProfit}" />
-                <TextBlock x:Name="TextBlock_NetProfit" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_TargetSalesNetProfit}" />
-                <TextBlock x:Name="TextBlock_TargetSalesNetProfit" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_Principal}" />
-                <TextBlock x:Name="TextBlock_Principal" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}" />
-                <TextBlock x:Name="TextBlock_HistoryPriceFluctuation" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}" />
-                <TextBlock x:Name="TextBlock_NowPriceFluctuation" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_SellOrderSaturation}" />
-                <TextBlock x:Name="TextBlock_SellOrderSaturation" />
-            </StackPanel>
-            <StackPanel>
-                <TextBlock Text="{StaticResource BusinessPage_Volume}" />
-                <TextBlock x:Name="TextBlock_Volume" Width="Auto" />
-                <TextBlock Margin="2,0,0,0" Text="m³" />
-            </StackPanel>
-        </StackPanel>
+        </ScrollViewer>
         <Pivot Grid.Column="1" Margin="8,-16,0,0">
             <PivotItem>
                 <PivotItem.Header>

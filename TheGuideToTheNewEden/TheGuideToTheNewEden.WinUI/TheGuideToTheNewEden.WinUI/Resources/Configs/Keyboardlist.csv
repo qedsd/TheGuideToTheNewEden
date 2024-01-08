@@ -61,6 +61,16 @@ Z,90
 Win,91,左边Window键
 LeftWin,91,左边Window键
 RightLeftWin,92,右边Window键
+Num0,96,数字键盘0
+Num1,97,数字键盘1
+Num2,98,数字键盘2
+Num3,99,数字键盘3
+Num4,100,数字键盘4
+Num5,101,数字键盘5
+Num6,102,数字键盘6
+Num7,103,数字键盘7
+Num8,104,数字键盘8
+Num9,105,数字键盘9
 F1,112
 F2,113
 F3,114

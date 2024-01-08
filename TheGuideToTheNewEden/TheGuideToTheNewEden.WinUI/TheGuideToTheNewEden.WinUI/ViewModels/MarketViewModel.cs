@@ -232,14 +232,37 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private async void GetRegionOrders()
         {
+            BuyOrders?.Clear();
+            SellOrders?.Clear();
+            StatisticsForShow?.Clear();
             Window?.ShowWaiting("获取订单中...");
-            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID); ;
-            BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p=>p.Price)?.ToObservableCollection();
-            SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p=>p.Price)?.ToObservableCollection();
-            SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            try
+            {
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID); ;
+                BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
+                SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
+                SetOrderStatisticalInfo(SellOrders, BuyOrders);
+            }
+            catch (Exception ex)
+            {
+                Window?.HideWaiting();
+                Window?.ShowError(ex.Message);
+                Core.Log.Error(ex);
+                return;
+            }
             Window?.ShowWaiting("获取历史记录中...");
-            Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
-            SetStatistics();
+            try
+            {
+                Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
+                SetStatistics();
+            }
+            catch(Exception ex)
+            {
+                Window?.HideWaiting();
+                Window?.ShowError(ex.Message);
+                Core.Log.Error(ex);
+                return;
+            }
             Window?.HideWaiting();
         }
 
