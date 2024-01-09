@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.Core.Services;
+using TheGuideToTheNewEden.Core.Services.DB;
 using ZKB.NET.Models.KillStream;
 
 namespace TheGuideToTheNewEden.Core.Helpers
@@ -28,6 +29,8 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 ids.Add(finalBlow.CorporationId);
                 ids.Add(finalBlow.AllianceId);
             }
+            ids = ids.Distinct().ToList();
+            ids.Remove(0);
             var results = await IDNameService.GetByIdsAsync(ids.Distinct().ToList());
             if(results.NotNullOrEmpty())
             {
@@ -41,6 +44,16 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     kbItemInfo.FinalBlowCorporationIdName = results.FirstOrDefault(p => p.Id == finalBlow.CorporationId);
                     kbItemInfo.FinalBlowAllianceName = results.FirstOrDefault(p => p.Id == finalBlow.AllianceId);
                 }
+            }
+            kbItemInfo.SolarSystem = await MapSolarSystemService.QueryAsync(detail.SolarSystemId);
+            if(kbItemInfo.SolarSystem != null)
+            {
+                kbItemInfo.Region = await MapRegionService.QueryAsync(kbItemInfo.SolarSystem.RegionID);
+            }
+            kbItemInfo.Type = await InvTypeService.QueryTypeAsync(detail.Victim.ShipTypeId);
+            if(kbItemInfo.Type != null)
+            {
+                kbItemInfo.Group = await InvGroupService.QueryGroupAsync(kbItemInfo.Type.GroupID);
             }
             return kbItemInfo;
         }

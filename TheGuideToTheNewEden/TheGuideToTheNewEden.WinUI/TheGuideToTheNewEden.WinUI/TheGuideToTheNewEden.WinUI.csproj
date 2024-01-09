@@ -220,6 +220,9 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\KBListCharacterControl.xaml" />
+    <None Remove="Controls\KBListControl.xaml" />
+    <None Remove="Controls\KBSystemInfoControl.xaml" />
     <None Remove="Controls\LinkInfoControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
@@ -343,6 +346,15 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Dialogs\EditLinkInfoDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\KBSystemInfoControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\KBListControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\KBListCharacterControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">

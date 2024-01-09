@@ -511,7 +511,15 @@
     <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
     <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
 
-    <!--  ZKBHomePage  -->
+    <!--  ZKB  -->
     <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
+    <x:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</x:String>
     <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
+    <x:String x:Key="KBListControl_Time">时间</x:String>
+    <x:String x:Key="KBListControl_TotalValue">估价</x:String>
+    <x:String x:Key="KBListControl_Location">位置</x:String>
+    <x:String x:Key="KBListControl_Type">飞船/建筑</x:String>
+    <x:String x:Key="KBListControl_Victim">受害者</x:String>
+    <x:String x:Key="KBListControl_FinalBlow">最后一击</x:String>
+    <x:String x:Key="KBListControl_OpenBrowser">浏览器查看</x:String>
 </ResourceDictionary>

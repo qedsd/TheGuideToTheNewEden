@@ -177,4 +177,24 @@
     <Style x:Key="StretchListView" TargetType="ListView">
         <Setter Property="ItemContainerStyle" Value="{StaticResource StretchListViewItem}" />
     </Style>
+    <Style
+        x:Key="TransparentButton"
+        BasedOn="{StaticResource DefaultButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style
+        x:Key="LinkButton"
+        BasedOn="{StaticResource TransparentButton}"
+        TargetType="Button">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Foreground" Value="#229fd6" />
+    </Style>
+    <Style
+        x:Key="ZKBLinkButton"
+        BasedOn="{StaticResource LinkButton}"
+        TargetType="Button">
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>

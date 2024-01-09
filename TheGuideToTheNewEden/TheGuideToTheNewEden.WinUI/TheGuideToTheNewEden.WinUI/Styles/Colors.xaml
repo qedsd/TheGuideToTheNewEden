@@ -51,4 +51,15 @@
                 Color="{ThemeResource ThemeMainColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+    <SolidColorBrush x:Key="SystemSecurityForeground1" Color="#24d7f9" />
+    <SolidColorBrush x:Key="SystemSecurityForeground09" Color="#2dd6c3" />
+    <SolidColorBrush x:Key="SystemSecurityForeground08" Color="#02f345" />
+    <SolidColorBrush x:Key="SystemSecurityForeground07" Color="#15f100" />
+    <SolidColorBrush x:Key="SystemSecurityForeground06" Color="#8ff930" />
+    <SolidColorBrush x:Key="SystemSecurityForeground05" Color="#d3d112" />
+    <SolidColorBrush x:Key="SystemSecurityForeground04" Color="#e58000" />
+    <SolidColorBrush x:Key="SystemSecurityForeground03" Color="#f64d19" />
+    <SolidColorBrush x:Key="SystemSecurityForeground02" Color="#eb4909" />
+    <SolidColorBrush x:Key="SystemSecurityForeground01" Color="#c4261e" />
+    <SolidColorBrush x:Key="SystemSecurityForeground00" Color="#d10202" />
 </ResourceDictionary>

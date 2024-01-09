@@ -1,0 +1,151 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WinUI.Controls.KBListControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:kb="using:TheGuideToTheNewEden.Core.Models.KB"
+    xmlns:killstream="using:ZKB.NET.Models.KillStream"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <dataGrid:SfDataGrid
+            x:Name="DataGrid"
+            HorizontalAlignment="Stretch"
+            AllowDraggingColumns="True"
+            AllowEditing="False"
+            AllowFiltering="True"
+            AllowGrouping="True"
+            AllowResizingColumns="True"
+            AllowSorting="True"
+            AutoGenerateColumns="False"
+            ColumnWidthMode="Star"
+            GridLinesVisibility="None"
+            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+            HeaderLinesVisibility="Both"
+            RowHeight="50"
+            SelectionMode="Extended"
+            ShowGroupDropArea="True"
+            Tapped="SfDataGrid_Tapped">
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTemplateColumn
+                    ColumnWidthMode="Auto"
+                    HeaderText="{StaticResource KBListControl_Time}"
+                    MappingName="SKBDetail.KillmailTime">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <Grid Margin="8,4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    FontWeight="Light"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind SKBDetail.KillmailTime.ToShortDateString()}" />
+                            </Grid>
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn
+                    ColumnWidthMode="Auto"
+                    HeaderText="{StaticResource KBListControl_TotalValue}"
+                    MappingName="SKBDetail.Zkb.TotalValue">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <Grid Margin="8,4">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind SKBDetail.Zkb.TotalValue, Converter={StaticResource ISKNormalizeConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn
+                    ColumnWidthMode="Auto"
+                    HeaderText="{StaticResource KBListControl_Type}"
+                    MappingName="Type.TypeName">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <Grid Margin="8,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Border CornerRadius="8">
+                                    <controls:ImageEx Source="{x:Bind SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
+                                </Border>
+                                <Grid Grid.Column="1" Margin="4,0,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Button Style="{StaticResource LinkButton}">
+                                        <Button.Content>
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Bind Type.TypeName}" />
+                                        </Button.Content>
+                                    </Button>
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        FontWeight="Light"
+                                        Text="{x:Bind Group.GroupName}" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn
+                    ColumnWidthMode="Auto"
+                    HeaderText="{StaticResource KBListControl_Location}"
+                    MappingName="SolarSystem.SolarSystemName">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <local:KBSystemInfoControl
+                                Margin="8,0"
+                                Region="{x:Bind Region}"
+                                System="{x:Bind SolarSystem}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource KBListControl_Victim}" MappingName="Victim.Name">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <local:KBListCharacterControl
+                                Margin="8,0"
+                                IsVictim="True"
+                                Loaded="KBListCharacterControl_Loaded" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource KBListControl_FinalBlow}" MappingName="FinalBlow.Name">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="kb:KBItemInfo">
+                            <local:KBListCharacterControl
+                                Margin="8,0"
+                                IsVictim="False"
+                                Loaded="KBListCharacterControl_Loaded" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+            </dataGrid:SfDataGrid.Columns>
+            <dataGrid:SfDataGrid.RecordContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Click="MenuFlyoutItem_Browser_Click" Text="{StaticResource KBListControl_OpenBrowser}" />
+                </MenuFlyout>
+            </dataGrid:SfDataGrid.RecordContextFlyout>
+
+        </dataGrid:SfDataGrid>
+    </Grid>
+</UserControl>

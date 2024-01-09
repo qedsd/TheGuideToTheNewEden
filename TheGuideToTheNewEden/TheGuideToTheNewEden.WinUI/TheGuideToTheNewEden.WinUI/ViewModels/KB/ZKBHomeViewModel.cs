@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +11,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
     public class ZKBHomeViewModel:BaseViewModel
     {
         private KillStream _killStream;
+        public ObservableCollection<Core.Models.KB.KBItemInfo> KBItemInfos { get; set; }
         public ZKBHomeViewModel()
         {
+            KBItemInfos = new ObservableCollection<Core.Models.KB.KBItemInfo>();
         }
         public async Task InitAsync()
         {
@@ -19,6 +22,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             {
                 _killStream = await ZKB.NET.ZKB.SubKillStreamAsync();
                 _killStream.OnMessage += KillStream_OnMessage;
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ZKBHomePage_Connected"));
             }
             catch(Exception ex)
             {
@@ -30,6 +34,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         private async void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
             var info = await Core.Helpers.KBHelpers.CreateKBItemInfoAsync(detail);
+            if(info != null)
+            {
+                Window?.DispatcherQueue?.TryEnqueue(() =>
+                {
+                    KBItemInfos.Insert(0,info);
+                });
+            }
         }
     }
 }

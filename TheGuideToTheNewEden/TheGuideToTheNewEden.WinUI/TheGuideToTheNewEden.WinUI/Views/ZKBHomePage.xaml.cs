@@ -26,6 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private async void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= ZKBHomePage_Loaded;
             this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
             await VM.InitAsync();
             this.GetBaseWindow()?.HideWaiting();
