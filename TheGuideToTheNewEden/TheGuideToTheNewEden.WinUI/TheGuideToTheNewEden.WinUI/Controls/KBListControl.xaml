@@ -23,11 +23,11 @@
             AllowSorting="True"
             AutoGenerateColumns="False"
             ColumnWidthMode="Star"
-            GridLinesVisibility="None"
+            GridLinesVisibility="Horizontal"
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
             HeaderLinesVisibility="Both"
             RowHeight="50"
-            SelectionMode="Extended"
+            SelectionMode="None"
             ShowGroupDropArea="True"
             Tapped="SfDataGrid_Tapped">
             <dataGrid:SfDataGrid.Columns>
@@ -48,9 +48,9 @@
                                     Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
                                 <TextBlock
                                     Grid.Row="1"
-                                    FontWeight="Light"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    FontWeight="Light"
                                     Text="{x:Bind SKBDetail.KillmailTime.ToShortDateString()}" />
                             </Grid>
                         </DataTemplate>
@@ -66,12 +66,14 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    FontWeight="Medium"
                                     Text="{x:Bind SKBDetail.Zkb.TotalValue, Converter={StaticResource ISKNormalizeConverter}}" />
                             </Grid>
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
                 <dataGrid:GridTemplateColumn
+                    Width="160"
                     ColumnWidthMode="Auto"
                     HeaderText="{StaticResource KBListControl_Type}"
                     MappingName="Type.TypeName">
@@ -82,8 +84,11 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <Border CornerRadius="8">
-                                    <controls:ImageEx Source="{x:Bind SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
+                                <Border CornerRadius="6">
+                                    <controls:ImageEx
+                                        EnableLazyLoading="True"
+                                        IsCacheEnabled="True"
+                                        Source="{x:Bind SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
                                 </Border>
                                 <Grid Grid.Column="1" Margin="4,0,0,0">
                                     <Grid.RowDefinitions>
@@ -107,6 +112,7 @@
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
                 <dataGrid:GridTemplateColumn
+                    Width="160"
                     ColumnWidthMode="Auto"
                     HeaderText="{StaticResource KBListControl_Location}"
                     MappingName="SolarSystem.SolarSystemName">

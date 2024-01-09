@@ -14,14 +14,20 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Border CornerRadius="8">
-            <controls:ImageEx x:Name="Image_Character" />
+        <Border CornerRadius="6">
+            <controls:ImageEx
+                x:Name="Image_Character"
+                EnableLazyLoading="True"
+                IsCacheEnabled="True" />
         </Border>
         <Border
             Grid.Column="1"
             Margin="4,0"
-            CornerRadius="8">
-            <controls:ImageEx x:Name="Image_Faction" />
+            CornerRadius="6">
+            <controls:ImageEx
+                x:Name="Image_Faction"
+                EnableLazyLoading="True"
+                IsCacheEnabled="True" />
         </Border>
         <Grid Grid.Column="2" Margin="4,0,0,0">
             <Grid.RowDefinitions>
