@@ -70,7 +70,9 @@ namespace TheGuideToTheNewEden.Core.Models.KB
             }
         }
 
-        public DateTime Date { get => SKBDetail.KillmailTime.Date; }
+        public string Date { get => SKBDetail.KillmailTime.ToShortDateString(); }
+
+        public string Time { get => SKBDetail.KillmailTime.ToShortTimeString(); }
 
         public Attacker GetFinalBlow()
         {

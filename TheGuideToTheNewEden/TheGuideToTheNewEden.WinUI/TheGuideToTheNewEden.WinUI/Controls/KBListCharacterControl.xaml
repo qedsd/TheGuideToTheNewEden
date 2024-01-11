@@ -34,14 +34,27 @@
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Button
-                x:Name="Button_Character"
-                Click="Button_Character_Click"
-                Style="{StaticResource LinkButton}">
-                <Button.Content>
-                    <TextBlock x:Name="TextBlock_Character" VerticalAlignment="Center" />
-                </Button.Content>
-            </Button>
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    x:Name="Button_Character"
+                    Click="Button_Character_Click"
+                    Style="{StaticResource LinkButton}">
+                    <Button.Content>
+                        <TextBlock x:Name="TextBlock_Character" VerticalAlignment="Center" />
+                    </Button.Content>
+                </Button>
+                <StackPanel
+                    x:Name="StackPanel_AttackerCount"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Visibility="Collapsed">
+                    <TextBlock FontWeight="Light" Text="( " />
+                    <TextBlock x:Name="TextBlock_AttackerCount" FontWeight="Light" />
+                    <TextBlock FontWeight="Light" Text=")" />
+                </StackPanel>
+            </StackPanel>
+
             <Button
                 x:Name="Button_Faction"
                 Grid.Row="1"

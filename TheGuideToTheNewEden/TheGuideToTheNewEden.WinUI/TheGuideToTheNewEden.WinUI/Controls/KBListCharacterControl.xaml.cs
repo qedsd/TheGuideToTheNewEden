@@ -133,7 +133,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                             Image_Faction.Visibility = Visibility.Collapsed;
                         }
                     }
-                    
+                    TextBlock_AttackerCount.Text = value.SKBDetail.Attackers.Count.ToString();
+                    StackPanel_AttackerCount.Visibility = Visibility.Visible;
                 }
             }
         }

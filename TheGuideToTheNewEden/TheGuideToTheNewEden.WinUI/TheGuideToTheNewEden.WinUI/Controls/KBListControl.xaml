@@ -21,6 +21,7 @@
             AllowGrouping="True"
             AllowResizingColumns="True"
             AllowSorting="True"
+            AutoExpandGroups="True"
             AutoGenerateColumns="False"
             ColumnWidthMode="Star"
             GridLinesVisibility="Horizontal"
@@ -30,7 +31,14 @@
             SelectionMode="None"
             ShowGroupDropArea="True"
             Tapped="SfDataGrid_Tapped">
+            <!--<dataGrid:SfDataGrid.GroupColumnDescriptions>
+                <dataGrid:GroupColumnDescription ColumnName="Date" />
+            </dataGrid:SfDataGrid.GroupColumnDescriptions>-->
             <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTextColumn
+                    ColumnWidthMode="Auto"
+                    HeaderText="{StaticResource KBListControl_Date}"
+                    MappingName="Date" />
                 <dataGrid:GridTemplateColumn
                     ColumnWidthMode="Auto"
                     HeaderText="{StaticResource KBListControl_Time}"
@@ -38,20 +46,10 @@
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="kb:KBItemInfo">
                             <Grid Margin="8,4">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontWeight="Light"
-                                    Text="{x:Bind SKBDetail.KillmailTime.ToShortDateString()}" />
                             </Grid>
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
