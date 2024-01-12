@@ -10,9 +10,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Converters;
+using TheGuideToTheNewEden.WinUI.Views.KB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using ZKB.NET.Models.KillStream;
@@ -51,14 +53,66 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             
         }
 
-        private void SfDataGrid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
         private void KBListCharacterControl_Loaded(object sender, RoutedEventArgs e)
         {
             (sender as KBListCharacterControl).KBItemInfo = (sender as KBListCharacterControl).DataContext as KBItemInfo;
         }
+
+        private void DataGrid_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
+        {
+            if(DataGrid.SelectedItem != null)
+            {
+                var item = DataGrid.SelectedItem as KBItemInfo;
+                if(item.SKBDetail.Victim == null)
+                {
+                    ShowWaiting();
+                    //TODO:加载详情
+                    HideWaiting();
+                }
+                ItemClicked?.Invoke(item);
+                ItemClickedCommand?.Execute(item);
+            }
+            DataGrid.SelectedItem = null;
+        }
+        private void ShowWaiting()
+        {
+            WaitingProgressRing.IsActive = true;
+            DataGrid.IsEnabled = false;
+        }
+        private void HideWaiting()
+        {
+            WaitingProgressRing.IsActive = false;
+            DataGrid.IsEnabled = true;
+        }
+
+        #region kb点击事件
+        public delegate void ItemClickedEventHandle(KBItemInfo itemInfo);
+        private ItemClickedEventHandle ItemClicked;
+
+        public static readonly DependencyProperty ItemClickedCommandProperty
+           = DependencyProperty.Register(
+               nameof(ItemClickedCommand),
+               typeof(ICommand),
+               typeof(KBListControl),
+               new PropertyMetadata(default(ICommand)));
+
+        public ICommand ItemClickedCommand
+        {
+            get => (ICommand)GetValue(ItemClickedCommandProperty);
+            set => SetValue(ItemClickedCommandProperty, value);
+        }
+
+        public event ItemClickedEventHandle OnItemClicked
+        {
+            add
+            {
+                ItemClicked += value;
+            }
+            remove
+            {
+                ItemClicked -= value;
+            }
+        }
+        #endregion
     }
 }

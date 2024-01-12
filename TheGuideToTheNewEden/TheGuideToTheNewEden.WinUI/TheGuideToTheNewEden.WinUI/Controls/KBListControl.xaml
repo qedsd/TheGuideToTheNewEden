@@ -28,19 +28,19 @@
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
             HeaderLinesVisibility="Both"
             RowHeight="50"
-            SelectionMode="None"
-            ShowGroupDropArea="True"
-            Tapped="SfDataGrid_Tapped">
+            SelectionChanged="DataGrid_SelectionChanged"
+            SelectionMode="Single"
+            ShowGroupDropArea="True">
             <!--<dataGrid:SfDataGrid.GroupColumnDescriptions>
                 <dataGrid:GroupColumnDescription ColumnName="Date" />
             </dataGrid:SfDataGrid.GroupColumnDescriptions>-->
             <dataGrid:SfDataGrid.Columns>
                 <dataGrid:GridTextColumn
-                    ColumnWidthMode="Auto"
+                    Width="90"
                     HeaderText="{StaticResource KBListControl_Date}"
                     MappingName="Date" />
                 <dataGrid:GridTemplateColumn
-                    ColumnWidthMode="Auto"
+                    Width="70"
                     HeaderText="{StaticResource KBListControl_Time}"
                     MappingName="SKBDetail.KillmailTime">
                     <dataGrid:GridTemplateColumn.CellTemplate>
@@ -151,5 +151,10 @@
             </dataGrid:SfDataGrid.RecordContextFlyout>
 
         </dataGrid:SfDataGrid>
+        <ProgressRing
+            x:Name="WaitingProgressRing"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="False" />
     </Grid>
 </UserControl>

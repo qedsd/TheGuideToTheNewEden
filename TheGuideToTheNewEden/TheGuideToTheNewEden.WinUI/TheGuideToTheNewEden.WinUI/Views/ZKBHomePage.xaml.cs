@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Views.KB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -30,6 +31,23 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
             await VM.InitAsync();
             this.GetBaseWindow()?.HideWaiting();
+        }
+
+        private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
+        {
+            KBDetailPage detailPage = new KBDetailPage(itemInfo);
+            TabViewItem item = new TabViewItem()
+            {
+                Header = itemInfo.Victim.Name,
+                IsSelected = true,
+                Content = detailPage
+            };
+            ContentTabView.TabItems.Add(item);
+        }
+
+        private void ContentTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            sender.TabItems.Remove(args.Item);
         }
     }
 }
