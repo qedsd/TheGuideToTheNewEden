@@ -14,6 +14,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public IdName CharacterName { get; set; }
         public IdName CorpName { get; set; }
         public IdName AllianceName { get; set; }
+        public float DamageRatio { get; set; }
         public AttackerInfo(Attacker attacker)
         {
             Attacker = attacker;

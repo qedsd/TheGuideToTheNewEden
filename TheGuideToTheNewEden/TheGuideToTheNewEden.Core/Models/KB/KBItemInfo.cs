@@ -14,6 +14,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public KBItemInfo(SKBDetail detail)
         {
             SKBDetail = detail;
+            TotalDamage = detail.Attackers.Sum(p => p.DamageDone);
         }
         public SKBDetail SKBDetail { get;private set; }
         public MapSolarSystem SolarSystem { get; set; }
@@ -73,6 +74,8 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public string Date { get => SKBDetail.KillmailTime.ToShortDateString(); }
 
         public string Time { get => SKBDetail.KillmailTime.ToShortTimeString(); }
+
+        public int TotalDamage { get;set; }
 
         public Attacker GetFinalBlow()
         {

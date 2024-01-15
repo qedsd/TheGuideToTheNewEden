@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -8,6 +9,7 @@ namespace TheGuideToTheNewEden.Core.DBModels
 {
     public class IdName
     {
+        [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
         public string Name { get; set; }
         public int Category { get; set; }

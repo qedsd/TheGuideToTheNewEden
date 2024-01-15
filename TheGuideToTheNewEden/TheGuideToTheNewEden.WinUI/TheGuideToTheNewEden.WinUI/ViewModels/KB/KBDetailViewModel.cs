@@ -108,10 +108,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(typeIds.Distinct().ToList());
             var typesDic = types.ToDictionary(p => p.TypeID);
             List<AttackerInfo> infos = new List<AttackerInfo>();
-            foreach(var attacker in KBItemInfo.SKBDetail.Attackers)
+            foreach (var attacker in KBItemInfo.SKBDetail.Attackers)
             {
                 AttackerInfo attackerInfo = new AttackerInfo(attacker);
-                if(attackerInfo.Attacker.CharacterId > 0)
+                attackerInfo.DamageRatio = (float)attacker.DamageDone / KBItemInfo.TotalDamage;
+                if (attackerInfo.Attacker.CharacterId > 0)
                 {
                     if (idNamesDic.TryGetValue(attackerInfo.Attacker.CharacterId, out var idName))
                     {
