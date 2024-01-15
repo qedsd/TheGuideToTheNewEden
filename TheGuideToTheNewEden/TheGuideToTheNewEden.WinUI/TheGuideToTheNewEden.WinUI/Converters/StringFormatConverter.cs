@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             if (parameter == null)
                 return value;
 
-            return string.Format((string)parameter, value);
+            return string.Format(parameter.ToString(), value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

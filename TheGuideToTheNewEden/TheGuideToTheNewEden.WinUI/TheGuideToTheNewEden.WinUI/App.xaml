@@ -49,6 +49,10 @@
                 x:Key="TypeImgConverter64"
                 Size="64"
                 Type="Type" />
+            <converters:GameImageConverter
+                x:Key="TypeImgConverter128"
+                Size="128"
+                Type="Type" />
             <converters:GameImageConverter x:Key="AllianceImgConverter" Type="Alliance" />
             <converters:GameImageConverter
                 x:Key="CharacterImgConverter128"
@@ -65,6 +69,9 @@
             <converters:ZeroToVisibilityConverter x:Key="ZeroToCollapsedConverter" ZeroToVisible="False" />
             <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibleConverter" ZeroToVisible="True" />
             <converters:ISKNormalizeConverter x:Key="ISKNormalizeConverter" />
+            <converters:SystemSecurityFormatConverter x:Key="SystemSecurityFormatConverter" />
+            <converters:SystemSecurityFormatStringConverter x:Key="SystemSecurityFormatStringConverter" />
+            <converters:SystemSecurityForegroundConverter x:Key="SystemSecurityForegroundConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

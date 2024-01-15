@@ -59,7 +59,13 @@ namespace TheGuideToTheNewEden.Core.Services
                         });
                     }
                 }
+                foreach(var group in noInDbResults.GroupBy(p => p.Id))
+                {
+                    if(group.Count() > 1)
+                    {
 
+                    }
+                }
                 //TODO:处理查找不到的
 
                 //3.保存数据库不存在的

@@ -23,4 +23,21 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             throw new NotImplementedException();
         }
     }
+
+    internal class SystemSecurityFormatStringConverter : IValueConverter
+    {
+        public static string Convert(double value)
+        {
+            return Math.Round(value, 1).ToString();
+        }
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return Convert((double)value);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
