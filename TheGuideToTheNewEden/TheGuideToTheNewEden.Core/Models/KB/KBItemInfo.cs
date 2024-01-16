@@ -81,5 +81,10 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         {
             return SKBDetail.Attackers.FirstOrDefault(p => p.FinalBlow);
         }
+
+        public Attacker GetTopDamage()
+        {
+            return SKBDetail.Attackers.OrderByDescending(p=>p.DamageDone).FirstOrDefault();
+        }
     }
 }

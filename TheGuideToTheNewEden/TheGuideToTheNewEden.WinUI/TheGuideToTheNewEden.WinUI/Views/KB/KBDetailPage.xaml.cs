@@ -16,6 +16,7 @@ using TheGuideToTheNewEden.WinUI.ViewModels.KB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using ZKB.NET.Models.KillStream;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
@@ -75,6 +76,25 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private void Button_Alliance_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+    }
+    public class CargoItemTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate GroupTemplate { get; set; }
+
+        public DataTemplate SingleTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            var cargoItem = item as CargoItemInfo;
+            if (cargoItem.SubItems.NotNullOrEmpty())
+            {
+                return GroupTemplate;
+            }
+            else
+            {
+                return SingleTemplate;
+            }
         }
     }
 }

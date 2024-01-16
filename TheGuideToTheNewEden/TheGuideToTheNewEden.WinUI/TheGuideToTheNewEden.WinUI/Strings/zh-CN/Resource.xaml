@@ -526,9 +526,13 @@
 
     <x:String x:Key="KB_Point">点数</x:String>
     <x:String x:Key="KB_Damage">伤害</x:String>
-    <x:String x:Key="KB_ShipFitValue">装配价值</x:String>
-    <x:String x:Key="KB_DroppedValue">掉落价值</x:String>
-    <x:String x:Key="KB_DestroyedValue">损失价值</x:String>
-    <x:String x:Key="KB_TotalValue">总价值</x:String>
-
+    <x:String x:Key="KB_ShipFitValue">装配</x:String>
+    <x:String x:Key="KB_DroppedValue">掉落</x:String>
+    <x:String x:Key="KB_DestroyedValue">损毁</x:String>
+    <x:String x:Key="KB_TotalValue">总价</x:String>
+    <x:String x:Key="KB_Dropped">掉落</x:String>
+    <x:String x:Key="KB_Destroyed">损毁</x:String>
+    <x:String x:Key="KB_FinalBlow">最后一击</x:String>
+    <x:String x:Key="KB_TopDamage">最高伤害</x:String>
+    <x:String x:Key="KB_AttackerCount">参与者</x:String>
 </ResourceDictionary>

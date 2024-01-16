@@ -31,9 +31,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             }
         }
 
-        private async void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
+        private void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
-            var info = await Core.Helpers.KBHelpers.CreateKBItemInfoAsync(detail);
+            var info = Core.Helpers.KBHelpers.CreateKBItemInfo(detail);
             if(info != null)
             {
                 Window?.DispatcherQueue?.TryEnqueue(() =>
@@ -41,6 +41,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     KBItemInfos.Insert(0,info);
                 });
             }
+        }
+
+        public void Dispose()
+        {
+            _killStream.Close();
         }
     }
 }

@@ -14,187 +14,46 @@
     <Page.DataContext>
         <kb:KBDetailViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="8,4">
-        <!--<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="300" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <StackPanel Margin="8,0">
-                <StackPanel.Resources>
-                    <Style x:Key="StackPanel_BaseInfo" TargetType="StackPanel">
-                        <Setter Property="Orientation" Value="Horizontal" />
-                        <Setter Property="Margin" Value="0,8" />
-                    </Style>
-                </StackPanel.Resources>
-
-                <StackPanel Margin="0,8" Orientation="Horizontal">
+    <Page.Resources>
+        <DataTemplate x:Key="SingleCargoItemTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
                     <controls:ImageEx
-                        Height="64"
-                        CornerRadius="4"
+                        Height="32"
                         EnableLazyLoading="True"
                         IsCacheEnabled="True"
-                        Source="{x:Bind VM.KBItemInfo.SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
-                    <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
-                        <Button
-                            Margin="0,2"
-                            Command="{x:Bind VM.CheckTypeCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Type.TypeID}"
-                            Content="{x:Bind VM.KBItemInfo.Type.TypeName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                        <Button
-                            Margin="0,2"
-                            Command="{x:Bind VM.CheckGroupCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Group.GroupID}"
-                            Content="{x:Bind VM.KBItemInfo.Group.GroupName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                    </StackPanel>
+                        Source="{Binding CargoItem.ItemTypeId, Converter={StaticResource TypeImgConverter32}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="{Binding Type.TypeName}" />
                 </StackPanel>
-                <StackPanel>
-                    <StackPanel
-                        x:Name="StackPanel_Character"
-                        Margin="0,2"
-                        Orientation="Horizontal">
-                        <controls:ImageEx
-                            x:Name="Image_Character"
-                            Height="40"
-                            CornerRadius="4"
-                            EnableLazyLoading="True"
-                            IsCacheEnabled="True" />
-                        <Button
-                            x:Name="Button_Character"
-                            Margin="8,0,0,0"
-                            Click="Button_Character_Click"
-                            Style="{StaticResource LinkButton}">
-                            <Button.Content>
-                                <TextBlock x:Name="TextBlock_Character" VerticalAlignment="Center" />
-                            </Button.Content>
-                        </Button>
-                    </StackPanel>
-                    <StackPanel
-                        x:Name="StackPanel_Corp"
-                        Margin="0,2"
-                        Orientation="Horizontal">
-                        <controls:ImageEx
-                            x:Name="Image_Corp"
-                            Height="40"
-                            CornerRadius="4"
-                            EnableLazyLoading="True"
-                            IsCacheEnabled="True" />
-                        <Button
-                            x:Name="Button_Corp"
-                            Margin="8,0,0,0"
-                            Click="Button_Corp_Click"
-                            Style="{StaticResource LinkButton}">
-                            <Button.Content>
-                                <TextBlock x:Name="TextBlock_Corp" VerticalAlignment="Center" />
-                            </Button.Content>
-                        </Button>
-                    </StackPanel>
-                    <StackPanel
-                        x:Name="StackPanel_Alliance"
-                        Margin="0,2"
-                        Orientation="Horizontal">
-                        <controls:ImageEx
-                            x:Name="Image_Alliance"
-                            Height="40"
-                            CornerRadius="4"
-                            EnableLazyLoading="True"
-                            IsCacheEnabled="True" />
-                        <Button
-                            x:Name="Button_Alliance"
-                            Margin="8,0,0,0"
-                            Click="Button_Alliance_Click"
-                            Style="{StaticResource LinkButton}">
-                            <Button.Content>
-                                <TextBlock x:Name="TextBlock_Alliance" VerticalAlignment="Center" />
-                            </Button.Content>
-                        </Button>
-                    </StackPanel>
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="0,0,8,0"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="OrangeRed"
+                        Text="{Binding CargoItem.QuantityDestroyed}"
+                        ToolTipService.ToolTip="{StaticResource KB_Destroyed}"
+                        Visibility="{Binding CargoItem.QuantityDestroyed, Converter={StaticResource ZeroToCollapsedConverter}}" />
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="MediumSeaGreen"
+                        Text="{Binding CargoItem.QuantityDropped}"
+                        ToolTipService.ToolTip="{StaticResource KB_Dropped}"
+                        Visibility="{Binding CargoItem.QuantityDropped, Converter={StaticResource ZeroToCollapsedConverter}}" />
                 </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KBListControl_Type}" />
-                    <StackPanel Orientation="Horizontal">
-                        <Button
-                            Command="{x:Bind VM.CheckTypeCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Type.TypeID}"
-                            Content="{x:Bind VM.KBItemInfo.Type.TypeName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                        <TextBlock Text="(" />
-                        <Button
-                            Command="{x:Bind VM.CheckGroupCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Group.GroupID}"
-                            Content="{x:Bind VM.KBItemInfo.Group.GroupName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                        <TextBlock Text=")" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource General_SolarSystem}" />
-                    <StackPanel Orientation="Horizontal">
-                        <Button
-                            Command="{x:Bind VM.CheckSystemCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.SolarSystem.SolarSystemID}"
-                            Content="{x:Bind VM.KBItemInfo.SolarSystem.SolarSystemName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                        <TextBlock Text="(" />
-                        <TextBlock Foreground="{x:Bind VM.KBItemInfo.SolarSystem.Security, Converter={StaticResource SystemSecurityForegroundConverter}}" Text="{x:Bind VM.KBItemInfo.SolarSystem.Security, Converter={StaticResource SystemSecurityFormatStringConverter}}" />
-                        <TextBlock Text=")" />
-                        <TextBlock Text="/" />
-                        <Button
-                            Command="{x:Bind VM.CheckRegionCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Region.RegionID}"
-                            Content="{x:Bind VM.KBItemInfo.Region.RegionName, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KBListControl_Time}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.KillmailTime}" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KB_Point}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.Points}" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KB_ShipFitValue}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.FittedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                        <TextBlock Margin="4,0,0,0" Text="ISK" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KB_DroppedValue}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DroppedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                        <TextBlock Margin="4,0,0,0" Text="ISK" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KB_DestroyedValue}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DestroyedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                        <TextBlock Margin="4,0,0,0" Text="ISK" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Style="{StaticResource StackPanel_BaseInfo}">
-                    <TextBlock Width="80" Text="{StaticResource KB_TotalValue}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.TotalValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                        <TextBlock Margin="4,0,0,0" Text="ISK" />
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
-        </Grid>-->
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid Margin="8,4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -294,26 +153,70 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
-            <StackPanel
-                Grid.Column="3"
-                VerticalAlignment="Bottom"
-                Orientation="Horizontal">
-                <Button Margin="0,2">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE167;" />
-                    </Button.Content>
-                </Button>
-                <Button Margin="0,2">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" />
-                    </Button.Content>
-                </Button>
-                <Button Margin="0,2">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72D;" />
-                    </Button.Content>
-                </Button>
-            </StackPanel>
+            <Grid Grid.Column="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Bottom">
+                    <StackPanel
+                        Margin="0,4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            FontWeight="Light"
+                            Foreground="MediumSeaGreen"
+                            Text="{StaticResource KB_DroppedValue}" />
+                        <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                            <TextBlock Foreground="MediumSeaGreen" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DroppedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Foreground="MediumSeaGreen"
+                                Text="ISK" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            FontWeight="Light"
+                            Foreground="OrangeRed"
+                            Text="{StaticResource KB_DestroyedValue}" />
+                        <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                            <TextBlock Foreground="OrangeRed" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DestroyedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Foreground="OrangeRed"
+                                Text="ISK" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock Text="{StaticResource KB_ShipFitValue}" />
+                        <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.FittedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                            <TextBlock Margin="4,0,0,0" Text="ISK" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,4"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock FontSize="15" Text="{StaticResource KB_TotalValue}" />
+                        <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                            <TextBlock FontSize="15" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.TotalValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                FontSize="15"
+                                Text="ISK" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
         </Grid>
         <Rectangle
             Grid.Row="1"
@@ -323,15 +226,140 @@
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <ListView ItemsSource="{x:Bind VM.AttackerInfos, Mode=OneWay}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="kb1:AttackerInfo">
-                        <controls1:KBDamageControl Attacker="{Binding}" Margin="0,4"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Text="{StaticResource KB_AttackerCount}" />
+                        <TextBlock
+                            Margin="2,0"
+                            VerticalAlignment="Center"
+                            Text=":" />
+                        <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.KBItemInfo.SKBDetail.Attackers.Count}" />
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Text="{StaticResource KB_Damage}" />
+                        <TextBlock
+                            Margin="2,0"
+                            VerticalAlignment="Center"
+                            Text=":" />
+                        <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.KBItemInfo.TotalDamage, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+                    </StackPanel>
+                </Grid>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <StackPanel Visibility="{x:Bind VM.Solo, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                            <StackPanel>
+                                <TextBlock FontSize="12" Text="{StaticResource KB_FinalBlow}" />
+                                <controls1:KBDamageControl Margin="0,4" Attacker="{x:Bind VM.FinalBlow, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock FontSize="12" Text="{StaticResource KB_TopDamage}" />
+                                <controls1:KBDamageControl Margin="0,4" Attacker="{x:Bind VM.TopDamage, Mode=OneWay}" />
+                            </StackPanel>
+                            <Rectangle
+                                Height="1"
+                                Margin="0,8"
+                                Fill="LightGray" />
+                        </StackPanel>
+                        <ListView
+                            Grid.Row="1"
+                            Margin="-16,0,0,0"
+                            ItemsSource="{x:Bind VM.AttackerInfos, Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="kb1:AttackerInfo">
+                                    <controls1:KBDamageControl Margin="0,4" Attacker="{Binding}" />
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+            <Rectangle
+                Grid.Column="1"
+                Width="1"
+                Margin="8,8"
+                Fill="LightGray" />
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ListView ItemsSource="{x:Bind VM.CargoItemInfos, Mode=OneWay}">
+                    <ListView.ItemTemplateSelector>
+                        <local:CargoItemTemplateSelector SingleTemplate="{StaticResource SingleCargoItemTemplate}">
+                            <local:CargoItemTemplateSelector.GroupTemplate>
+                                <DataTemplate>
+                                    <Expander
+                                        VerticalAlignment="Top"
+                                        ExpandDirection="Down"
+                                        HeaderTemplate="{StaticResource SingleCargoItemTemplate}"
+                                        IsExpanded="True">
+                                        <Expander.Content>
+                                            <ListView ItemsSource="{Binding SubItems}">
+                                                <ListView.ItemTemplateSelector>
+                                                    <local:CargoItemTemplateSelector SingleTemplate="{StaticResource SingleCargoItemTemplate}">
+                                                        <local:CargoItemTemplateSelector.GroupTemplate>
+                                                            <DataTemplate>
+                                                                <Expander
+                                                                    VerticalAlignment="Top"
+                                                                    ExpandDirection="Down"
+                                                                    Header="{Binding Type.TypeName}"
+                                                                    IsExpanded="True">
+                                                                    <Expander.Content>
+                                                                        <ListView ItemTemplate="{StaticResource SingleCargoItemTemplate}" ItemsSource="{Binding SubItems}" />
+                                                                    </Expander.Content>
+                                                                </Expander>
+                                                            </DataTemplate>
+                                                        </local:CargoItemTemplateSelector.GroupTemplate>
+                                                    </local:CargoItemTemplateSelector>
+                                                </ListView.ItemTemplateSelector>
+                                            </ListView>
+                                        </Expander.Content>
+                                    </Expander>
+                                </DataTemplate>
+                            </local:CargoItemTemplateSelector.GroupTemplate>
+                        </local:CargoItemTemplateSelector>
+                    </ListView.ItemTemplateSelector>
+                </ListView>
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal">
+                    <Button Command="{x:Bind VM.CopyLinkCommand}">
+                        <Button.Content>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE167;" />
+                        </Button.Content>
+                    </Button>
+                    <Button Margin="4,0" Command="{x:Bind VM.OpenInBrowerCommand}">
+                        <Button.Content>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE774;" />
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
         </Grid>
     </Grid>
 </Page>

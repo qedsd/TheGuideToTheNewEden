@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
@@ -25,6 +26,10 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<int> ids)
         {
+            return await Task.Run(() => GetByIds(ids));
+        }
+        public static List<DBModels.IdName> GetByIds(List<int> ids)
+        {
             try
             {
                 //1.优先查找数据库
@@ -34,8 +39,8 @@ namespace TheGuideToTheNewEden.Core.Services
 
                 //1.优先查找数据库
                 List<int> noInDbs;
-                List<DBModels.IdName> inDbResults = await IDNameDBService.QueryAsync(ids);
-                if(inDbResults.NotNullOrEmpty())
+                List<DBModels.IdName> inDbResults = IDNameDBService.Query(ids);
+                if (inDbResults.NotNullOrEmpty())
                 {
                     noInDbs = ids.Except(inDbResults.Select(p => p.Id)).ToList();
                 }
@@ -46,7 +51,7 @@ namespace TheGuideToTheNewEden.Core.Services
 
                 //2.查找数据库不存在的
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                var resp = await ESIService.Current.EsiClient.Universe.Names(noInDbs);
+                var resp = ESIService.Current.EsiClient.Universe.Names(noInDbs).Result;
                 if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     foreach (var data in resp.Data)
@@ -59,20 +64,13 @@ namespace TheGuideToTheNewEden.Core.Services
                         });
                     }
                 }
-                foreach(var group in noInDbResults.GroupBy(p => p.Id))
-                {
-                    if(group.Count() > 1)
-                    {
-
-                    }
-                }
                 //TODO:处理查找不到的
 
                 //3.保存数据库不存在的
-                await IDNameDBService.InsertAsync(noInDbResults);
+                IDNameDBService.Insert(noInDbResults);
 
                 //4.合并返回
-                if(inDbResults.NotNullOrEmpty())
+                if (inDbResults.NotNullOrEmpty())
                 {
                     noInDbResults.AddRange(inDbResults);
                     return noInDbResults;
@@ -85,7 +83,6 @@ namespace TheGuideToTheNewEden.Core.Services
             }
             return null;
         }
-
         public static async Task<DBModels.IdName> GetByName(string name)
         {
             var ids = await GetByNames(new List<string>() { name });

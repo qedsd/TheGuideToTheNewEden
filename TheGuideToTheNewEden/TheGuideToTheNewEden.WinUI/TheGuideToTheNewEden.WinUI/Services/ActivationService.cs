@@ -15,7 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             SettingService.Load();
             CoreConfig.MainDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "main.db");
             CoreConfig.StaticDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "static.db");
-            CoreConfig.CacheDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "cache.db");
+            CoreConfig.CacheDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "cache.db");
             CoreConfig.NeedLocalization = DBLocalizationSettingService.Value;
             CoreConfig.LocalDbPath = LocalDbSelectorService.Value;
             CoreConfig.DefaultGameServer = GameServerSelectorService.Value;

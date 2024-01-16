@@ -22,6 +22,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         private List<AttackerInfo> attackerInfos;
         public List<AttackerInfo> AttackerInfos { get => attackerInfos; set => SetProperty(ref attackerInfos, value); }
 
+        private AttackerInfo finalBlow;
+        public AttackerInfo FinalBlow { get => finalBlow; set => SetProperty(ref finalBlow, value); }
+
+        private AttackerInfo topDamage;
+        public AttackerInfo TopDamage { get => topDamage; set => SetProperty(ref topDamage, value); }
+
+        private bool solo;
+        public bool Solo { get => solo; set => SetProperty(ref solo, value); }
+
         public KBDetailViewModel()
         {
             
@@ -34,7 +43,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         private async void Init()
         {
             CargoItemInfos = await Task.Run(() => InitCargoItemInfos());
-            AttackerInfos = await InitAttackerInfosAsync();
+            var attackerInfos = await InitAttackerInfosAsync();
+            if(attackerInfos.Count == 1)
+            {
+                Solo = true;
+            }
+            else
+            {
+                var finalBlow = KBItemInfo.GetFinalBlow();
+                FinalBlow = attackerInfos.FirstOrDefault(p => p.Attacker == finalBlow);
+                var topDamage = KBItemInfo.GetTopDamage();
+                TopDamage = attackerInfos.FirstOrDefault(p => p.Attacker == topDamage);
+                attackerInfos.Remove(FinalBlow); 
+                attackerInfos.Remove(TopDamage);
+            }
+            AttackerInfos = attackerInfos;
         }
 
         private List<CargoItemInfo> InitCargoItemInfos()
@@ -98,13 +121,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             List<int> ids = characterIds.ToList();
             ids.AddRange(corpIds);
             ids.AddRange(allianceIds);
-            var idNames = await Core.Services.IDNameService.GetByIdsAsync(ids.Distinct().ToList());
+            ids = ids.Distinct().ToList();
+            ids.Remove(0);
+            var idNames = await Core.Services.IDNameService.GetByIdsAsync(ids);
             var idNamesDic = idNames.ToDictionary(p => p.Id);
 
             var shipTypeIds = KBItemInfo.SKBDetail.Attackers.Select(p => p.ShipTypeId).ToList();
             var weaponIds = KBItemInfo.SKBDetail.Attackers.Select(p => p.WeaponTypeId).ToList();
             var typeIds = shipTypeIds.ToList();
             typeIds.AddRange(weaponIds);
+            typeIds = typeIds.Distinct().ToList();
+            typeIds.Remove(0);
             var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(typeIds.Distinct().ToList());
             var typesDic = types.ToDictionary(p => p.TypeID);
             List<AttackerInfo> infos = new List<AttackerInfo>();
@@ -164,6 +191,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         public ICommand CheckRegionCommand => new RelayCommand<int>((id) =>
         {
 
+        });
+        public ICommand CopyLinkCommand => new RelayCommand(() =>
+        {
+            Windows.ApplicationModel.DataTransfer.DataPackage dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            dataPackage.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+            dataPackage.SetText($"https://zkillboard.com/kill/{KBItemInfo.SKBDetail.KillmailId}/");
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+            Window?.ShowSuccess("已复制");
+        });
+        public ICommand OpenInBrowerCommand => new RelayCommand(() =>
+        {
+            System.Diagnostics.Process.Start("explorer.exe", $"https://zkillboard.com/kill/{KBItemInfo.SKBDetail.KillmailId}/");
         });
     }
 }

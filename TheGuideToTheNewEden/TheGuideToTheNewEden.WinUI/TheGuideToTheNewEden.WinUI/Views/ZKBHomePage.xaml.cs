@@ -17,7 +17,7 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class ZKBHomePage : Page
+    public sealed partial class ZKBHomePage : Page, IPage
     {
         public ZKBHomePage()
         {
@@ -36,9 +36,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
         {
             KBDetailPage detailPage = new KBDetailPage(itemInfo);
+            string name = itemInfo.Victim == null ? itemInfo.SKBDetail.KillmailId.ToString() : itemInfo.Victim.Name;
             TabViewItem item = new TabViewItem()
             {
-                Header = itemInfo.Victim.Name,
+                Header = $"KB - {name}",
                 IsSelected = true,
                 Content = detailPage
             };
@@ -48,6 +49,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void ContentTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
         {
             sender.TabItems.Remove(args.Item);
+        }
+
+        public void Close()
+        {
+            VM?.Dispose();
         }
     }
 }

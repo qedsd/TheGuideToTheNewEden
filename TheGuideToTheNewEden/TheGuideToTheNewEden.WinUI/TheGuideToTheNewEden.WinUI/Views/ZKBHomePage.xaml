@@ -16,8 +16,8 @@
         <TabView
             x:Name="ContentTabView"
             CloseButtonOverlayMode="OnPointerOver"
-            TabCloseRequested="ContentTabView_TabCloseRequested"
-            IsAddTabButtonVisible="False">
+            IsAddTabButtonVisible="False"
+            TabCloseRequested="ContentTabView_TabCloseRequested">
             <TabView.TabStripFooter>
                 <Grid>
                     <AutoSuggestBox
@@ -39,7 +39,7 @@
                         <BitmapIconSource ShowAsMonochrome="False" UriSource="Resources\Images\LinkIcons\zkb.jpg" />
                     </TabViewItem.IconSource>
                     <TabViewItem.Content>
-                        <controls:KBListControl KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}" OnItemClicked="KBListControl_OnItemClicked"/>
+                        <controls:KBListControl KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}" OnItemClicked="KBListControl_OnItemClicked" />
                     </TabViewItem.Content>
                 </TabViewItem>
             </TabView.TabItems>

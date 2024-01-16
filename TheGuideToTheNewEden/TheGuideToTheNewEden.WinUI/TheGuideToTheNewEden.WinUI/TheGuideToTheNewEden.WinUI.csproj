@@ -21,6 +21,9 @@
     <!--package需注释掉-->
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\Icon\KillRightsIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Assets\Icon\alliances.png" />
     <None Remove="Assets\Icon\character.png" />
     <None Remove="Assets\Icon\corporation.png" />

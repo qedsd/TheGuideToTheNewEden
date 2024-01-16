@@ -21,6 +21,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return item;
         }
+        public static InvGroup QueryGroup(int id)
+        {
+            var item = DBService.MainDb.Queryable<InvGroup>().First(p => p.GroupID == id);
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvGroup(item);
+            }
+            return item;
+        }
 
         public static async Task<List<InvGroup>> QueryGroupsAsync(List<int> ids)
         {

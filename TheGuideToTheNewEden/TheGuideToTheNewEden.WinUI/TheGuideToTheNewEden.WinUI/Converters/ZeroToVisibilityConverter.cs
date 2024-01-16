@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if ((int)value == 0)
+            if (decimal.Parse(value.ToString()) == 0)
             {
                 return ZeroToVisible ? Visibility.Visible : Visibility.Collapsed;
             }

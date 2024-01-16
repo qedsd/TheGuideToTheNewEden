@@ -95,6 +95,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<InvGroupBase>().FirstAsync(p => invTypeId == p.GroupID);
         }
+        public static InvGroupBase TranInvGroup(int invTypeId)
+        {
+            return DBService.LocalDb.Queryable<InvGroupBase>().First(p => invTypeId == p.GroupID);
+        }
 
         public static async Task TranInvGroupsAsync(List<InvGroup> invGroups)
         {
@@ -118,6 +122,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task TranInvGroupAsync(InvGroup invGroup)
         {
             var type = await TranInvGroupAsync(invGroup.GroupID);
+            invGroup.GroupName = type?.GroupName;
+        }
+        public static void TranInvGroup(InvGroup invGroup)
+        {
+            var type = TranInvGroup(invGroup.GroupID);
             invGroup.GroupName = type?.GroupName;
         }
         #endregion
