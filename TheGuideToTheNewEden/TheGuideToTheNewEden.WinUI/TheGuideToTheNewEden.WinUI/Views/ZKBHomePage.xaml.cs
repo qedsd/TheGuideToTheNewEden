@@ -78,10 +78,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 {
                     List<IdName> result = new List<IdName>();
                     var names = Core.Services.IDNameService.SerachByName(searchName);
-                    var types = Core.Services.DB.InvTypeService.QueryByName(searchName);
+                    var typesSearch = Core.Services.DB.InvTypeService.Search(searchName);
                     List<Core.DBModels.InvType> ships = null;
-                    if(types.NotNullOrEmpty())
+                    if(typesSearch.NotNullOrEmpty())
                     {
+                        var types = Core.Services.DB.InvTypeService.QueryTypes(typesSearch.Select(p=>p.ID).ToList());
                         var typeGroups = Core.Services.DB.InvGroupService.QueryGroupIdOfCategory(new List<int>()
                         {
                             3,6,22,23,65,87,
@@ -179,7 +180,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         return;
                     }
             }
-            await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
+            try
+            {
+                var statist = await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
+            }
+            catch (Exception e)
+            {
+                this.GetBaseWindow()?.ShowError(e.Message);
+                Core.Log.Error(e);
+            }
         }
     }
 }
