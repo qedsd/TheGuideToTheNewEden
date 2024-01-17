@@ -165,5 +165,105 @@ namespace TheGuideToTheNewEden.Core.Services
             }
             return null;
         }
+
+        public static async Task<List<DBModels.IdName>> SerachByNameAsync(string name)
+        {
+            try
+            {
+                List<DBModels.IdName> results = await IDNameDBService.SearchAsync(name);
+                List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
+                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
+                {
+                    if (resolvedInfos.NotNullOrEmpty())
+                    {
+                        foreach (var data in resolvedInfos)
+                        {
+                            var idName = new DBModels.IdName()
+                            {
+                                Id = data.Id,
+                                Name = data.Name,
+                                Category = (int)category
+                            };
+                            results.Add(idName);
+                            noInDbResults.Add(idName);
+                        }
+                    }
+                }
+                var resp = await ESIService.Current.EsiClient.Universe.IDs(new List<string>() { name});
+                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
+                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
+                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
+                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
+                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                }
+                if(noInDbResults.Any())
+                {
+                    await IDNameDBService.InsertAsync(noInDbResults);
+                }
+                return results;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+            return null;
+        }
+
+        public static List<DBModels.IdName> SerachByName(string name)
+        {
+            try
+            {
+                List<DBModels.IdName> results = IDNameDBService.Search(name);
+                List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
+                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
+                {
+                    if (resolvedInfos.NotNullOrEmpty())
+                    {
+                        foreach (var data in resolvedInfos)
+                        {
+                            var idName = new DBModels.IdName()
+                            {
+                                Id = data.Id,
+                                Name = data.Name,
+                                Category = (int)category
+                            };
+                            results.Add(idName);
+                            noInDbResults.Add(idName);
+                        }
+                    }
+                }
+                var resp = ESIService.Current.EsiClient.Universe.IDs(new List<string>() { name }).Result;
+                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
+                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
+                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
+                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
+                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                }
+                if (noInDbResults.Any())
+                {
+                    IDNameDBService.Insert(noInDbResults);
+                }
+                return results;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+            return null;
+        }
     }
 }

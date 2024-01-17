@@ -52,5 +52,14 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.CacheDb.Insertable(idNames).ExecuteCommand();
         }
+
+        public static async Task<List<IdName>> SearchAsync(string name)
+        {
+            return await DBService.CacheDb.Queryable<IdName>().Where(p => p.Name.Contains(name)).ToListAsync();
+        }
+        public static List<IdName> Search(string name)
+        {
+            return DBService.CacheDb.Queryable<IdName>().Where(p => p.Name.Contains(name)).ToList();
+        }
     }
 }

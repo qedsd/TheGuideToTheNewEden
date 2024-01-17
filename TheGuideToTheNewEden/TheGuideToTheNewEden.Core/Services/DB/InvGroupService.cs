@@ -30,7 +30,24 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return item;
         }
-
+        public static async Task<List<InvGroup>> QueryGroupsAsync(string name)
+        {
+            var items = await DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranInvGroupsAsync(items);
+            }
+            return items;
+        }
+        public static List<InvGroup> QueryGroups(string name)
+        {
+            var items = DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvGroups(items);
+            }
+            return items;
+        }
         public static async Task<List<InvGroup>> QueryGroupsAsync(List<int> ids)
         {
             var items = await DBService.MainDb.Queryable<InvGroup>().Where(p => ids.Contains(p.GroupID)).ToListAsync();
@@ -91,6 +108,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var groups = await DBService.MainDb.Queryable<InvGroup>().Where(p => p.CategoryID == 9).ToListAsync();
             
             return groups.Select(p=>p.GroupID).ToList();
+        }
+
+        public static List<int> QueryGroupIdOfCategory(List<int> categories)
+        {
+            var groups = DBService.MainDb.Queryable<InvGroup>().Where(p => categories.Contains(p.CategoryID)).ToList();
+            return groups.Select(p => p.GroupID).ToList();
         }
     }
 }

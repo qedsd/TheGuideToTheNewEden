@@ -91,6 +91,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<InvGroupBase>().Where(p => invTypeIds.Contains(p.GroupID)).ToListAsync();
         }
+        public static List<InvGroupBase> TranInvGroups(List<int> invTypeIds)
+        {
+            return DBService.LocalDb.Queryable<InvGroupBase>().Where(p => invTypeIds.Contains(p.GroupID)).ToList();
+        }
         public static async Task<InvGroupBase> TranInvGroupAsync(int invTypeId)
         {
             return await DBService.LocalDb.Queryable<InvGroupBase>().FirstAsync(p => invTypeId == p.GroupID);
@@ -118,7 +122,24 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             keyValuePairs.Clear();
             keyValuePairs = null;
         }
-
+        public static void TranInvGroups(List<InvGroup> invGroups)
+        {
+            Dictionary<int, InvGroup> keyValuePairs = new Dictionary<int, InvGroup>();
+            foreach (InvGroup invGroup in invGroups)
+            {
+                keyValuePairs.Add(invGroup.GroupID, invGroup);
+            }
+            var results = TranInvGroups(invGroups.Select(p => p.GroupID).ToList());
+            foreach (var result in results)
+            {
+                keyValuePairs.TryGetValue(result.GroupID, out var keyValue);
+                {
+                    keyValue.GroupName = result.GroupName;
+                }
+            }
+            keyValuePairs.Clear();
+            keyValuePairs = null;
+        }
         public static async Task TranInvGroupAsync(InvGroup invGroup)
         {
             var type = await TranInvGroupAsync(invGroup.GroupID);

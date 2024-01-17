@@ -38,7 +38,14 @@ namespace TheGuideToTheNewEden.Core.DBModels
             [EnumMember(Value = "faction")]
             Faction,
             [EnumMember(Value = "structure")]
-            Structure
+            Structure,
+            [EnumMember(Value = "group")]
+            Group
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

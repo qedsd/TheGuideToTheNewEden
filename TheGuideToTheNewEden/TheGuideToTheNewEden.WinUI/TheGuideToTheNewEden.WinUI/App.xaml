@@ -72,6 +72,7 @@
             <converters:SystemSecurityFormatConverter x:Key="SystemSecurityFormatConverter" />
             <converters:SystemSecurityFormatStringConverter x:Key="SystemSecurityFormatStringConverter" />
             <converters:SystemSecurityForegroundConverter x:Key="SystemSecurityForegroundConverter" />
+            <converters:CategoryEnumToStringConverter x:Key="CategoryEnumToStringConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

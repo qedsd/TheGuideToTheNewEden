@@ -535,4 +535,15 @@
     <x:String x:Key="KB_FinalBlow">最后一击</x:String>
     <x:String x:Key="KB_TopDamage">最高伤害</x:String>
     <x:String x:Key="KB_AttackerCount">参与者</x:String>
+
+    <x:String x:Key="CategoryEnum_Alliance">联盟</x:String>
+    <x:String x:Key="CategoryEnum_Character">角色</x:String>
+    <x:String x:Key="CategoryEnum_Constellation">星座</x:String>
+    <x:String x:Key="CategoryEnum_Corporation">军团</x:String>
+    <x:String x:Key="CategoryEnum_InventoryType">物品</x:String>
+    <x:String x:Key="CategoryEnum_Region">星域</x:String>
+    <x:String x:Key="CategoryEnum_SolarSystem">星系</x:String>
+    <x:String x:Key="CategoryEnum_Station">空间站</x:String>
+    <x:String x:Key="CategoryEnum_Faction">势力</x:String>
+    <x:String x:Key="CategoryEnum_Structure">建筑</x:String>
 </ResourceDictionary>

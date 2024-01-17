@@ -85,6 +85,23 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return types;
         }
+        public static List<InvType> QueryByName(string name, bool isLike = true)
+        {
+            List<InvType> types;
+            if (isLike)
+            {
+                types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(name)).ToList();
+            }
+            else
+            {
+                types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Equals(name)).ToList();
+            }
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvTypes(types);
+            }
+            return types;
+        }
 
         /// <summary>
         /// 模糊搜索物品名，支持本地化数据库
@@ -108,6 +125,26 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 }
                 return searchInvTypes;
             });
+        }
+        /// <summary>
+        /// 模糊搜索物品名，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static List<TranslationSearchItem> Search(string partName)
+        {
+            List<TranslationSearchItem> searchInvTypes = new List<TranslationSearchItem>();
+            var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
+            if (types.NotNullOrEmpty())
+            {
+                types.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+            }
+            var localTypes = LocalDbService.SearchInvType(partName);
+            if (localTypes.NotNullOrEmpty())
+            {
+                localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+            }
+            return searchInvTypes;
         }
     }
 }

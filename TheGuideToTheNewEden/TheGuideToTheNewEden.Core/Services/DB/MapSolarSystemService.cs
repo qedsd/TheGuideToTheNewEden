@@ -108,7 +108,26 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 return searchs;
             });
         }
-
+        /// <summary>
+        /// 模糊搜索，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static List<TranslationSearchItem> Search(string partName)
+        {
+            List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+            var systems = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => p.SolarSystemName.Contains(partName)).ToList();
+            if (systems.NotNullOrEmpty())
+            {
+                systems.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+            }
+            var locals = LocalDbService.SearchMapSolarSystem(partName);
+            if (locals.NotNullOrEmpty())
+            {
+                locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+            }
+            return searchs;
+        }
         public static async Task<List<MapSolarSystem>> QueryWormholesAsync()
         {
             return await DBService.MainDb.Queryable<MapSolarSystem>().Where(p=>p.SolarSystemID > 31000000 && p.SolarSystemName.StartsWith("J")).ToListAsync();

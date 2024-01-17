@@ -21,11 +21,30 @@
             <TabView.TabStripFooter>
                 <Grid>
                     <AutoSuggestBox
+                        x:Name="SearchBox"
                         Width="240"
                         Height="32"
                         Margin="0,0,8,0"
                         HorizontalAlignment="Right"
-                        QueryIcon="Find" />
+                        QueryIcon="Find"
+                        SuggestionChosen="SearchBox_SuggestionChosen"
+                        TextChanged="SearchBox_TextChanged">
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="4,0,0,0"
+                                        Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
                 </Grid>
             </TabView.TabStripFooter>
             <TabView.TabItems>

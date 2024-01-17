@@ -7,13 +7,18 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Views.KB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -54,6 +59,127 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public void Close()
         {
             VM?.Dispose();
+        }
+
+        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (_searchItem?.Name == sender.Text)
+            {
+                return;
+            }
+            if (string.IsNullOrEmpty(sender.Text))
+            {
+                sender.ItemsSource = null;
+            }
+            else
+            {
+                string searchName = sender.Text;
+                sender.ItemsSource =  await Task.Run(() =>
+                {
+                    List<IdName> result = new List<IdName>();
+                    var names = Core.Services.IDNameService.SerachByName(searchName);
+                    var types = Core.Services.DB.InvTypeService.QueryByName(searchName);
+                    List<Core.DBModels.InvType> ships = null;
+                    if(types.NotNullOrEmpty())
+                    {
+                        var typeGroups = Core.Services.DB.InvGroupService.QueryGroupIdOfCategory(new List<int>()
+                        {
+                            3,6,22,23,65,87,
+                        });
+                        ships = types.Where(p => typeGroups.Contains(p.GroupID)).ToList();
+                    }
+                    var groups = Core.Services.DB.InvGroupService.QueryGroups(searchName);
+                    var systems = Core.Services.DB.MapSolarSystemService.Search(searchName);
+                    var regions = Core.Services.DB.MapRegionService.Search(searchName);
+                    if(ships.NotNullOrEmpty())
+                    {
+                        foreach(var ship in ships)
+                        {
+                            result.Add(new IdName()
+                            {
+                                Id = ship.TypeID,
+                                Name = ship.TypeName,
+                                Category = (int)IdName.CategoryEnum.InventoryType
+                            });
+                        }
+                    }
+                    if (groups.NotNullOrEmpty())
+                    {
+                        foreach (var group in groups)
+                        {
+                            result.Add(new IdName()
+                            {
+                                Id = group.GroupID,
+                                Name = group.GroupName,
+                                Category = (int)IdName.CategoryEnum.Group
+                            });
+                        }
+                    }
+                    if (systems.NotNullOrEmpty())
+                    {
+                        foreach (var system in systems)
+                        {
+                            result.Add(new IdName()
+                            {
+                                Id = system.ID,
+                                Name = system.Name,
+                                Category = (int)IdName.CategoryEnum.SolarSystem
+                            });
+                        }
+                    }
+                    if (regions.NotNullOrEmpty())
+                    {
+                        foreach (var region in regions)
+                        {
+                            result.Add(new IdName()
+                            {
+                                Id = region.ID,
+                                Name = region.Name,
+                                Category = (int)IdName.CategoryEnum.Region
+                            });
+                        }
+                    }
+                    if (names.NotNullOrEmpty())
+                    {
+                        var hashSet = result.Select(p => p.Id).ToHashSet2();
+                        foreach (var name in names)
+                        {
+                            if(!hashSet.Contains(name.Id))
+                            {
+                                result.Add(name);
+                            }
+                        }
+                    }
+                    return result;
+                });
+            }
+        }
+        private IdName _searchItem;
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            _searchItem = args.SelectedItem as IdName;
+            ShowDetail(_searchItem);
+        }
+        private async void ShowDetail(IdName idName)
+        {
+            ZKB.NET.EntityType entityType;
+            switch(idName.GetCategory())
+            {
+                case IdName.CategoryEnum.Character:entityType = ZKB.NET.EntityType.CharacterID; break;
+                case IdName.CategoryEnum.Corporation: entityType = ZKB.NET.EntityType.CorporationID; break;
+                case IdName.CategoryEnum.Alliance: entityType = ZKB.NET.EntityType.AllianceID; break;
+                case IdName.CategoryEnum.Faction: entityType = ZKB.NET.EntityType.FactionID; break;
+                case IdName.CategoryEnum.InventoryType: entityType = ZKB.NET.EntityType.ShipTypeID; break;
+                case IdName.CategoryEnum.Group: entityType = ZKB.NET.EntityType.GroupID; break;
+                case IdName.CategoryEnum.SolarSystem: entityType = ZKB.NET.EntityType.SolarSystemID; break;
+                case IdName.CategoryEnum.Region: entityType = ZKB.NET.EntityType.RegionID; break;
+                default:
+                    {
+                        Core.Log.Error($"Unknown category:{idName.GetCategory()}");
+                        return;
+                    }
+            }
+            await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
         }
     }
 }

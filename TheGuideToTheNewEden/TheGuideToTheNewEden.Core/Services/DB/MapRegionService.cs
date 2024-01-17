@@ -72,5 +72,26 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 return searchs;
             });
         }
+
+        /// <summary>
+        /// 模糊搜索，支持本地化数据库
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public static List<TranslationSearchItem> Search(string partName)
+        {
+            List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+            var regions = DBService.MainDb.Queryable<MapRegion>().Where(p => p.RegionName.Contains(partName)).ToList();
+            if (regions.NotNullOrEmpty())
+            {
+                regions.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+            }
+            var locals = LocalDbService.SearchMapRegion(partName);
+            if (locals.NotNullOrEmpty())
+            {
+                locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+            }
+            return searchs;
+        }
     }
 }
