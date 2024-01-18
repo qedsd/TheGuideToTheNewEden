@@ -268,6 +268,7 @@
     <None Remove="Views\IntelOverlapPages\IntelBasePage.xaml" />
     <None Remove="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
+    <None Remove="Views\KB\EntityStatistPage.xaml" />
     <None Remove="Views\KB\KBDetailPage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
@@ -479,6 +480,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\KB\EntityStatistPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\KB\KBDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

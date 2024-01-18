@@ -1,0 +1,44 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.KB.EntityStatistPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <controls:ImageEx
+                        x:Name="Image_Avatar"
+                        Width="64"
+                        Height="64"
+                        EnableLazyLoading="True"
+                        IsCacheEnabled="True" />
+                    <StackPanel Grid.Column="1">
+                        <StackPanel.Resources>
+                            <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel" />
+                        </StackPanel.Resources>
+                        <StackPanel Style="{StaticResource StackPanel_ListInfo}" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>
