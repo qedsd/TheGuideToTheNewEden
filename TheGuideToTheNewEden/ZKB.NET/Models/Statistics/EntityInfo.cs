@@ -22,6 +22,7 @@ namespace ZKB.NET.Models.Statistics
         /// 执行军团ID
         /// </summary>
         public int ExecutorCorpID { get; set; }
+        public int AllianceID { get; set; }
 
         /// <summary>
         /// 势力ID

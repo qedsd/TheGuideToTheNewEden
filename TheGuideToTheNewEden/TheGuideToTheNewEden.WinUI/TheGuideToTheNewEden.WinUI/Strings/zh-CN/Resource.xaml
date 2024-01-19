@@ -546,4 +546,17 @@
     <x:String x:Key="CategoryEnum_Station">空间站</x:String>
     <x:String x:Key="CategoryEnum_Faction">势力</x:String>
     <x:String x:Key="CategoryEnum_Structure">建筑</x:String>
+
+    <x:String x:Key="EntityStatistPage_Character">角色</x:String>
+    <x:String x:Key="EntityStatistPage_Corporation">军团</x:String>
+    <x:String x:Key="EntityStatistPage_Alliance">联盟</x:String>
+    <x:String x:Key="EntityStatistPage_CEO">CEO</x:String>
+    <x:String x:Key="EntityStatistPage_Members">成员</x:String>
+    <x:String x:Key="EntityStatistPage_Executor">执行军团</x:String>
+    <x:String x:Key="EntityStatistPage_Sec">安全等级</x:String>
+    <x:String x:Key="EntityStatistPage_Ship">舰船</x:String>
+    <x:String x:Key="EntityStatistPage_Class">类别</x:String>
+    <x:String x:Key="EntityStatistPage_System">星系</x:String>
+    <x:String x:Key="EntityStatistPage_Constellation">星座</x:String>
+    <x:String x:Key="EntityStatistPage_Region">星域</x:String>
 </ResourceDictionary>

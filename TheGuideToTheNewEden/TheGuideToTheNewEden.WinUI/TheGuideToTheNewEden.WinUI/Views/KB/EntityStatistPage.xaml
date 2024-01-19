@@ -33,9 +33,131 @@
                         IsCacheEnabled="True" />
                     <StackPanel Grid.Column="1">
                         <StackPanel.Resources>
-                            <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel" />
+                            <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel">
+                                <Setter Property="Width" Value="100" />
+                                <Setter Property="Margin" Value="0,4" />
+                                <Setter Property="Orientation" Value="Horizontal" />
+                            </Style>
+                            <Style x:Key="TextBlock_ListInfoNmae" TargetType="StackPanel">
+                                <Setter Property="Width" Value="100" />
+                                <Setter Property="Margin" Value="0,4" />
+                            </Style>
                         </StackPanel.Resources>
-                        <StackPanel Style="{StaticResource StackPanel_ListInfo}" />
+                        <StackPanel
+                            x:Name="StackPanel_Character"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Character}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Character"
+                                Click="Button_Character_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Corp"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Corporation}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Corp"
+                                Click="Button_Corp_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Alliance"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Alliance}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Alliance"
+                                Click="Button_Alliance_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Executor"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Executor}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Executor"
+                                Click="Button_Corp_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Region"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Region}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Region"
+                                Click="Button_Region_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Constellation"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Constellation}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Constellation"
+                                Click="Button_Constellation_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Region"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Region}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Region"
+                                Click="Button_Region_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Ship"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Ship}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Ship"
+                                Click="Button_Ship_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Class"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Class}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <Button
+                                x:Name="Button_Class"
+                                Click="Button_Class_Click"
+                                Style="{StaticResource LinkButton}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Sec"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Sec}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <TextBlock x:Name="TextBlock_Sec" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="StackPanel_Members"
+                            Style="{StaticResource StackPanel_ListInfo}"
+                            Visibility="Collapsed">
+                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Members}" />
+                            <TextBlock Margin="2,0" Text=":" />
+                            <TextBlock x:Name="TextBlock_Members" />
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Grid>

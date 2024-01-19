@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ZKB.NET.Models.KillStream;
-using static Vanara.PInvoke.Kernel32.REASON_CONTEXT;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
