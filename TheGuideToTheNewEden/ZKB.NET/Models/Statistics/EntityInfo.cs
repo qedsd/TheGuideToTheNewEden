@@ -23,7 +23,7 @@ namespace ZKB.NET.Models.Statistics
         /// </summary>
         public int ExecutorCorpID { get; set; }
         public int AllianceID { get; set; }
-
+        public int CEOID { get; set; }
         /// <summary>
         /// 势力ID
         /// 仅npc军团有，默认0

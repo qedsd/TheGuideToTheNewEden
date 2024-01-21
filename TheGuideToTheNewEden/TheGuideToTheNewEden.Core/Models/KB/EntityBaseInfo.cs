@@ -9,12 +9,15 @@ namespace TheGuideToTheNewEden.Core.Models.KB
     {
         public IdName CharacterName { get; set; }
         public IdName CorpName { get; set; }
+        public IdName CEOName { get; set; }
         public IdName AllianceName { get; set; }
+        public IdName ExecutorCorpName { get; set; }
         public IdName SystemName { get; set; }
         public IdName ConstellationName { get; set; }
         public IdName RegionName { get; set; }
         public IdName ShipName { get; set; }
         public IdName ClassName { get; set; }
+        public IdName FactionName { get; set; }
         public int? Members { get; set; }
         public float? Sec { get; set; }
 
