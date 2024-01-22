@@ -12,22 +12,23 @@
     <Page.DataContext>
         <kb:EntityStatistViewModel x:Name="VM" />
     </Page.DataContext>
-    <ScrollViewer>
-        <Grid Margin="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
+
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
                     <controls:ImageEx
                         x:Name="Image_Avatar"
                         Width="80"
@@ -36,8 +37,8 @@
                         EnableLazyLoading="True"
                         IsCacheEnabled="True" />
                     <StackPanel
-                        Grid.Column="1"
-                        Margin="8,0,0,0"
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
                         VerticalAlignment="Center">
                         <StackPanel.Resources>
                             <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel">
@@ -179,15 +180,16 @@
                         </StackPanel>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Column="1">
+                <Grid Grid.Row="1" Margin="0,16,0,0">
                     <Grid.Resources>
                         <Style x:Key="TextBlock_RowHeader" TargetType="TextBlock">
                             <Setter Property="Margin" Value="0,2,8,2" />
                             <Setter Property="FontWeight" Value="Light" />
-                            <Setter Property="TextAlignment" Value="Right" />
+                            <Setter Property="TextAlignment" Value="Center" />
+                            <Setter Property="FontSize" Value="12" />
                         </Style>
                         <Style x:Key="TextBlock_Value" TargetType="TextBlock">
-                            <Setter Property="Margin" Value="16,2,16,2" />
+                            <Setter Property="Margin" Value="8,2,8,2" />
                             <Setter Property="TextAlignment" Value="Center" />
                             <Setter Property="Foreground" Value="{ThemeResource SystemAccentColor}" />
                         </Style>
@@ -206,10 +208,12 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock
                         Grid.Column="1"
+                        FontSize="12"
                         Text="{StaticResource EntityStatistPage_Destroyed}"
                         TextAlignment="Center" />
                     <TextBlock
                         Grid.Column="2"
+                        FontSize="12"
                         Text="{StaticResource EntityStatistPage_Lost}"
                         TextAlignment="Center" />
 
@@ -274,6 +278,6 @@
                         Text="{x:Bind VM.Statistic.SoloLosses, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
                 </Grid>
             </Grid>
-        </Grid>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </Page>
