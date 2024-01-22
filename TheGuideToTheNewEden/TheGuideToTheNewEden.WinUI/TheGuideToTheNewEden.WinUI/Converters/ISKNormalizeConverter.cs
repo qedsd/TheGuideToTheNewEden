@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             string str = value.ToString();
             var array = str.Split(".");
             int length = array[0].Length;
-            double number = (double)value;
+            decimal number = decimal.Parse(str);
             switch (length)
             {
                 case 4:

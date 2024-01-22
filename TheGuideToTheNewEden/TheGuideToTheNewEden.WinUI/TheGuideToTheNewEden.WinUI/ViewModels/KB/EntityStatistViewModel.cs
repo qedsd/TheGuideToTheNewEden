@@ -9,27 +9,31 @@ using TheGuideToTheNewEden.Core.Services;
 using ZKB.NET.Models.Statistics;
 using TheGuideToTheNewEden.Core.Extensions;
 using static TheGuideToTheNewEden.Core.DBModels.IdName;
-using SqlSugar.DistributedSystem.Snowflake;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
     public class EntityStatistViewModel:BaseViewModel
     {
+        private Services.KBNavigationService _kbNavigationService;
         private EntityBaseInfo baseInfo;
         public EntityBaseInfo BaseInfo { get => baseInfo; set=> SetProperty(ref baseInfo, value); }
 
         private EntityStatistic _statistic;
-        public void SetData(EntityStatistic statistic)
+        public EntityStatistic Statistic { get => _statistic; set => SetProperty(ref _statistic, value); }
+        public void SetData(EntityStatistic statistic, KBNavigationService kbNavigationService)
         {
-            _statistic = statistic;
+            Statistic = statistic;
+            _kbNavigationService = kbNavigationService;
         }
         public async Task InitAsync()
         {
-            Core.Models.KB.EntityBaseInfo info;
+            Core.Models.KB.EntityBaseInfo info = null;
             await Task.Run(() =>
             {
                 info = CreateEntityBaseInfo();
             });
+            BaseInfo = info;
         }
         private Core.Models.KB.EntityBaseInfo CreateEntityBaseInfo()
         {
@@ -108,7 +112,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     break;
                 case "factionID":
                     {
-                        var names = Core.Services.IDNameService.GetByIds(new List<int>() { _statistic.Info.Id });
+                        var names = Core.Services.IDNameService.GetByIds(new List<int>() { _statistic.Id });
                         if (names.NotNullOrEmpty())
                         {
                             info.FactionName = names.FirstOrDefault(p => p.GetCategory() == CategoryEnum.Faction);
@@ -117,13 +121,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     break;
                 case "shipTypeID":
                     {
-                        var type = Core.Services.DB.InvTypeService.QueryType(_statistic.Info.Id);
+                        var type = Core.Services.DB.InvTypeService.QueryType(_statistic.Id);
                         if (type != null)
                         {
                             info.ShipName = new IdName()
                             {
                                 Category = (int)CategoryEnum.InventoryType,
-                                Id = _statistic.Info.Id,
+                                Id = _statistic.Id,
                                 Name = type.TypeName
                             };
                             var group = Core.Services.DB.InvGroupService.QueryGroup(type.GroupID);
@@ -141,7 +145,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     break;
                 case "groupID":
                     {
-                        var group = Core.Services.DB.InvGroupService.QueryGroup(_statistic.Info.Id);
+                        var group = Core.Services.DB.InvGroupService.QueryGroup(_statistic.Id);
                         if (group != null)
                         {
                             info.ClassName = new IdName()
@@ -155,10 +159,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     break;
                 case "solarSystemID":
                     {
-                        var system = Core.Services.DB.MapSolarSystemService.Query(_statistic.Info.Id);
+                        var system = Core.Services.DB.MapSolarSystemService.Query(_statistic.Id);
                         if (system != null)
                         {
-                            info.ClassName = new IdName()
+                            info.SystemName = new IdName()
                             {
                                 Category = (int)CategoryEnum.SolarSystem,
                                 Id = system.SolarSystemID,
@@ -167,7 +171,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                             var region = Core.Services.DB.MapRegionService.Query(system.RegionID);
                             if (region != null)
                             {
-                                info.ClassName = new IdName()
+                                info.RegionName = new IdName()
                                 {
                                     Category = (int)CategoryEnum.Region,
                                     Id = region.RegionID,
@@ -179,10 +183,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     break;
                 case "regionID":
                     {
-                        var region = Core.Services.DB.MapRegionService.Query(_statistic.Info.Id);
+                        var region = Core.Services.DB.MapRegionService.Query(_statistic.Id);
                         if (region != null)
                         {
-                            info.ClassName = new IdName()
+                            info.RegionName = new IdName()
                             {
                                 Category = (int)CategoryEnum.Region,
                                 Id = region.RegionID,

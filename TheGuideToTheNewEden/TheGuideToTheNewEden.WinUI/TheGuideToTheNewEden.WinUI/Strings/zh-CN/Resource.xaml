@@ -535,6 +535,7 @@
     <x:String x:Key="KB_FinalBlow">最后一击</x:String>
     <x:String x:Key="KB_TopDamage">最高伤害</x:String>
     <x:String x:Key="KB_AttackerCount">参与者</x:String>
+    <x:String x:Key="KB_Solo">单挑</x:String>
 
     <x:String x:Key="CategoryEnum_Alliance">联盟</x:String>
     <x:String x:Key="CategoryEnum_Character">角色</x:String>
@@ -559,4 +560,6 @@
     <x:String x:Key="EntityStatistPage_System">星系</x:String>
     <x:String x:Key="EntityStatistPage_Constellation">星座</x:String>
     <x:String x:Key="EntityStatistPage_Region">星域</x:String>
+    <x:String x:Key="EntityStatistPage_Destroyed">击杀</x:String>
+    <x:String x:Key="EntityStatistPage_Lost">损失</x:String>
 </ResourceDictionary>

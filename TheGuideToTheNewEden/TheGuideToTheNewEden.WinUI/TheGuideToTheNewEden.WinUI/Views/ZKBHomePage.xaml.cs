@@ -19,11 +19,14 @@ using TheGuideToTheNewEden.WinUI.Views.KB;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using System.Xml.Linq;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ZKBHomePage : Page, IPage
     {
+        private Services.KBNavigationService _kbNavigationService;
         public ZKBHomePage()
         {
             this.InitializeComponent();
@@ -32,6 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private async void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
         {
+            _kbNavigationService = new KBNavigationService(this);
             Loaded -= ZKBHomePage_Loaded;
             this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
             await VM.InitAsync();
@@ -163,32 +167,29 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         private async void ShowDetail(IdName idName)
         {
-            ZKB.NET.EntityType entityType;
-            switch(idName.GetCategory())
-            {
-                case IdName.CategoryEnum.Character:entityType = ZKB.NET.EntityType.CharacterID; break;
-                case IdName.CategoryEnum.Corporation: entityType = ZKB.NET.EntityType.CorporationID; break;
-                case IdName.CategoryEnum.Alliance: entityType = ZKB.NET.EntityType.AllianceID; break;
-                case IdName.CategoryEnum.Faction: entityType = ZKB.NET.EntityType.FactionID; break;
-                case IdName.CategoryEnum.InventoryType: entityType = ZKB.NET.EntityType.ShipTypeID; break;
-                case IdName.CategoryEnum.Group: entityType = ZKB.NET.EntityType.GroupID; break;
-                case IdName.CategoryEnum.SolarSystem: entityType = ZKB.NET.EntityType.SolarSystemID; break;
-                case IdName.CategoryEnum.Region: entityType = ZKB.NET.EntityType.RegionID; break;
-                default:
-                    {
-                        Core.Log.Error($"Unknown category:{idName.GetCategory()}");
-                        return;
-                    }
-            }
             try
             {
-                var statist = await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
+                this.GetBaseWindow()?.ShowWaiting();
+                await _kbNavigationService.NavigationTo(idName);
+                this.GetBaseWindow()?.HideWaiting();
             }
             catch (Exception e)
             {
                 this.GetBaseWindow()?.ShowError(e.Message);
                 Core.Log.Error(e);
             }
+        }
+
+
+        public void AddTab(string header, Page content)
+        {
+            TabViewItem item = new TabViewItem()
+            {
+                Header = header,
+                IsSelected = true,
+                Content = content
+            };
+            ContentTabView.TabItems.Add(item);
         }
     }
 }
