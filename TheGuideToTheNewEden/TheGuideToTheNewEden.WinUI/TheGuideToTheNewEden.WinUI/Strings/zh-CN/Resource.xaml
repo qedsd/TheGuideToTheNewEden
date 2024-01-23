@@ -57,6 +57,8 @@
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
     <x:String x:Key="General_OpenFile">打开文件</x:String>
     <x:String x:Key="General_Clear">清除</x:String>
+    <x:String x:Key="General_No">否</x:String>
+    <x:String x:Key="General_Yes">是</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -562,4 +564,15 @@
     <x:String x:Key="EntityStatistPage_Region">星域</x:String>
     <x:String x:Key="EntityStatistPage_Destroyed">击杀</x:String>
     <x:String x:Key="EntityStatistPage_Lost">损失</x:String>
+    <x:String x:Key="EntityStatistPage_DangerRatio">危险系数</x:String>
+    <x:String x:Key="EntityStatistPage_GangRatio">抱团概率</x:String>
+    <x:String x:Key="EntityStatistPage_HasSupers">拥有超期</x:String>
+    <x:String x:Key="EntityStatistPage_RecentActivity">最近活跃</x:String>
+    <x:String x:Key="EntityStatistPage_Overview">概览</x:String>
+    <x:String x:Key="EntityStatistPage_Kills">击杀</x:String>
+    <x:String x:Key="EntityStatistPage_Solo">单挑</x:String>
+    <x:String x:Key="EntityStatistPage_Losses">损失</x:String>
+    <x:String x:Key="EntityStatistPage_Top">最高</x:String>
+    <x:String x:Key="EntityStatistPage_GroupSummary">分类</x:String>
+    <x:String x:Key="EntityStatistPage_SupperSummary">超期</x:String>
 </ResourceDictionary>

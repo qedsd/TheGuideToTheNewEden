@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.Core.Services.DB;
+using ZKB.NET.Models.Killmails;
 using ZKB.NET.Models.KillStream;
 
 namespace TheGuideToTheNewEden.Core.Helpers
@@ -101,6 +102,51 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 kbItemInfo.Group = InvGroupService.QueryGroup(kbItemInfo.Type.GroupID);
             }
             return kbItemInfo;
+        }
+
+        public static List<KBItemInfo> CreateKBItemInfo(List<ZKillmaill> killmaills)
+        {
+            if (killmaills.NotNullOrEmpty())
+            {
+                ESI.NET.Models.Killmails.Information getInfo(ZKillmaill zKillmaill)
+                {
+                    var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
+                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return resp.Data;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"Can not get Killmail info of {zKillmaill.KillmailId} {zKillmaill.Zkb.Hash}");
+                        return null;
+                    }
+                }
+                var kmInfos = Core.Helpers.ThreadHelper.Run(killmaills, getInfo);
+                if (kmInfos.NotNullOrEmpty())
+                {
+                    var kmDic = killmaills.ToDictionary(p => p.KillmailId);
+                    List<SKBDetail> kmDetails = new List<SKBDetail>();
+                    foreach (var kmInfo in kmInfos)
+                    {
+                        if (kmInfo != null)
+                        {
+                            if (kmDic.TryGetValue((int)kmInfo.KillmailId, out var km))
+                            {
+                                SKBDetail detail = kmInfo.DepthClone<SKBDetail>();
+                                detail.Zkb = km.Zkb;
+                                kmDetails.Add(detail);
+                            }
+                        }
+                    }
+                    return Core.Helpers.ThreadHelper.Run(kmDetails, Core.Helpers.KBHelpers.CreateKBItemInfo).ToList();
+                }
+            }
+            return null;
+        }
+
+        public static async Task<List<KBItemInfo>> CreateKBItemInfoAsync(List<ZKillmaill> killmaills)
+        {
+            return await Task.Run(() => CreateKBItemInfo(killmaills));
         }
     }
 }

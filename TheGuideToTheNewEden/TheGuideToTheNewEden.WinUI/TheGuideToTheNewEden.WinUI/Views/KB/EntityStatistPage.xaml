@@ -12,175 +12,220 @@
     <Page.DataContext>
         <kb:EntityStatistViewModel x:Name="VM" />
     </Page.DataContext>
-
-    <Grid Margin="8">
+    <Page.Resources>
+        <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="Orientation" Value="Horizontal" />
+        </Style>
+        <Style x:Key="TextBlock_ListInfoNmae" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style x:Key="TextBlock_Split" TargetType="TextBlock">
+            <Setter Property="Margin" Value="2,0,8,0" />
+            <Setter Property="Text" Value=":" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="TextBlock_Value" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Page.Resources>
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <ScrollViewer>
+        <Grid
+            MinWidth="200"
+            Padding="8,8"
+            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+            <Grid.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Click="Menu_OpenInZKB_Click" Text="zkillboard.com" />
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <controls:ImageEx
-                        x:Name="Image_Avatar"
-                        Width="80"
-                        Height="80"
-                        CornerRadius="4"
-                        EnableLazyLoading="True"
-                        IsCacheEnabled="True" />
+                <controls:ImageEx
+                    x:Name="Image_Avatar"
+                    Width="80"
+                    Height="80"
+                    CornerRadius="40"
+                    EnableLazyLoading="True"
+                    IsCacheEnabled="True" />
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    VerticalAlignment="Center">
                     <StackPanel
-                        Grid.Row="1"
-                        Margin="0,8,0,0"
-                        VerticalAlignment="Center">
-                        <StackPanel.Resources>
-                            <Style x:Key="StackPanel_ListInfo" TargetType="StackPanel">
-                                <Setter Property="Margin" Value="0,4" />
-                                <Setter Property="Orientation" Value="Horizontal" />
-                            </Style>
-                            <Style x:Key="TextBlock_ListInfoNmae" TargetType="StackPanel">
-                                <Setter Property="Width" Value="100" />
-                                <Setter Property="Margin" Value="0,4" />
-                            </Style>
-                            <Style x:Key="TextBlock_Split" TargetType="TextBlock">
-                                <Setter Property="Margin" Value="2,0,8,0" />
-                                <Setter Property="Text" Value=":" />
-                            </Style>
-                        </StackPanel.Resources>
-                        <StackPanel
-                            x:Name="StackPanel_Character"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.CharacterName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Character}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Character"
-                                Click="Button_Character_Click"
-                                Content="{x:Bind VM.BaseInfo.CharacterName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Corp"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.CorpName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Corporation}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Corp"
-                                Click="Button_Corp_Click"
-                                Content="{x:Bind VM.BaseInfo.CorpName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Alliance"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.AllianceName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Alliance}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Alliance"
-                                Click="Button_Alliance_Click"
-                                Content="{x:Bind VM.BaseInfo.AllianceName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Executor"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.ExecutorCorpName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Executor}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Executor"
-                                Click="Button_Corp_Click"
-                                Content="{x:Bind VM.BaseInfo.ExecutorCorpName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_System"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.SystemName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_System}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_System"
-                                Click="Button_System_Click"
-                                Content="{x:Bind VM.BaseInfo.SystemName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Constellation"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.ConstellationName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Constellation}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Constellation"
-                                Click="Button_Constellation_Click"
-                                Content="{x:Bind VM.BaseInfo.ConstellationName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Region"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.RegionName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Region}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Region"
-                                Click="Button_Region_Click"
-                                Content="{x:Bind VM.BaseInfo.RegionName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Ship"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.ShipName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Ship}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Ship"
-                                Click="Button_Ship_Click"
-                                Content="{x:Bind VM.BaseInfo.ShipName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Class"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.ClassName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Class}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <Button
-                                x:Name="Button_Class"
-                                Click="Button_Class_Click"
-                                Content="{x:Bind VM.BaseInfo.ClassName.Name, Mode=OneWay}"
-                                Style="{StaticResource LinkButton}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Sec"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.Sec, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Sec}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <TextBlock x:Name="TextBlock_Sec" Text="{x:Bind VM.BaseInfo.Sec, Mode=OneWay}" />
-                        </StackPanel>
-                        <StackPanel
-                            x:Name="StackPanel_Members"
-                            Style="{StaticResource StackPanel_ListInfo}"
-                            Visibility="{x:Bind VM.BaseInfo.Members, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                            <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Members}" />
-                            <TextBlock Style="{StaticResource TextBlock_Split}" />
-                            <TextBlock x:Name="TextBlock_Members" Text="{x:Bind VM.BaseInfo.Members, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
-                        </StackPanel>
+                        x:Name="StackPanel_Character"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.CharacterName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Character}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Character"
+                            Click="Button_Character_Click"
+                            Content="{x:Bind VM.BaseInfo.CharacterName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
                     </StackPanel>
-                </Grid>
-                <Grid Grid.Row="1" Margin="0,16,0,0">
+                    <StackPanel
+                        x:Name="StackPanel_Corp"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.CorpName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Corporation}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Corp"
+                            Click="Button_Corp_Click"
+                            Content="{x:Bind VM.BaseInfo.CorpName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Alliance"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.AllianceName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Alliance}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Alliance"
+                            Click="Button_Alliance_Click"
+                            Content="{x:Bind VM.BaseInfo.AllianceName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Executor"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.ExecutorCorpName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Executor}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Executor"
+                            Click="Button_Corp_Click"
+                            Content="{x:Bind VM.BaseInfo.ExecutorCorpName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_System"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.SystemName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_System}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_System"
+                            Click="Button_System_Click"
+                            Content="{x:Bind VM.BaseInfo.SystemName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Constellation"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.ConstellationName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Constellation}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Constellation"
+                            Click="Button_Constellation_Click"
+                            Content="{x:Bind VM.BaseInfo.ConstellationName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Region"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.RegionName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Region}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Region"
+                            Click="Button_Region_Click"
+                            Content="{x:Bind VM.BaseInfo.RegionName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Ship"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.ShipName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Ship}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Ship"
+                            Click="Button_Ship_Click"
+                            Content="{x:Bind VM.BaseInfo.ShipName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Class"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.ClassName, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Class}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <Button
+                            x:Name="Button_Class"
+                            Click="Button_Class_Click"
+                            Content="{x:Bind VM.BaseInfo.ClassName.Name, Mode=OneWay}"
+                            Style="{StaticResource LinkButton}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Sec"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.Sec, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Sec}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <TextBlock
+                            x:Name="TextBlock_Sec"
+                            Style="{StaticResource TextBlock_Value}"
+                            Text="{x:Bind VM.BaseInfo.Sec, Mode=OneWay}" />
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="StackPanel_Members"
+                        Style="{StaticResource StackPanel_ListInfo}"
+                        Visibility="{x:Bind VM.BaseInfo.Members, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_Members}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <TextBlock
+                            x:Name="TextBlock_Members"
+                            Style="{StaticResource TextBlock_Value}"
+                            Text="{x:Bind VM.BaseInfo.Members, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel>
+                    <StackPanel Style="{StaticResource StackPanel_ListInfo}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_DangerRatio}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.DangerRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource StackPanel_ListInfo}" Visibility="{x:Bind VM.Statistic.Info, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_GangRatio}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.GangRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                    </StackPanel>
+                    <StackPanel x:Name="StackPanel_HasSupers" Style="{StaticResource StackPanel_ListInfo}">
+                        <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_HasSupers}" />
+                        <TextBlock Style="{StaticResource TextBlock_Split}" />
+                        <TextBlock x:Name="TextBlock_HasSupers" Style="{StaticResource TextBlock_Value}" />
+                    </StackPanel>
+                </StackPanel>
+                <Grid
+                    Grid.Row="1"
+                    Margin="4,16,0,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom">
                     <Grid.Resources>
                         <Style x:Key="TextBlock_RowHeader" TargetType="TextBlock">
                             <Setter Property="Margin" Value="0,2,8,2" />
@@ -203,8 +248,8 @@
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
                         Grid.Column="1"
@@ -278,6 +323,22 @@
                         Text="{x:Bind VM.Statistic.SoloLosses, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
                 </Grid>
             </Grid>
-        </ScrollViewer>
+        </Grid>
+        <TabView
+            Grid.Column="1"
+            VerticalAlignment="Stretch"
+            IsAddTabButtonVisible="False"
+            TabWidthMode="Equal">
+            <TabViewItem
+                x:Name="TabViewItem_Overview"
+                Header="{StaticResource EntityStatistPage_Overview}"
+                IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_Kills}" IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_Solo}" IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_Losses}" IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_Top}" IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_GroupSummary}" IsClosable="False" />
+            <TabViewItem Header="{StaticResource EntityStatistPage_SupperSummary}" IsClosable="False" />
+        </TabView>
     </Grid>
 </Page>

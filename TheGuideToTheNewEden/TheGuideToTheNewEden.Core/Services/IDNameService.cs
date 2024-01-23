@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Services.DB;
@@ -12,6 +14,45 @@ namespace TheGuideToTheNewEden.Core.Services
 {
     public class IDNameService
     {
+        #region 保存到数据库
+        private static Task _saveThread;
+        private static ConcurrentQueue<DBModels.IdName> _saveQueue;
+        /// <summary>
+        /// 用于暂存当前需要保存到数据库的数据
+        /// </summary>
+        private static Dictionary<int, IdName> _tempDic;
+        private static void SaveToDB(List<DBModels.IdName> idNames)
+        {
+            _saveQueue ??= new ConcurrentQueue<IdName>();
+            _tempDic ??= new Dictionary<int, IdName>();
+            foreach (var  idName in idNames)
+            {
+                _saveQueue.Enqueue(idName);
+            }
+            _saveThread ??= new Task(() =>
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            _tempDic.Clear();
+                            Dictionary<int, IdName> dic = new Dictionary<int, IdName>();
+                            IdName name = null;
+                            while (_saveQueue.TryDequeue(out name))
+                            {
+                                dic.TryAdd(name.Id, name);
+                            }
+                            IDNameDBService.Insert(dic.Values.ToList());
+                        }
+                        catch (Exception ex)
+                        {
+                            Core.Log.Error(ex);
+                        }
+                        Thread.Sleep(1000);//一秒钟检查一次是否有插入
+                    }
+                });
+        }
+        #endregion
         public static async Task<DBModels.IdName> GetByIdAsync(int id)
         {
             var ids = await GetByIdsAsync(new List<int>() { id});
@@ -67,7 +108,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 //TODO:处理查找不到的
 
                 //3.保存数据库不存在的
-                IDNameDBService.Insert(noInDbResults);
+                SaveToDB(noInDbResults);
 
                 //4.合并返回
                 if (inDbResults.NotNullOrEmpty())
@@ -149,7 +190,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
 
                 //3.保存数据库不存在的
-                await IDNameDBService.InsertAsync(noInDbResults);
+                SaveToDB(noInDbResults);
 
                 //4.合并返回
                 if (inDbResults.NotNullOrEmpty())
@@ -205,7 +246,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
                 if(noInDbResults.Any())
                 {
-                    await IDNameDBService.InsertAsync(noInDbResults);
+                    SaveToDB(noInDbResults);
                 }
                 return results;
             }
@@ -255,7 +296,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
                 if (noInDbResults.Any())
                 {
-                    IDNameDBService.Insert(noInDbResults);
+                    SaveToDB(noInDbResults);
                 }
                 return results;
             }

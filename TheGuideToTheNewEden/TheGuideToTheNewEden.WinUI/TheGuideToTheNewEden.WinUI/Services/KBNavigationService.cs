@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Controls;
+using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Views;
 using TheGuideToTheNewEden.WinUI.Views.KB;
@@ -80,6 +83,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
             }
             await NavigationTo(idName.Id, entityType, idName.Name);
+        }
+
+        public void NavigateToKM(Core.Models.KB.KBItemInfo info)
+        {
+            KBDetailPage detailPage = new KBDetailPage(info);
+            string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
+            _window.DispatcherQueue.TryEnqueue(() =>
+            {
+                _page.AddTab($"KB - {name}", detailPage);
+            });
         }
 
     }

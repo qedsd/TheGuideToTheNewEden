@@ -44,15 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
         {
-            KBDetailPage detailPage = new KBDetailPage(itemInfo);
-            string name = itemInfo.Victim == null ? itemInfo.SKBDetail.KillmailId.ToString() : itemInfo.Victim.Name;
-            TabViewItem item = new TabViewItem()
-            {
-                Header = $"KB - {name}",
-                IsSelected = true,
-                Content = detailPage
-            };
-            ContentTabView.TabItems.Add(item);
+            _kbNavigationService.NavigateToKM(itemInfo);
         }
 
         private void ContentTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)

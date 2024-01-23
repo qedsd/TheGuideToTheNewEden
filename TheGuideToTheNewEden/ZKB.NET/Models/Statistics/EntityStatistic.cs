@@ -13,6 +13,24 @@ namespace ZKB.NET.Models.Statistics
 {
     public class EntityStatistic
     {
+        public EntityStatisticType StatisticType
+        {
+            get
+            {
+                switch(Type)
+                {
+                    case "characterID":return EntityStatisticType.Character;
+                    case "corporationID": return EntityStatisticType.Corporation;
+                    case "allianceID": return EntityStatisticType.Alliance;
+                    case "factionID": return EntityStatisticType.Faction;
+                    case "shipTypeID": return EntityStatisticType.ShipType;
+                    case "groupID": return EntityStatisticType.Group;
+                    case "solarSystemID": return EntityStatisticType.SolarSystem;
+                    case "regionID": return EntityStatisticType.Region;
+                    default:return EntityStatisticType.Unknown;
+                }
+            }
+        }
         /// <summary>
         /// characterID/corporationID/allianceID/factionID/shipTypeID/groupID/solarSystemID/regionID
         /// </summary>
@@ -54,6 +72,9 @@ namespace ZKB.NET.Models.Statistics
             }
         }
 
+        /// <summary>
+        /// 按船分类统计
+        /// </summary>
         [JsonIgnore]
         public List<GroupData> Groups { get; set; }
 
@@ -202,7 +223,7 @@ namespace ZKB.NET.Models.Statistics
         public int NextTopRecalc { get; set; }
 
         /// <summary>
-        /// 最高击杀kb的id
+        /// 历史最高击杀kb的id
         /// </summary>
         public List<int> TopIskKills { get; set; }
 
@@ -237,14 +258,28 @@ namespace ZKB.NET.Models.Statistics
         public List<TopKill> TopLists { get; set; }
 
         /// <summary>
-        /// 
+        /// 最近7天最高击杀
         /// </summary>
-        public List<int> TopIskKillIDs { get; set; }
+        [JsonProperty("topIskKillIDs")]
+        public List<int> TopIskKills7d { get; set; }
 
         /// <summary>
         /// 不明
         /// </summary>
         public JObject Activity { get; set; }
 
+    }
+
+    public enum EntityStatisticType
+    {
+        Unknown,
+        Character,
+        Corporation,
+        Alliance,
+        Faction,
+        ShipType,
+        Group,
+        SolarSystem,
+        Region
     }
 }

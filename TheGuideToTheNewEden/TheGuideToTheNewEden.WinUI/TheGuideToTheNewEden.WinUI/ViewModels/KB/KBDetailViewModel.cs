@@ -202,7 +202,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         });
         public ICommand OpenInBrowerCommand => new RelayCommand(() =>
         {
-            System.Diagnostics.Process.Start("explorer.exe", $"https://zkillboard.com/kill/{KBItemInfo.SKBDetail.KillmailId}/");
+            Helpers.UrlHelper.OpenInBrower($"https://zkillboard.com/kill/{KBItemInfo.SKBDetail.KillmailId}/");
         });
     }
 }

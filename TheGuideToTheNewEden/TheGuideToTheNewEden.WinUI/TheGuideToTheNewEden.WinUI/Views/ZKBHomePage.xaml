@@ -15,6 +15,7 @@
     <Grid>
         <TabView
             x:Name="ContentTabView"
+            VerticalAlignment="Stretch"
             CloseButtonOverlayMode="OnPointerOver"
             IsAddTabButtonVisible="False"
             TabCloseRequested="ContentTabView_TabCloseRequested">

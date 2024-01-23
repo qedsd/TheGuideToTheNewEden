@@ -14,6 +14,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using ZKB.NET.Models.Statistics;
 using TheGuideToTheNewEden.WinUI.Services;
+using System.Text;
+using static TheGuideToTheNewEden.WinUI.Converters.GameImageConverter;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
@@ -26,6 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             _kbNavigationService = kbNavigationService;
             _statistic = statistic;
             this.InitializeComponent();
+            TabViewItem_Overview.Content = new StatistOverviewPage(_statistic, _kbNavigationService);
             Loaded += EntityStatistPage_Loaded;
         }
 
@@ -35,6 +38,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             VM.SetData(_statistic, _kbNavigationService);
             await VM.InitAsync();
             SetAvatar();
+            SetSuper();
+            //StatistOverviewPage page = new StatistOverviewPage(_statistic, _kbNavigationService);
+            //TabViewItem_Overview.Content = page;
         }
 
         private void SetAvatar()
@@ -73,6 +79,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
                     return;
             }
             Image_Avatar.Source = Converters.GameImageConverter.GetImageUri(_statistic.Id, imgType, 128);
+        }
+        private void SetSuper()
+        {
+            switch (_statistic.Type)
+            {
+                case "characterID":
+                case "corporationID":
+                case "allianceID":
+                    {
+                        if(_statistic.HasSupers)
+                        {
+                            TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_Yes");
+                        }
+                        else
+                        {
+                            TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_No");
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        StackPanel_HasSupers.Visibility = Visibility.Collapsed;
+                    }
+                    return;
+            }
         }
 
         private void Button_Character_Click(object sender, RoutedEventArgs e)
@@ -123,6 +154,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private void Button_System_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void Menu_OpenInZKB_Click(object sender, RoutedEventArgs e)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("https://zkillboard.com/");
+            switch (_statistic.Type)
+            {
+                case "shipTypeID": stringBuilder.Append("ship");break;
+                case "solarSystemID": stringBuilder.Append("system"); break;
+                default:
+                    {
+                        stringBuilder.Append(_statistic.Type[..^2]);
+                    }break;
+            }
+            
+            stringBuilder.Append('/');
+            stringBuilder.Append(_statistic.Id);
+            stringBuilder.Append('/');
+            Helpers.UrlHelper.OpenInBrower(stringBuilder.ToString());
         }
     }
 }
