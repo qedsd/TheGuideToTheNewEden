@@ -14,6 +14,37 @@
     </Page.DataContext>
     <Grid>
         <Grid x:Name="ContentGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <GridView
+                    IsItemClickEnabled="True"
+                    ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
+                    SelectionMode="Single">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <controls:KBTopKillControl KBItemInfo="{Binding}" />
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+                <GridView
+                    Grid.Row="1"
+                    IsItemClickEnabled="True"
+                    ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
+                    SelectionMode="Single">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <controls:KBTopKillControl KBItemInfo="{Binding}" />
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </Grid>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition />

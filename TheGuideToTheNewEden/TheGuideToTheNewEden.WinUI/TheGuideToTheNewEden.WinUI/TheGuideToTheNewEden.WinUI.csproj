@@ -227,6 +227,7 @@
     <None Remove="Controls\KBListCharacterControl.xaml" />
     <None Remove="Controls\KBListControl.xaml" />
     <None Remove="Controls\KBSystemInfoControl.xaml" />
+    <None Remove="Controls\KBTopKillControl.xaml" />
     <None Remove="Controls\LinkInfoControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
@@ -365,6 +366,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\KBDamageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\KBTopKillControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">

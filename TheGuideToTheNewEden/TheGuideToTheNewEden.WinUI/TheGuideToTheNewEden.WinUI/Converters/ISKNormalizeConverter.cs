@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
 {
     class ISKNormalizeConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+        public static string Normalize(object value)
         {
             string str = value.ToString();
             var array = str.Split(".");
@@ -34,6 +34,10 @@ namespace TheGuideToTheNewEden.WinUI.Converters
                 case 18: return (Math.Round(number / 1000000000000000, 2) + "aa");
                 default: return number.ToString();
             }
+        }
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return Normalize(value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

@@ -25,6 +25,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         public EntityStatistic Statistic { get => _statistic; set => SetProperty(ref _statistic, value); }
         private ObservableCollection<Core.Models.KB.KBItemInfo> kbItemInfos;
         public ObservableCollection<Core.Models.KB.KBItemInfo> KBItemInfos { get => kbItemInfos; set => SetProperty(ref kbItemInfos, value); }
+        private List<Core.Models.KB.KBItemInfo> _topKillAllTime;
+        public List<Core.Models.KB.KBItemInfo> TopKillAllTime { get => _topKillAllTime; set => SetProperty(ref _topKillAllTime, value); }
+        private List<Core.Models.KB.KBItemInfo> _topKill7d;
+        public List<Core.Models.KB.KBItemInfo> TopKillA7d { get => _topKill7d; set => SetProperty(ref _topKill7d, value); }
         private int _page;
         public int Page
         {
@@ -87,7 +91,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             }
             if (_statistic.TopIskKills.NotNullOrEmpty())
             {
-                var list = GetItemInfosAsync(_statistic.TopIskKills);
+                TopKillAllTime = await GetItemInfosAsync(_statistic.TopIskKills);
+            }
+            if (_statistic.TopIskKills7d.NotNullOrEmpty())
+            {
+                TopKillA7d = await GetItemInfosAsync(_statistic.TopIskKills);
             }
         }
         private async Task<List<KBItemInfo>> GetItemInfosAsync(List<int> ids)
