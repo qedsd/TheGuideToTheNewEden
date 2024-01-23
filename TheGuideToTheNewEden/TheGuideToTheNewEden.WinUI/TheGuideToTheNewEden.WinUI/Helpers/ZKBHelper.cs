@@ -10,9 +10,9 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 {
     public static class ZKBHelper
     {
-        private static int _maxItems = 200;
-        private static float _targetItemsF = 50;
-        private static int _targetItems = 50;
+        private static readonly int _maxItems = 200;
+        private static readonly float _targetItemsF = 50;
+        private static readonly int _targetItems = 50;
         /// <summary>
         /// 给ZKB加上每页最大数量
         /// </summary>

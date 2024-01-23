@@ -148,5 +148,9 @@ namespace TheGuideToTheNewEden.Core.Helpers
         {
             return await Task.Run(() => CreateKBItemInfo(killmaills));
         }
+        public static async Task<KBItemInfo> CreateKBItemInfoAsync(ZKillmaill killmaill)
+        {
+            return (await Task.Run(() => CreateKBItemInfo(new List<ZKillmaill>() { killmaill})))?.FirstOrDefault();
+        }
     }
 }

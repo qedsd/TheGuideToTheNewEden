@@ -13,6 +13,7 @@ using ZKB.NET.Models.Killmails;
 using ZKB.NET.Models.KillStream;
 using TheGuideToTheNewEden.Core.Helpers;
 using System.Collections.ObjectModel;
+using ESI.NET.Models.Killmails;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
@@ -84,18 +85,41 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             {
                 KBItemInfos = new ObservableCollection<KBItemInfo>();
             }
+            if (_statistic.TopIskKills.NotNullOrEmpty())
+            {
+                var list = GetItemInfosAsync(_statistic.TopIskKills);
+            }
+        }
+        private async Task<List<KBItemInfo>> GetItemInfosAsync(List<int> ids)
+        {
+            if (ids.NotNullOrEmpty())
+            {
+                ZKillmaill getZKillmail(int id)
+                {
+                    return ZKB.NET.ZKB.GetKillmaillAsync(new ParamModifierData[]
+                    {
+                        new ParamModifierData(ParamModifier.KillID, id.ToString()),
+                    }).Result?.FirstOrDefault();
+                }
+                var killmails = await Core.Helpers.ThreadHelper.RunAsync(ids, getZKillmail);
+                return await KBHelpers.CreateKBItemInfoAsync(killmails.ToList());
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private async Task<List<KBItemInfo>> GetItemInfosAsync(int page)
         {
             try
             {
-                var killmaills = await Helpers.ZKBHelper.GetKillmaillAsync(new List<ParamModifierData>
+                var killmails = await Helpers.ZKBHelper.GetKillmaillAsync(new List<ParamModifierData>
                     {
                         new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
                         new ParamModifierData(ParamModifier.Page, page.ToString()),
                     },page);
-                return await KBHelpers.CreateKBItemInfoAsync(killmaills);
+                return await KBHelpers.CreateKBItemInfoAsync(killmails);
             }
             catch (Exception ex)
             {
