@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -61,6 +62,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             control.Button_Victim.Content = victim;
             control.TextBlock_ISK.Text = ISKNormalizeConverter.Normalize(value.SKBDetail.Zkb.TotalValue);
             control.TextBlock_Ship.Text = value.Type.TypeName;
+            control.ImageBrush_Background.ImageSource = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.ShipTypeId, Converters.GameImageConverter.ImgType.Type, 64)));
         }
 
         private void Button_Victim_Click(object sender, RoutedEventArgs e)

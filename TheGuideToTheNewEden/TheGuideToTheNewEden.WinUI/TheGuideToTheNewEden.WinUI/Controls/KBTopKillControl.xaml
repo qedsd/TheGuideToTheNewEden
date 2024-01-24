@@ -14,30 +14,38 @@
             <Setter Property="Margin" Value="0,2" />
         </Style>
     </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <local:ImageControl
-            x:Name="Image_Avatar"
-            Width="64"
-            Height="64"
-            CornerRadius="6" />
-        <StackPanel Grid.Row="1">
-            <TextBlock x:Name="TextBlock_ISK" FontSize="12" />
-        </StackPanel>
-        <StackPanel Grid.Row="2">
-            <TextBlock x:Name="TextBlock_Ship" FontSize="12" />
-        </StackPanel>
-        <StackPanel Grid.Row="3">
-            <Button
-                x:Name="Button_Victim"
-                Click="Button_Victim_Click"
-                FontSize="12"
-                Style="{StaticResource LinkButton}" />
-        </StackPanel>
-    </Grid>
+    <Border CornerRadius="4">
+        <Border.Background>
+            <ImageBrush x:Name="ImageBrush_Background" />
+        </Border.Background>
+        <Grid Padding="4">
+            <Grid.Background>
+                <SolidColorBrush Opacity="1" Color="{ThemeResource ThemeMainColor}" />
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <local:ImageControl
+                x:Name="Image_Avatar"
+                Width="64"
+                Height="64"
+                CornerRadius="6" />
+            <StackPanel Grid.Row="1" Orientation="Vertical">
+                <StackPanel>
+                    <TextBlock x:Name="TextBlock_ISK" FontSize="12" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock x:Name="TextBlock_Ship" FontSize="12" />
+                </StackPanel>
+                <StackPanel>
+                    <Button
+                        x:Name="Button_Victim"
+                        Click="Button_Victim_Click"
+                        FontSize="12"
+                        Style="{StaticResource LinkButton}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

@@ -274,6 +274,7 @@
     <None Remove="Views\KB\KBDetailPage.xaml" />
     <None Remove="Views\KB\StatistOverviewPage.xaml" />
     <None Remove="Views\KB\StatistRecentPage.xaml" />
+    <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
@@ -490,6 +491,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\KB\StatistTopValuePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\KB\StatistRecentPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
