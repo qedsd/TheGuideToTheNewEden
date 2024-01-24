@@ -17,45 +17,50 @@
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="False"
-            AllowFiltering="True"
-            AllowGrouping="True"
+            AllowFiltering="False"
+            AllowGrouping="False"
             AllowResizingColumns="True"
-            AllowSorting="True"
+            AllowSorting="False"
             AutoExpandGroups="True"
             AutoGenerateColumns="False"
             ColumnWidthMode="Star"
             GridLinesVisibility="Horizontal"
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
             HeaderLinesVisibility="Both"
+            IsGroupDropAreaExpanded="False"
             RowHeight="50"
             SelectionChanged="DataGrid_SelectionChanged"
             SelectionMode="Single"
-            ShowGroupDropArea="True">
-            <!--<dataGrid:SfDataGrid.GroupColumnDescriptions>
-                <dataGrid:GroupColumnDescription ColumnName="Date" />
-            </dataGrid:SfDataGrid.GroupColumnDescriptions>-->
+            ShowGroupDropArea="False">
             <dataGrid:SfDataGrid.Columns>
-                <dataGrid:GridTextColumn
-                    Width="90"
-                    HeaderText="{StaticResource KBListControl_Date}"
-                    MappingName="Date" />
                 <dataGrid:GridTemplateColumn
-                    Width="70"
+                    Width="80"
                     HeaderText="{StaticResource KBListControl_Time}"
                     MappingName="SKBDetail.KillmailTime">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="kb:KBItemInfo">
                             <Grid Margin="8,4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="Light"
+                                    Text="{x:Bind SKBDetail.KillmailTime.ToShortDateString()}" />
                             </Grid>
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
                 <dataGrid:GridTemplateColumn
-                    ColumnWidthMode="Auto"
+                    Width="80"
                     HeaderText="{StaticResource KBListControl_TotalValue}"
                     MappingName="SKBDetail.Zkb.TotalValue">
                     <dataGrid:GridTemplateColumn.CellTemplate>
@@ -82,12 +87,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <Border CornerRadius="6">
-                                    <controls:ImageEx
-                                        EnableLazyLoading="True"
-                                        IsCacheEnabled="True"
-                                        Source="{x:Bind SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
-                                </Border>
+                                <local:ImageControl CornerRadius="6" Source="{x:Bind SKBDetail.Victim.ShipTypeId, Converter={StaticResource TypeImgConverter64}}" />
                                 <Grid Grid.Column="1" Margin="4,0,0,0">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />

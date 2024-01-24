@@ -106,32 +106,25 @@ namespace ZKB.NET
                     client.DefaultRequestHeaders.Add(item.Key, item.Value);
                 }
             }
-            try
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseBody;
+            if (client.DefaultRequestHeaders.TryGetValues("Accept-Encoding", out var encodes))
             {
-                HttpResponseMessage response = await client.GetAsync(url);
-                string responseBody;
-                if (client.DefaultRequestHeaders.TryGetValues("Accept-Encoding", out var encodes))
+                if (encodes.Contains("gzip"))
                 {
-                    if(encodes.Contains("gzip"))
-                    {
-                        GZipInputStream inputStream = new GZipInputStream(await response.Content.ReadAsStreamAsync());
-                        responseBody = new StreamReader(inputStream).ReadToEnd();
-                    }
-                    else
-                    {
-                        responseBody = await response.Content.ReadAsStringAsync();
-                    }
+                    GZipInputStream inputStream = new GZipInputStream(await response.Content.ReadAsStreamAsync());
+                    responseBody = new StreamReader(inputStream).ReadToEnd();
                 }
                 else
                 {
                     responseBody = await response.Content.ReadAsStringAsync();
                 }
-                return responseBody;
             }
-            catch (Exception)
+            else
             {
-                return null;
+                responseBody = await response.Content.ReadAsStringAsync();
             }
+            return responseBody;
         }
 
         public static async Task<string> GetZKBAsync(string url)

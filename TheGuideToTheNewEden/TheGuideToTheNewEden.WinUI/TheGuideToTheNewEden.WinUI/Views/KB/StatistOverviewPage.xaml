@@ -15,50 +15,56 @@
     <Grid>
         <Grid x:Name="ContentGrid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <GridView
-                    IsItemClickEnabled="True"
-                    ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
-                    SelectionMode="Single">
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <controls:KBTopKillControl KBItemInfo="{Binding}" />
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                </GridView>
-                <GridView
-                    Grid.Row="1"
-                    IsItemClickEnabled="True"
-                    ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
-                    SelectionMode="Single">
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <controls:KBTopKillControl KBItemInfo="{Binding}" />
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                </GridView>
-            </Grid>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <controls:KBListControl
-                    Grid.Row="0"
-                    KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
-                    OnItemClicked="KBListControl_OnItemClicked" />
-                <controls:NavigatePageControl
-                    Grid.Row="1"
-                    HorizontalAlignment="Right"
-                    Page="{x:Bind VM.Page, Mode=TwoWay}" />
-            </Grid>
+            <ScrollViewer>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <GridView
+                            HorizontalAlignment="Center"
+                            IsItemClickEnabled="True"
+                            ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
+                            SelectionMode="Single">
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:KBTopKillControl KBItemInfo="{Binding}" />
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                        <GridView
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            IsItemClickEnabled="True"
+                            ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
+                            SelectionMode="Single">
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:KBTopKillControl KBItemInfo="{Binding}" />
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <controls:KBListControl
+                            Grid.Row="1"
+                            KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
+                            OnItemClicked="KBListControl_OnItemClicked" />
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+            <controls:NavigatePageControl
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                Page="{x:Bind VM.Page, Mode=TwoWay}" />
         </Grid>
         <Grid
             x:Name="ProgressGrid"

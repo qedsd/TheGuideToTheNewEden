@@ -17,7 +17,7 @@ using ESI.NET.Models.Killmails;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
-    public class StatistOverviewViewModel : BaseViewModel
+    internal class StatistRecentViewModel : BaseViewModel
     {
         private ParamModifier _paramModifier;
         private Services.KBNavigationService _kbNavigationService;
@@ -25,33 +25,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         public EntityStatistic Statistic { get => _statistic; set => SetProperty(ref _statistic, value); }
         private ObservableCollection<Core.Models.KB.KBItemInfo> kbItemInfos;
         public ObservableCollection<Core.Models.KB.KBItemInfo> KBItemInfos { get => kbItemInfos; set => SetProperty(ref kbItemInfos, value); }
-        private List<Core.Models.KB.KBItemInfo> _topKillAllTime;
-        public List<Core.Models.KB.KBItemInfo> TopKillAllTime { get => _topKillAllTime; set => SetProperty(ref _topKillAllTime, value); }
-        private List<Core.Models.KB.KBItemInfo> _topKill7d;
-        public List<Core.Models.KB.KBItemInfo> TopKillA7d { get => _topKill7d; set => SetProperty(ref _topKill7d, value); }
         private int _page;
         public int Page
         {
             get => _page;
             set
             {
-                if(SetProperty(ref _page, value))
+                if (SetProperty(ref _page, value))
                 {
                     LoadPageData(value);
                 }
             }
         }
 
-        public StatistOverviewViewModel()
+        public StatistRecentViewModel()
         {
         }
         public void SetData(EntityStatistic statistic, KBNavigationService kbNavigationService)
         {
             Statistic = statistic;
             _kbNavigationService = kbNavigationService;
-            switch(_statistic.StatisticType)
+            switch (_statistic.StatisticType)
             {
-                case EntityStatisticType.Character: _paramModifier = ParamModifier.CharacterID;break;
+                case EntityStatisticType.Character: _paramModifier = ParamModifier.CharacterID; break;
                 case EntityStatisticType.Corporation: _paramModifier = ParamModifier.CorporationID; break;
                 case EntityStatisticType.Alliance: _paramModifier = ParamModifier.AllianceID; break;
                 case EntityStatisticType.Faction: _paramModifier = ParamModifier.FactionID; break;
@@ -81,62 +77,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             ShowWaiting();
             var kbList = await GetItemInfosAsync(1);
             HideWaiting();
-            if(kbList.NotNullOrEmpty())
+            if (kbList.NotNullOrEmpty())
             {
                 KBItemInfos = kbList.ToObservableCollection();
             }
             else
             {
                 KBItemInfos = new ObservableCollection<KBItemInfo>();
-            }
-            if (_statistic.TopIskKills.NotNullOrEmpty())
-            {
-                TopKillAllTime = await GetItemInfosAsync(_statistic.TopIskKills);
-            }
-            if (_statistic.TopIskKills7d.NotNullOrEmpty())
-            {
-                TopKillA7d = await GetItemInfosAsync(_statistic.TopIskKills);
-            }
-        }
-        private async Task<List<KBItemInfo>> GetItemInfosAsync(List<int> ids)
-        {
-            try
-            {
-                if (ids.NotNullOrEmpty())
-                {
-                    //ZKillmaill getZKillmail(int id)
-                    //{
-                    //    return ZKB.NET.ZKB.GetKillmaillAsync(new ParamModifierData[]
-                    //    {
-                    //        new ParamModifierData(ParamModifier.KillID, id.ToString()),
-                    //    }).Result?.FirstOrDefault();
-                    //}
-                    //var killmails = await Core.Helpers.ThreadHelper.RunAsync(ids, getZKillmail);
-                    //return await KBHelpers.CreateKBItemInfoAsync(killmails.ToList());
-                    List<ZKillmaill> killmails = new List<ZKillmaill>();
-                    foreach (var id in ids)
-                    {
-                        var km = await ZKB.NET.ZKB.GetKillmaillAsync(new ParamModifierData[]
-                        {
-                        new ParamModifierData(ParamModifier.KillID, id.ToString()),
-                        });
-                        if (km.NotNullOrEmpty())
-                        {
-                            killmails.Add(km.FirstOrDefault());
-                        }
-                    }
-                    return await KBHelpers.CreateKBItemInfoAsync(killmails);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch(Exception ex)
-            {
-                Core.Log.Error(ex);
-                ShowError(ex.Message);
-                return null;
             }
         }
 
@@ -148,7 +95,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     {
                         new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
                         new ParamModifierData(ParamModifier.Page, page.ToString()),
-                    },page);
+                    }, page);
                 return await KBHelpers.CreateKBItemInfoAsync(killmails);
             }
             catch (Exception ex)
@@ -161,17 +108,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 
         private async void LoadPageData(int page)
         {
-            if(KBItemInfos == null)
+            if (KBItemInfos == null)
             {
                 return;
             }
             KBItemInfos.Clear();
             ShowWaiting();
             var kbList = await GetItemInfosAsync(page);
-            HideWaiting() ;
+            HideWaiting();
             if (kbList.NotNullOrEmpty())
             {
-                foreach(var kb in kbList)
+                foreach (var kb in kbList)
                 {
                     KBItemInfos.Add(kb);
                 }

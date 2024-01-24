@@ -223,6 +223,7 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\ImageControl.xaml" />
     <None Remove="Controls\KBDamageControl.xaml" />
     <None Remove="Controls\KBListCharacterControl.xaml" />
     <None Remove="Controls\KBListControl.xaml" />
@@ -272,6 +273,7 @@
     <None Remove="Views\KB\EntityStatistPage.xaml" />
     <None Remove="Views\KB\KBDetailPage.xaml" />
     <None Remove="Views\KB\StatistOverviewPage.xaml" />
+    <None Remove="Views\KB\StatistRecentPage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
@@ -369,6 +371,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\KBTopKillControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ImageControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">
@@ -485,6 +490,10 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\KB\StatistRecentPage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\KB\StatistOverviewPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

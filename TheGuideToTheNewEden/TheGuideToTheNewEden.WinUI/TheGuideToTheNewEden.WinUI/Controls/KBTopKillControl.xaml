@@ -11,7 +11,7 @@
         <Style TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="Margin" Value="0,2" />
         </Style>
     </UserControl.Resources>
     <Grid>
@@ -21,24 +21,22 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <controls:ImageEx
+        <local:ImageControl
             x:Name="Image_Avatar"
             Width="64"
             Height="64"
-            CornerRadius="4"
-            EnableLazyLoading="True"
-            IsCacheEnabled="True" />
+            CornerRadius="6" />
         <StackPanel Grid.Row="1">
-            <TextBlock x:Name="TextBlock_ISK" />
-            <TextBlock Margin="8,0,0,0" Text="ISK" />
+            <TextBlock x:Name="TextBlock_ISK" FontSize="12" />
         </StackPanel>
         <StackPanel Grid.Row="2">
-            <TextBlock x:Name="TextBlock_Ship" />
+            <TextBlock x:Name="TextBlock_Ship" FontSize="12" />
         </StackPanel>
         <StackPanel Grid.Row="3">
             <Button
                 x:Name="Button_Victim"
                 Click="Button_Victim_Click"
+                FontSize="12"
                 Style="{StaticResource LinkButton}" />
         </StackPanel>
     </Grid>

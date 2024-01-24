@@ -569,10 +569,12 @@
     <x:String x:Key="EntityStatistPage_HasSupers">拥有超期</x:String>
     <x:String x:Key="EntityStatistPage_RecentActivity">最近活跃</x:String>
     <x:String x:Key="EntityStatistPage_Overview">概览</x:String>
+    <x:String x:Key="EntityStatistPage_Recent">最近</x:String>
     <x:String x:Key="EntityStatistPage_Kills">击杀</x:String>
     <x:String x:Key="EntityStatistPage_Solo">单挑</x:String>
     <x:String x:Key="EntityStatistPage_Losses">损失</x:String>
-    <x:String x:Key="EntityStatistPage_Top">最高</x:String>
-    <x:String x:Key="EntityStatistPage_GroupSummary">分类</x:String>
+    <x:String x:Key="EntityStatistPage_TopValue">最贵击杀</x:String>
+    <x:String x:Key="EntityStatistPage_TopStatist">最高统计</x:String>
+    <x:String x:Key="EntityStatistPage_GroupSummary">分类统计</x:String>
     <x:String x:Key="EntityStatistPage_SupperSummary">超期</x:String>
 </ResourceDictionary>

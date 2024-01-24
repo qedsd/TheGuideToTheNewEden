@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             _kbNavigationService = kbNavigationService;
             _statistic = statistic;
             this.InitializeComponent();
-            TabViewItem_Overview.Content = new StatistOverviewPage(_statistic, _kbNavigationService);
+            TabViewItem_Recent.Content = new StatistRecentPage(_statistic, _kbNavigationService);
             Loaded += EntityStatistPage_Loaded;
         }
 
@@ -39,8 +39,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             await VM.InitAsync();
             SetAvatar();
             SetSuper();
-            //StatistOverviewPage page = new StatistOverviewPage(_statistic, _kbNavigationService);
-            //TabViewItem_Overview.Content = page;
         }
 
         private void SetAvatar()

@@ -1,0 +1,38 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.KB.StatistRecentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:kb="using:TheGuideToTheNewEden.WinUI.ViewModels.KB"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <kb:StatistRecentViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <Grid x:Name="ContentGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <controls:KBListControl KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}" OnItemClicked="KBListControl_OnItemClicked" />
+            <controls:NavigatePageControl
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                Page="{x:Bind VM.Page, Mode=TwoWay}" />
+        </Grid>
+        <Grid
+            x:Name="ProgressGrid"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Visibility="Collapsed">
+            <Grid.Background>
+                <SolidColorBrush Opacity="0.6" Color="{ThemeResource ThemeMainColor}" />
+            </Grid.Background>
+            <ProgressRing x:Name="ProgressRing" IsActive="False" />
+        </Grid>
+    </Grid>
+</Page>
