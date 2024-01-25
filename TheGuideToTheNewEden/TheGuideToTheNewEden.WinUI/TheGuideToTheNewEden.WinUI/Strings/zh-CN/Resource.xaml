@@ -577,4 +577,7 @@
     <x:String x:Key="EntityStatistPage_TopStatist">最高统计</x:String>
     <x:String x:Key="EntityStatistPage_GroupSummary">分类统计</x:String>
     <x:String x:Key="EntityStatistPage_SupperSummary">超期</x:String>
+
+    <x:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</x:String>
+    <x:String x:Key="StatistTopValuePage_Top7dDays">最近7天最高价值KB</x:String>
 </ResourceDictionary>

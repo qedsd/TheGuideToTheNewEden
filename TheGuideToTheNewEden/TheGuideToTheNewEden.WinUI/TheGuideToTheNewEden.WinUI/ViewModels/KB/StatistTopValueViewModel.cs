@@ -57,11 +57,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             ShowWaiting();
             if (_statistic.TopIskKills.NotNullOrEmpty())
             {
-                TopKillAllTime = await GetItemInfosAsync(_statistic.TopIskKills);
+                var items = await GetItemInfosAsync(_statistic.TopIskKills);
+                if(items.NotNullOrEmpty())
+                {
+                    TopKillAllTime = items.OrderByDescending(p => p.SKBDetail.Zkb.TotalValue).ToList();
+                }
             }
             if (_statistic.TopIskKills7d.NotNullOrEmpty())
             {
-                TopKillA7d = await GetItemInfosAsync(_statistic.TopIskKills);
+                var items = await GetItemInfosAsync(_statistic.TopIskKills7d);
+                if (items.NotNullOrEmpty())
+                {
+                    TopKillA7d = items.OrderByDescending(p => p.SKBDetail.Zkb.TotalValue).ToList();
+                }
             }
             HideWaiting();
         }

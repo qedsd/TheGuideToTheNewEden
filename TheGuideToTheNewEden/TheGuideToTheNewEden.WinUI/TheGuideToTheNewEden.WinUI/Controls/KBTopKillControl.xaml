@@ -15,13 +15,13 @@
         </Style>
     </UserControl.Resources>
     <Border CornerRadius="4">
-        <Border.Background>
+        <!--<Border.Background>
             <ImageBrush x:Name="ImageBrush_Background" />
-        </Border.Background>
-        <Grid Padding="4">
-            <Grid.Background>
-                <SolidColorBrush Opacity="1" Color="{ThemeResource ThemeMainColor}" />
-            </Grid.Background>
+        </Border.Background>-->
+        <Grid Padding="4" Background="{ThemeResource ContentBackgroudBrush}">
+            <!--<Grid.Background>
+                <SolidColorBrush Opacity="1" Color="{ThemeResource ContentBackgroudBrush}" />
+            </Grid.Background>-->
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

@@ -34,10 +34,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         {
             Loaded -= StatistTopValuePage_Loaded;
             _window = this.GetWindow();
-            VM.SetData(_statistic, _kbNavigationService);
             VM.SetWaitingAction(
                 () => ShowWaiting(),
                 () => HideWaiting());
+            VM.SetData(_statistic, _kbNavigationService);
         }
         private void ShowWaiting()
         {

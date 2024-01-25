@@ -12,36 +12,75 @@
     <Page.DataContext>
         <kb:StatistTopValueViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <GridView
-                HorizontalAlignment="Center"
-                IsItemClickEnabled="True"
-                ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
-                SelectionMode="Single">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <controls:KBTopKillControl Width="140" KBItemInfo="{Binding}" />
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
-            <GridView
-                Grid.Row="1"
-                HorizontalAlignment="Center"
-                IsItemClickEnabled="True"
-                ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
-                SelectionMode="Single">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <controls:KBTopKillControl KBItemInfo="{Binding}" />
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
-        </Grid>
+    <Page.Resources>
+        <Style x:Key="TextBlock_Header" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Light" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </Page.Resources>
+    <Grid Margin="8">
+        <ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid x:Name="Grid_TopAllTime" Visibility="{x:Bind VM.TopKillAllTime, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Style="{StaticResource TextBlock_Header}" Text="{StaticResource StatistTopValuePage_TopAllTime}" />
+                    <GridView
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        IsItemClickEnabled="True"
+                        ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
+                        SelectionMode="None">
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Padding" Value="6" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <controls:KBTopKillControl Width="140" KBItemInfo="{Binding}" />
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </Grid>
+                <Grid
+                    x:Name="Grid_Top7dDays"
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    Visibility="{x:Bind VM.TopKillA7d, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Style="{StaticResource TextBlock_Header}" Text="{StaticResource StatistTopValuePage_Top7dDays}" />
+                    <GridView
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        IsItemClickEnabled="True"
+                        ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
+                        SelectionMode="None">
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Padding" Value="6" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <controls:KBTopKillControl Width="140" KBItemInfo="{Binding}" />
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
         <Grid
             x:Name="ProgressGrid"
             HorizontalAlignment="Stretch"
