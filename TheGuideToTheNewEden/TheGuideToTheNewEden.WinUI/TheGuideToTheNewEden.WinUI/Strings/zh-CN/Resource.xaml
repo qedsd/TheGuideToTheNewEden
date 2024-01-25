@@ -568,6 +568,7 @@
     <x:String x:Key="EntityStatistPage_GangRatio">抱团概率</x:String>
     <x:String x:Key="EntityStatistPage_HasSupers">拥有超期</x:String>
     <x:String x:Key="EntityStatistPage_RecentActivity">最近活跃</x:String>
+    <x:String x:Key="EntityStatistPage_KBList">KB列表</x:String>
     <x:String x:Key="EntityStatistPage_Overview">概览</x:String>
     <x:String x:Key="EntityStatistPage_Recent">最近</x:String>
     <x:String x:Key="EntityStatistPage_Kills">击杀</x:String>
@@ -580,4 +581,14 @@
 
     <x:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</x:String>
     <x:String x:Key="StatistTopValuePage_Top7dDays">最近7天最高价值KB</x:String>
+
+    <x:String x:Key="StatistKBListPage_KBModifier">类型</x:String>
+    <x:String x:Key="StatistKBListPage_All">所有</x:String>
+    <x:String x:Key="StatistKBListPage_Kills">击杀</x:String>
+    <x:String x:Key="StatistKBListPage_Losses">损失</x:String>
+    <x:String x:Key="StatistKBListPage_Wormhole">虫洞</x:String>
+    <x:String x:Key="StatistKBListPage_Solo">单挑</x:String>
+    <x:String x:Key="StatistKBListPage_Finalblow">最后一击</x:String>
+    <x:String x:Key="StatistKBListPage_Awox">Awox</x:String>
+    <x:String x:Key="StatistKBListPage_Npc">Npc</x:String>
 </ResourceDictionary>

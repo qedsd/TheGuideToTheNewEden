@@ -330,12 +330,9 @@
             IsAddTabButtonVisible="False"
             TabWidthMode="Equal">
             <TabViewItem
-                x:Name="TabViewItem_Recent"
-                Header="{StaticResource EntityStatistPage_Recent}"
+                x:Name="TabViewItem_List"
+                Header="{StaticResource EntityStatistPage_KBList}"
                 IsClosable="False" />
-            <TabViewItem Header="{StaticResource EntityStatistPage_Kills}" IsClosable="False" />
-            <TabViewItem Header="{StaticResource EntityStatistPage_Solo}" IsClosable="False" />
-            <TabViewItem Header="{StaticResource EntityStatistPage_Losses}" IsClosable="False" />
             <TabViewItem
                 x:Name="TabViewItem_TopValue"
                 Header="{StaticResource EntityStatistPage_TopValue}"

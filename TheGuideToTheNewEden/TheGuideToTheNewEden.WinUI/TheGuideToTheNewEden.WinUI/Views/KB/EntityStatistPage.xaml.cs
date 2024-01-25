@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             _kbNavigationService = kbNavigationService;
             _statistic = statistic;
             this.InitializeComponent();
-            TabViewItem_Recent.Content = new StatistRecentPage(_statistic, _kbNavigationService);
+            TabViewItem_List.Content = new StatistKBListPage(_statistic, _kbNavigationService);
             TabViewItem_TopValue.Content = new StatistTopValuePage(_statistic, _kbNavigationService);
             Loaded += EntityStatistPage_Loaded;
         }
