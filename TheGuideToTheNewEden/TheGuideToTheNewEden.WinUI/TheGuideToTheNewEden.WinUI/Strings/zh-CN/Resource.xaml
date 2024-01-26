@@ -591,4 +591,12 @@
     <x:String x:Key="StatistKBListPage_Finalblow">最后一击</x:String>
     <x:String x:Key="StatistKBListPage_Awox">Awox</x:String>
     <x:String x:Key="StatistKBListPage_Npc">Npc</x:String>
+
+    <x:String x:Key="StatistTopAllTimePage_Character">最高击杀玩家</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Corporation">最高击杀军团</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Alliance">最高击杀联盟</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Faction">最高击杀势力</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Ship">最高击杀舰船</x:String>
+    <x:String x:Key="StatistTopAllTimePage_System">最高击杀星系</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Kills">击杀数</x:String>
 </ResourceDictionary>

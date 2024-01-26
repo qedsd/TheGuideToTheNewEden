@@ -1,0 +1,78 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.KB.StatistTopAllTimePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:kb="using:TheGuideToTheNewEden.WinUI.ViewModels.KB"
+    xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <kb:StatistTopAllTimeViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <Grid x:Name="ContentGrid">
+            <GridView ItemsSource="{x:Bind VM.KillStatisticInfos, Mode=OneWay}">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="6" />
+                        <Setter Property="VerticalContentAlignment" Value="Top" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="kb1:KillStatisticInfo">
+                        <Grid Width="260" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{x:Bind Type}" />
+                            <TextBlock HorizontalAlignment="Right" Text="{StaticResource StatistTopAllTimePage_Kills}" />
+                            <ListView Grid.Row="2" ItemsSource="{x:Bind KillDataInfos}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:ImageControl
+                                                Width="32"
+                                                Height="32"
+                                                Source="{Binding ImgUrl}" />
+                                            <Button
+                                                Grid.Column="1"
+                                                Click="Button_Click"
+                                                Content="{Binding Name}"
+                                                Style="{StaticResource LinkButton}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                Margin="4,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding Kills, Converter={StaticResource ISKNormalizeConverter}}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+        <Grid
+            x:Name="ProgressGrid"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Visibility="Collapsed">
+            <Grid.Background>
+                <SolidColorBrush Opacity="0.6" Color="{ThemeResource ThemeMainColor}" />
+            </Grid.Background>
+            <ProgressRing x:Name="ProgressRing" IsActive="False" />
+        </Grid>
+    </Grid>
+</Page>

@@ -275,6 +275,7 @@
     <None Remove="Views\KB\StatistKBListPage.xaml" />
     <None Remove="Views\KB\StatistOverviewPage.xaml" />
     <None Remove="Views\KB\StatistRecentPage.xaml" />
+    <None Remove="Views\KB\StatistTopAllTimePage.xaml" />
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
@@ -492,6 +493,10 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\KB\StatistTopAllTimePage.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\KB\StatistKBListPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

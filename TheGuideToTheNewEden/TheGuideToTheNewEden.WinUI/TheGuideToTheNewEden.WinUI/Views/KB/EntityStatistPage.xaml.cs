@@ -30,6 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             this.InitializeComponent();
             TabViewItem_List.Content = new StatistKBListPage(_statistic, _kbNavigationService);
             TabViewItem_TopValue.Content = new StatistTopValuePage(_statistic, _kbNavigationService);
+            TabViewItem_TopAllTime.Content = new StatistTopAllTimePage(_statistic, _kbNavigationService);
             Loaded += EntityStatistPage_Loaded;
         }
 

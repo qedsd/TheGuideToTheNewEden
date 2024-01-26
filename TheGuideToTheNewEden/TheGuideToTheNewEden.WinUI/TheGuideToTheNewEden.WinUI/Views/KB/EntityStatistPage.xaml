@@ -337,7 +337,10 @@
                 x:Name="TabViewItem_TopValue"
                 Header="{StaticResource EntityStatistPage_TopValue}"
                 IsClosable="False" />
-            <TabViewItem Header="{StaticResource EntityStatistPage_TopStatist}" IsClosable="False" />
+            <TabViewItem
+                x:Name="TabViewItem_TopAllTime"
+                Header="{StaticResource EntityStatistPage_TopStatist}"
+                IsClosable="False" />
             <TabViewItem Header="{StaticResource EntityStatistPage_GroupSummary}" IsClosable="False" />
             <TabViewItem Header="{StaticResource EntityStatistPage_SupperSummary}" IsClosable="False" />
         </TabView>
