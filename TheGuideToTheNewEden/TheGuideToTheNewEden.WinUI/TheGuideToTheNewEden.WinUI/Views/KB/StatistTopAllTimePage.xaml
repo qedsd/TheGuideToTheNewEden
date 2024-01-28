@@ -30,9 +30,11 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Text="{x:Bind Type}" />
-                            <TextBlock HorizontalAlignment="Right" Text="{StaticResource StatistTopAllTimePage_Kills}" />
-                            <ListView Grid.Row="2" ItemsSource="{x:Bind KillDataInfos}">
+                            <Grid Margin="8,4">
+                                <TextBlock Text="{x:Bind Type}" />
+                                <TextBlock HorizontalAlignment="Right" Text="{StaticResource StatistTopAllTimePage_Kills}" />
+                            </Grid>
+                            <ListView Grid.Row="1" ItemsSource="{x:Bind KillDataInfos}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <Grid>
@@ -47,6 +49,7 @@
                                                 Source="{Binding ImgUrl}" />
                                             <Button
                                                 Grid.Column="1"
+                                                Margin="4,0,0,0"
                                                 Click="Button_Click"
                                                 Content="{Binding Name}"
                                                 Style="{StaticResource LinkButton}" />

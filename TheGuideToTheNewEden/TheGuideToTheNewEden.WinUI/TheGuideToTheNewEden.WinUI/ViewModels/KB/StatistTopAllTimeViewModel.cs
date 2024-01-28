@@ -31,27 +31,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     List<KillStatisticInfo> infos = new List<KillStatisticInfo>();
                     foreach (var datas in Statistic.TopAllTime)
                     {
-                        KillStatisticInfo info;
-                        switch (datas.Type)
+                        if(datas != null && datas.Datas.NotNullOrEmpty())
                         {
-                            case "character":
-                            case "corporation":
-                            case "alliance":
-                            case "faction":
-                                {
-                                    info = GetInfoByIdName(datas);
-                                }
-                                break;
-                            case "ship": info = GetInfoOfShip(datas); break;
-                            case "system": info = GetInfoOfSystem(datas); break;
-                            default:
-                                {
-                                    Core.Log.Error($"Unknown TopAllTime Type :{datas.Type}");
-                                    continue;
-                                };
+                            KillStatisticInfo info;
+                            switch (datas.Type)
+                            {
+                                case "character":
+                                case "corporation":
+                                case "alliance":
+                                case "faction":
+                                    {
+                                        info = GetInfoByIdName(datas);
+                                    }
+                                    break;
+                                case "ship": info = GetInfoOfShip(datas); break;
+                                case "system": info = GetInfoOfSystem(datas); break;
+                                default:
+                                    {
+                                        Core.Log.Error($"Unknown TopAllTime Type :{datas.Type}");
+                                        continue;
+                                    };
+                            }
+                            infos.Add(info);
                         }
-                        //info.Type = Helpers.ResourcesHelper.GetString($"StatistTopAllTimePage_{datas.Type}");
-                        infos.Add(info);
                     }
                     return infos;
                 });
@@ -59,10 +61,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                 {
                     foreach(var data in list)
                     {
-                        data.Type = Helpers.ResourcesHelper.GetString($"StatistTopAllTimePage_{data.Type}");
+                        data.Type = Helpers.ResourcesHelper.GetString($"StatistTopAllTimePage_{data.Type.Substring(0, 1).ToUpper() + data.Type.Substring(1)}");
                     }
                 }
-                KillStatisticInfos = list;
+                KillStatisticInfos = list.OrderByDescending(p=>p.KillDataInfos.Count).ToList();
             }
             HideWaiting();
         }
