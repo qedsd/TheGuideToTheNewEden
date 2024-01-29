@@ -52,6 +52,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                                         continue;
                                     };
                             }
+                            for(int i = 0; i< info.KillDataInfos.Count;i++)
+                            {
+                                info.KillDataInfos[i].No = i + 1;
+                            }
                             infos.Add(info);
                         }
                     }

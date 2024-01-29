@@ -599,4 +599,5 @@
     <x:String x:Key="StatistTopAllTimePage_Ship">最高击杀舰船</x:String>
     <x:String x:Key="StatistTopAllTimePage_System">最高击杀星系</x:String>
     <x:String x:Key="StatistTopAllTimePage_Kills">击杀数</x:String>
+    <x:String x:Key="StatistTopAllTimePage_No">排名</x:String>
 </ResourceDictionary>
