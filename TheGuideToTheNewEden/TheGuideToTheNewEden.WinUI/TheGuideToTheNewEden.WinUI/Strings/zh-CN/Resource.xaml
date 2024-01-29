@@ -577,6 +577,7 @@
     <x:String x:Key="EntityStatistPage_TopValue">最贵击杀</x:String>
     <x:String x:Key="EntityStatistPage_TopStatist">最高统计</x:String>
     <x:String x:Key="EntityStatistPage_GroupSummary">分类统计</x:String>
+    <x:String x:Key="EntityStatistPage_MonthSummary">月份统计</x:String>
     <x:String x:Key="EntityStatistPage_SupperSummary">超期</x:String>
 
     <x:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</x:String>
@@ -604,4 +605,13 @@
     <x:String x:Key="StatistGroupPage_No">击杀排名</x:String>
     <x:String x:Key="StatistGroupPage_Kills">击杀数</x:String>
     <x:String x:Key="StatistGroupPage_Losses">损失数</x:String>
+
+    <x:String x:Key="StatistMonthPage_Year">年</x:String>
+    <x:String x:Key="StatistMonthPage_Month">月</x:String>
+    <x:String x:Key="StatistMonthPage_ItemDestroyed">击杀舰船</x:String>
+    <x:String x:Key="StatistMonthPage_PointsDestroyed">击杀点数</x:String>
+    <x:String x:Key="StatistMonthPage_IskDestroyed">击杀ISK</x:String>
+    <x:String x:Key="StatistMonthPage_ItemLost">损失舰船</x:String>
+    <x:String x:Key="StatistMonthPage_PointsLost">损失点数</x:String>
+    <x:String x:Key="StatistMonthPage_IskLost">损失ISK</x:String>
 </ResourceDictionary>

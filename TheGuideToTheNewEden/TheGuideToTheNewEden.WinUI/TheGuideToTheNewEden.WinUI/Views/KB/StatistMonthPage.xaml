@@ -1,0 +1,147 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.KB.StatistMonthPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:kb="using:TheGuideToTheNewEden.WinUI.ViewModels.KB"
+    xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
+    xmlns:kb2="using:ZKB.NET.Models.Statistics"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ContentBackgroudBrush}"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <kb:StatistMonthViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <dataGrid:SfDataGrid
+            HorizontalAlignment="Stretch"
+            AllowDraggingColumns="True"
+            AllowEditing="False"
+            AllowFiltering="False"
+            AllowGrouping="False"
+            AllowResizingColumns="True"
+            AllowSorting="False"
+            AutoExpandGroups="True"
+            AutoGenerateColumns="False"
+            ColumnWidthMode="Star"
+            GridLinesVisibility="Horizontal"
+            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+            HeaderLinesVisibility="Both"
+            IsGroupDropAreaExpanded="False"
+            ItemsSource="{x:Bind VM.Statistic.Months, Mode=OneWay}"
+            RowHeight="50"
+            SelectionMode="Single"
+            ShowGroupDropArea="False">
+            <dataGrid:SfDataGrid.GroupColumnDescriptions>
+                <dataGrid:GroupColumnDescription ColumnName="Year" />
+            </dataGrid:SfDataGrid.GroupColumnDescriptions>
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTemplateColumn
+                    Width="80"
+                    HeaderText="{StaticResource StatistMonthPage_Year}"
+                    MappingName="Year">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="{Binding Year}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn
+                    Width="80"
+                    HeaderText="{StaticResource StatistMonthPage_Month}"
+                    MappingName="Year">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="{Binding Month}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_ItemDestroyed}" MappingName="ItemDestroyed">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="MediumSeaGreen"
+                                Text="{Binding ItemDestroyed, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_PointsDestroyed}" MappingName="PointsDestroyed">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="MediumSeaGreen"
+                                Text="{Binding PointsDestroyed, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_IskDestroyed}" MappingName="IskDestroyed">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="MediumSeaGreen"
+                                Text="{Binding IskDestroyed, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_ItemLost}" MappingName="ItemLost">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="OrangeRed"
+                                Text="{Binding ItemLost, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_PointsLost}" MappingName="PointsLost">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="OrangeRed"
+                                Text="{Binding PointsLost, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_IskLost}" MappingName="IskLost">
+                    <dataGrid:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="OrangeRed"
+                                Text="{Binding IskLost, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </DataTemplate>
+                    </dataGrid:GridTemplateColumn.CellTemplate>
+                </dataGrid:GridTemplateColumn>
+            </dataGrid:SfDataGrid.Columns>
+        </dataGrid:SfDataGrid>
+        <Grid
+            x:Name="ProgressGrid"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Visibility="Collapsed">
+            <Grid.Background>
+                <SolidColorBrush Opacity="0.6" Color="{ThemeResource ThemeMainColor}" />
+            </Grid.Background>
+            <ProgressRing x:Name="ProgressRing" IsActive="False" />
+        </Grid>
+    </Grid>
+</Page>

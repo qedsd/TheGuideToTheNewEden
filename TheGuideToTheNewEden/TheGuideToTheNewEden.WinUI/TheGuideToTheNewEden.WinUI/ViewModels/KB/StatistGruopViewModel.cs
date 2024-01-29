@@ -24,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         public override async Task InitAsync()
         {
             ShowWaiting();
-            if(Statistic.TopAllTime.NotNullOrEmpty())
+            if(Statistic.Groups.NotNullOrEmpty())
             {
                 var list = await Task.Run(() =>
                 {

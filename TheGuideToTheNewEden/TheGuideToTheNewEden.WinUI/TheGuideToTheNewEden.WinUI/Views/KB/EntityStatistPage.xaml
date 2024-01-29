@@ -345,7 +345,14 @@
                 x:Name="TabViewItem_Group"
                 Header="{StaticResource EntityStatistPage_GroupSummary}"
                 IsClosable="False" />
-            <TabViewItem Header="{StaticResource EntityStatistPage_SupperSummary}" IsClosable="False" />
+            <TabViewItem
+                x:Name="TabViewItem_Month"
+                Header="{StaticResource EntityStatistPage_MonthSummary}"
+                IsClosable="False" />
+            <TabViewItem
+                x:Name="TabViewItem_Supper"
+                Header="{StaticResource EntityStatistPage_SupperSummary}"
+                IsClosable="False" />
         </TabView>
     </Grid>
 </Page>
