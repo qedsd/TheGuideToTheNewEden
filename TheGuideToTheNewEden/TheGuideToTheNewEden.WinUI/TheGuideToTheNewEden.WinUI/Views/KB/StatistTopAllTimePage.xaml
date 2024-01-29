@@ -32,7 +32,7 @@
                             <GridView HorizontalAlignment="Stretch" ItemsSource="{Binding KillDataInfos}">
                                 <GridView.ItemContainerStyle>
                                     <Style TargetType="GridViewItem">
-                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="Margin" Value="4,0" />
                                         <Setter Property="Padding" Value="0" />
                                     </Style>
                                 </GridView.ItemContainerStyle>

@@ -57,6 +57,16 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return items;
         }
+        public static List<InvGroup> QueryGroups(List<int> ids)
+        {
+            var items = DBService.MainDb.Queryable<InvGroup>().Where(p => ids.Contains(p.GroupID)).ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranInvGroups(items);
+            }
+            return items;
+        }
+
         /// <summary>
         /// 获取每个技能组的id、name、包含的skill id
         /// 不对Skills赋值

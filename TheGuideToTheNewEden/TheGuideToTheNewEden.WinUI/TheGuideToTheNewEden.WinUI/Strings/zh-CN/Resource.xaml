@@ -600,4 +600,8 @@
     <x:String x:Key="StatistTopAllTimePage_System">最高击杀星系</x:String>
     <x:String x:Key="StatistTopAllTimePage_Kills">击杀数</x:String>
     <x:String x:Key="StatistTopAllTimePage_No">排名</x:String>
+
+    <x:String x:Key="StatistGroupPage_No">击杀排名</x:String>
+    <x:String x:Key="StatistGroupPage_Kills">击杀数</x:String>
+    <x:String x:Key="StatistGroupPage_Losses">损失数</x:String>
 </ResourceDictionary>
