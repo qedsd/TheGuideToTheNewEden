@@ -208,17 +208,25 @@
                     <StackPanel Style="{StaticResource StackPanel_ListInfo}">
                         <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_DangerRatio}" />
                         <TextBlock Style="{StaticResource TextBlock_Split}" />
-                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.DangerRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.DangerRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="%" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource StackPanel_ListInfo}" Visibility="{x:Bind VM.Statistic.Info, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
                         <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_GangRatio}" />
                         <TextBlock Style="{StaticResource TextBlock_Split}" />
-                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.GangRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock Style="{StaticResource TextBlock_Value}" Text="{x:Bind VM.Statistic.GangRatio, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
                     </StackPanel>
                     <StackPanel x:Name="StackPanel_HasSupers" Style="{StaticResource StackPanel_ListInfo}">
                         <TextBlock Style="{StaticResource TextBlock_ListInfoNmae}" Text="{StaticResource EntityStatistPage_HasSupers}" />
                         <TextBlock Style="{StaticResource TextBlock_Split}" />
                         <TextBlock x:Name="TextBlock_HasSupers" Style="{StaticResource TextBlock_Value}" />
+                        <TextBlock
+                            Margin="2,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="%" />
                     </StackPanel>
                 </StackPanel>
                 <Grid

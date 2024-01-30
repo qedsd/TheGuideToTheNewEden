@@ -5,6 +5,7 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:grids="using:Syncfusion.UI.Xaml.Grids"
     xmlns:kb="using:TheGuideToTheNewEden.WinUI.ViewModels.KB"
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:kb2="using:ZKB.NET.Models.Statistics"
@@ -21,9 +22,9 @@
             AllowDraggingColumns="True"
             AllowEditing="False"
             AllowFiltering="False"
-            AllowGrouping="False"
+            AllowGrouping="True"
             AllowResizingColumns="True"
-            AllowSorting="False"
+            AllowSorting="True"
             AutoExpandGroups="True"
             AutoGenerateColumns="False"
             ColumnWidthMode="Star"
@@ -33,11 +34,17 @@
             IsGroupDropAreaExpanded="False"
             ItemsSource="{x:Bind VM.Statistic.Months, Mode=OneWay}"
             RowHeight="50"
-            SelectionMode="Single"
-            ShowGroupDropArea="False">
+            SelectionMode="None"
+            ShowGroupDropArea="True">
             <dataGrid:SfDataGrid.GroupColumnDescriptions>
                 <dataGrid:GroupColumnDescription ColumnName="Year" />
             </dataGrid:SfDataGrid.GroupColumnDescriptions>
+            <dataGrid:SfDataGrid.SortColumnDescriptions>
+                <grids:SortColumnDescriptions>
+                    <grids:SortColumnDescription ColumnName="Month" SortDirection="Descending" />
+                    <grids:SortColumnDescription ColumnName="Year" SortDirection="Descending" />
+                </grids:SortColumnDescriptions>
+            </dataGrid:SfDataGrid.SortColumnDescriptions>
             <dataGrid:SfDataGrid.Columns>
                 <dataGrid:GridTemplateColumn
                     Width="80"
@@ -55,7 +62,7 @@
                 <dataGrid:GridTemplateColumn
                     Width="80"
                     HeaderText="{StaticResource StatistMonthPage_Month}"
-                    MappingName="Year">
+                    MappingName="Month">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -65,7 +72,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_ItemDestroyed}" MappingName="ItemDestroyed">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_ItemDestroyed}"
+                    MappingName="ItemDestroyed">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -76,7 +86,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_PointsDestroyed}" MappingName="PointsDestroyed">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_PointsDestroyed}"
+                    MappingName="PointsDestroyed">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -87,7 +100,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_IskDestroyed}" MappingName="IskDestroyed">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_IskDestroyed}"
+                    MappingName="IskDestroyed">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -98,7 +114,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_ItemLost}" MappingName="ItemLost">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_ItemLost}"
+                    MappingName="ItemLost">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -109,7 +128,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_PointsLost}" MappingName="PointsLost">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_PointsLost}"
+                    MappingName="PointsLost">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
@@ -120,7 +142,10 @@
                         </DataTemplate>
                     </dataGrid:GridTemplateColumn.CellTemplate>
                 </dataGrid:GridTemplateColumn>
-                <dataGrid:GridTemplateColumn HeaderText="{StaticResource StatistMonthPage_IskLost}" MappingName="IskLost">
+                <dataGrid:GridTemplateColumn
+                    AllowGrouping="False"
+                    HeaderText="{StaticResource StatistMonthPage_IskLost}"
+                    MappingName="IskLost">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock
