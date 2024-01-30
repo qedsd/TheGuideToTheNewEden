@@ -575,10 +575,10 @@
     <x:String x:Key="EntityStatistPage_Solo">单挑</x:String>
     <x:String x:Key="EntityStatistPage_Losses">损失</x:String>
     <x:String x:Key="EntityStatistPage_TopValue">最贵击杀</x:String>
-    <x:String x:Key="EntityStatistPage_TopStatist">最高统计</x:String>
+    <x:String x:Key="EntityStatistPage_TopStatist">最高击杀</x:String>
     <x:String x:Key="EntityStatistPage_GroupSummary">分类统计</x:String>
     <x:String x:Key="EntityStatistPage_MonthSummary">月份统计</x:String>
-    <x:String x:Key="EntityStatistPage_SupperSummary">超期</x:String>
+    <x:String x:Key="EntityStatistPage_SupperSummary">超期击杀</x:String>
 
     <x:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</x:String>
     <x:String x:Key="StatistTopValuePage_Top7dDays">最近7天最高价值KB</x:String>
@@ -614,4 +614,9 @@
     <x:String x:Key="StatistMonthPage_ItemLost">损失舰船</x:String>
     <x:String x:Key="StatistMonthPage_PointsLost">损失点数</x:String>
     <x:String x:Key="StatistMonthPage_IskLost">损失ISK</x:String>
+
+    <x:String x:Key="StatistSuperPage_Titan">泰坦</x:String>
+    <x:String x:Key="StatistSuperPage_Supercarrier">大航</x:String>
+    <x:String x:Key="StatistSuperPage_No">击杀排名</x:String>
+    <x:String x:Key="StatistSuperPage_Kills">击杀数</x:String>
 </ResourceDictionary>

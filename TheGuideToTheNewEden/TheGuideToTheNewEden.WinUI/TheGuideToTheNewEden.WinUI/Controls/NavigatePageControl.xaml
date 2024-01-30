@@ -12,7 +12,7 @@
         <NumberBox
             x:Name="PageBox"
             BorderBrush="{ThemeResource SystemAccentColor}"
-            CornerRadius="8"
+            CornerRadius="6"
             SpinButtonPlacementMode="Inline"
             ValueChanged="PageBox_ValueChanged"
             Value="1" />
@@ -21,14 +21,14 @@
             Margin="8,0,0,0"
             Click="GoButton_Click"
             Content="Go"
-            CornerRadius="8"
+            CornerRadius="6"
             Style="{ThemeResource AccentButtonStyle}" />
         <Button
             x:Name="PreButton"
             Height="32"
             Margin="8,0,0,0"
             Click="PreButton_Click"
-            CornerRadius="8">
+            CornerRadius="6">
             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00E;" />
         </Button>
         <Button
@@ -36,7 +36,7 @@
             Height="32"
             Margin="8,0,0,0"
             Click="NextButton_Click"
-            CornerRadius="8">
+            CornerRadius="6">
             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00F;" />
         </Button>
     </StackPanel>

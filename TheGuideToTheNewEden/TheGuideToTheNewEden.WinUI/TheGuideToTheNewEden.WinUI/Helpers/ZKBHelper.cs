@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             paramModifiers.Add(new ParamModifierData(ParamModifier.Page, zkbPage.ToString()));
             var totalKillmaills = await ZKB.NET.ZKB.GetKillmaillAsync(paramModifiers.ToArray(), typeModifiers);
-            return totalKillmaills.Skip((page - 1) * _targetItems).Take(_targetItems).ToList();
+            return totalKillmaills.Skip((page % 4 - 1) * _targetItems).Take(_targetItems).ToList();
         }
     }
 }

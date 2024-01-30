@@ -33,6 +33,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             TabViewItem_TopAllTime.Content = new StatistTopAllTimePage(_statistic, _kbNavigationService);
             TabViewItem_Group.Content = new StatistGroupPage(_statistic, _kbNavigationService);
             TabViewItem_Month.Content = new StatistMonthPage(_statistic, _kbNavigationService);
+            if(statistic.Supers == null)
+            {
+                TabView_Statist.TabItems.Remove(TabViewItem_Supper);
+            }
+            else
+            {
+                TabViewItem_Supper.Content = new StatistSuperPage(_statistic, _kbNavigationService);
+            }
             Loaded += EntityStatistPage_Loaded;
         }
 
