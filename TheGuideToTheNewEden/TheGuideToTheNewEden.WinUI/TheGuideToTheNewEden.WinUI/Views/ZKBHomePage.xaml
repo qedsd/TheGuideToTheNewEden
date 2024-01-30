@@ -37,11 +37,11 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock
-                                        Grid.Column="1"
-                                        Margin="4,0,0,0"
-                                        Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
+                                        Text="{Binding Name}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTipService.ToolTip="{Binding Id}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
                                 </Grid>
                             </DataTemplate>
                         </AutoSuggestBox.ItemTemplate>
@@ -59,7 +59,10 @@
                         <BitmapIconSource ShowAsMonochrome="False" UriSource="Resources\Images\LinkIcons\zkb.jpg" />
                     </TabViewItem.IconSource>
                     <TabViewItem.Content>
-                        <controls:KBListControl KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}" OnItemClicked="KBListControl_OnItemClicked" />
+                        <controls:KBListControl
+                            IdNameClicked="KBListControl_IdNameClicked"
+                            KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
+                            OnItemClicked="KBListControl_OnItemClicked" />
                     </TabViewItem.Content>
                 </TabViewItem>
             </TabView.TabItems>

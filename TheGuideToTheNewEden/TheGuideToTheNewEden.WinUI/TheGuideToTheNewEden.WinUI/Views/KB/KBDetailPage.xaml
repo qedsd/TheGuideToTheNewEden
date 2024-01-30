@@ -116,14 +116,12 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <Button
-                            Command="{x:Bind VM.CheckTypeCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Type.TypeID}"
+                            Click="Button_Type_Click"
                             Content="{x:Bind VM.KBItemInfo.Type.TypeName, Mode=OneWay}"
                             Style="{StaticResource LinkButton}" />
                         <TextBlock Text="(" />
                         <Button
-                            Command="{x:Bind VM.CheckGroupCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Group.GroupID}"
+                            Click="Button_Group_Click"
                             Content="{x:Bind VM.KBItemInfo.Group.GroupName, Mode=OneWay}"
                             Style="{StaticResource LinkButton}" />
                         <TextBlock Text=")" />
@@ -133,8 +131,7 @@
                     <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.KillmailTime}" />
                     <StackPanel Orientation="Horizontal">
                         <Button
-                            Command="{x:Bind VM.CheckSystemCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.SolarSystem.SolarSystemID}"
+                            Click="Button_System_Click"
                             Content="{x:Bind VM.KBItemInfo.SolarSystem.SolarSystemName, Mode=OneWay}"
                             Style="{StaticResource LinkButton}" />
                         <TextBlock
@@ -146,8 +143,7 @@
                             FontWeight="Light"
                             Text="&lt;" />
                         <Button
-                            Command="{x:Bind VM.CheckRegionCommand}"
-                            CommandParameter="{x:Bind VM.KBItemInfo.Region.RegionID}"
+                            Click="Button_Region_Click"
                             Content="{x:Bind VM.KBItemInfo.Region.RegionName, Mode=OneWay}"
                             Style="{StaticResource LinkButton}" />
                     </StackPanel>
@@ -266,15 +262,21 @@
                     </StackPanel>
                 </Grid>
                 <ScrollViewer Grid.Row="1">
-                    <StackPanel>
+                    <StackPanel Margin="0,0,8,0">
                         <StackPanel Visibility="{x:Bind VM.Solo, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
                             <StackPanel>
                                 <TextBlock FontSize="12" Text="{StaticResource KB_FinalBlow}" />
-                                <controls1:KBDamageControl Margin="0,4" Attacker="{x:Bind VM.FinalBlow, Mode=OneWay}" />
+                                <controls1:KBDamageControl
+                                    Margin="0,4"
+                                    Attacker="{x:Bind VM.FinalBlow, Mode=OneWay}"
+                                    IdNameClicked="KBDamageControl_IdNameClicked" />
                             </StackPanel>
                             <StackPanel>
                                 <TextBlock FontSize="12" Text="{StaticResource KB_TopDamage}" />
-                                <controls1:KBDamageControl Margin="0,4" Attacker="{x:Bind VM.TopDamage, Mode=OneWay}" />
+                                <controls1:KBDamageControl
+                                    Margin="0,4"
+                                    Attacker="{x:Bind VM.TopDamage, Mode=OneWay}"
+                                    IdNameClicked="KBDamageControl_IdNameClicked" />
                             </StackPanel>
                             <Rectangle
                                 Height="1"
@@ -287,7 +289,10 @@
                             ItemsSource="{x:Bind VM.AttackerInfos, Mode=OneWay}">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="kb1:AttackerInfo">
-                                    <controls1:KBDamageControl Margin="0,4" Attacker="{Binding}" />
+                                    <controls1:KBDamageControl
+                                        Margin="0,4"
+                                        Attacker="{Binding}"
+                                        IdNameClicked="KBDamageControl_IdNameClicked" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>

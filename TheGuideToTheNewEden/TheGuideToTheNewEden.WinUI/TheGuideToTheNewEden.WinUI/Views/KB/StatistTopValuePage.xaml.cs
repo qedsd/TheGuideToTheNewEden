@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -54,6 +56,22 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
                 ProgressGrid.Visibility = Visibility.Collapsed;
                 ProgressRing.IsActive = false;
             });
+        }
+
+        private async void KBTopKillControl_IdNameClicked(Core.DBModels.IdName idName)
+        {
+            this.GetBaseWindow()?.ShowWaiting();
+            await _kbNavigationService.NavigationTo(idName);
+            this.GetBaseWindow()?.HideWaiting();
+        }
+
+        private void GridView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var info = e.ClickedItem as KBItemInfo;
+            if(info != null)
+            {
+                _kbNavigationService.NavigateToKM(info);
+            }
         }
     }
 }

@@ -37,6 +37,7 @@
                         Grid.Row="1"
                         HorizontalAlignment="Center"
                         IsItemClickEnabled="True"
+                        ItemClick="GridView_ItemClick"
                         ItemsSource="{x:Bind VM.TopKillAllTime, Mode=OneWay}"
                         SelectionMode="None">
                         <GridView.ItemContainerStyle>
@@ -46,7 +47,10 @@
                         </GridView.ItemContainerStyle>
                         <GridView.ItemTemplate>
                             <DataTemplate>
-                                <controls:KBTopKillControl Width="140" KBItemInfo="{Binding}" />
+                                <controls:KBTopKillControl
+                                    Width="140"
+                                    IdNameClicked="KBTopKillControl_IdNameClicked"
+                                    KBItemInfo="{Binding}" />
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>
@@ -65,6 +69,7 @@
                         Grid.Row="1"
                         HorizontalAlignment="Center"
                         IsItemClickEnabled="True"
+                        ItemClick="GridView_ItemClick"
                         ItemsSource="{x:Bind VM.TopKillA7d, Mode=OneWay}"
                         SelectionMode="None">
                         <GridView.ItemContainerStyle>
@@ -74,7 +79,10 @@
                         </GridView.ItemContainerStyle>
                         <GridView.ItemTemplate>
                             <DataTemplate>
-                                <controls:KBTopKillControl Width="140" KBItemInfo="{Binding}" />
+                                <controls:KBTopKillControl
+                                    Width="140"
+                                    IdNameClicked="KBTopKillControl_IdNameClicked"
+                                    KBItemInfo="{Binding}" />
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>

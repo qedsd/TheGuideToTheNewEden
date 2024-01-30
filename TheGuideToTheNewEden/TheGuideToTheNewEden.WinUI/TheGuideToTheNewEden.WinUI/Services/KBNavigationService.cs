@@ -87,7 +87,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void NavigateToKM(Core.Models.KB.KBItemInfo info)
         {
-            KBDetailPage detailPage = new KBDetailPage(info);
+            KBDetailPage detailPage = new KBDetailPage(info, this);
             string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
             _window.DispatcherQueue.TryEnqueue(() =>
             {

@@ -52,11 +52,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                                         continue;
                                     };
                             }
-                            for(int i = 0; i< info.KillDataInfos.Count;i++)
+                            if(info != null)
                             {
-                                info.KillDataInfos[i].No = i + 1;
+                                for (int i = 0; i < info.KillDataInfos.Count; i++)
+                                {
+                                    info.KillDataInfos[i].No = i + 1;
+                                }
+                                infos.Add(info);
                             }
-                            infos.Add(info);
                         }
                     }
                     return infos;

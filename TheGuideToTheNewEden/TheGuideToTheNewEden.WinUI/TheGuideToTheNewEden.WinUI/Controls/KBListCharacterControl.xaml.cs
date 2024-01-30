@@ -15,11 +15,15 @@ using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.WinUI.UI.Controls;
 using TheGuideToTheNewEden.Core.Models.KB;
 using ESI.NET.Models.Character;
+using TheGuideToTheNewEden.Core.DBModels;
+using static TheGuideToTheNewEden.Core.Events.IdNameEvent;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class KBListCharacterControl : UserControl
     {
+        private IdName _characterIdName = new IdName();
+        private IdName _factionIdName = new IdName();
         public KBListCharacterControl()
         {
             this.InitializeComponent();
@@ -60,25 +64,40 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                     {
                         Image_Character.Source = Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.CharacterId, Converters.GameImageConverter.ImgType.Character, 64);
                         TextBlock_Character.Text = value.VictimCharacterName?.Name;
-                        if(value.SKBDetail.Victim.AllianceId != 0)//显示受害者联盟
+                        _characterIdName.Id = value.SKBDetail.Victim.CharacterId;
+                        _characterIdName.Category = (int)IdName.CategoryEnum.Character;
+                        _characterIdName.Name = TextBlock_Character.Text;
+                        if (value.SKBDetail.Victim.AllianceId != 0)//显示受害者联盟
                         {
                             Image_Faction.Source = Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.AllianceId, Converters.GameImageConverter.ImgType.Alliance, 64);
                             TextBlock_Faction.Text = value.VictimAllianceName?.Name;
+                            _factionIdName.Id = value.SKBDetail.Victim.AllianceId;
+                            _factionIdName.Category = (int)IdName.CategoryEnum.Alliance;
+                            _factionIdName.Name = TextBlock_Faction.Text;
                         }
                         else//显示受害者军团
                         {
                             Image_Faction.Source = Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.CorporationId, Converters.GameImageConverter.ImgType.Corporation, 64);
                             TextBlock_Faction.Text = value.VictimCorporationIdName?.Name;
+                            _factionIdName.Id = value.SKBDetail.Victim.CorporationId;
+                            _factionIdName.Category = (int)IdName.CategoryEnum.Corporation;
+                            _factionIdName.Name = TextBlock_Faction.Text;
                         }
                     }
                     else if(value.SKBDetail.Victim.CorporationId != 0)//受害者是军团
                     {
                         Image_Character.Source = Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.CorporationId, Converters.GameImageConverter.ImgType.Corporation, 64);
                         TextBlock_Character.Text = value.VictimCorporationIdName?.Name;
+                        _characterIdName.Id = value.SKBDetail.Victim.CorporationId;
+                        _characterIdName.Category = (int)IdName.CategoryEnum.Corporation;
+                        _characterIdName.Name = TextBlock_Character.Text;
                         if (value.SKBDetail.Victim.AllianceId != 0)//显示受害者联盟
                         {
                             Image_Faction.Source = Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.AllianceId, Converters.GameImageConverter.ImgType.Alliance, 64);
                             TextBlock_Faction.Text = value.VictimAllianceName?.Name;
+                            _factionIdName.Id = value.SKBDetail.Victim.AllianceId;
+                            _factionIdName.Category = (int)IdName.CategoryEnum.Alliance;
+                            _factionIdName.Name = TextBlock_Faction.Text;
                         }
                         else
                         {
@@ -101,25 +120,40 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                         {
                             Image_Character.Source = Converters.GameImageConverter.GetImageUri(finalBlow.CharacterId, Converters.GameImageConverter.ImgType.Character, 64);
                             TextBlock_Character.Text = value.FinalBlowCharacterName?.Name;
+                            _characterIdName.Id = finalBlow.CharacterId;
+                            _characterIdName.Category = (int)IdName.CategoryEnum.Character;
+                            _characterIdName.Name = TextBlock_Character.Text;
                             if (finalBlow.AllianceId != 0)//显示最后一击联盟
                             {
                                 Image_Faction.Source = Converters.GameImageConverter.GetImageUri(finalBlow.AllianceId, Converters.GameImageConverter.ImgType.Alliance, 64);
                                 TextBlock_Faction.Text = value.FinalBlowAllianceName?.Name;
+                                _factionIdName.Id = finalBlow.AllianceId;
+                                _factionIdName.Category = (int)IdName.CategoryEnum.Alliance;
+                                _factionIdName.Name = TextBlock_Faction.Text;
                             }
                             else//显示最后一击军团
                             {
                                 Image_Faction.Source = Converters.GameImageConverter.GetImageUri(finalBlow.CorporationId, Converters.GameImageConverter.ImgType.Corporation, 64);
                                 TextBlock_Faction.Text = value.FinalBlowCorporationIdName?.Name;
+                                _factionIdName.Id = finalBlow.CorporationId;
+                                _factionIdName.Category = (int)IdName.CategoryEnum.Corporation;
+                                _factionIdName.Name = TextBlock_Faction.Text;
                             }
                         }
                         else if (value.SKBDetail.Victim.CorporationId != 0)//最后一击是军团
                         {
                             Image_Character.Source = Converters.GameImageConverter.GetImageUri(finalBlow.CorporationId, Converters.GameImageConverter.ImgType.Corporation, 64);
                             TextBlock_Character.Text = value.FinalBlowCorporationIdName?.Name;
+                            _characterIdName.Id = finalBlow.CorporationId;
+                            _characterIdName.Category = (int)IdName.CategoryEnum.Corporation;
+                            _characterIdName.Name = TextBlock_Character.Text;
                             if (finalBlow.AllianceId != 0)//显示最后一击联盟
                             {
                                 Image_Faction.Source = Converters.GameImageConverter.GetImageUri(finalBlow.AllianceId, Converters.GameImageConverter.ImgType.Alliance, 64);
                                 TextBlock_Faction.Text = value.FinalBlowAllianceName?.Name;
+                                _factionIdName.Id = finalBlow.AllianceId;
+                                _factionIdName.Category = (int)IdName.CategoryEnum.Alliance;
+                                _factionIdName.Name = TextBlock_Faction.Text;
                             }
                             else
                             {
@@ -130,6 +164,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                         {
                             Image_Character.Source = Converters.GameImageConverter.GetImageUri(finalBlow.AllianceId, Converters.GameImageConverter.ImgType.Alliance, 64);
                             TextBlock_Character.Text = value.FinalBlowAllianceName?.Name;
+                            _characterIdName.Id = finalBlow.AllianceId;
+                            _characterIdName.Category = (int)IdName.CategoryEnum.Alliance;
+                            _characterIdName.Name = TextBlock_Character.Text;
                             Image_Faction.Visibility = Visibility.Collapsed;
                         }
                     }
@@ -142,9 +179,41 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
 
         }
+
+
+        private IdNameClickedEventHandel _characterClicked;
+        public event IdNameClickedEventHandel CharacterClicked
+        {
+            add
+            {
+                _characterClicked += value;
+            }
+            remove
+            {
+                _characterClicked -= value;
+            }
+        }
+
+        private IdNameClickedEventHandel _factionClicked;
+        public event IdNameClickedEventHandel FactionClicked
+        {
+            add
+            {
+                _factionClicked += value;
+            }
+            remove
+            {
+                _factionClicked -= value;
+            }
+        }
         private void Button_Character_Click(object sender, RoutedEventArgs e)
         {
+            _characterClicked?.Invoke(_characterIdName);
+        }
 
+        private void Button_Faction_Click(object sender, RoutedEventArgs e)
+        {
+            _factionClicked?.Invoke(_factionIdName);
         }
     }
 }

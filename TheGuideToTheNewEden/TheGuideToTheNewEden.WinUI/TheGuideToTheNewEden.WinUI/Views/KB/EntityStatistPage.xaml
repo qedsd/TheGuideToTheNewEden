@@ -76,7 +76,8 @@
                             x:Name="Button_Character"
                             Click="Button_Character_Click"
                             Content="{x:Bind VM.BaseInfo.CharacterName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.CharacterName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Corp"
@@ -88,7 +89,8 @@
                             x:Name="Button_Corp"
                             Click="Button_Corp_Click"
                             Content="{x:Bind VM.BaseInfo.CorpName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.CorpName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Alliance"
@@ -100,7 +102,8 @@
                             x:Name="Button_Alliance"
                             Click="Button_Alliance_Click"
                             Content="{x:Bind VM.BaseInfo.AllianceName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.AllianceName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Executor"
@@ -112,7 +115,8 @@
                             x:Name="Button_Executor"
                             Click="Button_Corp_Click"
                             Content="{x:Bind VM.BaseInfo.ExecutorCorpName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.ExecutorCorpName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_System"
@@ -124,7 +128,8 @@
                             x:Name="Button_System"
                             Click="Button_System_Click"
                             Content="{x:Bind VM.BaseInfo.SystemName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.SystemName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Constellation"
@@ -136,7 +141,8 @@
                             x:Name="Button_Constellation"
                             Click="Button_Constellation_Click"
                             Content="{x:Bind VM.BaseInfo.ConstellationName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.ConstellationName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Region"
@@ -148,7 +154,8 @@
                             x:Name="Button_Region"
                             Click="Button_Region_Click"
                             Content="{x:Bind VM.BaseInfo.RegionName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.RegionName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Ship"
@@ -160,7 +167,8 @@
                             x:Name="Button_Ship"
                             Click="Button_Ship_Click"
                             Content="{x:Bind VM.BaseInfo.ShipName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.ShipName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Class"
@@ -172,7 +180,8 @@
                             x:Name="Button_Class"
                             Click="Button_Class_Click"
                             Content="{x:Bind VM.BaseInfo.ClassName.Name, Mode=OneWay}"
-                            Style="{StaticResource LinkButton}" />
+                            Style="{StaticResource LinkButton}"
+                            Tag="{x:Bind VM.BaseInfo.ClassName, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel
                         x:Name="StackPanel_Sec"

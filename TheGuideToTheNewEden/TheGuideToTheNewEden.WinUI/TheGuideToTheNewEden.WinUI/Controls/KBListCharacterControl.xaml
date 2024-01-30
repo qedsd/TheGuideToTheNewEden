@@ -48,6 +48,7 @@
 
             <Button
                 x:Name="Button_Faction"
+                Click="Button_Faction_Click"
                 Grid.Row="1"
                 Style="{StaticResource LinkButton}">
                 <Button.Content>

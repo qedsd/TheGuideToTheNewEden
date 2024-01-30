@@ -87,7 +87,7 @@
                 Severity="Informational" />
             <Grid x:Name="WaitingGrid" Visibility="Collapsed">
                 <Grid.Background>
-                    <SolidColorBrush Opacity="0.6" Color="{ThemeResource ControlFillColorDefault}" />
+                    <SolidColorBrush Opacity="0.5" Color="{ThemeResource ThemeMainColor}" />
                 </Grid.Background>
                 <Grid Height="100">
                     <Grid.RowDefinitions>

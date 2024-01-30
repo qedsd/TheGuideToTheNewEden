@@ -15,6 +15,8 @@ using Microsoft.UI.Xaml.Navigation;
 using TheGuideToTheNewEden.WinUI.Services;
 using ZKB.NET.Models.Statistics;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.KB;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
@@ -59,9 +61,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             });
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            var info = (sender as FrameworkElement).DataContext as KillDataInfo;
+            if (info != null)
+            {
+                this.GetBaseWindow()?.ShowWaiting();
+                await _kbNavigationService.NavigationTo(new IdName()
+                {
+                    Id = info.Id,
+                    Name = info.Name,
+                    Category = (int)IdName.CategoryEnum.Character
+                });
+                this.GetBaseWindow()?.HideWaiting();
+            }
         }
     }
 }

@@ -11,10 +11,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Converters;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static TheGuideToTheNewEden.Core.Events.IdNameEvent;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -40,7 +43,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 SetValue(KBItemInfoProperty, value);
             }
         }
-
         private static void KBItemInfoPropertyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as KBTopKillControl;
@@ -61,13 +63,52 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             control.Button_Victim.Content = victim;
             control.TextBlock_ISK.Text = ISKNormalizeConverter.Normalize(value.SKBDetail.Zkb.TotalValue);
-            control.TextBlock_Ship.Text = value.Type.TypeName;
+            control.Button_Ship.Content = value.Type.TypeName;
             //control.ImageBrush_Background.ImageSource = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(value.SKBDetail.Victim.ShipTypeId, Converters.GameImageConverter.ImgType.Type, 64)));
         }
 
         private void Button_Victim_Click(object sender, RoutedEventArgs e)
         {
+            _idNameClicked?.Invoke(KBItemInfo.Victim);
+            IdNameClickedCommand?.Execute(KBItemInfo.Victim);
+        }
 
+        private void Button_Ship_Click(object sender, RoutedEventArgs e)
+        {
+            IdName idName = new IdName()
+            {
+                Id = KBItemInfo.Type.TypeID,
+                Name = KBItemInfo.Type.TypeName,
+                Category = (int)IdName.CategoryEnum.InventoryType
+            };
+            _idNameClicked?.Invoke(idName);
+            IdNameClickedCommand?.Execute(idName);
+        }
+
+        private IdNameClickedEventHandel _idNameClicked;
+        public event IdNameClickedEventHandel IdNameClicked
+        {
+            add
+            {
+                _idNameClicked += value;
+            }
+            remove
+            {
+                _idNameClicked -= value;
+            }
+        }
+
+        public static readonly DependencyProperty IdNameClickedCommandProperty
+          = DependencyProperty.Register(
+              nameof(IdNameClickedCommand),
+              typeof(ICommand),
+              typeof(KBTopKillControl),
+              new PropertyMetadata(default(ICommand)));
+
+        public ICommand IdNameClickedCommand
+        {
+            get => (ICommand)GetValue(IdNameClickedCommandProperty);
+            set => SetValue(IdNameClickedCommandProperty, value);
         }
     }
 }

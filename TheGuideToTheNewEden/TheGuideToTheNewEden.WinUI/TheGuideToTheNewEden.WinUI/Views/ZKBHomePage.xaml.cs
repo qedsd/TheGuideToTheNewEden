@@ -171,11 +171,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
             if (names.NotNullOrEmpty())
             {
-                var hashSet = result.Select(p => p.Id).ToHashSet2();
+                var hashSet = result.Select(p=>p.Id).ToHashSet2();
                 foreach (var name in names)
                 {
                     if (!hashSet.Contains(name.Id))
                     {
+                        hashSet.Add(name.Id);
                         result.Add(name);
                     }
                 }
@@ -217,6 +218,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Content = content
             };
             ContentTabView.TabItems.Add(item);
+        }
+
+        private void KBListControl_IdNameClicked(IdName idName)
+        {
+            ShowDetail(idName);
         }
     }
 }

@@ -93,17 +93,19 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Button Style="{StaticResource LinkButton}">
+                                    <Button Click="Button_ShipType_Clicked" Style="{StaticResource LinkButton}">
                                         <Button.Content>
                                             <TextBlock VerticalAlignment="Center" Text="{x:Bind Type.TypeName}" />
                                         </Button.Content>
                                     </Button>
-                                    <TextBlock
+                                    <Button
+                                        Click="Button_Group_Clicked"
                                         Grid.Row="1"
                                         VerticalAlignment="Center"
+                                        Content="{x:Bind Group.GroupName}"
                                         FontSize="12"
                                         FontWeight="Light"
-                                        Text="{x:Bind Group.GroupName}" />
+                                        Style="{StaticResource LinkButton}" />
                                 </Grid>
                             </Grid>
                         </DataTemplate>
@@ -118,6 +120,8 @@
                         <DataTemplate x:DataType="kb:KBItemInfo">
                             <local:KBSystemInfoControl
                                 Margin="8,0"
+                                OnRegionClicked="KBSystemInfoControl_OnRegionClicked"
+                                OnSystemClicked="KBSystemInfoControl_OnSystemClicked"
                                 Region="{x:Bind Region}"
                                 System="{x:Bind SolarSystem}" />
                         </DataTemplate>
@@ -128,6 +132,8 @@
                         <DataTemplate x:DataType="kb:KBItemInfo">
                             <local:KBListCharacterControl
                                 Margin="8,0"
+                                CharacterClicked="KBListCharacterControl_CharacterClicked"
+                                FactionClicked="KBListCharacterControl_FactionClicked"
                                 IsVictim="True"
                                 Loaded="KBListCharacterControl_Loaded" />
                         </DataTemplate>
@@ -138,6 +144,8 @@
                         <DataTemplate x:DataType="kb:KBItemInfo">
                             <local:KBListCharacterControl
                                 Margin="8,0"
+                                CharacterClicked="KBListCharacterControl_CharacterClicked"
+                                FactionClicked="KBListCharacterControl_FactionClicked"
                                 IsVictim="False"
                                 Loaded="KBListCharacterControl_Loaded" />
                         </DataTemplate>

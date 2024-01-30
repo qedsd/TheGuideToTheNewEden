@@ -36,7 +36,11 @@
                     <TextBlock x:Name="TextBlock_ISK" FontSize="12" />
                 </StackPanel>
                 <StackPanel>
-                    <TextBlock x:Name="TextBlock_Ship" FontSize="12" />
+                    <Button
+                        x:Name="Button_Ship"
+                        Click="Button_Ship_Click"
+                        FontSize="12"
+                        Style="{StaticResource LinkButton}" />
                 </StackPanel>
                 <StackPanel>
                     <Button

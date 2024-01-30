@@ -14,6 +14,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.WinUI.Converters;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static TheGuideToTheNewEden.Core.Events.IdNameEvent;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -72,12 +73,38 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         private void Button_System_Click(object sender, RoutedEventArgs e)
         {
-
+            SystemClicked?.Invoke(new IdName() { Id = System.SolarSystemID, Name = System.SolarSystemName, Category = (int)IdName.CategoryEnum.SolarSystem });
         }
 
         private void Button_Region_Click(object sender, RoutedEventArgs e)
         {
+            RegionClicked?.Invoke(new IdName() { Id = Region.RegionID, Name = Region.RegionName, Category = (int)IdName.CategoryEnum.Region });
+        }
 
+        private IdNameClickedEventHandel SystemClicked;
+        public event IdNameClickedEventHandel OnSystemClicked
+        {
+            add
+            {
+                SystemClicked += value;
+            }
+            remove
+            {
+                SystemClicked -= value;
+            }
+        }
+
+        private IdNameClickedEventHandel RegionClicked;
+        public event IdNameClickedEventHandel OnRegionClicked
+        {
+            add
+            {
+                RegionClicked += value;
+            }
+            remove
+            {
+                RegionClicked -= value;
+            }
         }
     }
 }

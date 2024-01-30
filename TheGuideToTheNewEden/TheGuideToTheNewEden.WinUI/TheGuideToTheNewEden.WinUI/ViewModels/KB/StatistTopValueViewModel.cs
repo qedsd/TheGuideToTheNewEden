@@ -14,6 +14,7 @@ using ZKB.NET.Models.KillStream;
 using TheGuideToTheNewEden.Core.Helpers;
 using System.Collections.ObjectModel;
 using ESI.NET.Models.Killmails;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
@@ -79,6 +80,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             {
                 if (ids.NotNullOrEmpty())
                 {
+                    //ZKillmaill getKM(int id)
+                    //{
+                    //    Thread.Sleep((new Random()).Next(500, 5000));
+                    //    var km = ZKB.NET.ZKB.GetKillmaillAsync(new ParamModifierData[]
+                    //    {
+                    //        new ParamModifierData(ParamModifier.KillID, id.ToString()),
+                    //    }).Result;
+                    //    return km?.FirstOrDefault();
+                    //}
+                    //var list = await Core.Helpers.ThreadHelper.RunAsync(ids, getKM);
+                    //var killmails = list?.Where(p => p != null).ToList();
                     List<ZKillmaill> killmails = new List<ZKillmaill>();
                     foreach (var id in ids)
                     {

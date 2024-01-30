@@ -29,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             _statistic = statistic;
             this.InitializeComponent();
             Loaded += StatistOverviewPage_Loaded;
+            KBListControl.SetKBNavigationService(kbNavigationService);
         }
 
         private async void StatistOverviewPage_Loaded(object sender, RoutedEventArgs e)
@@ -42,10 +43,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             await VM.InitAsync();
         }
 
-        private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
-        {
-            _kbNavigationService.NavigateToKM(itemInfo);
-        }
+        //private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
+        //{
+        //    _kbNavigationService.NavigateToKM(itemInfo);
+        //}
 
         private void ShowWaiting()
         {

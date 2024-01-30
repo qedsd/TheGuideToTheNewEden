@@ -17,14 +17,19 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using ZKB.NET.Models.KillStream;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
     public sealed partial class KBDetailPage : Page
     {
+        private KBNavigationService _navigationService;
         private KBItemInfo _kbInfo;
-        public KBDetailPage(KBItemInfo kbInfo)
+        public KBDetailPage(KBItemInfo kbInfo, KBNavigationService navigationService)
         {
+            _navigationService = navigationService;
             this.InitializeComponent();
             _kbInfo = kbInfo;
             VM.SetData(kbInfo);
@@ -65,17 +70,68 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         }
         private void Button_Corp_Click(object sender, RoutedEventArgs e)
         {
-
+            Navigation(_kbInfo.VictimCorporationIdName);
         }
 
         private void Button_Character_Click(object sender, RoutedEventArgs e)
         {
-
+            Navigation(_kbInfo.VictimCharacterName);
         }
 
         private void Button_Alliance_Click(object sender, RoutedEventArgs e)
         {
+            Navigation(_kbInfo.VictimAllianceName);
+        }
 
+        private void Button_Type_Click(object sender, RoutedEventArgs e)
+        {
+            Navigation(new IdName()
+            {
+                Id = VM.KBItemInfo.Type.TypeID,
+                Name = VM.KBItemInfo.Type.TypeName,
+                Category = (int)IdName.CategoryEnum.InventoryType
+            });
+        }
+
+        private void Button_Group_Click(object sender, RoutedEventArgs e)
+        {
+            Navigation(new IdName()
+            {
+                Id = VM.KBItemInfo.Group.GroupID,
+                Name = VM.KBItemInfo.Group.GroupName,
+                Category = (int)IdName.CategoryEnum.Group
+            });
+        }
+
+        private void Button_System_Click(object sender, RoutedEventArgs e)
+        {
+            Navigation(new IdName()
+            {
+                Id = VM.KBItemInfo.SolarSystem.SolarSystemID,
+                Name = VM.KBItemInfo.SolarSystem.SolarSystemName,
+                Category = (int)IdName.CategoryEnum.SolarSystem
+            });
+        }
+
+        private void Button_Region_Click(object sender, RoutedEventArgs e)
+        {
+            Navigation(new IdName()
+            {
+                Id = VM.KBItemInfo.Region.RegionID,
+                Name = VM.KBItemInfo.Region.RegionName,
+                Category = (int)IdName.CategoryEnum.Region
+            });
+        }
+
+        private void KBDamageControl_IdNameClicked(IdName idName)
+        {
+            Navigation(idName);
+        }
+        private async void Navigation(IdName idName)
+        {
+            this.GetBaseWindow()?.ShowWaiting();
+            await _navigationService.NavigationTo(idName);
+            this.GetBaseWindow()?.HideWaiting();
         }
     }
     public class CargoItemTemplateSelector : DataTemplateSelector

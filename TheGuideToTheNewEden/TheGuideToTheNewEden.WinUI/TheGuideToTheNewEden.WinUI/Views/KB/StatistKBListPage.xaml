@@ -44,9 +44,9 @@
                 </ComboBox>
             </StackPanel>
             <controls:KBListControl
+                x:Name="KBListControl"
                 Grid.Row="1"
-                KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
-                OnItemClicked="KBListControl_OnItemClicked" />
+                KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}" />
             <controls:NavigatePageControl
                 Grid.Row="2"
                 HorizontalAlignment="Right"

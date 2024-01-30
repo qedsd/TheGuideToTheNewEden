@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Converters
                 case 15: return (Math.Round(number / 1000000000000, 2) + "t");
                 case 16:
                 case 17:
-                case 18: return (Math.Round(number / 1000000000000000, 2) + "aa");
+                case 18: return (Math.Round(number / 1000000000000000, 2) + "tt");
                 default: return number.ToString();
             }
         }

@@ -15,6 +15,8 @@ using Microsoft.UI.Xaml.Navigation;
 using TheGuideToTheNewEden.WinUI.Services;
 using ZKB.NET.Models.Statistics;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.Core.Models.KB;
+using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
@@ -59,9 +61,35 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             });
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            var info = (sender as FrameworkElement).DataContext as KillDataInfo;
+            if (info != null)
+            {
+                this.GetBaseWindow()?.ShowWaiting();
+                IdName.CategoryEnum? categoryEnum;
+                switch(info.Type)
+                {
+                    case "character":categoryEnum = IdName.CategoryEnum.Character;break;
+                    case "corporation": categoryEnum = IdName.CategoryEnum.Corporation; break;
+                    case "alliance": categoryEnum = IdName.CategoryEnum.Alliance; break;
+                    case "faction": categoryEnum = IdName.CategoryEnum.Faction; break;
+                    case "ship": categoryEnum = IdName.CategoryEnum.InventoryType; break;
+                    case "system": categoryEnum = IdName.CategoryEnum.SolarSystem; break;
+                    default:
+                        {
+                            Core.Log.Error($"Unknown type:{info.Type}");
+                            return;
+                        }
+                }
+                await _kbNavigationService.NavigationTo(new IdName()
+                {
+                    Id = info.Id,
+                    Name = info.Name,
+                    Category = (int)categoryEnum
+                });
+                this.GetBaseWindow()?.HideWaiting();
+            }
         }
     }
 }

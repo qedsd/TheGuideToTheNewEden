@@ -16,6 +16,8 @@ using ZKB.NET.Models.Statistics;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Text;
 using static TheGuideToTheNewEden.WinUI.Converters.GameImageConverter;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
@@ -118,52 +120,50 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 
         private void Button_Character_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Corp_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Alliance_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Region_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Constellation_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Ship_Click(object sender, RoutedEventArgs e)
         {
-
+            ClickInfo(sender);
         }
 
         private void Button_Class_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void Button_Sec_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Button_Members_Click(object sender, RoutedEventArgs e)
-        {
-
+            ClickInfo(sender);
         }
 
         private void Button_System_Click(object sender, RoutedEventArgs e)
         {
+            ClickInfo(sender);
+        }
 
+        private async void ClickInfo(object sender)
+        {
+            var idName = (sender as Button).Tag as IdName;
+            this.GetBaseWindow()?.ShowWaiting();
+            await _kbNavigationService.NavigationTo(idName);
+            this.GetBaseWindow()?.HideWaiting();
         }
 
         private void Menu_OpenInZKB_Click(object sender, RoutedEventArgs e)
