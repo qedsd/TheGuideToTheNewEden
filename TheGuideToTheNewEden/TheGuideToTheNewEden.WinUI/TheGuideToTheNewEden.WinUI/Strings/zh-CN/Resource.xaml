@@ -517,6 +517,7 @@
     <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
     <x:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</x:String>
     <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
+    <x:String x:Key="ZKBHomePage_AutoConnect">自动连接KB流</x:String>
     <x:String x:Key="KBListControl_Date">日期</x:String>
     <x:String x:Key="KBListControl_Time">时间</x:String>
     <x:String x:Key="KBListControl_TotalValue">估价</x:String>

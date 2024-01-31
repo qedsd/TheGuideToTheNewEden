@@ -20,7 +20,7 @@
             IsAddTabButtonVisible="False"
             TabCloseRequested="ContentTabView_TabCloseRequested">
             <TabView.TabStripFooter>
-                <Grid>
+                <StackPanel Orientation="Horizontal">
                     <AutoSuggestBox
                         x:Name="SearchBox"
                         Width="240"
@@ -46,7 +46,19 @@
                             </DataTemplate>
                         </AutoSuggestBox.ItemTemplate>
                     </AutoSuggestBox>
-                </Grid>
+                    <Button>
+                        <Button.Content>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
+                        </Button.Content>
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <ToggleSwitch Header="{StaticResource ZKBHomePage_AutoConnect}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
             </TabView.TabStripFooter>
             <TabView.TabItems>
                 <TabViewItem IsClosable="False">
