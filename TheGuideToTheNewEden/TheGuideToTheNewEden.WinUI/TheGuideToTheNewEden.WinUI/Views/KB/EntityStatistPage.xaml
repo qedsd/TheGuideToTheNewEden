@@ -39,6 +39,7 @@
         </Grid.ColumnDefinitions>
         <Grid
             MinWidth="200"
+            MaxWidth="300"
             Padding="8,8"
             Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
             <Grid.ContextFlyout>

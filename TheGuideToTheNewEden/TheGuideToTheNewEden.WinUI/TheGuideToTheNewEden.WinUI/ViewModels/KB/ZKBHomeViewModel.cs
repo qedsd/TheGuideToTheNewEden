@@ -68,7 +68,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 
         public void Dispose()
         {
-            _killStream.Close();
+            _killStream?.Close();
         }
     }
 }
