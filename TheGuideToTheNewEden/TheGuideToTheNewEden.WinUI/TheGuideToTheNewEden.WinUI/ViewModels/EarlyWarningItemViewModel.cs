@@ -378,21 +378,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="news"></param>
         private void EarlyWarningItem_OnWarningUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            foreach(var ch in news)
+            Window.DispatcherQueue.TryEnqueue(() =>
             {
-                if(ch.IntelType == Core.Enums.IntelChatType.Intel)
+                foreach (var ch in news)
                 {
-                    Core.Models.WarningSoundSetting soundSetting = null;
-                    if(Setting.Sounds.Count >= ch.Jumps)
+                    if (ch.IntelType == Core.Enums.IntelChatType.Intel)
                     {
-                        soundSetting = Setting.Sounds[ch.Jumps];
-                    }
-                    Window.DispatcherQueue.TryEnqueue(() =>
-                    {
+                        Core.Models.WarningSoundSetting soundSetting = null;
+                        if (Setting.Sounds.Count >= ch.Jumps)
+                        {
+                            soundSetting = Setting.Sounds[ch.Jumps];
+                        }
                         WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
-                    });
+                    }
+                    else
+                    {
+                        //只clr
+                        WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
+                    }
                 }
-            }
+            });
         }
         /// <summary>
         /// 频道内容更新
@@ -595,10 +600,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (Setting != null)
             {
-                Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
-                Setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
-                Setting.NameDbs = SelectedNameDbs.ToList();
-                IntelSettingService.SetValue(Setting);
+                var setting = Setting.DepthClone<Core.Models.EarlyWarningSetting>();
+                setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
+                setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
+                setting.NameDbs = SelectedNameDbs.ToList();
+                IntelSettingService.SetValue(setting);
             }
         }
     }

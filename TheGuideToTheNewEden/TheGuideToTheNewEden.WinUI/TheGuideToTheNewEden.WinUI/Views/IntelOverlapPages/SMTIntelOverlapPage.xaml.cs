@@ -145,6 +145,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                         Canvas.SetLeft(value, value.ActualOffset.X - value.Width * (_intelScale.X - 1) / 2);
                         Canvas.SetTop(value, value.ActualOffset.Y - value.Height * (_intelScale.Y - 1) / 2);
                     }
+                    _intelings.Add(content.SolarSystemId);
+                    _downgradeds.Remove(content.SolarSystemId);
                 }
                 else if (content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
@@ -163,8 +165,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                         value.Fill = _defaultBrush;
                     }
                 }
-                _intelings.Add(content.SolarSystemId);
-                _downgradeds.Remove(content.SolarSystemId);
             }
         }
         public void Clear(List<int> systemIds)
