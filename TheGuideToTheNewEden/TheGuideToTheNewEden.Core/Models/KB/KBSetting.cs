@@ -8,7 +8,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
     {
         public bool AutoConnect { get; set; } = true;
         public bool Notify { get; set; } = true;
-        public long MinNotifyValue { get; set; }
+        public long MinNotifyValue { get; set; } = 1000000000;
         public HashSet<int> Types { get; set; }
         public HashSet<int> Systems { get; set; }
         public HashSet<int> Regions { get; set; }
