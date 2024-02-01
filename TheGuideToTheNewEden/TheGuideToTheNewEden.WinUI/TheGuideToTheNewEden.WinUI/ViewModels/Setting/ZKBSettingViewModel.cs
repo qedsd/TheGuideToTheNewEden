@@ -127,12 +127,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             }
         }
 
+        private double _maxKBItems;
+        public double MaxKBItems
+        {
+            get => _maxKBItems;
+            set
+            {
+                if (SetProperty(ref _maxKBItems, value))
+                {
+                    Save();
+                }
+            }
+        }
+
         public ZKBSettingViewModel()
         {
             var setting = ZKBSettingService.Setting;
             _autoConnect = ZKBSettingService.Setting.AutoConnect;
             _notify = ZKBSettingService.Setting.Notify;
             _minNotifyValue = ZKBSettingService.Setting.MinNotifyValue;
+            _maxKBItems = ZKBSettingService.Setting.MaxKBItems;
             StringBuilder stringBuilder = new StringBuilder();
             if (setting.Types.NotNullOrEmpty())
             {
@@ -208,6 +222,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
                 ZKBSettingService.Setting.AutoConnect = AutoConnect;
                 ZKBSettingService.Setting.Notify = Notify;
                 ZKBSettingService.Setting.MinNotifyValue = (long)MinNotifyValue;
+                ZKBSettingService.Setting.MaxKBItems = (int)MaxKBItems;
                 if (!string.IsNullOrEmpty(Types))
                 {
                     ZKBSettingService.Setting.Types = Types.Split(',').Select(p => int.Parse(p)).ToHashSet2();

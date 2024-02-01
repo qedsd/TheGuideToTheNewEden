@@ -25,6 +25,11 @@
             <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Notify}" Description="{StaticResource ZKBSettingPage_Notify_Desc}">
                 <ToggleSwitch IsOn="{x:Bind VM.Notify, Mode=TwoWay}" />
             </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_MaxKBItems}" Description="{StaticResource ZKBSettingPage_MaxKBItems_Desc}">
+                <StackPanel Orientation="Horizontal">
+                    <NumberBox Minimum="10" Value="{x:Bind VM.MaxKBItems, Mode=TwoWay}" />
+                </StackPanel>
+            </controls:ExpandableSettingControl>
             <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_MinNotifyValue}" Description="{StaticResource ZKBSettingPage_MinNotifyValue_Desc}">
                 <StackPanel Orientation="Horizontal">
                     <NumberBox Minimum="0" Value="{x:Bind VM.MinNotifyValue, Mode=TwoWay}" />

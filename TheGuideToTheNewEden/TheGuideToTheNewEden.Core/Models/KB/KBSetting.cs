@@ -15,5 +15,6 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public HashSet<int> Characters { get; set; }
         public HashSet<int> Corps { get; set; }
         public HashSet<int> Alliances { get; set; }
+        public int MaxKBItems { get; set; } = 100;
     }
 }

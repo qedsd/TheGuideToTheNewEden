@@ -41,6 +41,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                                 Window?.DispatcherQueue?.TryEnqueue(() =>
                                 {
                                     KBItemInfos.Insert(0, info);
+                                    if(KBItemInfos.Count > Services.Settings.ZKBSettingService.Setting.MaxKBItems)
+                                    {
+                                        KBItemInfos.RemoveAt(KBItemInfos.Count - 1);
+                                    }
                                 });
                             }
                         }

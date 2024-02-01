@@ -630,6 +630,8 @@
     <x:String x:Key="ZKBSettingPage_Notify_Desc">KB流有新KB时是否弹出系统通知</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue">击杀通知最小价值</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">仅当KB价值大于此值才通知，设为0则全部通知</x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems">最大显示KB数</x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems_Desc">KB流每次最多显示多少个KB</x:String>
     <x:String x:Key="ZKBSettingPage_Types">舰船/建筑/物品ID</x:String>
     <x:String x:Key="ZKBSettingPage_Systems">星系ID</x:String>
     <x:String x:Key="ZKBSettingPage_Regions">星域ID</x:String>
