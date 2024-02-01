@@ -31,13 +31,13 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             set => SetProperty(ref destinationMarketLocation, value);
         }
 
-        private int marketGroup = 9;
+        private int[] marketGroups;
         /// <summary>
         /// 物品类型
         /// </summary>
-        public int MarketGroup
+        public int[] MarketGroups
         {
-            get => marketGroup; set => SetProperty(ref marketGroup, value);
+            get => marketGroups; set => SetProperty(ref marketGroups, value);
         }
         #endregion
 

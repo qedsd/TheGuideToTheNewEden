@@ -7,6 +7,7 @@
     xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
@@ -94,7 +95,21 @@
                                             Grid.Row="2"
                                             VerticalAlignment="Center"
                                             Text="{StaticResource BusinessPage_MarketGroup}" />
-                                        <ComboBox
+                                        <editors:SfComboBox
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Height="32"
+                                            Margin="8,0,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            DelimiterText=","
+                                            DisplayMemberPath="MarketGroupName"
+                                            ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
+                                            MultiSelectionDisplayMode="Token"
+                                            SelectionChanged="SfComboBox_SelectionChanged"
+                                            SelectionMode="Multiple" />
+                                        <!--<ComboBox
                                             Grid.Row="2"
                                             Grid.Column="1"
                                             Height="32"
@@ -104,7 +119,7 @@
                                             HorizontalContentAlignment="Center"
                                             DisplayMemberPath="MarketGroupName"
                                             ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
-                                            SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />
+                                            SelectedItem="{x:Bind VM.SelectedInvMarketGroup, Mode=TwoWay}" />-->
                                     </Grid>
 
                                 </StackPanel>

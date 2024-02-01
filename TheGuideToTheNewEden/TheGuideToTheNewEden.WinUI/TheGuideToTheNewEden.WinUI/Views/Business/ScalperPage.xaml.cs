@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Syncfusion.UI.Xaml.DataGrid;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WinUI.Dialogs;
-using WinUIEx;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -75,6 +75,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             {
                 var types = ListView_FilterTypes.SelectedItems.Select(p=> p as Core.DBModels.InvType).ToList();
                 VM.RemoveFilterTypes(types);
+            }
+        }
+
+        private void SfComboBox_SelectionChanged(object sender, Syncfusion.UI.Xaml.Editors.ComboBoxSelectionChangedEventArgs e)
+        {
+            if(e.AddedItems.NotNullOrEmpty())
+            {
+                foreach(var item in e.AddedItems)
+                {
+                    VM.SelectedInvMarketGroups.Add(item as Core.DBModels.InvMarketGroup);
+                }
+            }
+            if (e.RemovedItems.NotNullOrEmpty())
+            {
+                foreach (var item in e.RemovedItems)
+                {
+                    VM.SelectedInvMarketGroups.Remove(item as Core.DBModels.InvMarketGroup);
+                }
             }
         }
     }

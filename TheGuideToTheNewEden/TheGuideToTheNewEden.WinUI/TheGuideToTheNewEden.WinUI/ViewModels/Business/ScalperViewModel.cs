@@ -96,15 +96,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private Core.DBModels.InvMarketGroup selectedInvMarketGroup;
-        public Core.DBModels.InvMarketGroup SelectedInvMarketGroup
-        {
-            get => selectedInvMarketGroup;
-            set
-            {
-                SetProperty(ref selectedInvMarketGroup, value);
-            }
-        }
+        public List<Core.DBModels.InvMarketGroup> SelectedInvMarketGroups { get; set; }
 
         private List<ScalperItem> scalperItems;
         public List<ScalperItem> ScalperItems
@@ -151,7 +143,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             SourceSalesType = (int)Setting.SourceSalesType;
             DestinationSalesType = (int)Setting.DestinationSalesType;
             InvMarketGroups = await Core.Services.DB.InvMarketGroupService.QueryRootGroupAsync();
-            SelectedInvMarketGroup = InvMarketGroups.FirstOrDefault(p => p.MarketGroupID == Setting.MarketGroup);
+            if(Setting.MarketGroups.NotNullOrEmpty())
+            {
+                SelectedInvMarketGroups = InvMarketGroups.Where(p => Setting.MarketGroups.Contains(p.MarketGroupID)).ToList();
+            }
+            else
+            {
+                SelectedInvMarketGroups = new List<InvMarketGroup>();
+            }
         }
 
         public ICommand AnalyseCommand => new RelayCommand(async() =>
@@ -192,6 +191,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 System.IO.Directory.CreateDirectory(SettingFolderPath);
             }
+            Setting.MarketGroups = SelectedInvMarketGroups.Select(p=>p.MarketGroupID).ToArray();
             string json = JsonConvert.SerializeObject(Setting);
             System.IO.File.WriteAllText(SettingFilePath, json);
         }
@@ -209,7 +209,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 Window?.ShowError("请选择目的市场");
                 return false;
             }
-            if(SelectedInvMarketGroup == null)
+            if(!SelectedInvMarketGroups.Any())
             {
                 Window?.ShowError("请选择物品类型");
                 return false;
@@ -478,10 +478,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             return await Task.Run(() =>
             {
                 List<Core.DBModels.InvMarketGroup> targetroups = new List<Core.DBModels.InvMarketGroup>();
+                var ids = SelectedInvMarketGroups.Select(p => p.MarketGroupID).ToHashSet2();
                 foreach (var group in subGroups)
                 {
                     var top = GetTopGroup(subGroups, group);
-                    if (top.ParentGroupID == SelectedInvMarketGroup.MarketGroupID)
+                    if (ids.Contains((int)top.ParentGroupID))
                     {
                         targetroups.Add(group);
                     }
