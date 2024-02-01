@@ -181,10 +181,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
             Window?.HideWaiting();
         });
-        public ICommand AddToShoppingCartCommand => new RelayCommand<ScalperItem>((item) =>
-        {
-            
-        });
         private void SaveSetting()
         {
             if (!System.IO.Directory.Exists(SettingFolderPath))

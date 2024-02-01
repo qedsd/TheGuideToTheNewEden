@@ -34,15 +34,28 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
-            var item = ((sender as MenuFlyoutItem).CommandParameter as Syncfusion.UI.Xaml.DataGrid.GridRecordContextFlyoutInfo)?.Record as ScalperItem;
-            if(item != null)
+            if(DataGrid.SelectedItems.Count == 1)
             {
-                ScalperShoppingItem scalperShoppingItem = new ScalperShoppingItem(item);
-                if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem,this.XamlRoot))
+                var item = DataGrid.SelectedItems[0] as ScalperItem;
+                if (item != null)
                 {
-                    AddShoppingItem?.Invoke(scalperShoppingItem);
+                    ScalperShoppingItem scalperShoppingItem = new ScalperShoppingItem(item);
+                    if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem, this.XamlRoot))
+                    {
+                        AddShoppingItem?.Invoke(scalperShoppingItem);
+                    }
                 }
             }
+            else if(DataGrid.SelectedItems.Count > 1)
+            {
+                List<ScalperShoppingItem> items = new List<ScalperShoppingItem>();
+                foreach( var item in DataGrid.SelectedItems)
+                {
+                    items.Add(new ScalperShoppingItem(item as ScalperItem));
+                }
+
+            }
+            
         }
 
         private void SfDataGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -63,6 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 AddShoppingItem -= value;
             }
         }
+
 
         public void AddToFilter(List<Core.DBModels.InvType> types)
         {
