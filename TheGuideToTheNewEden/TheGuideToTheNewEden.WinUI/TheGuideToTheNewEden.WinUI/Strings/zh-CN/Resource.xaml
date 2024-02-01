@@ -320,6 +320,7 @@
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
     <x:String x:Key="SettingPage_Test">测试</x:String>
+    <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
@@ -518,6 +519,7 @@
     <x:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</x:String>
     <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
     <x:String x:Key="ZKBHomePage_AutoConnect">自动连接KB流</x:String>
+    <x:String x:Key="ZKBHomePage_Connect">连接ZKB服务器</x:String>
     <x:String x:Key="KBListControl_Date">日期</x:String>
     <x:String x:Key="KBListControl_Time">时间</x:String>
     <x:String x:Key="KBListControl_TotalValue">估价</x:String>
@@ -526,6 +528,7 @@
     <x:String x:Key="KBListControl_Victim">受害者</x:String>
     <x:String x:Key="KBListControl_FinalBlow">最后一击</x:String>
     <x:String x:Key="KBListControl_OpenBrowser">浏览器查看</x:String>
+
 
     <x:String x:Key="KB_Point">点数</x:String>
     <x:String x:Key="KB_Damage">伤害</x:String>
@@ -620,4 +623,18 @@
     <x:String x:Key="StatistSuperPage_Supercarrier">大航</x:String>
     <x:String x:Key="StatistSuperPage_No">击杀排名</x:String>
     <x:String x:Key="StatistSuperPage_Kills">击杀数</x:String>
+
+    <x:String x:Key="ZKBSettingPage_AutoConnect">自动接收KB流</x:String>
+    <x:String x:Key="ZKBSettingPage_AutoConnect_Desc">打开ZKillborad功能时是否自动连接服务器以接收KB流</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify">击杀系统通知</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify_Desc">KB流有新KB时是否弹出系统通知</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue">击杀通知最小价值</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">仅当KB价值大于此值才通知，设为0则全部通知</x:String>
+    <x:String x:Key="ZKBSettingPage_Types">舰船/建筑/物品ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Systems">星系ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Regions">星域ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Characters">角色ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Corps">军团ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Alliances">联盟ID</x:String>
+    <x:String x:Key="ZKBSettingPage_IdsDesc">仅对列出的ID进行通知，多个ID请用符号,分割，留空则通知全部</x:String>
 </ResourceDictionary>

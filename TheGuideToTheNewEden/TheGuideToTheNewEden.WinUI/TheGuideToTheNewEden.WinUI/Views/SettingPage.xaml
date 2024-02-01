@@ -38,6 +38,12 @@
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_ZKB}" />
+            </PivotItem.Header>
+            <settings:ZKBSettingPage />
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource SettingPage_Test}" />
             </PivotItem.Header>
             <settings:TestSettingPage />

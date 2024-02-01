@@ -7,6 +7,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.Core.Services.DB;
+using ZKB.NET;
 using ZKB.NET.Models.Killmails;
 using ZKB.NET.Models.KillStream;
 
@@ -151,6 +152,15 @@ namespace TheGuideToTheNewEden.Core.Helpers
         public static async Task<KBItemInfo> CreateKBItemInfoAsync(ZKillmaill killmaill)
         {
             return (await Task.Run(() => CreateKBItemInfo(new List<ZKillmaill>() { killmaill})))?.FirstOrDefault();
+        }
+
+        public static async Task<KBItemInfo> CreateKBItemInfoAsync(int id)
+        {
+            var km = await ZKB.NET.ZKB.GetKillmaillAsync(new ParamModifierData[]
+                        {
+                        new ParamModifierData(ParamModifier.KillID, id.ToString()),
+                        });
+            return CreateKBItemInfo(new List<ZKillmaill>() { km.FirstOrDefault() })?.FirstOrDefault();
         }
     }
 }

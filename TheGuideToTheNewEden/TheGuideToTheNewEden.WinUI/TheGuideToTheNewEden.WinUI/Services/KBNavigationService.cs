@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Views;
@@ -16,12 +17,32 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class KBNavigationService
     {
-        private readonly ZKBHomePage _page;
+        private static KBNavigationService _default;
+        public static KBNavigationService Default
+        {
+            get
+            {
+                _default ??= new KBNavigationService();
+                return _default;
+            }
+        }
+        private readonly Action<string, Microsoft.UI.Xaml.Controls.Page> _addTabAction;
         private readonly BaseWindow _window;
         public KBNavigationService(ZKBHomePage page)
         {
-            _page = page;
+            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h,p) =>
+            {
+                page.AddTab(h, p);
+            });
             _window = page.GetBaseWindow();
+        }
+        public KBNavigationService()
+        {
+            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h, p) =>
+            {
+                Services.NavigationService.NavigateTo(p,h);
+            });
+            _window = Helpers.WindowHelper.MainWindow as BaseWindow;
         }
 
         public static async Task<EntityStatistic> GetEntityStatisticAsync(int id, ZKB.NET.EntityType entityType)
@@ -59,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 EntityStatistPage page = new EntityStatistPage(statistic,this);
                 _window.DispatcherQueue.TryEnqueue(() =>
                 {
-                    _page.AddTab(header, page);
+                    _addTabAction(header, page);
                 });
             }
         }
@@ -87,11 +108,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void NavigateToKM(Core.Models.KB.KBItemInfo info)
         {
-            KBDetailPage detailPage = new KBDetailPage(info, this);
-            string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
             _window.DispatcherQueue.TryEnqueue(() =>
             {
-                _page.AddTab($"KB - {name}", detailPage);
+                KBDetailPage detailPage = new KBDetailPage(info, this);
+                string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
+                _addTabAction($"KB - {name}", detailPage);
             });
         }
 

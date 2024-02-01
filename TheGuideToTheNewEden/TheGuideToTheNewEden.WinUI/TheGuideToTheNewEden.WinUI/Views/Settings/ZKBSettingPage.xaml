@@ -1,0 +1,78 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Settings.ZKBSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:setting="using:TheGuideToTheNewEden.WinUI.ViewModels.Setting"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <setting:ZKBSettingViewModel x:Name="VM" />
+    </Page.DataContext>
+    <ScrollViewer>
+        <StackPanel Spacing="4">
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_AutoConnect}" Description="{StaticResource ZKBSettingPage_AutoConnect_Desc}">
+                <ToggleSwitch IsOn="{x:Bind VM.AutoConnect, Mode=TwoWay}" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Notify}" Description="{StaticResource ZKBSettingPage_Notify_Desc}">
+                <ToggleSwitch IsOn="{x:Bind VM.Notify, Mode=TwoWay}" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_MinNotifyValue}" Description="{StaticResource ZKBSettingPage_MinNotifyValue_Desc}">
+                <StackPanel Orientation="Horizontal">
+                    <NumberBox Minimum="0" Value="{x:Bind VM.MinNotifyValue, Mode=TwoWay}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="ISK" />
+                </StackPanel>
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Types}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    PlaceholderText="eg: 28710,29984,12005"
+                    Text="{x:Bind VM.Types, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Systems}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    PlaceholderText="eg: 30000142,30000144"
+                    Text="{x:Bind VM.Systems, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Regions}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    PlaceholderText="eg: 10000002,10000016"
+                    Text="{x:Bind VM.Regions, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Characters}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    Text="{x:Bind VM.Characters, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Corps}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    Text="{x:Bind VM.Corps, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource ZKBSettingPage_Alliances}" Description="{StaticResource ZKBSettingPage_IdsDesc}">
+                <TextBox
+                    AcceptsReturn="True"
+                    Text="{x:Bind VM.Alliances, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
+            </controls:ExpandableSettingControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

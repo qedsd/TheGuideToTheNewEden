@@ -35,15 +35,28 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded += ZKBHomePage_Loaded;
         }
 
-        private async void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
+        private void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
         {
             _kbNavigationService = new KBNavigationService(this);
             Loaded -= ZKBHomePage_Loaded;
+            if(Services.Settings.ZKBSettingService.Setting.AutoConnect)
+            {
+                Connect();
+            }
+            else
+            {
+                KBListControl.Visibility = Visibility.Collapsed;
+                Button_Connect.Visibility = Visibility.Visible;
+            }
+        }
+        private async void Connect()
+        {
+            KBListControl.Visibility = Visibility.Visible;
+            Button_Connect.Visibility = Visibility.Collapsed;
             this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
             await VM.InitAsync();
             this.GetBaseWindow()?.HideWaiting();
         }
-
         private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
         {
             _kbNavigationService.NavigateToKM(itemInfo);
@@ -223,6 +236,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void KBListControl_IdNameClicked(IdName idName)
         {
             ShowDetail(idName);
+        }
+
+        private void Button_Connect_Click(object sender, RoutedEventArgs e)
+        {
+            Connect();
         }
     }
 }

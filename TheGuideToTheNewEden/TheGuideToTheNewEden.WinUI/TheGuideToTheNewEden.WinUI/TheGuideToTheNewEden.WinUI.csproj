@@ -290,6 +290,7 @@
     <None Remove="Views\Settings\MarketSettingPage.xaml" />
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\Settings\TestSettingPage.xaml" />
+    <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
@@ -496,6 +497,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Settings\ZKBSettingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\KB\StatistSuperPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

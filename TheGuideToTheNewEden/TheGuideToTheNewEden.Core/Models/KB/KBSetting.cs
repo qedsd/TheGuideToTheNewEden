@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public long MinNotifyValue { get; set; }
         public HashSet<int> Types { get; set; }
         public HashSet<int> Systems { get; set; }
-        public HashSet<int> Region { get; set; }
+        public HashSet<int> Regions { get; set; }
         public HashSet<int> Characters { get; set; }
         public HashSet<int> Corps { get; set; }
         public HashSet<int> Alliances { get; set; }

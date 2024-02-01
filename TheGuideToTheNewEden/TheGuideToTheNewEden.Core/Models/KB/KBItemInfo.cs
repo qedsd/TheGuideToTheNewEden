@@ -11,6 +11,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
 {
     public class KBItemInfo
     {
+        public KBItemInfo() { }
         public KBItemInfo(SKBDetail detail)
         {
             SKBDetail = detail;
