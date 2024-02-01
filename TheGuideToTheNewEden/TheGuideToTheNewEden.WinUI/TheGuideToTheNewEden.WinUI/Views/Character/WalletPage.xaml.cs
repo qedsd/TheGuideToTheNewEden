@@ -146,7 +146,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse;
             if (corp)
             {
-                esiResponse = await _esiClient.Wallet.CorporationTransactions(page);
+                //esiResponse = await _esiClient.Wallet.CorporationTransactions(page);
+                esiResponse = null;
             }
             else
             {

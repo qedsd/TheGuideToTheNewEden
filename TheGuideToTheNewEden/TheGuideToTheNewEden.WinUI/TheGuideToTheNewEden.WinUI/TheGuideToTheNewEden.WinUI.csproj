@@ -301,22 +301,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageReference Include="log4net" Version="2.0.15" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.231008000" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.231219000" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="23.1.40" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="23.1.40" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="23.1.40" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.16" />
-    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.16" />
-    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.16" />
-    <PackageReference Include="WinUIEx" Version="2.3.2" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="24.2.3" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="24.2.3" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="24.2.3" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.17" />
+    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.17" />
+    <PackageReference Include="WinUIEx" Version="2.3.3" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -384,7 +384,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

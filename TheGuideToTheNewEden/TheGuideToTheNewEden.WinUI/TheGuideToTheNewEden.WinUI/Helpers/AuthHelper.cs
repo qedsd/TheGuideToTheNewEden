@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Interfaces;
-using static SixLabors.ImageSharp.Metadata.Profiles.Exif.EncodedString;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
