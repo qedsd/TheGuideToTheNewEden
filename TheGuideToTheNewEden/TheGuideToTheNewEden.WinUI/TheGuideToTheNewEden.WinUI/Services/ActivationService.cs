@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CharacterService.Init();
             StructureService.Init();
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
+            ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
         }
         private static string GetSyncfusionLicense()
         {
