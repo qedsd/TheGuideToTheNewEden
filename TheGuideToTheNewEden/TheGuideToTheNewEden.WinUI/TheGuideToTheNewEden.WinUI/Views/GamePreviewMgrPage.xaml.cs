@@ -223,5 +223,31 @@ namespace TheGuideToTheNewEden.WinUI.Views
             VM.Dispose();
             KeyboardService.Stop();
         }
+
+        private void MenuFlyoutItem_Up_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as FrameworkElement).DataContext as ProcessInfo;
+            if(info != null)
+            {
+                int index = VM.Processes.IndexOf(info);
+                if(index > 0)
+                {
+                    VM.Processes.Move(index, index - 1);
+                }
+            }
+        }
+
+        private void MenuFlyoutItem_Down_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as FrameworkElement).DataContext as ProcessInfo;
+            if (info != null)
+            {
+                int index = VM.Processes.IndexOf(info);
+                if (index < VM.Processes.Count - 2)
+                {
+                    VM.Processes.Move(index, index + 1);
+                }
+            }
+        }
     }
 }

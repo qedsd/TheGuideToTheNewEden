@@ -640,4 +640,8 @@
     <x:String x:Key="ZKBSettingPage_Corps">军团ID</x:String>
     <x:String x:Key="ZKBSettingPage_Alliances">联盟ID</x:String>
     <x:String x:Key="ZKBSettingPage_IdsDesc">仅对列出的ID进行通知，多个ID请用符号,分割，留空则通知全部</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_MoveUp">上移</x:String>
+    <x:String x:Key="GamePreviewMgrPage_MoveDown">下移</x:String>
 </ResourceDictionary>

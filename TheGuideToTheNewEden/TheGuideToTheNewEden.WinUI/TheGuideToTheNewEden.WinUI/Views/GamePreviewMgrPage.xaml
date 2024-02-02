@@ -61,6 +61,12 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="gamepreviews:ProcessInfo">
                         <Grid Margin="4,8">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Up_Click" Text="{StaticResource GamePreviewMgrPage_MoveUp}" />
+                                    <MenuFlyoutItem Click="MenuFlyoutItem_Down_Click" Text="{StaticResource GamePreviewMgrPage_MoveDown}" />
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="Auto" />
@@ -98,7 +104,6 @@
                                 ToolTipService.ToolTip="预览中"
                                 Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                         </Grid>
-
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
