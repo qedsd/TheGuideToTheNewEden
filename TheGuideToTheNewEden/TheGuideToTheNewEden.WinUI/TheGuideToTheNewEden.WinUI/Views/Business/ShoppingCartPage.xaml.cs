@@ -117,9 +117,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        public void AddItem(ScalperShoppingItem item)
+        public void AddItems(List<ScalperShoppingItem> items)
         {
-            ShoppingItems.Add(item);
+            foreach(var item in items)
+            {
+                ShoppingItems.Add(item);
+            }
             Cal();
         }
     }

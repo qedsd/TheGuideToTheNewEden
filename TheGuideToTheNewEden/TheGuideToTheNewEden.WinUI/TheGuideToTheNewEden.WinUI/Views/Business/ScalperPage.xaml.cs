@@ -42,7 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     ScalperShoppingItem scalperShoppingItem = new ScalperShoppingItem(item);
                     if (await AddToShoppingCartDialog.ShowAsync(scalperShoppingItem, this.XamlRoot))
                     {
-                        AddShoppingItem?.Invoke(scalperShoppingItem);
+                        AddShoppingItem?.Invoke(new List<ScalperShoppingItem>() { scalperShoppingItem });
                     }
                 }
             }
@@ -53,7 +53,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 {
                     items.Add(new ScalperShoppingItem(item as ScalperItem));
                 }
-
+                AddShoppingItem?.Invoke(items);
             }
             
         }
@@ -63,7 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             VM.SelectedScalperItem = (sender as SfDataGrid).SelectedItem as ScalperItem;
         }
 
-        public delegate void AddShoppingItemEventHandel(ScalperShoppingItem item);
+        public delegate void AddShoppingItemEventHandel(List<ScalperShoppingItem> items);
         private AddShoppingItemEventHandel AddShoppingItem;
         public event AddShoppingItemEventHandel OnAddShoppingItem
         {
@@ -76,6 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 AddShoppingItem -= value;
             }
         }
+
 
 
         public void AddToFilter(List<Core.DBModels.InvType> types)
