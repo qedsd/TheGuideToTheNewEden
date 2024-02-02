@@ -9,6 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Helpers;
+using Vanara.PInvoke;
+using static TheGuideToTheNewEden.WinUI.Services.HotkeyService;
+using static Vanara.PInvoke.User32;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -66,6 +70,31 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
             [PreserveSig]
             int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
+        }
+        private struct EventMsg
+        {
+            /// <summary>
+            /// 虚拟密钥代码
+            /// 代码必须是范围 1 到 254 中的值
+            /// <see cref="https://learn.microsoft.com/zh-cn/windows/win32/inputdev/virtual-key-codes"/>
+            /// </summary>
+            public int vkCode;
+            /// <summary>
+            /// 密钥的硬件扫描代码
+            /// </summary>
+            public int scanCode;
+            /// <summary>
+            /// 扩展键标志
+            /// </summary>
+            public int flags;
+            /// <summary>
+            /// 此消息的时间戳
+            /// </summary>
+            public int time;
+            /// <summary>
+            /// 与消息关联的其他信息
+            /// </summary>
+            public int dwExtraInfo;
         }
         #endregion
         private static readonly string KeylistFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "Keyboardlist.csv");
@@ -147,7 +176,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private readonly IntPtr _hwnd;
 
-        private DispatcherTimer dispatcherTimer;
         private HashSet<int> _registerIds = new HashSet<int>();
         public bool Register(string hotkey, out int registerId)
         {
@@ -240,8 +268,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (result)
                 {
                     Core.Log.Info($"已注册热键{_hwnd}_{registerId}");
-                    //Start();
-                    return true;
+                    return TryMonitorHotKey();
                 }
                 else
                 {
@@ -267,10 +294,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 Core.Log.Info($"已注销热键{_hwnd}_{id}");
                 _registerIds.Remove(id);
-                if(!_registerIds.Any())
-                {
-                    Stop();
-                }
                 return true;
             }
             else
@@ -290,69 +313,34 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             _dic.Remove(_hwnd);
         }
-        private void Start()
-        {
-            if (dispatcherTimer == null)
-            {
-                dispatcherTimer = new DispatcherTimer()
-                {
-                    Interval = TimeSpan.FromMilliseconds(100)
-                };
-                dispatcherTimer.Tick -= DispatcherTimer_Tick;
-                dispatcherTimer.Tick += DispatcherTimer_Tick;
-                dispatcherTimer.Start();
-            }
-        }
-        private void Stop()
-        {
-            if (dispatcherTimer != null)
-            {
-                dispatcherTimer.Tick -= DispatcherTimer_Tick;
-                dispatcherTimer.Stop();
-            }
-            dispatcherTimer = null;
-            _stop = true;
-        }
 
-        private bool _stop;
-        private async void DispatcherTimer_Tick(object sender, object e)
+        private ComCtl32.SUBCLASSPROC _wndProcHandler;
+        private bool TryMonitorHotKey()
         {
-            dispatcherTimer.Stop();
-            while(!_stop)
+            if(_wndProcHandler == null)
             {
-                if (GetMessage(out TagMSG tagMSG, _hwnd, 0, 0) == -1)
+                _wndProcHandler = new ComCtl32.SUBCLASSPROC(WndProc);
+                bool result = ComCtl32.SetWindowSubclass(WindowHelper.GetWindowHandle(Helpers.WindowHelper.MainWindow), _wndProcHandler, 1, IntPtr.Zero);
+                if(!result)
                 {
-
+                    _wndProcHandler = null;
+                    Core.Log.Error("SetWindowSubclass failed");
                 }
-                else
-                {
-                    //Debug.WriteLine(tagMSG.message);
-                    if (tagMSG.message == 786)//Hotkey
-                    {
-                        //EventMsg msg = (EventMsg)Marshal.PtrToStructure(tagMSG.lParam, typeof(EventMsg));
-                        //int vk = msg.vkCode & 0xff;
-                        //int scanCode = msg.scanCode & 0xff;
-                        //string name = string.Empty;
-                        //StringBuilder strKeyName = new StringBuilder(225);
-                        //if (GetKeyNameText(scanCode * 65536, strKeyName, 255) > 0)
-                        //{
-                        //    name = strKeyName.ToString().Trim(new char[] { ' ', '\0' });
-                        //}
-                        HotkeyActived?.Invoke(tagMSG.wParam.ToInt32());
-                    }
-                    else
-                    {
-                        TranslateMessage(ref tagMSG);
-                        DispatchMessage(ref tagMSG);
-                    }
-                }
-                await Task.Delay(10);
+                return result;
             }
-            
-
-            //dispatcherTimer.Start();
+            else
+            {
+                return true;
+            }
         }
-        public delegate void HotkeyDelegate(int id);
-        public event HotkeyDelegate HotkeyActived;
+        public static unsafe IntPtr WndProc(HWND hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, nuint uIdSubclass, IntPtr dwRefData)
+        {
+            if(uMsg == (uint)User32.WindowMessage.WM_HOTKEY)
+            {
+                EventMsg msg = (EventMsg)Marshal.PtrToStructure(lParam, typeof(EventMsg));
+                int vk = msg.vkCode & 0xff;
+            }
+            return ComCtl32.DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        }
     }
 }
