@@ -27,9 +27,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Loaded += ScalperPage_Loaded;
         }
 
-        private void ScalperPage_Loaded(object sender, RoutedEventArgs e)
+        private async void ScalperPage_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= ScalperPage_Loaded;
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            await VM.Init();
+            if (VM.SelectedInvMarketGroups != null)
+            {
+                foreach (var group in VM.SelectedInvMarketGroups)
+                {
+                    ComboBox_SelectedGroup.SelectedItems.Add(group);
+                }
+            }
+            ComboBox_SelectedGroup.SelectionChanged += SfComboBox_SelectionChanged;
         }
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)

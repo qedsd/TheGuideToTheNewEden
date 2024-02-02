@@ -96,7 +96,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        public List<Core.DBModels.InvMarketGroup> SelectedInvMarketGroups { get; set; }
+        private List<Core.DBModels.InvMarketGroup> selectedInvMarketGroups;
+        public List<Core.DBModels.InvMarketGroup> SelectedInvMarketGroups
+        {
+            get => selectedInvMarketGroups;
+            set
+            {
+                SetProperty(ref selectedInvMarketGroups, value);
+            }
+        }
 
         private List<ScalperItem> scalperItems;
         public List<ScalperItem> ScalperItems
@@ -123,11 +131,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 
         public ScalperViewModel()
         {
-            Init();
+            
         }
         private static readonly string SettingFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ScalperSetting.json");
         private static readonly string SettingFolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
-        private async void Init()
+        public async Task Init()
         {
             if(System.IO.File.Exists(SettingFilePath))
             {

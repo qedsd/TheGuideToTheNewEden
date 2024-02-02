@@ -96,6 +96,7 @@
                                             VerticalAlignment="Center"
                                             Text="{StaticResource BusinessPage_MarketGroup}" />
                                         <editors:SfComboBox
+                                            x:Name="ComboBox_SelectedGroup"
                                             Grid.Row="2"
                                             Grid.Column="1"
                                             Height="32"
@@ -107,7 +108,6 @@
                                             DisplayMemberPath="MarketGroupName"
                                             ItemsSource="{x:Bind VM.InvMarketGroups, Mode=OneWay}"
                                             MultiSelectionDisplayMode="Token"
-                                            SelectionChanged="SfComboBox_SelectionChanged"
                                             SelectionMode="Multiple" />
                                     </Grid>
 
