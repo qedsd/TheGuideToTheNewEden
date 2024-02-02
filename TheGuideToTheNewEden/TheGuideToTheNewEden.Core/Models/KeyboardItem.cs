@@ -20,7 +20,21 @@ namespace TheGuideToTheNewEden.Core.Models
                 string[] values = csvLine.Split(',');
                 KeyboardItem item = new KeyboardItem();
                 item.Name = values[0];
-                item.Code = values.Length >= 2 ? int.Parse(values[1]) : throw new Exception("未知按键Code");
+                if(values.Length > 1)
+                {
+                    if(values[1].StartsWith("0x"))
+                    {
+                        item.Code = Convert.ToInt32(values[1], 16);
+                    }
+                    else
+                    {
+                        item.Code = int.Parse(values[1]);
+                    }
+                }
+                else
+                {
+                    throw new Exception("未知按键Code");
+                }
                 item.Note = values.Length >= 3 ? values[2] : null;
                 return item;
             }
