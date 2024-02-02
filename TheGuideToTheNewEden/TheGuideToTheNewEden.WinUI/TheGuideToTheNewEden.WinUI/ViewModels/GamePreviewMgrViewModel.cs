@@ -274,13 +274,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (_runningDic.Any())
                 {
-                    string formatHotkey = keys.First().Name;
-                    foreach(var key in keys.Skip(1))
+                    StringBuilder formatHotkey = new StringBuilder();
+                    foreach (var key in keys)
                     {
-                        formatHotkey += '+';
-                        formatHotkey += key.Name;
+                        if (HotkeyService.TryGetHotkeyName(key.VirtKey, out string name))
+                        {
+                            formatHotkey.Append('+');
+                            formatHotkey.Append(name);
+                        }
+                        else
+                        {
+                            Core.Log.Error($"Unknown VirtKey:{key.VirtKey}");
+                            return;
+                        }
                     }
-                    if(PreviewSetting.SwitchHotkey_Forward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向前进切换
+                    formatHotkey.Remove(0, 1);
+                    Debug.WriteLine(formatHotkey);
+                    if (PreviewSetting.SwitchHotkey_Forward.Equals(formatHotkey.ToString(), StringComparison.OrdinalIgnoreCase))//向前进切换
                     {
                         KeyboardService.Clear();
                         if (_lastProcessGUID == null)
@@ -327,7 +337,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             }
                         }
                     }
-                    else if(PreviewSetting.SwitchHotkey_Backward.Equals(formatHotkey, StringComparison.OrdinalIgnoreCase))//向后退切换
+                    else if(PreviewSetting.SwitchHotkey_Backward.Equals(formatHotkey.ToString(), StringComparison.OrdinalIgnoreCase))//向后退切换
                     {
                         KeyboardService.Clear();
                         if (_lastProcessGUID == null)

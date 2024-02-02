@@ -211,6 +211,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return false;
             }
         }
+        public static bool TryGetHotkeyName(int vk, out string name)
+        {
+            foreach(var item in _keyboards)
+            {
+                if(item.Value.Code == vk)
+                {
+                    name = item.Value.Name;
+                    return true;
+                }
+            }
+            name = null;
+            return false;
+        }
         /// <summary>
         /// 注册热键
         /// </summary>
