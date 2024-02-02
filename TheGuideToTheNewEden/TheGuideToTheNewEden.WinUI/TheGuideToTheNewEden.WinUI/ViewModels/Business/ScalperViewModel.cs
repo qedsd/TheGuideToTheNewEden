@@ -617,6 +617,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 case PriceType.HistoryHighest: calPrice = CalPriceHistoryHighest; break;
                 case PriceType.HistoryAverage: calPrice = CalPriceHistoryAverage; break;
                 case PriceType.HistoryLowest: calPrice = CalPriceHistoryLowest; break;
+                case PriceType.HistoryMedian: calPrice = CalPriceHistoryMedian; break;
             }
             foreach(var item in items)
             {
@@ -651,6 +652,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 case PriceType.HistoryHighest: calPrice = CalPriceHistoryHighest; break;
                 case PriceType.HistoryAverage: calPrice = CalPriceHistoryAverage; break;
                 case PriceType.HistoryLowest: calPrice = CalPriceHistoryLowest; break;
+                case PriceType.HistoryMedian: calPrice = CalPriceHistoryMedian; break;
             }
             foreach (var item in items)
             {
@@ -821,6 +823,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 {
                     return (long)Math.Ceiling(history.Sum(p => p.Lowest) / history.Count);
                 }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 历史价格中位数
+        /// </summary>
+        /// <param name="statistics"></param>
+        /// <param name="day"></param>
+        /// <returns></returns>
+        private double CalPriceHistoryMedian(List<Order> orders, List<Statistic> statistics, long sales, int day, bool removeExtremum)
+        {
+            var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
+            if (history.NotNullOrEmpty())
+            {
+                List<decimal> decimals = history.Select(p => p.Lowest).ToList();
+                decimals.AddRange(history.Select(p => p.Highest).ToList());
+                decimals = decimals.OrderBy(p=>p).ToList();
+                var avag = (decimals[decimals.Count / 2 - 1] + decimals[decimals.Count / 2]) / 2;
+                return (double)avag;
             }
             else
             {

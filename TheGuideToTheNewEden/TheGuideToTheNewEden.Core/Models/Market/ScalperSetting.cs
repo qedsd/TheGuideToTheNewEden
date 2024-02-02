@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             set
             {
                 SetProperty(ref buyPrice, value);
-                IsHistoryBuyPrice = (value == PriceType.HistoryLowest || value == PriceType.HistoryHighest || value == PriceType.HistoryAverage);
+                IsHistoryBuyPrice = (value == PriceType.HistoryLowest || value == PriceType.HistoryHighest || value == PriceType.HistoryAverage || value == PriceType.HistoryMedian);
             }
         }
 
@@ -103,7 +103,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             set
             {
                 SetProperty(ref sellPrice, value);
-                IsHistorySellPrice = (value == PriceType.HistoryLowest || value == PriceType.HistoryHighest || value == PriceType.HistoryAverage);
+                IsHistorySellPrice = (value == PriceType.HistoryLowest || value == PriceType.HistoryHighest || value == PriceType.HistoryAverage || value == PriceType.HistoryMedian);
             }
         }
 
@@ -387,6 +387,8 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             HistoryAverage,
             [Description("历史最低价格")]
             HistoryLowest,
+            [Description("历史中位数价格")]
+            HistoryMedian,
         }
 
         public enum SalesType

@@ -261,6 +261,7 @@
     <x:String x:Key="BusinessPage_HistoryHighest">历史最高价格</x:String>
     <x:String x:Key="BusinessPage_HistoryAverage">历史平均价格</x:String>
     <x:String x:Key="BusinessPage_HistoryLowest">历史最低价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryMedian">历史中位数</x:String>
 
     <x:String x:Key="BusinessPage_DaySales">日销量</x:String>
     <x:String x:Key="BusinessPage_SourceSalesDay">源市场统计天数</x:String>

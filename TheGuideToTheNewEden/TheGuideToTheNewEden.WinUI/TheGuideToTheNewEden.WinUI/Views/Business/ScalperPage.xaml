@@ -129,6 +129,7 @@
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighest}" />
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverage}" />
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowest}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryMedian}" />
                                     </ComboBox>
                                     <NumberBox
                                         Header="{StaticResource BusinessPage_HistoryDay}"
@@ -160,6 +161,7 @@
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryHighest}" />
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryAverage}" />
                                         <ComboBoxItem Content="{StaticResource BusinessPage_HistoryLowest}" />
+                                        <ComboBoxItem Content="{StaticResource BusinessPage_HistoryMedian}" />
                                     </ComboBox>
                                     <NumberBox
                                         Header="{StaticResource BusinessPage_HistoryDay}"
