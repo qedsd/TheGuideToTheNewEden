@@ -11,9 +11,6 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using Vanara.PInvoke;
-using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
-using static TheGuideToTheNewEden.WinUI.Services.HotkeyService;
-using static Vanara.PInvoke.User32;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {

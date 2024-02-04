@@ -22,7 +22,6 @@ using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -32,7 +31,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
-            KeyboardService.Start();
             this.InitializeComponent();
             Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
@@ -75,7 +73,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             VM.Dispose();
-            KeyboardService.Stop();
         }
 
         private void PreviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -221,7 +218,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public void Close()
         {
             VM.Dispose();
-            KeyboardService.Stop();
         }
 
         private void MenuFlyoutItem_Up_Click(object sender, RoutedEventArgs e)
