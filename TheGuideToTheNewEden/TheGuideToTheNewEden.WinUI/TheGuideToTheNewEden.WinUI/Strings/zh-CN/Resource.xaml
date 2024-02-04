@@ -451,6 +451,7 @@
     <x:String x:Key="GameLogMonitorPage_Setting">设置</x:String>
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
+    <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
     <x:String x:Key="GameLogMonitorPage_Regex">正则表达式</x:String>
     <x:String x:Key="GameLogMonitorPage_ShowGame">显示游戏窗口</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorMode">监控模式</x:String>
@@ -462,6 +463,7 @@
     <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
     <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>

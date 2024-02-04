@@ -82,5 +82,11 @@ namespace TheGuideToTheNewEden.Core.Models
         }
         private string pattern;
         public string Pattern { get => pattern; set => SetProperty(ref pattern, value);}
+
+        private int span;
+        /// <summary>
+        /// 监控间隔时间，间隔时间内重复检测到关键词不预警
+        /// </summary>
+        public int Span { get => span; set => SetProperty(ref span, value); }
     }
 }

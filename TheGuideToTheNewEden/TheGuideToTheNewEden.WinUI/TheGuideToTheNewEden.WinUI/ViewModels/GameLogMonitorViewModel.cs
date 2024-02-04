@@ -110,7 +110,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError"));
                 return;
             }
-            if(GameLogMonitorNotifyService.Current.Add(SelectedGameLogInfo, GameLogSetting, SelectedGameLogInfo.ListenerName))
+            if (GameLogSetting.Keys.GroupBy(p => p.Pattern).FirstOrDefault(p => p.Count() > 1) != null)
+            {
+                ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_SameKeyError"));
+                return;
+            }
+            if (GameLogMonitorNotifyService.Current.Add(SelectedGameLogInfo, GameLogSetting, SelectedGameLogInfo.ListenerName))
             {
                 Core.Models.GameLogItem gameLogItem = new GameLogItem(SelectedGameLogInfo, GameLogSetting);
                 _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);

@@ -25,7 +25,8 @@ namespace TheGuideToTheNewEden.Core.Models
         /// </summary>
         public event ContentUpdate OnContentUpdate;
         private long _fileStreamOffset = 0;
-        private readonly List<Regex> _regexes = new List<Regex>();
+
+        private readonly Dictionary<GameLogMonityKey, DateTime> _keyTimes = new Dictionary<GameLogMonityKey, DateTime>();
         private GameLogItem _threadErrorGameLogItem;
 
         public GameLogItem(GameLogInfo gameLogInfo, GameLogSetting gameLogSetting)
@@ -35,7 +36,7 @@ namespace TheGuideToTheNewEden.Core.Models
             _fileStreamOffset = FileHelper.GetStreamLength(FilePath);
             foreach (var key in Setting.Keys)
             {
-                _regexes.Add(new Regex(key.Pattern));
+                _keyTimes.Add(key, DateTime.MinValue);
             }
         }
 
@@ -127,11 +128,16 @@ namespace TheGuideToTheNewEden.Core.Models
 
         private bool IsMatch(string content)
         {
-            foreach(var regex in _regexes)
+            foreach(var key in _keyTimes)
             {
-                if(regex.IsMatch(content))
+                if(Regex.Match(content, key.Key.Pattern).Success)
                 {
-                    return true;
+                    if((DateTime.Now - key.Value).TotalSeconds > key.Key.Span)
+                    {
+                        _keyTimes.Remove(key.Key);
+                        _keyTimes.Add(key.Key, DateTime.Now);
+                        return true;
+                    }
                 }
             }
             return false;
