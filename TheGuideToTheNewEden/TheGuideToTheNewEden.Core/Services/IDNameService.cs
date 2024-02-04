@@ -29,7 +29,9 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 _saveQueue.Enqueue(idName);
             }
-            _saveThread ??= new Task(() =>
+            if(_saveThread == null)
+            {
+                _saveThread = new Task(() =>
                 {
                     while (true)
                     {
@@ -51,6 +53,8 @@ namespace TheGuideToTheNewEden.Core.Services
                         Thread.Sleep(1000);//一秒钟检查一次是否有插入
                     }
                 });
+                _saveThread.Start();
+            }
         }
         #endregion
         public static async Task<DBModels.IdName> GetByIdAsync(int id)
