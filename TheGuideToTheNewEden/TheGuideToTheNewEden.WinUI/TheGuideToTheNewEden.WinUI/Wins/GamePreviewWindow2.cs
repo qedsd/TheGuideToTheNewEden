@@ -22,23 +22,19 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class GamePreviewWindow2 : Window, IGamePreviewWindow
+    internal class GamePreviewWindow2 : GamePreviewWindowBase
     {
         private Window _thumbnailWindow;
         private readonly AppWindow _appWindow;
         private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
-        private readonly PreviewItem _setting;
-        private readonly PreviewSetting _previewSetting;
         private readonly OverlappedPresenter _presenter;
         /// <summary>
         /// 必须放到全局变量，避免被GC回收
         /// </summary>
         private ComCtl32.SUBCLASSPROC _wndProcHandler;
-        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting)
+        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
         {
-            _previewSetting = previewSetting;
-            _setting = setting;
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             ExtendsContentIntoTitleBar = true;
@@ -54,7 +50,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             StopTitlebarOp();
             InitUI(_setting.Name);
             MonitorWindow();
-            InitHotkey();
         }
         #region UI
         private TextBlock _TitleTextBlock;
@@ -181,58 +176,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
-        #region 快捷键
-        private int _hotkeyRegisterId;
-        private List<string> _keys;
-        private void InitHotkey()
-        {
-            //快捷键
-            if (!string.IsNullOrEmpty(_setting.HotKey))
-            {
-                Core.Log.Debug($"预览窗口初始化快捷键{_setting.HotKey}");
-                if (Services.HotkeyService.TryGetHotkeyVK(_setting.HotKey, out _, out _))
-                {
-                    if (Services.HotkeyService.GetHotkeyService(this.GetWindowHandle()).Register(_setting.HotKey, out _hotkeyRegisterId))
-                    {
-                        Core.Log.Info("注册窗口热键成功");
-                        var keynames = _setting.HotKey.Split('+');
-                        if (keynames.NotNullOrEmpty())
-                        {
-                            _keys = keynames.ToList();
-                            KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Info($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
-                        (WindowHelper.MainWindow as BaseWindow)?.ShowError($"注册窗口热键{_setting.HotKey}失败，请检查是否按键冲突");
-                    }
-                }
-                else
-                {
-                    Core.Log.Error($"不规范热键{_setting.HotKey}");
-                    (WindowHelper.MainWindow as BaseWindow)?.ShowError($"不规范热键{_setting.HotKey}");
-                }
-            }
-        }
-
-        private void HotkeyService_OnKeyboardClicked(List<KeyboardHook.KeyboardInfo> keys)
-        {
-            if (keys.Count != 0)
-            {
-                foreach (var key in _keys)
-                {
-                    if (!keys.Where(p => p.Name.Equals(key, StringComparison.OrdinalIgnoreCase)).Any())
-                    {
-                        return;
-                    }
-                }
-                //Core.Log.Debug($"捕获到预览窗口激活快捷键{keys.Select(p=>p.Name).ToSeqString(",")}");
-                ActiveSourceWindow();
-            }
-        }
-        #endregion
-        public void HideWindow()
+        public override void HideWindow()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -243,7 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             });
         }
-        public void ShowWindow(bool hHighlight = false)
+        public override void ShowWindow(bool hHighlight = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -262,18 +206,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             });
         }
-        public bool IsHideOnForeground()
+        public override bool IsHideOnForeground()
         {
             return _setting.HideOnForeground;
         }
 
-        public bool IsHighlight()
+        public override bool IsHighlight()
         {
             return _setting.Highlight;
         }
 
         private readonly object _updateThumbnailLocker = new object();
-        public void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
+        public override void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
         {
             lock(_updateThumbnailLocker)
             {
@@ -303,7 +247,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-        public void ActiveSourceWindow()
+        public override void ActiveSourceWindow()
         {
             Task.Run(() =>
             {
@@ -319,7 +263,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             });
         }
 
-        public void Start(IntPtr sourceHWnd)
+        public override void Start(IntPtr sourceHWnd)
         {
             if (_setting.WinW == 0 || _setting.WinH == 0)
             {
@@ -370,25 +314,25 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             TransparentWindowHelper.TransparentWindow(_thumbnailWindow, _setting.OverlapOpacity);
         }
 
-        public void Stop()
+        public override void Stop()
         {
+            base.Stop();
             if (_thumbHWnd != IntPtr.Zero)
             {
                 WindowCaptureHelper.HideThumb(_thumbHWnd);
                 _thumbnailWindow.Close();
                 _thumbHWnd = IntPtr.Zero;
             }
-            KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
             RestoreTitlebarOp();
             this.Close();
         }
 
-        public void Highlight()
+        public override void Highlight()
         {
             UpdateThumbnail(6);
         }
 
-        public void CancelHighlight()
+        public override void CancelHighlight()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -396,17 +340,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             });
         }
 
-        public void SetSize(int w, int h)
+        public override void SetSize(int w, int h)
         {
             _appWindow.Resize(new Windows.Graphics.SizeInt32(w, h));
         }
 
-        public void SetPos(int x, int y)
+        public override void SetPos(int x, int y)
         {
             Helpers.WindowHelper.MoveToScreen(this, x, y);
         }
 
-        public void GetSizeAndPos(out int x, out int y, out int w, out int h)
+        public override void GetSizeAndPos(out int x, out int y, out int w, out int h)
         {
             x = _appWindow.Position.X;
             y = _appWindow.Position.Y;
@@ -414,17 +358,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             h = _appWindow.ClientSize.Height;
         }
 
-        public int GetWidth()
+        public override int GetWidth()
         {
             return _appWindow.ClientSize.Width;
         }
 
-        public int GetHeight()
+        public override int GetHeight()
         {
             return _appWindow.ClientSize.Height;
         }
 
-        public event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
-        public event IGamePreviewWindow.StopDelegate OnStop;
+        public override event IGamePreviewWindow.StopDelegate OnStop;
+        public override event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
     }
 }

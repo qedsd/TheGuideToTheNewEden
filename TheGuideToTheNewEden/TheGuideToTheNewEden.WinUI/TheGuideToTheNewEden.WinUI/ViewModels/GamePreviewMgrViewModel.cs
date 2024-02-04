@@ -136,32 +136,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if(PreviewSetting.PreviewItems.NotNullOrEmpty())
             {
                 Settings = PreviewSetting.PreviewItems.ToObservableCollection();
-                //foreach(var item in Settings)
-                //{
-                //    item.ProcessGUID = item.Name;
-                //}
             }
             else
             {
                 Settings = new ObservableCollection<PreviewItem>();
             }
             Init();
-            StartHotkey();
+            RegisterHotkey();
         }
         #region 切换快捷键
         private int _forwardHotkeyRegisterId;
         private int _backwardHotkeyRegisterId;
-        private void StartHotkey()
+        private void RegisterHotkey()
         {
-            bool result1 = StartForwardHotkey();
-            bool result2 = StartBackwardHotkey();
+            bool result1 = RegisterForwardHotkey();
+            bool result2 = RegisterBackwardHotkey();
             if(result1 && result2)
             {
-                Window.ShowSuccess($"注册切换热键成功");
+                Window.ShowSuccess("注册切换热键成功");
             }
             else if(!result1 && !result2)
             {
-                Window.ShowSuccess($"注册切换热键失败");
+                Window.ShowError("注册热键失败，请检查是否按键冲突、按键名称是否规范");
             }
             else if(result1)
             {
@@ -172,217 +168,211 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowSuccess($"注册切换热键{PreviewSetting.SwitchHotkey_Backward}成功");
             }
         }
-        private bool StartForwardHotkey()
+        private bool RegisterForwardHotkey()
         {
             Core.Log.Info($"向前全局切换快捷键{PreviewSetting.SwitchHotkey_Forward}");
             if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Forward))
             {
                 return false;
             }
-            if(HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Forward, out _forwardHotkeyRegisterId))
+            if(!UnregisterForwardHotkey())
             {
-                Core.Log.Info("注册热键成功");
-                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Forward}成功");
-                KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
-                KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
-                return true;
-            }
-            else
-            {
-                Core.Log.Info("注册热键失败");
-                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Forward}失败，请检查是否按键冲突");
                 return false;
             }
+            return RegisterHotkey(PreviewSetting.SwitchHotkey_Forward, out _forwardHotkeyRegisterId);
         }
-        private bool StartBackwardHotkey()
+        private bool RegisterBackwardHotkey()
         {
             Core.Log.Info($"向后全局切换快捷键{PreviewSetting.SwitchHotkey_Backward}");
             if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Backward))
             {
                 return false;
             }
-            if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId))
+            if (!UnregisterBackwardHotkey())
             {
-                Core.Log.Info("注册热键成功");
-                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Backward}成功");
-                KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
-                KeyboardService.OnKeyboardClicked += HotkeyService_OnKeyboardClicked;
+                return false;
+            }
+            return RegisterHotkey(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId);
+        }
+        private bool RegisterHotkey(string hotkey, out int hotkeyRegisterId)
+        {
+            hotkeyRegisterId = -1;
+            if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Register(hotkey, out hotkeyRegisterId))
+            {
+                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).HotkeyActived -= GamePreviewMgrViewModel_HotkeyActived;
+                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).HotkeyActived += GamePreviewMgrViewModel_HotkeyActived;
                 return true;
             }
             else
             {
-                Core.Log.Info("注册热键失败");
-                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Backward}失败，请检查是否按键冲突");
                 return false;
+            }
+        }
+        private bool UnregisterForwardHotkey()
+        {
+            if (_forwardHotkeyRegisterId > 0)
+            {
+                if(HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId))
+                {
+                    _forwardHotkeyRegisterId = -1;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+        private bool UnregisterBackwardHotkey()
+        {
+            if (_backwardHotkeyRegisterId > 0)
+            {
+                if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId))
+                {
+                    _backwardHotkeyRegisterId = -1;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
             }
         }
         public ICommand SetForwardHotkeyCommand => new RelayCommand(() =>
         {
-            if(string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Forward))
+            if(RegisterForwardHotkey())
             {
-                if (_forwardHotkeyRegisterId > 0)//先注销原本热键
-                {
-                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
-                    _forwardHotkeyRegisterId = -1;
-                    Window.ShowSuccess($"已注销热键{PreviewSetting.SwitchHotkey_Forward}");
-                }
-                return;
-            }
-            if(HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Forward,out _,out _))
-            {
-                if (_forwardHotkeyRegisterId > 0)//先注销原本热键
-                {
-                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
-                }
-                StartForwardHotkey();
+                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Forward}成功");
             }
             else
             {
-                Window.ShowError($"不规范热键");
+                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Forward}失败，请检查是否按键冲突、按键名称是否规范");
             }
         });
         public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
         {
-            if (string.IsNullOrEmpty(PreviewSetting.SwitchHotkey_Backward))
+            if (RegisterBackwardHotkey())
             {
-                if (_backwardHotkeyRegisterId > 0)//先注销原本热键
-                {
-                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
-                    _backwardHotkeyRegisterId = -1;
-                    Window.ShowSuccess($"已注销热键{PreviewSetting.SwitchHotkey_Backward}");
-                }
-                return;
-            }
-            if (HotkeyService.TryGetHotkeyVK(PreviewSetting.SwitchHotkey_Backward, out _, out _))
-            {
-                if (_backwardHotkeyRegisterId > 0)//先注销原本热键
-                {
-                    HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
-                }
-                StartBackwardHotkey();
+                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Backward}成功");
             }
             else
             {
-                Window.ShowError($"不规范热键");
+                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Backward}失败，请检查是否按键冲突、按键名称是否规范");
             }
         });
-        private string _lastProcessGUID;
-        private void HotkeyService_OnKeyboardClicked(List<Common.KeyboardHook.KeyboardInfo> keys)
+
+        private void GamePreviewMgrViewModel_HotkeyActived(int hotkeyId)
         {
-            //限定按键顺序
-            if (keys.NotNullOrEmpty())
+            if (_runningDic.Any())
             {
-                if (_runningDic.Any())
+                if(hotkeyId == _forwardHotkeyRegisterId)
                 {
-                    StringBuilder formatHotkey = new StringBuilder();
-                    foreach (var key in keys)
+                    SwitchForward();
+                }
+                else if(hotkeyId == _backwardHotkeyRegisterId)
+                {
+                    SwitchBackward();
+                }
+            }
+        }
+        private string _lastActiveProcessGUID;
+        private void SwitchForward()
+        {
+            if (_lastActiveProcessGUID == null)
+            {
+                var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                if (firstRunning != null)
+                {
+                    if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
                     {
-                        if (HotkeyService.TryGetHotkeyName(key.VirtKey, out string name))
-                        {
-                            formatHotkey.Append('+');
-                            formatHotkey.Append(name);
-                        }
-                        else
-                        {
-                            Core.Log.Error($"Unknown VirtKey:{key.VirtKey}");
-                            return;
-                        }
+                        value.ActiveSourceWindow();
+                        _lastActiveProcessGUID = firstRunning.GUID;
                     }
-                    formatHotkey.Remove(0, 1);
-                    Debug.WriteLine(formatHotkey);
-                    if (PreviewSetting.SwitchHotkey_Forward.Equals(formatHotkey.ToString(), StringComparison.OrdinalIgnoreCase))//向前进切换
+                }
+            }
+            else
+            {
+                var runnings = Processes.Where(p => p.Running).ToList();
+                for (int i = 0; i < runnings.Count; i++)
+                {
+                    var item = runnings[i];
+                    if (item.GUID == _lastActiveProcessGUID)
                     {
-                        KeyboardService.Clear();
-                        if (_lastProcessGUID == null)
+                        string targetGUID = null;
+                        //上一次激活的窗口不是最后一个窗口，则依序激活下一个
+                        //是最后一个窗口则激活第一个
+                        if (i != runnings.Count - 1)
                         {
-                            var firstRunning = Processes.FirstOrDefault(p => p.Running);
-                            if (firstRunning != null)
-                            {
-                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                                {
-                                    value.ActiveSourceWindow();
-                                    _lastProcessGUID = firstRunning.GUID;
-                                }
-                            }
+                            targetGUID = runnings[i + 1].GUID;
                         }
                         else
                         {
-                            var runnings = Processes.Where(p => p.Running).ToList();
-                            for (int i = 0; i < runnings.Count; i++)
+                            targetGUID = runnings.First().GUID;
+                        }
+                        if (targetGUID != null)
+                        {
+                            if (_runningDic.TryGetValue(targetGUID, out var value))
                             {
-                                var item = runnings[i];
-                                if (item.GUID == _lastProcessGUID)
-                                {
-                                    string targetGUID = null;
-                                    //上一次激活的窗口不是最后一个窗口，则依序激活下一个
-                                    //是最后一个窗口则激活第一个
-                                    if (i != runnings.Count - 1)
-                                    {
-                                        targetGUID = runnings[i + 1].GUID;
-                                    }
-                                    else
-                                    {
-                                        targetGUID = runnings.First().GUID;
-                                    }
-                                    if (targetGUID != null)
-                                    {
-                                        if (_runningDic.TryGetValue(targetGUID, out var value))
-                                        {
-                                            value.ActiveSourceWindow();
-                                            _lastProcessGUID = targetGUID;
-                                        }
-                                    }
-                                    break;
-                                }
+                                value.ActiveSourceWindow();
+                                _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        break;
                     }
-                    else if(PreviewSetting.SwitchHotkey_Backward.Equals(formatHotkey.ToString(), StringComparison.OrdinalIgnoreCase))//向后退切换
+                }
+            }
+        }
+
+        private void SwitchBackward()
+        {
+            if (_lastActiveProcessGUID == null)
+            {
+                var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                if (firstRunning != null)
+                {
+                    if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
                     {
-                        KeyboardService.Clear();
-                        if (_lastProcessGUID == null)
+                        value.ActiveSourceWindow();
+                        _lastActiveProcessGUID = firstRunning.GUID;
+                    }
+                }
+            }
+            else
+            {
+                var runnings = Processes.Where(p => p.Running).ToList();
+                for (int i = 0; i < runnings.Count; i++)
+                {
+                    var item = runnings[i];
+                    if (item.GUID == _lastActiveProcessGUID)
+                    {
+                        string targetGUID = null;
+                        //上一次激活的窗口第一个窗口，则依序激活上一个
+                        //是第一个窗口则激活最后一个
+                        if (i != 0)
                         {
-                            var firstRunning = Processes.FirstOrDefault(p => p.Running);
-                            if (firstRunning != null)
-                            {
-                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                                {
-                                    value.ActiveSourceWindow();
-                                    _lastProcessGUID = firstRunning.GUID;
-                                }
-                            }
+                            targetGUID = runnings[i - 1].GUID;
                         }
                         else
                         {
-                            var runnings = Processes.Where(p => p.Running).ToList();
-                            for (int i = 0; i < runnings.Count; i++)
+                            targetGUID = runnings.Last().GUID;
+                        }
+                        if (targetGUID != null)
+                        {
+                            if (_runningDic.TryGetValue(targetGUID, out var value))
                             {
-                                var item = runnings[i];
-                                if (item.GUID == _lastProcessGUID)
-                                {
-                                    string targetGUID = null;
-                                    //上一次激活的窗口第一个窗口，则依序激活上一个
-                                    //是第一个窗口则激活最后一个
-                                    if (i != 0)
-                                    {
-                                        targetGUID = runnings[i - 1].GUID;
-                                    }
-                                    else
-                                    {
-                                        targetGUID = runnings.Last().GUID;
-                                    }
-                                    if (targetGUID != null)
-                                    {
-                                        if (_runningDic.TryGetValue(targetGUID, out var value))
-                                        {
-                                            value.ActiveSourceWindow();
-                                            _lastProcessGUID = targetGUID;
-                                        }
-                                    }
-                                    break;
-                                }
+                                value.ActiveSourceWindow();
+                                _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        break;
                     }
                 }
             }
@@ -852,7 +842,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(_runningDic.TryGetValue(targetProcess.GUID, out var item))
                 {
-                    _lastProcessGUID = targetProcess.GUID;
+                    _lastActiveProcessGUID = targetProcess.GUID;
                     if (item.IsHideOnForeground())
                     {
                         item.HideWindow();
@@ -1231,16 +1221,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             StopAll();
             Processes.CollectionChanged -= Processes_CollectionChanged;
-            KeyboardService.OnKeyboardClicked -= HotkeyService_OnKeyboardClicked;
+            HotkeyService.GetHotkeyService(Window.GetWindowHandle()).HotkeyActived -= GamePreviewMgrViewModel_HotkeyActived;
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
-            if(_forwardHotkeyRegisterId > 0)
-            {
-                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_forwardHotkeyRegisterId);
-            }
-            if (_backwardHotkeyRegisterId > 0)
-            {
-                HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(_backwardHotkeyRegisterId);
-            }
+            UnregisterForwardHotkey();
+            UnregisterBackwardHotkey();
         }
     }
 }

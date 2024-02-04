@@ -7,7 +7,7 @@ Backspace,8,
 Tab,9,
 Clear,12,清除键
 Enter,13,回车键
-Shitf,16,
+Shift,16,
 Ctrl,17,
 Alt,18
 Pause,19,暂停键
@@ -83,7 +83,7 @@ Add,107,加号键
 Separator,108,分隔符键
 Subtract,109,减号键
 Decimal,110,句点键
-Divide111,除号键
+Divide,111,除号键
 F1,112
 F2,113
 F3,114
@@ -127,7 +127,7 @@ VK_VOLUME_MUTE,0xAD,静音键
 VK_VOLUME_DOWN,0xAE,音量减小键
 VK_VOLUME_UP,0xAF,音量增加键
 VK_MEDIA_NEXT_TRACK,0xB0,下一曲目键
-VK_MEDIA_PREV_TRACK	0xB1,上一曲目键
+VK_MEDIA_PREV_TRACK,0xB1,上一曲目键
 VK_MEDIA_STOP,0xB2,停止媒体键
 VK_MEDIA_PLAY_PAUSE,0xB3,播放/暂停媒体键
 VK_LAUNCH_MAIL,0xB4,启动邮件键

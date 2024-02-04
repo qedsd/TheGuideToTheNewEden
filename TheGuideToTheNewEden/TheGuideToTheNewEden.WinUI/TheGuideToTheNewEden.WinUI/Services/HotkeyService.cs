@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using Vanara.PInvoke;
+using static TheGuideToTheNewEden.WinUI.Common.KeyboardHook;
 using static TheGuideToTheNewEden.WinUI.Services.HotkeyService;
 using static Vanara.PInvoke.User32;
 
@@ -267,18 +268,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 bool result = RegisterHotKey(_hwnd, registerId, fsModifier, vk);
                 if (result)
                 {
-                    Core.Log.Info($"已注册热键{_hwnd}_{registerId}");
-                    return TryMonitorHotKey();
+                    Core.Log.Info($"注册热键{_hwnd}_{registerId}成功");
+                    return TryMonitorHotKey(_hwnd);
                 }
                 else
                 {
-                    Core.Log.Error($"添加热键{fsModifier}+{vk}失败，RegisterHotKey失败");
+                    Core.Log.Error($"注册热键{fsModifier}+{vk}失败");
+                    registerId = -1;
                     return false;
                 }
             }
             else
             {
-                Core.Log.Error($"添加热键{fsModifier}+{vk}失败，已存在相同热键ID");
+                Core.Log.Error($"注册热键{fsModifier}+{vk}失败，已存在相同热键ID");
                 registerId = -1;
                 return false;
             }
@@ -292,13 +294,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if(UnregisterHotKey(_hwnd, id))
             {
-                Core.Log.Info($"已注销热键{_hwnd}_{id}");
+                Core.Log.Info($"注销热键{_hwnd}_{id}成功");
                 _registerIds.Remove(id);
                 return true;
             }
             else
             {
-                Core.Log.Error($"注销热键{id}失败");
+                Core.Log.Error($"注销热键{_hwnd}_{id}失败");
                 return false;
             }
         }
@@ -314,13 +316,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _dic.Remove(_hwnd);
         }
 
+        #region 监控热键触发
+        public delegate void HotkeyActivedDeletegate(int hotkeyId);
+        public event HotkeyActivedDeletegate HotkeyActived;
         private ComCtl32.SUBCLASSPROC _wndProcHandler;
-        private bool TryMonitorHotKey()
+        private bool TryMonitorHotKey(IntPtr _hwnd)
         {
             if(_wndProcHandler == null)
             {
                 _wndProcHandler = new ComCtl32.SUBCLASSPROC(WndProc);
-                bool result = ComCtl32.SetWindowSubclass(WindowHelper.GetWindowHandle(Helpers.WindowHelper.MainWindow), _wndProcHandler, 1, IntPtr.Zero);
+                bool result = ComCtl32.SetWindowSubclass(_hwnd, _wndProcHandler, 1, IntPtr.Zero);
                 if(!result)
                 {
                     _wndProcHandler = null;
@@ -333,14 +338,23 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return true;
             }
         }
-        public static unsafe IntPtr WndProc(HWND hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, nuint uIdSubclass, IntPtr dwRefData)
+        public unsafe IntPtr WndProc(HWND hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, nuint uIdSubclass, IntPtr dwRefData)
         {
             if(uMsg == (uint)User32.WindowMessage.WM_HOTKEY)
             {
-                EventMsg msg = (EventMsg)Marshal.PtrToStructure(lParam, typeof(EventMsg));
-                int vk = msg.vkCode & 0xff;
+                try
+                {
+                    var hotkeyId = (int)wParam;
+                    HotkeyActived?.Invoke(hotkeyId);
+                    Core.Log.Info($"Got hotkey {_hwnd}_{hotkeyId}");
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                }
             }
             return ComCtl32.DefSubclassProc(hWnd, uMsg, wParam, lParam);
         }
+        #endregion
     }
 }
