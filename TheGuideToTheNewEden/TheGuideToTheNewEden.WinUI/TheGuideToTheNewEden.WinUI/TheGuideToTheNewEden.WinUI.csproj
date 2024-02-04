@@ -8,8 +8,8 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <ApplicationIcon>logo_32.ico</ApplicationIcon>
-    <PackageIcon>logo_180.png</PackageIcon>
+    <ApplicationIcon>logo_128.ico</ApplicationIcon>
+    <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<AssemblyVersion>2.6.3.0</AssemblyVersion>
@@ -240,6 +240,7 @@
     <None Remove="Dialogs\AddSerenityAuthDialog.xaml" />
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
+    <None Remove="logo_128.ico" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
@@ -298,6 +299,9 @@
     <None Remove="Views\ZKBHomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="logo_128.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="logo_32.ico" />
   </ItemGroup>
 
@@ -387,6 +391,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
@@ -495,6 +502,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Images\LinkIcons\zkb.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\logo_128.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Images\logo_32.ico">
