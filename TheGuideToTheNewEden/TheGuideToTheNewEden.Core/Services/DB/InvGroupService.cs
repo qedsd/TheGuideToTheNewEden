@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
@@ -30,24 +31,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return item;
         }
-        public static async Task<List<InvGroup>> QueryGroupsAsync(string name)
-        {
-            var items = await DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToListAsync();
-            if (DBService.NeedLocalization)
-            {
-                await LocalDbService.TranInvGroupsAsync(items);
-            }
-            return items;
-        }
-        public static List<InvGroup> QueryGroups(string name)
-        {
-            var items = DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToList();
-            if (DBService.NeedLocalization)
-            {
-                LocalDbService.TranInvGroups(items);
-            }
-            return items;
-        }
+        
         public static async Task<List<InvGroup>> QueryGroupsAsync(List<int> ids)
         {
             var items = await DBService.MainDb.Queryable<InvGroup>().Where(p => ids.Contains(p.GroupID)).ToListAsync();
@@ -124,6 +108,30 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             var groups = DBService.MainDb.Queryable<InvGroup>().Where(p => categories.Contains(p.CategoryID)).ToList();
             return groups.Select(p => p.GroupID).ToList();
+        }
+
+        public static async Task<List<TranslationSearchItem>> SearchAsync(string name)
+        {
+            return await Task.Run(() =>
+            {
+                return Search(name);
+            });
+        }
+
+        public static List<TranslationSearchItem> Search(string name)
+        {
+            List<TranslationSearchItem> searchItems = new List<TranslationSearchItem>();
+            var types = DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToList();
+            if (types.NotNullOrEmpty())
+            {
+                types.ForEach(p => searchItems.Add(new TranslationSearchItem(p)));
+            }
+            var localTypes = LocalDbService.SearchInvType(name);
+            if (localTypes.NotNullOrEmpty())
+            {
+                localTypes.ForEach(p => searchItems.Add(new TranslationSearchItem(p)));
+            }
+            return searchItems;
         }
     }
 }

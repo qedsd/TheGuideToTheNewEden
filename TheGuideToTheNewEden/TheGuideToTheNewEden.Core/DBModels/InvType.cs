@@ -1,19 +1,16 @@
 ﻿using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Xml.Linq;
 
 namespace TheGuideToTheNewEden.Core.DBModels
 {
     [SugarTable("invTypes")]
     public class InvType: InvTypeBase
     {
-        //public int TypeID { get; set; }
         public int GroupID { get; set; }
-        //[SugarColumn(IsNullable = true)]
-        //public string TypeName { get; set; }
-        //[SugarColumn(IsNullable = true)]
-        //public string Description { get; set; }
         public double Mass { get; set; }
         public double Volume { get; set; }
         public double PackagedVolume { get; set; }
@@ -33,9 +30,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
     [SugarTable("invTypes")]
     public class InvTypeBase
     {
+        [Display(Order = 1)]
         public int TypeID { get; set; }
+
+        [Display(Order = 2)]
         [SugarColumn(IsNullable = true)]
         public string TypeName { get; set; }
+
         [SugarColumn(IsNullable = true)]
         public string Description { get; set; }
     }

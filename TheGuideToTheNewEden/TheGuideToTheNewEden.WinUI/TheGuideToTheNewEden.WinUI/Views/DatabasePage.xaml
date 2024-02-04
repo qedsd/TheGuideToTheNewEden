@@ -1,0 +1,68 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.DatabasePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                x:Name="StackPanel_SearchResult"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <TextBlock FontWeight="Light" Text="{StaticResource DatabasePage_SearchResult}" />
+                <TextBlock
+                    x:Name="TextBlock_SearchCount"
+                    Margin="8,0,0,0"
+                    FontWeight="Light" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ComboBox x:Name="ComboBox_SerachType" SelectedIndex="0">
+                    <ComboBoxItem Content="{StaticResource DatabasePage_InvType}" />
+                    <ComboBoxItem Content="{StaticResource DatabasePage_InvGroup}" />
+                    <ComboBoxItem Content="{StaticResource DatabasePage_MapSystem}" />
+                    <ComboBoxItem Content="{StaticResource DatabasePage_MapRegion}" />
+                    <ComboBoxItem Content="{StaticResource DatabasePage_Station}" />
+                    <ComboBoxItem Content="{StaticResource DatabasePage_IdName}" />
+                </ComboBox>
+                <AutoSuggestBox
+                    x:Name="SuggestBox"
+                    Width="200"
+                    QueryIcon="Find"
+                    QuerySubmitted="SuggestBox_QuerySubmitted" />
+            </StackPanel>
+        </Grid>
+        <dataGrid:SfDataGrid
+            x:Name="ResultDataGrid"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            AllowDraggingColumns="True"
+            AllowEditing="True"
+            AllowFiltering="True"
+            AllowGrouping="True"
+            AllowResizingColumns="True"
+            AllowSorting="True"
+            AutoGenerateColumns="True"
+            ColumnWidthMode="Auto"
+            GridLinesVisibility="Both"
+            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+            HeaderLinesVisibility="Both"
+            SelectionMode="Extended"
+            ShowGroupDropArea="True" />
+
+    </Grid>
+</Page>

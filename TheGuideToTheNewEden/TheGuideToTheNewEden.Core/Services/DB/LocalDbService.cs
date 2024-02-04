@@ -150,6 +150,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var type = TranInvGroup(invGroup.GroupID);
             invGroup.GroupName = type?.GroupName;
         }
+
+        public static List<InvGroupBase> SearchInvGroup(string partName)
+        {
+            return DBService.LocalDb.Queryable<InvGroupBase>().Where(p => p.GroupName.Contains(partName)).ToList();
+        }
         #endregion
 
         #region region

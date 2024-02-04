@@ -127,7 +127,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         });
                 ships = types.Where(p => typeGroups.Contains(p.GroupID)).ToList();
             }
-            var groups = Core.Services.DB.InvGroupService.QueryGroups(searchName);
+            var groups = Core.Services.DB.InvGroupService.Search(searchName);
             var systems = Core.Services.DB.MapSolarSystemService.Search(searchName);
             var regions = Core.Services.DB.MapRegionService.Search(searchName);
             if (cancellationToken.IsCancellationRequested)
@@ -152,8 +152,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 {
                     result.Add(new IdName()
                     {
-                        Id = group.GroupID,
-                        Name = group.GroupName,
+                        Id = group.ID,
+                        Name = group.Name,
                         Category = (int)IdName.CategoryEnum.Group
                     });
                 }

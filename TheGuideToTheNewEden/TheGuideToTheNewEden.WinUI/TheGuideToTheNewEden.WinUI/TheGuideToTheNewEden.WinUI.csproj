@@ -260,6 +260,7 @@
     <None Remove="Views\Character\WalletPage.xaml" />
     <None Remove="Views\ContractDetailPage.xaml" />
     <None Remove="Views\ContractPage.xaml" />
+    <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
     <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
@@ -502,6 +503,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\DatabasePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\ZKBSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

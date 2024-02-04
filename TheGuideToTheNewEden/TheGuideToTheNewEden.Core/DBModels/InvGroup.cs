@@ -1,6 +1,7 @@
 ﻿using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
@@ -20,7 +21,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
     [SugarTable("invGroups")]
     public class InvGroupBase
     {
+        [Display(Order = 1)]
         public int GroupID { get; set; }
+
+        [Display(Order = 2)]
         [SugarColumn(IsNullable = true)]
         public string GroupName { get; set; }
     }

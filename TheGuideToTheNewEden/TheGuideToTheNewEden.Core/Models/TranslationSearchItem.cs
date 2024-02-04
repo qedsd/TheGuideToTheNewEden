@@ -78,10 +78,15 @@ namespace TheGuideToTheNewEden.Core.Models
             Type = TranslationSearchType.StaStation;
             IsLocal = isLocal;
         }
-
+        public TranslationSearchItem(InvGroup group)
+        {
+            ID = group.GroupID;
+            Name = group.GroupName;
+            Type = TranslationSearchType.InvGroup;
+        }
         public enum TranslationSearchType
         {
-            InvType, MapSolarSystem, MapRegion, StaStation
+            InvType, MapSolarSystem, MapRegion, StaStation,InvGroup
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
@@ -29,7 +30,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
     [SugarTable("staStations")]
     public class StaStationBase
     {
+        [Display(Order = 1)]
         public int StationID { get; set; }
+
+        [Display(Order = 2)]
         [SugarColumn(IsNullable = true)]
         public string StationName { get; set; }
     }
