@@ -386,7 +386,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="ESI.NET.dll">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
