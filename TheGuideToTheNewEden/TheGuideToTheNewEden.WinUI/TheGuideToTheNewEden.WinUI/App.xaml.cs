@@ -10,6 +10,7 @@ namespace TheGuideToTheNewEden.WinUI
 {
     public partial class App : Application
     {
+        public static bool HandleClosedEvents { get; set; } = true;
         private NotificationManager notificationManager;
         public App()
         {
@@ -53,17 +54,24 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 MainContent = new Views.HomePage()
             };
-            m_window.AppWindow.Closing += AppWindow_Closing;
+            m_window.Closed += M_window_Closed;
             (m_window as BaseWindow).SetTavViewHomeMode();
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();
         }
 
-        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
+        private void M_window_Closed(object sender, WindowEventArgs args)
         {
-
-            ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
+            if (HandleClosedEvents)
+            {
+                args.Handled = true;
+                (sender as Window).Hide();
+            }
+            else
+            {
+                ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
+            }
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)

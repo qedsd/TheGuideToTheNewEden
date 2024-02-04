@@ -646,4 +646,8 @@
     <!--  GamePreviewMgrPage  -->
     <x:String x:Key="GamePreviewMgrPage_MoveUp">上移</x:String>
     <x:String x:Key="GamePreviewMgrPage_MoveDown">下移</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="TaskbarIcon_Show">显示</x:String>
+    <x:String x:Key="TaskbarIcon_Exit">退出</x:String>
 </ResourceDictionary>

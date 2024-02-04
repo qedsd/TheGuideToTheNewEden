@@ -5,28 +5,51 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="using:H.NotifyIcon"
     Background="Transparent"
     mc:Ignorable="d">
-
-    <TabView
-        x:Name="TabView"
-        Padding="0,0,0,0"
-        VerticalAlignment="Stretch"
-        AddTabButtonClick="TabView_AddTabButtonClick"
-        Background="Transparent"
-        CloseButtonOverlayMode="OnPointerOver"
-        TabCloseRequested="TabView_TabCloseRequested">
-        <TabView.TabStripHeader>
-            <Grid
-                x:Name="ShellTitleBarInset"
-                Width="28"
-                Background="Transparent" />
-        </TabView.TabStripHeader>
-        <TabView.TabStripFooter>
-            <Grid
-                x:Name="CustomDragRegion"
-                MinWidth="150"
-                Background="Transparent" />
-        </TabView.TabStripFooter>
-    </TabView>
+    <Page.Resources>
+        <MenuFlyout x:Key="TrayContextFlyout">
+            <MenuFlyoutItem Click="TaskbarIcon_Exit_Click" Text="{StaticResource TaskbarIcon_Exit}" />
+            <MenuFlyoutSeparator />
+        </MenuFlyout>
+    </Page.Resources>
+    <Grid>
+        <tb:TaskbarIcon
+            x:Name="TaskbarIcon"
+            IconSource="/Resources/Images/logo_32.ico"
+            LeftClickCommand="{x:Bind ShowCommand}"
+            MenuActivation="LeftOrRightClick"
+            NoLeftClickDelay="True"
+            PopupActivation="RightClick"
+            ToolTipText="{StaticResource AppDisplayName}">
+            <tb:TaskbarIcon.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Command="{x:Bind ShowCommand}" Text="{StaticResource TaskbarIcon_Show}" />
+                    <MenuFlyoutItem Command="{x:Bind ExitCommand}" Text="{StaticResource TaskbarIcon_Exit}" />
+                </MenuFlyout>
+            </tb:TaskbarIcon.ContextFlyout>
+        </tb:TaskbarIcon>
+        <TabView
+            x:Name="TabView"
+            Padding="0,0,0,0"
+            VerticalAlignment="Stretch"
+            AddTabButtonClick="TabView_AddTabButtonClick"
+            Background="Transparent"
+            CloseButtonOverlayMode="OnPointerOver"
+            TabCloseRequested="TabView_TabCloseRequested">
+            <TabView.TabStripHeader>
+                <Grid
+                    x:Name="ShellTitleBarInset"
+                    Width="28"
+                    Background="Transparent" />
+            </TabView.TabStripHeader>
+            <TabView.TabStripFooter>
+                <Grid
+                    x:Name="CustomDragRegion"
+                    MinWidth="150"
+                    Background="Transparent" />
+            </TabView.TabStripFooter>
+        </TabView>
+    </Grid>
 </Page>

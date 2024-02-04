@@ -32,8 +32,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public GamePreviewMgrPage()
         {
             this.InitializeComponent();
-            Loaded += GamePreviewMgrPage_Loaded2;
             Loaded += GamePreviewMgrPage_Loaded;
+            Loaded += GamePreviewMgrPage_Loaded2;
             Unloaded += GamePreviewMgrPage_Unloaded;
         }
 
@@ -48,15 +48,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private IntPtr windowHandle = IntPtr.Zero;
         private void GamePreviewMgrPage_Loaded2(object sender, RoutedEventArgs e)
         {
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            VM.Window = Window;
-            windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
-            if (AppWindow != null)
-            {
-                AppWindow.Closing -= AppWindow_Closing;
-            }
-            AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
-            AppWindow.Closing += AppWindow_Closing;
             if(lastThumb!= IntPtr.Zero && ProcessList.SelectedItem != null)
             {
                 lastThumb = WindowCaptureHelper.Show(windowHandle, (ProcessList.SelectedItem as ProcessInfo).MainWindowHandle);
@@ -68,11 +59,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded -= GamePreviewMgrPage_Loaded;
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
-        }
-
-        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
-        {
-            VM.Dispose();
+            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            VM.Window = Window;
+            windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
+            AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
         }
 
         private void PreviewGrid_SizeChanged(object sender, SizeChangedEventArgs e)

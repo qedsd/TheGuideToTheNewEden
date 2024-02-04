@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.Input;
+using H.NotifyIcon.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -168,5 +171,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 }
             }
         }
+
+
+        #region ÏµÍ³ÍÐÅÌ
+        private void TaskbarIcon_Exit_Click(object sender, RoutedEventArgs e)
+        {
+            App.HandleClosedEvents = false;
+            TaskbarIcon.Dispose();
+            Helpers.WindowHelper.MainWindow.Close();
+        }
+        private ICommand ShowCommand => new RelayCommand(() =>
+        {
+            Helpers.WindowHelper.MainWindow.Activate();
+        });
+        private ICommand ExitCommand => new RelayCommand(() =>
+        {
+            App.HandleClosedEvents = false;
+            TaskbarIcon.Dispose();
+            Helpers.WindowHelper.MainWindow.Close();
+        });
+        #endregion
     }
 }
