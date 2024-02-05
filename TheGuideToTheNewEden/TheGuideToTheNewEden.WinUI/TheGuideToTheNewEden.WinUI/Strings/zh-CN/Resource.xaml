@@ -324,6 +324,7 @@
     <x:String x:Key="SettingPage_Market">市场</x:String>
     <x:String x:Key="SettingPage_Test">测试</x:String>
     <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="SettingPage_KeyboardList">按键列表</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
@@ -661,4 +662,9 @@
     <x:String x:Key="DatabasePage_MapRegion">星域</x:String>
     <x:String x:Key="DatabasePage_Station">空间站</x:String>
     <x:String x:Key="DatabasePage_IdName">缓存ID名称</x:String>
+
+    <!--  KeyboardListPage  -->
+    <x:String x:Key="KeyboardListPage_Name">按键名称</x:String>
+    <x:String x:Key="KeyboardListPage_Code">按键代码</x:String>
+    <x:String x:Key="KeyboardListPage_Note">备注</x:String>
 </ResourceDictionary>

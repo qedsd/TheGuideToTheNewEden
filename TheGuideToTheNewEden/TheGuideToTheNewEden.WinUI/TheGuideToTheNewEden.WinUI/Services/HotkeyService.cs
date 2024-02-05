@@ -353,5 +353,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return ComCtl32.DefSubclassProc(hWnd, uMsg, wParam, lParam);
         }
         #endregion
+
+        public static List<KeyboardItem> GetKeyboardItems()
+        {
+            LoadKeys();
+            return _keyboards.Values.ToList();
+        }
     }
 }

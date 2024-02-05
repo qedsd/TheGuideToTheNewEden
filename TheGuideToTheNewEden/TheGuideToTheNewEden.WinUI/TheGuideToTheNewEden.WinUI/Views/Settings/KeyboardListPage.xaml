@@ -1,0 +1,35 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Settings.KeyboardListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <dataGrid:SfDataGrid
+        x:Name="ResultDataGrid"
+        Grid.Row="1"
+        HorizontalAlignment="Stretch"
+        AllowDraggingColumns="True"
+        AllowEditing="True"
+        AllowFiltering="True"
+        AllowGrouping="False"
+        AllowResizingColumns="True"
+        AllowSorting="True"
+        AutoGenerateColumns="False"
+        ColumnWidthMode="Star"
+        GridLinesVisibility="Both"
+        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+        HeaderLinesVisibility="Both"
+        SelectionMode="Extended"
+        ShowGroupDropArea="False">
+        <dataGrid:SfDataGrid.Columns>
+            <dataGrid:GridTextColumn HeaderText="{StaticResource KeyboardListPage_Name}" MappingName="Name" />
+            <dataGrid:GridTextColumn HeaderText="{StaticResource KeyboardListPage_Code}" MappingName="Code" />
+            <dataGrid:GridTextColumn HeaderText="{StaticResource KeyboardListPage_Note}" MappingName="Note" />
+        </dataGrid:SfDataGrid.Columns>
+    </dataGrid:SfDataGrid>
+</Page>

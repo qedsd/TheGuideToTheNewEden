@@ -48,5 +48,11 @@
             </PivotItem.Header>
             <settings:TestSettingPage />
         </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_KeyboardList}" />
+            </PivotItem.Header>
+            <settings:KeyboardListPage />
+        </PivotItem>
     </Pivot>
 </Page>
