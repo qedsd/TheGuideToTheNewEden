@@ -58,6 +58,7 @@
             AllowSorting="True"
             AutoGenerateColumns="True"
             ColumnWidthMode="Auto"
+            FrozenColumnsCount="2"
             GridLinesVisibility="Both"
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
             HeaderLinesVisibility="Both"
