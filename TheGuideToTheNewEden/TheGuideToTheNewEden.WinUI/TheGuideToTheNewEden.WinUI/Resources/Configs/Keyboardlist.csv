@@ -14,7 +14,7 @@ Pause,19,暂停键
 CapsLock,20,大写键
 Esc,27,
 Space,32,空格键
-PageUPp,33,
+PageUp,33,
 PageDown,34,
 End,35,
 Home,36,
@@ -67,7 +67,7 @@ Y,89
 Z,90
 Win,91,左边Window键
 LeftWin,91,左边Window键
-RightLeftWin,92,右边Window键
+RightWin,92,右边Window键
 Num0,96,数字键盘0
 Num1,97,数字键盘1
 Num2,98,数字键盘2

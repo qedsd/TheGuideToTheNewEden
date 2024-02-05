@@ -35,7 +35,17 @@ namespace TheGuideToTheNewEden.Core.Models
                 {
                     throw new Exception("未知按键Code");
                 }
-                item.Note = values.Length >= 3 ? values[2] : null;
+                if(values.Length >= 3)
+                {
+                    if (csvLine.EndsWith("键,"))
+                    {
+                        item.Note = "键,";
+                    }
+                    else
+                    {
+                        item.Note = values[2];
+                    }
+                }
                 return item;
             }
             catch(Exception ex)
