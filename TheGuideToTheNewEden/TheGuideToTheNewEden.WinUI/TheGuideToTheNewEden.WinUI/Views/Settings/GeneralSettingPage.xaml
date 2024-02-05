@@ -125,7 +125,7 @@
                             <Run>或加QQ群：</Run>
                             <Run FontWeight="Medium">784194289</Run>
                             <Run>，</Run>
-                            <Run>欢迎提Bug提需求。</Run>
+                            <Run>欢迎提Bug提意见。</Run>
                         </Paragraph>
                     </RichTextBlock>
                 </controls:ExpandableSettingControl.ExpandableContent>
