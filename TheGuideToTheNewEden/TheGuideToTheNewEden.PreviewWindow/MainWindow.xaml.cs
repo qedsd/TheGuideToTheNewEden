@@ -4,12 +4,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -49,21 +51,35 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 MessageBox.Show(ex.Message);
             }
         }
+        private string _lastMsg = null;
         private void GetMsg()
         {
             while(true)
             {
-                int[] msgs = _previewIPC.CheckMsg();
-                if (msgs != null)
+                _previewIPC.GetMsg(out var op, out var msgs);
+                if (op != IPCOp.None)
                 {
-                    this.Dispatcher.Invoke(() =>
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(op);
+                    if(msgs != null && msgs.Length > 0)
                     {
-                        foreach (var msg in msgs)
+                        foreach(var p in msgs)
                         {
-                            _msgs.Add(msg.ToString());
+                            stringBuilder.Append(' ');
+                            stringBuilder.Append(p);
                         }
-                    });
+                    }
+                    string msgStr = stringBuilder.ToString();
+                    if(_lastMsg != msgStr)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            _msgs.Add(msgStr);
+                        });
+                        _lastMsg = msgStr;
+                    }
                 }
+                Thread.Sleep(100);
             }
         }
 
@@ -103,7 +119,13 @@ namespace TheGuideToTheNewEden.PreviewWindow
             _pressedPos = e.GetPosition(this);
         }
 
-        
+
         #endregion
+
+        private void Button_Test_Click(object sender, RoutedEventArgs e)
+        {
+            var previewIPC = new MemoryIPC(App.Args[1]);
+            previewIPC.SendMsg(IPCOp.GetWidth);
+        }
     }
 }

@@ -11,6 +11,7 @@
     PreviewMouseMove="Window_PreviewMouseMove"
     PreviewMouseRightButtonDown="Window_PreviewMouseRightButtonDown"
     PreviewMouseRightButtonUp="Window_PreviewMouseRightButtonUp"
+    Topmost="True"
     WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}"
     WindowStyle="None"
     mc:Ignorable="d">
@@ -22,5 +23,17 @@
             <WindowChrome.CaptionHeight>0</WindowChrome.CaptionHeight>
         </WindowChrome>
     </Window.Resources>
-    <ListView x:Name="ListView_Msg" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListView x:Name="ListView_Msg" />
+        <Button
+            x:Name="Button_Test"
+            Grid.Row="1"
+            Click="Button_Test_Click"
+            Content="Test" />
+    </Grid>
+
 </Window>

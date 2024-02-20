@@ -24,61 +24,66 @@ namespace TheGuideToTheNewEden.PreviewIPC.Memory
         }
         public void SendMsg(IPCOp op, params int[] p)
         {
-            // 使用 MemoryMappedViewAccessor 类来创建一个视图，可以通过它来读写共享内存区域
-            using (var accessor = _memoryMappedFile.CreateViewAccessor())
+            using (MemoryMappedViewStream stream = _memoryMappedFile.CreateViewStream())
             {
-                accessor.Write(0, (int)op);
+                StreamWriter sw = new StreamWriter(stream);
+                // 向内存映射文件种写入数据
+                StringBuilder stringBuilder= new StringBuilder();
+                stringBuilder.Append((int)op);
                 if (p?.Length > 0)//有参数
                 {
-                    accessor.Write(sizeof(int), p.Length);
-                    //List<int> ps = new List<int>(p.Length + 1)
-                    //{
-                    //    (int)op
-                    //};
-                    //ps.AddRange(p);
-                    long position = 2;
                     for (int i = 0; i < p.Length; i++)
                     {
-                        accessor.Write(position + i * sizeof(int), p[i]);
+                        stringBuilder.Append(' ');
+                        stringBuilder.Append(p[i]);
                     }
                 }
-                else//无参数
+                sw.WriteLine(stringBuilder);
+                // 这一句是必须的，在某些情况下，如果不调用Flush 方法会造成进程B读取不到数据
+                // 它的作用是立即写入数据
+                // 这样在此进程释放 Mutex 的时候，进程B就能正确读取数据了
+                sw.Flush();
+            }
+        }
+        public int[] SendAndGetMsg(IPCOp op)
+        {
+            SendMsg(op, null);
+            while (true)
+            {
+                GetMsg(out IPCOp outOp, out int[] msgs);
+                if (outOp == IPCOp.ResultMsg)
                 {
-                    accessor.Write(0, (int)op);
+                    return msgs;
+                }
+                else
+                {
+                    Thread.Sleep(10);
                 }
             }
         }
-        public int[] GetMsg(IPCOp op)
+        public void GetMsg(out IPCOp op, out int[] msgs)
         {
-            // 使用 MemoryMappedViewAccessor 类来创建一个视图，可以通过它来读写共享内存区域
-            using (var accessor = _memoryMappedFile.CreateViewAccessor())
+            op = IPCOp.None;
+            msgs = null;
+            using (MemoryMappedViewStream stream = _memoryMappedFile.CreateViewStream())
             {
-                accessor.Write(0, (int)op);
-                int currentOp = 0;
-                while (true)
+                StreamReader sr = new StreamReader(stream);
+                string str = sr.ReadLine();
+                if (!string.IsNullOrEmpty(str))
                 {
-                    currentOp = accessor.ReadInt32(0);
-                    if (currentOp == (int)IPCOp.None)
+                    var array = str.Split(' ');
+                    if (int.TryParse(array[0], out var outOp))
                     {
-                        //读取传回来的参数
-                        int length = accessor.ReadInt32(1);
-                        if (length > 0)
+                        op = (IPCOp)outOp;
+                        if (array.Length > 1)
                         {
-                            int[] results = new int[length];
-                            for (int i = 0; i < length; i++)
+                            msgs = new int[array.Length - 1];
+                            for (int i = 1; i < array.Length; i++)
                             {
-                                results[i] = accessor.ReadInt32(i + 2);
+                                int p = int.Parse(array[i]);
+                                msgs[i - 1] = p;
                             }
-                            return results;
                         }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        Thread.Sleep(10);
                     }
                 }
             }

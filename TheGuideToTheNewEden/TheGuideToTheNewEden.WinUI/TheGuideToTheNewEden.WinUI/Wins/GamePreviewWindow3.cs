@@ -36,13 +36,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override int GetHeight()
         {
-            var msgs = _previewIPC.GetMsg(IPCOp.GetHeight);
+            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetHeight);
             return msgs[0];
         }
 
         public override void GetSizeAndPos(out int x, out int y, out int w, out int h)
         {
-            var msgs = _previewIPC.GetMsg(IPCOp.GetSizeAndPos);
+            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetSizeAndPos);
             x = msgs[0];
             y = msgs[1];
             w = msgs[2];
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override int GetWidth()
         {
-            var msgs = _previewIPC.GetMsg(IPCOp.GetWidth);
+            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetWidth);
             return msgs[0];
         }
 

@@ -21,6 +21,7 @@ namespace TheGuideToTheNewEden.PreviewIPC
         GetSizeAndPos,
         GetWidth,
         GetHeight,
-        UpdateSizeAndPos
+        UpdateSizeAndPos,
+        ResultMsg
     }
 }
