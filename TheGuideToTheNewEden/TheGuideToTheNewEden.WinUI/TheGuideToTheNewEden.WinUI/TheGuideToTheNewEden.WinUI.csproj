@@ -330,6 +330,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+    <ProjectReference Include="..\..\TheGuideToTheNewEden.PreviewIPC\TheGuideToTheNewEden.PreviewIPC.csproj" />
     <ProjectReference Include="..\..\ZKB.NET\ZKB.NET.csproj" />
   </ItemGroup>
 

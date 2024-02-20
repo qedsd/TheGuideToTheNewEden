@@ -1,0 +1,26 @@
+﻿<Window
+    x:Class="TheGuideToTheNewEden.PreviewWindow.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.PreviewWindow"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="PreviewWindow"
+    Width="800"
+    Height="450"
+    PreviewMouseMove="Window_PreviewMouseMove"
+    PreviewMouseRightButtonDown="Window_PreviewMouseRightButtonDown"
+    PreviewMouseRightButtonUp="Window_PreviewMouseRightButtonUp"
+    WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <WindowChrome x:Key="WindowChromeKey">
+            <WindowChrome.ResizeBorderThickness>
+                <Thickness>5</Thickness>
+            </WindowChrome.ResizeBorderThickness>
+            <WindowChrome.CaptionHeight>0</WindowChrome.CaptionHeight>
+        </WindowChrome>
+    </Window.Resources>
+    <ListView x:Name="ListView_Msg" />
+</Window>

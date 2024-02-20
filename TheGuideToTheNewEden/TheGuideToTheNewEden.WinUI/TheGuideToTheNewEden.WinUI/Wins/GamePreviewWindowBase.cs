@@ -67,8 +67,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public abstract int GetWidth();
         public abstract void HideWindow();
         public abstract void Highlight();
-        public abstract bool IsHideOnForeground();
-        public abstract bool IsHighlight();
+        public virtual bool IsHideOnForeground()
+        {
+            return _setting.HideOnForeground;
+        }
+        public virtual bool IsHighlight()
+        {
+            return _setting.Highlight;
+        }
         public abstract void SetPos(int x, int y);
         public abstract void SetSize(int w, int h);
         public abstract void ShowWindow(bool hHighlight = false);

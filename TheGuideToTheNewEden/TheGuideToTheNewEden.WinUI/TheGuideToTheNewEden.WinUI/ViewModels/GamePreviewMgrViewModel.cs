@@ -608,7 +608,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     IGamePreviewWindow gamePreviewWindow = Setting.ShowTitleBar ?
                                                             new GamePreviewWindow1(Setting, PreviewSetting) :
-                                                            new GamePreviewWindow2(Setting, PreviewSetting);
+                                                            new GamePreviewWindow3(Setting, PreviewSetting);
                     if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
@@ -1128,7 +1128,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     IGamePreviewWindow gamePreviewWindow = item.ShowTitleBar ?
                                                             new GamePreviewWindow1(item, PreviewSetting) :
-                                                            new GamePreviewWindow2(item, PreviewSetting);
+                                                            new GamePreviewWindow3(item, PreviewSetting);
                     if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
