@@ -56,10 +56,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void GetSizeAndPos(out int x, out int y, out int w, out int h)
         {
             var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetSizeAndPos);
-            x = msgs[0];
-            y = msgs[1];
-            w = msgs[2];
-            h = msgs[3];
+            x = msgs[2];
+            y = msgs[3];
+            w = msgs[0];
+            h = msgs[1];
         }
 
         public override int GetWidth()

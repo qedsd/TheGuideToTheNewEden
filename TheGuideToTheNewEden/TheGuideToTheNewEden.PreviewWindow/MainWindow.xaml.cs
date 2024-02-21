@@ -193,7 +193,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 case IPCOp.GetWidth: GetWidth(op, msgs); break;
                 case IPCOp.GetHeight: GetHeight(op, msgs); break;
             }
-            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void Close(IPCOp op, int[] msgs)
         {
@@ -213,17 +212,19 @@ namespace TheGuideToTheNewEden.PreviewWindow
             {
                 _thumbnailWindow.Hide();
             });
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void Show(IPCOp op, int[] msgs)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                this.Show();
-            });
             _thumbnailWindow.Dispatcher.Invoke(() =>
             {
                 _thumbnailWindow.Show();
             });
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Show();
+            });
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void UpdateThumbnail(IPCOp op, int[] msgs)
         {
@@ -232,6 +233,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("更新略缩图");
             });
             _thumbnailWindow.UpdateThumbnail();
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void Highlight(IPCOp op, int[] msgs)
         {
@@ -240,6 +242,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("高亮");
             });
             _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void CancelHighlight(IPCOp op, int[] msgs)
         {
@@ -248,6 +251,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("取消高亮");
             });
             _thumbnailWindow.UpdateThumbnail();
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void SetSize(IPCOp op, int[] msgs)
         {
@@ -256,6 +260,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("设置窗口大小");
             });
             SetWindowPos(_overlapHwnd, 0, 0, 0, msgs[0], msgs[1], 0x0002 | 0x0004);
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void SetPos(IPCOp op, int[] msgs)
         {
@@ -264,6 +269,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("设置窗口位置");
             });
             SetWindowPos(_overlapHwnd, 0, msgs[0], msgs[1], 0, 0, 0x0001 | 0x0004);
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void GetSizeAndPos(IPCOp op, int[] msgs)
         {
@@ -271,10 +277,9 @@ namespace TheGuideToTheNewEden.PreviewWindow
             GetWindowRect(_overlapHwnd, ref windowRect);
             this.Dispatcher.Invoke(() =>
             {
-                _msgs.Add($"获取窗口大小和位置：{windowRect.Width}x{windowRect.Height} {windowRect.X} {windowRect.Y}");
+                _msgs.Add($"获取窗口大小和位置：{windowRect.Width - windowRect.X}x{windowRect.Height - windowRect.Y} {windowRect.X} {windowRect.Y}");
             });
-            //TODO:winui无法接收到ResultMsg，只有handleed
-            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width , windowRect.Height , windowRect.X, windowRect.Y });
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width - windowRect.X, windowRect.Height - windowRect.Y, windowRect.X, windowRect.Y });
         }
         private void GetWidth(IPCOp op, int[] msgs)
         {
@@ -282,7 +287,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             GetWindowRect(_overlapHwnd, ref windowRect);
             this.Dispatcher.Invoke(() =>
             {
-                _msgs.Add($"获取窗口宽：{windowRect.Width}");
+                _msgs.Add($"获取窗口宽：{windowRect.Width - windowRect.X}");
             });
             _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width });
         }
@@ -292,7 +297,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             GetWindowRect(_overlapHwnd, ref windowRect);
             this.Dispatcher.Invoke(() =>
             {
-                _msgs.Add($"获取窗口高：{windowRect.Height}");
+                _msgs.Add($"获取窗口高：{windowRect.Height - windowRect.Y}");
             });
             _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Height });
         }
@@ -303,6 +308,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 _msgs.Add("设置窗口大小和位置");
             });
             SetWindowPos(_overlapHwnd, 0, msgs[2], msgs[3], msgs[0], msgs[1], 0x0004);
+            _previewIPC.SendMsg(IPCOp.Handled);
         }
         #endregion
 
