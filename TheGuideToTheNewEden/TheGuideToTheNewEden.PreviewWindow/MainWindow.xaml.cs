@@ -23,8 +23,10 @@ namespace TheGuideToTheNewEden.PreviewWindow
 {
     public partial class MainWindow : Window
     {
+        private IntPtr _overlapHwnd = IntPtr.Zero;
         private ObservableCollection<string> _msgs = new ObservableCollection<string>();
         private IPreviewIPC _previewIPC;
+        private ThumbnailWindow _thumbnailWindow;
         public MainWindow()
         {
             InitializeComponent();
@@ -34,6 +36,9 @@ namespace TheGuideToTheNewEden.PreviewWindow
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            _overlapHwnd = (System.Windows.Interop.HwndSource.FromDependencyObject(this) as System.Windows.Interop.HwndSource).Handle;
+            SizeChanged += MainWindow_SizeChanged;
+            this.LocationChanged += MainWindow_LocationChanged;
             if (App.Args != null)
             {
                 for (int i = 0; i < App.Args?.Length; i++)
@@ -43,20 +48,65 @@ namespace TheGuideToTheNewEden.PreviewWindow
             }
             try
             {
-                _previewIPC = new MemoryIPC(App.Args[1]);
+                _previewIPC = new MemoryIPC(App.Args[0]);
                 Task.Run(() => GetMsg());
             }
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+            _thumbnailWindow = new ThumbnailWindow(App.GetHwnd(), Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
+            _thumbnailWindow.Loaded += _thumbnailWindow_Loaded;
+            _thumbnailWindow.Show();
+            SetWindowPos(_overlapHwnd, 0, App.GetX(), App.GetY(), App.GetW(), App.GetH(), 0x0004);
+            _thumbnailWindow?.UpdateThumbnail();
+
+            this.Closed += MainWindow_Closed;
         }
+
+        private void MainWindow_Closed(object? sender, EventArgs e)
+        {
+            _thumbnailWindow?.Dispose();
+        }
+
+        private void _thumbnailWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            _thumbnailWindow.Loaded -= _thumbnailWindow_Loaded;
+            Win32.SetWindowPos(_overlapHwnd, _thumbnailWindow.GetHwnd(), 0, 0, 0, 0, 0x0002 | 0x0001);
+        }
+
+        #region 通知窗口位置大小变化
+        private void MainWindow_LocationChanged(object? sender, EventArgs e)
+        {
+            Task.Run(() =>
+            {
+                UpdateSizeAndPos();
+            });
+        }
+
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Task.Run(() =>
+            {
+                UpdateSizeAndPos();
+            });
+        }
+        private void UpdateSizeAndPos()
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            GetWindowRect(_overlapHwnd, ref windowRect);
+            _previewIPC.SendMsg(IPCOp.UpdateSizeAndPos, new int[] { windowRect.Width - windowRect.X, windowRect.Height - windowRect.Y, windowRect.X, windowRect.Y });
+            _thumbnailWindow?.SetSizeAndPos(windowRect.Width - windowRect.X, windowRect.Height - windowRect.Y, windowRect.X, windowRect.Y);
+            _thumbnailWindow?.UpdateThumbnail();
+        }
+        #endregion
+
         private string _lastMsg = null;
         private void GetMsg()
         {
             while(true)
             {
-                _previewIPC.GetMsg(out var op, out var msgs);
+                _previewIPC.TryGetMsg(out var op, out var msgs);
                 if (op != IPCOp.None)
                 {
                     StringBuilder stringBuilder = new StringBuilder();
@@ -79,10 +129,11 @@ namespace TheGuideToTheNewEden.PreviewWindow
                         _lastMsg = msgStr;
                     }
                 }
+                HandleMsg(op, msgs);
                 Thread.Sleep(100);
             }
         }
-
+        
         #region 鼠标右键移动
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, int hWndlnsertAfter, int X, int Y, int cx, int cy, uint Flags);
@@ -96,12 +147,11 @@ namespace TheGuideToTheNewEden.PreviewWindow
             if (Mouse.RightButton == MouseButtonState.Pressed && _pressedPos != currentPos)
             {
                 _isDragMoved = true;
-                var hwnd = (System.Windows.Interop.HwndSource.FromDependencyObject(this) as System.Windows.Interop.HwndSource).Handle;
                 var windowRect = new System.Drawing.Rectangle();
-                GetWindowRect(hwnd,ref windowRect);
+                GetWindowRect(_overlapHwnd, ref windowRect);
                 //0x0001 SWP_NOSIZE | 0x0004 SWP_NOZORDER
                 //忽略hWndlnsertAfter和cy、cx，即不改变窗口显示顺序和显示长宽，仅移动位置
-                SetWindowPos(hwnd,0, windowRect.X + (int)(currentPos.X - _pressedPos.X), windowRect.Y + (int)(currentPos.Y - _pressedPos.Y), 0,0, 0x0001 | 0x0004);
+                SetWindowPos(_overlapHwnd, 0, windowRect.X + (int)(currentPos.X - _pressedPos.X), windowRect.Y + (int)(currentPos.Y - _pressedPos.Y), 0,0, 0x0001 | 0x0004);
             }
         }
 
@@ -122,10 +172,149 @@ namespace TheGuideToTheNewEden.PreviewWindow
 
         #endregion
 
-        private void Button_Test_Click(object sender, RoutedEventArgs e)
+        #region 响应
+        private void HandleMsg(IPCOp op, int[] msgs)
+        {
+            switch (op)
+            {
+                case IPCOp.None:
+                case IPCOp.Handled:
+                case IPCOp.UpdateSizeAndPos:
+                case IPCOp.ResultMsg:return;
+                case IPCOp.Close: Close(op, msgs); break;
+                case IPCOp.Hide: Hide(op, msgs); break;
+                case IPCOp.Show: Show(op, msgs); break;
+                case IPCOp.UpdateThumbnail: UpdateThumbnail(op, msgs); break;
+                case IPCOp.Highlight: Highlight(op, msgs); break;
+                case IPCOp.CancelHighlight: CancelHighlight(op, msgs); break;
+                case IPCOp.SetSize: SetSize(op, msgs); break;
+                case IPCOp.SetPos: SetPos(op, msgs); break;
+                case IPCOp.GetSizeAndPos: GetSizeAndPos(op, msgs); break;
+                case IPCOp.GetWidth: GetWidth(op, msgs); break;
+                case IPCOp.GetHeight: GetHeight(op, msgs); break;
+            }
+            _previewIPC.SendMsg(IPCOp.Handled);
+        }
+        private void Close(IPCOp op, int[] msgs)
+        {
+            _previewIPC?.Dispose();
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
+        }
+        private void Hide(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Hide();
+            });
+            _thumbnailWindow.Dispatcher.Invoke(() =>
+            {
+                _thumbnailWindow.Hide();
+            });
+        }
+        private void Show(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Show();
+            });
+            _thumbnailWindow.Dispatcher.Invoke(() =>
+            {
+                _thumbnailWindow.Show();
+            });
+        }
+        private void UpdateThumbnail(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("更新略缩图");
+            });
+            _thumbnailWindow.UpdateThumbnail();
+        }
+        private void Highlight(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("高亮");
+            });
+            _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
+        }
+        private void CancelHighlight(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("取消高亮");
+            });
+            _thumbnailWindow.UpdateThumbnail();
+        }
+        private void SetSize(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("设置窗口大小");
+            });
+            SetWindowPos(_overlapHwnd, 0, 0, 0, msgs[0], msgs[1], 0x0002 | 0x0004);
+        }
+        private void SetPos(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("设置窗口位置");
+            });
+            SetWindowPos(_overlapHwnd, 0, msgs[0], msgs[1], 0, 0, 0x0001 | 0x0004);
+        }
+        private void GetSizeAndPos(IPCOp op, int[] msgs)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            GetWindowRect(_overlapHwnd, ref windowRect);
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add($"获取窗口大小和位置：{windowRect.Width}x{windowRect.Height} {windowRect.X} {windowRect.Y}");
+            });
+            //TODO:winui无法接收到ResultMsg，只有handleed
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width , windowRect.Height , windowRect.X, windowRect.Y });
+        }
+        private void GetWidth(IPCOp op, int[] msgs)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            GetWindowRect(_overlapHwnd, ref windowRect);
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add($"获取窗口宽：{windowRect.Width}");
+            });
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width });
+        }
+        private void GetHeight(IPCOp op, int[] msgs)
+        {
+            var windowRect = new System.Drawing.Rectangle();
+            GetWindowRect(_overlapHwnd, ref windowRect);
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add($"获取窗口高：{windowRect.Height}");
+            });
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Height });
+        }
+        private void UpdateSizeAndPos(IPCOp op, int[] msgs)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                _msgs.Add("设置窗口大小和位置");
+            });
+            SetWindowPos(_overlapHwnd, 0, msgs[2], msgs[3], msgs[0], msgs[1], 0x0004);
+        }
+        #endregion
+
+        private async void Button_Test_Click(object sender, RoutedEventArgs e)
         {
             var previewIPC = new MemoryIPC(App.Args[1]);
-            previewIPC.SendMsg(IPCOp.GetWidth);
+            previewIPC.SendMsg(IPCOp.SetSize, new int[] { 500, 500 });
+        }
+
+        private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            Win32.SetForegroundWindow_Click(App.GetHwnd());
         }
     }
 }

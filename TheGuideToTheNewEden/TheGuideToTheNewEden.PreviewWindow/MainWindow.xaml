@@ -8,6 +8,9 @@
     Title="PreviewWindow"
     Width="800"
     Height="450"
+    AllowsTransparency="True"
+    Background="Transparent"
+    MouseLeftButtonUp="Window_MouseLeftButtonUp"
     PreviewMouseMove="Window_PreviewMouseMove"
     PreviewMouseRightButtonDown="Window_PreviewMouseRightButtonDown"
     PreviewMouseRightButtonUp="Window_PreviewMouseRightButtonUp"
@@ -16,24 +19,37 @@
     WindowStyle="None"
     mc:Ignorable="d">
     <Window.Resources>
-        <WindowChrome x:Key="WindowChromeKey">
+        <WindowChrome x:Key="WindowChromeKey" GlassFrameThickness="-1">
             <WindowChrome.ResizeBorderThickness>
                 <Thickness>5</Thickness>
             </WindowChrome.ResizeBorderThickness>
             <WindowChrome.CaptionHeight>0</WindowChrome.CaptionHeight>
         </WindowChrome>
     </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <ListView x:Name="ListView_Msg" />
-        <Button
-            x:Name="Button_Test"
-            Grid.Row="1"
-            Click="Button_Test_Click"
-            Content="Test" />
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ListView x:Name="ListView_Msg" />
+            <Button
+                x:Name="Button_Test"
+                Grid.Row="1"
+                Click="Button_Test_Click"
+                Content="Test" />
+        </Grid>
+        <Grid
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="White"
+            Opacity="0.01" />
+        <TextBlock
+            Margin="18"
+            Background="Transparent"
+            FontSize="16"
+            Foreground="White"
+            Text="QEDSD" />
     </Grid>
 
 </Window>

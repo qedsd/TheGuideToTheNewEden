@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.PreviewIPC.Memory
             SendMsg(op, null);
             while (true)
             {
-                GetMsg(out IPCOp outOp, out int[] msgs);
+                TryGetMsg(out IPCOp outOp, out int[] msgs);
                 if (outOp == IPCOp.ResultMsg)
                 {
                     return msgs;
@@ -61,7 +61,7 @@ namespace TheGuideToTheNewEden.PreviewIPC.Memory
                 }
             }
         }
-        public void GetMsg(out IPCOp op, out int[] msgs)
+        public void TryGetMsg(out IPCOp op, out int[] msgs)
         {
             op = IPCOp.None;
             msgs = null;
@@ -84,39 +84,6 @@ namespace TheGuideToTheNewEden.PreviewIPC.Memory
                                 msgs[i - 1] = p;
                             }
                         }
-                    }
-                }
-            }
-        }
-        public int[] CheckMsg()
-        {
-            using (var accessor = _memoryMappedFile.CreateViewAccessor())
-            {
-                int currentOp = 0;
-                while (true)
-                {
-                    currentOp = accessor.ReadInt32(0);
-                    if (currentOp != (int)IPCOp.None)
-                    {
-                        List<int> msgs = new List<int>()
-                        {
-                            currentOp
-                        };
-                        //读取传回来的参数
-                        int length = accessor.ReadInt32(sizeof(int));
-                        if (length > 0)
-                        {
-                            for (int i = 0; i < length; i++)
-                            {
-                                msgs.Add(accessor.ReadInt32((i + 2) * sizeof(int)));
-                            }
-                        }
-                        accessor.Write(0, (int)IPCOp.None);
-                        return msgs.ToArray();
-                    }
-                    else
-                    {
-                        Thread.Sleep(10);
                     }
                 }
             }
