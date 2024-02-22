@@ -104,7 +104,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void Start(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
-            _previewIPC = new MemoryIPC(sourceHWnd.ToString());
+            _previewIPC = Services.MemoryIPCService.Create(sourceHWnd);
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PreviewWindow", "TheGuideToTheNewEden.PreviewWindow.exe");
             if(!File.Exists(path))
             {
@@ -115,6 +115,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 List<string> args = new List<string>()
                 {
                     sourceHWnd.ToString(),
+                    _setting.Name,
                     _setting.WinW.ToString(),
                     _setting.WinH.ToString(),
                     _setting.WinX.ToString(),
@@ -132,7 +133,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                _previewIPC?.Dispose();
+                Services.MemoryIPCService.Dispose(_previewIPC);
             }
         }
         private CancellationTokenSource _ancellationTokenSource;
@@ -168,8 +169,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void Stop()
         {
             base.Stop();
-            _previewIPC?.SendMsg(IPCOp.Close);
-            _previewIPC?.Dispose();
+            Services.MemoryIPCService.Dispose(_previewIPC);
             _ancellationTokenSource?.Cancel();
             this.Close();
         }

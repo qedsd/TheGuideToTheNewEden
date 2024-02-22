@@ -6,14 +6,15 @@
     xmlns:local="clr-namespace:TheGuideToTheNewEden.PreviewWindow"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="PreviewWindow"
-    Width="800"
-    Height="450"
+    Width="1"
+    Height="1"
     AllowsTransparency="True"
     Background="Transparent"
     MouseLeftButtonUp="Window_MouseLeftButtonUp"
     PreviewMouseMove="Window_PreviewMouseMove"
     PreviewMouseRightButtonDown="Window_PreviewMouseRightButtonDown"
     PreviewMouseRightButtonUp="Window_PreviewMouseRightButtonUp"
+    ShowInTaskbar="False"
     Topmost="True"
     WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}"
     WindowStyle="None"
@@ -45,11 +46,11 @@
             Background="White"
             Opacity="0.01" />
         <TextBlock
+            x:Name="NameTextBlock"
             Margin="18"
             Background="Transparent"
             FontSize="16"
-            Foreground="White"
-            Text="QEDSD" />
+            Foreground="White" />
     </Grid>
 
 </Window>

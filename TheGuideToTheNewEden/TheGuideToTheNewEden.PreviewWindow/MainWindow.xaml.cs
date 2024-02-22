@@ -23,6 +23,8 @@ namespace TheGuideToTheNewEden.PreviewWindow
 {
     public partial class MainWindow : Window
     {
+        private SolidColorBrush _nomralColor = new SolidColorBrush(Colors.White);
+        private SolidColorBrush _hlColor;
         private IntPtr _overlapHwnd = IntPtr.Zero;
         private ObservableCollection<string> _msgs = new ObservableCollection<string>();
         private IPreviewIPC _previewIPC;
@@ -32,6 +34,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             InitializeComponent();
             ListView_Msg.ItemsSource = _msgs;
             Loaded += MainWindow_Loaded;
+            Loaded += MainWindow_Loaded2;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -55,12 +58,13 @@ namespace TheGuideToTheNewEden.PreviewWindow
             {
                 MessageBox.Show(ex.Message);
             }
-            _thumbnailWindow = new ThumbnailWindow(App.GetHwnd(), Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
-            _thumbnailWindow.Loaded += _thumbnailWindow_Loaded;
+            _thumbnailWindow = new ThumbnailWindow(App.GetHwnd(), Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()), _overlapHwnd);
+            _thumbnailWindow.Loaded += ThumbnailWindow_Loaded;
             _thumbnailWindow.Show();
             SetWindowPos(_overlapHwnd, 0, App.GetX(), App.GetY(), App.GetW(), App.GetH(), 0x0004);
             _thumbnailWindow?.UpdateThumbnail();
-
+            _hlColor = new SolidColorBrush(Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
+            NameTextBlock.Text = App.GetName();
             this.Closed += MainWindow_Closed;
         }
 
@@ -69,9 +73,9 @@ namespace TheGuideToTheNewEden.PreviewWindow
             _thumbnailWindow?.Dispose();
         }
 
-        private void _thumbnailWindow_Loaded(object sender, RoutedEventArgs e)
+        private void ThumbnailWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            _thumbnailWindow.Loaded -= _thumbnailWindow_Loaded;
+            _thumbnailWindow.Loaded -= ThumbnailWindow_Loaded;
             Win32.SetWindowPos(_overlapHwnd, _thumbnailWindow.GetHwnd(), 0, 0, 0, 0, 0x0002 | 0x0001);
         }
 
@@ -240,7 +244,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             this.Dispatcher.Invoke(() =>
             {
                 _msgs.Add("高亮");
-                var o = App.GetHwnd().ToString();
+                NameTextBlock.Foreground = _hlColor;
             });
             _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
             _previewIPC.SendMsg(IPCOp.Handled);
@@ -250,6 +254,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             this.Dispatcher.Invoke(() =>
             {
                 _msgs.Add("取消高亮");
+                NameTextBlock.Foreground = _nomralColor;
             });
             _thumbnailWindow.UpdateThumbnail();
             _previewIPC.SendMsg(IPCOp.Handled);
@@ -323,5 +328,83 @@ namespace TheGuideToTheNewEden.PreviewWindow
         {
             Win32.SetForegroundWindow_Click(App.GetHwnd());
         }
+
+        #region 异常处理
+        private void MainWindow_Loaded2(object sender, RoutedEventArgs e)
+        {
+            Loaded -= MainWindow_Loaded2;
+            System.Windows.Application.Current.DispatcherUnhandledException -= Current_DispatcherUnhandledException;
+            System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+            //处理非UI线程异常
+            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            ///Task线程内异常
+            TaskScheduler.UnobservedTaskException -= TaskScheduler_UnobservedTaskException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        }
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            System.Windows.Application.Current.DispatcherUnhandledException -= Current_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+            TaskScheduler.UnobservedTaskException -= TaskScheduler_UnobservedTaskException;
+        }
+        /// <summary>
+        /// 非UI线程异常
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("非UI线程发生未处理的异常：");
+            if (e.IsTerminating)//IsTerminating == true 将便不可避免关闭
+            {
+                stringBuilder.AppendLine("程序发生致命错误，将终止！");
+            }
+            if (e.ExceptionObject is Exception)
+            {
+                stringBuilder.Append(((Exception)e.ExceptionObject).Message);
+            }
+            else
+            {
+                stringBuilder.Append(e.ExceptionObject);
+            }
+            MessageBox.Show(stringBuilder.ToString());
+        }
+        /// <summary>
+        /// UI线程异常
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                e.Handled = true;
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append("UI线程发生未处理的异常：");
+                stringBuilder.Append(e.Exception.Message);
+                MessageBox.Show(stringBuilder.ToString());
+            }
+            catch (Exception)
+            {
+                System.Windows.MessageBox.Show("程序发生致命错误，将终止！", "系统错误", MessageBoxButton.OK);
+            }
+        }
+        /// <summary>
+        /// Task线程异常
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            e.SetObserved();//避免崩溃
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("Task线程发生未处理的异常：");
+            stringBuilder.Append(e.Exception.Message);
+            MessageBox.Show(stringBuilder.ToString());
+        }
+        #endregion
+
     }
 }

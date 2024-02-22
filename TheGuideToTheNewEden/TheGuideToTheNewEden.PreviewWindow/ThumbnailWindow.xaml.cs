@@ -29,13 +29,17 @@ namespace TheGuideToTheNewEden.PreviewWindow
         /// 游戏窗口句柄
         /// </summary>
         private IntPtr _gameHwnd = IntPtr.Zero;
-        public ThumbnailWindow(IntPtr gameHwnd, Color backgroundColor)
+        /// <summary>
+        /// 显示角色名称的窗口
+        /// </summary>
+        private IntPtr _overlapHwnd = IntPtr.Zero;
+        public ThumbnailWindow(IntPtr gameHwnd, Color backgroundColor, IntPtr overlapHwnd)
         {
+            _overlapHwnd = overlapHwnd;
             _gameHwnd = gameHwnd;
             InitializeComponent();
             Background = new SolidColorBrush(backgroundColor);
             Loaded += ThumbnailWindow_Loaded;
-            //Opacity = App.GetOpacity() / 100f;
         }
 
         private void ThumbnailWindow_Loaded(object sender, RoutedEventArgs e)
@@ -43,7 +47,10 @@ namespace TheGuideToTheNewEden.PreviewWindow
             Loaded -= ThumbnailWindow_Loaded;
             _thisHwnd = (System.Windows.Interop.HwndSource.FromDependencyObject(this) as System.Windows.Interop.HwndSource).Handle;
             _thumbnailHwnd = Win32.ShowThumbnail(_thisHwnd, _gameHwnd);
-            Win32.TransparentWindow(_thisHwnd, App.GetOpacity());
+            if(App.GetOpacity() < 100)
+            {
+                Win32.TransparentWindow(_thisHwnd, App.GetOpacity());
+            }
         }
 
         public void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0)

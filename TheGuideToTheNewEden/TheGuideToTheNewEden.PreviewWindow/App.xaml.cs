@@ -25,41 +25,45 @@ namespace TheGuideToTheNewEden.PreviewWindow
         {
             return IntPtr.Parse(Args[0]);
         }
-        public static int GetW()
+        public static string GetName()
         {
-            return int.Parse(Args[1]);
+            return Args[1];
         }
-        public static int GetH()
+        public static int GetW()
         {
             return int.Parse(Args[2]);
         }
-        public static int GetX()
+        public static int GetH()
         {
             return int.Parse(Args[3]);
         }
-        public static int GetY()
+        public static int GetX()
         {
             return int.Parse(Args[4]);
         }
-        public static byte GetA()
+        public static int GetY()
         {
-            return byte.Parse(Args[5]);
+            return int.Parse(Args[5]);
         }
-        public static byte GetR()
+        public static byte GetA()
         {
             return byte.Parse(Args[6]);
         }
-        public static byte GetG()
+        public static byte GetR()
         {
             return byte.Parse(Args[7]);
         }
-        public static byte GetB()
+        public static byte GetG()
         {
             return byte.Parse(Args[8]);
         }
+        public static byte GetB()
+        {
+            return byte.Parse(Args[9]);
+        }
         public static int GetOpacity()
         {
-            return int.Parse(Args[9]);
+            return int.Parse(Args[10]);
         }
     }
 }

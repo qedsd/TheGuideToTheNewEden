@@ -71,6 +71,7 @@ namespace TheGuideToTheNewEden.WinUI
             else
             {
                 ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
+                Services.MemoryIPCService.Dispose();
             }
         }
 

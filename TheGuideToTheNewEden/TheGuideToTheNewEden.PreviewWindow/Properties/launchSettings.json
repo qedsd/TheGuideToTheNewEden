@@ -2,7 +2,7 @@
   "profiles": {
     "TheGuideToTheNewEden.PreviewWindow": {
       "commandName": "Project",
-      "commandLineArgs": "266438\r\n500\r\n500\r\n500\r\n500\r\n100\r\n100\r\n100\r\n100\r\n50"
+      "commandLineArgs": "266438\r\nQEDSD\r\n500\r\n500\r\n500\r\n500\r\n100\r\n100\r\n100\r\n100\r\n50"
     }
   }
 }
