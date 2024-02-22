@@ -64,10 +64,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static void TransparentWindow(Window window,int nOpacity = 80)
         {
             nOpacity = nOpacity > 100 ? 100 : nOpacity < 0 ? 0 : nOpacity;
-
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-            WindowId myWndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow apw = AppWindow.GetFromWindowId(myWndId);
             long nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
             SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
             SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);

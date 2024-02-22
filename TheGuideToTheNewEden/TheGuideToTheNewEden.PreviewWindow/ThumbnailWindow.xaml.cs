@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             InitializeComponent();
             Background = new SolidColorBrush(backgroundColor);
             Loaded += ThumbnailWindow_Loaded;
-            Opacity = App.GetOpacity() / 100f;
+            //Opacity = App.GetOpacity() / 100f;
         }
 
         private void ThumbnailWindow_Loaded(object sender, RoutedEventArgs e)
@@ -43,6 +43,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             Loaded -= ThumbnailWindow_Loaded;
             _thisHwnd = (System.Windows.Interop.HwndSource.FromDependencyObject(this) as System.Windows.Interop.HwndSource).Handle;
             _thumbnailHwnd = Win32.ShowThumbnail(_thisHwnd, _gameHwnd);
+            Win32.TransparentWindow(_thisHwnd, App.GetOpacity());
         }
 
         public void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0)

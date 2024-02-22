@@ -240,6 +240,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             this.Dispatcher.Invoke(() =>
             {
                 _msgs.Add("高亮");
+                var o = App.GetHwnd().ToString();
             });
             _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
             _previewIPC.SendMsg(IPCOp.Handled);
