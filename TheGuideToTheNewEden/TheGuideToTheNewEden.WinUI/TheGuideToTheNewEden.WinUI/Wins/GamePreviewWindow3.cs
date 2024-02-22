@@ -49,23 +49,29 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override int GetHeight()
         {
-            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetHeight);
-            return msgs[0];
+            //var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetHeight);
+            //return msgs[0];
+            return _setting.WinH;
         }
 
         public override void GetSizeAndPos(out int x, out int y, out int w, out int h)
         {
-            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetSizeAndPos);
-            x = msgs[2];
-            y = msgs[3];
-            w = msgs[0];
-            h = msgs[1];
+            //var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetSizeAndPos);
+            //x = msgs[2];
+            //y = msgs[3];
+            //w = msgs[0];
+            //h = msgs[1];
+            x = _setting.WinX; 
+            y = _setting.WinY;
+            w = _setting.WinW; 
+            h = _setting.WinH;
         }
 
         public override int GetWidth()
         {
-            var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetWidth);
-            return msgs[0];
+            //var msgs = _previewIPC.SendAndGetMsg(IPCOp.GetWidth);
+            //return msgs[0];
+            return _setting.WinW;
         }
 
         public override void HideWindow()
@@ -83,11 +89,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void SetPos(int x, int y)
         {
+            _setting.WinX = x;
+            _setting.WinY = y;
             _previewIPC.SendMsg(IPCOp.SetPos, new int[] { x, y });
         }
 
         public override void SetSize(int w, int h)
         {
+            _setting.WinW = w;
+            _setting.WinH = h;
             _previewIPC.SendMsg(IPCOp.SetSize, new int[] { w, h });
         }
 
@@ -115,7 +125,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 List<string> args = new List<string>()
                 {
                     sourceHWnd.ToString(),
-                    _setting.Name,
+                    _setting.Name == null ? string.Empty : _setting.Name,
                     _setting.WinW.ToString(),
                     _setting.WinH.ToString(),
                     _setting.WinX.ToString(),
@@ -156,8 +166,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         _setting.WinH = msgs[1];
                         _setting.WinX = msgs[2];
                         _setting.WinY = msgs[3];
+                        _previewIPC.SendMsg(IPCOp.Handled);
                         OnSettingChanged?.Invoke(_setting);
                     }
+                    Thread.Sleep(100);
                 }
             });
             

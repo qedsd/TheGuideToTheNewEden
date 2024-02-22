@@ -66,13 +66,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref winH, value);
         }
 
-        private bool showTitleBar = true;
-        public bool ShowTitleBar
-        {
-            get => showTitleBar;
-            set => SetProperty(ref showTitleBar, value);
-        }
-
         private string hotKey;
         /// <summary>
         /// 快捷键

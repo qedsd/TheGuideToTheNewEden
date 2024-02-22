@@ -688,9 +688,6 @@
                             </Button.Flyout>
                         </Button>
                     </Grid>
-                    <Grid Margin="0,8">
-                        <CheckBox Content="显示标题栏" IsChecked="{x:Bind VM.Setting.ShowTitleBar, Mode=TwoWay}" />
-                    </Grid>
 
                     <Grid Margin="0,8">
                         <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />

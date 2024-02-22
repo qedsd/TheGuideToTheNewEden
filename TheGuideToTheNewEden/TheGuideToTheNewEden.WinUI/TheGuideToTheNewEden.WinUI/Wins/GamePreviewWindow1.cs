@@ -239,7 +239,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 try
                 {
                     int left = left1;
-                    int top = (_setting.ShowTitleBar ? (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) : 0 ) + top1;
+                    int top = (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) + top1;
                     int right = _appWindow.ClientSize.Width - right1;
                     int bottom = _appWindow.ClientSize.Height - bottom1;
                     var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度

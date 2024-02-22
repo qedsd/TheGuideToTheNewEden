@@ -53,6 +53,7 @@ namespace TheGuideToTheNewEden.PreviewIPC.Memory
                 TryGetMsg(out IPCOp outOp, out int[] msgs);
                 if (outOp == IPCOp.ResultMsg)
                 {
+                    Thread.Sleep(100);
                     return msgs;
                 }
                 else

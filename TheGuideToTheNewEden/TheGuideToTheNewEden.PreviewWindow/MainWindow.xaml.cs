@@ -132,8 +132,8 @@ namespace TheGuideToTheNewEden.PreviewWindow
                         });
                         _lastMsg = msgStr;
                     }
+                    HandleMsg(op, msgs);
                 }
-                HandleMsg(op, msgs);
                 Thread.Sleep(100);
             }
         }
@@ -295,7 +295,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             {
                 _msgs.Add($"获取窗口宽：{windowRect.Width - windowRect.X}");
             });
-            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width });
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width - windowRect.X });
         }
         private void GetHeight(IPCOp op, int[] msgs)
         {
@@ -305,7 +305,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             {
                 _msgs.Add($"获取窗口高：{windowRect.Height - windowRect.Y}");
             });
-            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Height });
+            _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Height - windowRect.Y });
         }
         private void UpdateSizeAndPos(IPCOp op, int[] msgs)
         {
