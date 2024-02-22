@@ -47,7 +47,7 @@
             Opacity="0.01" />
         <TextBlock
             x:Name="NameTextBlock"
-            Margin="18"
+            Margin="16,10,0,0"
             Background="Transparent"
             FontSize="16"
             Foreground="White" />

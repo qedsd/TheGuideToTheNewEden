@@ -38,28 +38,28 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref overlapOpacity, value);
         }
 
-        private int winX = -1;
+        private int winX = 100;
         public int WinX
         {
             get => winX;
             set => SetProperty(ref winX, value);
         }
 
-        private int winY = -1;
+        private int winY = 100;
         public int WinY
         {
             get => winY;
             set => SetProperty(ref winY, value);
         }
 
-        private int winW = 0;
+        private int winW = 533;
         public int WinW
         {
             get => winW;
             set => SetProperty(ref winW, value);
         }
 
-        private int winH = 0;
+        private int winH = 300;
         public int WinH
         {
             get => winH;
