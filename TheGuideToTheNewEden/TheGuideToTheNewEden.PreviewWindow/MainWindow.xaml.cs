@@ -27,13 +27,11 @@ namespace TheGuideToTheNewEden.PreviewWindow
         private SolidColorBrush _nomralColor = new SolidColorBrush(Colors.White);
         private SolidColorBrush _hlColor;
         private IntPtr _overlapHwnd = IntPtr.Zero;
-        private ObservableCollection<string> _msgs = new ObservableCollection<string>();
         private IPreviewIPC _previewIPC;
         private ThumbnailWindow _thumbnailWindow;
         public MainWindow()
         {
             InitializeComponent();
-            ListView_Msg.ItemsSource = _msgs;
             Loaded += MainWindow_Loaded;
             Loaded += MainWindow_Loaded2;
         }
@@ -43,13 +41,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
             _overlapHwnd = (System.Windows.Interop.HwndSource.FromDependencyObject(this) as System.Windows.Interop.HwndSource).Handle;
             SizeChanged += MainWindow_SizeChanged;
             this.LocationChanged += MainWindow_LocationChanged;
-            if (App.Args != null)
-            {
-                for (int i = 0; i < App.Args?.Length; i++)
-                {
-                    _msgs.Add(App.Args[i]);
-                }
-            }
             try
             {
                 _previewIPC = new MemoryIPC(App.Args[0]);
@@ -164,10 +155,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
                     string msgStr = stringBuilder.ToString();
                     if(_lastMsg != msgStr)
                     {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            _msgs.Add(msgStr);
-                        });
                         _lastMsg = msgStr;
                     }
                     HandleMsg(op, msgs);
@@ -271,10 +258,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
         }
         private void UpdateThumbnail(IPCOp op, int[] msgs)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add("更新略缩图");
-            });
             _thumbnailWindow.UpdateThumbnail();
             _previewIPC.SendMsg(IPCOp.Handled);
         }
@@ -282,7 +265,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
         {
             this.Dispatcher.Invoke(() =>
             {
-                _msgs.Add("高亮");
                 NameTextBlock.Foreground = _hlColor;
             });
             _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
@@ -292,7 +274,6 @@ namespace TheGuideToTheNewEden.PreviewWindow
         {
             this.Dispatcher.Invoke(() =>
             {
-                _msgs.Add("取消高亮");
                 NameTextBlock.Foreground = _nomralColor;
             });
             _thumbnailWindow.UpdateThumbnail();
@@ -300,19 +281,11 @@ namespace TheGuideToTheNewEden.PreviewWindow
         }
         private void SetSize(IPCOp op, int[] msgs)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add("设置窗口大小");
-            });
             SetWindowPos(_overlapHwnd, 0, 0, 0, msgs[0], msgs[1], 0x0002 | 0x0004);
             _previewIPC.SendMsg(IPCOp.Handled);
         }
         private void SetPos(IPCOp op, int[] msgs)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add("设置窗口位置");
-            });
             SetWindowPos(_overlapHwnd, 0, msgs[0], msgs[1], 0, 0, 0x0001 | 0x0004);
             _previewIPC.SendMsg(IPCOp.Handled);
         }
@@ -320,49 +293,26 @@ namespace TheGuideToTheNewEden.PreviewWindow
         {
             var windowRect = new System.Drawing.Rectangle();
             GetWindowRect(_overlapHwnd, ref windowRect);
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add($"获取窗口大小和位置：{windowRect.Width - windowRect.X}x{windowRect.Height - windowRect.Y} {windowRect.X} {windowRect.Y}");
-            });
             _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width - windowRect.X, windowRect.Height - windowRect.Y, windowRect.X, windowRect.Y });
         }
         private void GetWidth(IPCOp op, int[] msgs)
         {
             var windowRect = new System.Drawing.Rectangle();
             GetWindowRect(_overlapHwnd, ref windowRect);
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add($"获取窗口宽：{windowRect.Width - windowRect.X}");
-            });
             _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Width - windowRect.X });
         }
         private void GetHeight(IPCOp op, int[] msgs)
         {
             var windowRect = new System.Drawing.Rectangle();
             GetWindowRect(_overlapHwnd, ref windowRect);
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add($"获取窗口高：{windowRect.Height - windowRect.Y}");
-            });
             _previewIPC.SendMsg(IPCOp.ResultMsg, new int[] { windowRect.Height - windowRect.Y });
         }
         private void UpdateSizeAndPos(IPCOp op, int[] msgs)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                _msgs.Add("设置窗口大小和位置");
-            });
             SetWindowPos(_overlapHwnd, 0, msgs[2], msgs[3], msgs[0], msgs[1], 0x0004);
             _previewIPC.SendMsg(IPCOp.Handled);
         }
         #endregion
-
-        private async void Button_Test_Click(object sender, RoutedEventArgs e)
-        {
-            var previewIPC = new MemoryIPC(App.Args[1]);
-            previewIPC.SendMsg(IPCOp.SetSize, new int[] { 500, 500 });
-        }
-
         /// <summary>
         /// 左键激活游戏窗口
         /// </summary>

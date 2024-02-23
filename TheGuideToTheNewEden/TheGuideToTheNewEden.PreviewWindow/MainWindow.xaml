@@ -28,18 +28,6 @@
         </WindowChrome>
     </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid Visibility="Collapsed">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <ListView x:Name="ListView_Msg" />
-            <Button
-                x:Name="Button_Test"
-                Grid.Row="1"
-                Click="Button_Test_Click"
-                Content="Test" />
-        </Grid>
         <Grid
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
@@ -47,7 +35,7 @@
             Opacity="0.01" />
         <TextBlock
             x:Name="NameTextBlock"
-            Margin="16,10,0,0"
+            Margin="12,10,0,0"
             Background="Transparent"
             FontSize="16"
             Foreground="White" />
