@@ -424,6 +424,8 @@
     <x:String x:Key="GamePreviewMgrPage_Backward">向后</x:String>
     <x:String x:Key="GamePreviewMgrPage_Forward">向前</x:String>
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">行/列最大窗口个数</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RespondGlobalHotKey">响应全局切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ShowPreviewWindow">显示预览窗口</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>

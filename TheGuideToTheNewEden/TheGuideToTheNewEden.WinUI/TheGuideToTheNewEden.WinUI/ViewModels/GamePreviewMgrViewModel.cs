@@ -286,9 +286,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private string _lastActiveProcessGUID;
         private void SwitchForward()
         {
+            //筛选出正在运行中的和响应全局快捷键的
+            var targetProcesses = Processes.Where(p => p.Running && p.Setting.RespondGlobalHotKey).ToList();
             if (_lastActiveProcessGUID == null)
             {
-                var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
                 {
                     if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
@@ -300,7 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                var runnings = Processes.Where(p => p.Running).ToList();
+                var runnings = targetProcesses;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -333,9 +335,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void SwitchBackward()
         {
+            //筛选出正在运行中的和响应全局快捷键的
+            var targetProcesses = Processes.Where(p => p.Running && p.Setting.RespondGlobalHotKey).ToList();
             if (_lastActiveProcessGUID == null)
             {
-                var firstRunning = Processes.FirstOrDefault(p => p.Running);
+                var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
                 {
                     if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
@@ -347,7 +351,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                var runnings = Processes.Where(p => p.Running).ToList();
+                var runnings = targetProcesses;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -880,7 +884,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
 
-            if (_runningDic.TryGetValue(Processes.First(p => p.Running).GUID, out var window))
+            if (_runningDic.TryGetValue(Processes.First(p => p.Running && p.Setting.ShowPreviewWindow).GUID, out var window))
             {
                 switch (PreviewSetting.AutoLayout)
                 {
@@ -910,7 +914,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                if (win == targetWindow)
+                if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
                 }
@@ -951,7 +955,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                if (win == targetWindow)
+                if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
                 }
@@ -992,7 +996,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                if (win == targetWindow)
+                if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
                 }
@@ -1033,7 +1037,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int lineCount = 1;
             foreach (var win in _runningDic.Values)
             {
-                if (win == targetWindow)
+                if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
                 }

@@ -133,5 +133,25 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => highlightMarginBottom;
             set => SetProperty(ref highlightMarginBottom, value);
         }
+
+        private bool respondGlobalHotKey = true;
+        /// <summary>
+        /// 响应全局快捷键
+        /// </summary>
+        public bool RespondGlobalHotKey
+        {
+            get => respondGlobalHotKey;
+            set => SetProperty(ref respondGlobalHotKey, value);
+        }
+
+        private bool showPreviewWindow = true;
+        /// <summary>
+        /// 显示预览窗口
+        /// </summary>
+        public bool ShowPreviewWindow
+        {
+            get => showPreviewWindow;
+            set => SetProperty(ref showPreviewWindow, value);
+        }
     }
 }

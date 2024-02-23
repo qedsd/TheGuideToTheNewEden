@@ -828,6 +828,14 @@
                             Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}" />
                     </Grid>
 
+                    <Grid Margin="0,8">
+                        <CheckBox Content="{StaticResource GamePreviewMgrPage_RespondGlobalHotKey}" IsChecked="{x:Bind VM.Setting.RespondGlobalHotKey, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Grid Margin="0,8">
+                        <CheckBox Content="{StaticResource GamePreviewMgrPage_ShowPreviewWindow}" IsChecked="{x:Bind VM.Setting.ShowPreviewWindow, Mode=TwoWay}" />
+                    </Grid>
+
                 </StackPanel>
             </ScrollViewer>
             <Grid Grid.Row="1" Margin="0">

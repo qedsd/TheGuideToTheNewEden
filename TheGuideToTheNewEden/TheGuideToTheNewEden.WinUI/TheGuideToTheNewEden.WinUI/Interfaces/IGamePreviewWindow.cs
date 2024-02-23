@@ -9,6 +9,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
 {
     internal interface IGamePreviewWindow
     {
+        PreviewItem GetSetting();
         bool IsHideOnForeground();
         bool IsHighlight();
         void ActiveSourceWindow();
