@@ -21,6 +21,7 @@ using ESI.NET.Models.Universe;
 using Windows.ApplicationModel.DataTransfer;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Services;
+using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -124,6 +125,91 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 ShoppingItems.Add(item);
             }
             Cal();
+        }
+
+        private async void AppBarButton_PasteFromGameOrder_Click(object sender, RoutedEventArgs e)
+        {
+            var data = Clipboard.GetContent();
+            if(data != null)
+            {
+                try
+                {
+                    var text = await data.GetTextAsync();
+                    var remainDic = await Task.Run(Dictionary<int, int> () =>
+                    {
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            var lines = text.Split("\r\n");
+                            if (lines?.Length > 0)
+                            {
+                                Dictionary<int, int> dic = new Dictionary<int, int>();
+                                foreach (var line in lines)
+                                {
+                                    try
+                                    {
+                                        var array = line.Split(',');
+                                        if (array?.Length >= 24)
+                                        {
+                                            int typeId = int.Parse(array[1]);
+                                            int remain = (int)float.Parse(array[14]);
+                                            dic.Add(typeId, remain);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Core.Log.Error(ex);
+                                    }
+                                }
+                                return dic;
+                            }
+                        }
+                        return null;
+                    });
+                    if (remainDic?.Count > 0)
+                    {
+                        int updatedCount = 0;
+                        List<ScalperShoppingItem> removedItems = new List<ScalperShoppingItem>();
+                        foreach (var item in ShoppingItems)
+                        {
+                            if (remainDic.TryGetValue(item.InvType.TypeID, out var remain))
+                            {
+                                updatedCount++;
+                                item.Quantity -= remain;
+                                if (item.Quantity <= 0)
+                                    removedItems.Add(item);
+                            }
+                        }
+                        if (removedItems.Count > 0)
+                        {
+                            foreach (var item in removedItems)
+                            {
+                                ShoppingItems.Remove(item);
+                            }
+                        }
+                        if (updatedCount > 0)
+                        {
+                            Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
+                        }
+                        else
+                        {
+                            Window.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
+                        }
+                    }
+                    else
+                    {
+                        Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    Window.ShowError(ex.Message);
+                }
+            }
+            else
+            {
+                Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+            }
         }
     }
 }

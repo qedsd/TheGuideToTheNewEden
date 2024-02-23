@@ -303,6 +303,7 @@
     <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
     <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</x:String>
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>
     <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
@@ -311,6 +312,10 @@
     <x:String x:Key="BusinessPage_HistoryHighestSalse">历史最高销量</x:String>
     <x:String x:Key="BusinessPage_HistoryAverageSalse">历史平均销量</x:String>
     <x:String x:Key="BusinessPage_HistoryLowestSalse">历史最低销量</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem1">已更新</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem2">个物品</x:String>
+    <x:String x:Key="BusinessPage_NoUpdatedScalperShoppingItem">无物品需要更新</x:String>
+    <x:String x:Key="BusinessPage_NotPasteItem">未识别到物品订单</x:String>
 
     <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
