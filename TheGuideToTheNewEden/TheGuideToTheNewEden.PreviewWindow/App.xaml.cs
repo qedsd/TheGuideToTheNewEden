@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
     public partial class App : Application
     {
         /// <summary>
-        /// hwnd w h x y a r g b o
+        /// gamehwnd gamename w h x y a r g b opacity apphwnd
         /// </summary>
         public static string[] Args { get; private set; }
         private void Application_Startup(object sender, StartupEventArgs e)
@@ -64,6 +64,10 @@ namespace TheGuideToTheNewEden.PreviewWindow
         public static int GetOpacity()
         {
             return int.Parse(Args[10]);
+        }
+        public static IntPtr GetAppHwnd()
+        {
+            return IntPtr.Parse(Args[11]);
         }
     }
 }

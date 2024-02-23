@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -66,6 +67,42 @@ namespace TheGuideToTheNewEden.PreviewWindow
             _hlColor = new SolidColorBrush(Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
             NameTextBlock.Text = App.GetName();
             this.Closed += MainWindow_Closed;
+            MonitorAppClose();
+        }
+        private void MonitorAppClose()
+        {
+            Task.Run(() =>
+            {
+                var allProcesses = Process.GetProcesses();
+                IntPtr appHwnd = App.GetAppHwnd();
+                Process appProcess = null;
+                foreach (var process in allProcesses)
+                {
+                    if (process.MainWindowHandle == appHwnd)
+                    {
+                        appProcess = process;
+                        break;
+                    }
+                }
+                if (appProcess != null)
+                {
+                    while (true)
+                    {
+                        if (appProcess.HasExited)
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                this.Close();
+                            });
+                            break;
+                        }
+                        else
+                        {
+                            Thread.Sleep(1000);
+                        }
+                    }
+                }
+            });
         }
 
         private void MainWindow_Closed(object? sender, EventArgs e)
@@ -105,6 +142,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
         }
         #endregion
 
+        #region 监控App消息
         private string _lastMsg = null;
         private void GetMsg()
         {
@@ -137,7 +175,8 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 Thread.Sleep(100);
             }
         }
-        
+        #endregion
+
         #region 鼠标右键移动
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, int hWndlnsertAfter, int X, int Y, int cx, int cy, uint Flags);
@@ -324,6 +363,11 @@ namespace TheGuideToTheNewEden.PreviewWindow
             previewIPC.SendMsg(IPCOp.SetSize, new int[] { 500, 500 });
         }
 
+        /// <summary>
+        /// 左键激活游戏窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Win32.SetForegroundWindow_Click(App.GetHwnd());

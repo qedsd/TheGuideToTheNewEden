@@ -13,6 +13,7 @@ using TheGuideToTheNewEden.PreviewIPC;
 using TheGuideToTheNewEden.PreviewIPC.Memory;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -135,6 +136,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     _setting.HighlightColor.G.ToString(),
                     _setting.HighlightColor.B.ToString(),
                     _setting.OverlapOpacity.ToString(),
+                    Helpers.WindowHelper.MainWindow.GetWindowHandle().ToString(),
                  };
                 // 启动进程
                 Process.Start(path, args);
