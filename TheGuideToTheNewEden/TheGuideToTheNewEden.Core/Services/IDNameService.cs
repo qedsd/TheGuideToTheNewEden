@@ -69,6 +69,19 @@ namespace TheGuideToTheNewEden.Core.Services
                 return null;
             }
         }
+        public static DBModels.IdName GetById(int id)
+        {
+            var ids = GetByIds(new List<int>() { id });
+            if (ids?.Count > 0)
+            {
+                return ids[0];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<int> ids)
         {
             return await Task.Run(() => GetByIds(ids));

@@ -254,6 +254,7 @@
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
+    <None Remove="Views\Character\IndustryPage.xaml" />
     <None Remove="Views\Character\MailDetailPage.xaml" />
     <None Remove="Views\Character\MailPage.xaml" />
     <None Remove="Views\Character\OverviewPage.xaml" />
@@ -518,6 +519,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Character\IndustryPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\KeyboardListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

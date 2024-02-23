@@ -9,6 +9,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
 {
     public class IdName
     {
+        public IdName() { }
+        public IdName(int id, string name, CategoryEnum category)
+        {
+            Id = id;
+            Name = name;
+            Category = (int)category;
+        }
         [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
         public string Name { get; set; }

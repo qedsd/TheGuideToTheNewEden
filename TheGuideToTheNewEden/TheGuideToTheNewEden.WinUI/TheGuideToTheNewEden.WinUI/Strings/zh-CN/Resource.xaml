@@ -675,4 +675,17 @@
     <x:String x:Key="KeyboardListPage_Name">按键名称</x:String>
     <x:String x:Key="KeyboardListPage_Code">按键代码</x:String>
     <x:String x:Key="KeyboardListPage_Note">备注</x:String>
+
+    <!--  IndustryPage  -->
+    <x:String x:Key="IndustryPage_Blueprint">蓝图</x:String>
+    <x:String x:Key="IndustryPage_Product">产品</x:String>
+    <x:String x:Key="IndustryPage_Location">位置</x:String>
+    <x:String x:Key="IndustryPage_Cost">项目费用</x:String>
+    <x:String x:Key="IndustryPage_Duration">项目周期</x:String>
+    <x:String x:Key="IndustryPage_StartDate">开始时间</x:String>
+    <x:String x:Key="IndustryPage_EndDate">完成时间</x:String>
+    <x:String x:Key="IndustryPage_Status">状态</x:String>
+    <x:String x:Key="IndustryPage_Runs">流程</x:String>
+    <x:String x:Key="IndustryPage_SuccessfulRuns">成功流程</x:String>
+    <x:String x:Key="IndustryPage_Probability">成功率</x:String>
 </ResourceDictionary>

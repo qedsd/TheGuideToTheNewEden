@@ -217,7 +217,7 @@
             </Grid>
             <NavigationView
                 Grid.Column="1"
-                Margin="0,-8,0,0"
+                Margin="0,0,0,0"
                 IsBackButtonVisible="Collapsed"
                 IsSettingsVisible="False"
                 PaneDisplayMode="Top"
@@ -232,13 +232,15 @@
                     <NavigationViewItem Content="钱包" Tag="Wallet" />
                     <NavigationViewItem Content="邮件" Tag="Mail" />
                     <NavigationViewItem Content="合同" Tag="Contract" />
+                    <NavigationViewItem Content="工业" Tag="Industry" />
+                    <NavigationViewItem Content="种菜" Tag="PlanetIndustry" />
                 </NavigationView.MenuItems>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>
             <Button
                 x:Name="RefreshPageButton"
                 Grid.Column="1"
-                Margin="4,4"
+                Margin="4,12"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Background="Transparent"
