@@ -78,12 +78,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private void MenuFlyoutItem_Remove_Click(object sender, RoutedEventArgs e)
         {
-            var item = ((sender as MenuFlyoutItem).CommandParameter as Syncfusion.UI.Xaml.DataGrid.GridRecordContextFlyoutInfo)?.Record as ScalperShoppingItem;
-            if(item != null)
+            var items = ItemsDataGrid.SelectedItems.ToList();
+            foreach (var item in items)
             {
-                ShoppingItems.Remove(item);
-                Cal();
+                ShoppingItems.Remove(item as ScalperShoppingItem);
             }
+            Cal();
         }
 
         private void SfDataGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
