@@ -127,6 +127,40 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Cal();
         }
 
+
+        private void UpdateItems(Dictionary<int, int> items)
+        {
+            if (items?.Count > 0)
+            {
+                int updatedCount = 0;
+                List<ScalperShoppingItem> removedItems = new List<ScalperShoppingItem>();
+                foreach (var item in ShoppingItems)
+                {
+                    if (items.TryGetValue(item.InvType.TypeID, out var remain))
+                    {
+                        updatedCount++;
+                        item.Quantity -= remain;
+                        if (item.Quantity <= 0)
+                            removedItems.Add(item);
+                    }
+                }
+                if (removedItems.Count > 0)
+                {
+                    foreach (var item in removedItems)
+                    {
+                        ShoppingItems.Remove(item);
+                    }
+                }
+                if (updatedCount > 0)
+                {
+                    Window?.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
+                }
+                else
+                {
+                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
+                }
+            }
+        }
         private async void AppBarButton_PasteFromGameOrder_Click(object sender, RoutedEventArgs e)
         {
             var data = Clipboard.GetContent();
@@ -167,33 +201,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     });
                     if (remainDic?.Count > 0)
                     {
-                        int updatedCount = 0;
-                        List<ScalperShoppingItem> removedItems = new List<ScalperShoppingItem>();
-                        foreach (var item in ShoppingItems)
-                        {
-                            if (remainDic.TryGetValue(item.InvType.TypeID, out var remain))
-                            {
-                                updatedCount++;
-                                item.Quantity -= remain;
-                                if (item.Quantity <= 0)
-                                    removedItems.Add(item);
-                            }
-                        }
-                        if (removedItems.Count > 0)
-                        {
-                            foreach (var item in removedItems)
-                            {
-                                ShoppingItems.Remove(item);
-                            }
-                        }
-                        if (updatedCount > 0)
-                        {
-                            Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
-                        }
-                        else
-                        {
-                            Window.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
-                        }
+                        UpdateItems(remainDic);
                     }
                     else
                     {
@@ -209,6 +217,27 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             else
             {
                 Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+            }
+        }
+
+        public void UpdateItems(List<Core.Models.Market.Order> orders)
+        {
+            if(orders.NotNullOrEmpty())
+            {
+                Dictionary<int, int> items = new Dictionary<int, int>();
+                foreach (var item in orders)
+                {
+                    if(items.TryGetValue(item.TypeId, out int count))
+                    {
+                        items.Remove(item.TypeId);
+                        items.Add(item.TypeId, count + item.VolumeRemain);
+                    }
+                    else
+                    {
+                        items.Add(item.TypeId, item.VolumeRemain);
+                    }
+                }
+                UpdateItems(items);
             }
         }
     }

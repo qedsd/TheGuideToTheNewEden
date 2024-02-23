@@ -32,17 +32,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             VM.Window = Window;
         }
 
-        private void CharacterOrderPage_OnSelectedItemsChanged(List<Core.Models.Market.Order> orders)
-        {
-            if(orders.NotNullOrEmpty())
-            {
-                var groups = orders.GroupBy(p => p.TypeId).ToList();
-                var types = groups.Select(p => p.First().InvType).ToList();
-                ScalperPage.AddToFilter(types);
-                Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
-            }
-        }
-
         private void ScalperPage_OnAddShoppingItem(List<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items);
@@ -53,6 +42,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             ShoppingCartPage.AddItems(items.ToList());
             Window?.ShowSuccess($"已添加 {items.Count()}个物品到购物车");
+        }
+
+        private void CharacterOrderPage_OnAddToFilterListItemsChanged(List<Core.Models.Market.Order> orders)
+        {
+            if (orders.NotNullOrEmpty())
+            {
+                var groups = orders.GroupBy(p => p.TypeId).ToList();
+                var types = groups.Select(p => p.First().InvType).ToList();
+                ScalperPage.AddToFilter(types);
+                Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
+            }
+        }
+
+        private void CharacterOrderPage_OnAddToUpdatedScalperShoppingItemsChanged(List<Core.Models.Market.Order> orders)
+        {
+            if (orders.NotNullOrEmpty())
+            {
+                ShoppingCartPage.UpdateItems(orders);
+            }
         }
     }
 }

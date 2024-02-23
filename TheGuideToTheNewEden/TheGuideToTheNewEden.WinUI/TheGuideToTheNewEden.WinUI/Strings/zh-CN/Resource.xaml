@@ -238,6 +238,7 @@
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>
+    <x:String x:Key="BusinessPage_AddToUpdatedScalperShoppingItem">从购物车中减去相应物品数量</x:String>
     <x:String x:Key="BusinessPage_Character">个人</x:String>
     <x:String x:Key="BusinessPage_Corp">军团</x:String>
     <x:String x:Key="BusinessPage_CharacterOrders">订单</x:String>

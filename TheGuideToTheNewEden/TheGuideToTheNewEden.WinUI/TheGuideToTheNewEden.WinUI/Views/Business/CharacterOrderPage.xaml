@@ -38,13 +38,6 @@
                     ToolTipService.ToolTip="{StaticResource General_Refresh}">
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
                 </Button>
-                <Button
-                    x:Name="Button_AddToFilterList"
-                    Margin="8,0,0,0"
-                    Click="Button_AddToFilterList_Click"
-                    ToolTipService.ToolTip="{StaticResource BusinessPage_AddToFilterList}">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
-                </Button>
             </StackPanel>
         </Grid>
         <Pivot Grid.Row="1" Margin="0,-4,0,0">
@@ -93,6 +86,18 @@
                             MappingName="RemainTime" />
                         <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
                     </dataGrid:SfDataGrid.Columns>
+                    <dataGrid:SfDataGrid.RecordContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem
+                                Click="MenuFlyoutItem1_AddToFilterList_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToFilterList}" />
+                            <MenuFlyoutItem
+                                Click="MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToUpdatedScalperShoppingItem}" />
+                        </MenuFlyout>
+                    </dataGrid:SfDataGrid.RecordContextFlyout>
                 </dataGrid:SfDataGrid>
             </PivotItem>
             <PivotItem>
@@ -140,6 +145,18 @@
                             MappingName="RemainTime" />
                         <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
                     </dataGrid:SfDataGrid.Columns>
+                    <dataGrid:SfDataGrid.RecordContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem
+                                Click="MenuFlyoutItem2_AddToFilterList_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToFilterList}" />
+                            <MenuFlyoutItem
+                                Click="MenuFlyoutItem2_AddToUpdatedScalperShoppingItem_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToUpdatedScalperShoppingItem}" />
+                        </MenuFlyout>
+                    </dataGrid:SfDataGrid.RecordContextFlyout>
                 </dataGrid:SfDataGrid>
             </PivotItem>
         </Pivot>

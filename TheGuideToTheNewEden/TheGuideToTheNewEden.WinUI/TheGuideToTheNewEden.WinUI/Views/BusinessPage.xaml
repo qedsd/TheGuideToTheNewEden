@@ -18,7 +18,7 @@
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_CharacterOrders}" />
             </PivotItem.Header>
-            <business:CharacterOrderPage OnSelectedItemsChanged="CharacterOrderPage_OnSelectedItemsChanged" />
+            <business:CharacterOrderPage OnAddToFilterListItemsChanged="CharacterOrderPage_OnAddToFilterListItemsChanged" OnAddToUpdatedScalperShoppingItemsChanged="CharacterOrderPage_OnAddToUpdatedScalperShoppingItemsChanged" />
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
@@ -36,7 +36,7 @@
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_HistoryShopping}" />
             </PivotItem.Header>
-            <business:ShoppingRecordPage OnAddShoppingItems="ShoppingRecordPage_OnAddShoppingItems"/>
+            <business:ShoppingRecordPage OnAddShoppingItems="ShoppingRecordPage_OnAddShoppingItems" />
         </PivotItem>
     </Pivot>
 </Page>

@@ -71,32 +71,50 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 Window?.ShowError("Î´Ñ¡Ôñ½ÇÉ«");
             }
         }
-        private void Button_AddToFilterList_Click(object sender, RoutedEventArgs e)
-        {
-            List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
-            if(DataGrid_Character.SelectedItems.NotNullOrEmpty())
-            {
-                orders.AddRange(DataGrid_Character.SelectedItems.Select(p=> p as Core.Models.Market.Order));
-            }
-            if (DataGrid_Corp.SelectedItems.NotNullOrEmpty())
-            {
-                orders.AddRange(DataGrid_Corp.SelectedItems.Select(p => p as Core.Models.Market.Order));
-            }
-            SelectedItemsChanged?.Invoke(orders);
-        }
-
         public delegate void SelectedItemsChangedEventHandel(List<Core.Models.Market.Order> orders);
-        private SelectedItemsChangedEventHandel SelectedItemsChanged;
-        public event SelectedItemsChangedEventHandel OnSelectedItemsChanged
+        private SelectedItemsChangedEventHandel AddToFilterListItemsChanged;
+        public event SelectedItemsChangedEventHandel OnAddToFilterListItemsChanged
         {
             add
             {
-                SelectedItemsChanged += value;
+                AddToFilterListItemsChanged += value;
             }
             remove
             {
-                SelectedItemsChanged -= value;
+                AddToFilterListItemsChanged -= value;
             }
+        }
+
+        private SelectedItemsChangedEventHandel AddToUpdatedScalperShoppingItemsChanged;
+        public event SelectedItemsChangedEventHandel OnAddToUpdatedScalperShoppingItemsChanged
+        {
+            add
+            {
+                AddToUpdatedScalperShoppingItemsChanged += value;
+            }
+            remove
+            {
+                AddToUpdatedScalperShoppingItemsChanged -= value;
+            }
+        }
+
+        private void MenuFlyoutItem1_AddToFilterList_Click(object sender, RoutedEventArgs e)
+        {
+            AddToFilterListItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+        }
+
+        private void MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
+        {
+            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+        }
+        private void MenuFlyoutItem2_AddToFilterList_Click(object sender, RoutedEventArgs e)
+        {
+            AddToFilterListItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+        }
+
+        private void MenuFlyoutItem2_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
+        {
+            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
         }
     }
 }
