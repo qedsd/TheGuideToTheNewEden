@@ -15,11 +15,11 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal abstract class GamePreviewWindowBase : IGamePreviewWindow
+    internal abstract class GamePreviewBaseWindowBase : BaseWindow, IGamePreviewWindow
     {
         internal readonly PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
-        internal GamePreviewWindowBase(PreviewItem setting, PreviewSetting previewSetting) : base()
+        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting) : base()
         {
             _previewSetting = previewSetting;
             _setting = setting;
@@ -33,10 +33,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             //快捷键
             if (!string.IsNullOrEmpty(_setting.HotKey))
             {
-                if (HotkeyService.GetHotkeyService(Helpers.WindowHelper.MainWindow.GetWindowHandle()).Register(_setting.HotKey, out _hotkeyRegisterId))
+                if (HotkeyService.GetHotkeyService(this.GetWindowHandle()).Register(_setting.HotKey, out _hotkeyRegisterId))
                 {
-                    HotkeyService.GetHotkeyService(Helpers.WindowHelper.MainWindow.GetWindowHandle()).HotkeyActived -= GamePreviewWindowBase_HotkeyActived;
-                    HotkeyService.GetHotkeyService(Helpers.WindowHelper.MainWindow.GetWindowHandle()).HotkeyActived += GamePreviewWindowBase_HotkeyActived;
+                    HotkeyService.GetHotkeyService(this.GetWindowHandle()).HotkeyActived -= GamePreviewWindowBase_HotkeyActived;
+                    HotkeyService.GetHotkeyService(this.GetWindowHandle()).HotkeyActived += GamePreviewWindowBase_HotkeyActived;
                     Core.Log.Info($"注册游戏预览窗口热键成功{_setting.HotKey}_{_hotkeyRegisterId}");
                 }
                 else
@@ -81,7 +81,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public abstract void Start(IntPtr sourceHWnd);
         public virtual void Stop()
         {
-            HotkeyService.GetHotkeyService(Helpers.WindowHelper.MainWindow.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+            HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
         }
         public abstract void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);
     }

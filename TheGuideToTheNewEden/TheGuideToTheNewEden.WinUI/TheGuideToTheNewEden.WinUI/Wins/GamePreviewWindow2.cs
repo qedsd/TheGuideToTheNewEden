@@ -22,7 +22,7 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class GamePreviewWindow2 : GamePreviewWindowBase
+    internal class GamePreviewWindow2 : GamePreviewBaseWindowBase
     {
         private Window _thumbnailWindow;
         private readonly AppWindow _appWindow;

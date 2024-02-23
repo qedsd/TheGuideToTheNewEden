@@ -185,7 +185,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             base.Stop();
             Services.MemoryIPCService.Dispose(_previewIPC);
             _ancellationTokenSource?.Cancel();
-            this.Close();
         }
     }
 }
