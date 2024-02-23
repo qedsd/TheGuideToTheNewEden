@@ -233,7 +233,6 @@
                     <NavigationViewItem Content="邮件" Tag="Mail" />
                     <NavigationViewItem Content="合同" Tag="Contract" />
                     <NavigationViewItem Content="工业" Tag="Industry" />
-                    <NavigationViewItem Content="种菜" Tag="PlanetIndustry" />
                 </NavigationView.MenuItems>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>
