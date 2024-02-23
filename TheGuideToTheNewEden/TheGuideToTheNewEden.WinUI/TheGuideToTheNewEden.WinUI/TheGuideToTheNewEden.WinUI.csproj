@@ -12,7 +12,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.7.0.0</AssemblyVersion>
+	<AssemblyVersion>2.7.1.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<!--package需注释掉-->
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
