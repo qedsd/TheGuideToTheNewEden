@@ -104,9 +104,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(ShoppingItems.Any())
             {
-                TextBlock_ROI.Text = ShoppingItems.Average(p => p.ROI).ToString("N2");
-                TextBlock_NetProfi.Text = ShoppingItems.Sum(p => p.NetProfit).ToString("N2");
-                TextBlock_Principal.Text = ShoppingItems.Sum(p => p.BuyPrice * p.Quantity).ToString("N2");
+                double netProfit = ShoppingItems.Sum(p => p.NetProfit);
+                double principal = ShoppingItems.Sum(p => p.BuyPrice * p.Quantity);
+                TextBlock_ROI.Text = ((netProfit / principal) * 100).ToString("N2");
+                TextBlock_NetProfi.Text = netProfit.ToString("N2");
+                TextBlock_Principal.Text = principal.ToString("N2");
                 TextBlock_Volume.Text = ShoppingItems.Sum(p => p.Volume).ToString("N2");
             }
             else
