@@ -23,9 +23,8 @@ using Windows.UI.ViewManagement;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class EarlyWarningItemViewModel : BaseViewModel
+    internal class EarlyWarningViewModel : BaseViewModel
     {
-        public static HashSet<string> RunningCharacters;
         private string logPath;
         public string LogPath
         {
@@ -148,7 +147,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref setting, value);
         }
         public Core.Models.Map.IntelSolarSystemMap IntelMap { get; set; }
-        internal EarlyWarningItemViewModel()
+        internal EarlyWarningViewModel()
         {
             LogPath = System.IO.Path.Combine(GameLogsSettingService.EVELogsPathValue, "Chatlogs");
             InitNameDbs();
@@ -253,11 +252,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowError("请选择角色");
                 return;
             }
-            if(RunningCharacters.Contains(SelectedCharacter))
-            {
-                Window.ShowError("此角色已开启预警");
-                return;
-            }
             if(string.IsNullOrEmpty(LocationSolarSystem))
             {
                 Window.ShowError("请设置角色当前所处星系");
@@ -320,7 +314,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         intelWindow.OnStop += IntelWindow_OnStop;
                     }
                     IsRunning = true;
-                    RunningCharacters.Add(SelectedCharacter);
                     SaveSetting();
                 }
                 else
@@ -344,7 +337,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             IsRunning = false;
             LocalEarlyWarningItem = null;
             Services.WarningService.Current.Remove(Setting?.Listener);
-            RunningCharacters.Remove(SelectedCharacter);
             GC.Collect();
         });
 

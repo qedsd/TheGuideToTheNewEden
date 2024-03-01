@@ -264,7 +264,6 @@
     <None Remove="Views\ContractPage.xaml" />
     <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
-    <None Remove="Views\EarlyWarningItemPage.xaml" />
     <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\GameLogMonitorPage.xaml" />
     <None Remove="Views\HomePage.xaml" />
@@ -682,9 +681,6 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Windows\IntelWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\EarlyWarningItemPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
