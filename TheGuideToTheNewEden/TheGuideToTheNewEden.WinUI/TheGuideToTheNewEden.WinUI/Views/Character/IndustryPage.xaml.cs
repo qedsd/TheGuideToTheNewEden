@@ -73,7 +73,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         List<IndustryJob> jobs = new List<IndustryJob>();
                         foreach (var job in result.Data)
                         {
-                            jobs.Add(new IndustryJob(job));
+                            jobs.Add(IndustryJob.Create(job));
                         }
                         return jobs;
                     });

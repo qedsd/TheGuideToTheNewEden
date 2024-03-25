@@ -20,7 +20,7 @@ namespace TheGuideToTheNewEden.Core.Models.Indusrty
         public static IndustryJob Create(ESI.NET.Models.Industry.Job job)
         {
             IndustryJob industryJob = new IndustryJob(job);
-            if(job.StationId > 70000000)//空间站
+            if(job.StationId < 70000000)//空间站
             {
                 var sta = Services.DB.StaStationService.Query((int)job.StationId);
                 if(sta != null)
