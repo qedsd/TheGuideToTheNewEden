@@ -35,25 +35,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         private Dictionary<string, IntelWindow> WarningWindows = new Dictionary<string, IntelWindow>();
         /// <summary>
-        /// 一个角色绑定一个MediaSource
+        /// 一个角色绑定一个
         /// </summary>
-        private Dictionary<string, MediaPlayer> MediaPlayers = new Dictionary<string, MediaPlayer>();
-        /// <summary>
-        /// 一个音源绑定一个MediaSource
-        /// </summary>
-        private Dictionary<string, MediaSource> MediaSources = new Dictionary<string, MediaSource>();
-        private MediaSource defaultMediaSource;
-        private MediaSource DefaultMediaSource
-        {
-            get
-            {
-                if(defaultMediaSource == null)
-                {
-                    defaultMediaSource = MediaSource.CreateFromUri(new Uri(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3")));
-                }
-                return defaultMediaSource;
-            }
-        }
+        private Dictionary<string, SoundNotifyItem> SoundNotifyItems = new Dictionary<string, SoundNotifyItem>();
         public bool Add(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             if(setting.OverlapType != 2)//初始化小窗
@@ -75,18 +59,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if(setting.MakeSound)
             {
-                if (MediaPlayers.ContainsKey(setting.Listener))
+                if (SoundNotifyItems.ContainsKey(setting.Listener))
                 {
-                    Core.Log.Error("存在相同角色名称MediaPlayer");
+                    Core.Log.Error("存在相同角色名称SoundNotifyItem");
                     return false;
                 }
                 else
                 {
-                    MediaPlayer mediaPlayer = new MediaPlayer()
-                    {
-                        Source = DefaultMediaSource
-                    };
-                    MediaPlayers.Add(setting.Listener, mediaPlayer);
+                    SoundNotifyItems.Add(setting.Listener, new SoundNotifyItem(setting.Listener));
                 }
             }
             return true;
@@ -100,11 +80,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     window.Dispose();
                 }
                 WarningWindows.Remove(listener);
-                if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
-                {
-                    mediaPlayer.Dispose();
-                }
-                MediaPlayers.Remove(listener);
+                //if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
+                //{
+                //    mediaPlayer.Dispose();
+                //}
+                //MediaPlayers.Remove(listener);
             }
             return true;
         }
@@ -119,22 +99,26 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
+        private object _notifyLocker = new object();
         public bool Notify(string listener, WarningSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
         {
             try
             {
-                if (WarningWindows.TryGetValue(listener, out var value))
+                lock(_notifyLocker)
                 {
-                    value.Show();
-                    value.Intel(content);
-                }
-                if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
-                {
-                    PlaySound(mediaPlayer, soundSetting);
-                }
-                if(sendToast)
-                {
-                    Notifications.IntelToast.SendToast(listener, chanel, content);
+                    if (WarningWindows.TryGetValue(listener, out var value))
+                    {
+                        value.Show();
+                        value.Intel(content);
+                    }
+                    if (SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem))
+                    {
+                        soundNotifyItem.PlaySound(soundSetting);
+                    }
+                    if (sendToast)
+                    {
+                        Notifications.IntelToast.SendToast(listener, chanel, content);
+                    }
                 }
                 return true;
             }
@@ -143,40 +127,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Core.Log.Error(ex);
                 return false;
             }
-        }
-        private void PlaySound(MediaPlayer mediaPlayer, WarningSoundSetting soundSetting)
-        {
-            string soundFile = soundSetting?.FilePath ?? string.Empty;
-            if (string.IsNullOrEmpty(soundFile))
-            {
-                mediaPlayer.Source = DefaultMediaSource;
-            }
-            else
-            {
-                if (MediaSources.TryGetValue(soundFile, out var mediaSource))
-                {
-                    mediaPlayer.Source = mediaSource;
-                }
-                else
-                {
-                    var m = MediaSource.CreateFromUri(new Uri(soundFile));
-                    if (m != null)
-                    {
-                        MediaSources.Add(soundFile, m);
-                        mediaPlayer.Source = m;
-                    }
-                    else
-                    {
-                        Core.Log.Error($"创建{soundFile}MediaSource失败");
-                        mediaPlayer.Source = mediaSource;
-                    }
-                }
-            }
-            mediaPlayer.Volume = (soundSetting?.Volume ?? 100) / 100.0;
-            mediaPlayer.IsLoopingEnabled = soundSetting?.Loop ?? false;
-            mediaPlayer.Pause();
-            mediaPlayer.Position = TimeSpan.Zero;
-            mediaPlayer.Play();
         }
         public void ClearWindow()
         {
@@ -214,28 +164,75 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void StopSound(string listener)
         {
-            if (!string.IsNullOrEmpty(listener) && MediaPlayers.TryGetValue(listener, out var mediaPlayer))
+            if (!string.IsNullOrEmpty(listener) && SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem))
             {
-                mediaPlayer.Pause();
-                mediaPlayer.Position = TimeSpan.Zero;
+                soundNotifyItem.StopSound();
             }
         }
         public void Dispose()
         {
             ClearWindow();
+            foreach(var player in SoundNotifyItems.Values)
+            {
+                player.Dispose();
+            }
+            SoundNotifyItems.Clear();
+        }
+    }
+
+    class SoundNotifyItem
+    {
+        private string defaultMediaFile;
+        private string DefaultMediaFile
+        {
+            get
+            {
+                if (defaultMediaFile == null)
+                {
+                    defaultMediaFile = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3");
+                }
+                return defaultMediaFile;
+            }
+        }
+        public string Listener { get; set; }
+        private Dictionary<string, MediaPlayer> MediaPlayers = new Dictionary<string, MediaPlayer>();
+        public SoundNotifyItem(string listener)
+        {
+            Listener = listener;
+        }
+        public void PlaySound(WarningSoundSetting soundSetting)
+        {
+            string soundFile = string.IsNullOrEmpty(soundSetting.FilePath) ? DefaultMediaFile : soundSetting.FilePath;
+            MediaPlayer mediaPlayer;
+            if (!MediaPlayers.TryGetValue(soundFile, out mediaPlayer))
+            {
+                mediaPlayer = new MediaPlayer()
+                {
+                    Source = MediaSource.CreateFromUri(new Uri(soundFile))
+                };
+                MediaPlayers.Add(soundFile, mediaPlayer);
+            }
+            mediaPlayer.Volume = (soundSetting?.Volume ?? 100) / 100.0;
+            mediaPlayer.IsLoopingEnabled = soundSetting?.Loop ?? false;
+            mediaPlayer.Pause();
+            mediaPlayer.Position = TimeSpan.Zero;
+            mediaPlayer.Play();
+        }
+        public void StopSound()
+        {
             foreach(var player in MediaPlayers.Values)
+            {
+                player.Pause();
+                player.Position = TimeSpan.Zero;
+            }
+        }
+        public void Dispose()
+        {
+            foreach (var player in MediaPlayers.Values)
             {
                 player.Pause();
                 player.Dispose();
             }
-            MediaPlayers.Clear();
-            foreach (var m in MediaSources.Values)
-            {
-                m.Dispose();
-            }
-            MediaSources.Clear();
-            DefaultMediaSource?.Dispose();
-            defaultMediaSource = null;
         }
     }
 }
