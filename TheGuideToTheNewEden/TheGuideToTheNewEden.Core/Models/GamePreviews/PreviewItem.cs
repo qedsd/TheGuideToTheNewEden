@@ -153,5 +153,15 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => showPreviewWindow;
             set => SetProperty(ref showPreviewWindow, value);
         }
+
+        private int showPreviewWindowMode = 0;
+        /// <summary>
+        /// 显示预览窗口模式
+        /// </summary>
+        public int ShowPreviewWindowMode
+        {
+            get => showPreviewWindowMode;
+            set => SetProperty(ref showPreviewWindowMode, value);
+        }
     }
 }

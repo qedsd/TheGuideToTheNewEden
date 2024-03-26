@@ -132,7 +132,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private void StopTitlebarOp()
         {
             _appWindow.Closing += AppWindow_Closing;
-            _appWindow.Changed += AppWindow_Changed;
+            //_appWindow.Changed += AppWindow_Changed;
         }
         private void RestoreTitlebarOp()
         {
@@ -180,10 +180,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                RestoreTitlebarOp();
+                //RestoreTitlebarOp();
                 _thumbnailWindow?.Hide();
                 this.Hide();
-                StopTitlebarOp();
+                //StopTitlebarOp();
                 UpdateThumbnail();
             });
         }
@@ -191,10 +191,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                RestoreTitlebarOp();
+                //RestoreTitlebarOp();
                 _thumbnailWindow?.Show();
-                this.Show();
-                StopTitlebarOp();
+                this.Activate();
+                //StopTitlebarOp();
                 if (hHighlight)
                 {
                     UpdateThumbnail((int)_setting.HighlightMarginLeft, (int)_setting.HighlightMarginRight,
@@ -323,7 +323,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow.Close();
                 _thumbHWnd = IntPtr.Zero;
             }
-            RestoreTitlebarOp();
+            //RestoreTitlebarOp();
             this.Close();
         }
 

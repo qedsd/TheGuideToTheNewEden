@@ -610,7 +610,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    IGamePreviewWindow gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting);
+                    IGamePreviewWindow gamePreviewWindow;;
+                    switch(Setting.ShowPreviewWindowMode)
+                    {
+                        case 0: gamePreviewWindow = new GamePreviewWindow1(Setting, PreviewSetting);break;
+                        case 1: gamePreviewWindow = new GamePreviewWindow2(Setting, PreviewSetting); break;
+                        case 2: gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting); break;
+                        default:throw new NotImplementedException();
+                    }
                     if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
@@ -1128,7 +1135,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    IGamePreviewWindow gamePreviewWindow = new GamePreviewWindow3(item, PreviewSetting);
+                    IGamePreviewWindow gamePreviewWindow; ;
+                    switch (Setting.ShowPreviewWindowMode)
+                    {
+                        case 0: gamePreviewWindow = new GamePreviewWindow1(Setting, PreviewSetting); break;
+                        case 1: gamePreviewWindow = new GamePreviewWindow2(Setting, PreviewSetting); break;
+                        case 2: gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting); break;
+                        default: throw new NotImplementedException();
+                    }
                     if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
