@@ -207,8 +207,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             base.Stop();
             if (_setting.ShowPreviewWindow)
             {
-                Services.MemoryIPCService.Dispose(_previewIPC);
                 _ancellationTokenSource?.Cancel();
+                Task.Run(() =>
+                {
+                    Services.MemoryIPCService.Dispose(_previewIPC);
+                });
             }
         }
     }
