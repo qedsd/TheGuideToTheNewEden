@@ -29,10 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
-        /// <summary>
-        /// 必须放到全局变量，避免被GC回收
-        /// </summary>
-        private ComCtl32.SUBCLASSPROC _wndProcHandler;
+        public WinUICommunity.IThemeService ThemeService { get; set; }
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
@@ -44,9 +41,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
             this.SetIsAlwaysOnTop(true);
-            Helpers.TransparentWindowHelper.TransparentWindowVisual(this);
-            _wndProcHandler = new ComCtl32.SUBCLASSPROC(Helpers.TransparentWindowHelper.WndProc);
-            ComCtl32.SetWindowSubclass(WindowHelper.GetWindowHandle(this), _wndProcHandler, 1, IntPtr.Zero);
+            ThemeService = new WinUICommunity.ThemeService();
+            ThemeService.Initialize(this);
+            ThemeService.ConfigElementTheme(ElementTheme.Default);
+            ThemeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
             StopTitlebarOp();
             InitUI(_setting.Name);
             MonitorWindow();
@@ -134,24 +132,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Closing += AppWindow_Closing;
             //_appWindow.Changed += AppWindow_Changed;
         }
-        private void RestoreTitlebarOp()
-        {
-            _appWindow.Closing -= AppWindow_Closing;
-            _appWindow.Changed -= AppWindow_Changed;
-        }
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             args.Cancel = true;//取消关闭
             OnStop?.Invoke(_setting);//交给调用者处理关闭
-        }
-        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
-        {
-            if (_presenter.State == OverlappedPresenterState.Minimized || _presenter.State == OverlappedPresenterState.Maximized)
-            {
-                //不显示标题栏时屏蔽标题栏的最大化最小化功能
-                _presenter.Restore();
-                return;
-            }
         }
         #endregion
         #region 检测窗口大小、位置更新

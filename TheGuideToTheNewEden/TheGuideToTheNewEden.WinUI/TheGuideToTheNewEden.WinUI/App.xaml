@@ -14,6 +14,7 @@
                 <ResourceDictionary Source="/Styles/Custom.xaml" />
                 <ResourceDictionary Source="/Strings/zh-CN/Resource.xaml" />
                 <ResourceDictionary Source="/Styles/Syncfusion.xaml" />
+                <ResourceDictionary Source="ms-appx:///WinUICommunity.Components/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
