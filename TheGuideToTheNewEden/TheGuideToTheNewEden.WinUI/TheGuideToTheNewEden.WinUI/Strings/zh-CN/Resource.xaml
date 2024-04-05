@@ -7,6 +7,7 @@
     <x:String x:Key="Setting_Theme_Dark">暗</x:String>
     <x:String x:Key="Setting_Theme_Default">系统默认</x:String>
     <x:String x:Key="Setting_Theme_Light">亮</x:String>
+    <x:String x:Key="Setting_Backdrop_Title">背景</x:String>
     <x:String x:Key="Setting_UILanguage_Description">修改界面语言后，需要重启应用程序</x:String>
     <x:String x:Key="Setting_UILanguage_Title">界面语言</x:String>
     <x:String x:Key="Setting_LocalDb_Description">物品数据库显示语言。修改后需要重启软件</x:String>

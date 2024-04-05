@@ -30,6 +30,20 @@
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_Backdrop_Title}">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedBackdropIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="None" />
+                        <ComboBoxItem Content="Mica" />
+                        <ComboBoxItem Content="MicaAlt" />
+                        <ComboBoxItem Content="DesktopAcrylic" />
+                        <ComboBoxItem Content="AcrylicThin" />
+                        <ComboBoxItem Content="AcrylicBase" />
+                        <ComboBoxItem Content="Transparent" />
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
+
             <controls:ExpandableSettingControl
                 Title="{StaticResource Setting_UILanguage_Title}"
                 Description="{StaticResource Setting_UILanguage_Description}"

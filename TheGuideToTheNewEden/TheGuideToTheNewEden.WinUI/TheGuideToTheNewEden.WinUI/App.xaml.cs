@@ -67,6 +67,7 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 args.Handled = true;
                 (sender as Window).Hide();
+                Helpers.WindowHelper.TrackWindow(sender as Window);
             }
             else
             {

@@ -37,6 +37,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _ = ThemeSelectorService.SetThemeAsync(ElementTheme);
             }
         }
+
+        private int selectedBackdropIndex = (int)BackdropSelectorService.Value;
+        public int SelectedBackdropIndex
+        {
+            get => selectedBackdropIndex;
+            set
+            {
+                selectedBackdropIndex = value;
+                BackdropSelectorService.Set(selectedBackdropIndex);
+            }
+        }
+
         private int selectedUILanguageIndex = LanguageSelectorService.Value == "zh-CN" ? 0 : 1;
         public int SelectedUILanguageIndex
         {

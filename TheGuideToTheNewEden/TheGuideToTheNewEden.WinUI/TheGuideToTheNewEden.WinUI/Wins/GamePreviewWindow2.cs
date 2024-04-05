@@ -29,8 +29,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
-        public WinUICommunity.IThemeService ThemeService { get; set; }
-        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
+        private WinUICommunity.ThemeService _themeService;
+        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
@@ -41,10 +41,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
             this.SetIsAlwaysOnTop(true);
-            ThemeService = new WinUICommunity.ThemeService();
-            ThemeService.Initialize(this);
-            ThemeService.ConfigElementTheme(ElementTheme.Default);
-            ThemeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
+            _themeService = new WinUICommunity.ThemeService();
+            _themeService.Initialize(this);
+            _themeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
             StopTitlebarOp();
             InitUI(_setting.Name);
             MonitorWindow();

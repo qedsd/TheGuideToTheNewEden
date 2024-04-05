@@ -77,6 +77,10 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                     rootElement.RequestedTheme = Theme;
                     TitleBarHelper.TriggerTitleBarRepaint(WindowHelper.GetWindowForElement(WindowHelper.MainWindow.Content));
                 }
+                //window.DispatcherQueue.TryEnqueue(() =>
+                //{
+                //    (window as BaseWindow).ThemeService.SetElementTheme(Theme);
+                //});
             }
         }
         private static ElementTheme LoadThemeFromSettings()

@@ -21,9 +21,17 @@ namespace TheGuideToTheNewEden.WinUI
 {
     public partial class BaseWindow : Window
     {
-        public BaseWindow(string head = null)
+        public WinUICommunity.IThemeService ThemeService { get; set; }
+        public BaseWindow(bool useThemeService = true)
         {
             this.InitializeComponent();
+            //Activated += BaseWindow_Activated;
+            if(useThemeService)
+            {
+                ThemeService = new WinUICommunity.ThemeService();
+                ThemeService.Initialize(this, false);
+                ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
+            }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = "新伊甸漫游指南";
             Helpers.WindowHelper.TrackWindow(this);
@@ -33,16 +41,25 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 rootElement.RequestedTheme = ThemeSelectorService.Theme;
             }
-            if (!TrySetMicaBackdrop())
-            {
-                //不启用需要自行修改主背景色
-                ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
-                ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
-            }
-            SetHeadText(head);
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
         }
+
+        private void BaseWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            ThemeService.Initialize(this, false);
+            //ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
+            ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
+            //ThemeService.ActualThemeChanged += ThemeService_ActualThemeChanged;
+            Activated -= BaseWindow_Activated;
+        }
+
+        private void ThemeService_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            ThemeService.SetBackdropType(WinUICommunity.BackdropType.None);
+            ThemeService.SetBackdropType(BackdropSelectorService.Value);
+        }
+
         public object MainContent
         {
             get => ContentFrame.Content;
@@ -154,75 +171,6 @@ namespace TheGuideToTheNewEden.WinUI
                         }
                     }
                     break;
-            }
-        }
-
-        Helpers.WindowsSystemDispatcherQueueHelper m_wsdqHelper; // See separate sample below for implementation
-        Microsoft.UI.Composition.SystemBackdrops.MicaController m_micaController;
-        Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration m_configurationSource;
-
-        bool TrySetMicaBackdrop()
-        {
-            if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
-            {
-                m_wsdqHelper = new Helpers.WindowsSystemDispatcherQueueHelper();
-                m_wsdqHelper.EnsureWindowsSystemDispatcherQueueController();
-
-                // Hooking up the policy object
-                m_configurationSource = new Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration();
-                this.Activated += Window_Activated;
-                this.Closed += Window_Closed;
-                ((FrameworkElement)this.Content).ActualThemeChanged += Window_ThemeChanged;
-
-                // Initial configuration state.
-                m_configurationSource.IsInputActive = true;
-                SetConfigurationSourceTheme();
-
-                m_micaController = new Microsoft.UI.Composition.SystemBackdrops.MicaController();
-
-                // Enable the system backdrop.
-                // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-                m_micaController.AddSystemBackdropTarget(this.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
-                m_micaController.SetSystemBackdropConfiguration(m_configurationSource);
-                return true; // succeeded
-            }
-
-            return false; // Mica is not supported on this system
-        }
-
-        private void Window_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            m_configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
-        }
-
-        private void Window_Closed(object sender, WindowEventArgs args)
-        {
-            // Make sure any Mica/Acrylic controller is disposed so it doesn't try to
-            // use this closed window.
-            if (m_micaController != null)
-            {
-                m_micaController.Dispose();
-                m_micaController = null;
-            }
-            this.Activated -= Window_Activated;
-            m_configurationSource = null;
-        }
-
-        private void Window_ThemeChanged(FrameworkElement sender, object args)
-        {
-            if (m_configurationSource != null)
-            {
-                SetConfigurationSourceTheme();
-            }
-        }
-
-        private void SetConfigurationSourceTheme()
-        {
-            switch (((FrameworkElement)this.Content).ActualTheme)
-            {
-                case ElementTheme.Dark: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Dark; break;
-                case ElementTheme.Light: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Light; break;
-                case ElementTheme.Default: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Default; break;
             }
         }
 

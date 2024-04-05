@@ -45,6 +45,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             GameLogsSettingService.Initialize();
             DBLocalizationSettingService.Initialize();
             AutoUpdateService.Initialize();
+            BackdropSelectorService.Initialize();
         }
         public static string GetValue(string key)
         {
