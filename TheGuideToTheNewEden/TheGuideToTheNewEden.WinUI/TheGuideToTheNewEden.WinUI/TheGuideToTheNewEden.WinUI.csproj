@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -14,9 +14,11 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<AssemblyVersion>2.7.1.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
+	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
-	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	<EnableMsixTooling>true</EnableMsixTooling>
 	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<SelfContained>true</SelfContained>
     <WindowsPackageType>None</WindowsPackageType>
     <!--package需注释掉-->
   </PropertyGroup>
@@ -313,7 +315,7 @@
     <PackageReference Include="H.NotifyIcon" Version="2.0.124" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.124" />
     <PackageReference Include="log4net" Version="2.0.17" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -324,8 +326,8 @@
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
     <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.17" />
-    <PackageReference Include="WinUICommunity.Components" Version="6.6.0" />
-    <PackageReference Include="WinUICommunity.Core" Version="6.6.0" />
+    <PackageReference Include="WinUICommunity.Components" Version="6.4.1" />
+    <PackageReference Include="WinUICommunity.Core" Version="6.4.1" />
     <PackageReference Include="WinUIEx" Version="2.3.4" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

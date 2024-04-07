@@ -59,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             IntelMap = intelMap;
             Setting = setting;
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-            WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
             AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             AppWindow.Resize(new Windows.Graphics.SizeInt32(Setting.WinW, Setting.WinH));
             if(Setting.WinX != -1 && Setting.WinY != -1)
@@ -259,7 +259,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                         if (StartTimes.Count == 0)
                         {
                             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-                            WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
                             Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
                             appWindow?.Hide();
                         }
