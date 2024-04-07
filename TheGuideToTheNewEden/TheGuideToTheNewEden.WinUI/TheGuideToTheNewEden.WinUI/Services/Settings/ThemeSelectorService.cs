@@ -51,36 +51,9 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 
         public static void SetRequestedTheme()
         {
-            var res = Application.Current.Resources;
-            Action<Color> SetTitleBarButtonForegroundColor = (color) => { res["WindowCaptionForeground"] = color; };
-            switch (Theme)
-            {
-                case ElementTheme.Dark: SetTitleBarButtonForegroundColor(Colors.White); break;
-                case ElementTheme.Light: SetTitleBarButtonForegroundColor(Colors.Black); break;
-                case ElementTheme.Default:
-                    {
-                        if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
-                        {
-                            SetTitleBarButtonForegroundColor(Colors.White);
-                        }
-                        else
-                        {
-                            SetTitleBarButtonForegroundColor(Colors.Black);
-                        }
-                    }
-                    break;
-            }
             foreach (Window window in WindowHelper.ActiveWindows)
             {
-                if (window.Content is FrameworkElement rootElement)
-                {
-                    rootElement.RequestedTheme = Theme;
-                    TitleBarHelper.TriggerTitleBarRepaint(WindowHelper.GetWindowForElement(WindowHelper.MainWindow.Content));
-                }
-                //window.DispatcherQueue.TryEnqueue(() =>
-                //{
-                //    (window as BaseWindow).ThemeService.SetElementTheme(Theme);
-                //});
+                (window as BaseWindow).ThemeService?.SetElementTheme(Theme);
             }
         }
         private static ElementTheme LoadThemeFromSettings()

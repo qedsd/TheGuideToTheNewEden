@@ -25,11 +25,11 @@ namespace TheGuideToTheNewEden.WinUI
         public BaseWindow(bool useThemeService = true)
         {
             this.InitializeComponent();
-            //Activated += BaseWindow_Activated;
             if(useThemeService)
             {
                 ThemeService = new WinUICommunity.ThemeService();
                 ThemeService.Initialize(this, false);
+                ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
                 ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
             }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
@@ -37,27 +37,8 @@ namespace TheGuideToTheNewEden.WinUI
             Helpers.WindowHelper.TrackWindow(this);
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            if (Content is FrameworkElement rootElement)
-            {
-                rootElement.RequestedTheme = ThemeSelectorService.Theme;
-            }
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
-        }
-
-        private void BaseWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            ThemeService.Initialize(this, false);
-            //ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
-            ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
-            //ThemeService.ActualThemeChanged += ThemeService_ActualThemeChanged;
-            Activated -= BaseWindow_Activated;
-        }
-
-        private void ThemeService_ActualThemeChanged(FrameworkElement sender, object args)
-        {
-            ThemeService.SetBackdropType(WinUICommunity.BackdropType.None);
-            ThemeService.SetBackdropType(BackdropSelectorService.Value);
         }
 
         public object MainContent
