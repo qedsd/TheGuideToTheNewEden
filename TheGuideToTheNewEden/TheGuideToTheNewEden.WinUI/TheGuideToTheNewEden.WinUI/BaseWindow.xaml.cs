@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
             }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
-            this.Title = "新伊甸漫游指南";
+            this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
             Helpers.WindowHelper.TrackWindow(this);
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
