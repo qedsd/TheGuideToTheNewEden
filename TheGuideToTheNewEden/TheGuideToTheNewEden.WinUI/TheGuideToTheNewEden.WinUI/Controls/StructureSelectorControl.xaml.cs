@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System.Collections.ObjectModel;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.Core.DBModels;
+using Syncfusion.UI.Xaml.Data;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -28,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private void Init()
         {
-            Structures = Services.StructureService.Structures;
+            Structures = Services.StructureService.GetStructures().ToObservableCollection();
             if(Structures.Any())
             {
                 ListView_List.Visibility = Visibility.Visible;

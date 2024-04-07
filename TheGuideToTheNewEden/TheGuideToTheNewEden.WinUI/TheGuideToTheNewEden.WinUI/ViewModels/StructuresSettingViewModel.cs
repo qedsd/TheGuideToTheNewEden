@@ -97,7 +97,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public StructuresSettingViewModel()
         {
             Characters = Services.CharacterService.CharacterOauths;
-            Structures = Services.StructureService.Structures;
+            Structures = Services.StructureService.GetStructures().ToObservableCollection();
             EsiClient = ESIService.GetDefaultEsi();
             SelectedCharacter = Characters.FirstOrDefault();
         }

@@ -14,30 +14,28 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
 using Octokit;
 using ESI.NET.Models.Character;
+using WinUICommunity;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class StructureService
     {
         private static readonly string FilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
-        public static ObservableCollection<Structure> Structures { get; set; }
+        private static Dictionary<long, Structure> Structures { get; set; }
         public static void Init()
         {
             if (File.Exists(FilePath))
             {
                 string json = File.ReadAllText(FilePath);
                 var list = JsonConvert.DeserializeObject<List<Structure>>(json);
-                Structures = list.ToObservableCollection();
+                Structures = list.ToDictionary(p=>p.Id);
             }
-            if(Structures == null)
-            {
-                Structures = new ObservableCollection<Structure>();
-            }
+            Structures ??= new Dictionary<long, Structure>();
         }
 
         public static void Save()
         {
-            string json = JsonConvert.SerializeObject(Structures);
+            string json = JsonConvert.SerializeObject(Structures.Values);
             string folder = Path.GetDirectoryName(FilePath);
             if (!Directory.Exists(folder))
             {
@@ -48,11 +46,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static Structure GetStructure(long id)
         {
-            return Structures.FirstOrDefault(p => p.Id == id);
+            if(Structures.TryGetValue(id,out var value))
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
-        public static async Task<Structure> QueryStructureAsync(List<long> ids, int characterID = -1)
+        public static async Task<List<Structure>> QueryStructureAsync(List<long> ids, int characterID = -1)
         {
-            var locals = Structures.Where(p=>ids.Contains(p.Id)).ToList();
+            var locals = Structures.Values.Where(p=>ids.Contains(p.Id)).ToList();
             if(locals.Any())
             {
                 var notInLocals = ids.Except(locals.Select(p=>p.Id).ToList()).ToList();
@@ -62,18 +67,37 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if(esis.NotNullOrEmpty())
                     {
                         locals.AddRange(esis);
+                        foreach (var item in esis)
+                        {
+                            Structures.Add(item.Id, item);
+                        }
                     }
                 }
                 return locals;
+            }
+            else
+            {
+                var esis = await GetStructureByESI(ids, characterID);
+                if(esis.NotNullOrEmpty())
+                {
+                    foreach (var item in esis)
+                    {
+                        Structures.Add(item.Id, item);
+                    }
+                }
+                return esis;
             }
         }
 
         public static List<Structure> GetStructuresOfRegion(int regionId)
         {
-            return Structures.Where(p => p.RegionId == regionId).ToList();
+            return Structures.Values.Where(p => p.RegionId == regionId).ToList();
         }
 
-
+        public static List<Structure> GetStructures()
+        {
+            return Structures.Values.ToList();
+        }
 
         private static async Task<List<Core.Models.Universe.Structure>> GetStructureByESI(List<long> ids, int characterID = -1)
         {
