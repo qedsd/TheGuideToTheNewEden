@@ -23,6 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             Value = (BackdropType)value;
             Save(Value.ToString());
             Set();
+            OnBackdropTypeChanged?.Invoke(null, Value);
         }
 
         private static BackdropType LoadFromSettings()
@@ -50,5 +51,6 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 (window as BaseWindow).ThemeService?.SetBackdropType(Value);
             }
         }
+        public static event EventHandler<BackdropType> OnBackdropTypeChanged;
     }
 }

@@ -38,7 +38,6 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             Theme = LoadThemeFromSettings();
             SetRequestedTheme();
-            OnChangedThemeHandler?.Invoke(Theme);
         }
 
         public static async Task SetThemeAsync(ElementTheme theme)

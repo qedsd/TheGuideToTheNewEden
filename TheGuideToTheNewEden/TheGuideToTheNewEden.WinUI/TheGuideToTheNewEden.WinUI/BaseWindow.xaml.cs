@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -31,6 +32,9 @@ namespace TheGuideToTheNewEden.WinUI
                 ThemeService.Initialize(this, false);
                 ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
                 ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
+                ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
+                ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+                BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
             }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = "新伊甸漫游指南";
@@ -134,26 +138,6 @@ namespace TheGuideToTheNewEden.WinUI
             ContentArea.SetValue(Grid.RowProperty, 0);
             HideAppTitleContentArea();
         }
-        private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
-        {
-            switch (theme)
-            {
-                case ElementTheme.Dark: MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 32, 32, 32)); break;
-                case ElementTheme.Light: MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243)); break;
-                case ElementTheme.Default:
-                    {
-                        if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
-                        {
-                            MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 32, 32, 32));
-                        }
-                        else
-                        {
-                            MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243));
-                        }
-                    }
-                    break;
-            }
-        }
 
         private System.Timers.Timer Timer;
         private void StartTimer()
@@ -246,6 +230,42 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 WindowHelper.GetAppWindow(this)?.Hide();
             });
+        }
+
+        private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
+        {
+            if (BackdropSelectorService.Value == WinUICommunity.BackdropType.None)
+            {
+                switch (theme)
+                {
+                    case ElementTheme.Dark: MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 32, 32, 32)); break;
+                    case ElementTheme.Light: MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243)); break;
+                    case ElementTheme.Default:
+                        {
+                            if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
+                            {
+                                MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 32, 32, 32));
+                            }
+                            else
+                            {
+                                MainWindowGrid.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243));
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void BackdropSelectorService_OnBackdropTypeChanged(object sender, WinUICommunity.BackdropType e)
+        {
+            if(e == WinUICommunity.BackdropType.None)
+            {
+                ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+            }
+            else
+            {
+                MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);
+            }
         }
     }
 }
