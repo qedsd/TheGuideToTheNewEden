@@ -41,6 +41,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
             else
             {
+                long searchId = -1;
+                long.TryParse(sender.Text, out searchId);
                 object result = null;
                 _window?.ShowWaiting();
                 try
@@ -54,6 +56,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                 {
                                     result = await Core.Services.DB.InvTypeService.QueryTypesAsync(list.Select(p=>p.ID).ToList());
                                 }
+                                if(searchId > 0)
+                                {
+                                    var type = await Core.Services.DB.InvTypeService.QueryTypeAsync((int)searchId);
+                                    if(type != null)
+                                    {
+                                        if(result == null)
+                                        {
+                                            result = new List<Core.DBModels.InvType>()
+                                            {
+                                                type
+                                            };
+                                        }
+                                        else
+                                        {
+                                            (result as List<object>).Add(type);
+                                        }
+                                        
+                                    }
+                                }
                             }
                             break;
                         case 1:
@@ -62,6 +83,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                 if (list.NotNullOrEmpty())
                                 {
                                     result = await Core.Services.DB.InvGroupService.QueryGroupsAsync(list.Select(p => p.ID).ToList());
+                                }
+                                if (searchId > 0)
+                                {
+                                    var target = await Core.Services.DB.InvGroupService.QueryGroupAsync((int)searchId);
+                                    if (target != null)
+                                    {
+                                        if (result == null)
+                                        {
+                                            result = new List<Core.DBModels.InvGroup>()
+                                            {
+                                                target
+                                            };
+                                        }
+                                        else
+                                        {
+                                            (result as List<object>).Add(target);
+                                        }
+
+                                    }
                                 }
                             }
                             break;
@@ -72,6 +112,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                 {
                                     result = await Core.Services.DB.MapSolarSystemService.QueryAsync(list.Select(p => p.ID).ToList());
                                 }
+                                if (searchId > 0)
+                                {
+                                    var target = await Core.Services.DB.MapSolarSystemService.QueryAsync((int)searchId);
+                                    if (target != null)
+                                    {
+                                        if (result == null)
+                                        {
+                                            result = new List<Core.DBModels.MapSolarSystem>()
+                                            {
+                                                target
+                                            };
+                                        }
+                                        else
+                                        {
+                                            (result as List<object>).Add(target);
+                                        }
+
+                                    }
+                                }
                             }
                             break;
                         case 3:
@@ -81,6 +140,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                 {
                                     result = await Core.Services.DB.MapRegionService.QueryAsync(list.Select(p => p.ID).ToList());
                                 }
+                                if (searchId > 0)
+                                {
+                                    var target = await Core.Services.DB.MapRegionService.QueryAsync((int)searchId);
+                                    if (target != null)
+                                    {
+                                        if (result == null)
+                                        {
+                                            result = new List<Core.DBModels.MapRegion>()
+                                            {
+                                                target
+                                            };
+                                        }
+                                        else
+                                        {
+                                            (result as List<object>).Add(target);
+                                        }
+
+                                    }
+                                }
                             }
                             break;
                         case 4:
@@ -89,6 +167,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                 if (list.NotNullOrEmpty())
                                 {
                                     result = await Core.Services.DB.StaStationService.QueryAsync(list.Select(p => p.ID).ToList());
+                                }
+                                if (searchId > 0)
+                                {
+                                    var target = await Core.Services.DB.StaStationService.QueryAsync((int)searchId);
+                                    if (target != null)
+                                    {
+                                        if (result == null)
+                                        {
+                                            result = new List<Core.DBModels.StaStation>()
+                                            {
+                                                target
+                                            };
+                                        }
+                                        else
+                                        {
+                                            (result as List<object>).Add(target);
+                                        }
+
+                                    }
                                 }
                             }
                             break;
