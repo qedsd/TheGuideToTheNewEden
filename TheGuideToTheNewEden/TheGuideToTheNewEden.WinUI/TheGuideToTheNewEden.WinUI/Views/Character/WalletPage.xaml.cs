@@ -307,7 +307,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 return;
             }
             _window?.ShowWaiting();
-            DataGrid_CorpJournal.ItemsSource = await GetCorpJournalsAsync((int)NumberBox_CorpTransaction.Value, page);
+            DataGrid_CorpJournal.ItemsSource = await GetCorpJournalsAsync((int)NumberBox_CorpJournal.Value, page);
             _window?.HideWaiting();
         }
         private async void LoadCharacterTransactionsAsync()
