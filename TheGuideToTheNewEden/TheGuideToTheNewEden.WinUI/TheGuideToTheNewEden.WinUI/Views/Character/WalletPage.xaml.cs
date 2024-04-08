@@ -71,68 +71,28 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             _window.HideWaiting();
         }
 
-        private async Task<List<Core.Models.Wallet.JournalEntry>> GetAllJournalsAsync(bool corp)
+        private async Task<List<Core.Models.Wallet.JournalEntry>> GetCharacterJournalsAsync(int page)
         {
-            List<Core.Models.Wallet.JournalEntry> data = new List<Core.Models.Wallet.JournalEntry>();
-            for(int page = 1; ;page++)
-            {
-                var list = await GetJournalsAsync(corp, page);
-                if(list.NotNullOrEmpty())
-                {
-                    data.AddRange(list);
-                    if(list.Count < 1000)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-            return data;
+            EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse = await _esiClient.Wallet.CharacterJournal(page);
+            return GetDatas(esiResponse);
         }
-        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetAllTransactionsAsync(bool corp)
+        private async Task<List<Core.Models.Wallet.JournalEntry>> GetCorpJournalsAsync(int division,int page)
         {
-            List<Core.Models.Wallet.TransactionEntry> data = new List<Core.Models.Wallet.TransactionEntry>();
-            for (int page = 1; ; page++)
-            {
-                var list = await GetTransactionsAsync(corp, page);
-                if (list.NotNullOrEmpty())
-                {
-                    data.AddRange(list);
-                    if (list.Count < 1000)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-            return data;
+            EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse = await _esiClient.Wallet.CorporationJournal(division, page);
+            return GetDatas(esiResponse);
         }
-        private async Task<List<Core.Models.Wallet.JournalEntry>> GetJournalsAsync(bool corp, int page = 1)
+        private List<Core.Models.Wallet.JournalEntry> GetDatas(EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse;
-            if(corp)
+            if (esiResponse != null)
             {
-                esiResponse = await _esiClient.Wallet.CorporationJournal(page);
-            }
-            else
-            {
-                esiResponse = await _esiClient.Wallet.CharacterJournal(page);
-            }
-            if(esiResponse != null)
-            {
-                if(esiResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                if (esiResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    return esiResponse.Data.Select(p=>new Core.Models.Wallet.JournalEntry(p)).ToList();
+                    return esiResponse.Data.Select(p => new Core.Models.Wallet.JournalEntry(p)).ToList();
                 }
                 else
                 {
                     Log.Error(esiResponse.Message);
+                    _window.ShowError(esiResponse.Message);
                 }
             }
             else
@@ -141,24 +101,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             return null;
         }
-        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetTransactionsAsync(bool corp, int page = 1)
+        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetCharacterTransactionsAsync(int fromId)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse;
-            if (corp)
-            {
-                //esiResponse = await _esiClient.Wallet.CorporationTransactions(page);
-                esiResponse = null;
-            }
-            else
-            {
-                esiResponse = await _esiClient.Wallet.CharacterTransactions(page);
-            }
+            EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse = await _esiClient.Wallet.CharacterTransactions(fromId);
+            return await GetDatas(esiResponse);
+        }
+        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetCorpTransactionsAsync(int division, int fromId)
+        {
+            EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse = await _esiClient.Wallet.CorporationTransactions(division, fromId);
+            return await GetDatas(esiResponse);
+        }
+        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetDatas(EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse)
+        {
             if (esiResponse != null)
             {
                 if (esiResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    var list = esiResponse.Data.Select(p=>new Core.Models.Wallet.TransactionEntry(p)).ToList();
-                    if(list.NotNullOrEmpty())
+                    var list = esiResponse.Data.Select(p => new Core.Models.Wallet.TransactionEntry(p)).ToList();
+                    if (list.NotNullOrEmpty())
                     {
                         await SetNames(list);
                     }
@@ -167,6 +127,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 else
                 {
                     Log.Error(esiResponse.Message);
+                    _window.ShowError(esiResponse.Message);
                 }
             }
             else
@@ -304,7 +265,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_characterTransactionsLoaded)
                         {
                             _characterTransactionsLoaded = true;
-                            NavigatePageControl_CharacterTransaction_OnPageChanged(1);
+                            LoadCharacterTransactionsAsync();
                         }
                     } break;
                 case 2: 
@@ -320,7 +281,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (!_corpTransactionsLoaded)
                         {
                             _corpTransactionsLoaded = true;
-                            NavigatePageControl_CorpTransaction_OnPageChanged(1);
+                            LoadCorpTransactionsAsync();
                         }
                     } break;
             }
@@ -329,30 +290,51 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private async void NavigatePageControl_CharacterJournal_OnPageChanged(int page)
         {
+            if (page < 1)
+            {
+                DataGrid_CharacterJournal.ItemsSource = null;
+                return;
+            }
             _window?.ShowWaiting();
-            DataGrid_CharacterJournal.ItemsSource = await GetJournalsAsync(false, page);
+            DataGrid_CharacterJournal.ItemsSource = await GetCharacterJournalsAsync(page);
             _window?.HideWaiting();
         }
-
-        private async void NavigatePageControl_CharacterTransaction_OnPageChanged(int page)
-        {
-            _window?.ShowWaiting();
-            DataGrid_CharacterTransaction.ItemsSource = await GetTransactionsAsync(false, page);
-            _window?.HideWaiting();
-        }
-
         private async void NavigatePageControl_CorpJournal_OnPageChanged(int page)
         {
+            if(page < 1)
+            {
+                DataGrid_CorpJournal.ItemsSource = null;
+                return;
+            }
             _window?.ShowWaiting();
-            DataGrid_CorpJournal.ItemsSource = await GetJournalsAsync(true, page);
+            DataGrid_CorpJournal.ItemsSource = await GetCorpJournalsAsync((int)NumberBox_CorpTransaction.Value, page);
             _window?.HideWaiting();
         }
-
-        private async void NavigatePageControl_CorpTransaction_OnPageChanged(int page)
+        private async void LoadCharacterTransactionsAsync()
         {
             _window?.ShowWaiting();
-            DataGrid_CorpTransaction.ItemsSource = await GetTransactionsAsync(true, page);
+            DataGrid_CharacterTransaction.ItemsSource = await GetCharacterTransactionsAsync(0);
             _window?.HideWaiting();
+        }
+        private async void LoadCorpTransactionsAsync()
+        {
+            _window?.ShowWaiting();
+            DataGrid_CorpTransaction.ItemsSource = await GetCorpTransactionsAsync((int)NumberBox_CorpTransaction.Value, 0);
+            _window?.HideWaiting();
+        }
+        private void NumberBox_CorpJournal_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            if (_window == null)
+                return;
+            NavigatePageControl_CorpJournal.Page = 0;
+            NavigatePageControl_CorpJournal.Page = 1;
+        }
+
+        private void NumberBox_CorpTransaction_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            if (_window == null)
+                return;
+            LoadCorpTransactionsAsync();
         }
     }
     public class JournalEntryCellStyleSelector : StyleSelector

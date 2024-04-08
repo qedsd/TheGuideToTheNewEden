@@ -136,6 +136,7 @@
     <x:String x:Key="WalletPage_TransactionBuy">买入</x:String>
     <x:String x:Key="WalletPage_TransactionSell">卖出</x:String>
     <x:String x:Key="WalletPage_GroupTotalISK">合计：{TotalISK}</x:String>
+    <x:String x:Key="WalletPage_Division">钱包</x:String>
 
     <!--  Mail  -->
     <x:String x:Key="Inbox">收件箱</x:String>

@@ -165,11 +165,6 @@
                             MappingName="Transaction.IsBuy" />
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
-                <controls1:NavigatePageControl
-                    x:Name="NavigatePageControl_CharacterTransaction"
-                    Grid.Row="1"
-                    HorizontalAlignment="Right"
-                    OnPageChanged="NavigatePageControl_CharacterTransaction_OnPageChanged" />
             </Grid>
 
         </PivotItem>
@@ -179,10 +174,22 @@
             </PivotItem.Header>
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <dataGrid:SfDataGrid
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="{StaticResource WalletPage_Division}" VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <NumberBox x:Name="NumberBox_CorpJournal"
+                               VerticalAlignment="Center"
+                               Value="1"
+                               SpinButtonPlacementMode="Inline"
+                               ValueChanged="NumberBox_CorpJournal_ValueChanged"
+                               Minimum="1"
+                               SmallChange="1"/>
+                </StackPanel>
+                <dataGrid:SfDataGrid Grid.Row="1"
                     x:Name="DataGrid_CorpJournal"
                     HorizontalAlignment="Stretch"
                     AllowDraggingColumns="True"
@@ -232,7 +239,7 @@
                 </dataGrid:SfDataGrid>
                 <controls1:NavigatePageControl
                     x:Name="NavigatePageControl_CorpJournal"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     HorizontalAlignment="Right"
                     OnPageChanged="NavigatePageControl_CorpJournal_OnPageChanged" />
             </Grid>
@@ -243,10 +250,23 @@
             </PivotItem.Header>
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="{StaticResource WalletPage_Division}" VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <NumberBox x:Name="NumberBox_CorpTransaction"
+                               Value="1"
+                               VerticalAlignment="Center"
+                               SpinButtonPlacementMode="Inline"
+                               ValueChanged="NumberBox_CorpTransaction_ValueChanged"
+                               Minimum="1"
+                               SmallChange="1"/>
+                </StackPanel>
                 <dataGrid:SfDataGrid
+                    Grid.Row="1"
                     x:Name="DataGrid_CorpTransaction"
                     HorizontalAlignment="Stretch"
                     AllowDraggingColumns="True"
@@ -291,11 +311,6 @@
                             MappingName="Transaction.IsBuy" />
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
-                <controls1:NavigatePageControl
-                    x:Name="NavigatePageControl_CorpTransaction"
-                    Grid.Row="1"
-                    HorizontalAlignment="Right"
-                    OnPageChanged="NavigatePageControl_CorpTransaction_OnPageChanged" />
             </Grid>
         </PivotItem>
     </Pivot>
