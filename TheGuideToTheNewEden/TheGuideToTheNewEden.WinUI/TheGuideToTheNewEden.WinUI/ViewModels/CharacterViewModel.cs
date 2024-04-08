@@ -243,7 +243,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        characterWallet = p.Result.Data;
+                        if(decimal.TryParse(p.Result.Message, out var result))
+                        {
+                            characterWallet = result;
+                        }
                     }
                     else
                     {
