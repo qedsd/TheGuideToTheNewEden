@@ -7,6 +7,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid>
@@ -29,24 +30,19 @@
             <dataGrid:SfDataGrid.Columns>
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_Blueprint}" MappingName="Blueprint.TypeName" />
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_Product}" MappingName="Product.TypeName" />
-                <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_Status}" MappingName="Blueprint.Status" />
+                <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_Status}" MappingName="StatusDesc" />
                 <dataGrid:GridNumericColumn
                     DisplayNumberFormat="N0"
                     HeaderText="{StaticResource IndustryPage_Runs}"
                     MappingName="Runs" />
                 <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N0"
-                    HeaderText="{StaticResource IndustryPage_SuccessfulRuns}"
-                    MappingName="SuccessfulRuns" />
-                <dataGrid:GridNumericColumn
                     DisplayNumberFormat="N2"
                     HeaderText="{StaticResource IndustryPage_Probability}"
                     MappingName="Probability" />
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_StartDate}" MappingName="StartDate" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N0"
+                <dataGrid:GridTextColumn
                     HeaderText="{StaticResource IndustryPage_Duration}"
-                    MappingName="Duration" />
+                    MappingName="Span" />
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_EndDate}" MappingName="EndDate" />
                 <dataGrid:GridNumericColumn
                     DisplayNumberFormat="N2"

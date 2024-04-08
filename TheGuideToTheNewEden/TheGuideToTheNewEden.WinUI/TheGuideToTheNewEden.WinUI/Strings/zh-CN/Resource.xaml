@@ -693,4 +693,11 @@
     <x:String x:Key="IndustryPage_Runs">流程</x:String>
     <x:String x:Key="IndustryPage_SuccessfulRuns">成功流程</x:String>
     <x:String x:Key="IndustryPage_Probability">成功率</x:String>
+    <x:String x:Key="IndustryPage_Status_Done">完成</x:String>
+    <x:String x:Key="IndustryPage_Status_active">运行中</x:String>
+    <x:String x:Key="IndustryPage_Status_cancelled">已取消</x:String>
+    <x:String x:Key="IndustryPage_Status_delivered">已交付</x:String>
+    <x:String x:Key="IndustryPage_Status_paused">已暂停</x:String>
+    <x:String x:Key="IndustryPage_Status_ready">准备</x:String>
+    <x:String x:Key="IndustryPage_Status_reverted ">已恢复</x:String>
 </ResourceDictionary>

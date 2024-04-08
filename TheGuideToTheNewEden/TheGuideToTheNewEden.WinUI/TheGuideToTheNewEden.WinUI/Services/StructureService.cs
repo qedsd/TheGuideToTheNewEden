@@ -15,6 +15,7 @@ using TheGuideToTheNewEden.Core.Services;
 using Octokit;
 using ESI.NET.Models.Character;
 using WinUICommunity;
+using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -55,6 +56,36 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
+        public static async Task<Structure> QueryStructureAsync(long id, int characterID = -1)
+        {
+            var local = Structures.Values.FirstOrDefault(p => p.Id == id);
+            if (local != null)
+            {
+                return local;
+            }
+            else
+            {
+                var esi = await GetStructureByESI(id, characterID);
+                Structures.Add(id, esi);
+                Save();
+                return esi;
+            }
+        }
+        public static async Task<Structure> QueryStructureAsync(long id, EsiClient esiClient)
+        {
+            var local = Structures.Values.FirstOrDefault(p => p.Id == id);
+            if(local != null)
+            {
+                return local;
+            }
+            else
+            {
+                var esi = await GetStructureByESI(id, esiClient);
+                Structures.Add(id, esi);
+                Save();
+                return esi;
+            }
+        }
         public static async Task<List<Structure>> QueryStructureAsync(List<long> ids, int characterID = -1)
         {
             var locals = Structures.Values.Where(p=>ids.Contains(p.Id)).ToList();
@@ -71,6 +102,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         {
                             Structures.Add(item.Id, item);
                         }
+                        Save();
                     }
                 }
                 return locals;
@@ -84,6 +116,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     {
                         Structures.Add(item.Id, item);
                     }
+                    Save();
                 }
                 return esis;
             }
@@ -99,6 +132,36 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return Structures.Values.ToList();
         }
 
+        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID = -1)
+        {
+            EsiClient esiClient;
+            if (characterID > -1)
+            {
+                esiClient = ESIService.GetDefaultEsi();
+                esiClient.SetCharacterData(Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID));
+            }
+            else
+            {
+                esiClient = ESIService.Current.EsiClient;
+            }
+            var structure = await GetStructureByESI(id, esiClient);
+            if(structure != null)
+            {
+                structure.CharacterId = characterID;
+                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(structure.SolarSystemId);
+                if (system != null)
+                {
+                    structure.RegionId = system.RegionID;
+                    structure.SolarSystemName = system.SolarSystemName;
+                    var region = await Core.Services.DB.MapRegionService.QueryAsync(structure.RegionId);
+                    if (region != null)
+                    {
+                        structure.RegionName = region.RegionName;
+                    }
+                }
+            }
+            return structure;
+        }
         private static async Task<List<Core.Models.Universe.Structure>> GetStructureByESI(List<long> ids, int characterID = -1)
         {
             EsiClient esiClient;

@@ -16,6 +16,9 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models;
+using ESI.NET.Models.Industry;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -23,6 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
     {
         private BaseWindow _window;
         private EsiClient _esiClient;
+        private int _characterId;
         private bool _isLoaded = false;
         public IndustryPage()
         {
@@ -47,7 +51,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            _esiClient = e.Parameter as EsiClient;
+            var array = e.Parameter as dynamic[];
+            _esiClient = array[0];
+            _characterId = array[1];
         }
         public void Clear()
         {
@@ -68,19 +74,56 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 if(result.Data.NotNullOrEmpty())
                 {
-                    var jobs = await Task.Run(List<IndustryJob> () =>
+                    List<IndustryJob> jobs = new List<IndustryJob>();
+                    foreach(var item in result.Data)
                     {
-                        List<IndustryJob> jobs = new List<IndustryJob>();
-                        foreach (var job in result.Data)
+                        var job = await CreateIndustryJob(item);
+                        if(job != null)
                         {
-                            jobs.Add(IndustryJob.Create(job));
+                            job.StatusDesc = Helpers.ResourcesHelper.GetString($"IndustryPage_Status_{job.Status.ToLower()}");
+                            if (job.Status == "active" && job.EndDate <= DateTime.UtcNow)
+                            {
+                                job.StatusDesc = Helpers.ResourcesHelper.GetString("IndustryPage_Status_Done");
+                            }
+                            jobs.Add(job);
                         }
-                        return jobs;
-                    });
-
+                    }
+                    DataGrid.ItemsSource = jobs;
                 }
             }
             _window?.HideWaiting();
+        }
+
+        private async Task<IndustryJob> CreateIndustryJob(ESI.NET.Models.Industry.Job job)
+        {
+            IndustryJob industryJob = new IndustryJob(job);
+            if (job.StationId < 70000000)//¿Õ¼äÕ¾
+            {
+                var sta = Core.Services.DB.StaStationService.Query((int)job.StationId);
+                if (sta != null)
+                {
+                    industryJob.Location = new IdNameLong(sta.StationID, sta.StationName, IdName.CategoryEnum.Station);
+                }
+                else
+                {
+                    industryJob.Location = new IdNameLong(job.StationId, job.StationId.ToString(), IdName.CategoryEnum.Station);
+                }
+            }
+            else
+            {
+                var sta = await Services.StructureService.QueryStructureAsync(job.StationId, _characterId);
+                if (sta != null)
+                {
+                    industryJob.Location = new IdNameLong(sta.Id, sta.Name, IdName.CategoryEnum.Structure);
+                }
+                else
+                {
+                    industryJob.Location = new IdNameLong(job.StationId, job.StationId.ToString(), IdName.CategoryEnum.Structure);
+                }
+            }
+            industryJob.Blueprint = Core.Services.DB.InvTypeService.QueryType(job.BlueprintTypeId);
+            industryJob.Product = Core.Services.DB.InvTypeService.QueryType(job.ProductTypeId);
+            return industryJob;
         }
     }
 }
