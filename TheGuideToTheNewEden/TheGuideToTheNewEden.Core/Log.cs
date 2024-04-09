@@ -23,11 +23,13 @@ namespace TheGuideToTheNewEden.Core
         {
             System.Threading.Interlocked.Increment(ref infoCount);
             log.Info(info);
+            OnInfo?.Invoke(info);
         }
         public static void Error(object error)
         {
             System.Threading.Interlocked.Increment(ref errorCount);
             log.Error(error);
+            OnError?.Invoke(error);
         }
         public static void Fatal(object error)
         {
@@ -36,6 +38,7 @@ namespace TheGuideToTheNewEden.Core
         public static void Warn(object warn)
         {
             log.Warn(warn);
+            OnWarn?.Invoke(warn);
         }
         public static void Debug(object debug)
         {
@@ -56,5 +59,10 @@ namespace TheGuideToTheNewEden.Core
         {
             return System.Threading.Interlocked.Read(ref infoCount);
         }
+
+        public delegate void LogMsgEvent(object msg);
+        public static event LogMsgEvent OnError;
+        public static event LogMsgEvent OnInfo;
+        public static event LogMsgEvent OnWarn;
     }
 }
