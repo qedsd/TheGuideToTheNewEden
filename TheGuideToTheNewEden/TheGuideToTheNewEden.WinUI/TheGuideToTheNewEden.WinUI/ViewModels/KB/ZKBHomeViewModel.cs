@@ -13,7 +13,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
     public class ZKBHomeViewModel:BaseViewModel
     {
-        private KillStream _killStream;
         public ObservableCollection<Core.Models.KB.KBItemInfo> KBItemInfos { get; set; }
         public ZKBHomeViewModel()
         {
@@ -24,8 +23,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         {
             try
             {
-                _killStream = await ZKB.NET.ZKB.SubKillStreamAsync();
-                _killStream.OnMessage += KillStream_OnMessage;
+                await ZKBStreamService.Current.Sub();
+                ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
                 _killStreamMsgQueue = new ConcurrentQueue<SKBDetail>();
                 //使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突
                 _killStreamMessageThread = new Task(() =>
@@ -72,7 +71,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 
         public void Dispose()
         {
-            _killStream?.Close();
+            ZKBStreamService.Current.UnSub();
         }
     }
 }
