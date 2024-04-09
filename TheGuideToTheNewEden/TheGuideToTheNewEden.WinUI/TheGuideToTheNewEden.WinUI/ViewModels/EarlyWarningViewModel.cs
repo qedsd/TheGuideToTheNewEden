@@ -21,6 +21,7 @@ using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.UI.ViewManagement;
+using static Vanara.PInvoke.Kernel32.REASON_CONTEXT;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -448,12 +449,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
+                var span = DateTime.UtcNow - e.Time;
+                string desc;
+                if(span.TotalMinutes > 1)
+                {
+                    desc = $" {span.TotalMinutes.ToString("N1")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Min")}";
+                }
+                else
+                {
+                    desc = $" {span.TotalSeconds.ToString("N0")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Sec")}";
+                }
+                e.Content += desc;
                 Core.Models.WarningSoundSetting soundSetting = null;
                 if (Setting.Sounds.Count >= e.Jumps)
                 {
                     soundSetting = Setting.Sounds[e.Jumps];
                 }
-                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "ZKB", e);
+                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
             });
         }
 

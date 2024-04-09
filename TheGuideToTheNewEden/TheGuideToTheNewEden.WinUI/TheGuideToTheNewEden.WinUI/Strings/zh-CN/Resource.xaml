@@ -705,4 +705,6 @@
     <!--  EarlyWarningPage  -->
     <x:String x:Key="EarlyWarningPage_SubZKB">ZKB预警</x:String>
     <x:String x:Key="EarlyWarningPage_KBTime">有效时长(s)</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Min">分钟之前</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Sec">秒之前</x:String>
 </ResourceDictionary>

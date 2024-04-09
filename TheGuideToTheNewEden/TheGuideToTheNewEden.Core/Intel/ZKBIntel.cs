@@ -37,7 +37,8 @@ namespace TheGuideToTheNewEden.Core.Intel
             int jumps = _intelMap.JumpsOf(detail.SolarSystemId);
             if (jumps != -1)
             {
-                if((DateTime.UtcNow - detail.KillmailTime).TotalSeconds < _setting.KBTime && !detail.Zkb.Npc)
+                var span = DateTime.UtcNow - detail.KillmailTime;
+                if (span.TotalSeconds < _setting.KBTime && !detail.Zkb.Npc)
                 {
                     var info = Helpers.KBHelpers.CreateKBItemInfo(detail);
                     var content = new EarlyWarningContent()
