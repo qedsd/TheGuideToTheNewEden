@@ -701,4 +701,8 @@
     <x:String x:Key="IndustryPage_Status_paused">已暂停</x:String>
     <x:String x:Key="IndustryPage_Status_ready">准备</x:String>
     <x:String x:Key="IndustryPage_Status_reverted ">已恢复</x:String>
+
+    <!--  EarlyWarningPage  -->
+    <x:String x:Key="EarlyWarningPage_SubZKB">ZKB预警</x:String>
+    <x:String x:Key="EarlyWarningPage_KBTime">有效时长(s)</x:String>
 </ResourceDictionary>

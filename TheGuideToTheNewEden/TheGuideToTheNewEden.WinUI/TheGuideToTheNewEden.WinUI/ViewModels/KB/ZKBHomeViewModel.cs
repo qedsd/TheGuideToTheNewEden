@@ -19,17 +19,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             KBItemInfos = new ObservableCollection<Core.Models.KB.KBItemInfo>();
         }
         private Task _killStreamMessageThread;
+        private CancellationTokenSource _cancellationTokenSource;
         public async Task InitAsync()
         {
             try
             {
-                await ZKBStreamService.Current.Sub();
-                ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
+                await Core.Services.ZKBStreamService.Current.Sub();
+                Core.Services.ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
                 _killStreamMsgQueue = new ConcurrentQueue<SKBDetail>();
+                _cancellationTokenSource = new CancellationTokenSource();
+                var token = _cancellationTokenSource.Token;
                 //使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突
                 _killStreamMessageThread = new Task(() =>
                 {
-                    while(true)
+                    while(!token.IsCancellationRequested)
                     {
                         if(_killStreamMsgQueue.TryDequeue(out var detail))
                         {
@@ -71,7 +74,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 
         public void Dispose()
         {
-            ZKBStreamService.Current.UnSub();
+            Core.Services.ZKBStreamService.Current.UnSub();
+            Core.Services.ZKBStreamService.Current.OnMessage -= KillStream_OnMessage;
+            _cancellationTokenSource?.Cancel();
         }
     }
 }

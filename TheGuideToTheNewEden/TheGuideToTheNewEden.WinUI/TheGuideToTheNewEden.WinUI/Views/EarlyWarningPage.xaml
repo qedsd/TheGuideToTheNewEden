@@ -350,6 +350,18 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <StackPanel Margin="0,10,0,4" Orientation="Horizontal">
+                        <CheckBox Content="{StaticResource EarlyWarningPage_SubZKB}"
+                                  IsChecked="{x:Bind VM.Setting.SubZKB, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                    Visibility="{x:Bind VM.Setting.SubZKB,Mode=OneWay,Converter={StaticResource TrueToVisibleConverter}}">
+                            <TextBlock Text="{StaticResource EarlyWarningPage_KBTime}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <NumberBox Value="{x:Bind VM.Setting.KBTime,Mode=TwoWay}"
+                                       Minimum="1"
+                                       SpinButtonPlacementMode="Inline"
+                                       SmallChange="1"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
             <Rectangle

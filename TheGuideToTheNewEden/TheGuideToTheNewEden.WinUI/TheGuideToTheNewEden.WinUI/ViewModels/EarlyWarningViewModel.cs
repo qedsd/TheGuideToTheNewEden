@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
+using TheGuideToTheNewEden.Core.Intel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Models;
@@ -88,6 +89,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private List<Core.Models.EarlyWarningItem> EarlyWarningItems = new List<Core.Models.EarlyWarningItem>();
         private Core.Models.EarlyWarningItem LocalEarlyWarningItem;
+        private Core.Intel.ZKBIntel _zkbIntel;
 
         private bool isRunning;
         /// <summary>
@@ -307,6 +309,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             }
                         }
                     }
+                    if(Setting.SubZKB)
+                    {
+                        _zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
+                        await _zkbIntel.Start();
+                        _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                    }
                     WarningService.Current.Add(Setting, IntelMap);
                     var intelWindow = WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
@@ -336,6 +344,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChatContents.Clear();
             IsRunning = false;
             LocalEarlyWarningItem = null;
+            _zkbIntel?.Stop();
             Services.WarningService.Current.Remove(Setting?.Listener);
             GC.Collect();
         });
@@ -435,6 +444,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+        private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                Core.Models.WarningSoundSetting soundSetting = null;
+                if (Setting.Sounds.Count >= e.Jumps)
+                {
+                    soundSetting = Setting.Sounds[e.Jumps];
+                }
+                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "ZKB", e);
+            });
+        }
+
 
         private async Task<Dictionary<string,int>> GetSolarSystemNames()
         {

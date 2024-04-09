@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ZKB.NET.Models.KillStream;
 using static ZKB.NET.Models.KillStream.KillStream;
 
-namespace TheGuideToTheNewEden.WinUI.Services
+namespace TheGuideToTheNewEden.Core.Services
 {
     public class ZKBStreamService
     {

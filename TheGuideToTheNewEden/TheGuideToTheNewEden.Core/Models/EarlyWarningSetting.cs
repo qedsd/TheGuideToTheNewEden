@@ -211,6 +211,26 @@ namespace TheGuideToTheNewEden.Core.Models
             get => winH;
             set => SetProperty(ref winH, value);
         }
+
+        private bool subZKB = false;
+        /// <summary>
+        /// KB预警
+        /// </summary>
+        public bool SubZKB
+        {
+            get => subZKB;
+            set => SetProperty(ref subZKB, value);
+        }
+
+        private int kbTime = 300;
+        /// <summary>
+        /// KB预警有效时间
+        /// </summary>
+        public int KBTime
+        {
+            get => kbTime;
+            set => SetProperty(ref kbTime, value);
+        }
     }
 
     public class WarningSoundSetting : ObservableObject
