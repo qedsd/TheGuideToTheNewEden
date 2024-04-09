@@ -70,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                         }
                                         else
                                         {
-                                            (result as List<object>).Add(type);
+                                            (result as List<Core.DBModels.InvType>).Insert(0,type);
                                         }
                                         
                                     }
@@ -98,7 +98,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                         }
                                         else
                                         {
-                                            (result as List<object>).Add(target);
+                                            (result as List<Core.DBModels.InvGroup>).Insert(0, target);
                                         }
 
                                     }
@@ -126,7 +126,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                         }
                                         else
                                         {
-                                            (result as List<object>).Add(target);
+                                            (result as List<Core.DBModels.MapSolarSystem>).Insert(0, target);
                                         }
 
                                     }
@@ -154,7 +154,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                         }
                                         else
                                         {
-                                            (result as List<object>).Add(target);
+                                            (result as List<Core.DBModels.MapRegion>).Insert(0, target);
                                         }
 
                                     }
@@ -182,7 +182,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                                         }
                                         else
                                         {
-                                            (result as List<object>).Add(target);
+                                            (result as List<Core.DBModels.StaStation>).Insert(0, target);
                                         }
 
                                     }
