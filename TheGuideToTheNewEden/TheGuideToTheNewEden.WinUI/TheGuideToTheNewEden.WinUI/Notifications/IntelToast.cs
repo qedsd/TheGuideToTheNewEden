@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
                 .AddArgument("action", "ToastClick")
                 .AddArgument(Common.scenarioTag, ScenarioId.ToString())
                 .AddArgument("listener", listener)
-                .AddText($"频道预警：{earlyWarningContent.SolarSystemName} {earlyWarningContent.Jumps}跳")
+                .AddText($"{Helpers.ResourcesHelper.GetString("ShellPage_EarlyWarning")}：{earlyWarningContent.SolarSystemName} {earlyWarningContent.Jumps}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}")
                 .AddText($"{chanel}: {earlyWarningContent.Content}")
                 .BuildNotification();
             appNotification.Expiration = DateTime.Now.AddMinutes(1);

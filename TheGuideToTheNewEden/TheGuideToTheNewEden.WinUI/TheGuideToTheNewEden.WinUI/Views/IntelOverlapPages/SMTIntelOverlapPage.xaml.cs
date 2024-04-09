@@ -96,7 +96,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 ellipse.Scale = new System.Numerics.Vector3(ellipse.Scale.X * 1.5f, ellipse.Scale.Y * 1.5f, 1);
                 Canvas.SetLeft(ellipse, ellipse.ActualOffset.X - ellipse.Width * (ellipse.Scale.X - 1) / 2);
                 Canvas.SetTop(ellipse, ellipse.ActualOffset.Y - ellipse.Height * (ellipse.Scale.Y - 1) / 2);
-                TipTextBlock.Text = $"{map.SolarSystemName} {_intelMap.JumpsOf(map.SolarSystemID)} 跳";
+                string tip = $"{map.SolarSystemName} {_intelMap.JumpsOf(map.SolarSystemID)} {Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}";
+                if (_intelContent.TryGetValue(map.SolarSystemID, out string intelContent))
+                {
+                    tip += $"\n{intelContent}";
+                }
+                TipTextBlock.Text = tip;
                 TipTextBlock.Visibility = Visibility.Visible;
                 if (ellipse.ActualOffset.X > this.ActualWidth / 2)
                 {
@@ -105,7 +110,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 }
                 else
                 {
-                    TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 8, ellipse.ActualOffset.Y - 20, 1);
+                    TipTextBlock.Translation = new System.Numerics.Vector3(ellipse.ActualOffset.X + 16, ellipse.ActualOffset.Y - 20, 1);
                 }
 
                 #endregion
@@ -132,6 +137,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         /// 已降过级的星系
         /// </summary>
         private HashSet<int> _downgradeds = new HashSet<int>();
+        private Dictionary<int, string> _intelContent = new Dictionary<int, string>();
         public void Intel(EarlyWarningContent content)
         {
             if (_ellipseDic.TryGetValue(content.SolarSystemId, out var value))
@@ -147,9 +153,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                     }
                     _intelings.Add(content.SolarSystemId);
                     _downgradeds.Remove(content.SolarSystemId);
+                    _intelContent.Add(content.SolarSystemId, content.Content);
                 }
                 else if (content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
+                    _intelings.Remove(content.SolarSystemId);
+                    _downgradeds.Remove(content.SolarSystemId);
+                    _intelContent.Remove(content.SolarSystemId);
                     if (value.Scale.X != 1)
                     {
                         value.Scale = _defaultScale;
@@ -186,6 +196,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                     }
                     _intelings.Remove(item);
                     _downgradeds.Remove(item);
+                    _intelContent.Remove(item);
                 }
             }
         }
@@ -362,6 +373,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
             }
             _intelings.Clear();
             _downgradeds.Clear();
+            _intelContent.Clear();
         }
     }
 }
