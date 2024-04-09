@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
         {
-            _kbNavigationService = new KBNavigationService(this);
+            _kbNavigationService = new KBNavigationService();
             Loaded -= ZKBHomePage_Loaded;
             if(Services.Settings.ZKBSettingService.Setting.AutoConnect)
             {
@@ -230,7 +230,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 IsSelected = true,
                 Content = content
             };
-            ContentTabView.TabItems.Add(item);
+            //ContentTabView.TabItems.Add(item);
         }
 
         private void KBListControl_IdNameClicked(IdName idName)
