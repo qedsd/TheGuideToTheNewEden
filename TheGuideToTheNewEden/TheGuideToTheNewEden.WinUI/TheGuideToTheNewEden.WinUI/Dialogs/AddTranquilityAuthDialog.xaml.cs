@@ -91,6 +91,8 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             {
                 ProgressRing_WaitingStep3.IsActive = true;
                 Grid_WaitingStep3.Visibility = Visibility.Visible;
+                Grid_WaitingStep3_Success.Visibility = Visibility.Collapsed;
+                Grid_WaitingStep3_Failed.Visibility = Visibility.Collapsed;
                 var result2 = await Services.CharacterService.HandelProtocolAsync(_lastAuthMsg);
                 ProgressRing_WaitingStep3.IsActive = false;
                 Grid_WaitingStep3.Visibility = Visibility.Collapsed;
