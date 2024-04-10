@@ -13,69 +13,50 @@
         <kb:ZKBHomeViewModel x:Name="VM" />
     </Page.DataContext>
     <Grid>
-        <TabView
-            x:Name="ContentTabView"
-            VerticalAlignment="Stretch"
-            CloseButtonOverlayMode="OnPointerOver"
-            IsAddTabButtonVisible="False"
-            TabCloseRequested="ContentTabView_TabCloseRequested">
-            <TabView.TabStripFooter>
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <AutoSuggestBox
-                        x:Name="SearchBox"
-                        Width="240"
-                        Height="32"
-                        Margin="0,0,8,0"
-                        HorizontalAlignment="Right"
-                        QueryIcon="Find"
-                        SuggestionChosen="SearchBox_SuggestionChosen"
-                        TextChanged="SearchBox_TextChanged">
-                        <AutoSuggestBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Text="{Binding Name}"
-                                        TextTrimming="CharacterEllipsis"
-                                        ToolTipService.ToolTip="{Binding Id}" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
-                                </Grid>
-                            </DataTemplate>
-                        </AutoSuggestBox.ItemTemplate>
-                    </AutoSuggestBox>
-                </StackPanel>
-            </TabView.TabStripFooter>
-            <TabView.TabItems>
-                <TabViewItem IsClosable="False">
-                    <TabViewItem.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource ZKBHomePage_KillStream}" />
-                        </StackPanel>
-                    </TabViewItem.Header>
-                    <TabViewItem.IconSource>
-                        <BitmapIconSource ShowAsMonochrome="False" UriSource="Resources\Images\LinkIcons\zkb.jpg" />
-                    </TabViewItem.IconSource>
-                    <TabViewItem.Content>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+            <AutoSuggestBox
+                x:Name="SearchBox"
+                Width="300"
+                Height="32"
+                Margin="0,0,8,0"
+                HorizontalAlignment="Right"
+                QueryIcon="Find"
+                SuggestionChosen="SearchBox_SuggestionChosen"
+                TextChanged="SearchBox_TextChanged">
+                <AutoSuggestBox.ItemTemplate>
+                    <DataTemplate>
                         <Grid>
-                            <controls:KBListControl
-                                x:Name="KBListControl"
-                                IdNameClicked="KBListControl_IdNameClicked"
-                                KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
-                                OnItemClicked="KBListControl_OnItemClicked" />
-                            <Button
-                                x:Name="Button_Connect"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Click="Button_Connect_Click"
-                                Content="{StaticResource ZKBHomePage_Connect}"
-                                Visibility="Collapsed" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Text="{Binding Name}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTipService.ToolTip="{Binding Id}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
                         </Grid>
-                    </TabViewItem.Content>
-                </TabViewItem>
-            </TabView.TabItems>
-        </TabView>
+                    </DataTemplate>
+                </AutoSuggestBox.ItemTemplate>
+            </AutoSuggestBox>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <controls:KBListControl
+                x:Name="KBListControl"
+                IdNameClicked="KBListControl_IdNameClicked"
+                KBs="{x:Bind VM.KBItemInfos, Mode=OneWay}"
+                OnItemClicked="KBListControl_OnItemClicked" />
+            <Button
+                x:Name="Button_Connect"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="Button_Connect_Click"
+                Content="{StaticResource ZKBHomePage_Connect}"
+                Visibility="Collapsed" />
+        </Grid>
     </Grid>
 </Page>

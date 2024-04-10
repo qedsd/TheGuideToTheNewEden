@@ -21,6 +21,7 @@
                 x:Name="TipTextBlock"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
+                TextWrapping="Wrap"
                 Visibility="Collapsed" />
         </Grid>
     </Grid>
