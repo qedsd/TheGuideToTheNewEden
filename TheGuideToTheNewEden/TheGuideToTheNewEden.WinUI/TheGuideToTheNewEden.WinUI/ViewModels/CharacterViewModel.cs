@@ -188,13 +188,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
             Window?.ShowWaiting();
-            await Services.CharacterService.WaitRefreshToken();
             if(!SelectedCharacter.IsTokenValid())
             {
                 if(!await SelectedCharacter.RefreshTokenAsync())
                 {
                     Window?.HideWaiting();
-                    Window?.ShowError("Token已过期，尝试刷新失败");
+                    Window?.ShowError($"Token已过期，尝试刷新失败（{Core.Log.GetLastError()}）");
                     return;
                 }
             }

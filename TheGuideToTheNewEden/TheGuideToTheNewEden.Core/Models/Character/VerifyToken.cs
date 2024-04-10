@@ -4,11 +4,11 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models.Character
 {
-    public class VorifyToken
+    public class VerifyToken
     {
         public int CharacterID { get; set; }
         public string CharacterName { get; set; }
-        public string ExpiresOn { get; set; }
+        public DateTime ExpiresOn { get; set; }
         public string Scopes { get; set; }
         public string TokenType { get; set; }
         public string CharacterOwnerHash { get; set; }

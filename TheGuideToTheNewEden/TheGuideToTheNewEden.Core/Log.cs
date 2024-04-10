@@ -14,6 +14,8 @@ namespace TheGuideToTheNewEden.Core
         private static long infoCount;
         private static long errorCount;
         private static ILog log;
+        private static object _locker = new object();
+        private static object _lastError;
         public static void Init()
         {
             XmlConfigurator.Configure(new FileInfo(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config")));
@@ -27,6 +29,10 @@ namespace TheGuideToTheNewEden.Core
         }
         public static void Error(object error)
         {
+            lock(_locker)
+            {
+                _lastError = error;
+            }
             System.Threading.Interlocked.Increment(ref errorCount);
             log.Error(error);
             OnError?.Invoke(error);
@@ -58,6 +64,11 @@ namespace TheGuideToTheNewEden.Core
         public static long GetInfoCount()
         {
             return System.Threading.Interlocked.Read(ref infoCount);
+        }
+
+        public static object GetLastError()
+        {
+            return _lastError;
         }
 
         public delegate void LogMsgEvent(object msg);

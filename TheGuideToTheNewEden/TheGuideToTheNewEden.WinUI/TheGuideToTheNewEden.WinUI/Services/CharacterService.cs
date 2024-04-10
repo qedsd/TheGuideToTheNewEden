@@ -181,10 +181,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 var array = uri.Split(new char[2] { '=', '&' });
                 string code = array[1];
-                var token = await Core.Services.ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.AuthorizationCode, code, Guid.NewGuid().ToString());
+                var token = await Core.Services.ESIService.GetToken(ESI.NET.Enumerations.GrantType.AuthorizationCode, code, Guid.NewGuid().ToString());
                 if (token != null)
                 {
-                    var data = await Core.Services.ESIService.SSO.Verify(token);
+                    var data = await Core.Services.ESIService.Verify(token);
                     if (data?.Token != null)
                     {
                         Add(data);
@@ -204,76 +204,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             ESIService.Current.EsiClient.SetCharacterData(characterData);
             CurrentCharacter = characterData;
-            StartTimer();
         }
 
-        public static AuthorizedCharacterData GetCurrentCharacter(AuthorizedCharacterData characterData)
+        public static AuthorizedCharacterData GetCurrentCharacter()
         {
             return CurrentCharacter;
-        }
-
-        private static Timer RefreshTokenTimer;
-        private static void StartTimer()
-        {
-            if(CurrentCharacter != null)
-            {
-                if (RefreshTokenTimer == null)
-                {
-                    RefreshTokenTimer = new Timer()
-                    {
-                        AutoReset = false
-                    };
-                    RefreshTokenTimer.Elapsed += RefreshTokenTimer_Elapsed;
-                }
-                var span = CurrentCharacter.ExpiresOn.ToLocalTime() - DateTime.Now;
-                var interval = span.TotalMilliseconds - 60000;//提前一分钟刷新token
-                _refreshing = interval < 0 ? true : false;
-                interval = interval < 0 ? 1 : interval;
-                RefreshTokenTimer.Interval = interval;
-                RefreshTokenTimer.Start();
-            }
-        }
-        private static bool _refreshing = false;
-        private static async void RefreshTokenTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _refreshing = true;
-            int tryCount = 0;
-            while(tryCount < 3)
-            {
-                tryCount++;
-                try
-                {
-                    if(await CurrentCharacter.RefreshTokenAsync())
-                    {
-                        break;
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Core.Log.Error(ex);
-                }
-            }
-            if(tryCount < 3)//成功刷新
-            {
-                var span = CurrentCharacter.ExpiresOn.ToLocalTime() - DateTime.Now;
-                var interval = span.TotalMilliseconds - 60000;//提前一分钟刷新token
-                RefreshTokenTimer.Interval = interval < 0 ? 100 : interval;
-                RefreshTokenTimer.Start();
-            }
-            else//刷新失败
-            {
-                Core.Log.Error("刷新Token失败");
-                //TODO:弹窗提示
-            }
-            _refreshing = false;
-        }
-
-        public static async Task WaitRefreshToken()
-        {
-            while (_refreshing)
-            {
-                await Task.Delay(100);
-            }
         }
 
         /// <summary>

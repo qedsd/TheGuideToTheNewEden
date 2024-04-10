@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.Core.Extensions
         {
             try
             {
-                var token = await ESIService.SSO.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, data.RefreshToken, Guid.NewGuid().ToString());
+                var token = await ESIService.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, data.RefreshToken, Guid.NewGuid().ToString());
                 if (token != null)
                 {
                     var newdata = await ESIService.SSO.Verify(token);
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.Core.Extensions
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
+                Log.Error(ex.Message);
                 return false;
             }
         }

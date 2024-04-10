@@ -19,16 +19,14 @@ namespace TheGuideToTheNewEden.Core.Services.Api
                 return "https://login.eveonline.com/v2/oauth/token";
         }
 
+        public static string VerifyToken(string client_id, string token) => VerifyToken(client_id, token, DefaultGameServer);
         /// <summary>
         /// 检验token
         /// </summary>
         /// <returns></returns>
         public static string VerifyToken( string client_id, string token, GameServerType server = GameServerType.Tranquility)
         {
-            if (server == GameServerType.Tranquility)
-                return $"https://esi.evetech.net/verify/?user_agent={client_id}&datasource=tranquility&token={token}";
-            else
-                return $"https://ali-esi.evepc.163.com/verify/?user_agent={client_id}&datasource=tranquility&token={token}";
+            return $"https://{APIService.GetSSOUrl(server)}/verify/?user_agent={client_id}&datasource={server.ToString().ToLower()}&token={token}";
         }
     }
 }
