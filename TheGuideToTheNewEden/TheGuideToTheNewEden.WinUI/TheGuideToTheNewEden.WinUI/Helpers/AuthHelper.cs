@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Interfaces;
@@ -35,14 +36,14 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 return false;
             }
         }
-        public static async Task<string> WaitingAuthAsync()
+        public static async Task<string> WaitingAuthAsync(CancellationToken token)
         {
             string msgFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Auth","msg.txt");
             if(File.Exists(msgFile))
             {
                 File.Delete(msgFile);
             }
-            while(true)
+            while(!token.IsCancellationRequested)
             {
                 if(File.Exists(msgFile))
                 {
@@ -53,6 +54,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                     await Task.Delay(1000);
                 }
             }
+            return null;
         }
     }
 }

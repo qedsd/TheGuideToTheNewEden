@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Dialogs;
 using TheGuideToTheNewEden.WinUI.Converters;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -117,7 +118,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
-            string result;
             if (GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
                 if (!AuthHelper.RegistyProtocol())
@@ -125,20 +125,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     Window.ShowError("注册授权服务失败，请使用管理员模式运行");
                     return;
                 }
-                Window.ShowWaiting("等待网页授权...");
-                result = await Services.CharacterService.GetAuthorizeResultAsync();
+                var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
+                if(result != null)
+                {
+                    Window.ShowSuccess("添加成功");
+                    SelectedCharacter = result;
+                    ExistedCharacter = true;
+                }
             }
             else
             {
-                result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
+                string result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if(string.IsNullOrEmpty(result))
                 {
                     Window.HideWaiting();
                     Window.ShowError("未输入授权结果网址");
                     return;
                 }
+                else
+                {
+                    await VerifyNewAuth(result);
+                }
             }
-            await VerifyNewAuth(result);
+            
         });
         private async Task VerifyNewAuth(string result)
         {

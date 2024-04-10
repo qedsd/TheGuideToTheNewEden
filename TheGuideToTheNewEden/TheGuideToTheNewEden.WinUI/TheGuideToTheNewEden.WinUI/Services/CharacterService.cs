@@ -137,24 +137,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        public static async Task<AuthorizedCharacterData> AddAsync()
-        {
-            GetAuthorizeByBrower();
-            var result = await AuthHelper.WaitingAuthAsync();
-            if (result != null)
-            {
-                return await HandelProtocolAsync(result);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         public static async Task<string> GetAuthorizeResultAsync()
         {
             GetAuthorizeByBrower();
-            return await AuthHelper.WaitingAuthAsync();
+            return await AuthHelper.WaitingAuthAsync(System.Threading.CancellationToken.None);
         }
 
         public static void GetAuthorizeByBrower()

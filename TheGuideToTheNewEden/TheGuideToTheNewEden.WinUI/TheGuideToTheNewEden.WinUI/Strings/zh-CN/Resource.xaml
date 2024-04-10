@@ -60,6 +60,7 @@
     <x:String x:Key="General_Clear">清除</x:String>
     <x:String x:Key="General_No">否</x:String>
     <x:String x:Key="General_Yes">是</x:String>
+    <x:String x:Key="General_Close">关闭</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -367,6 +368,20 @@
     <x:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框并点击确定按钮完成授权</x:String>
+
+    <x:String x:Key="AddTranquilityAuthDialog_Title">新增国际服玩家角色授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0">步骤0：点击下方按钮跳转浏览器下载并安装.Net6桌面运行时（已安装请跳过）</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0Button">下载 .NET 6.0</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1">步骤1：点击下方按钮跳转浏览器登陆EVE账号并授权，然后按浏览器提示打开AuthListener.exe</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1Button">login.eveonline.com</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2">步骤2：等待写入授权信息</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Success">已获取到授权信息</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Failed">写入的授权信息为空</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3">步骤3：校验授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3Button">重新校验授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifyFailed">校验授权失败</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifySuccess">校验授权成功，请点击关闭按钮完成授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3_Failed">请更换网络/挂梯子/更换梯子节后点击此按钮重试</x:String>
 
     <x:String x:Key="WormholePage_Search">搜索虫洞...</x:String>
     <x:String x:Key="WormholePage_Home">显示洞口列表</x:String>

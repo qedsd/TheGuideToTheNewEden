@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Dialogs.AddTranquilityAuthDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Dialogs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step0}" />
+            <Button
+            Grid.Row="1"
+            Margin="8,8,8,16"
+            HorizontalAlignment="Stretch"
+            Click="Button_Step0_Click"
+            Content="{StaticResource AddTranquilityAuthDialog_Step0Button}" />
+        </Grid>
+        <Grid Grid.Row="1" Margin="0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step1}" TextWrapping="Wrap"/>
+            <Button
+            Grid.Row="1"
+            Margin="8,8,8,16"
+            HorizontalAlignment="Stretch"
+            Click="Button_Step1_Click"
+            Content="{StaticResource AddTranquilityAuthDialog_Step1Button}" />
+        </Grid>
+        <Grid Grid.Row="2" Margin="0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step2}" />
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_WaitingStep2">
+                <ProgressRing IsActive="False" x:Name="ProgressRing_WaitingStep2"/>
+            </Grid>
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_Step2Result_Success">
+                <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step2_Success}" Foreground="MediumSeaGreen"/>
+            </Grid>
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_Step2Result_Failed">
+                <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step2_Failed}" Foreground="OrangeRed"/>
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="3" Margin="0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddTranquilityAuthDialog_Step3}" />
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_WaitingStep3">
+                <ProgressRing IsActive="False" x:Name="ProgressRing_WaitingStep3"/>
+            </Grid>
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_WaitingStep3_Failed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="TextBlock_Step3FailedDesc" Foreground="OrangeRed"/>
+                <Button x:Name="Button_Step3"
+                        Grid.Row="1"
+                        Margin="8,8,8,16"
+                        HorizontalAlignment="Stretch"
+                        Click="Button_Step3_Click"
+                        Content="{StaticResource AddTranquilityAuthDialog_Step3_Failed}" />
+            </Grid>
+            <Grid Grid.Row="1"
+                  Visibility="Collapsed"
+                  Margin="8,8,8,16"
+                  x:Name="Grid_WaitingStep3_Success">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="{StaticResource AddTranquilityAuthDialog_VerifySuccess}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
