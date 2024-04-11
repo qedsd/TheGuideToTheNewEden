@@ -400,9 +400,6 @@
     <Page Update="Dialogs\AddTranquilityAuthDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <None Update="ESI.NET.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
