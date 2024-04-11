@@ -834,25 +834,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (structureOrders.NotNullOrEmpty())
             {
-                var c = await Services.CharacterService.GetDefaultCharacterAsync();
-                if (c != null)
+                var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
+                int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
+                foreach (var order in structureOrders)
                 {
-                    EsiClient.SetCharacterData(c);
-                    var result = await Core.Helpers.ThreadHelper.RunAsync(structureOrders.Select(p => p.LocationId).Distinct(), MaxThread, GetStructure);
-                    var data = result?.Where(p => p != null).ToList();
-                    var structuresDic = data.ToDictionary(p => p.Id);
-                    foreach (var order in structureOrders)
+                    var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
+                    if(structure != null)
                     {
-                        if (structuresDic.TryGetValue(order.LocationId, out var structure))
-                        {
-                            order.LocationName = structure.Name;
-                            order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
-                        }
+                        order.LocationName = structure.Name;
+                        order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
                     }
-                }
-                else
-                {
-                    foreach (var order in structureOrders)
+                    else
                     {
                         order.LocationName = order.LocationId.ToString();
                     }

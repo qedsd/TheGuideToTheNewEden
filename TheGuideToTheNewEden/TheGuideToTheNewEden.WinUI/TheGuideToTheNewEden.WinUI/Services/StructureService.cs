@@ -65,10 +65,25 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else
             {
-                var esi = await GetStructureByESI(id, characterID);
-                Structures.Add(id, esi);
-                Save();
-                return esi;
+                if(characterID > 0)
+                {
+                    try
+                    {
+                        var esi = await GetStructureByESI(id, characterID);
+                        Structures.Add(id, esi);
+                        Save();
+                        return esi;
+                    }
+                    catch (Exception ex)
+                    {
+                        Core.Log.Error(ex);
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
         public static async Task<Structure> QueryStructureAsync(long id, EsiClient esiClient)
@@ -132,18 +147,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return Structures.Values.ToList();
         }
 
-        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID = -1)
+        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID)
         {
-            EsiClient esiClient;
-            if (characterID > -1)
-            {
-                esiClient = ESIService.GetDefaultEsi();
-                esiClient.SetCharacterData(Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID));
-            }
-            else
-            {
-                esiClient = ESIService.Current.EsiClient;
-            }
+            EsiClient esiClient = ESIService.GetDefaultEsi();
+            esiClient.SetCharacterData(Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID));
             var structure = await GetStructureByESI(id, esiClient);
             if(structure != null)
             {
