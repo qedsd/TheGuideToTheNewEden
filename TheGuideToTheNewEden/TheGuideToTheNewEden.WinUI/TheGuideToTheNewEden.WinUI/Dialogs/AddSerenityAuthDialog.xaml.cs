@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using ABI.System;
+using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -27,23 +28,23 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
 {
     public sealed partial class AddSerenityAuthDialog : Page
     {
+        public ESI.NET.Models.SSO.AuthorizedCharacterData AuthorizedCharacterData { get; private set; }
         public AddSerenityAuthDialog()
         {
             this.InitializeComponent();
         }
-        public static async Task<string> ShowAsync(XamlRoot xamlRoot)
+        public static async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> ShowAsync(XamlRoot xamlRoot)
         {
             ContentDialog contentDialog = new ContentDialog()
             {
                 XamlRoot = xamlRoot,
                 Title = Helpers.ResourcesHelper.GetString("AddSerenityAuthDialog_Title"),
                 Content = new AddSerenityAuthDialog(),
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
-                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_Close"),
             };
             if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                return (contentDialog.Content as AddSerenityAuthDialog).TextBox_Code.Text;
+                return (contentDialog.Content as AddSerenityAuthDialog).AuthorizedCharacterData;
             }
             else
             {
@@ -63,6 +64,29 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
                 UseShellExecute = true,
             };
             Process.Start(sInfo);
+        }
+
+        private async void Button_Step3_Click(object sender, RoutedEventArgs e)
+        {
+            ProgressRing_WaitingStep3.IsActive = true;
+            Grid_WaitingStep3.Visibility = Visibility.Visible;
+            Grid_Step3_Success.Visibility = Visibility.Collapsed;
+            Grid_Step3_FailedResult.Visibility = Visibility.Collapsed;
+            Grid_Step3_Failed.Visibility = Visibility.Collapsed;
+            var result2 = await Services.CharacterService.HandelProtocolAsync(TextBox_Code.Text);
+            ProgressRing_WaitingStep3.IsActive = false;
+            Grid_WaitingStep3.Visibility = Visibility.Collapsed;
+            if (result2 != null)
+            {
+                AuthorizedCharacterData = result2;
+                Grid_Step3_Success.Visibility = Visibility.Visible;
+            }
+            else//–£—È ß∞‹
+            {
+                Grid_Step3_FailedResult.Visibility = Visibility.Visible;
+                Grid_Step3_Failed.Visibility = Visibility.Visible;
+                TextBlock_Step3FailedDesc.Text = (Core.Log.GetLastError() as System.Exception).Message;
+            }
         }
     }
 }

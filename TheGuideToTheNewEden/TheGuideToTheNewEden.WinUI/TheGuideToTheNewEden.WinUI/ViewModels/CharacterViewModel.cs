@@ -122,56 +122,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (!AuthHelper.RegistyProtocol())
                 {
-                    Window.ShowError("注册授权服务失败，请使用管理员模式运行");
+                    Window.ShowError(Helpers.ResourcesHelper.GetString("CharacterPage_RegistyProtocol"));
                     return;
                 }
                 var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if(result != null)
                 {
-                    Window.ShowSuccess("添加成功");
+                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
                     SelectedCharacter = result;
                     ExistedCharacter = true;
                 }
             }
             else
             {
-                string result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
-                if(string.IsNullOrEmpty(result))
+                var result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
+                if (result != null)
                 {
-                    Window.HideWaiting();
-                    Window.ShowError("未输入授权结果网址");
-                    return;
-                }
-                else
-                {
-                    await VerifyNewAuth(result);
+                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                    SelectedCharacter = result;
+                    ExistedCharacter = true;
                 }
             }
             
         });
-        private async Task VerifyNewAuth(string result)
-        {
-            if (result != null)
-            {
-                Window.ShowWaiting("验证授权中...");
-                var result2 = await Services.CharacterService.HandelProtocolAsync(result);
-                if (result2 != null)
-                {
-                    Window.ShowSuccess("添加成功");
-                    SelectedCharacter = result2;
-                    ExistedCharacter = true;
-                }
-                else
-                {
-                    Window.ShowError("验证授权失败");
-                }
-            }
-            else
-            {
-                Window.ShowError("添加失败");
-            }
-            Window.HideWaiting();
-        }
+        
         public ICommand RefreshCommand => new RelayCommand(() =>
         {
             GetBaseInfoAsync(SelectedCharacter);

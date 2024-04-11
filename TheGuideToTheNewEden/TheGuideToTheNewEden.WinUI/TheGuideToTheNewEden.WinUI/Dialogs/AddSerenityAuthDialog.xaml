@@ -13,6 +13,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid>
             <Grid.RowDefinitions>
@@ -40,7 +41,7 @@
                 Click="Button_Click"
                 Content="{StaticResource AddSerenityAuthDialog_Step1Button}" />
         </Grid>
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Margin="0,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -50,6 +51,57 @@
                 x:Name="TextBox_Code"
                 Grid.Row="1"
                 Margin="8,8,8,0" />
+        </Grid>
+        <Grid Grid.Row="3"  Margin="0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{StaticResource AddSerenityAuthDialog_Step3}" />
+            <Button
+                Grid.Row="1"
+                Margin="8,8,8,16"
+                HorizontalAlignment="Stretch"
+                Click="Button_Step3_Click"
+                Content="{StaticResource AddSerenityAuthDialog_Step3Button}" />
+            <Grid
+                x:Name="Grid_WaitingStep3"
+                Grid.Row="2"
+                Margin="8,8,8,16"
+                Visibility="Collapsed">
+                <ProgressRing x:Name="ProgressRing_WaitingStep3" IsActive="False" />
+            </Grid>
+            <Grid
+                x:Name="Grid_Step3_FailedResult"
+                Grid.Row="2"
+                Margin="8,8,8,16"
+                Visibility="Collapsed">
+                <TextBlock x:Name="TextBlock_Step3FailedDesc"
+                           HorizontalAlignment="Center"
+                           Foreground="OrangeRed"/>
+            </Grid>
+            <Grid
+                x:Name="Grid_Step3_Success"
+                Grid.Row="3"
+                Margin="8,8,8,16"
+                Visibility="Collapsed">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Foreground="MediumSeaGreen"
+                    Text="{StaticResource AddSerenityAuthDialog_VerifySuccess}" />
+            </Grid>
+            <Grid
+                x:Name="Grid_Step3_Failed"
+                Grid.Row="3"
+                Margin="8,8,8,16"
+                Visibility="Collapsed">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Foreground="OrangeRed"
+                    Text="{StaticResource AddSerenityAuthDialog_VerifyFailed}" />
+            </Grid>
         </Grid>
     </Grid>
 </Page>

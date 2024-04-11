@@ -367,7 +367,11 @@
     <x:String x:Key="AddSerenityAuthDialog_Title">新增国服玩家角色授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</x:String>
-    <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框并点击确定按钮完成授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3">步骤3：点击下面按钮开始校验授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3Button">校验授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifySuccess">校验授权成功，请点击关闭按钮完成授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifyFailed">校验授权失败</x:String>
 
     <x:String x:Key="AddTranquilityAuthDialog_Title">新增国际服玩家角色授权</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step0">步骤0：点击下方按钮跳转浏览器下载并安装.Net6桌面运行时（已安装请跳过）</x:String>
@@ -723,4 +727,24 @@
     <x:String x:Key="EarlyWarningPage_Befor_Min">分钟前</x:String>
     <x:String x:Key="EarlyWarningPage_Befor_Sec">秒前</x:String>
     <x:String x:Key="EarlyWarningPage_Jumps">跳</x:String>
+
+    <!--  CharacterPage  -->
+    <x:String x:Key="CharacterPage_Add">添加角色</x:String>
+    <x:String x:Key="CharacterPage_AddSuccess">添加成功</x:String>
+    <x:String x:Key="CharacterPage_RegistyProtocol">注册授权服务失败，请使用管理员模式运行</x:String>
+    <x:String x:Key="CharacterPage_Overview">概要</x:String>
+    <x:String x:Key="CharacterPage_Skill">技能</x:String>
+    <x:String x:Key="CharacterPage_Clone">克隆</x:String>
+    <x:String x:Key="CharacterPage_Wallet">钱包</x:String>
+    <x:String x:Key="CharacterPage_Mail">邮件</x:String>
+    <x:String x:Key="CharacterPage_Contract">合同</x:String>
+    <x:String x:Key="CharacterPage_Industry">工业</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">公司钱包：</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包：</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">安全等级：</x:String>
+    <x:String x:Key="CharacterPage_LP">忠诚点：</x:String>
+    <x:String x:Key="CharacterPage_UnallocatedSp">未使用技能点</x:String>
+    <x:String x:Key="CharacterPage_Sp">技能点：</x:String>
+    <x:String x:Key="CharacterPage_Birthday">出生：</x:String>
+    <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
 </ResourceDictionary>
