@@ -203,6 +203,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private BitmapImage selectedInvTypeIcon;
         public BitmapImage SelectedInvTypeIcon { get => selectedInvTypeIcon; set => SetProperty(ref selectedInvTypeIcon, value); }
+
         public MarketViewModel() 
         {
             SelectedRegion = Core.Services.DB.MapRegionService.Query(10000002);
@@ -381,6 +382,85 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         });
+        #endregion
+
+        #region 计算器
+        private float calSalesTax = 5;
+        public float CalSalesTax
+        {
+            get => calSalesTax;
+            set
+            {
+                if (SetProperty(ref calSalesTax, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private float calServiceCharge = 5;
+        public float CalServiceCharge
+        {
+            get => calServiceCharge;
+            set
+            {
+                if (SetProperty(ref calServiceCharge, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private float calSellAmount = 1;
+        public float CalSellAmount
+        {
+            get => calSellAmount;
+            set
+            {
+                if (SetProperty(ref calSellAmount, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private float calBuyAmount = 1;
+        public float CalBuyAmount
+        {
+            get => calBuyAmount;
+            set
+            {
+                if (SetProperty(ref calBuyAmount, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private float calSellResult;
+        public float CalSellResult
+        {
+            get => calSellResult;
+            set
+            {
+                if (SetProperty(ref calSellResult, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private float calBuyResult;
+        public float CalBuyResult
+        {
+            get => calBuyResult;
+            set
+            {
+                if (SetProperty(ref calBuyResult, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private void Cal()
+        {
+            
+        }
         #endregion
     }
 }

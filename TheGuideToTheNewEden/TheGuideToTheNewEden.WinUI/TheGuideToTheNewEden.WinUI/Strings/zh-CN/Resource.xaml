@@ -216,6 +216,8 @@
     <!--  MarketPage  -->
     <x:String x:Key="MarketPage_AllList">列表</x:String>
     <x:String x:Key="MarketPage_Star">收藏</x:String>
+    <x:String x:Key="MarketPage_AddStar">添加收藏</x:String>
+    <x:String x:Key="MarketPage_CancelStar">取消收藏</x:String>
     <x:String x:Key="MarketPage_SelecteMarket">选择市场</x:String>
     <x:String x:Key="MarketPage_Mean">平均</x:String>
     <x:String x:Key="MarketPage_Amount">数量</x:String>
@@ -238,6 +240,9 @@
     <x:String x:Key="MarketPage_History6">最近半年</x:String>
     <x:String x:Key="MarketPage_History12">最近一年</x:String>
     <x:String x:Key="MarketPage_HistoryAll">全部</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy">买入</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell">卖出</x:String>
+    <x:String x:Key="MarketPage_Cal_Amount">数量</x:String>
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>

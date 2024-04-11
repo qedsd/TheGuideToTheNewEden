@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    xmlns:wuc="using:WinUICommunity"
     Background="Transparent"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
@@ -81,12 +82,12 @@
                 </Button.Flyout>
             </Button>
         </Grid>
-        <Grid Grid.Column="1" Margin="8,0">
+        <Grid Grid.Column="1" Margin="8,0"  Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -103,18 +104,17 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock
+                        <TextBlock Margin="0,8"
+                            FontSize="18"
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource SystemAccentColor}"
                             Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
                         <Button
-                            Width="32"
-                            Height="32"
+                            VerticalAlignment="Center"
                             Margin="4,0,0,0"
-                            Padding="0"
                             Background="Transparent"
                             BorderThickness="0"
-                            Content="!">
+                            Content="{wuc:FontIcon GlyphName=Info}">
                             <Button.Flyout>
                                 <Flyout>
                                     <TextBlock
@@ -124,26 +124,42 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button
-                            Width="32"
-                            Height="32"
-                            Margin="4,0,0,0"
-                            Padding="0"
-                            VerticalAlignment="Center"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Command="{x:Bind VM.StarCommand}">
-                            <Grid>
-                                <TextBlock
-                                    FontFamily="Segoe MDL2 Assets"
-                                    Text="&#xE1CE;"
-                                    Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                                <TextBlock
-                                    FontFamily="Segoe MDL2 Assets"
-                                    Foreground="#fed801"
-                                    Text="&#xE1CF;"
-                                    Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                            </Grid>
+                        <Button Content="{wuc:FontIcon GlyphName=SubscriptionAdd}"
+                                VerticalAlignment="Center"
+                                ToolTipService.ToolTip="{StaticResource MarketPage_AddStar}"
+                                Background="Transparent"
+                                Command="{x:Bind VM.StarCommand}"
+                                BorderThickness="0"
+                                Margin="4,0,0,0"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}"/>
+                        <Button Content="{wuc:FontIcon GlyphName=SubscriptionAdd}"
+                                VerticalAlignment="Center"
+                                ToolTipService.ToolTip="{StaticResource MarketPage_CancelStar}"
+                                Background="Transparent"
+                                Command="{x:Bind VM.StarCommand}"
+                                Foreground="LightSeaGreen"
+                                BorderThickness="0"
+                                Margin="4,0,0,0"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}"/>
+                        <Button Content="{wuc:FontIcon GlyphName=Calculator}"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Margin="4,0,0,0">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel MinWidth="200">
+                                        <StackPanel>
+                                            <TextBlock Text="{StaticResource MarketPage_Cal_Buy}" FontSize="18"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,8" HorizontalAlignment="Stretch">
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_Amount}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <NumberBox Value="{x:Bind VM.CalBuyAmount}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
+                                                           HorizontalAlignment="Stretch"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
                         </Button>
                     </StackPanel>
                     <StackPanel
