@@ -85,6 +85,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref chatContents, value);
         }
 
+        public ObservableCollection<Core.Models.EarlyWarningContent> ZKBIntelContents = new ObservableCollection<Core.Models.EarlyWarningContent>();
+
         /// <summary>
         /// 当前选中的聊天频道对应的预警项
         /// </summary>
@@ -408,7 +410,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="newlines"></param>
         private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.TryEnqueue(() =>
             {
                 foreach (var line in news)
                 {
@@ -465,6 +467,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     soundSetting = Setting.Sounds[e.Jumps];
                 }
+                ZKBIntelContents.Add(e);
                 WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
             });
         }

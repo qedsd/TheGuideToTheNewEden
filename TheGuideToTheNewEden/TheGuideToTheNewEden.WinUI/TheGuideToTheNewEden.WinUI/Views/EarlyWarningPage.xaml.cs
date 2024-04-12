@@ -40,8 +40,61 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded -= EarlyWarningPage_Loaded;
             ChatContents.Blocks.Add(new Paragraph());
             VM.ChatContents.CollectionChanged += ChatContents_CollectionChanged;
+            VM.ZKBIntelContents.CollectionChanged += ZKBIntelContents_CollectionChanged;
             ChatContentsScroll.LayoutUpdated += ChatContentsScroll_LayoutUpdated;
             VM.PropertyChanged += EarlyWarningItemPage_PropertyChanged;
+        }
+
+        private void ZKBIntelContents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems != null)
+            {
+                //删除超出显示数量的
+                if (Services.Settings.GameLogsSettingService.MaxShowItems > 0)
+                {
+                    int removeCount = ChatContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + e.NewItems.Count;
+                    for (int i = 0; i < removeCount; i++)
+                    {
+                        ChatContents.Blocks.RemoveAt(0);
+                    }
+                }
+                foreach (var item in e.NewItems)
+                {
+                    var chatContent = item as Core.Models.EarlyWarningContent;
+                    Paragraph paragraph = new Paragraph()
+                    {
+                        Margin = new Thickness(0, 8, 0, 8),
+                    };
+                    Run timeRun = new Run()
+                    {
+                        FontWeight = FontWeights.Light,
+                        Text = $"[ {chatContent.Time} ]"
+                    };
+                    Run nameRun = new Run()
+                    {
+                        FontWeight = FontWeights.Medium,
+                        Text = " ZKB > "
+                    };
+                    Run contentRun = new Run()
+                    {
+                        FontWeight = FontWeights.Normal,
+                        Text = chatContent.Content
+                    };
+                    contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                    paragraph.Inlines.Add(timeRun);
+                    paragraph.Inlines.Add(nameRun);
+                    paragraph.Inlines.Add(contentRun);
+                    if (ChatContentsScroll.VerticalOffset == ChatContentsScroll.ScrollableHeight)
+                    {
+                        isAdded = true;
+                    }
+                    ChatContents.Blocks.Add(paragraph);
+                }
+            }
+            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                ChatContents.Blocks.Clear();
+            }
         }
 
         private void EarlyWarningItemPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
