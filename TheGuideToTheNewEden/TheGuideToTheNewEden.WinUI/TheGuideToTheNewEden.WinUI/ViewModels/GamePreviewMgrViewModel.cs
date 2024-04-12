@@ -1135,11 +1135,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
-                    IGamePreviewWindow gamePreviewWindow; ;
-                    switch (Setting.ShowPreviewWindowMode)
+                    IGamePreviewWindow gamePreviewWindow;
+                    switch (item.ShowPreviewWindowMode)
                     {
-                        case 0: gamePreviewWindow = new GamePreviewWindow1(Setting, PreviewSetting); break;
-                        case 1: gamePreviewWindow = new GamePreviewWindow2(Setting, PreviewSetting); break;
+                        case 0: gamePreviewWindow = new GamePreviewWindow1(item, PreviewSetting); break;
+                        case 1: gamePreviewWindow = new GamePreviewWindow2(item, PreviewSetting); break;
                         case 2: gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting); break;
                         default: throw new NotImplementedException();
                     }
