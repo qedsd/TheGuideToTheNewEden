@@ -32,7 +32,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= ShellPage_Loaded;
             _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            VM.SetWindow(_window);
         }
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
@@ -44,6 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var item = e.ClickedItem as ToolItem;
             if (item != null && item.PageType != null)
             {
+                VM.Dispose();
                 if(ContentFrame.Navigate(item.PageType))
                 {
                     NavigationService.SetNavigateTo(item.Title);

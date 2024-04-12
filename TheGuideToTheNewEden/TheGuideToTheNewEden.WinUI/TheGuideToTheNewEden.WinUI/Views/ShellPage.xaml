@@ -18,7 +18,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="0.4*" />
                 <RowDefinition Height="0.6*" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Border CornerRadius="8">
                 <Border.Background>
@@ -38,13 +37,24 @@
                             Foreground="White"
                             Text="{StaticResource AppDisplayName}" />
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="10,0,0,4">
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="White"
+                            Text="{StaticResource ShellPage_Players}" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="White"
+                            Text="{x:Bind VM.Players,Mode=OneWay}" />
+                    </StackPanel>
                     <TextBlock
                         Margin="0,0,10,4"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
                         FontSize="12"
-                        Foreground="Black"
-                        Text="{x:Bind VM.VersionDescription}" />
+                        Foreground="White"
+                        Text="{x:Bind VM.VersionDescription}" 
+                        ToolTipService.ToolTip="{StaticResource ShellPage_APPVersion}"/>
                 </Grid>
             </Border>
             <GridView
@@ -90,9 +100,6 @@
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
-            <Grid Grid.Row="2">
-                <!--  服务器状态  -->
-            </Grid>
         </Grid>
     </Frame>
 </Page>

@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Views;
@@ -15,8 +17,17 @@ using Windows.ApplicationModel;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class ShellViewModel : ObservableObject
+    internal class ShellViewModel : BaseViewModel
     {
+        private string players;
+        public string Players
+        {
+            get => players;
+            set
+            {
+                SetProperty(ref players, value);
+            }
+        }
         public string VersionDescription{get;set;}
         public List<ToolItem> ToolItems { get; set; }
         public ShellViewModel()
@@ -43,10 +54,52 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Database"),ResourcesHelper.GetString("ShellPage_Database_Desc"), typeof(DatabasePage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Setting"),"", typeof(SettingPage)),
             };
+            GetServerStatus();
         }
         private static string GetVersionDescription()
         {
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+        private CancellationTokenSource _cancellationTokenSource;
+        private void GetServerStatus()
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+            var esi = ESIService.GetDefaultEsi();
+            Task.Run(async() =>
+            {
+                while(!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var resp = await esi.Status.Retrieve();
+                        if(resp.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            Window?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                Players = resp.Data.Players.ToString("N0");
+                            });
+                        }
+                        else
+                        {
+                            Window?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                Players = "-";
+                            });
+                        }
+                        Thread.Sleep(10000);
+                    }
+                    catch(Exception ex)
+                    {
+                        Core.Log.Error(ex);
+                    }
+                }
+            });
+            
+        }
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
         }
     }
 }
