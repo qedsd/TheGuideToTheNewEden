@@ -243,6 +243,15 @@
     <x:String x:Key="MarketPage_Cal_Buy">买入</x:String>
     <x:String x:Key="MarketPage_Cal_Sell">卖出</x:String>
     <x:String x:Key="MarketPage_Cal_Amount">数量</x:String>
+    <x:String x:Key="MarketPage_Cal_AutoSetBuyPrice">按实际数量计算价格</x:String>
+    <x:String x:Key="MarketPage_Cal_BuyPrice">买入价格</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalBuyPrice">总花费</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy_NoEnoughSellOrder">卖单无法满足数量，剩余数量按卖单最低价格计算</x:String>
+    <x:String x:Key="MarketPage_Cal_SellPrice">卖出价格</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalSellPrice">总收入</x:String>
+    <x:String x:Key="MarketPage_Cal_SalesTax">销售税（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_AgentTax">中介税（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell_Immediately">立即卖出</x:String>
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>

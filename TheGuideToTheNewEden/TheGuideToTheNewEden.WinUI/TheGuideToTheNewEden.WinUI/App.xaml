@@ -74,6 +74,7 @@
             <converters:SystemSecurityFormatStringConverter x:Key="SystemSecurityFormatStringConverter" />
             <converters:SystemSecurityForegroundConverter x:Key="SystemSecurityForegroundConverter" />
             <converters:CategoryEnumToStringConverter x:Key="CategoryEnumToStringConverter" />
+            <converters:DecimaFormatConverter x:Key="N2DecimaFormatConverter" Decimals="2"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

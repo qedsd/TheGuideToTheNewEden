@@ -208,7 +208,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             SelectedRegion = Core.Services.DB.MapRegionService.Query(10000002);
         }
-        private void SetSelectedInvType()
+        private async void SetSelectedInvType()
         {
             if(SelectedInvType == null)
             {
@@ -222,16 +222,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             if (SelectedRegion != null)
             {
-                GetRegionOrders();
+                await GetRegionOrders();
             }
             else if(SelectedStructure != null)
             {
-                GetSructureOrders();
+                await GetSructureOrders();
             }
             Stared = MarketStarService.Current.IsStared(SelectedInvType.TypeID);
+
+            SetBuyPrice();
+            SetSellPrice();
+            Cal();
         }
 
-        private async void GetRegionOrders()
+        private async Task GetRegionOrders()
         {
             BuyOrders?.Clear();
             SellOrders?.Clear();
@@ -267,7 +271,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Window?.HideWaiting();
         }
 
-        private async void GetSructureOrders()
+        private async Task GetSructureOrders()
         {
             Window?.ShowWaiting("获取订单中...");
             List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID); ;
@@ -385,8 +389,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         #endregion
 
         #region 计算器
-        private float calSalesTax = 5;
-        public float CalSalesTax
+        #region 卖出
+        private double calSalesTax = 3.6;
+        /// <summary>
+        /// 销售税
+        /// </summary>
+        public double CalSalesTax
         {
             get => calSalesTax;
             set
@@ -397,20 +405,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private float calServiceCharge = 5;
-        public float CalServiceCharge
+        private double calAgentTax = 1;
+        /// <summary>
+        /// 中介税
+        /// </summary>
+        public double CalAgentTax
         {
-            get => calServiceCharge;
+            get => calAgentTax;
             set
             {
-                if (SetProperty(ref calServiceCharge, value))
+                if (SetProperty(ref calAgentTax, value))
                 {
                     Cal();
                 }
             }
         }
-        private float calSellAmount = 1;
-        public float CalSellAmount
+        private double calSellAmount = 1;
+        /// <summary>
+        /// 卖出价格
+        /// </summary>
+        public double CalSellAmount
         {
             get => calSellAmount;
             set
@@ -421,20 +435,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private float calBuyAmount = 1;
-        public float CalBuyAmount
-        {
-            get => calBuyAmount;
-            set
-            {
-                if (SetProperty(ref calBuyAmount, value))
-                {
-                    Cal();
-                }
-            }
-        }
-        private float calSellResult;
-        public float CalSellResult
+        private double calSellResult;
+        /// <summary>
+        /// 总卖出价格
+        /// </summary>
+        public double CalSellResult
         {
             get => calSellResult;
             set
@@ -445,21 +450,163 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private float calBuyResult;
-        public float CalBuyResult
+        private double calSellPrice;
+        /// <summary>
+        /// 单个卖出价格
+        /// </summary>
+        public double CalSellPrice
         {
-            get => calBuyResult;
+            get => calSellPrice;
             set
             {
-                if (SetProperty(ref calBuyResult, value))
+                if (SetProperty(ref calSellPrice, value))
                 {
                     Cal();
                 }
             }
         }
+        private bool calSelImmediately = false;
+        /// <summary>
+        /// 立即卖出
+        /// </summary>
+        public bool CalSellImmediately
+        {
+            get => calSelImmediately;
+            set
+            {
+                if (SetProperty(ref calSelImmediately, value))
+                {
+                    SetSellPrice();
+                    Cal();
+                }
+            }
+        }
+        #endregion
+
+        #region 买入
+        private double calBuyAmount = 1;
+        /// <summary>
+        /// 买入数量
+        /// </summary>
+        public double CalBuyAmount
+        {
+            get => calBuyAmount;
+            set
+            {
+                if (SetProperty(ref calBuyAmount, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private double calBuyResult;
+        /// <summary>
+        /// 买入总价格
+        /// </summary>
+        public double CalBuyResult
+        {
+            get => calBuyResult;
+            set
+            {
+                SetProperty(ref calBuyResult, value);
+            }
+        }
+        private bool autoSetBuyPrice = true;
+        /// <summary>
+        /// 自动算买入价格
+        /// </summary>
+        public bool AutoSetBuyPrice
+        {
+            get => autoSetBuyPrice;
+            set
+            {
+                if (SetProperty(ref autoSetBuyPrice, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        private double calBuyPrice;
+        /// <summary>
+        /// 单个买入价格
+        /// </summary>
+        public double CalBuyPrice
+        {
+            get => calBuyPrice;
+            set
+            {
+                if (SetProperty(ref calBuyPrice, value))
+                {
+                    Cal();
+                }
+            }
+        }
+        #endregion
+        
+        private void SetBuyPrice()
+        {
+            if (SellOrders.NotNullOrEmpty())
+                CalBuyPrice = (double)SellOrders.First().Price;
+            else
+                CalBuyPrice = 0;
+        }
+        private void SetSellPrice()
+        {
+            if (CalSellImmediately)
+            {
+                if (BuyOrders.NotNullOrEmpty())
+                    CalSellPrice = (double)BuyOrders.First().Price;
+                else
+                    CalSellPrice = 0;
+            }
+            else
+            {
+                if (SellOrders.NotNullOrEmpty())
+                    CalSellPrice = (double)SellOrders.First().Price;//TODO:自动递增
+                else
+                {
+                    CalSellPrice = 0;
+                }
+            }
+        }
         private void Cal()
         {
-            
+            if(SellOrders.NotNullOrEmpty())
+            {
+                if (AutoSetBuyPrice)
+                {
+                    decimal totalPrice = 0;//总计算价格
+                    long remainCount = (long)CalBuyAmount;//剩余计算数量
+                    foreach (var sellOrder in SellOrders)
+                    {
+                        long takeCount = sellOrder.VolumeRemain > remainCount ? remainCount : sellOrder.VolumeRemain;
+                        totalPrice += takeCount * sellOrder.Price;
+                        remainCount -= takeCount;
+                        if (remainCount == 0)
+                            break;
+                    }
+                    if (remainCount > 0)//卖单无法满足数量，剩余数量从最高卖单取
+                    {
+                        Window?.ShowError(Helpers.ResourcesHelper.GetString("MarketPage_Cal_Buy_NoEnoughSellOrder"));
+                        totalPrice += SellOrders.First().Price * remainCount;
+                    }
+                    CalBuyResult = (double)totalPrice;
+                }
+                else
+                {
+                    CalBuyResult = CalBuyPrice * CalBuyAmount;
+                }
+            }
+            double totalSellPrice = CalSellPrice * CalSellAmount;
+            if (CalSellImmediately)//只算销售税
+            {
+                totalSellPrice *= (100 - CalSalesTax) / 100.0;
+            }
+            else//中介税+销售税
+            {
+                totalSellPrice *= (100 - CalSalesTax - CalAgentTax) / 100.0;
+            }
+            CalSellResult = totalSellPrice;
         }
         #endregion
     }

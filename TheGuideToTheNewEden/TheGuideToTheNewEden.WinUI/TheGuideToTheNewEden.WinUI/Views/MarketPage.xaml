@@ -9,7 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
-    xmlns:wuc="using:WinUICommunity"
     Background="Transparent"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
@@ -113,8 +112,10 @@
                             VerticalAlignment="Center"
                             Margin="4,0,0,0"
                             Background="Transparent"
-                            BorderThickness="0"
-                            Content="{wuc:FontIcon GlyphName=Info}">
+                            BorderThickness="0">
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                Text="&#xE171;"/>
                             <Button.Flyout>
                                 <Flyout>
                                     <TextBlock
@@ -124,15 +125,19 @@
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
-                        <Button Content="{wuc:FontIcon GlyphName=SubscriptionAdd}"
+                        <Button 
                                 VerticalAlignment="Center"
                                 ToolTipService.ToolTip="{StaticResource MarketPage_AddStar}"
                                 Background="Transparent"
                                 Command="{x:Bind VM.StarCommand}"
                                 BorderThickness="0"
                                 Margin="4,0,0,0"
-                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}"/>
-                        <Button Content="{wuc:FontIcon GlyphName=SubscriptionAdd}"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                Text="&#xE1CE;"/>
+                        </Button>
+                        <Button 
                                 VerticalAlignment="Center"
                                 ToolTipService.ToolTip="{StaticResource MarketPage_CancelStar}"
                                 Background="Transparent"
@@ -140,24 +145,121 @@
                                 Foreground="LightSeaGreen"
                                 BorderThickness="0"
                                 Margin="4,0,0,0"
-                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}"/>
-                        <Button Content="{wuc:FontIcon GlyphName=Calculator}"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                Text="&#xE1CE;"/>
+                        </Button>
+                        <Button 
                                 VerticalAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Margin="4,0,0,0">
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                Text="&#xE1D0;"/>
                             <Button.Flyout>
                                 <Flyout>
-                                    <StackPanel MinWidth="200">
+                                    <Grid Width="300">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                                         <StackPanel>
-                                            <TextBlock Text="{StaticResource MarketPage_Cal_Buy}" FontSize="18"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,8" HorizontalAlignment="Stretch">
+                                            <TextBlock Text="{StaticResource MarketPage_Cal_Buy}" FontSize="18" Foreground="{ThemeResource SystemAccentColor}"/>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
                                                 <TextBlock Text="{StaticResource MarketPage_Cal_Amount}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <NumberBox Value="{x:Bind VM.CalBuyAmount}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
-                                                           HorizontalAlignment="Stretch"/>
-                                            </StackPanel>
+                                                <NumberBox Value="{x:Bind VM.CalBuyAmount, Mode=TwoWay}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
+                                                           HorizontalAlignment="Stretch"
+                                                           Grid.Column="1"/>
+                                            </Grid>
+                                            <CheckBox Content="{StaticResource MarketPage_Cal_AutoSetBuyPrice}"
+                                                      IsChecked="{x:Bind VM.AutoSetBuyPrice,Mode=TwoWay}"/>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch"
+                                                  Visibility="{x:Bind VM.AutoSetBuyPrice,Mode=OneWay,Converter={StaticResource FalseToVisibleConverter}}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_BuyPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <NumberBox Value="{x:Bind VM.CalBuyPrice, Mode=TwoWay}" Minimum="1" SpinButtonPlacementMode="Inline"
+                                                           HorizontalAlignment="Stretch"
+                                                           Grid.Column="1"/>
+                                            </Grid>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_TotalBuyPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{x:Bind VM.CalBuyResult, Mode=OneWay,Converter={StaticResource StringFormatConverter},ConverterParameter={}{0:N2}}" VerticalAlignment="Center" Grid.Column="1"
+                                                           HorizontalAlignment="Right"
+                                                           Foreground="OrangeRed"
+                                                           FontSize="18"/>
+                                                <TextBlock Text="ISK" VerticalAlignment="Center" Margin="8,0,0,0" 
+                                                           Grid.Column="2"/>
+                                            </Grid>
                                         </StackPanel>
-                                    </StackPanel>
+                                        <Rectangle Height="1" Margin="0,16" Fill="LightGray" Grid.Row="1"/>
+                                        <StackPanel Grid.Row="2">
+                                            <TextBlock Text="{StaticResource MarketPage_Cal_Sell}" FontSize="18" Foreground="{ThemeResource SystemAccentColor}"/>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_Amount}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <NumberBox Value="{x:Bind VM.CalSellAmount, Mode=TwoWay}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
+                                                           HorizontalAlignment="Stretch"
+                                                           Grid.Column="1"/>
+                                            </Grid>
+                                            <CheckBox Content="{StaticResource MarketPage_Cal_Sell_Immediately}"
+                                                      IsChecked="{x:Bind VM.CalSellImmediately,Mode=TwoWay}"/>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_SellPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <NumberBox Value="{x:Bind VM.CalSellPrice, Mode=TwoWay}" Minimum="1" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
+                                                           Grid.Column="1"/>
+                                            </Grid>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <NumberBox Value="{x:Bind VM.CalSalesTax, Mode=TwoWay,Converter={StaticResource N2DecimaFormatConverter},ConverterParameter={}{0:N2}}" Minimum="0" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
+                                                           Header="{StaticResource MarketPage_Cal_SalesTax}"
+                                                           SmallChange="0.1"/>
+                                                <NumberBox Value="{x:Bind VM.CalAgentTax, Mode=TwoWay,Converter={StaticResource N2DecimaFormatConverter},ConverterParameter={}{0:N2}}" Minimum="0" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
+                                                           Grid.Column="1"
+                                                           SmallChange="0.1"
+                                                           Header="{StaticResource MarketPage_Cal_AgentTax}"
+                                                           Visibility="{x:Bind VM.CalSellImmediately,Mode=OneWay,Converter={StaticResource FalseToVisibleConverter}}"/>
+                                            </Grid>
+                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource MarketPage_Cal_TotalSellPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{x:Bind VM.CalSellResult, Mode=OneWay,Converter={StaticResource StringFormatConverter},ConverterParameter={}{0:N2}}" VerticalAlignment="Center" Grid.Column="1"
+                                                           HorizontalAlignment="Right"
+                                                           Foreground="MediumSeaGreen"
+                                                           FontSize="18"/>
+                                                <TextBlock Text="ISK" VerticalAlignment="Center" Margin="8,0,0,0" 
+                                                           Grid.Column="2"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
                                 </Flyout>
                             </Button.Flyout>
                         </Button>
