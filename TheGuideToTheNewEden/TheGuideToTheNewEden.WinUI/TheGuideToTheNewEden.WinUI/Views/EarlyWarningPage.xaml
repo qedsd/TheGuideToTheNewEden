@@ -403,7 +403,13 @@
             x:Name="ChatContentsScroll"
             Grid.Column="2"
             Margin="8">
-            <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="False" />
+            <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="True">
+                <RichTextBlock.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                    </MenuFlyout>
+                </RichTextBlock.ContextFlyout>
+            </RichTextBlock>
         </ScrollViewer>
     </Grid>
 </Page>

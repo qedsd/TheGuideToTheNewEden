@@ -282,5 +282,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Services.WarningService.Current.Dispose();
             }
         }
+
+        private void MenuFlyoutItem_ClearNews_Click(object sender, RoutedEventArgs e)
+        {
+            ChatContents.Blocks.Clear();
+        }
     }
 }
