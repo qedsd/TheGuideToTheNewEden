@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models.Market;
+using ESI.NET.Models.Market;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -45,15 +47,33 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         private async void GetOrders()
         {
             Window?.ShowWaiting();
-            await GetCharacterOrders();
-            await GetCorpOrders();
+            try
+            {
+                await GetCharacterOrders();
+                await GetCorpOrders();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+            }
             Window?.HideWaiting();
         }
         private async Task GetCharacterOrders()
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                DataGrid_Character.ItemsSource = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                //var orders = await SimuOrders();
+                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                if (orders.NotNullOrEmpty())
+                {
+                    var os = await CalOrderStatus(orders);
+                    DataGrid_Character.ItemsSource = os;
+                }
+                else
+                {
+                    DataGrid_Character.ItemsSource = null;
+                }
             }
             else
             {
@@ -64,13 +84,57 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if (SelecteCharacterControl.SelectedItem != null)
             {
-                DataGrid_Corp.ItemsSource = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                var orders = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                if (orders.NotNullOrEmpty())
+                {
+                    var os = await CalOrderStatus(orders);
+                    DataGrid_Corp.ItemsSource = os;
+                }
+                else
+                {
+                    DataGrid_Corp.ItemsSource = null;
+                }
             }
             else
             {
                 Window?.ShowError("Î´Ñ¡Ôñ½ÇÉ«");
             }
         }
+
+        private async Task<List<StatusOrder>> CalOrderStatus(List<Core.Models.Market.Order> orders)
+        {
+            List<StatusOrder> statusOrders = new List<StatusOrder>();
+            foreach(var order in orders)
+            {
+                var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId);
+                List<Core.Models.Market.Order> refs = null;
+                if(results.NotNullOrEmpty())
+                {
+                    if(order.IsBuyOrder)
+                    {
+                        refs = results.Where(p=>p.IsBuyOrder)?.OrderByDescending(p=>p.Price).ToList();
+                    }
+                    else
+                    {
+                        refs = results.Where(p => !p.IsBuyOrder)?.OrderBy(p => p.Price).ToList();
+                    }
+                }
+                statusOrders.Add(new StatusOrder(order, refs));
+            }
+            return statusOrders;
+        }
+
+        private async Task<List<Core.Models.Market.Order>> SimuOrders()
+        {
+            var o1 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34, 10000002)).Where(p=>!p.IsBuyOrder).OrderBy(p=>p.Price).ToList()[0];
+            var o2 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(28710, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[1];
+            var o3 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34828, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[2];
+            return new List<Core.Models.Market.Order>()
+            {
+                o1,o2,o3
+            };
+        }
+
         public delegate void SelectedItemsChangedEventHandel(List<Core.Models.Market.Order> orders);
         private SelectedItemsChangedEventHandel AddToFilterListItemsChanged;
         public event SelectedItemsChangedEventHandel OnAddToFilterListItemsChanged

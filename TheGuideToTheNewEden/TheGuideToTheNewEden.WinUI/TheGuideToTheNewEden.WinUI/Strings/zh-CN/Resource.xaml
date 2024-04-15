@@ -763,4 +763,10 @@
     <x:String x:Key="CharacterPage_Sp">技能点：</x:String>
     <x:String x:Key="CharacterPage_Birthday">出生：</x:String>
     <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
+
+    <!--  CharacterOrderPage  -->
+    <x:String x:Key="CharacterOrderPage_Difference_Detail">价差</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status">订单状态</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">被压单</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">正常</x:String>
 </ResourceDictionary>

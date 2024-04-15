@@ -6,10 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters" 
+    xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
     Background="Transparent"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <converters:StatusOrderDescConverter x:Key="StatusOrderDescConverter"/>
+        <styleselectors:StatusOrderCellStyleSelector x:Key="StatusOrderCellStyleSelector" />
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -59,32 +64,40 @@
                     ColumnWidthMode="Auto"
                     GridLinesVisibility="None"
                     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
                     HeaderLinesVisibility="Both"
                     SelectionMode="Extended"
                     ShowGroupDropArea="True">
                     <dataGrid:SfDataGrid.Columns>
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="Target.InvType.TypeName" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_Amount}"
-                            MappingName="VolumeRemain" />
+                            MappingName="Target.VolumeRemain" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N2"
                             HeaderText="{StaticResource MarketPage_Price}"
-                            MappingName="Price" />
-                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                            MappingName="Target.Price" />
+                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Target.Security" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="Target.LocationName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="Target.SolarSystem.SolarSystemName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Target.Range" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_MinVolume}"
-                            MappingName="MinVolume" />
+                            MappingName="Target.MinVolume" />
                         <dataGrid:GridTextColumn
-                            DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                            DisplayBinding="{Binding Target.RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
                             HeaderText="{StaticResource MarketPage_Duration}"
-                            MappingName="RemainTime" />
-                        <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            MappingName="Target.RemainTime" />
+                        <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="Target.LocationId" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource CharacterOrderPage_Difference_Status}" 
+                                                 DisplayBinding="{Binding Normal, Converter={StaticResource StatusOrderDescConverter}}"
+                                                 MappingName="Normal" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource CharacterOrderPage_Difference_Detail}"
+                            MappingName="Difference" />
                     </dataGrid:SfDataGrid.Columns>
                     <dataGrid:SfDataGrid.RecordContextFlyout>
                         <MenuFlyout>
@@ -118,32 +131,34 @@
                     ColumnWidthMode="Auto"
                     GridLinesVisibility="None"
                     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
                     HeaderLinesVisibility="Both"
                     SelectionMode="Extended"
                     ShowGroupDropArea="True">
                     <dataGrid:SfDataGrid.Columns>
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="Target.InvType.TypeName" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_Amount}"
-                            MappingName="VolumeRemain" />
+                            MappingName="Target.VolumeRemain" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N2"
                             HeaderText="{StaticResource MarketPage_Price}"
-                            MappingName="Price" />
-                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                            MappingName="Target.Price" />
+                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Target.Security" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="Target.LocationName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="Target.SolarSystem.SolarSystemName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Target.Range" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MarketPage_MinVolume}"
-                            MappingName="MinVolume" />
+                            MappingName="Target.MinVolume" />
                         <dataGrid:GridTextColumn
                             DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
                             HeaderText="{StaticResource MarketPage_Duration}"
-                            MappingName="RemainTime" />
-                        <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            MappingName="Target.RemainTime" />
+                        <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="Target.LocationId" />
+                        <dataGrid:GridTextColumn HeaderText="CharacterOrderPage_Difference" MappingName="Difference" />
                     </dataGrid:SfDataGrid.Columns>
                     <dataGrid:SfDataGrid.RecordContextFlyout>
                         <MenuFlyout>
