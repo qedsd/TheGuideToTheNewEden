@@ -68,8 +68,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                var orders = await SimuOrders();
-                //var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                //var orders = await SimuOrders();
+                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
