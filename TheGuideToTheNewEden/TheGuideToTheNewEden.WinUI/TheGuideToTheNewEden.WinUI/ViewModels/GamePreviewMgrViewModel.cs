@@ -1077,106 +1077,114 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         #region 开始全部、暂停全部
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
-            SelectedProcess = null;
-            List<PreviewItem> needRunItems = new List<PreviewItem>();
-            #region 模拟选择进程步骤
-            foreach (var pro in Processes)
+            try
             {
-                if(!pro.Running)
+                SelectedProcess = null;
+                List<PreviewItem> needRunItems = new List<PreviewItem>();
+                #region 模拟选择进程步骤
+                foreach (var pro in Processes)
                 {
-                    PreviewItem setting = null;
-                    var characterName = pro.GetCharacterName();
-                    if (!string.IsNullOrEmpty(characterName))
+                    if (!pro.Running)
                     {
-                        //从保存列表里找出第一个同名且不在运行中的设置
-                        var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
-                        if (targetSetting != null)
-                        {
-                            setting = targetSetting;
-                        }
-                        else//没有找到则按加载方式选择
-                        {
-                            LoadDefaultSetting(out setting, pro, characterName);
-                        }
-                    }
-                    else//无法找到名称，如中文下
-                    {
-                        var username = pro.GetUserName();
-                        if (!string.IsNullOrEmpty(username))//没有角色名则找账号名
+                        PreviewItem setting = null;
+                        var characterName = pro.GetCharacterName();
+                        if (!string.IsNullOrEmpty(characterName))
                         {
                             //从保存列表里找出第一个同名且不在运行中的设置
-                            var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
+                            var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
                             if (targetSetting != null)
                             {
                                 setting = targetSetting;
                             }
-                            else//没有找到则新建
+                            else//没有找到则按加载方式选择
                             {
                                 LoadDefaultSetting(out setting, pro, characterName);
                             }
                         }
-                        else//如果不设置名称，不会保存，直接新建
+                        else//无法找到名称，如中文下
                         {
-                            LoadDefaultSetting(out setting, pro, characterName);
+                            var username = pro.GetUserName();
+                            if (!string.IsNullOrEmpty(username))//没有角色名则找账号名
+                            {
+                                //从保存列表里找出第一个同名且不在运行中的设置
+                                var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
+                                if (targetSetting != null)
+                                {
+                                    setting = targetSetting;
+                                }
+                                else//没有找到则新建
+                                {
+                                    LoadDefaultSetting(out setting, pro, characterName);
+                                }
+                            }
+                            else//如果不设置名称，不会保存，直接新建
+                            {
+                                LoadDefaultSetting(out setting, pro, characterName);
+                            }
+                        }
+                        if (setting != null)
+                        {
+                            setting.ProcessInfo = pro;
+                            needRunItems.Add(setting);
                         }
                     }
-                    if(setting != null)
-                    {
-                        setting.ProcessInfo = pro;
-                        needRunItems.Add(setting);
-                    }
                 }
-            }
-            #endregion
+                #endregion
 
-            #region 模拟开始步骤
-            bool save = false;
-            foreach(var item in needRunItems)
-            {
-                try
+                #region 模拟开始步骤
+                bool save = false;
+                foreach (var item in needRunItems)
                 {
-                    IGamePreviewWindow gamePreviewWindow;
-                    switch (item.ShowPreviewWindowMode)
+                    try
                     {
-                        case 0: gamePreviewWindow = new GamePreviewWindow1(item, PreviewSetting); break;
-                        case 1: gamePreviewWindow = new GamePreviewWindow2(item, PreviewSetting); break;
-                        case 2: gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting); break;
-                        default: throw new NotImplementedException();
-                    }
-                    if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
-                    {
-                        gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
-                        gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
-                        gamePreviewWindow.Start(item.ProcessInfo.MainWindowHandle);
-                        item.ProcessInfo.Setting = item;
-                        item.ProcessInfo.Running = true;
-                        item.ProcessInfo.SettingName = item.Name;
-                        Running = true;
-                        if (!string.IsNullOrEmpty(item.Name))
+                        IGamePreviewWindow gamePreviewWindow;
+                        switch (item.ShowPreviewWindowMode)
                         {
-                            if (!PreviewSetting.PreviewItems.Contains(item))
+                            case 0: gamePreviewWindow = new GamePreviewWindow1(item, PreviewSetting); break;
+                            case 1: gamePreviewWindow = new GamePreviewWindow2(item, PreviewSetting); break;
+                            case 2: gamePreviewWindow = new GamePreviewWindow3(item, PreviewSetting); break;
+                            default: throw new NotImplementedException();
+                        }
+                        if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
+                        {
+                            gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
+                            gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
+                            gamePreviewWindow.Start(item.ProcessInfo.MainWindowHandle);
+                            item.ProcessInfo.Setting = item;
+                            item.ProcessInfo.Running = true;
+                            item.ProcessInfo.SettingName = item.Name;
+                            Running = true;
+                            if (!string.IsNullOrEmpty(item.Name))
                             {
-                                PreviewSetting.PreviewItems.Add(item);
+                                if (!PreviewSetting.PreviewItems.Contains(item))
+                                {
+                                    PreviewSetting.PreviewItems.Add(item);
+                                }
+                                if (!Settings.Contains(item))
+                                {
+                                    Settings.Add(item);
+                                }
+                                save = true;
                             }
-                            if (!Settings.Contains(item))
-                            {
-                                Settings.Add(item);
-                            }
-                            save = true;
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                        Window.ShowError(ex.Message, false);
+                    }
                 }
-                catch (Exception ex)
+                if (save)
                 {
-                    Log.Error(ex);
-                    Window.ShowError(ex.Message, false);
+                    SaveSetting();
                 }
+                #endregion
             }
-            if(save)
+            catch(Exception ex)
             {
-                SaveSetting();
+                Log.Error(ex);
+                Window?.ShowError(ex.Message);
             }
-            #endregion
         });
         void LoadDefaultSetting(out PreviewItem setting, ProcessInfo processInfo, string name)
         {
