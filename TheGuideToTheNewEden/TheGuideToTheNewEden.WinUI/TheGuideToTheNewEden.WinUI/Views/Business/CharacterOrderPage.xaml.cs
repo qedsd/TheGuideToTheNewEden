@@ -56,8 +56,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Window?.ShowWaiting();
             try
             {
+                var errorCount1 = Core.Log.GetErrorCount();
                 await GetCharacterOrders();
                 await GetCorpOrders();
+                var errorCount2 = Core.Log.GetErrorCount();
+                if (errorCount1 != errorCount2)
+                {
+                    Window?.ShowError(Core.Log.GetLastError().ToString());
+                }
             }
             catch (Exception ex)
             {
@@ -230,7 +236,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private void Button_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
         {
-            var orders = DataGrid_Character.ItemsSource as List<StatusOrder>;
+            var orders = MainPivot.SelectedIndex == 0 ?  DataGrid_Character.ItemsSource as List<StatusOrder> : DataGrid_Corp.ItemsSource as List<StatusOrder>;
             if(orders.NotNullOrEmpty())
             {
                 var targetOrders = orders.Where(p => !p.Normal).ToList();
