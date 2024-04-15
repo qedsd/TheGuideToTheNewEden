@@ -92,6 +92,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     catch(Exception ex)
                     {
                         Core.Log.Error(ex);
+                        Thread.Sleep(60000);
                     }
                 }
             });
