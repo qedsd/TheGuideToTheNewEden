@@ -18,16 +18,20 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Market;
 using ESI.NET.Models.Market;
+using TheGuideToTheNewEden.Core.Services;
+using ESI.NET.Models.Character;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
     public sealed partial class CharacterOrderPage : Page
     {
+        private EsiClient _esiClient;
         private BaseWindow Window;
         public CharacterOrderPage()
         {
             this.InitializeComponent();
             Loaded += CharacterOrderPage_Loaded;
+            _esiClient = ESIService.GetDefaultEsi();
         }
 
         private void CharacterOrderPage_Loaded(object sender, RoutedEventArgs e)
@@ -37,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private void SelecteCharacterControl_OnSelectedItemChanged(ESI.NET.Models.SSO.AuthorizedCharacterData selectedItem)
         {
+            _esiClient.SetCharacterData(selectedItem);
             GetOrders();
         }
 
@@ -63,8 +68,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                //var orders = await SimuOrders();
-                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                var orders = await SimuOrders();
+                //var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
@@ -169,21 +174,56 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private void MenuFlyoutItem1_AddToFilterList_Click(object sender, RoutedEventArgs e)
         {
-            AddToFilterListItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+            AddToFilterListItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
         }
 
         private void MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
         {
-            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
         }
         private void MenuFlyoutItem2_AddToFilterList_Click(object sender, RoutedEventArgs e)
         {
-            AddToFilterListItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+            AddToFilterListItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
         }
 
         private void MenuFlyoutItem2_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
         {
-            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => p as Core.Models.Market.Order)?.ToList());
+            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
+        }
+
+        private async void MenuFlyoutItem1_ShowInGame_Click(object sender, RoutedEventArgs e)
+        {
+            var order = DataGrid_Character.SelectedItem as Core.Models.Market.StatusOrder;
+            if(order != null)
+            {
+                Window?.ShowWaiting();
+                try
+                {
+                    if(!SelecteCharacterControl.SelectedItem.IsTokenValid())
+                    {
+                        if (!await SelecteCharacterControl.SelectedItem.RefreshTokenAsync())
+                        {
+                            Core.Log.Error("Token已过期，尝试刷新失败");
+                            return;
+                        }
+                    }
+                    var resp = await _esiClient.UserInterface.MarketDetails(order.Target.TypeId);
+                    if(resp.StatusCode == System.Net.HttpStatusCode.OK || resp.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    {
+                        Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_ShowInGame_Succcess"));
+                    }
+                    else
+                    {
+                        Window?.ShowError(resp.Message);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    Window?.ShowError(ex.Message);
+                }
+                Window?.HideWaiting();
+            }
         }
     }
 }

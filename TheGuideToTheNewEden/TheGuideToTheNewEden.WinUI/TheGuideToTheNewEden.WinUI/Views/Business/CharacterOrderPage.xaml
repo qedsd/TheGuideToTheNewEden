@@ -63,6 +63,7 @@
                     AutoGenerateColumns="False"
                     ColumnWidthMode="Auto"
                     GridLinesVisibility="None"
+                    AutoExpandGroups="True"
                     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                     CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
                     HeaderLinesVisibility="Both"
@@ -111,6 +112,10 @@
                                 Click="MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click"
                                 CommandParameter="{Binding}"
                                 Text="{StaticResource BusinessPage_AddToUpdatedScalperShoppingItem}" />
+                            <MenuFlyoutItem
+                                Click="MenuFlyoutItem1_ShowInGame_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource CharacterOrderPage_ShowInGame}" />
                         </MenuFlyout>
                     </dataGrid:SfDataGrid.RecordContextFlyout>
                 </dataGrid:SfDataGrid>
@@ -120,66 +125,67 @@
                     <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Corp}" />
                 </PivotItem.Header>
                 <dataGrid:SfDataGrid
-    x:Name="DataGrid_Corp"
-    Margin="0,4,0,0"
-    HorizontalAlignment="Stretch"
-    AllowDraggingColumns="True"
-    AllowEditing="False"
-    AllowFiltering="True"
-    AllowGrouping="True"
-    AllowResizingColumns="True"
-    AllowSorting="True"
-    AutoGenerateColumns="False"
-    ColumnWidthMode="Auto"
-    GridLinesVisibility="None"
-    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-    CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
-    HeaderLinesVisibility="Both"
-    SelectionMode="Extended"
-    ShowGroupDropArea="True">
+                    x:Name="DataGrid_Corp"
+                    Margin="0,4,0,0"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowResizingColumns="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    AutoExpandGroups="True"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
                     <dataGrid:SfDataGrid.GroupColumnDescriptions>
                         <dataGrid:GroupColumnDescription ColumnName="Target.IsBuyOrder"/>
                     </dataGrid:SfDataGrid.GroupColumnDescriptions>
                     <dataGrid:SfDataGrid.Columns>
                         <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="Target.InvType.TypeName" />
                         <dataGrid:GridTextColumn
-            DisplayBinding="{Binding Target.IsBuyOrder, Converter={StaticResource OrderTypeConverter}}"
-            HeaderText="{StaticResource CharacterOrderPage_OrderType}"
-            MappingName="Target.IsBuyOrder" />
+                            DisplayBinding="{Binding Target.IsBuyOrder, Converter={StaticResource OrderTypeConverter}}"
+                            HeaderText="{StaticResource CharacterOrderPage_OrderType}"
+                            MappingName="Target.IsBuyOrder" />
                         <dataGrid:GridNumericColumn
-            DisplayNumberFormat="N0"
-            HeaderText="{StaticResource MarketPage_Amount}"
-            MappingName="Target.VolumeRemain" />
+                            DisplayNumberFormat="N0"
+                            HeaderText="{StaticResource MarketPage_Amount}"
+                            MappingName="Target.VolumeRemain" />
                         <dataGrid:GridNumericColumn
-            DisplayNumberFormat="N2"
-            HeaderText="{StaticResource MarketPage_Price}"
-            MappingName="Target.Price" />
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource MarketPage_Price}"
+                            MappingName="Target.Price" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource CharacterOrderPage_Difference_Status}" 
                                  DisplayBinding="{Binding Normal, Converter={StaticResource StatusOrderDescConverter}}"
                                  MappingName="Normal" />
                         <dataGrid:GridNumericColumn
-            DisplayNumberFormat="N2"
-            HeaderText="{StaticResource CharacterOrderPage_Difference_Detail}"
-            MappingName="Difference" />
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource CharacterOrderPage_Difference_Detail}"
+                            MappingName="Difference" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="Target.LocationName" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="Target.SolarSystem.SolarSystemName" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Target.Range" />
                         <dataGrid:GridTextColumn
-            DisplayBinding="{Binding Target.RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
-            HeaderText="{StaticResource MarketPage_Duration}"
-            MappingName="Target.RemainTime" />
+                            DisplayBinding="{Binding Target.RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                            HeaderText="{StaticResource MarketPage_Duration}"
+                            MappingName="Target.RemainTime" />
                         <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="Target.LocationId" />
                     </dataGrid:SfDataGrid.Columns>
                     <dataGrid:SfDataGrid.RecordContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem
-                Click="MenuFlyoutItem1_AddToFilterList_Click"
-                CommandParameter="{Binding}"
-                Text="{StaticResource BusinessPage_AddToFilterList}" />
+                                Click="MenuFlyoutItem2_AddToFilterList_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToFilterList}" />
                             <MenuFlyoutItem
-                Click="MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click"
-                CommandParameter="{Binding}"
-                Text="{StaticResource BusinessPage_AddToUpdatedScalperShoppingItem}" />
+                                Click="MenuFlyoutItem2_AddToUpdatedScalperShoppingItem_Click"
+                                CommandParameter="{Binding}"
+                                Text="{StaticResource BusinessPage_AddToUpdatedScalperShoppingItem}" />
                         </MenuFlyout>
                     </dataGrid:SfDataGrid.RecordContextFlyout>
                 </dataGrid:SfDataGrid>

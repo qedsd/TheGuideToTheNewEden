@@ -772,4 +772,7 @@
     <x:String x:Key="CharacterOrderPage_OrderType">订单类型</x:String>
     <x:String x:Key="CharacterOrderPage_OrderType_Buy">买单</x:String>
     <x:String x:Key="CharacterOrderPage_OrderType_Sell">卖单</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame">在游戏中查看</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Succcess">操作成功</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Falied">操作失败</x:String>
 </ResourceDictionary>
