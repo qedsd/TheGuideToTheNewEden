@@ -43,6 +43,12 @@
                     ToolTipService.ToolTip="{StaticResource General_Refresh}">
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
                 </Button>
+                <Button
+                    Margin="8"
+                    Click="Button_CopyToGameOrder_Click"
+                    ToolTipService.ToolTip="{StaticResource CharacterOrderPage_CopyBackwardOrderToGame}">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16F;" />
+                </Button>
             </StackPanel>
         </Grid>
         <Pivot Grid.Row="1" Margin="0,-4,0,0">

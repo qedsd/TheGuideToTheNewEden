@@ -20,6 +20,8 @@ using TheGuideToTheNewEden.Core.Models.Market;
 using ESI.NET.Models.Market;
 using TheGuideToTheNewEden.Core.Services;
 using ESI.NET.Models.Character;
+using System.Text;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -68,8 +70,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                //var orders = await SimuOrders();
-                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                var orders = await SimuOrders();
+                //var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
@@ -224,6 +226,22 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 Window?.HideWaiting();
             }
+        }
+
+        private void Button_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            //foreach (var item in ShoppingItems)
+            //{
+            //    stringBuilder.Append(item.InvType.TypeName);
+            //    stringBuilder.Append(" ");
+            //    stringBuilder.Append(item.Quantity);
+            //    stringBuilder.AppendLine();
+            //}
+            DataPackage dataPackage = new DataPackage();
+            dataPackage.SetText(stringBuilder.ToString());
+            Clipboard.SetContent(dataPackage);
+            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
         }
     }
 }
