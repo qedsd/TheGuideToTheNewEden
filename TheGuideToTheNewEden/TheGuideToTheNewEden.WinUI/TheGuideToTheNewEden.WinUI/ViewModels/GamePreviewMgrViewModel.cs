@@ -1217,6 +1217,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
+            _lastHighlightWindow = null;
             SelectedProcess = null;
             foreach (var pro in Processes)
             {
