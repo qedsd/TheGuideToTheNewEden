@@ -20,7 +20,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             {
                 var diff = Target.Price - references.First().Price;
                 Difference = Math.Abs(diff);
-                Normal = target.IsBuyOrder ? (diff > 0) : (diff <= 0);
+                Normal = target.IsBuyOrder ? (diff >= 0) : (diff <= 0);
             }
         }
     }

@@ -765,8 +765,11 @@
     <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
 
     <!--  CharacterOrderPage  -->
-    <x:String x:Key="CharacterOrderPage_Difference_Detail">价差</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status">订单状态</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">被压单</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">正常</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType">订单类型</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Buy">买单</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Sell">卖单</x:String>
 </ResourceDictionary>

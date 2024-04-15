@@ -129,9 +129,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             var o1 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34, 10000002)).Where(p=>!p.IsBuyOrder).OrderBy(p=>p.Price).ToList()[0];
             var o2 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(28710, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[1];
             var o3 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34828, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[2];
+
+            var o11 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[0];
+            var o22 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(28710, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[1];
+            var o33 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34828, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[2];
+
             return new List<Core.Models.Market.Order>()
             {
-                o1,o2,o3
+                o1,o2,o3,o11,o22,o33
             };
         }
 
