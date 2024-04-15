@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.Core.Extensions
                 var token = await ESIService.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, data.RefreshToken, Guid.NewGuid().ToString());
                 if (token != null)
                 {
-                    var newdata = await ESIService.SSO.Verify(token);
+                    var newdata = await ESIService.Verify(token);
                     if (newdata != null)
                     {
                         data.CopyFrom(newdata);

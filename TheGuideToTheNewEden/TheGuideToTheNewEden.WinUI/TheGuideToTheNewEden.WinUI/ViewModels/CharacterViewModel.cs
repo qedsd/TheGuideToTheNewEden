@@ -109,7 +109,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             Services.CharacterService.SetCurrentCharacter(characterData);
             EsiClient.SetCharacterData(characterData);
-            if (_selectedCharacter != null)
+            if (characterData != null)
             {
                 var uri = new System.Uri(GameImageConverter.GetImageUri(characterData.CharacterID, GameImageConverter.ImgType.Character, 512));
                 CharacterAvatar = new BitmapImage(uri);
@@ -171,9 +171,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
             Window?.ShowWaiting();
-            if(!SelectedCharacter.IsTokenValid())
+            if(!characterData.IsTokenValid())
             {
-                if(!await SelectedCharacter.RefreshTokenAsync())
+                if(!await characterData.RefreshTokenAsync())
                 {
                     Window?.HideWaiting();
                     Window?.ShowError($"Token已过期，尝试刷新失败（{Core.Log.GetLastError()}）");
@@ -188,7 +188,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
             var tasks = new Task[]
             {
-                EsiClient.Character.Information(SelectedCharacter.CharacterID).ContinueWith((p)=>
+                EsiClient.Character.Information(characterData.CharacterID).ContinueWith((p)=>
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
@@ -247,7 +247,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 }),
             };
-            await Task.WhenAll(tasks);
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+            }
             Window.DispatcherQueue.TryEnqueue(() =>
             {
                 Skill = skill;
