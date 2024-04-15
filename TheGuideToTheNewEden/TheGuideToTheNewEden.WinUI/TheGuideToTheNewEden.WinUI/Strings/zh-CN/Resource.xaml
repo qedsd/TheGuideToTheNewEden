@@ -777,4 +777,5 @@
     <x:String x:Key="CharacterOrderPage_ShowInGame_Falied">操作失败</x:String>
     <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame">复制被压订单为游戏批量购买订单</x:String>
     <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Success">复制成功！在游戏批量购买界面粘贴即可</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Failed">无物品可复制</x:String>
 </ResourceDictionary>

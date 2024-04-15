@@ -70,8 +70,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                var orders = await SimuOrders();
-                //var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                //var orders = await SimuOrders();
+                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
@@ -230,18 +230,34 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private void Button_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            //foreach (var item in ShoppingItems)
-            //{
-            //    stringBuilder.Append(item.InvType.TypeName);
-            //    stringBuilder.Append(" ");
-            //    stringBuilder.Append(item.Quantity);
-            //    stringBuilder.AppendLine();
-            //}
-            DataPackage dataPackage = new DataPackage();
-            dataPackage.SetText(stringBuilder.ToString());
-            Clipboard.SetContent(dataPackage);
-            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
+            var orders = DataGrid_Character.ItemsSource as List<StatusOrder>;
+            if(orders.NotNullOrEmpty())
+            {
+                var targetOrders = orders.Where(p => !p.Normal).ToList();
+                if(targetOrders.NotNullOrEmpty())
+                {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    foreach (var item in targetOrders)
+                    {
+                        stringBuilder.Append(item.Target.InvType.TypeName);
+                        stringBuilder.Append(' ');
+                        stringBuilder.Append(1);
+                        stringBuilder.AppendLine();
+                    }
+                    DataPackage dataPackage = new DataPackage();
+                    dataPackage.SetText(stringBuilder.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
+                }
+                else
+                {
+                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+                }
+            }
+            else
+            {
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+            }
         }
     }
 }
