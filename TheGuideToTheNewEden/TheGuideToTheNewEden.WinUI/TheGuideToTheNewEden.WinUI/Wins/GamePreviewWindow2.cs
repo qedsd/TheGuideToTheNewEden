@@ -36,6 +36,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             ExtendsContentIntoTitleBar = true;
             _appWindow.IsShownInSwitchers = false;
+            HideAppDisplayName();
+            Title = _setting.Name;
+            SetHeadText(_setting.Name);
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
@@ -145,6 +148,23 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void AppWindow_Changed2(AppWindow sender, AppWindowChangedEventArgs args)
         {
+            if (args.DidPositionChange)
+            {
+                if (!Helpers.WindowHelper.IsInWindow(_appWindow.Position.X, _appWindow.Position.Y))
+                {
+                    //可能是最小化后不显示在屏幕范围内
+                    _appWindow.IsShownInSwitchers = true;
+                    _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_appWindow.Position.X, _appWindow.Position.Y));
+                    _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_appWindow.Size.Width, _appWindow.Size.Height));
+                    UpdateThumbnail();
+                    return;
+                }
+                else if (_appWindow.IsShownInSwitchers)
+                {
+                    //最小化恢复正常显示
+                    _appWindow.IsShownInSwitchers = false;
+                }
+            }
             if (args.DidPositionChange || args.DidSizeChange)
             {
                 _setting.WinW = _appWindow.Size.Width;
@@ -312,7 +332,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void Highlight()
         {
-            UpdateThumbnail(6);
+            UpdateThumbnail((int)_setting.HighlightMarginLeft,
+                (int)_setting.HighlightMarginRight,
+                (int)_setting.HighlightMarginTop,
+                (int)_setting.HighlightMarginBottom);
         }
 
         public override void CancelHighlight()

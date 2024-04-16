@@ -876,6 +876,13 @@
                         Icon="Stop"
                         Label="停止"
                         Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.RestorePosCommand}"
+                        Icon="Refresh"
+                        Label="{StaticResource EarlyWarningItemPage_RestorePos}"
+                        ToolTipService.ToolTip="{StaticResource EarlyWarningItemPage_RestorePos_Desc}"
+                        Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                 </StackPanel>
             </Grid>
         </Grid>

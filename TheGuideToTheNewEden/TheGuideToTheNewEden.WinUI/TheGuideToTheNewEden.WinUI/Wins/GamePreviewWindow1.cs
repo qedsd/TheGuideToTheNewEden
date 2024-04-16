@@ -218,7 +218,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 RestoreTitlebarOp();
-                this.Show();
+                this.Activate();
                 StopTitlebarOp();
                 if(hHighlight)
                 {
@@ -305,7 +305,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                UpdateThumbnail(6);
+                UpdateThumbnail((int)_setting.HighlightMarginLeft,
+                (int)_setting.HighlightMarginRight,
+                (int)_setting.HighlightMarginTop,
+                (int)_setting.HighlightMarginBottom);
             });
         }
         /// <summary>

@@ -692,6 +692,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             if (_runningDic.TryGetValue(previewItem.ProcessInfo.GUID, out var window))
             {
+                if(_lastHighlightWindow == window)
+                {
+                    _lastHighlightWindow = null;
+                }
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
                 previewItem.ProcessInfo.Setting = null;
@@ -730,6 +734,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public void StopAll()
         {
+            _lastHighlightWindow = null;
             var list = Processes?.Where(p => p.Running).ToList();
             if (list.NotNullOrEmpty())
             {
@@ -1239,6 +1244,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
         #endregion
+
+        public ICommand RestorePosCommand => new RelayCommand(() =>
+        {
+            if(Setting != null)
+            {
+                if (_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))
+                {
+                    window.ShowWindow();
+                    window.SetPos(100, 100);
+                    window.SetSize(533, 300);
+                }
+            }
+        });
 
         public void Dispose()
         {
