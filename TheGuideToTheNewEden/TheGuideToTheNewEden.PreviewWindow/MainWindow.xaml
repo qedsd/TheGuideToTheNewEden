@@ -28,6 +28,7 @@
         </WindowChrome>
     </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border x:Name="HightLightBorder"/>
         <Grid
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"

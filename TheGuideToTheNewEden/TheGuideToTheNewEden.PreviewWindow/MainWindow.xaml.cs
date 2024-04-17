@@ -57,6 +57,8 @@ namespace TheGuideToTheNewEden.PreviewWindow
             _thumbnailWindow?.UpdateThumbnail();
             _hlColor = new SolidColorBrush(Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
             NameTextBlock.Text = App.GetName();
+            HightLightBorder.BorderBrush = new SolidColorBrush(Color.FromArgb(App.GetA(), App.GetR(), App.GetG(), App.GetB()));
+            HightLightBorder.BorderThickness = new Thickness(0, 0, 0, 0);
             this.Closed += MainWindow_Closed;
             MonitorAppClose();
         }
@@ -266,6 +268,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             this.Dispatcher.Invoke(() =>
             {
                 NameTextBlock.Foreground = _hlColor;
+                HightLightBorder.BorderThickness = new Thickness(msgs[0], msgs[1], msgs[2], msgs[3]);
             });
             _thumbnailWindow.UpdateThumbnail(msgs[0], msgs[1], msgs[2], msgs[3]);
             _previewIPC.SendMsg(IPCOp.Handled);
@@ -275,6 +278,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
             this.Dispatcher.Invoke(() =>
             {
                 NameTextBlock.Foreground = _nomralColor;
+                HightLightBorder.BorderThickness = new Thickness(0,0,0,0);
             });
             _thumbnailWindow.UpdateThumbnail();
             _previewIPC.SendMsg(IPCOp.Handled);
