@@ -1251,9 +1251,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (_runningDic.TryGetValue(Setting.ProcessInfo.GUID, out var window))
                 {
-                    window.ShowWindow();
-                    window.SetPos(100, 100);
-                    window.SetSize(533, 300);
+                    if(Setting.ShowPreviewWindowMode == 2)
+                    {
+                        window.ShowWindow();
+                        System.Threading.Thread.Sleep(50);
+                        window.SetPos(100, 100);
+                        System.Threading.Thread.Sleep(50);
+                        window.SetSize(533, 300);
+                    }
+                    else
+                    {
+                        window.ShowWindow();
+                        window.SetPos(100, 100);
+                        window.SetSize(533, 300);
+                    }
                 }
             }
         });
