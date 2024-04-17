@@ -159,7 +159,7 @@ namespace TheGuideToTheNewEden.PreviewWindow
                     }
                     HandleMsg(op, msgs);
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
         }
         #endregion
