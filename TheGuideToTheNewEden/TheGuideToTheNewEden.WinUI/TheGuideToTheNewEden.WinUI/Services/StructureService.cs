@@ -29,7 +29,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 string json = File.ReadAllText(FilePath);
                 var list = JsonConvert.DeserializeObject<List<Structure>>(json);
-                Structures = list.ToDictionary(p=>p.Id);
+                if(list.NotNullOrEmpty())
+                    Structures = list.Where(p=>p != null).ToDictionary(p=>p.Id);
             }
             Structures ??= new Dictionary<long, Structure>();
         }
@@ -70,8 +71,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     try
                     {
                         var esi = await GetStructureByESI(id, characterID);
-                        Structures.Add(id, esi);
-                        Save();
+                        if(esi != null)
+                        {
+                            Structures.Add(id, esi);
+                            Save();
+                        }
                         return esi;
                     }
                     catch (Exception ex)
@@ -96,8 +100,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             else
             {
                 var esi = await GetStructureByESI(id, esiClient);
-                Structures.Add(id, esi);
-                Save();
+                if(esi != null)
+                {
+                    Structures.Add(id, esi);
+                    Save();
+                }
                 return esi;
             }
         }
@@ -112,12 +119,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     var esis = await GetStructureByESI(notInLocals, characterID);
                     if(esis.NotNullOrEmpty())
                     {
-                        locals.AddRange(esis);
-                        foreach (var item in esis)
+                        var notNull = esis.Where(p=>p != null).ToList();
+                        if(notNull.NotNullOrEmpty())
                         {
-                            Structures.Add(item.Id, item);
+                            locals.AddRange(notNull);
+                            foreach (var item in notNull)
+                            {
+                                Structures.Add(item.Id, item);
+                            }
+                            Save();
                         }
-                        Save();
                     }
                 }
                 return locals;
@@ -129,7 +140,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     foreach (var item in esis)
                     {
-                        Structures.Add(item.Id, item);
+                        if(item != null)
+                        {
+                            Structures.Add(item.Id, item);
+                        }
                     }
                     Save();
                 }
