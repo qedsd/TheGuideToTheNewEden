@@ -17,9 +17,9 @@ namespace TheGuideToTheNewEden.Core.DBModels
     public class InvMarketGroupBase
     {
         public int MarketGroupID { get; set; }
-        [SugarColumn(IsNullable = true)]
+        [SugarColumn(IsNullable = true, ColumnName = "nameId")]
         public string MarketGroupName { get; set; }
-        [SugarColumn(IsNullable = true)]
+        [SugarColumn(IsNullable = true, ColumnName = "descriptionId")]
         public string Description { get; set; }
     }
 }
