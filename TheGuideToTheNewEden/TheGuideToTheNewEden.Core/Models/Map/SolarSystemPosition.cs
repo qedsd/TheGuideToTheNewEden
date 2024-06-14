@@ -20,4 +20,8 @@ namespace TheGuideToTheNewEden.Core.Models.Map
         /// </summary>
         public List<int> JumpTo { get; set; }
     }
+    public class SolarSystemPosition2: SolarSystemPosition
+    {
+        public double Sec { get; set; }
+    }
 }

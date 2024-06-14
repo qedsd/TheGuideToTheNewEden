@@ -52,6 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Links"),ResourcesHelper.GetString("ShellPage_Links_Desc"), typeof(LinksPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_ZKB"),ResourcesHelper.GetString("ShellPage_ZKB_Desc"), typeof(ZKBHomePage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Database"),ResourcesHelper.GetString("ShellPage_Database_Desc"), typeof(DatabasePage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_Map"),ResourcesHelper.GetString("ShellPage_Map_Desc"), typeof(Views.Map.MapPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Setting"),"", typeof(SettingPage)),
             };
             GetServerStatus();

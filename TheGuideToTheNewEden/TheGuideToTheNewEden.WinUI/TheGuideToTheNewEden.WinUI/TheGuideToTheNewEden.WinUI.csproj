@@ -232,6 +232,7 @@
     <None Remove="Controls\KBSystemInfoControl.xaml" />
     <None Remove="Controls\KBTopKillControl.xaml" />
     <None Remove="Controls\LinkInfoControl.xaml" />
+    <None Remove="Controls\MapSystemControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
@@ -286,6 +287,7 @@
     <None Remove="Views\KB\StatistTopAllTimePage.xaml" />
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
+    <None Remove="Views\Map\MapPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -398,6 +400,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Dialogs\AddTranquilityAuthDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\MapSystemControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
@@ -523,6 +528,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Map\MapPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Character\IndustryPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

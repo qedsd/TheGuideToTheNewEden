@@ -14,11 +14,17 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public double X { get; set; }
         public double Y { get; set; }
         public double Z { get; set; }
+        [SugarColumn(ColumnName = "x_Min")]
         public double XMin { get; set; }
+        [SugarColumn(ColumnName = "x_Max")]
         public double XMax { get; set; }
+        [SugarColumn(ColumnName = "y_Min")]
         public double YMin { get; set; }
+        [SugarColumn(ColumnName = "y_Max")]
         public double YMax { get; set; }
+        [SugarColumn(ColumnName = "z_Min")]
         public double ZMin { get; set; }
+        [SugarColumn(ColumnName = "z_Max")]
         public double ZMax { get; set; }
         public double Luminosity { get; set; }
         public bool Border { get; set; }

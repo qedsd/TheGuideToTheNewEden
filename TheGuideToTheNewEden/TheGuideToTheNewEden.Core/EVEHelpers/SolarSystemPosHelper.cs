@@ -357,5 +357,22 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
             return -1;
         }
+
+        public static List<SolarSystemPosition> GetAll()
+        {
+            var names = MapSolarSystemService.Query(PositionDic.Values.Where(p=>string.IsNullOrEmpty(p.SolarSystemName)).Select(p => p.SolarSystemID).ToList());
+            if (names.NotNullOrEmpty())
+            {
+                foreach(var name in names)
+                {
+                    PositionDic[name.SolarSystemID].SolarSystemName = name.SolarSystemName;
+                }
+            }
+            return PositionDic.Values.ToList();
+        }
+        public static async Task<List<SolarSystemPosition>> GetAllAsync()
+        {
+            return await Task.Run(() => GetAll());
+        }
     }
 }
