@@ -315,22 +315,23 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageReference Include="H.NotifyIcon" Version="2.0.124" />
-    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.124" />
+    <PackageReference Include="H.NotifyIcon" Version="2.0.131" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.131" />
     <PackageReference Include="log4net" Version="2.0.17" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.2.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="25.1.35" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="25.1.35" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="25.1.35" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.3" />
-    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.17" />
-    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
-    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.17" />
-    <PackageReference Include="WinUICommunity.Components" Version="6.4.1" />
-    <PackageReference Include="WinUICommunity.Core" Version="6.4.1" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="26.1.35" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="26.1.35" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="26.1.35" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.0.1" />
+    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.0.1" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="4.0.1" />
+    <PackageReference Include="WinUICommunity.Components" Version="6.9.0" />
+    <PackageReference Include="WinUICommunity.Core" Version="6.9.0" />
     <PackageReference Include="WinUIEx" Version="2.3.4" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -425,6 +426,9 @@
     </None>
     <None Update="Resources\Configs\log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Configs\RegionMap.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\SpeakerNames.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

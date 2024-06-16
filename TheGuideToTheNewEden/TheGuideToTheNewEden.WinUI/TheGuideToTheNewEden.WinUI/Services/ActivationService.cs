@@ -21,6 +21,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.DefaultGameServer = GameServerSelectorService.Value;
             CoreConfig.PlayerStatusApi = PlayerStatusService.Value;
             CoreConfig.SolarSystemMapPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "SolarSystemMap.json");
+            CoreConfig.RegionMapPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "RegionMap.json");
             CoreConfig.InitDb();
             CharacterService.Init();
             StructureService.Init();

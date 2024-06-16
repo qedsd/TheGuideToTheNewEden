@@ -30,6 +30,16 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return type;
         }
 
+        public static List<MapRegion> Query(List<int> ids, bool local = true)
+        {
+            var regions = DBService.MainDb.Queryable<MapRegion>().Where(p => ids.Contains(p.RegionID)).ToList();
+            if (local && DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapRegions(regions);
+            }
+            return regions;
+        }
+
         public static async Task<List<MapRegion>> QueryAsync(List<int> ids)
         {
             var types = DBService.MainDb.Queryable<MapRegion>().Where(p => ids.Contains(p.RegionID)).ToList();
@@ -45,6 +55,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             if (DBService.NeedLocalization)
             {
                 await LocalDbService.TranMapRegionsAsync(datas);
+            }
+            return datas;
+        }
+        public static List<MapRegion> QueryAll()
+        {
+            var datas = DBService.MainDb.Queryable<MapRegion>().ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapRegions(datas);
             }
             return datas;
         }

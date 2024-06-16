@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
     public static class SolarSystemPosHelper
     {
         private static Dictionary<int, SolarSystemPosition> positionDic;
-        private static Dictionary<int, SolarSystemPosition> PositionDic
+        public static Dictionary<int, SolarSystemPosition> PositionDic
         {
             get
             {
@@ -358,7 +358,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             return -1;
         }
 
-        public static List<SolarSystemPosition> GetAll()
+        public static List<SolarSystemPosition> GetAllWidthName()
         {
             var names = MapSolarSystemService.Query(PositionDic.Values.Where(p=>string.IsNullOrEmpty(p.SolarSystemName)).Select(p => p.SolarSystemID).ToList());
             if (names.NotNullOrEmpty())
@@ -370,9 +370,13 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
             return PositionDic.Values.ToList();
         }
-        public static async Task<List<SolarSystemPosition>> GetAllAsync()
+        public static async Task<List<SolarSystemPosition>> GetAllWidthNameAsync()
         {
-            return await Task.Run(() => GetAll());
+            return await Task.Run(() => GetAllWidthName());
+        }
+        public static List<SolarSystemPosition> GetAll()
+        {
+            return PositionDic.Values.ToList();
         }
     }
 }

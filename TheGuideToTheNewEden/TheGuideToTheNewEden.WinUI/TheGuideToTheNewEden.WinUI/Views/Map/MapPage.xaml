@@ -1,24 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="TheGuideToTheNewEden.WinUI.Views.Map.MapPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="Transparent">
+    Background="Transparent"
+    mc:Ignorable="d">
 
     <Grid>
-        <ScrollView VerticalScrollMode="Disabled" HorizontalScrollMode="Disabled" x:Name="MapScrollView"
-                    PointerWheelChanged="MapPointerWheelChanged"
-                    PointerMoved="MapPointerMoved"
-                    PointerPressed="MapPointerPressed"
-                    PointerReleased="MapPointerReleased">
-            <Grid x:Name="MapGrid" Width="1920" Height="2112" >
-                <Canvas x:Name="MapMainCanvas" Width="1920" Height="2112"/>
+        <!--<ScrollView
+            x:Name="MapScrollView"
+            HorizontalScrollMode="Disabled"
+            MaxZoomFactor="10"
+            MinZoomFactor="1"
+            PointerMoved="MapPointerMoved"
+            PointerPressed="MapPointerPressed"
+            PointerReleased="MapPointerReleased"
+            PointerWheelChanged="MapPointerWheelChanged"
+            VerticalScrollMode="Disabled">
+            <Grid
+                x:Name="MapGrid"
+                Width="1920"
+                Height="2112">
+                <Canvas
+                    x:Name="MapMainCanvas"
+                    Width="1920"
+                    Height="2112"
+                    Visibility="Collapsed" />
+                <local:MapCanvas x:Name="MapCanvas" />
             </Grid>
-        </ScrollView>
-        <!--<Canvas x:Name="MapMainCanvas" Width="1920" Height="2112" PointerMoved="MapPointerMoved"/>-->
+
+        </ScrollView>-->
+        <local:MapCanvas x:Name="MapCanvas" />
     </Grid>
 </Page>
