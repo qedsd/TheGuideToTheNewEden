@@ -52,6 +52,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _window = this.GetBaseWindow();
         }
 
+        private void MapCanvas_Loaded(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
         //private async Task UpdateMap()
         //{
         //    //从星系实际最大最小xy坐标比例算得长宽比为1：2.265
@@ -107,7 +112,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         //    //    _y = pointer.Position.Y;
         //    //}
         //}
-        
+
         //private void MapPointerPressed(object sender, PointerRoutedEventArgs e)
         //{
         //    var pointer = e.GetCurrentPoint(MapScrollView.Content);

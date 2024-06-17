@@ -22,17 +22,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
     internal class MapCanvas : UserControl
     {
-        private List<SolarSystemPosition> _positions;
         private CanvasControl _canvasControl;
         /// <summary>
         /// 当前缩放
         /// </summary>
         private float _currentZoom = 1;
-        private const float _stepZoom = 1f;
+        private const float _stepZoom = 0.2f;
         private const float _maxZoom = 10;
         private const float _minZoom = 1;
         private const float _regionZoom = 1;
-        private const float _systemZoom = 2;
+        private const float _systemZoom = 4;
         private float _fullXOffset = 0;
         /// <summary>
         /// 拖拽布局导致的X偏移
@@ -43,8 +42,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// 拖拽布局导致的Y偏移
         /// </summary>
         private float _curentYOffset = 0;
-        private Dictionary<int, IMapData> _systemDatas;
-        private Dictionary<int, IMapData> _regionDatas;
+        private Dictionary<int, MapData> _systemDatas;
+        private Dictionary<int, MapData> _regionDatas;
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -60,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void CanvasControl_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
         {
             InitData();
-            Draw(false);
+            Draw();
         }
         private double _scaleCenterX = 0;
         private double _scaleCenterY = 0;
@@ -69,18 +68,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var point = e.GetCurrentPoint(sender as UIElement);
             _scaleCenterX = point.Position.X;
             _scaleCenterY = point.Position.Y;
+            
             var delta = point.Properties.MouseWheelDelta > 0 ? -1f : 1f;//-1缩小 1 放大
-            var newZoom =  _currentZoom + _stepZoom * delta;
-            if(newZoom <= _maxZoom && newZoom >= _minZoom)
-            {
-                _currentZoom = newZoom;
-            }
-            Debug.WriteLine($"WheelChanged:{delta}");
-            Draw(true);
+            var newZoom = _stepZoom * delta;
+            var scaleCenterXOffset = (float)(_scaleCenterX *( 1 + newZoom) - _scaleCenterX);
+            var scaleCenterYOffset = (float)(_scaleCenterY * (1 + newZoom) - _scaleCenterY);
+            Draw(newZoom, -scaleCenterXOffset, -scaleCenterYOffset);
+            //if (newZoom <= _maxZoom && newZoom >= _minZoom)
+            //{
+
+            //}
+            //else
+            //{
+            //    Debug.WriteLine($"{newZoom}超出缩放范围");
+            //}
+            //var newZoom =  _currentZoom + _stepZoom * delta;
+            //if(newZoom <= _maxZoom && newZoom >= _minZoom)
+            //{
+            //    Draw(_stepZoom * delta, 0, 0);
+            //}
+            e.Handled = true;
         }
         private double _lastPressedX = 0;
         private double _lastPressedY = 0;
-        private object _drawLocker = new object();
         private void CanvasControl_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
@@ -93,10 +103,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
             if (pointerPoint.Properties.IsLeftButtonPressed)
             {
-                _curentXOffset = _fullXOffset + (float)(pointerPoint.Position.X - _lastPressedX);
-                _curentYOffset = _fullYOffset + (float)(pointerPoint.Position.Y - _lastPressedY);
-                Debug.WriteLine($"PointerMoved:{pointerPoint.Position.X}({_curentXOffset}) {pointerPoint.Position.Y}({_curentYOffset})");
-                Draw(false);
+                var xOffset = (float)(pointerPoint.Position.X - _lastPressedX);
+                var yOffset = (float)(pointerPoint.Position.Y - _lastPressedY);
+                _lastPressedX = pointerPoint.Position.X;
+                _lastPressedY = pointerPoint.Position.Y;
+                //_curentXOffset = _fullXOffset + (float)(pointerPoint.Position.X - _lastPressedX);
+                //_curentYOffset = _fullYOffset + (float)(pointerPoint.Position.Y - _lastPressedY);
+                //Debug.WriteLine($"PointerMoved:{pointerPoint.Position.X}({_curentXOffset}) {pointerPoint.Position.Y}({_curentYOffset})");
+                Draw(0, xOffset, yOffset);
             }
         }
         private void CanvasControl_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -107,133 +121,193 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _fullYOffset = _curentYOffset;
             Debug.WriteLine($"PointerReleased:{_lastPressedX} {_lastPressedY}");
         }
-
-        public void SetData(List<SolarSystemPosition> systemPositions)
-        {
-            _positions = systemPositions;
-        }
-        private List<IMapData> _usingMapDatas;
+        private Dictionary<int, MapData> _usingMapDatas;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
             {
-                //以最大的x/y为参考最大显示范围
-                var maxX = _usingMapDatas.Max(p => p.X);
-                var maxY = _usingMapDatas.Max(p => p.Y);
-                //将x缩放到UI显示区域
-                var xScale = sender.ActualWidth / maxX;
-                double yScale = xScale;//xy同一个缩放比例
-                if (maxY * yScale > sender.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
-                {
-                    yScale = sender.ActualHeight / maxY;
-                    xScale = yScale;
-                }
-                //当前缩放下最大显示的xy范围
-                var maxVisibleX = sender.ActualWidth / (xScale * _currentZoom);
-                var maxVisibleY = sender.ActualHeight / (yScale * _currentZoom);
+                ////以最大的x/y为参考最大显示范围
+                //var maxX = _usingMapDatas.Max(p => p.X);
+                //var maxY = _usingMapDatas.Max(p => p.Y);
+                ////将x缩放到UI显示区域
+                //var xScale = sender.ActualWidth / maxX;
+                //double yScale = xScale;//xy同一个缩放比例
+                //if (maxY * yScale > sender.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
+                //{
+                //    yScale = sender.ActualHeight / maxY;
+                //    xScale = yScale;
+                //}
+                ////当前缩放下最大显示的xy范围
+                //var maxVisibleX = sender.ActualWidth / (xScale * _currentZoom);
+                //var maxVisibleY = sender.ActualHeight / (yScale * _currentZoom);
+                //int invisibleCount = 0;
+                //float scaleCenterXOffset = 0;
+                //float scaleCenterYOffset = 0;
+                //if (_scaleCenterX != 0 && _scaleCenterY != 0)
+                //{
+                //    scaleCenterXOffset = (float)(_scaleCenterX * _currentZoom  - _scaleCenterX);
+                //    scaleCenterYOffset = (float)(_scaleCenterY * _currentZoom  - _scaleCenterY);
+                //    _fullXOffset = _curentXOffset - scaleCenterXOffset;
+                //    _fullYOffset = _curentYOffset - scaleCenterYOffset;
+                //}
+
+                //foreach (var data in _usingMapDatas)
+                //{
+                //    //最终绘制的坐标
+                //    double drawX = data.X * xScale * _currentZoom + _curentXOffset - scaleCenterXOffset;
+                //    double drawY = data.Y * yScale * _currentZoom + _curentYOffset - scaleCenterYOffset;
+                //    if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY>=0)
+                //    {
+                //        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, 30 / _currentZoom, 30 / _currentZoom, data.BgColor);
+                //    }
+                //    else
+                //    {
+                //        invisibleCount++;
+                //    }
+                //}
+                //Debug.WriteLine($"缩放系数：{_currentZoom} 不可见数量：{invisibleCount} {scaleCenterXOffset} {scaleCenterYOffset}");
+                //_scaleCenterX = 0;
+                //_scaleCenterY = 0;
+
                 int invisibleCount = 0;
-                float scaleCenterXOffset = 0;
-                float scaleCenterYOffset = 0;
-                if (_scaleCenterX != 0 && _scaleCenterY != 0)
+                foreach (var data in _usingMapDatas.Values)
                 {
-                    scaleCenterXOffset = (float)(_scaleCenterX * _currentZoom  - _scaleCenterX);
-                    scaleCenterYOffset = (float)(_scaleCenterY * _currentZoom  - _scaleCenterY);
-                    _fullXOffset = _curentXOffset - scaleCenterXOffset;
-                    _fullYOffset = _curentYOffset - scaleCenterYOffset;
-                }
-                
-                foreach (var data in _usingMapDatas)
-                {
-                    //最终绘制的坐标
-                    double drawX = data.X * xScale * _currentZoom + _curentXOffset - scaleCenterXOffset;
-                    double drawY = data.Y * yScale * _currentZoom + _curentYOffset - scaleCenterYOffset;
-                    if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY>=0)
+                    double drawX = data.X;
+                    double drawY = data.Y;
+                    if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY >= 0)
                     {
-                        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, 30 / _currentZoom, 30 / _currentZoom, data.BgColor);
+                        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, 10, 10, data.BgColor);
                     }
                     else
                     {
                         invisibleCount++;
                     }
                 }
-                Debug.WriteLine($"缩放系数：{_currentZoom} 不可见数量：{invisibleCount} {scaleCenterXOffset} {scaleCenterYOffset}");
-                _scaleCenterX = 0;
-                _scaleCenterY = 0;
+                //Debug.WriteLine($"不可见数量：{invisibleCount}");
             }
         }
-        public void Draw(bool zoomed)
+        public void Draw()
         {
-            if(zoomed)
+            Draw(0, 0, 0);
+        }
+        private void Draw(float zoom, double xOffset, double yOffset)
+        {
+            _currentZoom += zoom;
+            float usingZoom = zoom;
+            if (zoom != 0)
             {
-                if(_currentZoom >= _systemZoom)
+                //放大缩写需要检查是否切换数据源
+                if (_currentZoom < _systemZoom && zoom + _currentZoom >= _systemZoom)
                 {
-                    _usingMapDatas = _systemDatas.Values.ToList();
+                    _usingMapDatas = _systemDatas;
+                    usingZoom = _currentZoom - 1;
                 }
-                else
+                else if(_currentZoom >= _systemZoom && zoom + _currentZoom < _systemZoom)
                 {
-                    _usingMapDatas = _regionDatas.Values.ToList();
+                    _usingMapDatas = _regionDatas;
+                    usingZoom = _currentZoom - 1;
                 }
             }
+            Debug.WriteLine($"{usingZoom} {xOffset} {yOffset}");
+            UpdateData(usingZoom, xOffset, yOffset);
             _canvasControl.Invalidate();
+        }
+        private void UpdateData(float zoom, double xOffset, double yOffset)
+        {
+            foreach(var data in _usingMapDatas.Values)
+            {
+                data.X = data.X * (1 + zoom) + xOffset;
+                data.Y = data.Y * (1 + zoom) + yOffset;
+            }
         }
 
         private void InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
             var mapSolarSystems = MapSolarSystemService.Query(posDic.Values.Where(p => string.IsNullOrEmpty(p.SolarSystemName)).Select(p => p.SolarSystemID).ToList());
-            _systemDatas = new Dictionary<int, IMapData>();
+            _systemDatas = new Dictionary<int, MapData>();
             foreach (var mapSolarSystem in mapSolarSystems)
             {
-                MapSystemData mapSystemData = new MapSystemData()
-                {
-                    MapSolarSystem = mapSolarSystem,
-                    SolarSystemPosition = posDic[mapSolarSystem.SolarSystemID]
-                };
+                MapSystemData mapSystemData = new MapSystemData(posDic[mapSolarSystem.SolarSystemID], mapSolarSystem);
                 _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
             }
             var regionPosDic = RegionMapHelper.PositionDic;
             var mapRegions = MapRegionService.Query(regionPosDic.Keys.ToList());
-            _regionDatas = new Dictionary<int, IMapData>();
+            _regionDatas = new Dictionary<int, MapData>();
             foreach (var mapRegion in mapRegions)
             {
                 var regionPos = regionPosDic[mapRegion.RegionID];
                 MapRegionData mapRegionData = new MapRegionData(regionPos, mapRegion);
                 _regionDatas.Add(mapRegion.RegionID, mapRegionData);
             }
+            ResetXYToFix(_systemDatas);
+            ResetXYToFix(_regionDatas);
+            _usingMapDatas = _regionDatas;
+        }
+        private void ResetXYToFix(Dictionary<int, MapData> datas)
+        {
+            //缩放xy坐标到屏幕显示范围
+            //以最大的x/y为参考最大显示范围
+            var maxX = datas.Values.Max(p => p.OriginalX);
+            var maxY = datas.Values.Max(p => p.OriginalY);
+            //将x缩放到UI显示区域
+            var xScale = this.ActualWidth / maxX;
+            double yScale = xScale;//xy同一个缩放比例
+            if (maxY * yScale > this.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
+            {
+                yScale = this.ActualHeight / maxY;
+                xScale = yScale;
+            }
+            foreach (var data in datas.Values)
+            {
+                data.OriginalX *= xScale;
+                data.OriginalY *= yScale;
+            }
         }
 
         #region class
-        public interface IMapData
+        public class MapData
         {
-            double X { get; }
-            double Y { get; }
-            string InnerText { get; set; }
-            string MainText { get; }
-            Windows.UI.Color BgColor { get; }
+            public MapData(MapPosition pos)
+            {
+                OriginalX = pos.X;
+                OriginalY = pos.Y;
+            }
+            public double OriginalX { get; set; }
+            public double OriginalY { get; set; }
+            public double X { get; set; }
+            public double Y { get; set; }
+            public string InnerText { get; set; }
+            public string MainText { get; set; }
+            public Windows.UI.Color BgColor { get; set; }
         }
-        public class MapSystemData : IMapData
+        public class MapSystemData : MapData
         {
-            public double X{ get => SolarSystemPosition.X; }
-            public double Y { get => SolarSystemPosition.Y; }
-            public string MainText { get => MapSolarSystem.SolarSystemName; }
+            public MapSystemData(SolarSystemPosition solarSystemPosition, MapSolarSystem mapSolarSystem):base(solarSystemPosition)
+            {
+                SolarSystemPosition = solarSystemPosition;
+                MapSolarSystem = mapSolarSystem;
+                X = SolarSystemPosition.X;
+                Y = SolarSystemPosition.Y;
+                MainText = MapSolarSystem.SolarSystemName;
+                InnerText = MapSolarSystem.Security.ToString("N1");
+                BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;
+            }
             public SolarSystemPosition SolarSystemPosition { get; set; }
             public Core.DBModels.MapSolarSystem MapSolarSystem { get; set; }
-            public string InnerText { get; set; }
-            public Windows.UI.Color BgColor { get=>Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;}
         }
-        public class MapRegionData: IMapData
+        public class MapRegionData: MapData
         {
-            public double X { get => RegionPosition.X; }
-            public double Y { get => RegionPosition.Y; }
-            public string MainText { get => MapRegion.RegionName; }
-            public string InnerText { get; set; }
-            public Windows.UI.Color BgColor { get; set; } = Colors.Green;
             public RegionPosition RegionPosition { get; set; }
             public Core.DBModels.MapRegion MapRegion { get; set; }
-            public MapRegionData(RegionPosition regionPosition ,Core.DBModels.MapRegion mapRegion)
+            public MapRegionData(RegionPosition regionPosition ,Core.DBModels.MapRegion mapRegion) : base(regionPosition)
             {
                 RegionPosition = regionPosition;
                 MapRegion = mapRegion;
+                X = RegionPosition.X;
+                Y = RegionPosition.Y;
+                MainText = MapRegion.RegionName;
+                BgColor = Colors.Green;
             }
         }
         #endregion

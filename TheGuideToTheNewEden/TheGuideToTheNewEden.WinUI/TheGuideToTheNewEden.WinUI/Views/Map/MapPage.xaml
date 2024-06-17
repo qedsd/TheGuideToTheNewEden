@@ -33,6 +33,6 @@
             </Grid>
 
         </ScrollView>-->
-        <local:MapCanvas x:Name="MapCanvas" />
+        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded"/>
     </Grid>
 </Page>
