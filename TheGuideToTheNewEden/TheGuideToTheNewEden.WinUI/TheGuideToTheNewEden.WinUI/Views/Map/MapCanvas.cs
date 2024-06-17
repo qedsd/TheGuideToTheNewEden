@@ -30,18 +30,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const float _stepZoom = 0.2f;
         private const float _maxZoom = 10;
         private const float _minZoom = 1;
-        private const float _regionZoom = 1;
-        private const float _systemZoom = 4;
-        private float _fullXOffset = 0;
-        /// <summary>
-        /// 拖拽布局导致的X偏移
-        /// </summary>
-        private float _curentXOffset = 0;
-        private float _fullYOffset = 0;
-        /// <summary>
-        /// 拖拽布局导致的Y偏移
-        /// </summary>
-        private float _curentYOffset = 0;
         private Dictionary<int, MapData> _systemDatas;
         private Dictionary<int, MapData> _regionDatas;
         public MapCanvas()
@@ -59,6 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void CanvasControl_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
         {
             InitData();
+            SetMode(MapMode.System);
             Draw();
         }
         private double _scaleCenterX = 0;
@@ -100,8 +89,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             _lastPressedX = 0;
             _lastPressedY = 0;
-            _fullXOffset = _curentXOffset;
-            _fullYOffset = _curentYOffset;
         }
         private Dictionary<int, MapData> _usingMapDatas;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -115,7 +102,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     double drawY = data.Y;
                     if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY >= 0)
                     {
-                        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, 10, 10, data.BgColor);
+                        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, data.W, data.H, data.BgColor);
                     }
                     else
                     {
@@ -130,33 +117,21 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private void Draw(float zoom, double xOffset, double yOffset)
         {
-            var oldZoom = _currentZoom;
             _currentZoom += zoom;
-            float usingZoom = zoom;
-            if (zoom != 0)
-            {
-                //放大缩小需要检查是否切换数据源
-                if (oldZoom < _systemZoom && _currentZoom >= _systemZoom)
-                {
-                    _usingMapDatas = _systemDatas;
-                    usingZoom = _currentZoom - 1;
-                }
-                else if(oldZoom >= _systemZoom && _currentZoom < _systemZoom)
-                {
-                    _usingMapDatas = _regionDatas;
-                    usingZoom = _currentZoom - 1;
-                }
-            }
-            Debug.WriteLine($"{_currentZoom} {usingZoom} {xOffset} {yOffset}");
-            UpdateData(usingZoom, xOffset, yOffset);
+            Debug.WriteLine($"{_currentZoom} {zoom} {xOffset} {yOffset}");
+            UpdateData(zoom, xOffset, yOffset);
             _canvasControl.Invalidate();
         }
         private void UpdateData(float zoom, double xOffset, double yOffset)
         {
-            foreach(var data in _usingMapDatas.Values)
+            var xyZoom = 1 + zoom;
+            var whZoom = 1 + zoom / 2;
+            foreach (var data in _usingMapDatas.Values)
             {
-                data.X = data.X * (1 + zoom) + xOffset;
-                data.Y = data.Y * (1 + zoom) + yOffset;
+                data.X = data.X * xyZoom + xOffset;
+                data.Y = data.Y * xyZoom + yOffset;
+                data.W = data.OriginalW * _currentZoom;
+                data.H = data.OriginalH * _currentZoom;
             }
         }
 
@@ -181,7 +156,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             ResetXYToFix(_systemDatas);
             ResetXYToFix(_regionDatas);
-            _usingMapDatas = _regionDatas;
         }
         private void ResetXYToFix(Dictionary<int, MapData> datas)
         {
@@ -192,15 +166,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             //将x缩放到UI显示区域
             var xScale = this.ActualWidth / maxX;
             double yScale = xScale;//xy同一个缩放比例
+            double xOffset = 0;
+            double yOffset = 0;
             if (maxY * yScale > this.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
             {
                 yScale = this.ActualHeight / maxY;
                 xScale = yScale;
+
+                yOffset = 0;
+                var afterScaleMaxX = maxX * xScale;
+                var emptyX = this.ActualWidth - afterScaleMaxX;
+                xOffset = emptyX / 2;
+            }
+            else
+            {
+                xOffset = 0;
+                var afterScaleMaxY = maxY * yScale;
+                var emptyY = this.ActualHeight - afterScaleMaxY;
+                yOffset = emptyY / 2;
             }
             foreach (var data in datas.Values)
             {
-                data.OriginalX *= xScale;
-                data.OriginalY *= yScale;
+                data.OriginalX = (data.OriginalX * xScale) + xOffset;
+                data.OriginalY = (data.OriginalY * yScale) + yOffset;
                 data.X = data.OriginalX;
                 data.Y = data.OriginalY;
             }
@@ -237,6 +225,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             public double OriginalY { get; set; }
             public double X { get; set; }
             public double Y { get; set; }
+
+            public float OriginalW { get; set; } = 4;
+            public float OriginalH { get; set; } = 4;
+            public float W { get; set; } = 4;
+            public float H { get; set; } = 4;
             public string InnerText { get; set; }
             public string MainText { get; set; }
             public Windows.UI.Color BgColor { get; set; }

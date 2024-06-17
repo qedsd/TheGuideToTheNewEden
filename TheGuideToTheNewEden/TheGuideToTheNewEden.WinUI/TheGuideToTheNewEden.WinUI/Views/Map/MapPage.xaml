@@ -10,29 +10,6 @@
     mc:Ignorable="d">
 
     <Grid>
-        <!--<ScrollView
-            x:Name="MapScrollView"
-            HorizontalScrollMode="Disabled"
-            MaxZoomFactor="10"
-            MinZoomFactor="1"
-            PointerMoved="MapPointerMoved"
-            PointerPressed="MapPointerPressed"
-            PointerReleased="MapPointerReleased"
-            PointerWheelChanged="MapPointerWheelChanged"
-            VerticalScrollMode="Disabled">
-            <Grid
-                x:Name="MapGrid"
-                Width="1920"
-                Height="2112">
-                <Canvas
-                    x:Name="MapMainCanvas"
-                    Width="1920"
-                    Height="2112"
-                    Visibility="Collapsed" />
-                <local:MapCanvas x:Name="MapCanvas" />
-            </Grid>
-
-        </ScrollView>-->
-        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded"/>
+        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded" />
     </Grid>
 </Page>
