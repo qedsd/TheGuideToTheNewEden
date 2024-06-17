@@ -74,20 +74,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var scaleCenterXOffset = (float)(_scaleCenterX *( 1 + newZoom) - _scaleCenterX);
             var scaleCenterYOffset = (float)(_scaleCenterY * (1 + newZoom) - _scaleCenterY);
             Draw(newZoom, -scaleCenterXOffset, -scaleCenterYOffset);
-            //if (newZoom <= _maxZoom && newZoom >= _minZoom)
-            //{
-
-            //}
-            //else
-            //{
-            //    Debug.WriteLine($"{newZoom}超出缩放范围");
-            //}
-            //var newZoom =  _currentZoom + _stepZoom * delta;
-            //if(newZoom <= _maxZoom && newZoom >= _minZoom)
-            //{
-            //    Draw(_stepZoom * delta, 0, 0);
-            //}
-            e.Handled = true;
         }
         private double _lastPressedX = 0;
         private double _lastPressedY = 0;
@@ -107,9 +93,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var yOffset = (float)(pointerPoint.Position.Y - _lastPressedY);
                 _lastPressedX = pointerPoint.Position.X;
                 _lastPressedY = pointerPoint.Position.Y;
-                //_curentXOffset = _fullXOffset + (float)(pointerPoint.Position.X - _lastPressedX);
-                //_curentYOffset = _fullYOffset + (float)(pointerPoint.Position.Y - _lastPressedY);
-                //Debug.WriteLine($"PointerMoved:{pointerPoint.Position.X}({_curentXOffset}) {pointerPoint.Position.Y}({_curentYOffset})");
                 Draw(0, xOffset, yOffset);
             }
         }
@@ -119,56 +102,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastPressedY = 0;
             _fullXOffset = _curentXOffset;
             _fullYOffset = _curentYOffset;
-            Debug.WriteLine($"PointerReleased:{_lastPressedX} {_lastPressedY}");
         }
         private Dictionary<int, MapData> _usingMapDatas;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
             {
-                ////以最大的x/y为参考最大显示范围
-                //var maxX = _usingMapDatas.Max(p => p.X);
-                //var maxY = _usingMapDatas.Max(p => p.Y);
-                ////将x缩放到UI显示区域
-                //var xScale = sender.ActualWidth / maxX;
-                //double yScale = xScale;//xy同一个缩放比例
-                //if (maxY * yScale > sender.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
-                //{
-                //    yScale = sender.ActualHeight / maxY;
-                //    xScale = yScale;
-                //}
-                ////当前缩放下最大显示的xy范围
-                //var maxVisibleX = sender.ActualWidth / (xScale * _currentZoom);
-                //var maxVisibleY = sender.ActualHeight / (yScale * _currentZoom);
-                //int invisibleCount = 0;
-                //float scaleCenterXOffset = 0;
-                //float scaleCenterYOffset = 0;
-                //if (_scaleCenterX != 0 && _scaleCenterY != 0)
-                //{
-                //    scaleCenterXOffset = (float)(_scaleCenterX * _currentZoom  - _scaleCenterX);
-                //    scaleCenterYOffset = (float)(_scaleCenterY * _currentZoom  - _scaleCenterY);
-                //    _fullXOffset = _curentXOffset - scaleCenterXOffset;
-                //    _fullYOffset = _curentYOffset - scaleCenterYOffset;
-                //}
-
-                //foreach (var data in _usingMapDatas)
-                //{
-                //    //最终绘制的坐标
-                //    double drawX = data.X * xScale * _currentZoom + _curentXOffset - scaleCenterXOffset;
-                //    double drawY = data.Y * yScale * _currentZoom + _curentYOffset - scaleCenterYOffset;
-                //    if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY>=0)
-                //    {
-                //        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, 30 / _currentZoom, 30 / _currentZoom, data.BgColor);
-                //    }
-                //    else
-                //    {
-                //        invisibleCount++;
-                //    }
-                //}
-                //Debug.WriteLine($"缩放系数：{_currentZoom} 不可见数量：{invisibleCount} {scaleCenterXOffset} {scaleCenterYOffset}");
-                //_scaleCenterX = 0;
-                //_scaleCenterY = 0;
-
                 int invisibleCount = 0;
                 foreach (var data in _usingMapDatas.Values)
                 {
@@ -183,7 +122,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         invisibleCount++;
                     }
                 }
-                //Debug.WriteLine($"不可见数量：{invisibleCount}");
             }
         }
         public void Draw()
@@ -192,23 +130,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private void Draw(float zoom, double xOffset, double yOffset)
         {
+            var oldZoom = _currentZoom;
             _currentZoom += zoom;
             float usingZoom = zoom;
             if (zoom != 0)
             {
-                //放大缩写需要检查是否切换数据源
-                if (_currentZoom < _systemZoom && zoom + _currentZoom >= _systemZoom)
+                //放大缩小需要检查是否切换数据源
+                if (oldZoom < _systemZoom && _currentZoom >= _systemZoom)
                 {
                     _usingMapDatas = _systemDatas;
                     usingZoom = _currentZoom - 1;
                 }
-                else if(_currentZoom >= _systemZoom && zoom + _currentZoom < _systemZoom)
+                else if(oldZoom >= _systemZoom && _currentZoom < _systemZoom)
                 {
                     _usingMapDatas = _regionDatas;
                     usingZoom = _currentZoom - 1;
                 }
             }
-            Debug.WriteLine($"{usingZoom} {xOffset} {yOffset}");
+            Debug.WriteLine($"{_currentZoom} {usingZoom} {xOffset} {yOffset}");
             UpdateData(usingZoom, xOffset, yOffset);
             _canvasControl.Invalidate();
         }
@@ -262,8 +201,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 data.OriginalX *= xScale;
                 data.OriginalY *= yScale;
+                data.X = data.OriginalX;
+                data.Y = data.OriginalY;
             }
         }
+
+        #region public
+        public void SetMode(MapMode mapMode)
+        {
+            switch(mapMode)
+            {
+                case MapMode.Region:
+                    {
+                        _usingMapDatas = _regionDatas;
+                    }
+                    break;
+                case MapMode.System:
+                    {
+                        _usingMapDatas = _systemDatas;
+                    }
+                    break;
+            }
+        }
+        #endregion
 
         #region class
         public class MapData
@@ -309,6 +269,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 MainText = MapRegion.RegionName;
                 BgColor = Colors.Green;
             }
+        }
+        public enum MapMode
+        {
+            Region,System
         }
         #endregion
     }
