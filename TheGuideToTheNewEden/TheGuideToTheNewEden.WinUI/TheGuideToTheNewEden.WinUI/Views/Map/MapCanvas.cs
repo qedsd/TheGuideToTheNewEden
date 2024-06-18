@@ -30,9 +30,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// 当前缩放
         /// </summary>
         private float _currentZoom = 1;
-        private const float _stepZoom = 0.2f;
+        private const float _stepZoom = 0.5f;
         private const float _lineZoom = 2;
         private const float _detailZoom = 6;
+        private const float _toZoom = 20;
+        private const float _maxScaleWHZoom = 20;
         private const float _maxZoom = 10;
         private const float _minZoom = 1;
         private Dictionary<int, MapData> _systemDatas;
@@ -195,6 +197,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 2)), _mainTextColor, mainTextFormat);
                     }
                 }
+                //foreach (var data in visibleDatas)
+                //{
+                //    args.DrawingSession.FillRoundedRectangle(data.X, data.Y, data.W, data.H, Windows.UI.Color.FromArgb(100,Colors.Gray.R, Colors.Gray.G, Colors.Gray.B));
+                //}
             }
         }
         delegate byte TurnRGB(float s);
@@ -234,7 +240,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 data.X = data.X * zoom + xOffset;
                 data.Y = data.Y * zoom + yOffset;
             }
-            if(zoom != 1 && _currentZoom < 20)//仅平移则无需缩放图形大小
+            if(zoom != 1 && _currentZoom <= _maxScaleWHZoom)//仅平移则无需缩放图形大小
             {
                 var whZoom = (float)(_currentZoom / zoom * (zoom * Math.Pow(0.95, _currentZoom)));
                 foreach (var data in _usingMapDatas.Values)
@@ -319,6 +325,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         _usingMapDatas = _systemDatas;
                     }
                     break;
+            }
+        }
+
+        public void ToSystem(int id)
+        {
+            if(_usingMapDatas.TryGetValue(id, out var data))
+            {
+                float centerX = (float)ActualWidth / 2;
+                float centerY = (float)ActualHeight / 2;
+                float offsetX, offsetY, zoom;
+                if(_currentZoom < _toZoom)
+                {
+                    zoom = _toZoom / _currentZoom;
+                    offsetX = centerX - data.X * zoom;
+                    offsetY = centerY - data.Y * zoom;
+                }
+                else
+                {
+                    zoom = 1;
+                    offsetX = centerX - data.X;
+                    offsetY = centerY - data.Y;
+                }
+                Draw(zoom, offsetX, offsetY);
             }
         }
         #endregion

@@ -51,5 +51,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
         [Display(Order = 2)]
         [SugarColumn(IsNullable = true)]
         public string SolarSystemName { get; set; }
+
+        public override string ToString()
+        {
+            return SolarSystemName;
+        }
     }
 }

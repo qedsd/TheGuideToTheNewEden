@@ -5,11 +5,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
         <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded" />
+        <controls:MapSystemSelectorControl x:Name="MapSystemSelector" Width="200" Height="32"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Top"
+                                           OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged"/>
     </Grid>
 </Page>

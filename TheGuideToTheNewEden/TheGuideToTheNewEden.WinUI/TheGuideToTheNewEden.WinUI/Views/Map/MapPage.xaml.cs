@@ -57,6 +57,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             
         }
 
+        private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
+        {
+            MapCanvas.ToSystem(selectedItem.SolarSystemID);
+        }
+
         //private async Task UpdateMap()
         //{
         //    //从星系实际最大最小xy坐标比例算得长宽比为1：2.265
