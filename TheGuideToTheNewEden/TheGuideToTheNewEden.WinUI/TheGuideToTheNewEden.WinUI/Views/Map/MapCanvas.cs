@@ -1,4 +1,7 @@
-﻿using log4net.Core;
+﻿using ESI.NET.Models.PlanetaryInteraction;
+using ESI.NET.Models.Universe;
+using log4net.Core;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
@@ -26,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
     internal class MapCanvas : UserControl
     {
         private CanvasControl _canvasControl;
+        private CanvasControl _selectedCanvasControl;
         /// <summary>
         /// 当前缩放
         /// </summary>
@@ -37,11 +41,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const float _maxScaleWHZoom = 20;
         private const float _maxZoom = 10;
         private const float _minZoom = 1;
+        private const float _borderWidth = 1f;
+        private const float _selectedBorderWidth = 2f;
         private Dictionary<int, MapData> _systemDatas;
         private Dictionary<int, MapData> _regionDatas;
         private Windows.UI.Color _mainTextColor;
         private Windows.UI.Color _linkColor;
+        private Windows.UI.Color _selectedColor;
         private bool _isDark = false;
+        private DispatcherTimer _findDataTimer;
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -51,16 +59,130 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _canvasControl.PointerReleased += CanvasControl_PointerReleased;
             _canvasControl.PointerMoved += CanvasControl_PointerMoved;
             _canvasControl.PointerWheelChanged += CanvasControl_PointerWheelChanged;
-            Content = _canvasControl;
+
+            _selectedCanvasControl = new CanvasControl();
+            _selectedCanvasControl.Draw += SelectedCanvasControl_Draw;
+
+            var contentGrid = new Grid();
+            contentGrid.Children.Add(_selectedCanvasControl);
+            contentGrid.Children.Add(_canvasControl);
+            Content = contentGrid;
 
             SetMainTextColor(Services.Settings.ThemeSelectorService.IsDark);
             Services.Settings.ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
+
+            _findDataTimer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+            _findDataTimer.Tick += FindDataTimer_Tick;
+            _findDataTimer.Start();
         }
+
+        private void SelectedCanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if(_selectedData != null)
+            {
+                var w = _selectedData.W / 4;
+                var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
+                args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, _selectedData.BgColor.R, _selectedData.BgColor.G, _selectedData.BgColor.B));
+            }
+        }
+
+        private MapData _selectedData;
+        private void FindDataTimer_Tick(object sender, object e)
+        {
+            var lastSelectedData = _selectedData;
+            _selectedData = null;
+            if (_visbleMapDatas != null && _lastMovedX != 0 && _lastMovedY != 0)
+            {
+                //若还处在上一个数据范围内就不用重新找
+                if(lastSelectedData != null && _lastMovedX <= (lastSelectedData.X + lastSelectedData.W) && _lastMovedX >= lastSelectedData.X
+                    && _lastMovedY <= (lastSelectedData.Y + lastSelectedData.H) && _lastMovedY >= lastSelectedData.Y)
+                {
+                    _selectedData = lastSelectedData;
+                    return;
+                }
+                double spanX = ActualWidth * 0.05;
+                double spanY = ActualHeight * 0.05;
+                var posX = _lastMovedX;
+                var posY = _lastMovedY;
+                float maxX = (float)(posX + spanX);
+                float minX = (float)(posX - spanX);
+                int low = 0;
+                int high = _visbleMapDatas.Count - 1;
+                List<MapData> inXRange = new List<MapData>();
+                while (low <= high)
+                {
+                    int mid = (low + high) / 2;
+                    if (_visbleMapDatas[mid].X <= maxX && _visbleMapDatas[mid].X >= minX)
+                    {
+                        //找到当前点位于区间内
+                        //向左右两边分别扩展找到所有合适的点
+                        //向左
+                        inXRange.Add(_visbleMapDatas[mid]);
+                        for (int i = mid - 1; i >= 0; i--)
+                        {
+                            if (_visbleMapDatas[i].X >= minX)
+                            {
+                                inXRange.Add(_visbleMapDatas[i]);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        //向右
+                        for (int i = mid + 1; i < _visbleMapDatas.Count; i++)
+                        {
+                            if (_visbleMapDatas[i].X <= maxX)
+                            {
+                                inXRange.Add(_visbleMapDatas[i]);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    else if (_visbleMapDatas[mid].X > maxX)
+                    {
+                        high = mid - 1;
+                    }
+                    else if (_visbleMapDatas[mid].X < minX)
+                    {
+                        low = mid + 1;
+                    }
+                }
+                if (inXRange.Any())
+                {
+                    float maxY = (float)(posY + spanY);
+                    float minY = (float)(posY - spanY);
+                    foreach (var data in inXRange)
+                    {
+                        if (data.Y <= maxY && data.Y >= minY)
+                        {
+                            //找到
+                            Debug.WriteLine($"Find target {data.MainText}");
+                            _selectedData = data;
+                            //_selectedRect = new Windows.Foundation.Rect(data.X - _selectedBorderWidth, data.Y - _selectedBorderWidth, data.W + _selectedBorderWidth * 2, data.H + _selectedBorderWidth * 2);
+                            break;
+                        }
+                    }
+                }
+            }
+            _selectedCanvasControl.Invalidate();
+            _lastMovedX = 0;
+            _lastMovedY = 0;
+        }
+
         private void SetMainTextColor(bool isDark)
         {
             Windows.UI.Color color = isDark ? Colors.White : Colors.Black;
             _mainTextColor = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
-            _linkColor = isDark ? Windows.UI.Color.FromArgb(50, Colors.Gray.R, Colors.Gray.G, Colors.Gray.B) : Windows.UI.Color.FromArgb(200, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B); ;
+            _linkColor = isDark ? Windows.UI.Color.FromArgb(50, Colors.Gray.R, Colors.Gray.G, Colors.Gray.B) : Windows.UI.Color.FromArgb(200, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
+            _selectedColor = isDark ? Windows.UI.Color.FromArgb(255, Colors.GreenYellow.R, Colors.GreenYellow.G, Colors.GreenYellow.B) : Windows.UI.Color.FromArgb(255, Colors.GreenYellow.R, Colors.GreenYellow.G, Colors.GreenYellow.B);
         }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
@@ -91,6 +213,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private double _lastPressedX = 0;
         private double _lastPressedY = 0;
+        private double _lastMovedX = 0;
+        private double _lastMovedY = 0;
         private void CanvasControl_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
@@ -100,14 +224,21 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private void CanvasControl_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
+            _lastMovedX = 0;
+            _lastMovedY = 0;
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
-            if (pointerPoint.Properties.IsLeftButtonPressed)
+            if (pointerPoint.Properties.IsLeftButtonPressed)//拖拽移动布局
             {
                 var xOffset = (float)(pointerPoint.Position.X - _lastPressedX);
                 var yOffset = (float)(pointerPoint.Position.Y - _lastPressedY);
                 _lastPressedX = pointerPoint.Position.X;
                 _lastPressedY = pointerPoint.Position.Y;
                 Draw(0, xOffset, yOffset);
+            }
+            else//选择星系
+            {
+                _lastMovedX = pointerPoint.Position.X;
+                _lastMovedY = pointerPoint.Position.Y;
             }
         }
         private void CanvasControl_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -116,6 +247,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastPressedY = 0;
         }
         private Dictionary<int, MapData> _usingMapDatas;
+        /// <summary>
+        /// 按x从小到大排序的可见数据
+        /// </summary>
+        private List<MapData> _visbleMapDatas;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
@@ -136,6 +271,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     }
                 }
                 var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible);
+                _visbleMapDatas = visibleDatas.OrderBy(p=>p.X).ToList();
                 //先画的会被后画的遮盖
                 //连线
                 if (_currentZoom >= _lineZoom)
@@ -178,7 +314,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         double drawY = data.Y;
                         var fColor = data.BgColor;
                         var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
-                        var borderW = 1f;
+                        
 
                         CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                         {
@@ -187,7 +323,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             VerticalAlignment = CanvasVerticalAlignment.Center
                         };
                         args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), fColor, innerTextFormat);
-                        args.DrawingSession.DrawRoundedRectangle(new Windows.Foundation.Rect((float)drawX - borderW, (float)drawY - borderW, data.W + borderW * 2, data.H + borderW * 2), borderW * 2, borderW * 2, fColor, borderW * 2);
+                        var _borderWidth2 = _borderWidth * 2;
+                        args.DrawingSession.DrawRoundedRectangle(new Windows.Foundation.Rect((float)drawX - _borderWidth, (float)drawY - _borderWidth, data.W + _borderWidth2, data.H + _borderWidth2), _borderWidth2, _borderWidth2, fColor, _borderWidth2);
                         CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
                             FontSize = 12,
