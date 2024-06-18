@@ -59,9 +59,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _scaleCenterY = point.Position.Y;
             
             var delta = point.Properties.MouseWheelDelta > 0 ? -1f : 1f;//-1缩小 1 放大
-            var newZoom = _stepZoom * delta;
-            var scaleCenterXOffset = (float)(_scaleCenterX *( 1 + newZoom) - _scaleCenterX);
-            var scaleCenterYOffset = (float)(_scaleCenterY * (1 + newZoom) - _scaleCenterY);
+            var newZoom = 1+ _stepZoom * delta;
+            var scaleCenterXOffset = (float)(_scaleCenterX * newZoom - _scaleCenterX);
+            var scaleCenterYOffset = (float)(_scaleCenterY *  newZoom - _scaleCenterY);
             Draw(newZoom, -scaleCenterXOffset, -scaleCenterYOffset);
         }
         private double _lastPressedX = 0;
@@ -113,25 +113,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         public void Draw()
         {
-            Draw(0, 0, 0);
+            Draw(1, 0, 0);
         }
         private void Draw(float zoom, double xOffset, double yOffset)
         {
-            _currentZoom += zoom;
+            if(zoom != 0)
+            {
+                _currentZoom *= zoom;
+            }
+            else
+            {
+                zoom = 1;
+            }
+            
             Debug.WriteLine($"{_currentZoom} {zoom} {xOffset} {yOffset}");
             UpdateData(zoom, xOffset, yOffset);
             _canvasControl.Invalidate();
         }
         private void UpdateData(float zoom, double xOffset, double yOffset)
         {
-            var xyZoom = 1 + zoom;
-            var whZoom = 1 + zoom / 2;
             foreach (var data in _usingMapDatas.Values)
             {
-                data.X = data.X * xyZoom + xOffset;
-                data.Y = data.Y * xyZoom + yOffset;
-                data.W = data.OriginalW * _currentZoom;
-                data.H = data.OriginalH * _currentZoom;
+                data.X = data.X * zoom + xOffset;
+                data.Y = data.Y * zoom + yOffset;
+            }
+            if(zoom != 1 && _currentZoom < 20)//仅平移则无需缩放图形大小
+            {
+                var whZoom = (float)(_currentZoom / zoom * (zoom * Math.Pow(0.98, _currentZoom)));
+                foreach (var data in _usingMapDatas.Values)
+                {
+                    data.W = data.OriginalW * whZoom;
+                    data.H = data.OriginalH * whZoom;
+                }
             }
         }
 
@@ -226,8 +239,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             public double X { get; set; }
             public double Y { get; set; }
 
-            public float OriginalW { get; set; } = 4;
-            public float OriginalH { get; set; } = 4;
+            public float OriginalW { get; set; } = 3;
+            public float OriginalH { get; set; } = 3;
             public float W { get; set; } = 4;
             public float H { get; set; } = 4;
             public string InnerText { get; set; }
