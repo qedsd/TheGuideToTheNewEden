@@ -1,4 +1,6 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using log4net.Core;
+using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
@@ -17,6 +19,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Services.DB;
+using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
@@ -28,10 +31,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// </summary>
         private float _currentZoom = 1;
         private const float _stepZoom = 0.2f;
+        private const float _lineZoom = 2;
+        private const float _detailZoom = 6;
         private const float _maxZoom = 10;
         private const float _minZoom = 1;
         private Dictionary<int, MapData> _systemDatas;
         private Dictionary<int, MapData> _regionDatas;
+        private Windows.UI.Color _mainTextColor;
+        private Windows.UI.Color _linkColor;
+        private bool _isDark = false;
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -42,6 +50,21 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _canvasControl.PointerMoved += CanvasControl_PointerMoved;
             _canvasControl.PointerWheelChanged += CanvasControl_PointerWheelChanged;
             Content = _canvasControl;
+
+            SetMainTextColor(Services.Settings.ThemeSelectorService.IsDark);
+            Services.Settings.ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
+        }
+        private void SetMainTextColor(bool isDark)
+        {
+            Windows.UI.Color color = isDark ? Colors.White : Colors.Black;
+            _mainTextColor = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+            _linkColor = isDark ? Windows.UI.Color.FromArgb(50, Colors.Gray.R, Colors.Gray.G, Colors.Gray.B) : Windows.UI.Color.FromArgb(200, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B); ;
+        }
+        private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
+        {
+            _isDark = Services.Settings.ThemeSelectorService.IsDark;
+            SetMainTextColor(_isDark);
+            Draw();
         }
 
         private void CanvasControl_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
@@ -102,20 +125,94 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     double drawY = data.Y;
                     if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY >= 0)
                     {
-                        args.DrawingSession.FillRectangle((float)drawX, (float)drawY, data.W, data.H, data.BgColor);
+                        data.Visible = true;
                     }
                     else
                     {
+                        data.Visible = false;
                         invisibleCount++;
                     }
                 }
+                var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible);
+                //先画的会被后画的遮盖
+                //连线
+                if (_currentZoom >= _lineZoom)
+                {
+                    foreach (var data in visibleDatas)
+                    {
+                        if (data.LinkTo != null)
+                        {
+                            foreach (var jumpTo in data.LinkTo)
+                            {
+                                var linkToData = _usingMapDatas[jumpTo];
+                                var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
+                                var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
+                                args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 1);
+                            }
+                        }
+                    }
+                }
+                //星系图形表示
+                TurnRGB turnRGB = _isDark ? TurnRGBToDark : TurnRGBToLight;
+                foreach (var data in visibleDatas)
+                {
+                    Windows.UI.Color fColor;
+                    if (_currentZoom >= _detailZoom)
+                    {
+                        fColor = Windows.UI.Color.FromArgb(data.BgColor.A, turnRGB(data.BgColor.R), turnRGB(data.BgColor.G), turnRGB(data.BgColor.B));
+                    }
+                    else
+                    {
+                        fColor = data.BgColor;
+                    }
+                    args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, fColor);
+                }
+                //画星系详细信息：安全等级、名称等
+                if (_currentZoom >= _detailZoom)
+                {
+                    foreach (var data in visibleDatas)
+                    {
+                        double drawX = data.X;
+                        double drawY = data.Y;
+                        var fColor = data.BgColor;
+                        var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
+                        var borderW = 1f;
+
+                        CanvasTextFormat innerTextFormat = new CanvasTextFormat()
+                        {
+                            FontSize = 14,
+                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                            VerticalAlignment = CanvasVerticalAlignment.Center
+                        };
+                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), fColor, innerTextFormat);
+                        args.DrawingSession.DrawRoundedRectangle(new Windows.Foundation.Rect((float)drawX - borderW, (float)drawY - borderW, data.W + borderW * 2, data.H + borderW * 2), borderW * 2, borderW * 2, fColor, borderW * 2);
+                        CanvasTextFormat mainTextFormat = new CanvasTextFormat()
+                        {
+                            FontSize = 12,
+                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                            VerticalAlignment = CanvasVerticalAlignment.Top,
+                        };
+                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 2)), _mainTextColor, mainTextFormat);
+                    }
+                }
             }
+        }
+        delegate byte TurnRGB(float s);
+        private byte TurnRGBToLight(float s)
+        {
+            float level = 0.7f;
+            return (byte)Math.Round((255 - s) * level + s);
+        }
+        private byte TurnRGBToDark(float s)
+        {
+            float level = 0.7f;
+            return (byte)Math.Round(s - (s * level));
         }
         public void Draw()
         {
             Draw(1, 0, 0);
         }
-        private void Draw(float zoom, double xOffset, double yOffset)
+        private void Draw(float zoom, float xOffset, float yOffset)
         {
             if(zoom != 0)
             {
@@ -130,7 +227,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             UpdateData(zoom, xOffset, yOffset);
             _canvasControl.Invalidate();
         }
-        private void UpdateData(float zoom, double xOffset, double yOffset)
+        private void UpdateData(float zoom, float xOffset, float yOffset)
         {
             foreach (var data in _usingMapDatas.Values)
             {
@@ -139,7 +236,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(zoom != 1 && _currentZoom < 20)//仅平移则无需缩放图形大小
             {
-                var whZoom = (float)(_currentZoom / zoom * (zoom * Math.Pow(0.98, _currentZoom)));
+                var whZoom = (float)(_currentZoom / zoom * (zoom * Math.Pow(0.95, _currentZoom)));
                 foreach (var data in _usingMapDatas.Values)
                 {
                     data.W = data.OriginalW * whZoom;
@@ -177,13 +274,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var maxX = datas.Values.Max(p => p.OriginalX);
             var maxY = datas.Values.Max(p => p.OriginalY);
             //将x缩放到UI显示区域
-            var xScale = this.ActualWidth / maxX;
-            double yScale = xScale;//xy同一个缩放比例
+            float xScale = (float)(this.ActualWidth / maxX);
+            float yScale = xScale;//xy同一个缩放比例
             double xOffset = 0;
             double yOffset = 0;
             if (maxY * yScale > this.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
             {
-                yScale = this.ActualHeight / maxY;
+                yScale = (float)(this.ActualHeight / maxY);
                 xScale = yScale;
 
                 yOffset = 0;
@@ -200,8 +297,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             foreach (var data in datas.Values)
             {
-                data.OriginalX = (data.OriginalX * xScale) + xOffset;
-                data.OriginalY = (data.OriginalY * yScale) + yOffset;
+                data.OriginalX = (data.OriginalX * xScale) + (float)xOffset;
+                data.OriginalY = (data.OriginalY * yScale) + (float)yOffset;
                 data.X = data.OriginalX;
                 data.Y = data.OriginalY;
             }
@@ -231,33 +328,43 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             public MapData(MapPosition pos)
             {
-                OriginalX = pos.X;
-                OriginalY = pos.Y;
+                OriginalX = (float)pos.X;
+                OriginalY = (float)pos.Y;
             }
-            public double OriginalX { get; set; }
-            public double OriginalY { get; set; }
-            public double X { get; set; }
-            public double Y { get; set; }
+            public int Id { get; set; }
+            public float OriginalX { get; set; }
+            public float OriginalY { get; set; }
+            public float X { get; set; }
+            public float Y { get; set; }
 
-            public float OriginalW { get; set; } = 3;
-            public float OriginalH { get; set; } = 3;
+            public float OriginalW { get; set; } = 5;
+            public float OriginalH { get; set; } = 5;
             public float W { get; set; } = 4;
             public float H { get; set; } = 4;
             public string InnerText { get; set; }
             public string MainText { get; set; }
             public Windows.UI.Color BgColor { get; set; }
+
+            public bool Visible { get; set; } = true;
+
+            public List<int> LinkTo;
+
+            public float CenterX { get => X + W / 2; }
+            public float CenterY { get => Y + H / 2; }
         }
         public class MapSystemData : MapData
         {
             public MapSystemData(SolarSystemPosition solarSystemPosition, MapSolarSystem mapSolarSystem):base(solarSystemPosition)
             {
+                Id = solarSystemPosition.SolarSystemID;
                 SolarSystemPosition = solarSystemPosition;
                 MapSolarSystem = mapSolarSystem;
-                X = SolarSystemPosition.X;
-                Y = SolarSystemPosition.Y;
+                X = (float)SolarSystemPosition.X;
+                Y = (float)SolarSystemPosition.Y;
                 MainText = MapSolarSystem.SolarSystemName;
                 InnerText = MapSolarSystem.Security.ToString("N1");
                 BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;
+                LinkTo = SolarSystemPosition.JumpTo;
             }
             public SolarSystemPosition SolarSystemPosition { get; set; }
             public Core.DBModels.MapSolarSystem MapSolarSystem { get; set; }
@@ -268,12 +375,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             public Core.DBModels.MapRegion MapRegion { get; set; }
             public MapRegionData(RegionPosition regionPosition ,Core.DBModels.MapRegion mapRegion) : base(regionPosition)
             {
+                Id = regionPosition.RegionId;
                 RegionPosition = regionPosition;
                 MapRegion = mapRegion;
-                X = RegionPosition.X;
-                Y = RegionPosition.Y;
+                X = (float)RegionPosition.X;
+                Y = (float)RegionPosition.Y;
                 MainText = MapRegion.RegionName;
                 BgColor = Colors.Green;
+                LinkTo = RegionPosition.JumpTo;
             }
         }
         public enum MapMode
