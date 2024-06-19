@@ -83,9 +83,21 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             if(_selectedData != null)
             {
+                //选中高亮框
                 var w = _selectedData.W * 0.2;
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, _selectedData.BgColor.R, _selectedData.BgColor.G, _selectedData.BgColor.B));
+                if(_currentZoom < _detailZoom)
+                {
+                    //提示文字
+                    CanvasTextFormat itextFormat = new CanvasTextFormat()
+                    {
+                        FontSize = 14,
+                        HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                        VerticalAlignment = CanvasVerticalAlignment.Bottom
+                    };
+                    args.DrawingSession.DrawText($"{_selectedData.MainText} {_selectedData.InnerText}", new System.Numerics.Vector2((float)(rect.X + rect.Width / 2), (float)rect.Y), _mainTextColor, itextFormat);
+                }
             }
         }
 
