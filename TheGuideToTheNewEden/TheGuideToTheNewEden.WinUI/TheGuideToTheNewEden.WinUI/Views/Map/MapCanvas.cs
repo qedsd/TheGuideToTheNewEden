@@ -83,7 +83,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             if(_selectedData != null)
             {
-                var w = _selectedData.W / 4;
+                var w = _selectedData.W * 0.2;
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, _selectedData.BgColor.R, _selectedData.BgColor.G, _selectedData.BgColor.B));
             }
@@ -94,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             var lastSelectedData = _selectedData;
             _selectedData = null;
-            if (_visbleMapDatas != null && _lastMovedX != 0 && _lastMovedY != 0)
+            if (_visbleMapDatas != null && _visbleMapDatas.Any() && _lastMovedX != 0 && _lastMovedY != 0)
             {
                 //若还处在上一个数据范围内就不用重新找
                 if(lastSelectedData != null && _lastMovedX <= (lastSelectedData.X + lastSelectedData.W) && _lastMovedX >= lastSelectedData.X
@@ -289,21 +289,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 //星系图形表示
                 TurnRGB turnRGB = _isDark ? TurnRGBToDark : TurnRGBToLight;
-                foreach (var data in visibleDatas)
-                {
-                    Windows.UI.Color fColor;
-                    if (_currentZoom >= _detailZoom)
-                    {
-                        fColor = Windows.UI.Color.FromArgb(data.BgColor.A, turnRGB(data.BgColor.R), turnRGB(data.BgColor.G), turnRGB(data.BgColor.B));
-                    }
-                    else
-                    {
-                        fColor = data.BgColor;
-                    }
-                    args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, fColor);
-                }
-                //画星系详细信息：安全等级、名称等
-                if (_currentZoom >= _detailZoom)
+                
+                if (_currentZoom >= _detailZoom)//画星系详细信息：安全等级、名称等
                 {
                     foreach (var data in visibleDatas)
                     {
@@ -311,30 +298,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         double drawY = data.Y;
                         var fColor = data.BgColor;
                         var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
-                        
 
+                        //内图形
+                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, fColor);
+                        //内文字
                         CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                         {
                             FontSize = 14,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Center
                         };
-                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), fColor, innerTextFormat);
-                        var _borderWidth2 = _borderWidth * 2;
-                        args.DrawingSession.DrawRoundedRectangle(new Windows.Foundation.Rect((float)drawX - _borderWidth, (float)drawY - _borderWidth, data.W + _borderWidth2, data.H + _borderWidth2), _borderWidth2, _borderWidth2, fColor, _borderWidth2);
+                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), Colors.White, innerTextFormat);
+                        //外图形
+                        var borderWidth = data.W * 0.2f;
+                        args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), tColor);
+                        //外文字
                         CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
                             FontSize = 12,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Top,
                         };
-                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 2)), _mainTextColor, mainTextFormat);
+                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), _mainTextColor, mainTextFormat);
                     }
                 }
-                //foreach (var data in visibleDatas)
-                //{
-                //    args.DrawingSession.FillRoundedRectangle(data.X, data.Y, data.W, data.H, Windows.UI.Color.FromArgb(100,Colors.Gray.R, Colors.Gray.G, Colors.Gray.B));
-                //}
+                else//只画大概的内图形
+                {
+                    foreach (var data in visibleDatas)
+                    {
+                        //只有内图形
+                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, data.BgColor);
+                    }
+                }
             }
         }
         delegate byte TurnRGB(float s);
