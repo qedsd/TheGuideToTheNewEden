@@ -38,5 +38,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
         [Display(Order = 2)]
         [SugarColumn(IsNullable = true)]
         public string RegionName { get; set; }
+
+        public override string ToString()
+        {
+            return RegionName;
+        }
     }
 }

@@ -22,6 +22,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Models.Map;
 using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
@@ -39,17 +40,23 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const float _detailZoom = 6;
         private const float _toZoom = 20;
         private const float _maxScaleWHZoom = 20;
-        private const float _maxZoom = 10;
-        private const float _minZoom = 1;
-        private const float _borderWidth = 1f;
-        private const float _selectedBorderWidth = 2f;
-        private Dictionary<int, MapData> _systemDatas;
-        private Dictionary<int, MapData> _regionDatas;
         private Windows.UI.Color _mainTextColor;
         private Windows.UI.Color _linkColor;
         private Windows.UI.Color _selectedColor;
         private bool _isDark = false;
         private DispatcherTimer _findDataTimer;
+        private Dictionary<int, MapData> _usingMapDatas;
+        /// <summary>
+        /// 按x从小到大排序的可见数据
+        /// </summary>
+        private List<MapData> _visbleMapDatas;
+        private MapData _selectedData;
+        private double _scaleCenterX = 0;
+        private double _scaleCenterY = 0;
+        private double _lastPressedX = 0;
+        private double _lastPressedY = 0;
+        private double _lastMovedX = 0;
+        private double _lastMovedY = 0;
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -68,7 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             contentGrid.Children.Add(_canvasControl);
             Content = contentGrid;
 
-            SetMainTextColor(Services.Settings.ThemeSelectorService.IsDark);
+            SetColor(Services.Settings.ThemeSelectorService.IsDark);
             Services.Settings.ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
 
             _findDataTimer = new DispatcherTimer()
@@ -87,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var w = _selectedData.W * 0.2;
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, _selectedData.BgColor.R, _selectedData.BgColor.G, _selectedData.BgColor.B));
-                if(_currentZoom < _detailZoom)
+                //if(_currentZoom < _detailZoom)
                 {
                     //提示文字
                     CanvasTextFormat itextFormat = new CanvasTextFormat()
@@ -96,12 +103,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         HorizontalAlignment = CanvasHorizontalAlignment.Center,
                         VerticalAlignment = CanvasVerticalAlignment.Bottom
                     };
-                    args.DrawingSession.DrawText($"{_selectedData.MainText} {_selectedData.InnerText}", new System.Numerics.Vector2((float)(rect.X + rect.Width / 2), (float)rect.Y), _mainTextColor, itextFormat);
+                    args.DrawingSession.DrawText($"{_selectedData.MainText} {_selectedData.InnerText} {(_selectedData as MapSystemData).MapSolarSystem.RegionID}", new System.Numerics.Vector2((float)(rect.X + rect.Width / 2), (float)rect.Y), _mainTextColor, itextFormat);
                 }
             }
         }
 
-        private MapData _selectedData;
+        
         private void FindDataTimer_Tick(object sender, object e)
         {
             var lastSelectedData = _selectedData;
@@ -186,7 +193,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastMovedY = 0;
         }
 
-        private void SetMainTextColor(bool isDark)
+        private void SetColor(bool isDark)
         {
             Windows.UI.Color color = isDark ? Colors.White : Colors.Black;
             _mainTextColor = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
@@ -196,18 +203,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
             _isDark = Services.Settings.ThemeSelectorService.IsDark;
-            SetMainTextColor(_isDark);
+            SetColor(_isDark);
             Draw();
         }
 
         private void CanvasControl_CreateResources(CanvasControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
         {
-            InitData();
-            SetMode(MapMode.System);
             Draw();
         }
-        private double _scaleCenterX = 0;
-        private double _scaleCenterY = 0;
+        
         private void CanvasControl_PointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var point = e.GetCurrentPoint(sender as UIElement);
@@ -220,10 +224,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var scaleCenterYOffset = (float)(_scaleCenterY *  newZoom - _scaleCenterY);
             Draw(newZoom, -scaleCenterXOffset, -scaleCenterYOffset);
         }
-        private double _lastPressedX = 0;
-        private double _lastPressedY = 0;
-        private double _lastMovedX = 0;
-        private double _lastMovedY = 0;
+        
         private void CanvasControl_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
@@ -255,11 +256,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastPressedX = 0;
             _lastPressedY = 0;
         }
-        private Dictionary<int, MapData> _usingMapDatas;
-        /// <summary>
-        /// 按x从小到大排序的可见数据
-        /// </summary>
-        private List<MapData> _visbleMapDatas;
+
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
@@ -392,83 +389,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
         }
 
-        private void InitData()
-        {
-            var posDic = SolarSystemPosHelper.PositionDic;
-            var mapSolarSystems = MapSolarSystemService.Query(posDic.Values.Where(p => string.IsNullOrEmpty(p.SolarSystemName)).Select(p => p.SolarSystemID).ToList());
-            _systemDatas = new Dictionary<int, MapData>();
-            foreach (var mapSolarSystem in mapSolarSystems)
-            {
-                MapSystemData mapSystemData = new MapSystemData(posDic[mapSolarSystem.SolarSystemID], mapSolarSystem);
-                _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
-            }
-            var regionPosDic = RegionMapHelper.PositionDic;
-            var mapRegions = MapRegionService.Query(regionPosDic.Keys.ToList());
-            _regionDatas = new Dictionary<int, MapData>();
-            foreach (var mapRegion in mapRegions)
-            {
-                var regionPos = regionPosDic[mapRegion.RegionID];
-                MapRegionData mapRegionData = new MapRegionData(regionPos, mapRegion);
-                _regionDatas.Add(mapRegion.RegionID, mapRegionData);
-            }
-            ResetXYToFix(_systemDatas);
-            ResetXYToFix(_regionDatas);
-        }
-        private void ResetXYToFix(Dictionary<int, MapData> datas)
-        {
-            //缩放xy坐标到屏幕显示范围
-            //以最大的x/y为参考最大显示范围
-            var maxX = datas.Values.Max(p => p.OriginalX);
-            var maxY = datas.Values.Max(p => p.OriginalY);
-            //将x缩放到UI显示区域
-            float xScale = (float)(this.ActualWidth / maxX);
-            float yScale = xScale;//xy同一个缩放比例
-            double xOffset = 0;
-            double yOffset = 0;
-            if (maxY * yScale > this.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
-            {
-                yScale = (float)(this.ActualHeight / maxY);
-                xScale = yScale;
-
-                yOffset = 0;
-                var afterScaleMaxX = maxX * xScale;
-                var emptyX = this.ActualWidth - afterScaleMaxX;
-                xOffset = emptyX / 2;
-            }
-            else
-            {
-                xOffset = 0;
-                var afterScaleMaxY = maxY * yScale;
-                var emptyY = this.ActualHeight - afterScaleMaxY;
-                yOffset = emptyY / 2;
-            }
-            foreach (var data in datas.Values)
-            {
-                data.OriginalX = (data.OriginalX * xScale) + (float)xOffset;
-                data.OriginalY = (data.OriginalY * yScale) + (float)yOffset;
-                data.X = data.OriginalX;
-                data.Y = data.OriginalY;
-            }
-        }
-
         #region public
-        public void SetMode(MapMode mapMode)
+        public void SetData(Dictionary<int, MapData> datas)
         {
-            switch(mapMode)
-            {
-                case MapMode.Region:
-                    {
-                        _usingMapDatas = _regionDatas;
-                    }
-                    break;
-                case MapMode.System:
-                    {
-                        _usingMapDatas = _systemDatas;
-                    }
-                    break;
-            }
+            _usingMapDatas = datas;
+            _currentZoom = 1;
+            _scaleCenterX = 0;
+            _scaleCenterY = 0;
+            _lastPressedX = 0;
+            _lastPressedY = 0;
+            _lastMovedX = 0;
+            _lastMovedY = 0;
         }
-
         public void ToSystem(int id)
         {
             if(_usingMapDatas.TryGetValue(id, out var data))
@@ -491,73 +423,53 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 Draw(zoom, offsetX, offsetY);
             }
         }
-        #endregion
-
-        #region class
-        public class MapData
+        public void ToSystem(List<int> ids)
         {
-            public MapData(MapPosition pos)
+            float minX = float.MaxValue;
+            float maxX = float.MinValue;
+            float minY = float.MaxValue;
+            float maxY = float.MinValue;
+            foreach(var id in ids)
             {
-                OriginalX = (float)pos.X;
-                OriginalY = (float)pos.Y;
+                if (_usingMapDatas.TryGetValue(id, out var data))
+                {
+                    if(data.X < minX)
+                    {
+                        minX = data.X;
+                    }
+                    if(data.X > maxX)
+                    {
+                        maxX = data.X;
+                    }
+                    if (data.Y < minY)
+                    {
+                        minY = data.Y;
+                    }
+                    if (data.Y > maxY)
+                    {
+                        maxY = data.Y;
+                    }
+                }
             }
-            public int Id { get; set; }
-            public float OriginalX { get; set; }
-            public float OriginalY { get; set; }
-            public float X { get; set; }
-            public float Y { get; set; }
-
-            public float OriginalW { get; set; } = 5;
-            public float OriginalH { get; set; } = 5;
-            public float W { get; set; } = 4;
-            public float H { get; set; } = 4;
-            public string InnerText { get; set; }
-            public string MainText { get; set; }
-            public Windows.UI.Color BgColor { get; set; }
-
-            public bool Visible { get; set; } = true;
-
-            public List<int> LinkTo;
-
-            public float CenterX { get => X + W / 2; }
-            public float CenterY { get => Y + H / 2; }
-        }
-        public class MapSystemData : MapData
-        {
-            public MapSystemData(SolarSystemPosition solarSystemPosition, MapSolarSystem mapSolarSystem):base(solarSystemPosition)
+            if(minX < float.MaxValue)
             {
-                Id = solarSystemPosition.SolarSystemID;
-                SolarSystemPosition = solarSystemPosition;
-                MapSolarSystem = mapSolarSystem;
-                X = (float)SolarSystemPosition.X;
-                Y = (float)SolarSystemPosition.Y;
-                MainText = MapSolarSystem.SolarSystemName;
-                InnerText = MapSolarSystem.Security.ToString("N1");
-                BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;
-                LinkTo = SolarSystemPosition.JumpTo;
+                //将最小的xy平移到0
+                //将最大x缩放到屏幕范围内
+                //若此时y还在范围外，再按y缩放到屏幕范围内
+                //float xOffset = minX;
+                //float yOffset = minY;
+                //float xScale = (float)this.ActualWidth / (maxX - xOffset);
+                //float yScale = (float)this.ActualHeight / (maxY - yOffset);
+                //float scale = xScale > yScale ? xScale : yScale;//在当前缩放下的坐标再次缩放
+
+                //按最大最小x/y差值缩小到显示范围宽度并以此缩放当作缩放
+                float xScale = (float)this.ActualWidth / (maxX - minX);
+                float yScale = (float)this.ActualHeight / (maxY - minY);
+                float scale = Math.Abs(xScale - 1) > Math.Abs(yScale - 1) ? xScale : yScale;
+                float xOffset = -minX * scale;
+                float yOffset = -minY * scale;
+                Draw(scale, xOffset, yOffset);
             }
-            public SolarSystemPosition SolarSystemPosition { get; set; }
-            public Core.DBModels.MapSolarSystem MapSolarSystem { get; set; }
-        }
-        public class MapRegionData: MapData
-        {
-            public RegionPosition RegionPosition { get; set; }
-            public Core.DBModels.MapRegion MapRegion { get; set; }
-            public MapRegionData(RegionPosition regionPosition ,Core.DBModels.MapRegion mapRegion) : base(regionPosition)
-            {
-                Id = regionPosition.RegionId;
-                RegionPosition = regionPosition;
-                MapRegion = mapRegion;
-                X = (float)RegionPosition.X;
-                Y = (float)RegionPosition.Y;
-                MainText = MapRegion.RegionName;
-                BgColor = Colors.Green;
-                LinkTo = RegionPosition.JumpTo;
-            }
-        }
-        public enum MapMode
-        {
-            Region,System
         }
         #endregion
     }

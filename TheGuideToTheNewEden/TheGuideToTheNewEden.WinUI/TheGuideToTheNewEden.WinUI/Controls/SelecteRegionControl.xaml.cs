@@ -48,6 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 return;
             }
+            SelectedItem = null;
             if (string.IsNullOrEmpty(sender.Text))
             {
                 sender.ItemsSource = null;
@@ -107,6 +108,24 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private static void ItemSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             
+        }
+
+
+        public static readonly DependencyProperty ShowListProperty
+            = DependencyProperty.Register(
+                nameof(ShowList),
+                typeof(MapRegion),
+                typeof(SelecteRegionControl),
+                new PropertyMetadata(true, new PropertyChangedCallback(ShowListPropertyChanged)));
+
+        public bool ShowList
+        {
+            get => (bool)GetValue(ShowListProperty);
+            set => SetValue(ShowListProperty, value);
+        }
+        private static void ShowListPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as SelecteRegionControl).ListView_Regions.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public delegate void SelectedItemChangedEventHandel(MapRegion selectedItem);

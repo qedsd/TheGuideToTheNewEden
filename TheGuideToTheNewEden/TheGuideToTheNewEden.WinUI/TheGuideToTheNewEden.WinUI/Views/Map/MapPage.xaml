@@ -11,10 +11,34 @@
     mc:Ignorable="d">
 
     <Grid>
-        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded" />
-        <controls:MapSystemSelectorControl x:Name="MapSystemSelector" Width="200" Height="32"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Top"
-                                           OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="SearchTypeComboBox"
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}"/>
+                    <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}"/>
+                </ComboBox>
+                <Grid Grid.Column="1">
+                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector"/>
+                    <controls:SelecteRegionControl x:Name="RegionSelector"
+                                                   Visibility="Collapsed"
+                                                   ShowList="False"/>
+                </Grid>
+            </Grid>
+        </Grid>
+        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded" Grid.Column="1"/>
     </Grid>
 </Page>
