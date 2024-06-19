@@ -103,15 +103,27 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _selectedData = lastSelectedData;
                     return;
                 }
-                double spanX = ActualWidth * 0.05;
-                double spanY = ActualHeight * 0.05;
+                double spanX = ActualWidth * _visbleMapDatas[0].W * 2;
+                double spanY = ActualHeight * _visbleMapDatas[0].W * 2;
                 var posX = _lastMovedX;
                 var posY = _lastMovedY;
                 float maxX = (float)(posX + spanX);
                 float minX = (float)(posX - spanX);
                 int low = 0;
                 int high = _visbleMapDatas.Count - 1;
-                List<MapData> inXRange = new List<MapData>();
+                MapData resultData = null;
+                bool isTargetData(MapData tryData)
+                {
+                    if (posX >= tryData.X && posX <= tryData.X + tryData.W
+                                && posY >= tryData.Y && posY <= tryData.Y + tryData.H)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
                 while (low <= high)
                 {
                     int mid = (low + high) / 2;
@@ -120,28 +132,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //找到当前点位于区间内
                         //向左右两边分别扩展找到所有合适的点
                         //向左
-                        inXRange.Add(_visbleMapDatas[mid]);
-                        for (int i = mid - 1; i >= 0; i--)
+                        for (int i = mid ; i >= 0; i--)
                         {
-                            if (_visbleMapDatas[i].X >= minX)
+                            if(isTargetData(_visbleMapDatas[i]))
                             {
-                                inXRange.Add(_visbleMapDatas[i]);
-                            }
-                            else
-                            {
+                                resultData = _visbleMapDatas[i];
                                 break;
                             }
                         }
-                        //向右
-                        for (int i = mid + 1; i < _visbleMapDatas.Count; i++)
+                        if(resultData == null)
                         {
-                            if (_visbleMapDatas[i].X <= maxX)
+                            //向右
+                            for (int i = mid + 1; i < _visbleMapDatas.Count; i++)
                             {
-                                inXRange.Add(_visbleMapDatas[i]);
-                            }
-                            else
-                            {
-                                break;
+                                if (isTargetData(_visbleMapDatas[i]))
+                                {
+                                    resultData = _visbleMapDatas[i];
+                                    break;
+                                }
                             }
                         }
                         break;
@@ -155,21 +163,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         low = mid + 1;
                     }
                 }
-                if (inXRange.Any())
+                if (resultData != null)
                 {
-                    float maxY = (float)(posY + spanY);
-                    float minY = (float)(posY - spanY);
-                    foreach (var data in inXRange)
-                    {
-                        if (data.Y <= maxY && data.Y >= minY)
-                        {
-                            //找到
-                            Debug.WriteLine($"Find target {data.MainText}");
-                            _selectedData = data;
-                            //_selectedRect = new Windows.Foundation.Rect(data.X - _selectedBorderWidth, data.Y - _selectedBorderWidth, data.W + _selectedBorderWidth * 2, data.H + _selectedBorderWidth * 2);
-                            break;
-                        }
-                    }
+                    Debug.WriteLine($"Find target {resultData.MainText}");
+                    _selectedData = resultData;
                 }
             }
             _selectedCanvasControl.Invalidate();
