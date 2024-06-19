@@ -74,7 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             //缩放xy坐标到屏幕显示范围
             //以最大的x/y为参考最大显示范围
             var maxX = datas.Values.Max(p => p.OriginalX);
-            var maxY = datas.Values.Max(p => p.OriginalY);
+            var maxY = datas.Values.Max(p => p.OriginalY); 
             //将x缩放到UI显示区域
             float xScale = (float)(MapCanvas.ActualWidth / maxX);
             float yScale = xScale;//xy同一个缩放比例

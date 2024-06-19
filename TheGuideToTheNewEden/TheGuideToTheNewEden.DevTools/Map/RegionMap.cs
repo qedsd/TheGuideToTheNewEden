@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.DevTools.Map
                 {
                     RegionId = regionInfo.RegionID,
                     X = Math.Round(regionInfo.X / Math.Pow(10,15),3),//缩小坐标到百位数
-                    Y = Math.Round(regionInfo.Y / Math.Pow(10, 15),3),
+                    Y = Math.Round(regionInfo.Z / Math.Pow(10, 15),3),//Z才是Y
                     JumpTo = new List<int>()
                 };
                 var systems = (systemInfoGroupByRegion.FirstOrDefault(p => p.Key == regionInfo.RegionID))?.ToList();//超出当前星域下所有的星系
@@ -68,16 +68,22 @@ namespace TheGuideToTheNewEden.DevTools.Map
             //将xy平移到0
             var xOffset = 0 - minX;
             var yOffset = 0 - minY;
-            //将xy缩放到最大范围内
-            double maxYUnit = 100;
-            double maxXUnit = 100;
-            var xScale = maxXUnit / (maxX + xOffset);
-            var yScale = maxYUnit / (maxY+ yOffset);
-            foreach(var sys in rDic.Values)
+            var afterOffsetMaxY = maxY + yOffset;
+            foreach (var sys in rDic.Values)
             {
-                sys.X = (sys.X + xOffset) * xScale;
-                sys.Y = (sys.Y + yOffset) * yScale;
+                sys.X = sys.X + xOffset;
+                sys.Y = afterOffsetMaxY - (sys.Y + yOffset);//将Y从向上递增改为向下递增从而符合window绘制
             }
+            ////将xy缩放到最大范围内
+            //double maxYUnit = 100;
+            //double maxXUnit = 100;
+            //var xScale = maxXUnit / (maxX + xOffset);
+            //var yScale = maxYUnit / (maxY+ yOffset);
+            //foreach(var sys in rDic.Values)
+            //{
+            //    sys.X = (sys.X + xOffset) * xScale;
+            //    sys.Y = (sys.Y + yOffset) * yScale;
+            //}
             var outText = JsonConvert.SerializeObject(rDic.Values);
             File.WriteAllText(outPath, outText);
         }

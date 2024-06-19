@@ -64,7 +64,7 @@ namespace TheGuideToTheNewEden.DevTools.Map
                 if (dic.TryGetValue(item.SolarSystemID, out var mapSolarSystem))
                 {
                     item.X = Math.Round(mapSolarSystem.X / Math.Pow(10, 15), 3);
-                    item.Y = Math.Round(mapSolarSystem.Y / Math.Pow(10, 15), 3);
+                    item.Y = Math.Round(mapSolarSystem.Z / Math.Pow(10, 15), 3);//Z才是Y
                 }
             }
             var maxX = solarSystems.Max(p => p.X);
@@ -74,16 +74,22 @@ namespace TheGuideToTheNewEden.DevTools.Map
             //将xy平移到0
             var xOffset = 0 - minX;
             var yOffset = 0 - minY;
-            //将xy缩放到最大范围内
-            double maxYUnit = 100;
-            double maxXUnit = 100;
-            var xScale = maxXUnit / (maxX + xOffset);
-            var yScale = maxYUnit / (maxY + yOffset);
+            var afterOffsetMaxY = maxY + yOffset;
             foreach (var sys in solarSystems)
             {
-                sys.X = (sys.X + xOffset) * xScale;
-                sys.Y = (sys.Y + yOffset) * yScale;
-            }  
+                sys.X = sys.X + xOffset;
+                sys.Y = afterOffsetMaxY - (sys.Y + yOffset);//将Y从向上递增改为向下递增从而符合window绘制
+            }
+            ////将xy缩放到最大范围内
+            //double maxYUnit = 100;
+            //double maxXUnit = 100;
+            //var xScale = maxXUnit / (maxX + xOffset);
+            //var yScale = maxYUnit / (maxY + yOffset);
+            //foreach (var sys in solarSystems)
+            //{
+            //    sys.X = (sys.X + xOffset) * xScale;
+            //    sys.Y = maxYUnit - (sys.Y + yOffset) * yScale;
+            //}  
         }
     }
 }

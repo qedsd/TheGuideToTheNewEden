@@ -5,4 +5,4 @@ TheGuideToTheNewEden.Core.Config.DBPath = dbPath;
 TheGuideToTheNewEden.Core.Config.InitDb();
 
 SolarSystemMap.CreateSloarSystemMap("SolarSystemMap.json");
-RegionMap.CreateMap("SolarSystemMap.json", "RegionMap.json");
+//RegionMap.CreateMap("SolarSystemMap.json", "RegionMap.json");
