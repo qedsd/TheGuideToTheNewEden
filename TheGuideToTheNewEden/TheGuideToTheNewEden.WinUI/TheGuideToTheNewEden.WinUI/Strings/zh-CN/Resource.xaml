@@ -784,8 +784,16 @@
     <!--  MapPage  -->
     <x:String x:Key="MapPage_SearchSystem">星系</x:String>
     <x:String x:Key="MapPage_SearchRegion">星域</x:String>
+    <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>
+    <x:String x:Key="SystemFilterControl_System">星系</x:String>
+    <x:String x:Key="SystemFilterControl_Security">安全等级</x:String>
+    <x:String x:Key="SystemFilterControl_Sov">主权</x:String>
+    <x:String x:Key="SystemFilterControl_Npc">怪类型</x:String>
     <x:String x:Key="SystemFilterControl_SelectAll">全选</x:String>
+    <x:String x:Key="SystemFilterControl_System_Mode">显示模式</x:String>
+    <x:String x:Key="SystemFilterControl_System_OnlyInList">仅显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_NotInList">不显示列表中的</x:String>
 </ResourceDictionary>

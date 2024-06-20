@@ -1,46 +1,129 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="TheGuideToTheNewEden.WinUI.Controls.SystemFilterControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <StackPanel>
-        <controls:ExpandableSettingControl Title="{StaticResource Setting_About_Title}">
-            <controls:ExpandableSettingControl.ExpandableContent>
-                
-            </controls:ExpandableSettingControl.ExpandableContent>
-        </controls:ExpandableSettingControl>
-        <!--星域-->
-        <Grid Height="400">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+        <!--  星域  -->
+        <Expander
+            Margin="0,4"
+            HorizontalAlignment="Stretch"
+            Header="{StaticResource SystemFilterControl_Region}">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{StaticResource SystemFilterControl_Region}"/>
-                    <StackPanel Orientation="Horizontal" Grid.Column="1">
-                        <TextBlock Text="("/>
-                        <TextBlock x:Name="TextBlock_SelectedRegionCount"/>
-                        <TextBlock Text="/"/>
-                        <TextBlock x:Name="TextBlock_AllRegionCount"/>
-                        <TextBlock Text=")"/>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        Click="Button_SelecteAllRegion_Click"
+                        Content="{StaticResource SystemFilterControl_SelectAll}"
+                        IsChecked="True" />
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock x:Name="TextBlock_SelectedRegionCount" Text="0" />
+                        <TextBlock Text="/" />
+                        <TextBlock x:Name="TextBlock_AllRegionCount" />
                     </StackPanel>
                 </Grid>
-                <ToggleButton Content="{StaticResource SystemFilterControl_SelectAll}" Click="Button_SelecteAllRegion_Click" />
+                <GridView
+                    x:Name="GridView_Region"
+                    Grid.Row="1"
+                    Width="400"
+                    Height="400"
+                    Margin="0,4,0,0"
+                    IsItemClickEnabled="True"
+                    SelectionMode="None">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="4" />
+                            <Setter Property="Width" Value="84" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </GridView.ItemContainerStyle>
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <ToggleButton
+                                HorizontalAlignment="Stretch"
+                                Click="Button_Region_Click"
+                                Content="{Binding RegionName}"
+                                IsChecked="True"
+                                Loaded="ToggleButton_Region_Loaded" />
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
             </Grid>
-        </Grid>
+        </Expander>
+        <Expander
+            Margin="0,4"
+            HorizontalAlignment="Stretch"
+            Header="{StaticResource SystemFilterControl_System}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{StaticResource SystemFilterControl_System_Mode}" HorizontalAlignment="Left"/>
+                    <ComboBox Grid.Column="1" Margin="4,0,0,0">
+                        <ComboBoxItem Content="{StaticResource SystemFilterControl_System_NotInList}" />
+                        <ComboBoxItem Content="{StaticResource SystemFilterControl_System_OnlyInList}" />
+                    </ComboBox>
+                </Grid>
+                <controls:MapSystemSelectorControl
+                    x:Name="MapSystemSelector"
+                    Grid.Row="1"
+                    OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+                <ListView
+                    x:Name="ListView_Systems"
+                    Grid.Row="2"
+                    MaxHeight="400">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding SolarSystemName}" />
+                                <Button Grid.Column="1" Click="Button_SystemInList_Remove_Click" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Expander>
+        <Expander
+            Margin="0,4"
+            HorizontalAlignment="Stretch"
+            Header="{StaticResource SystemFilterControl_Security}" />
+        <Expander
+            Margin="0,4"
+            HorizontalAlignment="Stretch"
+            Header="{StaticResource SystemFilterControl_Sov}" />
+        <Expander
+            Margin="0,4"
+            HorizontalAlignment="Stretch"
+            Header="{StaticResource SystemFilterControl_Npc}" />
     </StackPanel>
 </UserControl>
