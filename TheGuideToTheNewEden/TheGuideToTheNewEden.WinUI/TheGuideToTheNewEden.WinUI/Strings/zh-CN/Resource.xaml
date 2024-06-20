@@ -784,4 +784,8 @@
     <!--  MapPage  -->
     <x:String x:Key="MapPage_SearchSystem">星系</x:String>
     <x:String x:Key="MapPage_SearchRegion">星域</x:String>
+
+    <!--  SystemFilterControl  -->
+    <x:String x:Key="SystemFilterControl_Region">星域</x:String>
+    <x:String x:Key="SystemFilterControl_SelectAll">全选</x:String>
 </ResourceDictionary>
