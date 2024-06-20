@@ -35,11 +35,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// 当前缩放
         /// </summary>
         private float _currentZoom = 1;
-        private const float _stepZoom = 0.5f;
+        private const float _stepZoom = 0.2f;
         private const float _lineZoom = 2;
-        private const float _detailZoom = 6;
+        private const float _detailZoom = 8;
         private const float _toZoom = 20;
-        private const float _maxScaleWHZoom = 20;
+        private const float _maxScaleWHZoom = 7;
         private Windows.UI.Color _mainTextColor;
         private Windows.UI.Color _linkColor;
         private Windows.UI.Color _selectedColor;
@@ -324,7 +324,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //外文字
                         CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
-                            FontSize = 12,
+                            FontSize = 14,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Top,
                         };
@@ -378,9 +378,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 data.X = data.X * zoom + xOffset;
                 data.Y = data.Y * zoom + yOffset;
             }
-            if(zoom != 1 && _currentZoom <= _maxScaleWHZoom)//仅平移则无需缩放图形大小
+            if(zoom != 1)//仅平移则无需缩放图形大小
             {
-                var whZoom = (float)(_currentZoom / zoom * (zoom * Math.Pow(0.95, _currentZoom)));
+                var z = _currentZoom > _maxScaleWHZoom ? _maxScaleWHZoom : _currentZoom;
+                var whZoom = (float)(z / zoom * (zoom * Math.Pow(0.95, z)));
                 foreach (var data in _usingMapDatas.Values)
                 {
                     data.W = data.OriginalW * whZoom;

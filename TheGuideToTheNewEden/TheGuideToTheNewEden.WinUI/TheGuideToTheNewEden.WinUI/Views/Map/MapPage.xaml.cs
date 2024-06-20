@@ -108,7 +108,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
         private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
         {
-            MapCanvas.ToSystem(selectedItem.SolarSystemID);
+            if(selectedItem != null)
+                MapCanvas.ToSystem(selectedItem.SolarSystemID);
         }
 
         private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)

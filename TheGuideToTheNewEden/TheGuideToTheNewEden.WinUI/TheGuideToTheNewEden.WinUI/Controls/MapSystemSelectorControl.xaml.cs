@@ -47,6 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 return;
             }
+            SelectedItem = null;
             if (string.IsNullOrEmpty(sender.Text))
             {
                 sender.ItemsSource = null;
