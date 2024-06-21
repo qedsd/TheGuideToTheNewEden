@@ -458,15 +458,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(minX < float.MaxValue)
             {
-                //将最小的xy平移到0
-                //将最大x缩放到屏幕范围内
-                //若此时y还在范围外，再按y缩放到屏幕范围内
-                //float xOffset = minX;
-                //float yOffset = minY;
-                //float xScale = (float)this.ActualWidth / (maxX - xOffset);
-                //float yScale = (float)this.ActualHeight / (maxY - yOffset);
-                //float scale = xScale > yScale ? xScale : yScale;//在当前缩放下的坐标再次缩放
-
+                //适当将XY扩大以便显示完全
+                minX -= (float)(ActualWidth * 0.05);
+                maxX += (float)(ActualWidth * 0.05);
+                minY -= (float)(ActualHeight * 0.05);
+                maxY += (float)(ActualHeight * 0.05);
                 //按最大最小x/y差值缩小到显示范围宽度并以此缩放当作缩放
                 float xScale = (float)this.ActualWidth / (maxX - minX);
                 float yScale = (float)this.ActualHeight / (maxY - minY);
