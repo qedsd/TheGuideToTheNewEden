@@ -784,7 +784,7 @@
     <!--  MapPage  -->
     <x:String x:Key="MapPage_SearchSystem">星系</x:String>
     <x:String x:Key="MapPage_SearchRegion">星域</x:String>
-    <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
+    <x:String x:Key="MapPage_SystemFilter">星系筛选设置</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>
@@ -796,4 +796,8 @@
     <x:String x:Key="SystemFilterControl_System_Mode">显示模式</x:String>
     <x:String x:Key="SystemFilterControl_System_OnlyInList">仅显示列表中的</x:String>
     <x:String x:Key="SystemFilterControl_System_NotInList">不显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_Search">搜索星系</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_UpdateSovList">刷新主权列表</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_ContainNoneSOV">包含无主权星系</x:String>
+    <x:String x:Key="SystemFilterControl_Confirm">更新地图显示</x:String>
 </ResourceDictionary>

@@ -56,5 +56,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
         {
             return SolarSystemName;
         }
+        /// <summary>
+        /// 虫洞、希拉之类的特殊星系
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSpecial()
+        {
+            return SolarSystemID >= 31000000;
+        }
     }
 }

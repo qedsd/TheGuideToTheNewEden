@@ -33,6 +33,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
     {
         private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
+        private bool _isSystemData = true;
         public MapPage()
         {
             this.InitializeComponent();
@@ -51,7 +52,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void MapCanvas_Loaded(object sender, RoutedEventArgs e)
         {
             MapCanvas.Loaded -= MapCanvas_Loaded;
-           
         }
 
         private void InitData()
@@ -130,6 +130,25 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 MapSystemSelector.Visibility = Visibility.Visible;
                 RegionSelector.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void SystemFilterControl_OnFilterSystemChanged(HashSet<int> ids)
+        {
+            if (_isSystemData)
+            {
+                foreach (var data in _systemDatas)
+                {
+                    if(!ids.Contains(data.Key))
+                    {
+                        data.Value.Enable = false;
+                    }
+                    else
+                    {
+                        data.Value.Enable = true;
+                    }
+                }
+            }
+            MapCanvas.Draw();
         }
     }
 }

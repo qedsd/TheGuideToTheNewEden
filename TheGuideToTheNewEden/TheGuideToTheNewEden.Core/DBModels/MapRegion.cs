@@ -43,5 +43,13 @@ namespace TheGuideToTheNewEden.Core.DBModels
         {
             return RegionName;
         }
+        /// <summary>
+        /// A-R00001之类的特殊星域
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSpecial()
+        {
+            return RegionID >= 11000000;
+        }
     }
 }

@@ -93,7 +93,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 //选中高亮框
                 var w = _selectedData.W * 0.2;
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
-                args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, _selectedData.BgColor.R, _selectedData.BgColor.G, _selectedData.BgColor.B));
+                var color = GetEnableColor(_selectedData.BgColor, _selectedData.Enable);
+                args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, color.R, color.G, color.B));
                 //if(_currentZoom < _detailZoom)
                 {
                     //提示文字
@@ -256,7 +257,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastPressedX = 0;
             _lastPressedY = 0;
         }
-
+        private Windows.UI.Color GetEnableColor(Windows.UI.Color targetColor, bool enable)
+        {
+            return enable ? targetColor : Windows.UI.Color.FromArgb(targetColor.A, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
+        }
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
@@ -298,7 +302,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 //星系图形表示
                 TurnRGB turnRGB = _isDark ? TurnRGBToDark : TurnRGBToLight;
-                
                 if (_currentZoom >= _detailZoom)//画星系详细信息：安全等级、名称等
                 {
                     foreach (var data in visibleDatas)
@@ -309,7 +312,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
 
                         //内图形
-                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, fColor);
+                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(fColor,data.Enable));
                         //内文字
                         CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                         {
@@ -317,10 +320,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Center
                         };
-                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), Colors.White, innerTextFormat);
+                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetEnableColor(Colors.White, data.Enable), innerTextFormat);
                         //外图形
                         var borderWidth = data.W * 0.2f;
-                        args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), tColor);
+                        args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetEnableColor(tColor, data.Enable));
                         //外文字
                         CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
@@ -328,7 +331,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Top,
                         };
-                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), _mainTextColor, mainTextFormat);
+                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetEnableColor(_mainTextColor, data.Enable), mainTextFormat);
                     }
                 }
                 else//只画大概的内图形
@@ -336,7 +339,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     foreach (var data in visibleDatas)
                     {
                         //只有内图形
-                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, data.BgColor);
+                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(data.BgColor, data.Enable));
                     }
                 }
             }
@@ -352,10 +355,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             float level = 0.7f;
             return (byte)Math.Round(s - (s * level));
         }
-        public void Draw()
-        {
-            Draw(1, 0, 0);
-        }
+        
         private void Draw(float zoom, float xOffset, float yOffset)
         {
             if(zoom != 0)
@@ -391,6 +391,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
 
         #region public
+        public void Draw()
+        {
+            Draw(1, 0, 0);
+        }
         public void SetData(Dictionary<int, MapData> datas)
         {
             _usingMapDatas = datas;

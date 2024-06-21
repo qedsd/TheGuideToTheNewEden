@@ -30,7 +30,7 @@
                     <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
                     <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
                 </ComboBox>
-                <Grid Grid.Column="1">
+                <Grid Grid.Column="1" Margin="-8,0">
                     <controls:MapSystemSelectorControl x:Name="MapSystemSelector" />
                     <controls:SelecteRegionControl
                         x:Name="RegionSelector"
@@ -38,10 +38,10 @@
                         Visibility="Collapsed" />
                 </Grid>
             </Grid>
-            <Button Grid.Row="1" Content="{StaticResource MapPage_SystemFilter}">
+            <Button Grid.Row="1" Content="{StaticResource MapPage_SystemFilter}" HorizontalAlignment="Stretch">
                 <Button.Flyout>
                     <Flyout>
-                        <controls:SystemFilterControl Grid.Row="1" Width="400"/>
+                        <controls:SystemFilterControl Grid.Row="1" Width="400" OnFilterSystemChanged="SystemFilterControl_OnFilterSystemChanged"/>
                     </Flyout>
                 </Button.Flyout>
             </Button>
