@@ -4,25 +4,24 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:slider="using:Syncfusion.UI.Xaml.Sliders" 
-    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:slider="using:Syncfusion.UI.Xaml.Sliders"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <Style TargetType="Expander">
-            <Setter Property="Margin" Value="0,4"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
     </UserControl.Resources>
     <StackPanel>
         <!--  星域  -->
-        <Expander
-            Header="{StaticResource SystemFilterControl_Region}">
+        <Expander Header="{StaticResource SystemFilterControl_Region}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -71,8 +70,7 @@
             </Grid>
         </Expander>
         <!--  星系  -->
-        <Expander 
-            Header="{StaticResource SystemFilterControl_System}">
+        <Expander Header="{StaticResource SystemFilterControl_System}">
             <Grid HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -85,15 +83,19 @@
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{StaticResource SystemFilterControl_System_Mode}" VerticalAlignment="Center"/>
-                    <ComboBox Grid.Column="1" Margin="8,0,0,0" SelectedIndex="0" x:Name="SystemModeComboBox">
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource SystemFilterControl_System_Mode}" />
+                    <ComboBox
+                        x:Name="SystemModeComboBox"
+                        Grid.Column="1"
+                        Margin="8,0,0,0"
+                        SelectedIndex="0">
                         <ComboBoxItem Content="{StaticResource SystemFilterControl_System_NotInList}" />
                         <ComboBoxItem Content="{StaticResource SystemFilterControl_System_OnlyInList}" />
                     </ComboBox>
                     <StackPanel
                         Grid.Column="2"
-                        VerticalAlignment="Center"
                         HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <TextBlock x:Name="TextBlock_SelectedSystemCount" Text="0" />
                         <TextBlock Text="/" />
@@ -105,23 +107,24 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{StaticResource SystemFilterControl_System_Search}" VerticalAlignment="Center"/>
-                    <controls:MapSystemSelectorControl Grid.Column="1"
-                                                       Margin="0,4"
-                                                       Height="32"
-                                                       x:Name="MapSystemSelector"
-                                                       Grid.Row="1"
-                                                       OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource SystemFilterControl_System_Search}" />
+                    <controls:MapSystemSelectorControl
+                        x:Name="MapSystemSelector"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Height="32"
+                        Margin="0,4"
+                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
                 </Grid>
                 <GridView
                     x:Name="GridView_System"
-                    BorderThickness="1"
-                    BorderBrush="Gray"
                     Grid.Row="2"
                     MaxHeight="400"
                     Margin="0,4,0,0"
-                    IsItemClickEnabled="True"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
                     DisplayMemberPath="SolarSystemName"
+                    IsItemClickEnabled="True"
                     ItemClick="GridView_System_ItemClick"
                     SelectionMode="None">
                     <GridView.ItemContainerStyle>
@@ -135,23 +138,22 @@
             </Grid>
         </Expander>
         <!--  安全等级  -->
-        <Expander 
-            Header="{StaticResource SystemFilterControl_Security}">
-            <slider:SfRangeSlider Maximum="1"
-                                  x:Name="SecuritySlider"
-                                  Minimum="-1"
-                                  IsInversed="False"
-                                  RangeStart="-1.0"
-                                  RangeEnd="1.0"
-                                  ShowLabels="False"
-                                  StepFrequency="0.1"
-                                  ShowToolTip="True"
-                                  ToolTipOption="BothThumb"
-                                  IsEnabled="True" />
+        <Expander Header="{StaticResource SystemFilterControl_Security}">
+            <slider:SfRangeSlider
+                x:Name="SecuritySlider"
+                IsEnabled="True"
+                IsInversed="False"
+                Maximum="1"
+                Minimum="-1"
+                RangeEnd="1.0"
+                RangeStart="-1.0"
+                ShowLabels="False"
+                ShowToolTip="True"
+                StepFrequency="0.1"
+                ToolTipOption="BothThumb" />
         </Expander>
         <!--  主权  -->
-        <Expander 
-            Header="{StaticResource SystemFilterControl_Sov}">
+        <Expander Header="{StaticResource SystemFilterControl_Sov}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -165,12 +167,10 @@
                             Click="Button_SelecteAllSOV_Click"
                             Content="{StaticResource SystemFilterControl_SelectAll}"
                             IsChecked="True" />
-                        <Button Content="&#xE117;" FontFamily="Segoe MDL2 Assets" ToolTipService.ToolTip="{StaticResource SystemFilterControl_Sov_UpdateSovList}"
-                                Click="_Button_UpdateSovList_Click"
-                                Height="34"
-                                 Margin="4,0"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_Sov_ContainNoneSOV}" x:Name="ContainNoneSOVCheckBox"
-                                  IsChecked="True"/>
+                        <CheckBox
+                            x:Name="ContainNoneSOVCheckBox"
+                            Content="{StaticResource SystemFilterControl_Sov_ContainNoneSOV}"
+                            IsChecked="True" />
                     </StackPanel>
                     <StackPanel
                         Grid.Column="1"
@@ -181,8 +181,6 @@
                         <TextBlock x:Name="TextBlock_AllSOVCount" />
                     </StackPanel>
                 </Grid>
-                <ProgressBar Grid.Row="1" IsIndeterminate="True" ShowPaused="False" ShowError="False" x:Name="UpdateSOVListProgressBar"
-                             Margin="2"/>
                 <ListView
                     x:Name="ListView_SOV"
                     Grid.Row="2"
@@ -195,13 +193,22 @@
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <controls1:ImageEx Source="{Binding Id,Converter={StaticResource AllianceImgConverter}}" Width="32"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"
-                                           ToolTipService.ToolTip="{Binding Id}"
-                                           Margin="8,0,0,0"/>
+                                <controls1:ImageEx Width="32" Source="{Binding AllianceId, Converter={StaticResource AllianceImgConverter}}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="8,0"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding AllianceName}"
+                                    ToolTipService.ToolTip="{Binding AllianceId}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding Count}"
+                                    ToolTipService.ToolTip="{StaticResource SystemFilterControl_SOV_Count}" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -209,9 +216,12 @@
             </Grid>
         </Expander>
         <Grid>
-            <Button Content="{StaticResource SystemFilterControl_Confirm}" Margin="0,8" HorizontalAlignment="Left"
-                    Foreground="{ThemeResource SystemAccentColor}"
-                    Click="Button_Confirm_Click"/>
+            <Button
+                Margin="0,8"
+                HorizontalAlignment="Left"
+                Click="Button_Confirm_Click"
+                Content="{StaticResource SystemFilterControl_Confirm}"
+                Style="{ThemeResource AccentButtonStyle}" />
             <StackPanel
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
@@ -221,6 +231,6 @@
                 <TextBlock x:Name="TextBlock_AllFilteredSystemCount" />
             </StackPanel>
         </Grid>
-        
+
     </StackPanel>
 </UserControl>

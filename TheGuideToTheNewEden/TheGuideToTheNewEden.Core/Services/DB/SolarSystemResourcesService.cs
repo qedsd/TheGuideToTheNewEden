@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -63,6 +64,48 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task<List<SolarSystemResources>> QueryByRegionIDAsync(int id)
         {
             return await Task.Run(()=> QueryByRegionID(id));
+        }
+
+        public static Dictionary<int, List<PlanetResourcesDetail>> GetPlanetResourcesDetailsBySolarSystemID(List<int> ids)
+        {
+            var allMapDenormalizes = MapDenormalizeService.QueryBySolarSystemID(ids);
+            if (allMapDenormalizes.NotNullOrEmpty())
+            {
+                var results = new Dictionary<int, List<PlanetResourcesDetail>>();
+                //StartID == ItemID
+                var allPlanetResources = PlanetResourcesService.QueryByStarID(allMapDenormalizes.Select(p => p.ItemID).ToList());
+                if(allPlanetResources.NotNullOrEmpty())
+                {
+                    var allPlanetResourcesDic = allPlanetResources.ToDictionary(p => p.StarID);
+                    var allTypeDic = InvTypeService.QueryTypes(allMapDenormalizes.Select(p=> p.TypeID).ToList()).ToDictionary(p=>p.TypeID);
+                    var allMapDenormalizesGroup = allMapDenormalizes.GroupBy(p=>p.SolarSystemID);
+                    foreach(var group in allMapDenormalizesGroup)
+                    {
+                        if(group.Count() > 0)
+                        {
+                            List<PlanetResourcesDetail> list = new List<PlanetResourcesDetail>();
+                            foreach (var mapDenormalize in group)
+                            {
+                                if(allPlanetResourcesDic.TryGetValue(mapDenormalize.ItemID, out var planetResources))
+                                {
+                                    list.Add(new PlanetResourcesDetail()
+                                    {
+                                        ItemType = allTypeDic[mapDenormalize.TypeID],
+                                        MapDenormalize = mapDenormalize,
+                                        PlanetResources = planetResources
+                                    });
+                                }
+                            }
+                            if(list.Any())
+                            {
+                                results.Add(group.Key, list);
+                            }
+                        }
+                    }
+                }
+                return results;
+            }
+            return null;
         }
     }
 }

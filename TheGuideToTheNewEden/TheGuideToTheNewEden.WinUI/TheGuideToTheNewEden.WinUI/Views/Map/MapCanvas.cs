@@ -316,7 +316,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //内文字
                         CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                         {
-                            FontSize = 14,
+                            FontSize = 12,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Center
                         };
@@ -380,7 +380,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(zoom != 1)//仅平移则无需缩放图形大小
             {
-                var z = _currentZoom > _maxScaleWHZoom ? _maxScaleWHZoom : _currentZoom;
+                var z = _currentZoom > 9 ? 9 : _currentZoom;
                 var whZoom = (float)(z / zoom * (zoom * Math.Pow(0.95, z)));
                 foreach (var data in _usingMapDatas.Values)
                 {

@@ -16,5 +16,9 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.MainDb.Queryable<PlanetResources>().In(ids).ToList();
         }
+        public static List<PlanetResources> QueryByStarID(List<int> ids)
+        {
+            return DBService.MainDb.Queryable<PlanetResources>().In(ids).ToList();
+        }
     }
 }

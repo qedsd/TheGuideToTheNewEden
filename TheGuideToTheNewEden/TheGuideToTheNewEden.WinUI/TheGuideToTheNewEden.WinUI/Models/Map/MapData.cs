@@ -37,6 +37,8 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public float CenterY { get => Y + H / 2; }
 
         public bool Enable { get; set; } = true;
+
+        public object Tag { get; set; }
     }
     public class MapSystemData : MapData
     {

@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Timers;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Controls;
@@ -25,6 +26,7 @@ using TheGuideToTheNewEden.WinUI.Converters;
 using TheGuideToTheNewEden.WinUI.Models.Map;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using static TheGuideToTheNewEden.WinUI.Extensions.PageExtension;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
@@ -47,6 +49,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             SearchTypeComboBox.SelectionChanged += SearchTypeComboBox_SelectionChanged;
             MapSystemSelector.OnSelectedItemChanged += MapSystemSelector_OnSelectedItemChanged;
             RegionSelector.OnSelectedItemChanged += RegionSelector_OnSelectedItemChanged;
+            InitSOV();
         }
 
         private void MapCanvas_Loaded(object sender, RoutedEventArgs e)
@@ -150,5 +153,159 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             MapCanvas.Draw();
         }
+
+        private List<SovData> _sovDatas;
+        private async void InitSOV()
+        {
+            _sovDatas = new List<SovData>();
+            _window?.ShowWaiting();
+            var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
+            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
+                foreach (var item in dic)
+                {
+                    if (item.Key > 0)
+                    {
+                        HashSet<int> ints = new HashSet<int>();
+                        foreach (var p in item)
+                        {
+                            ints.Add(p.SystemId);
+                        }
+                        _sovDatas.Add(new SovData()
+                        {
+                            AllianceId = item.Key,
+                            SystemIds = ints
+                        });
+                    }
+                }
+                if (_sovDatas.Count != 0)
+                {
+                    var names = await Core.Services.IDNameService.GetByIdsAsync(_sovDatas.Select(p => p.AllianceId).ToList());
+                    if (names != null && names.Any())
+                    {
+                        var nameDic = names.ToDictionary(p => p.Id);
+                        foreach (var sovData in _sovDatas)
+                        {
+                            if (nameDic.TryGetValue(sovData.GroupId, out var name))
+                            {
+                                sovData.AllianceName = name.Name;
+                            }
+                            else
+                            {
+                                sovData.AllianceName = sovData.AllianceId.ToString();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var sovData in _sovDatas)
+                        {
+                            sovData.AllianceName = sovData.AllianceId.ToString();
+                        }
+                    }
+                    _sovDatas = _sovDatas.OrderByDescending(p => p.Count).ToList();
+                    int groupId = 1;
+                    foreach(var sovData in _sovDatas)
+                    {
+                        sovData.GroupId = groupId++;
+                    }
+                }
+            }
+            else
+            {
+                _window?.ShowError(resp.StatusCode.ToString());
+            }
+            _window?.HideWaiting();
+            SystemFilterControl?.SetSOVData(_sovDatas);
+            MapDataTypeControl?.SetSOVData(_sovDatas);
+        }
+
+        #region ÏÔÊ¾ÉèÖÃ
+        private void MapDataTypeControl_OnDataTypChanged(int type)
+        {
+            switch(type)
+            {
+                case 0:SetDataToSecurity();break;
+            }
+        }
+        private void SetDataToSecurity()
+        {
+            foreach(var data in _systemDatas.Values)
+            {
+                data.InnerText = (data as MapSystemData).MapSolarSystem.Security.ToString("N1");
+                data.BgColor = Converters.SystemSecurityForegroundConverter.Convert((data as MapSystemData).MapSolarSystem.Security).Color;
+            }
+            MapCanvas.Draw();
+        }
+        delegate long CalResources(Core.DBModels.PlanetResources resources);
+        private long CalResourcesPower(Core.DBModels.PlanetResources resources)
+        {
+            return resources == null ? 0 : resources.Power;
+        }
+        private long CalResourcesWorkforce(Core.DBModels.PlanetResources resources)
+        {
+            return resources == null ? 0 : resources.Workforce;
+        }
+        private long CalResourcesPowerAndWorkforce(Core.DBModels.PlanetResources resources)
+        {
+            return resources == null ? 0 : resources.Power + resources.Workforce;
+        }
+        private async void SetDataToPlanetResourc(int type)
+        {
+            _window?.ShowWaiting();
+            CalResources calResources = null;
+            switch (type)
+            { 
+                case 0: calResources = CalResourcesPower;break;
+                case 1: calResources = CalResourcesWorkforce; break;
+                case 2: calResources = CalResourcesPowerAndWorkforce; break;
+            }
+            double max = double.MinValue;//minÎª0
+            await Task.Run(() =>
+            {
+                var resourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_systemDatas.Keys.ToList());
+                foreach (var data in _systemDatas.Values)
+                {
+                    if(resourcesDic.TryGetValue(data.Id, out var resources))
+                    {
+                        var resc = resources.Sum(p => calResources(p.PlanetResources));
+                        data.InnerText = ISKNormalizeConverter.Normalize(resc);
+                        data.Tag = resc;
+                        if(resc > max)
+                        {
+                            max = resc;
+                        }
+                    }
+                    else
+                    {
+                        data.InnerText = "0";
+                        data.Tag = 0L;
+                    }
+                }
+            });
+            //Color
+            foreach (var data in _systemDatas.Values)
+            {
+                long resc = (long)data.Tag;
+                data.BgColor = PlanetRecourceColorConverter.Convert(Math.Round(resc / max,1));
+            }
+            _window?.HideWaiting();
+            MapCanvas.Draw();
+        }
+        private void SetDataToSOV()
+        {
+            MapCanvas.Draw();
+        }
+
+        private void MapDataTypeControl_OnSOVDatasChanged(List<SovData> sovDatas)
+        {
+            SetDataToSOV();
+        }
+        private void MapDataTypeControl_OnPlanetResourceTypeChanged(int type)
+        {
+            SetDataToPlanetResourc(type);
+        }
+        #endregion
     }
 }

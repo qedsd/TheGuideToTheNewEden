@@ -16,5 +16,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.MainDb.Queryable<MapDenormalize>().Where(p => p.SolarSystemID == id).ToListAsync();
         }
+
+        public static List<MapDenormalize> QueryBySolarSystemID(List<int> ids)
+        {
+            return DBService.MainDb.Queryable<MapDenormalize>().Where(p => ids.Contains(p.SolarSystemID)).ToList();
+        }
     }
 }

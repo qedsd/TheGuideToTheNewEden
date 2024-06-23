@@ -16,6 +16,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -47,7 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 _selectedRegions.Add(region.RegionID);
             }
             GridView_System.ItemsSource = new ObservableCollection<Core.DBModels.MapSolarSystem>();
-            await InitSovList();
+            //await InitSovList();
         }
         #region 星域
         private void Button_SelecteAllRegion_Click(object sender, RoutedEventArgs e)
@@ -114,69 +115,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         #endregion
 
         #region SOV
+        private List<SovData> _sovDatas;
         private HashSet<int> _selectedAlliances = new HashSet<int>();
-        private Dictionary<int, HashSet<int>> _allianceSystems = new Dictionary<int, HashSet<int>>();
-        private async Task InitSovList()
-        {
-            UpdateSOVListProgressBar.Visibility = Visibility.Visible;
-            UpdateSOVListProgressBar.IsIndeterminate = true;
-            _allianceSystems.Clear();
-            var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
-            if(resp.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
-                foreach(var item in dic)
-                {
-                    if(item.Key > 0)
-                    {
-                        HashSet<int> ints = new HashSet<int>();
-                        foreach (var p in item)
-                        {
-                            ints.Add(p.SystemId);
-                        }
-                        _allianceSystems.Add(item.Key, ints);
-                    }
-                }
-            }
-            else
-            {
-                Core.Log.Error(resp);
-            }
-            TextBlock_AllSOVCount.Text = _allianceSystems.Count.ToString();
-            TextBlock_SelectedSOVCount.Text = _allianceSystems.Count.ToString();
-            if(_allianceSystems.Count != 0)
-            {
-                var sortedAllianceIds = _allianceSystems.OrderByDescending(p => p.Value.Count).Select(p => p.Key);
-                var names = await Core.Services.IDNameService.GetByIdsAsync(_allianceSystems.Keys.ToList());
-                List<IdName> itemsSource = new List<IdName>();
-                if(names != null && names.Any())
-                {
-                    var nameDic = names.ToDictionary(p => p.Id);
-                    foreach (var id in sortedAllianceIds)
-                    {
-                        if(nameDic.TryGetValue(id, out var name))
-                        {
-                            itemsSource.Add(name);
-                        }
-                        else
-                        {
-                            itemsSource.Add(new IdName(id, id.ToString(), IdName.CategoryEnum.Alliance));
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var id in sortedAllianceIds)
-                    {
-                        itemsSource.Add(new IdName(id, id.ToString(), IdName.CategoryEnum.Alliance));
-                    }
-                }
-                ListView_SOV.ItemsSource = itemsSource;
-                ListView_SOV.SelectAll();
-            }
-            UpdateSOVListProgressBar.IsIndeterminate = false;
-            UpdateSOVListProgressBar.Visibility = Visibility.Collapsed;
-        }
         private void Button_SelecteAllSOV_Click(object sender, RoutedEventArgs e)
         {
             if((sender as ToggleButton).IsChecked == true)
@@ -189,10 +129,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             TextBlock_SelectedSOVCount.Text = _selectedAlliances.Count.ToString();
         }
-        private async void _Button_UpdateSovList_Click(object sender, RoutedEventArgs e)
-        {
-            await InitSovList();
-        }
 
         private void ListView_SOV_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -200,17 +136,24 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 foreach (var item in e.RemovedItems)
                 {
-                    _selectedAlliances.Remove((item as IdName).Id);
+                    _selectedAlliances.Remove((item as SovData).AllianceId);
                 }
             }
             if (e.AddedItems.NotNullOrEmpty())
             {
                 foreach (var item in e.AddedItems)
                 {
-                    _selectedAlliances.Add((item as IdName).Id);
+                    _selectedAlliances.Add((item as SovData).AllianceId);
                 }
             }
             TextBlock_SelectedSOVCount.Text = _selectedAlliances.Count.ToString();
+        }
+
+        public void SetSOVData(List<SovData> sovDatas)
+        {
+            _sovDatas = sovDatas;
+            TextBlock_AllSOVCount.Text = _sovDatas.Count.ToString();
+            ListView_SOV.ItemsSource = _sovDatas;
         }
         #endregion
 
@@ -260,9 +203,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             if(ContainNoneSOVCheckBox.IsChecked == false)//不包含无主权星系，先移除所有不在主权下的星系
             {
                 HashSet<int> allInSovSystems = new HashSet<int>();//所有有主权的星系id
-                foreach (var alliance in _allianceSystems)
+                foreach (var sovData in _sovDatas)
                 {
-                    foreach (var sys in alliance.Value)
+                    foreach (var sys in sovData.SystemIds)
                     {
                         allInSovSystems.Add(sys);
                     }
@@ -281,13 +224,13 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 }
             }
             //（若不包含无主权星系）再在已选择的主权星系下排除没选择的
-            if (_selectedAlliances.Count != _allianceSystems.Count)//仅当有没选中时才需要全部判断一遍
+            if (_selectedAlliances.Count != _sovDatas.Count)//仅当有没选中时才需要全部判断一遍
             {
-                foreach (var alliance in _allianceSystems)
+                foreach (var sovData in _sovDatas)
                 {
-                    if (!_selectedAlliances.Contains(alliance.Key))//联盟不选中时，删除其下星系
+                    if (!_selectedAlliances.Contains(sovData.AllianceId))//联盟不选中时，删除其下星系
                     {
-                        foreach (var sys in alliance.Value)
+                        foreach (var sys in sovData.SystemIds)
                         {
                             filtedSystems.Remove(sys);
                         }
