@@ -28,6 +28,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using static TheGuideToTheNewEden.WinUI.Extensions.PageExtension;
+using static Vanara.PInvoke.Kernel32;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
@@ -36,6 +37,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
         private bool _isSystemData = true;
+        private const int SuperionicIceID = 81144;
+        private const int MagmaticGasID = 81143;
         public MapPage()
         {
             this.InitializeComponent();
@@ -187,7 +190,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         var nameDic = names.ToDictionary(p => p.Id);
                         foreach (var sovData in _sovDatas)
                         {
-                            if (nameDic.TryGetValue(sovData.GroupId, out var name))
+                            if (nameDic.TryGetValue(sovData.AllianceId, out var name))
                             {
                                 sovData.AllianceName = name.Name;
                             }
@@ -224,9 +227,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         #region œ‘ æ…Ë÷√
         private void MapDataTypeControl_OnDataTypChanged(int type)
         {
-            switch(type)
+            PlanetResourcePanel.Visibility = Visibility.Collapsed;
+            switch (type)
             {
                 case 0:SetDataToSecurity();break;
+                case 1:;break;
+                case 2: PlanetResourcePanel.Visibility = Visibility.Visible; break;
             }
         }
         private void SetDataToSecurity()
@@ -238,18 +244,75 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             MapCanvas.Draw();
         }
-        delegate long CalResources(Core.DBModels.PlanetResources resources);
-        private long CalResourcesPower(Core.DBModels.PlanetResources resources)
+        delegate long CalResources(Core.Models.PlanetResources.SolarSystemResources resources);
+        private long CalResourcesPower(Core.Models.PlanetResources.SolarSystemResources resources)
         {
             return resources == null ? 0 : resources.Power;
         }
-        private long CalResourcesWorkforce(Core.DBModels.PlanetResources resources)
+        private long CalResourcesWorkforce(Core.Models.PlanetResources.SolarSystemResources resources)
         {
             return resources == null ? 0 : resources.Workforce;
         }
-        private long CalResourcesPowerAndWorkforce(Core.DBModels.PlanetResources resources)
+        private long CalResourcesMagmaticGas(Core.Models.PlanetResources.SolarSystemResources resources)
         {
-            return resources == null ? 0 : resources.Power + resources.Workforce;
+            return resources == null? 0 : resources.MagmaticGas;
+        }
+        private long CalResourcesSuperionicIce(Core.Models.PlanetResources.SolarSystemResources resources)
+        {
+            return resources == null  ? 0 : resources.SuperionicIce;
+        }
+        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
+        private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
+        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> GetPlanetResourcesDic()
+        {
+            if(_systemResourcesDic == null)
+            {
+                var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_systemDatas.Keys.ToList());
+
+                #region region
+                _regionResourcesDic = new Dictionary<int, Core.Models.PlanetResources.RegionResources>();
+                var groupByRegion = _systemDatas.Values.GroupBy(p => (p as MapSystemData).MapSolarSystem.RegionID);
+                foreach( var group in groupByRegion )
+                {
+                    Core.Models.PlanetResources.RegionResources regionResources = new Core.Models.PlanetResources.RegionResources();
+                    regionResources.Region = Core.Services.DB.MapRegionService.Query(group.Key);
+                    foreach(var system in group)
+                    {
+                        if(planetResourcesDic.TryGetValue(system.Id, out var resourcesDetails))
+                        {
+                            regionResources.Power += resourcesDetails.Sum(p => p.PlanetResources.Power);
+                            regionResources.Workforce += resourcesDetails.Sum(p => p.PlanetResources.Workforce);
+                            regionResources.SuperionicIce += resourcesDetails.Where(p=>p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                        }
+                    }
+                    if(regionResources.Power + regionResources.Workforce != 0)
+                    {
+                        _regionResourcesDic.Add(group.Key, regionResources);
+                    }
+                }
+                #endregion
+
+                #region system
+                _systemResourcesDic = new Dictionary<int, Core.Models.PlanetResources.SolarSystemResources>();
+                foreach (var resources in planetResourcesDic)
+                {
+                    if(_systemDatas.TryGetValue(resources.Key, out var mapData))
+                    {
+                        Core.Models.PlanetResources.SolarSystemResources solarSystemResources = new Core.Models.PlanetResources.SolarSystemResources()
+                        {
+                            MapSolarSystem = (mapData as MapSystemData).MapSolarSystem,
+                            Power = resources.Value.Sum(p=>p.PlanetResources.Power),
+                            Workforce = resources.Value.Sum(p => p.PlanetResources.Workforce),
+                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                        };
+                        _systemResourcesDic.Add(resources.Key, solarSystemResources);
+                    }
+                }
+                #endregion
+            }
+            return _systemResourcesDic;
         }
         private async void SetDataToPlanetResourc(int type)
         {
@@ -259,17 +322,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             { 
                 case 0: calResources = CalResourcesPower;break;
                 case 1: calResources = CalResourcesWorkforce; break;
-                case 2: calResources = CalResourcesPowerAndWorkforce; break;
+                case 2: calResources = CalResourcesMagmaticGas; break;
+                case 3: calResources = CalResourcesSuperionicIce; break;
             }
             double max = double.MinValue;//minŒ™0
             await Task.Run(() =>
             {
-                var resourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_systemDatas.Keys.ToList());
+                var resourcesDic = GetPlanetResourcesDic();
                 foreach (var data in _systemDatas.Values)
                 {
                     if(resourcesDic.TryGetValue(data.Id, out var resources))
                     {
-                        var resc = resources.Sum(p => calResources(p.PlanetResources));
+                        var resc = calResources(resources);
                         data.InnerText = ISKNormalizeConverter.Normalize(resc);
                         data.Tag = resc;
                         if(resc > max)
@@ -290,6 +354,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 long resc = (long)data.Tag;
                 data.BgColor = PlanetRecourceColorConverter.Convert(Math.Round(resc / max,1));
             }
+            RegionPlanetResourcList.ItemsSource ??= _regionResourcesDic.Values;
+            SystemPlanetResourcList.ItemsSource ??= _systemResourcesDic.Values;
             _window?.HideWaiting();
             MapCanvas.Draw();
         }
@@ -307,5 +373,41 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             SetDataToPlanetResourc(type);
         }
         #endregion
+
+        private void MapCanvas_OnPointedSystemChanged(MapData mapData)
+        {
+
+        }
+
+        private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
+        {
+            if(mapData == null)
+            {
+                SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                SelectedSystemInfoPanel.Visibility = Visibility.Visible;
+                var data = mapData as MapSystemData;
+                SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
+                SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
+                SelectedSystemRegionTextBlock.Text = Core.Services.DB.MapRegionService.Query(data.MapSolarSystem.RegionID).RegionName;
+                SelectedSystemSecurityTextBlock.Text = data.MapSolarSystem.Security.ToString("N1");
+                //SelectedSystemSOVTextBlock.Text
+                if(_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource))
+                {
+                    SelectedSystemResourceGrid.Visibility = Visibility.Visible;
+                    SelectedSystemPowerTextBlock.Text = resource.Power.ToString("N0");
+                    SelectedSystemWorkforceTextBlock.Text = resource.Workforce.ToString("N0");
+                    SelectedSystemMagmaticGasTextBlock.Text = resource.MagmaticGas.ToString("N0");
+                    SelectedSystemSuperionicIceTextBlock.Text = resource.SuperionicIce.ToString("N0");
+                }
+                else
+                {
+                    SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
+                }
+
+            }
+        }
     }
 }

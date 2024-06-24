@@ -39,7 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const float _lineZoom = 2;
         private const float _detailZoom = 8;
         private const float _toZoom = 20;
-        private const float _maxScaleWHZoom = 7;
+        private const float _maxScaleWHZoom = 9;
         private Windows.UI.Color _mainTextColor;
         private Windows.UI.Color _linkColor;
         private Windows.UI.Color _selectedColor;
@@ -187,6 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 {
                     Debug.WriteLine($"Find target {resultData.MainText}");
                     _selectedData = resultData;
+                    PointedSystemChanged?.Invoke(_selectedData);
                 }
             }
             _selectedCanvasControl.Invalidate();
@@ -256,6 +257,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             _lastPressedX = 0;
             _lastPressedY = 0;
+            SelectedSystemChanged?.Invoke(_selectedData);
         }
         private Windows.UI.Color GetEnableColor(Windows.UI.Color targetColor, bool enable)
         {
@@ -327,7 +329,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //外文字
                         CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
-                            FontSize = 14,
+                            FontSize = 12,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Top,
                         };
@@ -380,7 +382,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(zoom != 1)//仅平移则无需缩放图形大小
             {
-                var z = _currentZoom > 9 ? 9 : _currentZoom;
+                var z = _currentZoom > _maxScaleWHZoom ? _maxScaleWHZoom : _currentZoom;
                 var whZoom = (float)(z / zoom * (zoom * Math.Pow(0.95, z)));
                 foreach (var data in _usingMapDatas.Values)
                 {
@@ -470,6 +472,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 float xOffset = -minX * scale;
                 float yOffset = -minY * scale;
                 Draw(scale, xOffset, yOffset);
+            }
+        }
+        public delegate void SelectedSystemChangedEventHandel(MapData mapData);
+        private SelectedSystemChangedEventHandel PointedSystemChanged;
+        public event SelectedSystemChangedEventHandel OnPointedSystemChanged
+        {
+            add
+            {
+                PointedSystemChanged += value;
+            }
+            remove
+            {
+                PointedSystemChanged -= value;
+            }
+        }
+        private SelectedSystemChangedEventHandel SelectedSystemChanged;
+        public event SelectedSystemChangedEventHandel OnSelectedSystemChanged
+        {
+            add
+            {
+                SelectedSystemChanged += value;
+            }
+            remove
+            {
+                SelectedSystemChanged -= value;
             }
         }
         #endregion

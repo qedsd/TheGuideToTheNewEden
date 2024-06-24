@@ -5,9 +5,9 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Models.PlanetResources
 {
-    public class SolarSystemResources
+    public class RegionResources
     {
-        public MapSolarSystem MapSolarSystem { get; set; }
+        public MapRegion Region { get; set; }
         public long Power { get; set; }
 
         public long Workforce { get; set; }

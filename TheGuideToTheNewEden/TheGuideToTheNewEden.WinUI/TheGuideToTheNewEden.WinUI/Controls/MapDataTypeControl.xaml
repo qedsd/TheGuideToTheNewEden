@@ -67,8 +67,10 @@
                         <dataGrid:GridTextColumn
                             HeaderText="{StaticResource MapDataTypeControl_SOV_Count}"
                             IsReadOnly="True"
+                            Width="80"
                             MappingName="Count" />
-                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MapDataTypeControl_SOV_Group}" MappingName="GroupId" />
+                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MapDataTypeControl_SOV_Group}" MappingName="GroupId" 
+                                                    Width="80"/>
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
                 <Button
@@ -93,9 +95,10 @@
                         VerticalAlignment="Center"
                         SelectedIndex="0"
                         SelectionChanged="PlanetResourceDataTypeComboBox_SelectionChanged">
-                        <ComboBoxItem Content="{StaticResource MapDataTypeControl_PlanetResource_Power}" />
-                        <ComboBoxItem Content="{StaticResource MapDataTypeControl_PlanetResource_Workforce}" />
-                        <ComboBoxItem Content="{StaticResource MapDataTypeControl_PlanetResource_PowerAndWorkforce}" />
+                        <ComboBoxItem Content="{StaticResource MapPage_PlanetResource_Power}" />
+                        <ComboBoxItem Content="{StaticResource MapPage_PlanetResource_Workforce}" />
+                        <ComboBoxItem Content="{StaticResource MapPage_PlanetResource_MagmaticGas}" />
+                        <ComboBoxItem Content="{StaticResource MapPage_PlanetResource_SuperionicIce}" />
                     </ComboBox>
                 </Grid>
             </Grid>

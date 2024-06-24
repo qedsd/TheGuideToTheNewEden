@@ -11,13 +11,22 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 {
     public class SolarSystemResourcesService
     {
+        private const int SuperionicIceID = 81144;
+        private const int MagmaticGasID = 81143;
         public static SolarSystemResources QueryBySolarSystemID(int id)
         {
             SolarSystemResources solarSystemResources = new SolarSystemResources()
             {
                 MapSolarSystem = MapSolarSystemService.Query(id),
-                PlanetResources = GetPlanetResourcesDetailsBySolarSystemID(id)
             };
+            var planetResources = GetPlanetResourcesDetailsBySolarSystemID(id);
+            if(planetResources.NotNullOrEmpty())
+            {
+                solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
+                solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
+                solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+            }
             return solarSystemResources;
         }
         private static List<PlanetResourcesDetail> GetPlanetResourcesDetailsBySolarSystemID(int id)
@@ -52,11 +61,19 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             {
                 foreach(var system in systems)
                 {
-                    list.Add(new SolarSystemResources()
+                    SolarSystemResources solarSystemResources = new SolarSystemResources()
                     {
                         MapSolarSystem = system,
-                        PlanetResources = GetPlanetResourcesDetailsBySolarSystemID(id)
-                    });
+                    };
+                    var planetResources = GetPlanetResourcesDetailsBySolarSystemID(id);
+                    if (planetResources.NotNullOrEmpty())
+                    {
+                        solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
+                        solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
+                        solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                        solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                    }
+                    list.Add(solarSystemResources);
                 }
             }
             return list;
