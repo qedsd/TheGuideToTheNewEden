@@ -376,14 +376,22 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
         private void MapCanvas_OnPointedSystemChanged(MapData mapData)
         {
-
+            if(mapData == null)
+            {
+                TopPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                TopPanel.Visibility = Visibility.Visible;
+                PointedSystemName.Text = $"{(mapData as MapSystemData).MainText} {(mapData as MapSystemData).InnerText}";
+            }
         }
 
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
         {
             if(mapData == null)
             {
-                SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+                //SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -393,8 +401,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
                 SelectedSystemRegionTextBlock.Text = Core.Services.DB.MapRegionService.Query(data.MapSolarSystem.RegionID).RegionName;
                 SelectedSystemSecurityTextBlock.Text = data.MapSolarSystem.Security.ToString("N1");
-                //SelectedSystemSOVTextBlock.Text
-                if(_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource))
+                if(_systemResourcesDic != null && _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource))
                 {
                     SelectedSystemResourceGrid.Visibility = Visibility.Visible;
                     SelectedSystemPowerTextBlock.Text = resource.Power.ToString("N0");
@@ -408,6 +415,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
 
             }
+        }
+
+        private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

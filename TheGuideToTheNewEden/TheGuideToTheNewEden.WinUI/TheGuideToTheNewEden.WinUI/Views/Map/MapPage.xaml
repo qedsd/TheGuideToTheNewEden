@@ -160,6 +160,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBlock x:Name="SelectedSystemNameTextBlock" 
                        Margin="0,4"
@@ -207,7 +208,28 @@
                         <TextBlock x:Name="SelectedSystemSuperionicIceTextBlock" HorizontalAlignment="Right"/>
                     </Grid>
                 </Grid>
+                <Button Grid.Row="6" Style="{ThemeResource TransparentButton}"
+                        Margin="0,8,0,4"
+                        x:Name="CloseSelectedSystemInfoPanelButton"
+                        Click="CloseSelectedSystemInfoPanelButton_Click"
+                        HorizontalAlignment="Stretch">
+                    <Button.Content>
+                        <TextBlock Text="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                   Foreground="OrangeRed"
+                                   Padding="4"/>
+                    </Button.Content>
+                </Button>
             </Grid>
+        </Grid>
+        <!--顶上名称面板-->
+        <Grid x:Name="TopPanel" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+              VerticalAlignment="Top"
+              HorizontalAlignment="Center"
+              CornerRadius="4"
+              Visibility="Collapsed"
+              Margin="0,4,0,0"
+              Padding="12,6">
+            <TextBlock x:Name="PointedSystemName" FontSize="16"/>
         </Grid>
     </Grid>
 </Page>

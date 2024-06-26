@@ -95,17 +95,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
                 var color = GetEnableColor(_selectedData.BgColor, _selectedData.Enable);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, color.R, color.G, color.B));
-                //if(_currentZoom < _detailZoom)
-                {
-                    //提示文字
-                    CanvasTextFormat itextFormat = new CanvasTextFormat()
-                    {
-                        FontSize = 14,
-                        HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                        VerticalAlignment = CanvasVerticalAlignment.Bottom
-                    };
-                    args.DrawingSession.DrawText($"{_selectedData.MainText} {_selectedData.InnerText} {(_selectedData as MapSystemData).MapSolarSystem.RegionID}", new System.Numerics.Vector2((float)(rect.X + rect.Width / 2), (float)rect.Y), _mainTextColor, itextFormat);
-                }
             }
         }
 
@@ -187,8 +176,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 {
                     Debug.WriteLine($"Find target {resultData.MainText}");
                     _selectedData = resultData;
-                    PointedSystemChanged?.Invoke(_selectedData);
                 }
+                PointedSystemChanged?.Invoke(resultData);
             }
             _selectedCanvasControl.Invalidate();
             _lastMovedX = 0;
