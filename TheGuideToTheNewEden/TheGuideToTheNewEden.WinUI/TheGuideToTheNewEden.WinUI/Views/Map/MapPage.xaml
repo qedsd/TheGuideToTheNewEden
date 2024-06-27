@@ -181,8 +181,13 @@
                     <TextBlock x:Name="SelectedSystemRegionTextBlock" HorizontalAlignment="Right"/>
                 </Grid>
                 <Grid Grid.Row="4" x:Name="SelectedSystemSOVGrid" Margin="0,4">
-                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_SOV}"/>
-                    <TextBlock x:Name="SelectedSystemSOVTextBlock" HorizontalAlignment="Right"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_SOV}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SelectedSystemSOVTextBlock" Grid.Column="1" TextWrapping="WrapWholeWords"
+                               TextAlignment="Right"/>
                 </Grid>
                 <Grid x:Name="SelectedSystemResourceGrid" Grid.Row="5">
                     <Grid.RowDefinitions>
@@ -209,14 +214,14 @@
                     </Grid>
                 </Grid>
                 <Button Grid.Row="6" Style="{ThemeResource TransparentButton}"
-                        Margin="0,8,0,4"
+                        Margin="0,8,0,0"
                         x:Name="CloseSelectedSystemInfoPanelButton"
                         Click="CloseSelectedSystemInfoPanelButton_Click"
                         HorizontalAlignment="Stretch">
                     <Button.Content>
                         <TextBlock Text="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                                    Foreground="OrangeRed"
-                                   Padding="4"/>
+                                   Padding="2"/>
                     </Button.Content>
                 </Button>
             </Grid>

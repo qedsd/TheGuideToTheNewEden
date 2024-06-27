@@ -17,33 +17,56 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
+using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class MapDataTypeControl : UserControl
     {
-        private List<Core.DBModels.MapSolarSystem> _mapSolarSystems;
         public MapDataTypeControl()
         {
             this.InitializeComponent();
-            Init();
             DataTypComboBox.SelectionChanged += DataTypComboBox_SelectionChanged;
-        }
-
-        private async void Init()
-        {
-            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p=> !p.IsSpecial()).ToList();
         }
 
         #region SOV
         private List<SovData> _sovDatas;
         private void ResetGroupByDefault(List<SovData> sovDatas)
         {
-            //TODO
+            var dic = ReadSOVGroup();
+            if(dic.NotNullOrEmpty())
+            {
+                foreach(var data in sovDatas)
+                {
+                    if(dic.TryGetValue(data.AllianceId, out int groupID))
+                    {
+                        data.GroupId = groupID;
+                    }
+                }
+            }
+            int maxGroup = sovDatas.Max(p => p.GroupId);
+            foreach(var data in sovDatas)
+            {
+                if(data.GroupId < 1)
+                {
+                    data.GroupId = ++maxGroup;
+                }
+            }
         }
         private void Button_Confirm_Click(object sender, RoutedEventArgs e)
         {
+            SaveSOVGroup(_sovDatas);
             SOVDatasChanged?.Invoke(_sovDatas);
+        }
+        private void Button_ResetGroup_Click(object sender, RoutedEventArgs e)
+        {
+            int id = 1;
+            foreach(var data in _sovDatas)
+            {
+                data.GroupId = id++;
+            }
+            SOVListDataGrid.ItemsSource = null;
+            SOVListDataGrid.ItemsSource = _sovDatas;
         }
         public delegate void SOVDatasChangedEventHandel(List<SovData> sovDatas);
         private SOVDatasChangedEventHandel SOVDatasChanged;
@@ -69,11 +92,51 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
 
 
+        private static readonly string SOVGroupPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "SOVGroup.json");
         public void SetSOVData(List<SovData> sovDatas)
         {
             _sovDatas = sovDatas;
             ResetGroupByDefault(_sovDatas);
             SOVListDataGrid.ItemsSource = _sovDatas;
+        }
+
+        private void SaveSOVGroup(List<SovData> sovDatas)
+        {
+            if(sovDatas.NotNullOrEmpty())
+            {
+                List<string> lines = new List<string>();
+                foreach(var data in sovDatas)
+                {
+                    lines.Add($"{data.AllianceId} {data.GroupId}");
+                }
+                File.WriteAllLines(SOVGroupPath, lines);
+            }
+        }
+        private Dictionary<int,int> ReadSOVGroup()
+        {
+            try
+            {
+                if (File.Exists(SOVGroupPath))
+                {
+                    var lines = File.ReadAllLines(SOVGroupPath);
+                    if (lines.NotNullOrEmpty())
+                    {
+                        Dictionary<int, int> dic = new Dictionary<int, int>();
+                        foreach (var line in lines)
+                        {
+                            var array = line.Split(' ');
+                            dic.Add(int.Parse(array[0]), int.Parse(array[1]));
+                        }
+                        return dic;
+                    }
+                }
+                return null;
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                return null;
+            }
         }
         #endregion
 

@@ -67,10 +67,11 @@
                         <dataGrid:GridTextColumn
                             HeaderText="{StaticResource MapDataTypeControl_SOV_Count}"
                             IsReadOnly="True"
-                            Width="80"
+                            Width="90"
                             MappingName="Count" />
                         <dataGrid:GridNumericColumn HeaderText="{StaticResource MapDataTypeControl_SOV_Group}" MappingName="GroupId" 
-                                                    Width="80"/>
+                                                    Width="90"
+                                                    MinValue="1"/>
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
                 <Button
@@ -80,6 +81,12 @@
                     Click="Button_Confirm_Click"
                     Content="{StaticResource MapDataTypeControl_SOV_Confirm}"
                     Style="{ThemeResource AccentButtonStyle}" />
+                <Button
+                    Grid.Row="1"
+                    Margin="0,8"
+                    HorizontalAlignment="Right"
+                    Click="Button_ResetGroup_Click"
+                    Content="{StaticResource MapDataTypeControl_SOV_ResetGroup}"/>
             </Grid>
             <Grid x:Name="PlanetResourcGrid" Visibility="Collapsed">
                 <Grid>

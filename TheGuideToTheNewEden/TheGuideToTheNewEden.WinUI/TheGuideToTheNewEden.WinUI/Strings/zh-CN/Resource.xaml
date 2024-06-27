@@ -823,5 +823,6 @@
     <x:String x:Key="MapDataTypeControl_SOV_Count">数量</x:String>
     <x:String x:Key="MapDataTypeControl_SOV_Group">分组</x:String>
     <x:String x:Key="MapDataTypeControl_SOV_Confirm">更新地图显示</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">重置分组</x:String>
     <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">资源类型</x:String>
 </ResourceDictionary>

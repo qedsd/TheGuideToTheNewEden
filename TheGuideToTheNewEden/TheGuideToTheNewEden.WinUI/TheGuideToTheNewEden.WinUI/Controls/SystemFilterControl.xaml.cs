@@ -154,6 +154,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             _sovDatas = sovDatas;
             TextBlock_AllSOVCount.Text = _sovDatas.Count.ToString();
             ListView_SOV.ItemsSource = _sovDatas;
+            ListView_SOV.SelectAll();
         }
         #endregion
 

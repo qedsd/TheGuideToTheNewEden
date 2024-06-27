@@ -309,7 +309,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         {
                             FontSize = 12,
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                            VerticalAlignment = CanvasVerticalAlignment.Center
+                            VerticalAlignment = CanvasVerticalAlignment.Center,
+                            //Options = CanvasDrawTextOptions.Clip
                         };
                         args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetEnableColor(Colors.White, data.Enable), innerTextFormat);
                         //外图形
