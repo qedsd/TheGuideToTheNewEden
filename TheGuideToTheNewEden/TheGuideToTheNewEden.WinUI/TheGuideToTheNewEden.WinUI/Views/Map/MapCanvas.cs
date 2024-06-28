@@ -486,5 +486,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
         }
         #endregion
+
+        public void Dispose()
+        {
+            _canvasControl.RemoveFromVisualTree();
+            _canvasControl = null;
+            _selectedCanvasControl.RemoveFromVisualTree();
+            _selectedCanvasControl = null;
+        }
     }
 }

@@ -32,7 +32,7 @@ using static Vanara.PInvoke.Kernel32;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
-    public sealed partial class MapPage : Page
+    public sealed partial class MapPage : Page, IPage
     {
         private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
@@ -456,6 +456,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+        }
+
+        public void Close()
+        {
+            MapCanvas.Dispose();
         }
     }
 }
