@@ -34,11 +34,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
     public sealed partial class MapPage : Page, IPage
     {
-        private BaseWindow _window;
-        private Dictionary<int, MapData> _systemDatas;
-        private bool _isSystemData = true;
         private const int SuperionicIceID = 81144;
         private const int MagmaticGasID = 81143;
+
+        private BaseWindow _window;
+        private bool _isSystemData = true;
+
+        private Dictionary<int, MapData> _systemDatas;
+        private List<MapSolarSystem> _mapSolarSystems;
+        private List<MapRegion> _mapRegions;
+        /// <summary>
+        /// key为星系id
+        /// </summary>
+        private Dictionary<int, SovData> _sovDatas;
         public MapPage()
         {
             this.InitializeComponent();
@@ -58,26 +66,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             MapCanvas.Loaded -= MapCanvas_Loaded;
         }
-        private void Init()
+        private async void Init()
         {
-            InitData();
-            InitSOV();
-            InitPlanetResourcesData();
+            _window?.ShowWaiting("Loading System Data");
+            await InitData();
+            MapCanvas.SetData(_systemDatas);
+
+            _window?.ShowWaiting("Loading SOV Data");
+            var sovDatas = await InitSOV();
+            MapDataTypeControl?.SetSOVData(sovDatas);
+            SystemFilterControl?.SetData(_mapSolarSystems, _mapRegions, sovDatas);
+
+            _window?.ShowWaiting("Loading PlanetResources data");
+            await InitPlanetResourcesData();
+
+            _window?.HideWaiting();
         }
-        private void InitData()
+        
+        private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
-            var mapSolarSystems = MapSolarSystemService.Query(posDic.Values.Where(p => string.IsNullOrEmpty(p.SolarSystemName)).Select(p => p.SolarSystemID).ToList());
+            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
             _systemDatas = new Dictionary<int, MapData>();
-            foreach (var mapSolarSystem in mapSolarSystems)
+            foreach (var mapSolarSystem in _mapSolarSystems)
             {
-                MapSystemData mapSystemData = new MapSystemData(posDic[mapSolarSystem.SolarSystemID], mapSolarSystem);
-                _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
+                if(posDic.TryGetValue(mapSolarSystem.SolarSystemID, out var pos))
+                {
+                    MapSystemData mapSystemData = new MapSystemData(pos, mapSolarSystem);
+                    _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
+                }
             }
-            var regionPosDic = RegionMapHelper.PositionDic;
-            var mapRegions = MapRegionService.Query(regionPosDic.Keys.ToList());
+            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
             ResetXYToFix(_systemDatas);
-            MapCanvas.SetData(_systemDatas);
         }
         private void ResetXYToFix(Dictionary<int, MapData> datas)
         {
@@ -161,14 +181,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             MapCanvas.Draw();
         }
 
-        /// <summary>
-        /// key为星系id
-        /// </summary>
-        private Dictionary<int, SovData> _sovDatas;
-        private async void InitSOV()
+        private async Task<List<SovData>> InitSOV()
         {
             List<SovData> sovDatas = new List<SovData>();
-            _window?.ShowWaiting();
             var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
             if (resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -226,9 +241,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 _window?.ShowError(resp.StatusCode.ToString());
             }
-            _window?.HideWaiting();
-            SystemFilterControl?.SetSOVData(sovDatas);
-            MapDataTypeControl?.SetSOVData(sovDatas);
+
             _sovDatas = new Dictionary<int, SovData>();
             foreach(var data in sovDatas)
             {
@@ -237,6 +250,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _sovDatas.Add(sys, data);
                 }
             }
+            return sovDatas;
         }
 
         #region 显示设置
@@ -278,52 +292,55 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
         private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
-        private void InitPlanetResourcesData()
+        private async Task InitPlanetResourcesData()
         {
-            var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_systemDatas.Keys.ToList());
-
-            #region region
-            _regionResourcesDic = new Dictionary<int, Core.Models.PlanetResources.RegionResources>();
-            var groupByRegion = _systemDatas.Values.GroupBy(p => (p as MapSystemData).MapSolarSystem.RegionID);
-            foreach (var group in groupByRegion)
+            await Task.Run(() =>
             {
-                Core.Models.PlanetResources.RegionResources regionResources = new Core.Models.PlanetResources.RegionResources();
-                regionResources.Region = Core.Services.DB.MapRegionService.Query(group.Key);
-                foreach (var system in group)
+                var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_mapSolarSystems.Where(p=>p.Security <= 0).Select(p=>p.SolarSystemID).ToList());
+
+                #region region
+                _regionResourcesDic = new Dictionary<int, Core.Models.PlanetResources.RegionResources>();
+                var groupByRegion = _systemDatas.Values.GroupBy(p => (p as MapSystemData).MapSolarSystem.RegionID);
+                foreach (var group in groupByRegion)
                 {
-                    if (planetResourcesDic.TryGetValue(system.Id, out var resourcesDetails))
+                    Core.Models.PlanetResources.RegionResources regionResources = new Core.Models.PlanetResources.RegionResources();
+                    regionResources.Region = Core.Services.DB.MapRegionService.Query(group.Key);
+                    foreach (var system in group)
                     {
-                        regionResources.Power += resourcesDetails.Sum(p => p.PlanetResources.Power);
-                        regionResources.Workforce += resourcesDetails.Sum(p => p.PlanetResources.Workforce);
-                        regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
-                        regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                        if (planetResourcesDic.TryGetValue(system.Id, out var resourcesDetails))
+                        {
+                            regionResources.Power += resourcesDetails.Sum(p => p.PlanetResources.Power);
+                            regionResources.Workforce += resourcesDetails.Sum(p => p.PlanetResources.Workforce);
+                            regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                        }
+                    }
+                    if (regionResources.Power + regionResources.Workforce != 0)
+                    {
+                        _regionResourcesDic.Add(group.Key, regionResources);
                     }
                 }
-                if (regionResources.Power + regionResources.Workforce != 0)
-                {
-                    _regionResourcesDic.Add(group.Key, regionResources);
-                }
-            }
-            #endregion
+                #endregion
 
-            #region system
-            _systemResourcesDic = new Dictionary<int, Core.Models.PlanetResources.SolarSystemResources>();
-            foreach (var resources in planetResourcesDic)
-            {
-                if (_systemDatas.TryGetValue(resources.Key, out var mapData))
+                #region system
+                _systemResourcesDic = new Dictionary<int, Core.Models.PlanetResources.SolarSystemResources>();
+                foreach (var resources in planetResourcesDic)
                 {
-                    Core.Models.PlanetResources.SolarSystemResources solarSystemResources = new Core.Models.PlanetResources.SolarSystemResources()
+                    if (_systemDatas.TryGetValue(resources.Key, out var mapData))
                     {
-                        MapSolarSystem = (mapData as MapSystemData).MapSolarSystem,
-                        Power = resources.Value.Sum(p => p.PlanetResources.Power),
-                        Workforce = resources.Value.Sum(p => p.PlanetResources.Workforce),
-                        MagmaticGas = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
-                        SuperionicIce = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
-                    };
-                    _systemResourcesDic.Add(resources.Key, solarSystemResources);
+                        Core.Models.PlanetResources.SolarSystemResources solarSystemResources = new Core.Models.PlanetResources.SolarSystemResources()
+                        {
+                            MapSolarSystem = (mapData as MapSystemData).MapSolarSystem,
+                            Power = resources.Value.Sum(p => p.PlanetResources.Power),
+                            Workforce = resources.Value.Sum(p => p.PlanetResources.Workforce),
+                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                        };
+                        _systemResourcesDic.Add(resources.Key, solarSystemResources);
+                    }
                 }
-            }
-            #endregion
+                #endregion
+            });
         }
         private async void SetDataToPlanetResourc(int type)
         {
@@ -433,7 +450,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             if(_sovDatas != null && _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData))
             {
                 SelectedSystemSOVGrid.Visibility = Visibility.Visible;
-                SelectedSystemSOVTextBlock.Text = $"{sovData.AllianceName}\n\r{sovData.AllianceId}";
+                SelectedSystemSOVNameTextBlock.Text = sovData.AllianceName;
+                SelectedSystemSOVIDTextBlock.Text = sovData.AllianceId.ToString();
             }
             else
             {

@@ -186,8 +186,13 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{StaticResource MapPage_SelectedSystem_SOV}" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="SelectedSystemSOVTextBlock" Grid.Column="1" TextWrapping="WrapWholeWords"
-                               TextAlignment="Right"/>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                        <TextBlock x:Name="SelectedSystemSOVNameTextBlock"
+                                   TextAlignment="Right"/>
+                        <TextBlock x:Name="SelectedSystemSOVIDTextBlock"
+                                   TextAlignment="Right"
+                                   FontSize="12"/>
+                    </StackPanel>
                 </Grid>
                 <Grid x:Name="SelectedSystemResourceGrid" Grid.Row="5">
                     <Grid.RowDefinitions>

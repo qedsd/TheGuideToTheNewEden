@@ -30,14 +30,11 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         public SystemFilterControl()
         {
             this.InitializeComponent();
-            Init();
         }
-        private async void Init()
+        private void Init()
         {
-            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p=> !p.IsSpecial()).ToList();
             TextBlock_AllFilteredSystemCount.Text = _mapSolarSystems.Count.ToString();
             TextBlock_FilteredSystemCount.Text = TextBlock_AllFilteredSystemCount.Text;
-            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
             GridView_Region.ItemsSource = _mapRegions;
             TextBlock_AllRegionCount.Text = _mapRegions.Count.ToString();
             TextBlock_SelectedRegionCount.Text = _mapRegions.Count.ToString();
@@ -48,7 +45,18 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 _selectedRegions.Add(region.RegionID);
             }
             GridView_System.ItemsSource = new ObservableCollection<Core.DBModels.MapSolarSystem>();
-            //await InitSovList();
+
+            TextBlock_AllSOVCount.Text = _sovDatas.Count.ToString();
+            ListView_SOV.ItemsSource = _sovDatas;
+            ListView_SOV.SelectAll();
+        }
+
+        public void SetData(List<Core.DBModels.MapSolarSystem> systems, List<Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
+        {
+            _mapSolarSystems = systems;
+            _mapRegions = regions;
+            _sovDatas = sovDatas;
+            Init();
         }
         #region –«”Ú
         private void Button_SelecteAllRegion_Click(object sender, RoutedEventArgs e)
@@ -147,14 +155,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 }
             }
             TextBlock_SelectedSOVCount.Text = _selectedAlliances.Count.ToString();
-        }
-
-        public void SetSOVData(List<SovData> sovDatas)
-        {
-            _sovDatas = sovDatas;
-            TextBlock_AllSOVCount.Text = _sovDatas.Count.ToString();
-            ListView_SOV.ItemsSource = _sovDatas;
-            ListView_SOV.SelectAll();
         }
         #endregion
 

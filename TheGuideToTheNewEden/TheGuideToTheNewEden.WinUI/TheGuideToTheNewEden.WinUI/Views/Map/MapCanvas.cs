@@ -356,8 +356,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             
             Debug.WriteLine($"{_currentZoom} {zoom} {xOffset} {yOffset}");
-            UpdateData(zoom, xOffset, yOffset);
-            _canvasControl.Invalidate();
+            if(_usingMapDatas != null && _usingMapDatas.Any())
+            {
+                UpdateData(zoom, xOffset, yOffset);
+                _canvasControl.Invalidate();
+            }
         }
         private void UpdateData(float zoom, float xOffset, float yOffset)
         {
@@ -493,6 +496,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _canvasControl = null;
             _selectedCanvasControl.RemoveFromVisualTree();
             _selectedCanvasControl = null;
+            _findDataTimer.Stop();
+            _findDataTimer = null;
         }
     }
 }
