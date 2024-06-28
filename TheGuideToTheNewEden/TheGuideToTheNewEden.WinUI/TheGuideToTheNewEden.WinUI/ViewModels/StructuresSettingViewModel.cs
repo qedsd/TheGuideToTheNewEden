@@ -97,7 +97,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public StructuresSettingViewModel()
         {
             Characters = Services.CharacterService.CharacterOauths;
-            Structures = Services.StructureService.GetStructures().ToObservableCollection();
+            Structures = Services.StructureService.GetMarketStrutures();
             EsiClient = ESIService.GetDefaultEsi();
             SelectedCharacter = Characters.FirstOrDefault();
         }
@@ -113,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Structures.Add(structure);
                 }
-                Services.StructureService.Save();
+                Services.StructureService.SaveMarketStrutures();
             }
         });
         public ICommand AddIDCommand => new RelayCommand(async() =>
@@ -126,7 +126,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Window.ShowSuccess($"添加成功：{s.Name}");
                     Structures.Add(s);
-                    Services.StructureService.Save();
+                    Services.StructureService.SaveMarketStrutures();
                 }
                 else
                 {
@@ -147,7 +147,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Structures.Remove(item);
                 }
-                Services.StructureService.Save();
+                Services.StructureService.SaveMarketStrutures();
             }
         });
         public ICommand SearchCommand => new RelayCommand(() =>

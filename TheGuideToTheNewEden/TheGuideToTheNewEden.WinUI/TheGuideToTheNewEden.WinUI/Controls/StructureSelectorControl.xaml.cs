@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private void Init()
         {
-            Structures = Services.StructureService.GetStructures().ToObservableCollection();
+            Structures = Services.StructureService.GetMarketStrutures();
             if(Structures.Any())
             {
                 ListView_List.Visibility = Visibility.Visible;

@@ -21,7 +21,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class StructureService
     {
+        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "MarketStructures.json");
         private static readonly string FilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
+        private static ObservableCollection<Structure> MarketStructures { get; set; }
         private static Dictionary<long, Structure> Structures { get; set; }
         public static void Init()
         {
@@ -33,9 +35,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Structures = list.Where(p=>p != null).ToDictionary(p=>p.Id);
             }
             Structures ??= new Dictionary<long, Structure>();
+
+            if(File.Exists(MarketStrutureFilePath))
+            {
+                string json = File.ReadAllText(MarketStrutureFilePath);
+                var list = JsonConvert.DeserializeObject<List<Structure>>(json);
+                if (list.NotNullOrEmpty())
+                    MarketStructures = list.Where(p => p != null).ToObservableCollection();
+            }
+            MarketStructures ??= new ObservableCollection<Structure>();
         }
 
-        public static void Save()
+        private static void Save()
         {
             string json = JsonConvert.SerializeObject(Structures.Values);
             string folder = Path.GetDirectoryName(FilePath);
@@ -159,6 +170,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static List<Structure> GetStructures()
         {
             return Structures.Values.ToList();
+        }
+        public static ObservableCollection<Structure> GetMarketStrutures()
+        {
+            return MarketStructures;
+        }
+        public static void SaveMarketStrutures()
+        {
+            string json = JsonConvert.SerializeObject(MarketStructures);
+            string folder = Path.GetDirectoryName(MarketStrutureFilePath);
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            File.WriteAllText(MarketStrutureFilePath, json);
         }
 
         private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID)
