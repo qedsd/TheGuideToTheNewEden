@@ -5,15 +5,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
-        <local:MapCanvas x:Name="MapCanvas" Loaded="MapCanvas_Loaded" 
-                         OnPointedSystemChanged="MapCanvas_OnPointedSystemChanged"
-                         OnSelectedSystemChanged="MapCanvas_OnSelectedSystemChanged"/>
+        <local:MapCanvas
+            x:Name="MapCanvas"
+            Loaded="MapCanvas_Loaded"
+            OnPointedSystemChanged="MapCanvas_OnPointedSystemChanged"
+            OnSelectedSystemChanged="MapCanvas_OnSelectedSystemChanged" />
         <!--  搜索  -->
         <Grid
             Width="240"
@@ -41,9 +44,9 @@
         <!--  设置  -->
         <StackPanel
             Margin="2,4,0,0"
+            Padding="4"
             VerticalAlignment="Top"
-            Orientation="Horizontal" 
-            Padding="4">
+            Orientation="Horizontal">
             <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_SystemFilter}">
                 <Button.Content>
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16E;" />
@@ -68,22 +71,21 @@
                             x:Name="MapDataTypeControl"
                             Width="400"
                             OnDataTypChanged="MapDataTypeControl_OnDataTypChanged"
-                            OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" 
-                            OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"/>
+                            OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
+                            OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
                     </Flyout>
                 </Button.Flyout>
             </Button>
         </StackPanel>
-        <!--左侧详细面板-->
+        <!--  左侧详细面板  -->
         <Grid VerticalAlignment="Bottom">
             <StackPanel x:Name="PlanetResourcePanel" Visibility="Collapsed">
                 <!--<Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>-->
-                <Expander Header="{StaticResource MapPage_PlanetResource_Region}" ExpandDirection="Up">
+                <Expander ExpandDirection="Up" Header="{StaticResource MapPage_PlanetResource_Region}">
                     <dataGrid:SfDataGrid
-                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                         x:Name="RegionPlanetResourcList"
                         Height="400"
                         HorizontalAlignment="Stretch"
@@ -94,6 +96,7 @@
                         AllowResizingColumns="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
+                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                         ColumnWidthMode="Auto"
                         GridLinesVisibility="Both"
                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
@@ -101,19 +104,31 @@
                         SelectionMode="Extended"
                         ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn
-                                HeaderText="{StaticResource MapPage_PlanetResource_Region_Name}"
-                                MappingName="Region.RegionName" />
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Power}" MappingName="Power" DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Workforce}" MappingName="Workforce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}" MappingName="SuperionicIce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}" MappingName="MagmaticGas"  DisplayNumberFormat="N0"/>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Region_Name}" MappingName="Region.RegionName" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                MappingName="Power" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                MappingName="Workforce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                MappingName="SuperionicIce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Expander>
-                <Expander Header="{StaticResource MapPage_PlanetResource_System}" Grid.Row="1"  ExpandDirection="Up">
+                <Expander
+                    Grid.Row="1"
+                    ExpandDirection="Up"
+                    Header="{StaticResource MapPage_PlanetResource_System}">
                     <dataGrid:SfDataGrid
-                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                         x:Name="SystemPlanetResourcList"
                         Height="400"
                         HorizontalAlignment="Stretch"
@@ -124,6 +139,7 @@
                         AllowResizingColumns="True"
                         AllowSorting="True"
                         AutoGenerateColumns="False"
+                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                         ColumnWidthMode="Auto"
                         GridLinesVisibility="Both"
                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
@@ -131,158 +147,198 @@
                         SelectionMode="Extended"
                         ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn
-                                HeaderText="{StaticResource MapPage_PlanetResource_System_Name}"
-                                MappingName="MapSolarSystem.SolarSystemName" />
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Power}" MappingName="Power" DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Workforce}" MappingName="Workforce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}" MappingName="SuperionicIce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}" MappingName="MagmaticGas"  DisplayNumberFormat="N0"/>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                MappingName="Power" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                MappingName="Workforce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                MappingName="SuperionicIce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Expander>
-                <Expander Header="{StaticResource MapPage_PlanetResource_Upgrade_Resource}" Grid.Row="1"  ExpandDirection="Up">
+                <Expander
+                    Grid.Row="1"
+                    ExpandDirection="Up"
+                    Header="{StaticResource MapPage_PlanetResource_Upgrade_Resource}">
                     <dataGrid:SfDataGrid
-        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-        x:Name="UpgradeList"
-        Height="400"
-        HorizontalAlignment="Stretch"
-        AllowDraggingColumns="True"
-        AllowEditing="False"
-        AllowFiltering="True"
-        AllowGrouping="False"
-        AllowResizingColumns="True"
-        AllowSorting="True"
-        AutoGenerateColumns="False"
-        ColumnWidthMode="Auto"
-        GridLinesVisibility="Both"
-        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-        HeaderLinesVisibility="Both"
-        SelectionMode="Extended"
-        ShowGroupDropArea="False">
+                        x:Name="UpgradeList"
+                        Height="400"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="False"
+                        AllowFiltering="True"
+                        AllowGrouping="False"
+                        AllowResizingColumns="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="Both"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        SelectionMode="Extended"
+                        ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn
-                HeaderText="{StaticResource MapPage_PlanetResource_Upgrade_Name}"
-                MappingName="Name" />
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Power}" MappingName="Power" DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Workforce}" MappingName="Workforce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}" MappingName="SuperionicIce"  DisplayNumberFormat="N0"/>
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}" MappingName="MagmaticGas"  DisplayNumberFormat="N0"/>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Upgrade_Name}" MappingName="Name" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                MappingName="Power" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                MappingName="Workforce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                MappingName="SuperionicIce" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Expander>
             </StackPanel>
         </Grid>
-        <!--右侧详细面板-->
-        <Grid VerticalAlignment="Bottom" x:Name="SelectedSystemInfoPanel"
-              HorizontalAlignment="Right"
-              Width="240"
-              Padding="16"
-              Margin="16"
-              Visibility="Collapsed"
-              CornerRadius="8"
-              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-            <Grid Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Padding="8">
+        <!--  右侧详细面板  -->
+        <Grid
+            x:Name="SelectedSystemInfoPanel"
+            Width="260"
+            Margin="16"
+            Padding="16"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="8"
+            Visibility="Collapsed">
+            <Grid Padding="8" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock x:Name="SelectedSystemNameTextBlock" 
-                       Margin="0,4"
-                       FontSize="18" 
-                       FontWeight="Medium" 
-                       Foreground="{ThemeResource SystemAccentColor}" 
-                       HorizontalAlignment="Center"/>
+                <TextBlock
+                    x:Name="SelectedSystemNameTextBlock"
+                    Margin="0,4"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="Medium"
+                    Foreground="{ThemeResource SystemAccentColor}" />
                 <Grid Grid.Row="1" Margin="0,4">
-                    <TextBlock Text="ID"/>
-                    <TextBlock x:Name="SelectedSystemIDTextBlock" HorizontalAlignment="Right"/>
+                    <TextBlock Text="ID" />
+                    <TextBlock x:Name="SelectedSystemIDTextBlock" HorizontalAlignment="Right" />
                 </Grid>
                 <Grid Grid.Row="2" Margin="0,4">
-                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_Security}"/>
-                    <TextBlock x:Name="SelectedSystemSecurityTextBlock" HorizontalAlignment="Right"/>
+                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_Security}" />
+                    <TextBlock x:Name="SelectedSystemSecurityTextBlock" HorizontalAlignment="Right" />
                 </Grid>
                 <Grid Grid.Row="3" Margin="0,4">
-                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_Region}"/>
-                    <TextBlock x:Name="SelectedSystemRegionTextBlock" HorizontalAlignment="Right"/>
+                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_Region}" />
+                    <TextBlock x:Name="SelectedSystemRegionTextBlock" HorizontalAlignment="Right" />
                 </Grid>
-                <Grid Grid.Row="4" x:Name="SelectedSystemSOVGrid" Margin="0,4">
+                <Grid
+                    x:Name="SelectedSystemSOVGrid"
+                    Grid.Row="4"
+                    Margin="0,4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{StaticResource MapPage_SelectedSystem_SOV}" VerticalAlignment="Center"/>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapPage_SelectedSystem_SOV}" />
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                        <TextBlock x:Name="SelectedSystemSOVNameTextBlock"
-                                   TextAlignment="Right"/>
-                        <TextBlock x:Name="SelectedSystemSOVIDTextBlock"
-                                   TextAlignment="Right"
-                                   FontSize="12"/>
+                        <TextBlock x:Name="SelectedSystemSOVNameTextBlock" TextAlignment="Right" />
+                        <TextBlock
+                            x:Name="SelectedSystemSOVIDTextBlock"
+                            FontSize="12"
+                            TextAlignment="Right" />
                     </StackPanel>
                 </Grid>
                 <Grid x:Name="SelectedSystemResourceGrid" Grid.Row="5">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,4">
-                        <TextBlock Text="{StaticResource MapPage_PlanetResource_Power}"/>
-                        <TextBlock x:Name="SelectedSystemPowerTextBlock" HorizontalAlignment="Right"/>
+                        <TextBlock Text="{StaticResource MapPage_PlanetResource_Power}" />
+                        <TextBlock x:Name="SelectedSystemPowerTextBlock" HorizontalAlignment="Right" />
                     </Grid>
                     <Grid Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{StaticResource MapPage_PlanetResource_Workforce}"/>
-                        <TextBlock x:Name="SelectedSystemWorkforceTextBlock" HorizontalAlignment="Right"/>
+                        <TextBlock Text="{StaticResource MapPage_PlanetResource_Workforce}" />
+                        <TextBlock x:Name="SelectedSystemWorkforceTextBlock" HorizontalAlignment="Right" />
                     </Grid>
                     <Grid Grid.Row="2" Margin="0,4">
-                        <TextBlock Text="{StaticResource MapPage_PlanetResource_MagmaticGas}"/>
-                        <TextBlock x:Name="SelectedSystemMagmaticGasTextBlock" HorizontalAlignment="Right"/>
+                        <TextBlock Text="{StaticResource MapPage_PlanetResource_MagmaticGas}" />
+                        <TextBlock x:Name="SelectedSystemMagmaticGasTextBlock" HorizontalAlignment="Right" />
                     </Grid>
                     <Grid Grid.Row="3" Margin="0,4">
-                        <TextBlock Text="{StaticResource MapPage_PlanetResource_SuperionicIce}"/>
-                        <TextBlock x:Name="SelectedSystemSuperionicIceTextBlock" HorizontalAlignment="Right"/>
+                        <TextBlock Text="{StaticResource MapPage_PlanetResource_SuperionicIce}" />
+                        <TextBlock x:Name="SelectedSystemSuperionicIceTextBlock" HorizontalAlignment="Right" />
                     </Grid>
                 </Grid>
                 <Grid Grid.Row="6" Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button Margin="0,0,4,0"
-        x:Name="SystemResourceDetailButton"
-        Click="SystemResourceDetailButton_Click"
-        HorizontalAlignment="Stretch">
+                    <Button
+                        x:Name="SystemResourceDetailButton"
+                        Margin="0,0,4,0"
+                        HorizontalAlignment="Stretch"
+                        Click="SystemResourceDetailButton_Click">
                         <Button.Content>
-                            <TextBlock Text="&#xE700;" FontFamily="Segoe MDL2 Assets" FontSize="12"
-                   Padding="2"/>
+                            <TextBlock
+                                Padding="2"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="12"
+                                Text="&#xE700;" />
                         </Button.Content>
                     </Button>
-                    <Button Grid.Column="1"
-        x:Name="CloseSelectedSystemInfoPanelButton"
-        Click="CloseSelectedSystemInfoPanelButton_Click">
+                    <Button
+                        x:Name="CloseSelectedSystemInfoPanelButton"
+                        Grid.Column="1"
+                        Click="CloseSelectedSystemInfoPanelButton_Click">
                         <Button.Content>
-                            <TextBlock Text="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="12" Padding="2"
-                   Foreground="OrangeRed"/>
+                            <TextBlock
+                                Padding="2"
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="12"
+                                Foreground="OrangeRed"
+                                Text="&#xE106;" />
                         </Button.Content>
                     </Button>
                 </Grid>
             </Grid>
         </Grid>
-        <!--顶上名称面板-->
-        <Grid x:Name="TopPanel" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-              VerticalAlignment="Top"
-              HorizontalAlignment="Center"
-              CornerRadius="4"
-              Visibility="Collapsed"
-              Margin="0,4,0,0"
-              Padding="12,6">
-            <TextBlock x:Name="PointedSystemName" FontSize="16"/>
+        <!--  顶上名称面板  -->
+        <Grid
+            x:Name="TopPanel"
+            Margin="0,4,0,0"
+            Padding="12,6"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="4"
+            Visibility="Collapsed">
+            <TextBlock x:Name="PointedSystemName" FontSize="16" />
         </Grid>
     </Grid>
 </Page>
