@@ -172,16 +172,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         low = mid + 1;
                     }
                 }
-                if (resultData != null)
-                {
-                    Debug.WriteLine($"Find target {resultData.MainText}");
-                    _selectedData = resultData;
-                }
+                _selectedData = resultData;
                 PointedSystemChanged?.Invoke(resultData);
             }
             _selectedCanvasControl.Invalidate();
-            _lastMovedX = 0;
-            _lastMovedY = 0;
         }
 
         private void SetColor(bool isDark)
@@ -225,16 +219,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private void CanvasControl_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            _lastMovedX = 0;
-            _lastMovedY = 0;
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
             if (pointerPoint.Properties.IsLeftButtonPressed)//拖拽移动布局
             {
-                var xOffset = (float)(pointerPoint.Position.X - _lastPressedX);
-                var yOffset = (float)(pointerPoint.Position.Y - _lastPressedY);
-                _lastPressedX = pointerPoint.Position.X;
-                _lastPressedY = pointerPoint.Position.Y;
-                Draw(0, xOffset, yOffset);
+                if(_lastPressedX != 0 && _lastPressedY != 0)
+                {
+                    Debug.WriteLine($"PointerMoved:({_lastPressedX},{_lastPressedY}) -> ({pointerPoint.Position.X},{pointerPoint.Position.Y})");
+                    var xOffset = (float)(pointerPoint.Position.X - _lastPressedX);
+                    var yOffset = (float)(pointerPoint.Position.Y - _lastPressedY);
+                    _lastPressedX = pointerPoint.Position.X;
+                    _lastPressedY = pointerPoint.Position.Y;
+                    Draw(0, xOffset, yOffset);
+                }
             }
             else//选择星系
             {
