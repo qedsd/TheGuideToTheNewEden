@@ -76,11 +76,11 @@
         </StackPanel>
         <!--左侧详细面板-->
         <Grid VerticalAlignment="Bottom">
-            <Grid x:Name="PlanetResourcePanel" Visibility="Collapsed">
-                <Grid.RowDefinitions>
+            <StackPanel x:Name="PlanetResourcePanel" Visibility="Collapsed">
+                <!--<Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                </Grid.RowDefinitions>-->
                 <Expander Header="{StaticResource MapPage_PlanetResource_Region}" ExpandDirection="Up">
                     <dataGrid:SfDataGrid
                         Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
@@ -141,7 +141,37 @@
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Expander>
-            </Grid>
+                <Expander Header="{StaticResource MapPage_PlanetResource_Upgrade_Resource}" Grid.Row="1"  ExpandDirection="Up">
+                    <dataGrid:SfDataGrid
+        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+        x:Name="UpgradeList"
+        Height="400"
+        HorizontalAlignment="Stretch"
+        AllowDraggingColumns="True"
+        AllowEditing="False"
+        AllowFiltering="True"
+        AllowGrouping="False"
+        AllowResizingColumns="True"
+        AllowSorting="True"
+        AutoGenerateColumns="False"
+        ColumnWidthMode="Auto"
+        GridLinesVisibility="Both"
+        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+        HeaderLinesVisibility="Both"
+        SelectionMode="Extended"
+        ShowGroupDropArea="False">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTextColumn
+                HeaderText="{StaticResource MapPage_PlanetResource_Upgrade_Name}"
+                MappingName="Name" />
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Power}" MappingName="Power" DisplayNumberFormat="N0"/>
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_Workforce}" MappingName="Workforce"  DisplayNumberFormat="N0"/>
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}" MappingName="SuperionicIce"  DisplayNumberFormat="N0"/>
+                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}" MappingName="MagmaticGas"  DisplayNumberFormat="N0"/>
+                        </dataGrid:SfDataGrid.Columns>
+                    </dataGrid:SfDataGrid>
+                </Expander>
+            </StackPanel>
         </Grid>
         <!--右侧详细面板-->
         <Grid VerticalAlignment="Bottom" x:Name="SelectedSystemInfoPanel"
@@ -200,6 +230,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="0,4">
                         <TextBlock Text="{StaticResource MapPage_PlanetResource_Power}"/>
@@ -218,17 +249,29 @@
                         <TextBlock x:Name="SelectedSystemSuperionicIceTextBlock" HorizontalAlignment="Right"/>
                     </Grid>
                 </Grid>
-                <Button Grid.Row="6" Style="{ThemeResource TransparentButton}"
-                        Margin="0,8,0,0"
-                        x:Name="CloseSelectedSystemInfoPanelButton"
-                        Click="CloseSelectedSystemInfoPanelButton_Click"
-                        HorizontalAlignment="Stretch">
-                    <Button.Content>
-                        <TextBlock Text="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                                   Foreground="OrangeRed"
-                                   Padding="2"/>
-                    </Button.Content>
-                </Button>
+                <Grid Grid.Row="6" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Margin="0,0,4,0"
+        x:Name="SystemResourceDetailButton"
+        Click="SystemResourceDetailButton_Click"
+        HorizontalAlignment="Stretch">
+                        <Button.Content>
+                            <TextBlock Text="&#xE700;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                   Padding="2"/>
+                        </Button.Content>
+                    </Button>
+                    <Button Grid.Column="1"
+        x:Name="CloseSelectedSystemInfoPanelButton"
+        Click="CloseSelectedSystemInfoPanelButton_Click">
+                        <Button.Content>
+                            <TextBlock Text="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="12" Padding="2"
+                   Foreground="OrangeRed"/>
+                        </Button.Content>
+                    </Button>
+                </Grid>
             </Grid>
         </Grid>
         <!--顶上名称面板-->

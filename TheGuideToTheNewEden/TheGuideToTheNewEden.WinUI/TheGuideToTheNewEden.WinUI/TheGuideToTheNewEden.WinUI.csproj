@@ -246,6 +246,7 @@
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
+    <None Remove="Dialogs\SystemResourceDialog.xaml" />
     <None Remove="logo_128.ico" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -415,6 +416,9 @@
     <Page Update="Controls\SystemFilterControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Dialogs\SystemResourceDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -444,6 +448,9 @@
     </None>
     <None Update="Resources\Configs\SolarSystemMap.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Configs\UpgradeResources.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\ded.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return solarSystemResources;
         }
-        private static List<PlanetResourcesDetail> GetPlanetResourcesDetailsBySolarSystemID(int id)
+        public static List<PlanetResourcesDetail> GetPlanetResourcesDetailsBySolarSystemID(int id)
         {
             var mapDenormalizes = MapDenormalizeService.QueryBySolarSystemID(id);
             List<PlanetResourcesDetail> list = null;
@@ -40,8 +40,6 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 {
                     list.Add(new PlanetResourcesDetail()
                     {
-                        ItemType = InvTypeService.QueryType(mapDenormalize.TypeID),
-                        //ItemName = InvNameService.Query(mapDenormalize.ItemID),
                         MapDenormalize = mapDenormalize,
                         PlanetResources = PlanetResourcesService.QueryByStarID(mapDenormalize.ItemID)
                     });
@@ -94,7 +92,6 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 if(allPlanetResources.NotNullOrEmpty())
                 {
                     var allPlanetResourcesDic = allPlanetResources.ToDictionary(p => p.StarID);
-                    var allTypeDic = InvTypeService.QueryTypes(allMapDenormalizes.Select(p=> p.TypeID).ToList()).ToDictionary(p=>p.TypeID);
                     var allMapDenormalizesGroup = allMapDenormalizes.GroupBy(p=>p.SolarSystemID);
                     foreach(var group in allMapDenormalizesGroup)
                     {
@@ -107,7 +104,6 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                                 {
                                     list.Add(new PlanetResourcesDetail()
                                     {
-                                        ItemType = allTypeDic[mapDenormalize.TypeID],
                                         MapDenormalize = mapDenormalize,
                                         PlanetResources = planetResources
                                     });

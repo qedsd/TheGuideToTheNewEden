@@ -23,6 +23,7 @@ using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Converters;
+using TheGuideToTheNewEden.WinUI.Dialogs;
 using TheGuideToTheNewEden.WinUI.Models.Map;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -79,7 +80,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
             _window?.ShowWaiting("Loading PlanetResources data");
             await InitPlanetResourcesData();
-
+            RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
+            SystemPlanetResourcList.ItemsSource = _systemResourcesDic.Values;
+            UpgradeList.ItemsSource = _upgrades;
             _window?.HideWaiting();
         }
         
@@ -292,6 +295,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
         private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
+        private List<Core.Models.PlanetResources.Upgrade> _upgrades;
         private async Task InitPlanetResourcesData()
         {
             await Task.Run(() =>
@@ -340,6 +344,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     }
                 }
                 #endregion
+
+                #region upgrade
+                _upgrades = Core.Services.UpgradeService.Current.GetUpgrades();
+                #endregion
             });
         }
         private async void SetDataToPlanetResourc(int type)
@@ -381,8 +389,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 long resc = (long)data.Tag;
                 data.BgColor = PlanetRecourceColorConverter.Convert(Math.Round(resc / max,1));
             }
-            RegionPlanetResourcList.ItemsSource ??= _regionResourcesDic.Values;
-            SystemPlanetResourcList.ItemsSource ??= _systemResourcesDic.Values;
             _window?.HideWaiting();
             MapCanvas.Draw();
         }
@@ -442,6 +448,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 return;
             SelectedSystemInfoPanel.Visibility = Visibility.Visible;
             var data = mapData as MapSystemData;
+            SystemResourceDetailButton.Tag = data;
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
             SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
             SelectedSystemRegionTextBlock.Text = Core.Services.DB.MapRegionService.Query(data.MapSolarSystem.RegionID).RegionName;
@@ -459,6 +466,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if (_systemResourcesDic != null && _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource))
             {
+                SystemResourceDetailButton.Visibility = Visibility.Visible;
                 SelectedSystemResourceGrid.Visibility = Visibility.Visible;
                 SelectedSystemPowerTextBlock.Text = resource.Power.ToString("N0");
                 SelectedSystemWorkforceTextBlock.Text = resource.Workforce.ToString("N0");
@@ -467,6 +475,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             else
             {
+                SystemResourceDetailButton.Visibility = Visibility.Collapsed;
                 SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
             }
         }
@@ -479,6 +488,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         public void Close()
         {
             MapCanvas.Dispose();
+        }
+
+        private async void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button).Tag as MapSystemData;
+            _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
+            _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource);
+            await SystemResourceDialog.ShowAsync(data.MapSolarSystem, _mapRegions.First(p=>p.RegionID == data.MapSolarSystem.RegionID), sovData, resource, this.XamlRoot);
         }
     }
 }

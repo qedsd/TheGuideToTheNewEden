@@ -222,7 +222,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
             if (pointerPoint.Properties.IsLeftButtonPressed)//拖拽移动布局
             {
-                if(_lastPressedX != 0 && _lastPressedY != 0)
+                if (_lastPressedX != 0 && _lastPressedY != 0)
                 {
                     Debug.WriteLine($"PointerMoved:({_lastPressedX},{_lastPressedY}) -> ({pointerPoint.Position.X},{pointerPoint.Position.Y})");
                     var xOffset = (float)(pointerPoint.Position.X - _lastPressedX);
