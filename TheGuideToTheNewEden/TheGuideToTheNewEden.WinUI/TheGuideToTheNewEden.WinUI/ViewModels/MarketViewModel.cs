@@ -275,8 +275,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             Window?.ShowWaiting("获取订单中...");
             List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID); ;
-            BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
-            SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
+            BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
+            SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
             Window?.ShowWaiting("获取历史记录中...");
             Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedStructure.RegionId);

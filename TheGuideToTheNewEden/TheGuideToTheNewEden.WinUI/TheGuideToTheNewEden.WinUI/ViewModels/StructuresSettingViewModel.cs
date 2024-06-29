@@ -374,6 +374,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
+                Core.Log.Error(resp.StatusCode);
                 return null;
             }
         }
