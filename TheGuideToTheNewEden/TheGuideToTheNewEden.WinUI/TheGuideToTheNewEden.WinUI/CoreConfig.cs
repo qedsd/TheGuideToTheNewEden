@@ -29,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI
         public static string StaticDbPath { set => Core.Config.StaticDBPath = value; }
         public static string CacheDbPath { set => Core.Config.CacheDBPath = value; }
         public static string SolarSystemMapPath { set=> Core.Config.SolarSystemMapPath = value; }
+        public static string RegionMapPath { set => Core.Config.RegionMapPath = value; }
         #endregion
 
         public static bool InitDb()

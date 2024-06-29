@@ -16,7 +16,6 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.Market;
-using static Vanara.PInvoke.Kernel32.DEVICE_MEDIA_INFO.DEVICESPECIFIC;
 
 namespace TheGuideToTheNewEden.WinUI.Dialogs
 {

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,32 +54,42 @@ namespace TheGuideToTheNewEden.DevTools.Map
         static void SetPositon(List<SolarSystemPosition> solarSystems)
         {
             var items = MapSolarSystemService.QueryAll();
-            if(items != null)
+            if (items != null)
             {
                 items = items.Where(p => p.SolarSystemID < 31000000).ToList();//ID大于31000000的为虫洞空间之类的
-                int referenceX = 1000;//最终重新计算的x位置最大值
-                int referenceY = 1000;//最终重新计算的y位置最大值
-                var maxX = items.Max(p => p.X);
-                var minX = items.Min(p => p.X);
-                var maxY = items.Max(p => p.Y);
-                var minY = items.Min(p => p.Y);
-                var xSpan = maxX - minX;//整个X区间大小
-                var ySpan = maxY - minY;//整个Y区间大小
-                //要计算某个x在当前区间内对应百分比位置，就此x与所有x中最小x的差，除以x区间即可，y同理
-                var dic = items.ToDictionary(p => p.SolarSystemID);
-                foreach (var item in solarSystems)
+            }
+            var dic = items.ToDictionary(p => p.SolarSystemID);
+            foreach (var item in solarSystems)
+            {
+                if (dic.TryGetValue(item.SolarSystemID, out var mapSolarSystem))
                 {
-                    if(dic.TryGetValue(item.SolarSystemID, out var mapSolarSystem))
-                    {
-                        double xP = (mapSolarSystem.X - minX) / xSpan;
-                        double yP = (mapSolarSystem.Y - minY) / ySpan;
-                        //item.X = xP * referenceX;//从0到referenceX重新赋值
-                        //item.Y = yP * referenceY;//从0到referenceY重新赋值
-                        item.X = xP;
-                        item.Y = yP;
-                    }
+                    item.X = Math.Round(mapSolarSystem.X / Math.Pow(10, 15), 3);
+                    item.Y = Math.Round(mapSolarSystem.Z / Math.Pow(10, 15), 3);//Z才是Y
                 }
             }
+            var maxX = solarSystems.Max(p => p.X);
+            var minX = solarSystems.Min(p => p.X);
+            var maxY = solarSystems.Max(p => p.Y);
+            var minY = solarSystems.Min(p => p.Y);
+            //将xy平移到0
+            var xOffset = 0 - minX;
+            var yOffset = 0 - minY;
+            var afterOffsetMaxY = maxY + yOffset;
+            foreach (var sys in solarSystems)
+            {
+                sys.X = sys.X + xOffset;
+                sys.Y = afterOffsetMaxY - (sys.Y + yOffset);//将Y从向上递增改为向下递增从而符合window绘制
+            }
+            ////将xy缩放到最大范围内
+            //double maxYUnit = 100;
+            //double maxXUnit = 100;
+            //var xScale = maxXUnit / (maxX + xOffset);
+            //var yScale = maxYUnit / (maxY + yOffset);
+            //foreach (var sys in solarSystems)
+            //{
+            //    sys.X = (sys.X + xOffset) * xScale;
+            //    sys.Y = maxYUnit - (sys.Y + yOffset) * yScale;
+            //}  
         }
     }
 }

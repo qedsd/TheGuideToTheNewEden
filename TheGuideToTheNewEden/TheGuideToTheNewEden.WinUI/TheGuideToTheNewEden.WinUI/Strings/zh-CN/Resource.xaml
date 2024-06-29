@@ -102,6 +102,8 @@
     <x:String x:Key="ShellPage_ZKB_Desc">Zkillboard青春版</x:String>
     <x:String x:Key="ShellPage_Database">数据库</x:String>
     <x:String x:Key="ShellPage_Database_Desc">查询本地数据库</x:String>
+    <x:String x:Key="ShellPage_Map">星图</x:String>
+    <x:String x:Key="ShellPage_Map_Desc">地图、导航、资源</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -778,4 +780,58 @@
     <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame">复制被压订单为游戏批量购买订单</x:String>
     <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Success">复制成功！在游戏批量购买界面粘贴即可</x:String>
     <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Failed">无物品可复制</x:String>
+
+    <!--  MapPage  -->
+    <x:String x:Key="MapPage_SearchSystem">星系</x:String>
+    <x:String x:Key="MapPage_SearchRegion">星域</x:String>
+    <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
+    <x:String x:Key="MapPage_Setting">设置</x:String>
+    <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_PlanetResource">行星资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region">星域资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region_Name">星域名称</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Power">能量</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Workforce">劳动力</x:String>
+    <x:String x:Key="MapPage_PlanetResource_MagmaticGas">岩浆气</x:String>
+    <x:String x:Key="MapPage_PlanetResource_SuperionicIce">离子冰</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System">星系资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System_Name">星系名称</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Security">安全等级</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_SOV">主权</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Region">星域</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">插件需求</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">插件名</x:String>
+
+    <!--  SystemFilterControl  -->
+    <x:String x:Key="SystemFilterControl_Region">星域</x:String>
+    <x:String x:Key="SystemFilterControl_System">星系</x:String>
+    <x:String x:Key="SystemFilterControl_Security">安全等级</x:String>
+    <x:String x:Key="SystemFilterControl_Sov">主权</x:String>
+    <x:String x:Key="SystemFilterControl_Npc">怪类型</x:String>
+    <x:String x:Key="SystemFilterControl_SelectAll">全选</x:String>
+    <x:String x:Key="SystemFilterControl_System_Mode">显示模式</x:String>
+    <x:String x:Key="SystemFilterControl_System_OnlyInList">仅显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_NotInList">不显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_Search">搜索星系</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_UpdateSovList">刷新主权列表</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_ContainNoneSOV">包含无主权星系</x:String>
+    <x:String x:Key="SystemFilterControl_Confirm">更新地图显示</x:String>
+    <x:String x:Key="SystemFilterControl_SOV_Count">主权数量</x:String>
+
+    <!--  MapDataTypeControl  -->
+    <x:String x:Key="MapDataTypeControl_SOV_AllianceName">联盟</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Count">数量</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Group">分组</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Confirm">更新地图显示</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">重置分组</x:String>
+    <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">资源类型</x:String>
+
+    <!--  SystemResourceDialog  -->
+    <x:String x:Key="SystemResourceDialog_UpgradeList">插件需求</x:String>
+    <x:String x:Key="SystemResourceDialog_PlanetResourceList">行星资源</x:String>
+    <x:String x:Key="SystemResourceDialog_PlanetID">行星ID</x:String>
+    <x:String x:Key="SystemResourceDialog_Reagent">试剂</x:String>
+    <x:String x:Key="SystemResourceDialog_HarvestAmount">产量/小时</x:String>
 </ResourceDictionary>

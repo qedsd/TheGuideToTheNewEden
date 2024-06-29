@@ -21,36 +21,75 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class StructureService
     {
-        private static readonly string FilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
-        private static Dictionary<long, Structure> Structures { get; set; }
+        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "MarketStructures.json");
+        private static readonly string AutoStructureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
+        private static ObservableCollection<Structure> MarketStructures { get; set; }
+        private static Dictionary<long, Structure> AutoStructures { get; set; }
         public static void Init()
         {
-            if (File.Exists(FilePath))
+            if (File.Exists(AutoStructureFilePath))
             {
-                string json = File.ReadAllText(FilePath);
+                string json = File.ReadAllText(AutoStructureFilePath);
                 var list = JsonConvert.DeserializeObject<List<Structure>>(json);
                 if(list.NotNullOrEmpty())
-                    Structures = list.Where(p=>p != null).ToDictionary(p=>p.Id);
+                    AutoStructures = list.Where(p=>p != null).ToDictionary(p=>p.Id);
             }
-            Structures ??= new Dictionary<long, Structure>();
+            AutoStructures ??= new Dictionary<long, Structure>();
+
+            if(File.Exists(MarketStrutureFilePath))
+            {
+                string json = File.ReadAllText(MarketStrutureFilePath);
+                var list = JsonConvert.DeserializeObject<List<Structure>>(json);
+                if (list.NotNullOrEmpty())
+                    MarketStructures = list.Where(p => p != null).ToObservableCollection();
+            }
+            MarketStructures ??= new ObservableCollection<Structure>();
         }
 
-        public static void Save()
+        private static void SaveAutoStructure()
         {
-            string json = JsonConvert.SerializeObject(Structures.Values);
-            string folder = Path.GetDirectoryName(FilePath);
+            string json = JsonConvert.SerializeObject(AutoStructures.Values);
+            string folder = Path.GetDirectoryName(AutoStructureFilePath);
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
             }
-            File.WriteAllText(FilePath, json);
+            File.WriteAllText(AutoStructureFilePath, json);
         }
 
         public static Structure GetStructure(long id)
         {
-            if(Structures.TryGetValue(id,out var value))
+            if(AutoStructures.TryGetValue(id,out var value))
             {
                 return value;
+            }
+            else
+            {
+                return MarketStructures.FirstOrDefault(p => p.Id == id);
+            }
+        }
+        public static List<Structure> GetStructure(List<long> ids)
+        {
+            var autos = AutoStructures.Values.Where(p => ids.Contains(p.Id)).ToList();
+            var market = MarketStructures.Where(p=> ids.Contains(p.Id)).ToList();
+            if(autos.NotNullOrEmpty() || market.NotNullOrEmpty())
+            {
+                List<Structure> structures = new List<Structure>();
+                if(autos.NotNullOrEmpty())
+                {
+                    structures.AddRange(autos);
+                }
+                if (market.NotNullOrEmpty())
+                {
+                    foreach (var s in market)
+                    {
+                        if (structures.FirstOrDefault(p => p.Id == s.Id) == null)
+                        {
+                            structures.Add(s);
+                        }
+                    }
+                }
+                return structures;
             }
             else
             {
@@ -59,7 +98,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public static async Task<Structure> QueryStructureAsync(long id, int characterID = -1)
         {
-            var local = Structures.Values.FirstOrDefault(p => p.Id == id);
+            var local = GetStructure(id);
             if (local != null)
             {
                 return local;
@@ -73,8 +112,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         var esi = await GetStructureByESI(id, characterID);
                         if(esi != null)
                         {
-                            Structures.Add(id, esi);
-                            Save();
+                            AutoStructures.Add(id, esi);
+                            SaveAutoStructure();
                         }
                         return esi;
                     }
@@ -92,7 +131,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public static async Task<Structure> QueryStructureAsync(long id, EsiClient esiClient)
         {
-            var local = Structures.Values.FirstOrDefault(p => p.Id == id);
+            var local = GetStructure(id);
             if(local != null)
             {
                 return local;
@@ -102,15 +141,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var esi = await GetStructureByESI(id, esiClient);
                 if(esi != null)
                 {
-                    Structures.Add(id, esi);
-                    Save();
+                    AutoStructures.Add(id, esi);
+                    SaveAutoStructure();
                 }
                 return esi;
             }
         }
         public static async Task<List<Structure>> QueryStructureAsync(List<long> ids, int characterID = -1)
         {
-            var locals = Structures.Values.Where(p=>ids.Contains(p.Id)).ToList();
+            var locals = GetStructure(ids);
             if(locals.Any())
             {
                 var notInLocals = ids.Except(locals.Select(p=>p.Id).ToList()).ToList();
@@ -125,9 +164,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             locals.AddRange(notNull);
                             foreach (var item in notNull)
                             {
-                                Structures.Add(item.Id, item);
+                                AutoStructures.Add(item.Id, item);
                             }
-                            Save();
+                            SaveAutoStructure();
                         }
                     }
                 }
@@ -142,10 +181,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     {
                         if(item != null)
                         {
-                            Structures.Add(item.Id, item);
+                            AutoStructures.Add(item.Id, item);
                         }
                     }
-                    Save();
+                    SaveAutoStructure();
                 }
                 return esis;
             }
@@ -153,12 +192,45 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static List<Structure> GetStructuresOfRegion(int regionId)
         {
-            return Structures.Values.Where(p => p.RegionId == regionId).ToList();
+            var autos = AutoStructures.Values.Where(p => p.RegionId == regionId).ToList();
+            var market = MarketStructures.Where(p => p.RegionId == regionId).ToList();
+            if (autos.NotNullOrEmpty() || market.NotNullOrEmpty())
+            {
+                List<Structure> structures = new List<Structure>();
+                if (autos.NotNullOrEmpty())
+                {
+                    structures.AddRange(autos);
+                }
+                if (market.NotNullOrEmpty())
+                {
+                    foreach(var s in market)
+                    {
+                        if(structures.FirstOrDefault(p=>p.Id == s.Id) == null)
+                        {
+                            structures.Add(s);
+                        }
+                    }
+                }
+                return structures;
+            }
+            else
+            {
+                return null;
+            }
         }
-
-        public static List<Structure> GetStructures()
+        public static ObservableCollection<Structure> GetMarketStrutures()
         {
-            return Structures.Values.ToList();
+            return MarketStructures;
+        }
+        public static void SaveMarketStrutures()
+        {
+            string json = JsonConvert.SerializeObject(MarketStructures);
+            string folder = Path.GetDirectoryName(MarketStrutureFilePath);
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            File.WriteAllText(MarketStrutureFilePath, json);
         }
 
         private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID)

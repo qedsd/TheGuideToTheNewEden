@@ -45,6 +45,7 @@ namespace TheGuideToTheNewEden.Core
         /// 星系位置更新文件路径
         /// </summary>
         public static string SolarSystemMapPath { get; set; }
+        public static string RegionMapPath { get; set; }
         #endregion
         /// <summary>
         /// 数据库使用语言

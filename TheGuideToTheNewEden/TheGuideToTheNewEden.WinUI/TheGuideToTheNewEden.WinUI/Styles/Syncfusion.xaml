@@ -48,4 +48,10 @@
     <Style x:Key="UnnormalStatusOrderCellStyle" TargetType="dataGrid:GridCell">
         <Setter Property="Foreground" Value="OrangeRed" />
     </Style>
+    <Style x:Key="GreenCellStyle" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="MediumSeaGreen" />
+    </Style>
+    <Style x:Key="RedCellStyle" TargetType="dataGrid:GridCell">
+        <Setter Property="Foreground" Value="OrangeRed" />
+    </Style>
 </ResourceDictionary>

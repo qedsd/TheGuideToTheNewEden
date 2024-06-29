@@ -162,6 +162,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<MapRegionBase>().Where(p => ids.Contains(p.RegionID)).ToListAsync();
         }
+        public static List<MapRegionBase> TranMapRegions(List<int> ids)
+        {
+            return DBService.LocalDb.Queryable<MapRegionBase>().Where(p => ids.Contains(p.RegionID)).ToList();
+        }
         public static async Task<MapRegionBase> TranMapRegionAsync(int id)
         {
             return await DBService.LocalDb.Queryable<MapRegionBase>().FirstAsync(p => id == p.RegionID);
@@ -179,6 +183,25 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 keyValuePairs.Add(item.RegionID, item);
             }
             var results = await TranMapRegionsAsync(items.Select(p => p.RegionID).ToList());
+            foreach (var result in results)
+            {
+                keyValuePairs.TryGetValue(result.RegionID, out var keyValue);
+                {
+                    keyValue.RegionName = result.RegionName;
+                }
+            }
+            keyValuePairs.Clear();
+            keyValuePairs = null;
+        }
+
+        public static void TranMapRegions(List<MapRegion> items)
+        {
+            Dictionary<int, MapRegion> keyValuePairs = new Dictionary<int, MapRegion>();
+            foreach (var item in items)
+            {
+                keyValuePairs.Add(item.RegionID, item);
+            }
+            var results = TranMapRegions(items.Select(p => p.RegionID).ToList());
             foreach (var result in results)
             {
                 keyValuePairs.TryGetValue(result.RegionID, out var keyValue);

@@ -19,7 +19,6 @@
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
-
             <SolidColorBrush
                 x:Key="ItemContentBg"
                 Opacity="0.3"
@@ -74,7 +73,7 @@
             <converters:SystemSecurityFormatStringConverter x:Key="SystemSecurityFormatStringConverter" />
             <converters:SystemSecurityForegroundConverter x:Key="SystemSecurityForegroundConverter" />
             <converters:CategoryEnumToStringConverter x:Key="CategoryEnumToStringConverter" />
-            <converters:DecimaFormatConverter x:Key="N2DecimaFormatConverter" Decimals="2"/>
+            <converters:DecimaFormatConverter x:Key="N2DecimaFormatConverter" Decimals="2" />
             <converters:OrderTypeConverter x:Key="OrderTypeConverter" />
         </ResourceDictionary>
     </Application.Resources>

@@ -12,7 +12,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.8.2.0</AssemblyVersion>
+	<AssemblyVersion>2.9.0.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
@@ -232,6 +232,8 @@
     <None Remove="Controls\KBSystemInfoControl.xaml" />
     <None Remove="Controls\KBTopKillControl.xaml" />
     <None Remove="Controls\LinkInfoControl.xaml" />
+    <None Remove="Controls\MapDataTypeControl.xaml" />
+    <None Remove="Controls\MapSystemControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
@@ -239,10 +241,12 @@
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
     <None Remove="Controls\StructureSelectorControl.xaml" />
+    <None Remove="Controls\SystemFilterControl.xaml" />
     <None Remove="Dialogs\AddSerenityAuthDialog.xaml" />
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
+    <None Remove="Dialogs\SystemResourceDialog.xaml" />
     <None Remove="logo_128.ico" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -286,6 +290,7 @@
     <None Remove="Views\KB\StatistTopAllTimePage.xaml" />
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
+    <None Remove="Views\Map\MapPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -313,22 +318,24 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageReference Include="H.NotifyIcon" Version="2.0.124" />
-    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.124" />
+    <PackageReference Include="H.NotifyIcon" Version="2.0.131" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.131" />
     <PackageReference Include="log4net" Version="2.0.17" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.240211001" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.2.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="25.1.35" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="25.1.35" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="25.1.35" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.3" />
-    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.17" />
-    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.17" />
-    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.17" />
-    <PackageReference Include="WinUICommunity.Components" Version="6.4.1" />
-    <PackageReference Include="WinUICommunity.Core" Version="6.4.1" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="26.1.35" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="26.1.35" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="26.1.35" />
+    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="26.1.38" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.0.1" />
+    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.0.1" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="4.0.1" />
+    <PackageReference Include="WinUICommunity.Components" Version="6.9.0" />
+    <PackageReference Include="WinUICommunity.Core" Version="6.9.0" />
     <PackageReference Include="WinUIEx" Version="2.3.4" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -367,6 +374,9 @@
     <Page Update="Controls\MarketLocationSelectorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\MapDataTypeControl.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
     <Page Update="Dialogs\AddToShoppingCartDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -400,6 +410,15 @@
     <Page Update="Dialogs\AddTranquilityAuthDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\MapSystemControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\SystemFilterControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Dialogs\SystemResourceDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -421,11 +440,17 @@
     <None Update="Resources\Configs\log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Configs\RegionMap.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Configs\SpeakerNames.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\SolarSystemMap.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Configs\UpgradeResources.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\ded.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -523,6 +548,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Map\MapPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Character\IndustryPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
