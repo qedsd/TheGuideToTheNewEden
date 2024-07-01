@@ -88,5 +88,10 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             InvType, MapSolarSystem, MapRegion, StaStation,InvGroup
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
