@@ -33,23 +33,26 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private List<SovData> _sovDatas;
         private void ResetGroupByDefault(List<SovData> sovDatas)
         {
-            var dic = ReadSOVGroup();
-            if(dic.NotNullOrEmpty())
+            if(sovDatas.NotNullOrEmpty())
             {
-                foreach(var data in sovDatas)
+                var dic = ReadSOVGroup();
+                if (dic.NotNullOrEmpty())
                 {
-                    if(dic.TryGetValue(data.AllianceId, out int groupID))
+                    foreach (var data in sovDatas)
                     {
-                        data.GroupId = groupID;
+                        if (dic.TryGetValue(data.AllianceId, out int groupID))
+                        {
+                            data.GroupId = groupID;
+                        }
                     }
                 }
-            }
-            int maxGroup = sovDatas.Max(p => p.GroupId);
-            foreach(var data in sovDatas)
-            {
-                if(data.GroupId < 1)
+                int maxGroup = sovDatas.Max(p => p.GroupId);
+                foreach (var data in sovDatas)
                 {
-                    data.GroupId = ++maxGroup;
+                    if (data.GroupId < 1)
+                    {
+                        data.GroupId = ++maxGroup;
+                    }
                 }
             }
         }

@@ -187,64 +187,72 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private async Task<List<SovData>> InitSOV()
         {
             List<SovData> sovDatas = new List<SovData>();
-            var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
-            if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+            try
             {
-                var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
-                foreach (var item in dic)
+                var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
+                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    if (item.Key > 0)
+                    var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
+                    foreach (var item in dic)
                     {
-                        HashSet<int> ints = new HashSet<int>();
-                        foreach (var p in item)
+                        if (item.Key > 0)
                         {
-                            ints.Add(p.SystemId);
-                        }
-                        sovDatas.Add(new SovData()
-                        {
-                            AllianceId = item.Key,
-                            SystemIds = ints
-                        });
-                    }
-                }
-                if (sovDatas.Count != 0)
-                {
-                    var names = await Core.Services.IDNameService.GetByIdsAsync(sovDatas.Select(p => p.AllianceId).ToList());
-                    if (names != null && names.Any())
-                    {
-                        var nameDic = names.ToDictionary(p => p.Id);
-                        foreach (var sovData in sovDatas)
-                        {
-                            if (nameDic.TryGetValue(sovData.AllianceId, out var name))
+                            HashSet<int> ints = new HashSet<int>();
+                            foreach (var p in item)
                             {
-                                sovData.AllianceName = name.Name;
+                                ints.Add(p.SystemId);
                             }
-                            else
+                            sovDatas.Add(new SovData()
+                            {
+                                AllianceId = item.Key,
+                                SystemIds = ints
+                            });
+                        }
+                    }
+                    if (sovDatas.Count != 0)
+                    {
+                        var names = await Core.Services.IDNameService.GetByIdsAsync(sovDatas.Select(p => p.AllianceId).ToList());
+                        if (names != null && names.Any())
+                        {
+                            var nameDic = names.ToDictionary(p => p.Id);
+                            foreach (var sovData in sovDatas)
+                            {
+                                if (nameDic.TryGetValue(sovData.AllianceId, out var name))
+                                {
+                                    sovData.AllianceName = name.Name;
+                                }
+                                else
+                                {
+                                    sovData.AllianceName = sovData.AllianceId.ToString();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (var sovData in sovDatas)
                             {
                                 sovData.AllianceName = sovData.AllianceId.ToString();
                             }
                         }
+                        sovDatas = sovDatas.OrderByDescending(p => p.Count).ToList();
+                        //int groupId = 1;
+                        //foreach(var sovData in sovDatas)
+                        //{
+                        //    sovData.GroupId = groupId++;
+                        //}
                     }
-                    else
-                    {
-                        foreach (var sovData in sovDatas)
-                        {
-                            sovData.AllianceName = sovData.AllianceId.ToString();
-                        }
-                    }
-                    sovDatas = sovDatas.OrderByDescending(p => p.Count).ToList();
-                    //int groupId = 1;
-                    //foreach(var sovData in sovDatas)
-                    //{
-                    //    sovData.GroupId = groupId++;
-                    //}
+                }
+                else
+                {
+                    _window?.ShowError(resp.StatusCode.ToString());
                 }
             }
-            else
+            
+            catch(Exception ex)
             {
-                _window?.ShowError(resp.StatusCode.ToString());
+                Core.Log.Error(ex);
+                _window?.ShowError(ex.Message);
             }
-
             _sovDatas = new Dictionary<int, SovData>();
             foreach(var data in sovDatas)
             {
