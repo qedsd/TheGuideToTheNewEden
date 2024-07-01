@@ -144,7 +144,7 @@ HorizontalAlignment="Stretch"
 AllowDraggingColumns="True"
 AllowEditing="False"
 AllowFiltering="True"
-AllowGrouping="False"
+AllowGrouping="True"
 AllowResizingColumns="True"
 AllowSorting="True"
 AutoGenerateColumns="False"
@@ -157,6 +157,10 @@ SelectionMode="Extended"
 ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
+                            <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource General_Sec}"
+                                MappingName="MapSolarSystem.Security" />
                             <dataGrid:GridNumericColumn
         DisplayNumberFormat="N0"
         HeaderText="{StaticResource MapPage_PlanetResource_Power}"

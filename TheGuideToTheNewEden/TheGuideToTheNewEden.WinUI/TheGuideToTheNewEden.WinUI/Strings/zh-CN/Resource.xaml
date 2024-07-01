@@ -61,6 +61,7 @@
     <x:String x:Key="General_No">否</x:String>
     <x:String x:Key="General_Yes">是</x:String>
     <x:String x:Key="General_Close">关闭</x:String>
+    <x:String x:Key="General_Sec">安等</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
