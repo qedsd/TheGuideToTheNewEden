@@ -259,12 +259,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         #region 显示设置
         private void MapDataTypeControl_OnDataTypChanged(int type)
         {
-            PlanetResourcePanel.Visibility = Visibility.Collapsed;
+            //PlanetResourcePanel.Visibility = Visibility.Collapsed;
             switch (type)
             {
                 case 0:SetDataToSecurity();break;
                 case 1:;break;
-                case 2: PlanetResourcePanel.Visibility = Visibility.Visible; break;
+                //case 2: PlanetResourcePanel.Visibility = Visibility.Visible; break;
             }
         }
         private void SetDataToSecurity()
@@ -497,5 +497,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource);
             await SystemResourceDialog.ShowAsync(data.MapSolarSystem, _mapRegions.First(p=>p.RegionID == data.MapSolarSystem.RegionID), sovData, resource, this.XamlRoot);
         }
+
+
+        #region 工具
+        private void Tools_Click(object sender, RoutedEventArgs e)
+        {
+            MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
+            foreach(var u in ToolGrid.Children)
+            {
+                u.Visibility = Visibility.Collapsed;
+            }
+            UIElement targetTool = null;
+            switch(menuFlyoutItem.Tag.ToString())
+            {
+                case "None": targetTool = null; break;
+                case "PlanetResource_Region": targetTool = RegionPlanetResourcList; break;
+                case "PlanetResource_System": targetTool = SystemPlanetResourcList; break;
+                case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
+                case "TowSystemsDistance": targetTool = Tool_TowSystemsDistance; break;
+                case "InOneJumpSystems": targetTool = Tool_InOneJumpSystems; break;
+                case "CapitalNavigation": targetTool = Tool_CapitalNavigation; break;
+            }
+            if(targetTool == null)
+            {
+                ToolPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ToolPanel.Visibility = Visibility.Visible;
+                targetTool.Visibility = Visibility.Visible;
+                ToolExpander.Header = menuFlyoutItem.Text;
+            }
+        }
+        #endregion
     }
 }

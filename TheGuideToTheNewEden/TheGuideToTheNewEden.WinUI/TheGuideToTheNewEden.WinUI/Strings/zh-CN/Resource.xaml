@@ -786,6 +786,7 @@
     <x:String x:Key="MapPage_SearchRegion">星域</x:String>
     <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
     <x:String x:Key="MapPage_Setting">设置</x:String>
+    <x:String x:Key="MapPage_Tools">工具</x:String>
     <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
@@ -803,6 +804,13 @@
     <x:String x:Key="MapPage_SelectedSystem_Region">星域</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">插件需求</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">插件名</x:String>
+    <x:String x:Key="MapPage_Tools_None">无</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Region">星域资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System">星系资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">插件需求表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_TowSystemsDistance">星系距离计算</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_InOneJumpSystems">一跳范围内星系</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_CapitalNavigation">旗舰跳跃导航</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>
