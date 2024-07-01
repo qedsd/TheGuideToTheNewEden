@@ -141,8 +141,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
         private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
         {
-            if(selectedItem != null)
+            if (selectedItem != null)
+            {
                 MapCanvas.ToSystem(selectedItem.SolarSystemID);
+                if(_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                {
+                    ShowSystemInfo(data as MapSystemData);
+                }
+            }
         }
 
         private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)
@@ -452,17 +458,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
         {
-            if (mapData == null)
+            ShowSystemInfo(mapData as MapSystemData);
+        }
+        private void ShowSystemInfo(MapSystemData data)
+        {
+            if (data == null)
                 return;
             SelectedSystemInfoPanel.Visibility = Visibility.Visible;
-            var data = mapData as MapSystemData;
             SystemResourceDetailButton.Tag = data;
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
             SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
             SelectedSystemRegionTextBlock.Text = Core.Services.DB.MapRegionService.Query(data.MapSolarSystem.RegionID).RegionName;
             SelectedSystemSecurityTextBlock.Text = data.MapSolarSystem.Security.ToString("N2");
-            
-            if(_sovDatas != null && _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData))
+
+            if (_sovDatas != null && _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData))
             {
                 SelectedSystemSOVGrid.Visibility = Visibility.Visible;
                 SelectedSystemSOVNameTextBlock.Text = sovData.AllianceName;
@@ -487,7 +496,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
             }
         }
-
         private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
