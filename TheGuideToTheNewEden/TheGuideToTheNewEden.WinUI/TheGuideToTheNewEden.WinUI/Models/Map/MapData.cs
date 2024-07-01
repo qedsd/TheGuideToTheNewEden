@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
             X = (float)SolarSystemPosition.X;
             Y = (float)SolarSystemPosition.Y;
             MainText = MapSolarSystem.SolarSystemName;
-            InnerText = MapSolarSystem.Security.ToString("N1");
+            InnerText = MapSolarSystem.Security.ToString("N2");
             BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;
             LinkTo = SolarSystemPosition.JumpTo;
         }

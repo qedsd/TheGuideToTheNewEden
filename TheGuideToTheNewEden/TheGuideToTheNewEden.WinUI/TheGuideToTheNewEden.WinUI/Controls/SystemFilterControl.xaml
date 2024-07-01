@@ -149,7 +149,7 @@
                 RangeStart="-1.0"
                 ShowLabels="False"
                 ShowToolTip="True"
-                StepFrequency="0.1"
+                StepFrequency="0.01"
                 ToolTipOption="BothThumb" />
         </Expander>
         <!--  主权  -->

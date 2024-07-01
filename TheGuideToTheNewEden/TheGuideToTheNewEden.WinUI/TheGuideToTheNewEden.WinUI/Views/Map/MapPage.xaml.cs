@@ -271,7 +271,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             foreach(var data in _systemDatas.Values)
             {
-                data.InnerText = (data as MapSystemData).MapSolarSystem.Security.ToString("N1");
+                data.InnerText = (data as MapSystemData).MapSolarSystem.Security.ToString("N2");
                 data.BgColor = Converters.SystemSecurityForegroundConverter.Convert((data as MapSystemData).MapSolarSystem.Security).Color;
             }
             MapCanvas.Draw();
@@ -452,7 +452,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
             SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
             SelectedSystemRegionTextBlock.Text = Core.Services.DB.MapRegionService.Query(data.MapSolarSystem.RegionID).RegionName;
-            SelectedSystemSecurityTextBlock.Text = data.MapSolarSystem.Security.ToString("N1");
+            SelectedSystemSecurityTextBlock.Text = data.MapSolarSystem.Security.ToString("N2");
             
             if(_sovDatas != null && _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData))
             {

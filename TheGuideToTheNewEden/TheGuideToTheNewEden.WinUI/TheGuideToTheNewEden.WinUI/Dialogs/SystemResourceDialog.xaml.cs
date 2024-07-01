@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
         {
             this.InitializeComponent();
             SystemIDTextBlock.Text = system.SolarSystemID.ToString();
-            SystemSecurityTextBlock.Text = system.Security.ToString("N1");
+            SystemSecurityTextBlock.Text = system.Security.ToString("N2");
             SystemRegionTextBlock.Text = region.RegionName;
             if(sov != null)
             {
