@@ -814,7 +814,8 @@
     <x:String x:Key="MapPage_Tools_PlanetResource_TowSystemsDistance">星系距离计算</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_InOneJumpSystems">一跳范围内星系</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_CapitalNavigation">旗舰跳跃导航</x:String>
-    
+    <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>
@@ -856,4 +857,10 @@
     <x:String x:Key="SystemResourceDialog_PlanetID">行星ID</x:String>
     <x:String x:Key="SystemResourceDialog_Reagent">试剂</x:String>
     <x:String x:Key="SystemResourceDialog_HarvestAmount">产量/小时</x:String>
+
+    <!--  SystemResourceDialog  -->
+    <x:String x:Key="TowSystemsDistance_System1">星系1</x:String>
+    <x:String x:Key="TowSystemsDistance_System2">星系2</x:String>
+    <x:String x:Key="TowSystemsDistance_Distance">距离</x:String>
+    <x:String x:Key="TowSystemsDistance_Jumps">跳</x:String>
 </ResourceDictionary>
