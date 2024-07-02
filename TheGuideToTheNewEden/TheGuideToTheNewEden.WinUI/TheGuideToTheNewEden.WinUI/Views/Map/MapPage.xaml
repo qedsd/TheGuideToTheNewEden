@@ -14,7 +14,6 @@
     <Grid>
         <local:MapCanvas
             x:Name="MapCanvas"
-            Loaded="MapCanvas_Loaded"
             OnPointedSystemChanged="MapCanvas_OnPointedSystemChanged"
             OnSelectedSystemChanged="MapCanvas_OnSelectedSystemChanged" />
         <!--  搜索  -->
@@ -138,7 +137,23 @@ ShowGroupDropArea="False">
         MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
-                    <dataGrid:SfDataGrid Visibility="Collapsed"
+                    <Grid x:Name="Tool_SystemPlanetResourcList" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <ComboBox x:Name="Tool_SystemPlanetResourcList_Mode"
+          Margin="0,-8,0,4"
+          SelectedIndex="0"
+          SelectionChanged="Tool_SystemPlanetResourcList_Mode_SelectionChanged">
+                                <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_All}"/>
+                                <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_Filtered}"/>
+                            </ComboBox>
+                            <TextBlock x:Name="Tool_SystemPlanetResourcList_Count" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                        </Grid>
+                            
+                        <dataGrid:SfDataGrid Grid.Row="1"
 x:Name="SystemPlanetResourcList"
 HorizontalAlignment="Stretch"
 AllowDraggingColumns="True"
@@ -155,30 +170,31 @@ GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
 HeaderLinesVisibility="Both"
 SelectionMode="Extended"
 ShowGroupDropArea="False">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
-                            <dataGrid:GridNumericColumn
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
+                                <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N2"
                                 HeaderText="{StaticResource General_Sec}"
                                 MappingName="MapSolarSystem.Security" />
-                            <dataGrid:GridNumericColumn
+                                <dataGrid:GridNumericColumn
         DisplayNumberFormat="N0"
         HeaderText="{StaticResource MapPage_PlanetResource_Power}"
         MappingName="Power" />
-                            <dataGrid:GridNumericColumn
+                                <dataGrid:GridNumericColumn
         DisplayNumberFormat="N0"
         HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
         MappingName="Workforce" />
-                            <dataGrid:GridNumericColumn
+                                <dataGrid:GridNumericColumn
         DisplayNumberFormat="N0"
         HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
         MappingName="SuperionicIce" />
-                            <dataGrid:GridNumericColumn
+                                <dataGrid:GridNumericColumn
         DisplayNumberFormat="N0"
         HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
         MappingName="MagmaticGas" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </Grid>
                     <dataGrid:SfDataGrid Visibility="Collapsed"
      x:Name="UpgradeList"
      HorizontalAlignment="Stretch"

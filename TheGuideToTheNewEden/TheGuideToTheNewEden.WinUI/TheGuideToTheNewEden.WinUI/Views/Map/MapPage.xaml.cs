@@ -39,8 +39,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const int MagmaticGasID = 81143;
 
         private BaseWindow _window;
-        private bool _isSystemData = true;
-
         private Dictionary<int, MapData> _systemDatas;
         private List<MapSolarSystem> _mapSolarSystems;
         private List<MapRegion> _mapRegions;
@@ -48,11 +46,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// key为星系id
         /// </summary>
         private Dictionary<int, SovData> _sovDatas;
+        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
+        private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
+        private List<Core.Models.PlanetResources.Upgrade> _upgrades;
         public MapPage()
         {
             this.InitializeComponent();
             Loaded += MapPage_Loaded;
         }
+
+        #region 初始化数据
         private void MapPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MapPage_Loaded;
@@ -61,11 +64,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             MapSystemSelector.OnSelectedItemChanged += MapSystemSelector_OnSelectedItemChanged;
             RegionSelector.OnSelectedItemChanged += RegionSelector_OnSelectedItemChanged;
             Init();
-        }
-
-        private void MapCanvas_Loaded(object sender, RoutedEventArgs e)
-        {
-            MapCanvas.Loaded -= MapCanvas_Loaded;
         }
         private async void Init()
         {
@@ -81,11 +79,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _window?.ShowWaiting("Loading PlanetResources data");
             await InitPlanetResourcesData();
             RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
-            SystemPlanetResourcList.ItemsSource = _systemResourcesDic.Values;
+            UpdataSystemPlanetResourcList(0);
             UpgradeList.ItemsSource = _upgrades;
             _window?.HideWaiting();
         }
-        
         private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
@@ -102,94 +99,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
             ResetXYToFix(_systemDatas);
         }
-        private void ResetXYToFix(Dictionary<int, MapData> datas)
-        {
-            //缩放xy坐标到屏幕显示范围
-            //以最大的x/y为参考最大显示范围
-            var maxX = datas.Values.Max(p => p.OriginalX);
-            var maxY = datas.Values.Max(p => p.OriginalY); 
-            //将x缩放到UI显示区域
-            float xScale = (float)(MapCanvas.ActualWidth / maxX);
-            float yScale = xScale;//xy同一个缩放比例
-            double xOffset = 0;
-            double yOffset = 0;
-            if (maxY * yScale > MapCanvas.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
-            {
-                yScale = (float)(MapCanvas.ActualHeight / maxY);
-                xScale = yScale;
-
-                yOffset = 0;
-                var afterScaleMaxX = maxX * xScale;
-                var emptyX = MapCanvas.ActualWidth - afterScaleMaxX;
-                xOffset = emptyX / 2;
-            }
-            else
-            {
-                xOffset = 0;
-                var afterScaleMaxY = maxY * yScale;
-                var emptyY = MapCanvas.ActualHeight - afterScaleMaxY;
-                yOffset = emptyY / 2;
-            }
-            foreach (var data in datas.Values)
-            {
-                data.OriginalX = (data.OriginalX * xScale) + (float)xOffset;
-                data.OriginalY = (data.OriginalY * yScale) + (float)yOffset;
-                data.X = data.OriginalX;
-                data.Y = data.OriginalY;
-            }
-        }
-
-        private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
-        {
-            if (selectedItem != null)
-            {
-                MapCanvas.ToSystem(selectedItem.SolarSystemID);
-                if(_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
-                {
-                    ShowSystemInfo(data as MapSystemData);
-                }
-            }
-        }
-
-        private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)
-        {
-            if(selectedItem != null)
-                MapCanvas.ToSystem(_systemDatas.Values.Where(p=>(p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p=>p.Id).ToList());
-        }
-
-        private void SearchTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if ((sender as ComboBox).SelectedIndex == 1)
-            {
-                MapSystemSelector.Visibility = Visibility.Collapsed;
-                RegionSelector.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                MapSystemSelector.Visibility = Visibility.Visible;
-                RegionSelector.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void SystemFilterControl_OnFilterSystemChanged(HashSet<int> ids)
-        {
-            if (_isSystemData)
-            {
-                foreach (var data in _systemDatas)
-                {
-                    if(!ids.Contains(data.Key))
-                    {
-                        data.Value.Enable = false;
-                    }
-                    else
-                    {
-                        data.Value.Enable = true;
-                    }
-                }
-            }
-            MapCanvas.Draw();
-        }
-
         private async Task<List<SovData>> InitSOV()
         {
             List<SovData> sovDatas = new List<SovData>();
@@ -253,22 +162,93 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _window?.ShowError(resp.StatusCode.ToString());
                 }
             }
-            
-            catch(Exception ex)
+
+            catch (Exception ex)
             {
                 Core.Log.Error(ex);
                 _window?.ShowError(ex.Message);
             }
             _sovDatas = new Dictionary<int, SovData>();
-            foreach(var data in sovDatas)
+            foreach (var data in sovDatas)
             {
-                foreach(var sys in data.SystemIds)
+                foreach (var sys in data.SystemIds)
                 {
                     _sovDatas.Add(sys, data);
                 }
             }
             return sovDatas;
         }
+        private void ResetXYToFix(Dictionary<int, MapData> datas)
+        {
+            //缩放xy坐标到屏幕显示范围
+            //以最大的x/y为参考最大显示范围
+            var maxX = datas.Values.Max(p => p.OriginalX);
+            var maxY = datas.Values.Max(p => p.OriginalY); 
+            //将x缩放到UI显示区域
+            float xScale = (float)(MapCanvas.ActualWidth / maxX);
+            float yScale = xScale;//xy同一个缩放比例
+            double xOffset = 0;
+            double yOffset = 0;
+            if (maxY * yScale > MapCanvas.ActualHeight)//按x最大比例缩放后若y超出范围，再按y最大比例缩放，即可确保xy都在范围内
+            {
+                yScale = (float)(MapCanvas.ActualHeight / maxY);
+                xScale = yScale;
+
+                yOffset = 0;
+                var afterScaleMaxX = maxX * xScale;
+                var emptyX = MapCanvas.ActualWidth - afterScaleMaxX;
+                xOffset = emptyX / 2;
+            }
+            else
+            {
+                xOffset = 0;
+                var afterScaleMaxY = maxY * yScale;
+                var emptyY = MapCanvas.ActualHeight - afterScaleMaxY;
+                yOffset = emptyY / 2;
+            }
+            foreach (var data in datas.Values)
+            {
+                data.OriginalX = (data.OriginalX * xScale) + (float)xOffset;
+                data.OriginalY = (data.OriginalY * yScale) + (float)yOffset;
+                data.X = data.OriginalX;
+                data.Y = data.OriginalY;
+            }
+        }
+        #endregion
+
+        #region 搜索
+        private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
+        {
+            if (selectedItem != null)
+            {
+                MapCanvas.ToSystem(selectedItem.SolarSystemID);
+                if(_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                {
+                    ShowSystemInfo(data as MapSystemData);
+                }
+            }
+        }
+
+        private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)
+        {
+            if(selectedItem != null)
+                MapCanvas.ToSystem(_systemDatas.Values.Where(p=>(p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p=>p.Id).ToList());
+        }
+
+        private void SearchTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if ((sender as ComboBox).SelectedIndex == 1)
+            {
+                MapSystemSelector.Visibility = Visibility.Collapsed;
+                RegionSelector.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MapSystemSelector.Visibility = Visibility.Visible;
+                RegionSelector.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion
 
         #region 显示设置
         private void MapDataTypeControl_OnDataTypChanged(int type)
@@ -307,9 +287,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             return resources == null  ? 0 : resources.SuperionicIce;
         }
-        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
-        private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
-        private List<Core.Models.PlanetResources.Upgrade> _upgrades;
         private async Task InitPlanetResourcesData()
         {
             await Task.Run(() =>
@@ -443,6 +420,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         #endregion
 
+        #region 选中星系
         private void MapCanvas_OnPointedSystemChanged(MapData mapData)
         {
             if(mapData == null)
@@ -455,7 +433,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 PointedSystemName.Text = $"{(mapData as MapSystemData).MainText} {(mapData as MapSystemData).InnerText}";
             }
         }
-
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
         {
             ShowSystemInfo(mapData as MapSystemData);
@@ -500,20 +477,67 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
         }
-
-        public void Close()
-        {
-            MapCanvas.Dispose();
-        }
-
         private async void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button).Tag as MapSystemData;
             _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
             _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource);
-            await SystemResourceDialog.ShowAsync(data.MapSolarSystem, _mapRegions.First(p=>p.RegionID == data.MapSolarSystem.RegionID), sovData, resource, this.XamlRoot);
+            await SystemResourceDialog.ShowAsync(data.MapSolarSystem, _mapRegions.First(p => p.RegionID == data.MapSolarSystem.RegionID), sovData, resource, this.XamlRoot);
         }
+        #endregion
 
+        #region 筛选
+        /// <summary>
+        /// 筛选设置
+        /// </summary>
+        /// <param name="ids"></param>
+        private void SystemFilterControl_OnFilterSystemChanged(HashSet<int> ids)
+        {
+            foreach (var data in _systemDatas)
+            {
+                if (!ids.Contains(data.Key))
+                {
+                    data.Value.Enable = false;
+                }
+                else
+                {
+                    data.Value.Enable = true;
+                }
+            }
+            MapCanvas.Draw();
+            UpdataSystemPlanetResourcList(Tool_SystemPlanetResourcList_Mode.SelectedIndex);
+        }
+        private void Tool_SystemPlanetResourcList_Mode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_systemResourcesDic == null)
+                return;
+            UpdataSystemPlanetResourcList((sender as ComboBox).SelectedIndex);
+        }
+        private void UpdataSystemPlanetResourcList(int mode)
+        {
+            if (mode == 1)
+            {
+                List<Core.Models.PlanetResources.SolarSystemResources> solarSystemResources = new List<Core.Models.PlanetResources.SolarSystemResources>();
+                foreach (var v in _systemResourcesDic)
+                {
+                    if (_systemDatas.TryGetValue(v.Key, out var data))
+                    {
+                        if (data.Enable)
+                        {
+                            solarSystemResources.Add(v.Value);
+                        }
+                    }
+                }
+                SystemPlanetResourcList.ItemsSource = solarSystemResources;
+                Tool_SystemPlanetResourcList_Count.Text = solarSystemResources.Count.ToString();
+            }
+            else
+            {
+                SystemPlanetResourcList.ItemsSource = _systemResourcesDic.Values;
+                Tool_SystemPlanetResourcList_Count.Text = _systemResourcesDic.Count.ToString();
+            }
+        }
+        #endregion
 
         #region 工具
         private void Tools_Click(object sender, RoutedEventArgs e)
@@ -528,7 +552,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 case "None": targetTool = null; break;
                 case "PlanetResource_Region": targetTool = RegionPlanetResourcList; break;
-                case "PlanetResource_System": targetTool = SystemPlanetResourcList; break;
+                case "PlanetResource_System": targetTool = Tool_SystemPlanetResourcList; break;
                 case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
                 case "TowSystemsDistance": targetTool = Tool_TowSystemsDistance; break;
                 case "InOneJumpSystems": targetTool = Tool_InOneJumpSystems; break;
@@ -546,5 +570,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
         }
         #endregion
+
+        public void Close()
+        {
+            MapCanvas.Dispose();
+        }
     }
 }
