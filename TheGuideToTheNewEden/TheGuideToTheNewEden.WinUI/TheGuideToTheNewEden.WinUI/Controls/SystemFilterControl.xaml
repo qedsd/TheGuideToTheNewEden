@@ -139,18 +139,40 @@
         </Expander>
         <!--  安全等级  -->
         <Expander Header="{StaticResource SystemFilterControl_Security}">
-            <slider:SfRangeSlider
-                x:Name="SecuritySlider"
-                IsEnabled="True"
-                IsInversed="False"
-                Maximum="1"
-                Minimum="-1"
-                RangeEnd="1.0"
-                RangeStart="-1.0"
-                ShowLabels="False"
-                ShowToolTip="True"
-                StepFrequency="0.01"
-                ToolTipOption="BothThumb" />
+            <StackPanel>
+                <slider:SfRangeSlider
+    x:Name="SecuritySlider"
+    IsEnabled="True"
+    IsInversed="False"
+    Maximum="1"
+    Minimum="-1"
+    RangeEnd="1.0"
+    RangeStart="-1.0"
+    ShowLabels="False"
+    ShowToolTip="True"
+    StepFrequency="0.01"
+    ToolTipOption="BothThumb" />
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_1}" x:Name="Security1CheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_2}" x:Name="Security2CheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_3}" x:Name="Security3CheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_4}" x:Name="Security4CheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_5}" x:Name="Security5CheckBox" IsChecked="True"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_A}" x:Name="SecurityACheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_B}" x:Name="SecurityBCheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_C}" x:Name="SecurityCCheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_D}" x:Name="SecurityDCheckBox" IsChecked="True"/>
+                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_E}" x:Name="SecurityECheckBox" IsChecked="True"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
         </Expander>
         <!--  主权  -->
         <Expander Header="{StaticResource SystemFilterControl_Sov}">

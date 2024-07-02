@@ -240,21 +240,108 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
 
             //安全等级
+            List<int> removedIds2 = new List<int>();
             if (SecuritySlider.RangeStart != SecuritySlider.Minimum || SecuritySlider.RangeEnd != SecuritySlider.Maximum)
             {
                 //仅当选择范围不是最大范围时才需要判断一遍
-                List<int> removedIds = new List<int>();
                 foreach (var sys in filtedSystems)
                 {
                     if (sys.Value.Security < SecuritySlider.RangeStart || sys.Value.Security > SecuritySlider.RangeEnd)
                     {
-                        removedIds.Add(sys.Key);
+                        removedIds2.Add(sys.Key);
                     }
                 }
-                foreach (var id in removedIds)
+            }
+            if (Security1CheckBox.IsChecked == false ||
+                Security2CheckBox.IsChecked == false ||
+                Security3CheckBox.IsChecked == false ||
+                Security4CheckBox.IsChecked == false ||
+                Security5CheckBox.IsChecked == false || 
+                
+                SecurityACheckBox.IsChecked == false ||
+                SecurityBCheckBox.IsChecked == false ||
+                SecurityCCheckBox.IsChecked == false ||
+                SecurityDCheckBox.IsChecked == false ||
+                SecurityECheckBox.IsChecked == false)
+            {
+                foreach (var sys in filtedSystems)
                 {
-                    filtedSystems.Remove(id);
+                    double sec = sys.Value.Security;
+                    if (sec >= 0.85)
+                    {
+                        if (Security1CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if(sec >= 0.75)
+                    {
+                        if (Security2CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= 0.65)
+                    {
+                        if (Security3CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= 0.5)
+                    {
+                        if (Security4CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec > 0.0)
+                    {
+                        if (Security5CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.24)
+                    {
+                        if (SecurityACheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.44)
+                    {
+                        if (SecurityBCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.64)
+                    {
+                        if (SecurityCCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.84)
+                    {
+                        if (SecurityDCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else
+                    {
+                        if (SecurityECheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
                 }
+            }
+            foreach (var id in removedIds2)
+            {
+                filtedSystems.Remove(id);
             }
             return filtedSystems.Keys.ToList();
         }
