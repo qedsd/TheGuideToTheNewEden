@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Map.Tools.MapNavigation"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    mc:Ignorable="d"
+    Background="Transparent"
+    Width="240">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{StaticResource MapNavigation_AddWaypoint}" VerticalAlignment="Center"/>
+            <controls:MapSystemSelectorControl
+                x:Name="MapSystemSelector"
+                Grid.Column="1"
+                Height="32"
+                Margin="0,4"
+                OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+        </Grid>
+        <ListView x:Name="WaypointsListView" Grid.Row="1">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding SolarSystemName}"/>
+                        <Button Grid.Column="1" Style="{ThemeResource TransparentButton}" Click="RemoveWaypointButton_Click">
+                            <Button.Content>
+                                <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets"/>
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

@@ -813,7 +813,7 @@
     <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">插件需求表</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_TowSystemsDistance">星系距离计算</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_InOneJumpSystems">一跳范围内星系</x:String>
-    <x:String x:Key="MapPage_Tools_PlanetResource_CapitalNavigation">旗舰跳跃导航</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Navigation">导航</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
 
 
@@ -863,4 +863,7 @@
     <x:String x:Key="TowSystemsDistance_System2">星系2</x:String>
     <x:String x:Key="TowSystemsDistance_Distance">距离</x:String>
     <x:String x:Key="TowSystemsDistance_Jumps">跳</x:String>
+
+    <!--  MapNavigation  -->
+    <x:String x:Key="MapNavigation_AddWaypoint">添加航点</x:String>
 </ResourceDictionary>

@@ -90,7 +90,7 @@
                         <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_TowSystemsDistance}" Click="Tools_Click" Tag="TowSystemsDistance"/>
                         <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_InOneJumpSystems}" Click="Tools_Click" Tag="InOneJumpSystems"/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_CapitalNavigation}" Click="Tools_Click" Tag="CapitalNavigation"/>
+                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_Navigation}" Click="Tools_Click" Tag="Navigation"/>
                         <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="{StaticResource MapPage_Tools_KBStream}" Click="Tools_Click" Tag="KBStream"/>
                     </MenuFlyout>
@@ -238,7 +238,9 @@ ShowGroupDropArea="False">
                         <tools:TowSystemsDistance Margin="8"/>
                     </Grid>
                     <Grid x:Name="Tool_InOneJumpSystems" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8"/>
-                    <Grid x:Name="Tool_CapitalNavigation" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8"/>
+                    <Grid x:Name="Tool_Navigation" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
+                        <tools:MapNavigation Margin="8"/>
+                    </Grid>
                 </Grid>
             </Expander>
         </Grid>
