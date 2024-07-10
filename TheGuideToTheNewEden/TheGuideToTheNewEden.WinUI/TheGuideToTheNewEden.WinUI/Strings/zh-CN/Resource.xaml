@@ -866,4 +866,9 @@
 
     <!--  MapNavigation  -->
     <x:String x:Key="MapNavigation_AddWaypoint">添加航点</x:String>
+    <x:String x:Key="MapNavigation_NavType">导航方式</x:String>
+    <x:String x:Key="MapNavigation_NavType_Stargate">星门</x:String>
+    <x:String x:Key="MapNavigation_NavType_CapitalJump">旗舰跳</x:String>
+    <x:String x:Key="MapNavigation_AvoidSystem">避开星系</x:String>
+    <x:String x:Key="MapNavigation_AvoidRegion">避开星域</x:String>
 </ResourceDictionary>

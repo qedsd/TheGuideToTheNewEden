@@ -361,6 +361,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return await DBService.LocalDb.Queryable<InvMarketGroupBase>().FirstAsync(p => id == p.MarketGroupID);
         }
+        public static InvMarketGroupBase TranInvMarketGroup(int id)
+        {
+            return DBService.LocalDb.Queryable<InvMarketGroupBase>().First(p => id == p.MarketGroupID);
+        }
 
         public static async Task TranInvMarketGroupsAsync(List<InvMarketGroup> items)
         {
@@ -385,6 +389,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task TranInvMarketGroupAsync(InvMarketGroup item)
         {
             var type = await TranInvMarketGroupAsync(item.MarketGroupID);
+            item.MarketGroupName = type?.MarketGroupName;
+            item.Description = type?.Description;
+        }
+        public static void TranInvMarketGroup(InvMarketGroup item)
+        {
+            var type = TranInvMarketGroup(item.MarketGroupID);
             item.MarketGroupName = type?.MarketGroupName;
             item.Description = type?.Description;
         }

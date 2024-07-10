@@ -101,7 +101,7 @@
         <Grid Margin="8,42,0,8" VerticalAlignment="Stretch" Visibility="Collapsed" x:Name="ToolPanel">
             <Expander ExpandDirection="Up" x:Name="ToolExpander" VerticalAlignment="Bottom"
                       IsExpanded="True">
-                <Grid x:Name="ToolGrid">
+                <Grid x:Name="ToolGrid" Margin="-8">
                     <dataGrid:SfDataGrid Visibility="Collapsed"
 x:Name="RegionPlanetResourcList"
 HorizontalAlignment="Stretch"
