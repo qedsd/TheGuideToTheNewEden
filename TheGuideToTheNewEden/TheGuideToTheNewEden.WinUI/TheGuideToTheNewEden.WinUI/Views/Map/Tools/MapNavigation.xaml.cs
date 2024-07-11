@@ -17,6 +17,8 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
+using TheGuideToTheNewEden.Core.Models;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -37,7 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private void MapNavigation_Loaded(object sender, RoutedEventArgs e)
         {
             this.Loaded -= MapNavigation_Loaded;
-            GetCanCapitalJumpShips();
+            InitCapitalJumpShipInfos();
         }
 
         private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
@@ -80,37 +82,57 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             AvoidRegionButton.Content = _avoidRegions.Count.ToString();
         }
 
-        private async void GetCanCapitalJumpShips()
+        //private async void GetCanCapitalJumpShips()
+        //{
+        //    IEnumerable<InvType> ships = null;
+        //    await Task.Run(() =>
+        //    {
+        //        //分类在旗舰1381和黑隐1075下的所有分类下的船
+        //        //循环找分组的子分组，直到没有子分组
+        //        List<InvMarketGroup> findLastSubGroup(InvMarketGroup inputGroup)
+        //        {
+        //            var subGroup = Core.Services.DB.InvMarketGroupService.QuerySubGroupId(inputGroup.MarketGroupID);
+        //            if (subGroup.NotNullOrEmpty())//还有子分组
+        //            {
+        //                List<InvMarketGroup> subGroups = new List<InvMarketGroup>();
+        //                foreach (var group in subGroup)
+        //                {
+        //                    subGroups.AddRange(findLastSubGroup(group));
+        //                }
+        //                return subGroups;
+        //            }
+        //            else
+        //            {
+        //                return new List<InvMarketGroup>() { inputGroup };
+        //            }
+        //        }
+        //        var capGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1381));
+        //        var capShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(capGroup.Select(p=>p.MarketGroupID).ToList());
+        //        var blackOpsGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1075));
+        //        var blackOpsShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(blackOpsGroup.Select(p => p.MarketGroupID).ToList());
+        //        ships = capShips.Union(blackOpsShips).ToList();//所有支持旗舰跳的船
+        //    });
+        //    ShipTypeComboBox.ItemsSource = ships;
+        //}
+
+        private void InitCapitalJumpShipInfos()
         {
-            IEnumerable<IGrouping<int?, InvType>> ships;
-            await Task.Run(() =>
+            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "CapitalJumpShipInfo.json"));
+            if (json != null)
             {
-                //分类在旗舰1381和黑隐1075下的所有分类下的船
-                //循环找分组的子分组，直到没有子分组
-                List<InvMarketGroup> findLastSubGroup(InvMarketGroup inputGroup)
+                var infos = JsonConvert.DeserializeObject<List<CapitalJumpShipInfo>>(json);
+                foreach(var info in infos)
                 {
-                    var subGroup = Core.Services.DB.InvMarketGroupService.QuerySubGroupId(inputGroup.MarketGroupID);
-                    if (subGroup.NotNullOrEmpty())//还有子分组
-                    {
-                        List<InvMarketGroup> subGroups = new List<InvMarketGroup>();
-                        foreach (var group in subGroup)
-                        {
-                            subGroups.AddRange(findLastSubGroup(group));
-                        }
-                        return subGroups;
-                    }
-                    else
-                    {
-                        return new List<InvMarketGroup>() { inputGroup };
-                    }
+                    info.InvMarketGroup = Core.Services.DB.InvMarketGroupService.Query(info.GroupID);
+                    info.InvType = Core.Services.DB.InvTypeService.QueryType(info.TypeID);
                 }
-                var capGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1381));
-                var capShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(capGroup.Select(p=>p.MarketGroupID).ToList());
-                var blackOpsGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1075));
-                var blackOpsShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(blackOpsGroup.Select(p => p.MarketGroupID).ToList());
-                var shipTypes = capShips.Union(blackOpsShips);//所有支持旗舰跳的船
-                ships = shipTypes.GroupBy(p => p.MarketGroupID);
-            });
+                ShipTypeComboBox.ItemsSource = infos;
+            }
+        }
+
+        private void StartNavigateButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResultGrid.Visibility = Visibility.Visible;
         }
     }
 }

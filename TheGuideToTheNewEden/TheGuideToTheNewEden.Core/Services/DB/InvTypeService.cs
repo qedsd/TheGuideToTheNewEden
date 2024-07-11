@@ -60,7 +60,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public static List<InvType> QueryTypesInGroup(List<int> groupIds)
         {
-            var types = DBService.MainDb.Queryable<InvType>().Where(p => groupIds.Contains(p.GroupID)).ToList();
+            var types = DBService.MainDb.Queryable<InvType>().Where(p => p.MarketGroupID != null && groupIds.Contains((int)p.MarketGroupID)).ToList();
             if (DBService.NeedLocalization)
             {
                 LocalDbService.TranInvTypes(types);

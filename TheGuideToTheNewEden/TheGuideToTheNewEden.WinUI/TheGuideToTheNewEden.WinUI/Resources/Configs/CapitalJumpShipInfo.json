@@ -1,0 +1,44 @@
+﻿[
+  {
+    "GroupID": 761,
+    "TypeID": 19726,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  },
+  {
+    "GroupID": 812,
+    "TypeID": 11567,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  },
+  {
+    "GroupID": 817,
+    "TypeID": 23917,
+    "MaxLY": 8,
+    "PerLYFuel": 110000
+  },
+  {
+    "GroupID": 1047,
+    "TypeID": 28352,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  },
+  {
+    "GroupID": 1089,
+    "TypeID": 28844,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  },
+  {
+    "GroupID": 2271,
+    "TypeID": 37605,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  },
+  {
+    "GroupID": 1075,
+    "TypeID": 22436,
+    "MaxLY": 9,
+    "PerLYFuel": 100000
+  }
+]
