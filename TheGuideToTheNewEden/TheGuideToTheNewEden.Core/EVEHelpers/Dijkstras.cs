@@ -6,21 +6,25 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
     internal class Dijkstras
     {
-        readonly Dictionary<int, Dictionary<int, int>> _vertices = new Dictionary<int, Dictionary<int, int>>();
+        readonly Dictionary<int, Dictionary<int, double>> _vertices = new Dictionary<int, Dictionary<int, double>>();
 
-        public void AddVertex(int name, Dictionary<int, int> edges)
+        public void AddVertex(int name, Dictionary<int, double> edges)
         {
             _vertices[name] = edges;
         }
         public void RemoveVertex(int name)
         {
             _vertices.Remove(name);
+            foreach(var v in _vertices.Values)
+            {
+                v.Remove(name);
+            }
         }
 
         public List<int> CalShortestPath(int start, int end)
         {
             var previous = new Dictionary<int, int>();
-            var distances = new Dictionary<int, int>();
+            var distances = new Dictionary<int, double>();
             var nodes = new List<int>();
 
             List<int> path = null;
@@ -41,7 +45,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 
             while (nodes.Count != 0)
             {
-                nodes.Sort((x, y) => distances[x] - distances[y]);
+                nodes.Sort((x, y) => (int)(distances[x] - distances[y]));
 
                 var smallest = nodes[0];
                 nodes.Remove(smallest);

@@ -878,12 +878,14 @@
     <x:String x:Key="MapNavigation_JumpFuelConservation_Tip">每升一级，每光年的跳跃操作所消耗的同位素减少10%</x:String>
     <x:String x:Key="MapNavigation_JumpFreighters">战略货舰操作</x:String>
     <x:String x:Key="MapNavigation_JumpFreighters_Tip">每升一级，跳跃燃料需求减少10%</x:String>
+    <x:String x:Key="MapNavigation_UseStargate">使用星门</x:String>
     <x:String x:Key="MapNavigation_Go">计算导航</x:String>
     <x:String x:Key="MapNavigation_Result">导航结果</x:String>
-    <x:String x:Key="MapNavigation_Result_Overview">总览</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview">导航总览</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">直线距离</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_PassSystemCount">途径星系数量</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_PassStargateCount">过星门次数</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpCount">旗舰跳次数</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_RequireFuel">燃料消耗量</x:String>
+    <x:String x:Key="MapNavigation_Result_Null">无导航结果，请检查目的地是否可达</x:String>
 </ResourceDictionary>

@@ -7,8 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls" xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
     mc:Ignorable="d"
-    Background="Transparent"
-    Width="600">
+    Background="Transparent">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -62,7 +61,7 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
-            <Rectangle Height="1" Grid.Row="1" Fill="{ThemeResource SystemAccentColor}" Margin="4,8"/>
+            <Rectangle Height="1" Grid.Row="1" Fill="LightGray" Margin="4,8"/>
             <!--通用导航设置-->
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
@@ -187,7 +186,7 @@ Margin="0,4"
                 </Grid>
             </Grid>
             <!--旗舰跳设置-->
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="3" x:Name="CapitalJumpGrid" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -201,7 +200,8 @@ Margin="0,4"
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{StaticResource MapNavigation_ShipType}" VerticalAlignment="Center"/>
-                    <ComboBox Grid.Column="1" x:Name="ShipTypeComboBox" DisplayMemberPath="Name" HorizontalAlignment="Right" MinWidth="100" Margin="8,0,0,0"/>
+                    <ComboBox Grid.Column="1" x:Name="ShipTypeComboBox" DisplayMemberPath="Name" HorizontalAlignment="Right" MinWidth="100" Margin="8,0,0,0"
+                              SelectedIndex="0"/>
                 </Grid>
                 <Grid Grid.Row="1" Margin="0,4">
                     <Grid.ColumnDefinitions>
@@ -254,6 +254,15 @@ Margin="0,4"
     Minimum="0"
     Maximum="5"/>
                 </Grid>
+                <Grid Grid.Row="4" Margin="0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition  Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{StaticResource MapNavigation_UseStargate}" 
+                       VerticalAlignment="Center"/>
+                    <CheckBox x:Name="UseStargateCheckBox" IsChecked="True" Grid.Column="1" Margin="8,0,0,0"/>
+                </Grid>
             </Grid>
             <!--计算-->
             <Grid Grid.Row="4">
@@ -263,14 +272,8 @@ Margin="0,4"
             </Grid>
         </Grid>
         <!--导航结果-->
-        <Grid Grid.Column="1" x:Name="ResultGrid" Visibility="Collapsed">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <TextBlock Text="{StaticResource MapNavigation_Result}" HorizontalAlignment="Center"/>
-            <Grid Grid.Row="1" Margin="0,8">
+        <Grid Grid.Column="1" x:Name="ResultGrid" Visibility="Collapsed" Margin="16,0" Width="300">
+            <Grid x:Name="HasResultGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -279,27 +282,37 @@ Margin="0,4"
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <TextBlock Text="{StaticResource MapNavigation_Result_Overview}" HorizontalAlignment="Center" Margin="0,4"/>
-                <Grid Grid.Row="1" Margin="0,4">
+                <TextBlock Text="{StaticResource MapNavigation_Result}" HorizontalAlignment="Center" Margin="0,4" Opacity="0.8"/>
+                <Grid Grid.Row="1" Margin="0,8">
                     <TextBlock Text="{StaticResource MapNavigation_Result_Overview_LinearDistance}" VerticalAlignment="Center"/>
-                    <TextBlock HorizontalAlignment="Right" x:Name="LinearDistanceTextBlock"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock  x:Name="LinearDistanceTextBlock" Text="0"/>
+                        <TextBlock Text="ly" Margin="4,0,0,0"/>
+                    </StackPanel>
                 </Grid>
-                <Grid Grid.Row="2" Margin="0,4">
+                <Grid Grid.Row="2" Margin="0,8">
                     <TextBlock Text="{StaticResource MapNavigation_Result_Overview_PassSystemCount}" VerticalAlignment="Center"/>
-                    <TextBlock HorizontalAlignment="Right" x:Name="PassSystemCountTextBlock"/>
+                    <TextBlock HorizontalAlignment="Right" x:Name="PassSystemCountTextBlock" Text="0" Margin="0,0,16,0"/>
                 </Grid>
-                <Grid Grid.Row="3" Margin="0,4">
+                <Grid Grid.Row="3" Margin="0,8">
                     <TextBlock Text="{StaticResource MapNavigation_Result_Overview_PassStargateCount}" VerticalAlignment="Center"/>
-                    <TextBlock HorizontalAlignment="Right" x:Name="PassStargateCountTextBlock"/>
+                    <TextBlock HorizontalAlignment="Right" x:Name="PassStargateCountTextBlock" Text="0"/>
                 </Grid>
-                <Grid Grid.Row="4" Margin="0,4">
+                <Grid Grid.Row="4" Margin="0,8">
                     <TextBlock Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpCount}" VerticalAlignment="Center"/>
-                    <TextBlock HorizontalAlignment="Right" x:Name="CapitalJumpCountTextBlock"/>
+                    <TextBlock HorizontalAlignment="Right" x:Name="CapitalJumpCountTextBlock" Text="0"/>
                 </Grid>
-                <Grid Grid.Row="5" Margin="0,4">
+                <Grid Grid.Row="5" Margin="0,8">
                     <TextBlock Text="{StaticResource MapNavigation_Result_Overview_RequireFuel}" VerticalAlignment="Center"/>
-                    <TextBlock HorizontalAlignment="Right" x:Name="RequireFuelTextBlock"/>
+                    <TextBlock HorizontalAlignment="Right" x:Name="RequireFuelTextBlock" Text="0"/>
                 </Grid>
+            </Grid>
+            <Grid x:Name="NoResultGrid">
+                <TextBlock Text="{StaticResource MapNavigation_Result_Null}" HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Grid>
+            <Grid x:Name="WaitingResultGrid">
+                <ProgressRing IsActive="False" x:Name="WaitingResultRing"/>
             </Grid>
         </Grid>
     </Grid>

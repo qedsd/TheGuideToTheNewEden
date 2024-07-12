@@ -142,5 +142,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return systems;
         }
+
+        public static List<MapSolarSystem> QueryByMinSec(double maxSec)
+        {
+            var types = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => p.Security >= maxSec).ToList();
+            if (DBService.NeedLocalization)
+            {
+                LocalDbService.TranMapSolarSystems(types);
+            }
+            return types;
+        }
     }
 }

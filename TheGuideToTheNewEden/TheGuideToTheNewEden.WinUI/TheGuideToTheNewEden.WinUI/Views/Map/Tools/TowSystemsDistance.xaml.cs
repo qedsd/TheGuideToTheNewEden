@@ -18,7 +18,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
     public sealed partial class TowSystemsDistance : Page
     {
-        private Core.EVEHelpers.ShortestPathHelper _shortestPathHelper;
         public TowSystemsDistance()
         {
             this.InitializeComponent();
@@ -50,11 +49,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 {
                     try
                     {
-                        if (_shortestPathHelper == null)
-                        {
-                            _shortestPathHelper = new Core.EVEHelpers.ShortestPathHelper();
-                        }
-                        paths = _shortestPathHelper.Cal(_system1.SolarSystemID, _system2.SolarSystemID);
+                        paths = Core.EVEHelpers.ShortestPathHelper.CalStargatePath(_system1.SolarSystemID, _system2.SolarSystemID, new List<int>());
                     }
                     catch(Exception ex)
                     {

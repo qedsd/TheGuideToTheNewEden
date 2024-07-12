@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.Core.EVEHelpers;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -40,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             this.Loaded -= MapNavigation_Loaded;
             InitCapitalJumpShipInfos();
+            NavTypeComboBox.SelectionChanged += NavTypeComboBox_SelectionChanged;
         }
 
         private void MapSystemSelector_OnSelectedItemChanged(Core.DBModels.MapSolarSystem selectedItem)
@@ -130,9 +132,30 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             }
         }
 
-        private void StartNavigateButton_Click(object sender, RoutedEventArgs e)
+        private async void StartNavigateButton_Click(object sender, RoutedEventArgs e)
         {
             ResultGrid.Visibility = Visibility.Visible;
+            WaitingResultGrid.Visibility = Visibility.Visible;
+            WaitingResultRing.IsActive = true;
+            HasResultGrid.Visibility = Visibility.Collapsed;
+            NoResultGrid.Visibility = Visibility.Collapsed;
+            var path = await Task.Run(()=>ShortestPathHelper.CalCapitalJumpPath(_waypoints[0].SolarSystemID, _waypoints[1].SolarSystemID, (ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo).MaxLY, UseStargateCheckBox.IsChecked == true, new List<int>()));
+            WaitingResultGrid.Visibility = Visibility.Collapsed;
+            WaitingResultRing.IsActive = false;
+            if (path != null)
+            {
+                HasResultGrid.Visibility = Visibility.Visible;
+                PassSystemCountTextBlock.Text = (path.Count + 1).ToString();
+            }
+            else
+            {
+                NoResultGrid.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void NavTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CapitalJumpGrid.Visibility = NavTypeComboBox.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }
