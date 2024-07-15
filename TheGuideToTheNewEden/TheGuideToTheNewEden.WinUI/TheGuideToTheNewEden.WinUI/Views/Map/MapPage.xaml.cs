@@ -49,6 +49,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
         private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
         private List<Core.Models.PlanetResources.Upgrade> _upgrades;
+        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
+        private Dictionary<int, int> _systemJumps;
         public MapPage()
         {
             this.InitializeComponent();
@@ -81,6 +83,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
             UpdataSystemPlanetResourcList(0);
             UpgradeList.ItemsSource = _upgrades;
+
+            _window?.ShowWaiting("Loading Statistics data");
+            await InitStatistics();
+            MapNavigation.SetData(_systemKills, _systemJumps, _sovDatas);
             _window?.HideWaiting();
         }
         private async Task InitData()
@@ -212,6 +218,33 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 data.OriginalY = (data.OriginalY * yScale) + (float)yOffset;
                 data.X = data.OriginalX;
                 data.Y = data.OriginalY;
+            }
+        }
+        private async Task InitStatistics()
+        {
+            ESI.NET.EsiClient esiClient = Core.Services.ESIService.GetDefaultEsi();
+            var kills = await esiClient.Universe.Kills();
+            if (kills?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                _systemKills = kills.Data.ToDictionary(p => p.SystemId);
+            }
+            else
+            {
+                Core.Log.Error($"Init Kills Statistics Error: {kills?.StatusCode}");
+                _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
+            }
+            var jumps = await esiClient.Universe.Jumps();
+            _systemJumps = new Dictionary<int, int>();
+            if (jumps?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                foreach(var p in jumps.Data)
+                {
+                    _systemJumps.Add(p.SystemId, p.ShipJumps);
+                }
+            }
+            else
+            {
+                Core.Log.Error($"Init Jumps Statistics Error: {jumps?.StatusCode}");
             }
         }
         #endregion

@@ -20,6 +20,10 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.EVEHelpers;
+using TheGuideToTheNewEden.Core.Models.Map;
+using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
+using Vanara.PInvoke;
+using SqlSugar.DistributedSystem.Snowflake;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -28,6 +32,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private readonly ObservableCollection<MapSolarSystem> _waypoints = new ObservableCollection<MapSolarSystem>();
         private readonly ObservableCollection<MapSolarSystem> _avoidSystems = new ObservableCollection<MapSolarSystem>();
         private readonly ObservableCollection<MapRegion> _avoidRegions = new ObservableCollection<MapRegion>();
+        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
+        private Dictionary<int, int> _systemJumps;
+        private Dictionary<int, SovData> _sovDatas;
         public MapNavigation()
         {
             this.InitializeComponent();
@@ -36,7 +43,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             AvoidRegionListView.ItemsSource = _avoidRegions;
             Loaded += MapNavigation_Loaded;
         }
-
+        public void SetData(Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        {
+            _systemKills = kills;
+            _systemJumps = jumps;
+            _sovDatas = sovDatas;
+        }
         private void MapNavigation_Loaded(object sender, RoutedEventArgs e)
         {
             this.Loaded -= MapNavigation_Loaded;
@@ -134,18 +146,34 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private async void StartNavigateButton_Click(object sender, RoutedEventArgs e)
         {
-            ResultGrid.Visibility = Visibility.Visible;
+            MainPivot.SelectedIndex = 1;
             WaitingResultGrid.Visibility = Visibility.Visible;
             WaitingResultRing.IsActive = true;
             HasResultGrid.Visibility = Visibility.Collapsed;
             NoResultGrid.Visibility = Visibility.Collapsed;
-            var path = await Task.Run(()=>ShortestPathHelper.CalCapitalJumpPath(_waypoints[0].SolarSystemID, _waypoints[1].SolarSystemID, (ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo).MaxLY, UseStargateCheckBox.IsChecked == true, new List<int>()));
+            //TODO:计算避开星系
+            List<int> avoid = new List<int>();
+            CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
+            double maxLY = ship.MaxLY * Math.Pow(1.2, (int)JumpDriveCalibrationNumberBox.Value);
+            double perLyFuel = ship.PerLYFuel * Math.Pow(1.1, (int)JumpFuelConservationNumberBox.Value);//未算上战略货舰技能加成
+            if(ship.GroupID == 1089)//战略货舰
+            {
+                perLyFuel *= Math.Pow(1.1, (int)JumpFreightersNumberBox.Value);
+            }
+            var path = await CalCapitalJumpPath(_waypoints.Select(p => p.SolarSystemID).ToList(), maxLY, UseStargateCheckBox.IsChecked == true, avoid, perLyFuel);
             WaitingResultGrid.Visibility = Visibility.Collapsed;
             WaitingResultRing.IsActive = false;
             if (path != null)
             {
                 HasResultGrid.Visibility = Visibility.Visible;
                 PassSystemCountTextBlock.Text = (path.Count + 1).ToString();
+                ResultList.ItemsSource = path;
+                var startSys = _waypoints.First();
+                var endSys = _waypoints.Last();
+                var m = Math.Sqrt(Math.Pow(startSys.X - endSys.X, 2) + Math.Pow(startSys.Y - endSys.Y, 2) + Math.Pow(startSys.Z - endSys.Z, 2));
+                LinearDistanceTextBlock.Text = (m / 9460730472580800).ToString("N2");
+                PassStargateCountTextBlock.Text = path.Where(p => p.NavType == 1).Count().ToString();
+                CapitalJumpCountTextBlock.Text = path.Where(p => p.NavType == 2).Count().ToString();
             }
             else
             {
@@ -156,6 +184,101 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private void NavTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CapitalJumpGrid.Visibility = NavTypeComboBox.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async Task<List<MapNavigationPoint>> CalCapitalJumpPath(List<int> path, double maxLY, bool useStargate, List<int> avoidSys, double perLyFuel)
+        {
+            return await Task.Run(() =>
+            {
+                List<int> resultPath = new List<int>();
+                for (int i = 0; i < path.Count; i += 2)
+                {
+                    var pathIds = ShortestPathHelper.CalCapitalJumpPath(path[i], path[i + 1], maxLY, useStargate, avoidSys);
+                    if (pathIds != null)
+                    {
+                        resultPath.AddRange(pathIds);
+                    }
+                }
+                if (resultPath.Any())
+                {
+                    return GetMapNavigationPoints(resultPath, perLyFuel);
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+        private List<MapNavigationPoint> GetMapNavigationPoints(List<int> path, double perLyFuel)
+        {
+            if (path.NotNullOrEmpty())
+            {
+                try
+                {
+                    List<MapNavigationPoint> mapNavigationPoints = new List<MapNavigationPoint>();
+                    var systemDic = Core.Services.DB.MapSolarSystemService.Query(path).ToDictionary(p => p.SolarSystemID);
+                    var regionDic = Core.Services.DB.MapRegionService.Query(systemDic.Values.Select(p => p.RegionID).Distinct().ToList()).ToDictionary(p => p.RegionID);
+                    MapNavigationPoint createPoint(int sysId)
+                    {
+                        MapNavigationPoint mapNavigationPoint = new MapNavigationPoint()
+                        {
+                            Id = mapNavigationPoints.Count
+                        };
+                        if (systemDic.TryGetValue(sysId, out var system))
+                        {
+                            mapNavigationPoint.System = system;
+                        }
+                        if (mapNavigationPoint.System != null && regionDic.TryGetValue(mapNavigationPoint.System.RegionID, out var region))
+                        {
+                            mapNavigationPoint.Region = region;
+                        }
+                        if (_systemKills.TryGetValue(sysId, out var sysKill))
+                        {
+                            mapNavigationPoint.PodKills = sysKill.PodKills;
+                            mapNavigationPoint.ShipKills = sysKill.ShipKills;
+                        }
+                        if (_systemJumps.TryGetValue(sysId, out var sysJump))
+                        {
+                            mapNavigationPoint.Jumps = sysJump;
+                        }
+                        if (_sovDatas.TryGetValue(sysId, out var sov))
+                        {
+                            mapNavigationPoint.Sov = sov.AllianceName;
+                        }
+                        return mapNavigationPoint;
+                    }
+                    var firstP = createPoint(path.Last());
+                    mapNavigationPoints.Add(firstP);
+                    for(int i = path.Count - 2;i >= 0;i--)
+                    {
+                        var point = createPoint(path[i]);
+                        var prevP = mapNavigationPoints.Last();
+                        var m = Math.Sqrt(Math.Pow(point.System.X - prevP.System.X, 2) + Math.Pow(point.System.Y - prevP.System.Y, 2) + Math.Pow(point.System.Z - prevP.System.Z, 2));
+                        point.Distance = m / 9460730472580800;
+                        point.Fuel = perLyFuel * point.Distance;
+                        var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
+                        if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
+                        {
+                            point.NavType = 1;
+                        }
+                        else
+                        {
+                            point.NavType = 2;
+                        }
+                        mapNavigationPoints.Add(point);
+                    }
+                    return mapNavigationPoints;
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

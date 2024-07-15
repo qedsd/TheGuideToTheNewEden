@@ -888,4 +888,11 @@
     <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpCount">旗舰跳次数</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_RequireFuel">燃料消耗量</x:String>
     <x:String x:Key="MapNavigation_Result_Null">无导航结果，请检查目的地是否可达</x:String>
+    <x:String x:Key="MapNavigation_Result_Distance">距离（ly）</x:String>
+    <x:String x:Key="MapNavigation_Result_RequireFuel">燃料</x:String>
+    <x:String x:Key="MapNavigation_Result_SOV">主权</x:String>
+    <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数</x:String>
+    <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数</x:String>
+    <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数</x:String>
+    <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
 </ResourceDictionary>

@@ -78,6 +78,10 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 }
             }
 
+            if(path != null)
+            {
+                path.Add(start);
+            }
             return path;
         }
     }
