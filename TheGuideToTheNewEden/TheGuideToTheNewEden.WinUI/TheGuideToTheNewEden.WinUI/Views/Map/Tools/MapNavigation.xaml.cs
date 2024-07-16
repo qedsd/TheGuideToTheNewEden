@@ -337,11 +337,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         }
         private double GetShipPerLyFuel(CapitalJumpShipInfo ship)
         {
-            double perLyFuel = ship.PerLYFuel - ship.PerLYFuel * 0.1 * (int)JumpFuelConservationNumberBox.Value;//未算上战略货舰技能加成
+            double basePerLyFuel = ship.PerLYFuel;
             if (ship.GroupID == 1089)//战略货舰
             {
-                perLyFuel -= ship.PerLYFuel * 0.1 * (int)JumpFreightersNumberBox.Value;
+                basePerLyFuel = ship.PerLYFuel - ship.PerLYFuel * 0.1 * (int)JumpFreightersNumberBox.Value;
             }
+            double perLyFuel = basePerLyFuel - basePerLyFuel * 0.1 * (int)JumpFuelConservationNumberBox.Value;//未算上战略货舰技能加成
             return perLyFuel;
         }
 
