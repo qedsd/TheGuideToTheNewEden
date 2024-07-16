@@ -93,12 +93,12 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                         }
                     }
                     //旗舰跳连接
-                    var jumpTo2 = ps.Values.Where(p2=> !notCapJumpSystems.Contains(p2.SolarSystemID) && Math.Abs(p2.X - p.X) <= maxJump2 && Math.Abs(p2.Y - p.Y) <= maxJump2 && Math.Sqrt(Math.Pow(p2.X - p.X,2) + Math.Pow(p2.Y - p.Y, 2)) <= maxJump2).ToList();
+                    var jumpTo2 = ps.Values.Where(p2=> !notCapJumpSystems.Contains(p2.SolarSystemID) && Math.Abs(p2.X - p.X) <= maxJump2 && Math.Abs(p2.Y - p.Y) <= maxJump2 && Math.Abs(p2.Z - p.Z) <= maxJump2 && Math.Sqrt(Math.Pow(p2.X - p.X,2) + Math.Pow(p2.Y - p.Y, 2) + Math.Pow(p2.Z - p.Z, 2)) <= maxJump2).ToList();
                     foreach (var jump in jumpTo2)
                     {
                         if (jump.SolarSystemID != p.SolarSystemID && !avoidIdsHashSet.Contains(jump.SolarSystemID))
                         {
-                            edges.TryAdd(jump.SolarSystemID, Math.Sqrt(Math.Pow(p.X - jump.X, 2) + Math.Pow(p.Y - jump.Y, 2)));
+                            edges.TryAdd(jump.SolarSystemID, Math.Sqrt(Math.Pow(p.X - jump.X, 2) + Math.Pow(p.Y - jump.Y, 2) + Math.Pow(p.Z - jump.Z, 2)));
                         }
                     }
                     dijkstras.AddVertex(p.SolarSystemID, edges);
