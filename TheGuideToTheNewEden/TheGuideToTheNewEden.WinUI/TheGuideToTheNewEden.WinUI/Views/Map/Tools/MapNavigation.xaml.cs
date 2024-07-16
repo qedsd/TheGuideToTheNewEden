@@ -25,6 +25,7 @@ using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using Vanara.PInvoke;
 using SqlSugar.DistributedSystem.Snowflake;
 using ESI.NET.Models.Location;
+using Vanara.Extensions.Reflection;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -357,6 +358,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private void JumpFreightersNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
             UpdateShipMaxJumpAndFuel();
+        }
+
+        private void MaxContentButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.MaxWidth = double.MaxValue;
+            MaxContentButton.Visibility = Visibility.Collapsed;
+            MinContentButton.Visibility = Visibility.Visible;
+        }
+
+        private void MinContentButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.MaxWidth = 656;
+            MaxContentButton.Visibility = Visibility.Visible;
+            MinContentButton.Visibility = Visibility.Collapsed;
         }
     }
 }
