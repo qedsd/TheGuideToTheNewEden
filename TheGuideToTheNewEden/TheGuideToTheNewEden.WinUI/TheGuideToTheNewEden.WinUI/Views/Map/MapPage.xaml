@@ -22,7 +22,7 @@
             Margin="0,4,2,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Grid Height="32">
+            <Grid Height="34">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />

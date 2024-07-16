@@ -168,7 +168,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _window?.ShowError(resp.StatusCode.ToString());
                 }
             }
-
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
@@ -222,29 +221,39 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async Task InitStatistics()
         {
-            ESI.NET.EsiClient esiClient = Core.Services.ESIService.GetDefaultEsi();
-            var kills = await esiClient.Universe.Kills();
-            if (kills?.StatusCode == System.Net.HttpStatusCode.OK)
+            try
             {
-                _systemKills = kills.Data.ToDictionary(p => p.SystemId);
-            }
-            else
-            {
-                Core.Log.Error($"Init Kills Statistics Error: {kills?.StatusCode}");
-                _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
-            }
-            var jumps = await esiClient.Universe.Jumps();
-            _systemJumps = new Dictionary<int, int>();
-            if (jumps?.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                foreach(var p in jumps.Data)
+                ESI.NET.EsiClient esiClient = Core.Services.ESIService.GetDefaultEsi();
+                var kills = await esiClient.Universe.Kills();
+                if (kills?.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    _systemJumps.Add(p.SystemId, p.ShipJumps);
+                    _systemKills = kills.Data.ToDictionary(p => p.SystemId);
+                }
+                else
+                {
+                    Core.Log.Error($"Init Kills Statistics Error: {kills?.StatusCode}");
+                    _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
+                }
+                var jumps = await esiClient.Universe.Jumps();
+                _systemJumps = new Dictionary<int, int>();
+                if (jumps?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    foreach (var p in jumps.Data)
+                    {
+                        _systemJumps.Add(p.SystemId, p.ShipJumps);
+                    }
+                }
+                else
+                {
+                    Core.Log.Error($"Init Jumps Statistics Error: {jumps?.StatusCode}");
                 }
             }
-            else
+            catch(Exception ex)
             {
-                Core.Log.Error($"Init Jumps Statistics Error: {jumps?.StatusCode}");
+                Core.Log.Error(ex);
+                _window?.ShowError(ex.Message);
+                _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
+                _systemJumps = new Dictionary<int, int>();
             }
         }
         #endregion

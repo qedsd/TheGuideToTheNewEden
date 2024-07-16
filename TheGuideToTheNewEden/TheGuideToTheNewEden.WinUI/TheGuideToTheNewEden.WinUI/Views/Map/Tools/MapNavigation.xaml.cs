@@ -24,6 +24,7 @@ using TheGuideToTheNewEden.Core.Models.Map;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using Vanara.PInvoke;
 using SqlSugar.DistributedSystem.Snowflake;
+using ESI.NET.Models.Location;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -96,39 +97,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             AvoidRegionButton.Content = _avoidRegions.Count.ToString();
         }
 
-        //private async void GetCanCapitalJumpShips()
-        //{
-        //    IEnumerable<InvType> ships = null;
-        //    await Task.Run(() =>
-        //    {
-        //        //分类在旗舰1381和黑隐1075下的所有分类下的船
-        //        //循环找分组的子分组，直到没有子分组
-        //        List<InvMarketGroup> findLastSubGroup(InvMarketGroup inputGroup)
-        //        {
-        //            var subGroup = Core.Services.DB.InvMarketGroupService.QuerySubGroupId(inputGroup.MarketGroupID);
-        //            if (subGroup.NotNullOrEmpty())//还有子分组
-        //            {
-        //                List<InvMarketGroup> subGroups = new List<InvMarketGroup>();
-        //                foreach (var group in subGroup)
-        //                {
-        //                    subGroups.AddRange(findLastSubGroup(group));
-        //                }
-        //                return subGroups;
-        //            }
-        //            else
-        //            {
-        //                return new List<InvMarketGroup>() { inputGroup };
-        //            }
-        //        }
-        //        var capGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1381));
-        //        var capShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(capGroup.Select(p=>p.MarketGroupID).ToList());
-        //        var blackOpsGroup = findLastSubGroup(Core.Services.DB.InvMarketGroupService.Query(1075));
-        //        var blackOpsShips = Core.Services.DB.InvTypeService.QueryTypesInGroup(blackOpsGroup.Select(p => p.MarketGroupID).ToList());
-        //        ships = capShips.Union(blackOpsShips).ToList();//所有支持旗舰跳的船
-        //    });
-        //    ShipTypeComboBox.ItemsSource = ships;
-        //}
-
         private void InitCapitalJumpShipInfos()
         {
             var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "CapitalJumpShipInfo.json"));
@@ -151,22 +119,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             WaitingResultRing.IsActive = true;
             HasResultGrid.Visibility = Visibility.Collapsed;
             NoResultGrid.Visibility = Visibility.Collapsed;
-            //TODO:计算避开星系
-            List<int> avoid = new List<int>();
-            CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
-            double maxLY = ship.MaxLY * Math.Pow(1.2, (int)JumpDriveCalibrationNumberBox.Value);
-            double perLyFuel = ship.PerLYFuel * Math.Pow(1.1, (int)JumpFuelConservationNumberBox.Value);//未算上战略货舰技能加成
-            if(ship.GroupID == 1089)//战略货舰
+            List<int> avoid = await GetAvoidSystems();
+            List<MapNavigationPoint> path = null;
+            if(NavTypeComboBox.SelectedIndex == 1)//旗舰跳
             {
-                perLyFuel *= Math.Pow(1.1, (int)JumpFreightersNumberBox.Value);
+                CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
+                double maxLY = GetShipMaxJump(ship);
+                double perLyFuel = GetShipPerLyFuel(ship);
+                path = await CalCapitalJumpPath(_waypoints.Select(p => p.SolarSystemID).ToList(), maxLY, UseStargateCheckBox.IsChecked == true, avoid, perLyFuel);
             }
-            var path = await CalCapitalJumpPath(_waypoints.Select(p => p.SolarSystemID).ToList(), maxLY, UseStargateCheckBox.IsChecked == true, avoid, perLyFuel);
+            else//走星门
+            {
+                path = await CalStargatePath(_waypoints.Select(p => p.SolarSystemID).ToList(), avoid);
+            }
+            
             WaitingResultGrid.Visibility = Visibility.Collapsed;
             WaitingResultRing.IsActive = false;
             if (path != null)
             {
                 HasResultGrid.Visibility = Visibility.Visible;
-                PassSystemCountTextBlock.Text = (path.Count + 1).ToString();
+                PassSystemCountTextBlock.Text = path.Count.ToString();
                 ResultList.ItemsSource = path;
                 var startSys = _waypoints.First();
                 var endSys = _waypoints.Last();
@@ -174,6 +146,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 LinearDistanceTextBlock.Text = (m / 9460730472580800).ToString("N2");
                 PassStargateCountTextBlock.Text = path.Where(p => p.NavType == 1).Count().ToString();
                 CapitalJumpCountTextBlock.Text = path.Where(p => p.NavType == 2).Count().ToString();
+                RequireFuelTextBlock.Text = path.Sum(p => p.Fuel).ToString("N2");
+                CapitalJumpDistanceTextBlock.Text = path.Where(p=>p.NavType == 2).Sum(p => p.Distance).ToString("N2");
             }
             else
             {
@@ -185,23 +159,76 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             CapitalJumpGrid.Visibility = NavTypeComboBox.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         }
-
+        private async Task<List<int>> GetAvoidSystems()
+        {
+            return await Task.Run(() =>
+            {
+                List<int> avoid = _avoidSystems.Select(p => p.SolarSystemID).ToList();
+                foreach (var region in _avoidRegions)
+                {
+                    var systems = Core.Services.DB.MapSolarSystemService.QueryByRegionID(region.RegionID);
+                    avoid.AddRange(systems.Select(p => p.SolarSystemID));
+                }
+                return avoid;
+            });
+        }
         private async Task<List<MapNavigationPoint>> CalCapitalJumpPath(List<int> path, double maxLY, bool useStargate, List<int> avoidSys, double perLyFuel)
         {
             return await Task.Run(() =>
             {
                 List<int> resultPath = new List<int>();
-                for (int i = 0; i < path.Count; i += 2)
+                for (int i = 0; i < path.Count - 1; i ++)
                 {
+                    //ShortestPathHelper返回的数据从终点到起点
+                    //需要将数据反转
                     var pathIds = ShortestPathHelper.CalCapitalJumpPath(path[i], path[i + 1], maxLY, useStargate, avoidSys);
                     if (pathIds != null)
                     {
-                        resultPath.AddRange(pathIds);
+                        for(int j = pathIds.Count - 1; j >= 1; j--)
+                        {
+                            resultPath.Add(pathIds[j]);
+                        }
+                        if(i == path.Count - 2)//最后一个航点需要添加回最后航点
+                        {
+                            resultPath.Add(pathIds[0]);
+                        }
                     }
                 }
                 if (resultPath.Any())
                 {
                     return GetMapNavigationPoints(resultPath, perLyFuel);
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+        private async Task<List<MapNavigationPoint>> CalStargatePath(List<int> path, List<int> avoidSys)
+        {
+            return await Task.Run(() =>
+            {
+                List<int> resultPath = new List<int>();
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    //ShortestPathHelper返回的数据从终点到起点
+                    //需要将数据反转
+                    var pathIds = ShortestPathHelper.CalStargatePath(path[i], path[i + 1], avoidSys);
+                    if (pathIds != null)
+                    {
+                        for (int j = pathIds.Count - 1; j >= 1; j--)
+                        {
+                            resultPath.Add(pathIds[j]);
+                        }
+                        if (i == path.Count - 2)//最后一个航点需要添加回最后航点
+                        {
+                            resultPath.Add(pathIds[0]);
+                        }
+                    }
+                }
+                if (resultPath.Any())
+                {
+                    return GetMapNavigationPoints(resultPath, 0);
                 }
                 else
                 {
@@ -247,15 +274,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                         }
                         return mapNavigationPoint;
                     }
-                    var firstP = createPoint(path.Last());
+                    var firstP = createPoint(path[0]);
                     mapNavigationPoints.Add(firstP);
-                    for(int i = path.Count - 2;i >= 0;i--)
+                    for(int i = 1;i <= path.Count - 1;i++)
                     {
                         var point = createPoint(path[i]);
                         var prevP = mapNavigationPoints.Last();
                         var m = Math.Sqrt(Math.Pow(point.System.X - prevP.System.X, 2) + Math.Pow(point.System.Y - prevP.System.Y, 2) + Math.Pow(point.System.Z - prevP.System.Z, 2));
                         point.Distance = m / 9460730472580800;
-                        point.Fuel = perLyFuel * point.Distance;
                         var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
                         if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
                         {
@@ -264,6 +290,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                         else
                         {
                             point.NavType = 2;
+                            point.Fuel = perLyFuel * point.Distance;
                         }
                         mapNavigationPoints.Add(point);
                     }
@@ -279,6 +306,57 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             {
                 return null;
             }
+        }
+
+        private void ShipTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
+            if (ship?.GroupID == 1089)
+            {
+                JumpFreightersGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                JumpFreightersGrid.Visibility = Visibility.Collapsed;
+            }
+            UpdateShipMaxJumpAndFuel();
+        }
+        private void UpdateShipMaxJumpAndFuel()
+        {
+            CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
+            if(ship != null)
+            {
+                MaxJumpTextBlock.Text = GetShipMaxJump(ship).ToString("N2");
+                PerLyFuelTextBlock.Text = GetShipPerLyFuel(ship).ToString("N2");
+            }
+        }
+        private double GetShipMaxJump(CapitalJumpShipInfo ship)
+        {
+            return ship.MaxLY + ship.MaxLY * 0.2 * (int)JumpDriveCalibrationNumberBox.Value;
+        }
+        private double GetShipPerLyFuel(CapitalJumpShipInfo ship)
+        {
+            double perLyFuel = ship.PerLYFuel - ship.PerLYFuel * 0.1 * (int)JumpFuelConservationNumberBox.Value;//未算上战略货舰技能加成
+            if (ship.GroupID == 1089)//战略货舰
+            {
+                perLyFuel -= ship.PerLYFuel * 0.1 * (int)JumpFreightersNumberBox.Value;
+            }
+            return perLyFuel;
+        }
+
+        private void JumpDriveCalibrationNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            UpdateShipMaxJumpAndFuel();
+        }
+
+        private void JumpFuelConservationNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            UpdateShipMaxJumpAndFuel();
+        }
+
+        private void JumpFreightersNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            UpdateShipMaxJumpAndFuel();
         }
     }
 }
