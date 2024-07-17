@@ -103,17 +103,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private void InitCapitalJumpShipInfos()
         {
-            var json = System.IO.File.ReadAllText(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "CapitalJumpShipInfo.json"));
-            if (json != null)
-            {
-                var infos = JsonConvert.DeserializeObject<List<CapitalJumpShipInfo>>(json);
-                foreach(var info in infos)
-                {
-                    info.InvMarketGroup = Core.Services.DB.InvMarketGroupService.Query(info.GroupID);
-                    info.InvType = Core.Services.DB.InvTypeService.QueryType(info.TypeID);
-                }
-                ShipTypeComboBox.ItemsSource = infos;
-            }
+            ShipTypeComboBox.ItemsSource = Core.EVEHelpers.CapitalJumpShipInfoHelper.GetInfos();
         }
 
         private async void StartNavigateButton_Click(object sender, RoutedEventArgs e)
