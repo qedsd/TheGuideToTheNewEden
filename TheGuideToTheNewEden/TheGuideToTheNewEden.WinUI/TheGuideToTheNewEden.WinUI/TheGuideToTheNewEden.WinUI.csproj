@@ -292,7 +292,6 @@
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
-    <None Remove="Views\Map\Tools\TowSystemsDistance.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -554,9 +553,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Page Update="Views\Map\Tools\MapNavigation.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\Map\Tools\TowSystemsDistance.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Map\MapPage.xaml">

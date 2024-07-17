@@ -598,7 +598,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 case "PlanetResource_Region": targetTool = RegionPlanetResourcList; break;
                 case "PlanetResource_System": targetTool = Tool_SystemPlanetResourcList; break;
                 case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
-                case "TowSystemsDistance": targetTool = Tool_TowSystemsDistance; break;
                 case "InOneJumpSystems": targetTool = Tool_InOneJumpSystems; break;
                 case "Navigation": targetTool = Tool_Navigation; break;
             }
