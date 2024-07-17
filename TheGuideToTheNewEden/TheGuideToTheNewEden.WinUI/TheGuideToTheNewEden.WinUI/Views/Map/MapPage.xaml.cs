@@ -86,7 +86,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
             _window?.ShowWaiting("Loading Statistics data");
             await InitStatistics();
-            MapNavigation.SetData(_systemKills, _systemJumps, _sovDatas);
+            MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
             _window?.HideWaiting();
         }
         private async Task InitData()
@@ -584,6 +584,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         #region ¹¤¾ß
         private void Tools_Click(object sender, RoutedEventArgs e)
         {
+            MapCanvas.ClearMapGraph();
+            MapCanvas.RemoveTemporary();
             MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
             foreach(var u in ToolGrid.Children)
             {

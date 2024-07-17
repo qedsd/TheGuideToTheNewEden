@@ -881,8 +881,12 @@
     <x:String x:Key="MapNavigation_JumpFreighters">战略货舰操作</x:String>
     <x:String x:Key="MapNavigation_JumpFreighters_Tip">每升一级，跳跃燃料需求减少10%</x:String>
     <x:String x:Key="MapNavigation_UseStargate">使用星门</x:String>
+    <x:String x:Key="MapNavigation_PreferPath">优先路线</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Faster">省时优先</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Cheaper">省钱优先</x:String>
     <x:String x:Key="MapNavigation_MaxJump">最大跳跃距离</x:String>
     <x:String x:Key="MapNavigation_PerLyFuel">每光年消耗燃料</x:String>
+    <x:String x:Key="MapNavigation_MapOnlyShowPath">星图仅显示途径星系</x:String>
     <x:String x:Key="MapNavigation_Go">计算导航</x:String>
     <x:String x:Key="MapNavigation_Result_Overview">导航总览</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">直线距离</x:String>

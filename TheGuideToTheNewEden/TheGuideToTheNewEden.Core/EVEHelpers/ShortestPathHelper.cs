@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ESI.NET.Models.Universe;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,49 +35,44 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
             return dijkstras.CalShortestPath(start, end);
         }
-        public static List<int> CalCapitalJumpPath(int start, int end, double maxJump,bool useGate, List<int> avoidIds)
+        private delegate double CalWeightDelegate(SolarSystemPosition p1, SolarSystemPosition p2);
+        private static double EqualWeight(SolarSystemPosition p1, SolarSystemPosition p2)
+        {
+            return 1;
+        }
+        private static double DistanceWeight(SolarSystemPosition p1, SolarSystemPosition p2)
+        {
+            return Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2) + Math.Pow(p1.Z - p2.Z, 2));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="maxJump"></param>
+        /// <param name="useGate"></param>
+        /// <param name="avoidIds"></param>
+        /// <param name="mode">
+        /// 0 时间优先 - 权重全部相等
+        /// 1 省钱优先 - 以跳跃距离为权重，星门按最大跳跃距离算
+        /// </param>
+        /// <returns></returns>
+        public static List<int> CalCapitalJumpPath(int start, int end, double maxJump,bool useGate, List<int> avoidIds,int mode)
         {
             Dijkstras dijkstras = new Dijkstras();
             var avoidIdsHashSet = avoidIds.ToHashSet2();
             var ps = SolarSystemPosHelper.PositionDic;
             var notCapJumpSystems = Services.DB.MapSolarSystemService.QueryByMinSec(0.5).Select(p=>p.SolarSystemID).ToHashSet2();
-            //SolarSystemPosition kmq4 = new SolarSystemPosition()
-            //{
-            //    SolarSystemID = 30004375,
-            //    X = 415.63,
-            //    Y = 21.855000000000018,
-            //    JumpTo = new List<int>() { 30004374 }
-            //};
-            //SolarSystemPosition p5 = new SolarSystemPosition()
-            //{
-            //    SolarSystemID = 30004374,
-            //    X = 400.658,
-            //    Y = 24.979000000000042,
-            //    JumpTo = new List<int>() { 30004373, 30004375 }
-            //};
-            //SolarSystemPosition j52 = new SolarSystemPosition()
-            //{
-            //    SolarSystemID = 30004373,
-            //    X = 399.56300000000005,
-            //    Y = 33.50800000000004,
-            //    JumpTo = new List<int>() { 30004374, 30004372 }
-            //};
-            //SolarSystemPosition clb = new SolarSystemPosition()
-            //{
-            //    SolarSystemID = 30004372,
-            //    X = 401.249,
-            //    Y = 36.298,
-            //    JumpTo = new List<int>() { 30004373 }
-            //};
-            //Dictionary<int, SolarSystemPosition> ps = new Dictionary<int, SolarSystemPosition>()
-            //{
-            //    {kmq4.SolarSystemID, kmq4 },
-            //    {p5.SolarSystemID, p5 },
-            //    {j52.SolarSystemID, j52 },
-            //    {clb.SolarSystemID, clb },
-            //};
 
             double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
+            double gateWeight = mode == 0 ? maxJump2 : 1;
+            
+            CalWeightDelegate calWeight = EqualWeight;
+            switch(mode)
+            {
+                case 0: calWeight = EqualWeight; break;
+                case 1: calWeight = DistanceWeight; break;
+            }
             foreach (var p in ps.Values)
             {
                 if (!avoidIdsHashSet.Contains(p.SolarSystemID))
@@ -98,7 +94,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                     {
                         if (jump.SolarSystemID != p.SolarSystemID && !avoidIdsHashSet.Contains(jump.SolarSystemID))
                         {
-                            edges.TryAdd(jump.SolarSystemID, Math.Sqrt(Math.Pow(p.X - jump.X, 2) + Math.Pow(p.Y - jump.Y, 2) + Math.Pow(p.Z - jump.Z, 2)));
+                            edges.TryAdd(jump.SolarSystemID, calWeight(p, jump));
                         }
                     }
                     dijkstras.AddVertex(p.SolarSystemID, edges);

@@ -26,6 +26,7 @@ using Vanara.PInvoke;
 using SqlSugar.DistributedSystem.Snowflake;
 using ESI.NET.Models.Location;
 using Vanara.Extensions.Reflection;
+using static TheGuideToTheNewEden.WinUI.Views.Map.MapCanvas;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -37,6 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
         private Dictionary<int, int> _systemJumps;
         private Dictionary<int, SovData> _sovDatas;
+        private MapCanvas _mapCanvas;
         public MapNavigation()
         {
             this.InitializeComponent();
@@ -45,8 +47,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             AvoidRegionListView.ItemsSource = _avoidRegions;
             Loaded += MapNavigation_Loaded;
         }
-        public void SetData(Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public void SetData(MapCanvas mapCanvas,Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
         {
+            _mapCanvas = mapCanvas;
             _systemKills = kills;
             _systemJumps = jumps;
             _sovDatas = sovDatas;
@@ -115,6 +118,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private async void StartNavigateButton_Click(object sender, RoutedEventArgs e)
         {
+            _mapCanvas.RemoveTemporary();
+            _mapCanvas.ClearMapGraph();
             MainPivot.SelectedIndex = 1;
             WaitingResultGrid.Visibility = Visibility.Visible;
             WaitingResultRing.IsActive = true;
@@ -127,7 +132,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
                 double maxLY = GetShipMaxJump(ship);
                 double perLyFuel = GetShipPerLyFuel(ship);
-                path = await CalCapitalJumpPath(_waypoints.Select(p => p.SolarSystemID).ToList(), maxLY, UseStargateCheckBox.IsChecked == true, avoid, perLyFuel);
+                path = await CalCapitalJumpPath(_waypoints.Select(p => p.SolarSystemID).ToList(), maxLY, UseStargateCheckBox.IsChecked == true, avoid, perLyFuel, PreferPathComboBox.SelectedIndex);
             }
             else//走星门
             {
@@ -149,6 +154,28 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 CapitalJumpCountTextBlock.Text = path.Where(p => p.NavType == 2).Count().ToString();
                 RequireFuelTextBlock.Text = path.Sum(p => p.Fuel).ToString("N2");
                 CapitalJumpDistanceTextBlock.Text = path.Where(p=>p.NavType == 2).Sum(p => p.Distance).ToString("N2");
+
+                if(MapOnlyShowPathCheckBox.IsChecked == true)
+                {
+                    _mapCanvas.TemporaryEnableData(path.Select(p => p.System.SolarSystemID).ToList());
+                }
+                List<MapGraphBase> mapGraphs = new List<MapGraphBase>();
+                for(int i = 0; i< path.Count;i++)
+                {
+                    mapGraphs.Add(new CircleMapGraph()
+                    {
+                        CenterDataId = path[i].System.SolarSystemID,
+                    });
+                }
+                for (int i = 0; i < path.Count - 1;)
+                {
+                    mapGraphs.Add(new LineMapGraph()
+                    {
+                        Data1Id = path[i].System.SolarSystemID,
+                        Data2Id = path[++i].System.SolarSystemID,
+                    });
+                }
+                _mapCanvas.AddMapGraph(mapGraphs);
             }
             else
             {
@@ -173,7 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 return avoid;
             });
         }
-        private async Task<List<MapNavigationPoint>> CalCapitalJumpPath(List<int> path, double maxLY, bool useStargate, List<int> avoidSys, double perLyFuel)
+        private async Task<List<MapNavigationPoint>> CalCapitalJumpPath(List<int> path, double maxLY, bool useStargate, List<int> avoidSys, double perLyFuel,int mode)
         {
             return await Task.Run(() =>
             {
@@ -182,7 +209,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 {
                     //ShortestPathHelper返回的数据从终点到起点
                     //需要将数据反转
-                    var pathIds = ShortestPathHelper.CalCapitalJumpPath(path[i], path[i + 1], maxLY, useStargate, avoidSys);
+                    var pathIds = ShortestPathHelper.CalCapitalJumpPath(path[i], path[i + 1], maxLY, useStargate, avoidSys, mode);
                     if (pathIds != null)
                     {
                         for(int j = pathIds.Count - 1; j >= 1; j--)
@@ -197,7 +224,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 }
                 if (resultPath.Any())
                 {
-                    return GetMapNavigationPoints(resultPath, perLyFuel);
+                    return GetMapNavigationPoints(resultPath, perLyFuel,useStargate);
                 }
                 else
                 {
@@ -229,7 +256,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 }
                 if (resultPath.Any())
                 {
-                    return GetMapNavigationPoints(resultPath, 0);
+                    return GetMapNavigationPoints(resultPath, 0, true);
                 }
                 else
                 {
@@ -237,7 +264,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 }
             });
         }
-        private List<MapNavigationPoint> GetMapNavigationPoints(List<int> path, double perLyFuel)
+        private List<MapNavigationPoint> GetMapNavigationPoints(List<int> path, double perLyFuel, bool useStargate)
         {
             if (path.NotNullOrEmpty())
             {
@@ -283,15 +310,23 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                         var prevP = mapNavigationPoints.Last();
                         var m = Math.Sqrt(Math.Pow(point.System.X - prevP.System.X, 2) + Math.Pow(point.System.Y - prevP.System.Y, 2) + Math.Pow(point.System.Z - prevP.System.Z, 2));
                         point.Distance = m / 9460730472580800;
-                        var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
-                        if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
-                        {
-                            point.NavType = 1;
-                        }
-                        else
+                        if(!useStargate)
                         {
                             point.NavType = 2;
                             point.Fuel = perLyFuel * point.Distance;
+                        }
+                        else
+                        {
+                            var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
+                            if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
+                            {
+                                point.NavType = 1;
+                            }
+                            else
+                            {
+                                point.NavType = 2;
+                                point.Fuel = perLyFuel * point.Distance;
+                            }
                         }
                         mapNavigationPoints.Add(point);
                     }
@@ -373,6 +408,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             this.MaxWidth = 656;
             MaxContentButton.Visibility = Visibility.Visible;
             MinContentButton.Visibility = Visibility.Collapsed;
+        }
+
+        private void ResultList_CellDoubleTapped(object sender, Syncfusion.UI.Xaml.DataGrid.GridCellDoubleTappedEventArgs e)
+        {
+            var point = ResultList.SelectedItem as MapNavigationPoint;
+            if(point != null)
+            {
+                _mapCanvas.ToSystem(point.System.SolarSystemID);
+            }
         }
     }
 }

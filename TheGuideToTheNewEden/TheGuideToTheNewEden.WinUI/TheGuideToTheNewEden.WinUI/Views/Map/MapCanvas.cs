@@ -23,14 +23,14 @@ using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Models.Map;
-using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
-    internal class MapCanvas : UserControl
+    public class MapCanvas : UserControl
     {
         private CanvasControl _canvasControl;
         private CanvasControl _selectedCanvasControl;
+        private CanvasControl _otherCanvasControl;
         /// <summary>
         /// 当前缩放
         /// </summary>
@@ -57,6 +57,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private double _lastPressedY = 0;
         private double _lastMovedX = 0;
         private double _lastMovedY = 0;
+        private List<MapGraphBase> _otherMapGraphs = new List<MapGraphBase>();
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -70,7 +71,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _selectedCanvasControl = new CanvasControl();
             _selectedCanvasControl.Draw += SelectedCanvasControl_Draw;
 
+            _otherCanvasControl = new CanvasControl();
+            _otherCanvasControl.Draw += OtherCanvasControl_Draw;
+
             var contentGrid = new Grid();
+            contentGrid.Children.Add(_otherCanvasControl);
             contentGrid.Children.Add(_selectedCanvasControl);
             contentGrid.Children.Add(_canvasControl);
             Content = contentGrid;
@@ -84,6 +89,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             };
             _findDataTimer.Tick += FindDataTimer_Tick;
             _findDataTimer.Start();
+        }
+
+        private void OtherCanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if(_otherMapGraphs.Any())
+            {
+                foreach(var graph in _otherMapGraphs)
+                {
+                    graph.Draw(args, _usingMapDatas);
+                }
+            }
         }
 
         private void SelectedCanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -360,6 +376,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 UpdateData(zoom, xOffset, yOffset);
                 _canvasControl.Invalidate();
+                _otherCanvasControl.Invalidate();
             }
         }
         private void UpdateData(float zoom, float xOffset, float yOffset)
@@ -463,6 +480,55 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 Draw(scale, xOffset, yOffset);
             }
         }
+        public void AddMapGraph(List<MapGraphBase> mapGraphs)
+        {
+            _otherMapGraphs.AddRange(mapGraphs);
+            _otherCanvasControl.Invalidate();
+        }
+        public void ClearMapGraph()
+        {
+            _otherMapGraphs.Clear();
+            _otherCanvasControl.Invalidate();
+        }
+        private Dictionary<int, bool> _temporaryDisableData = new Dictionary<int, bool>();
+        public void TemporaryEnableData(List<int> datas)
+        {
+            _temporaryDisableData.Clear();
+            foreach(var data in _usingMapDatas)
+            {
+                _temporaryDisableData.Add(data.Key, data.Value.Enable);
+                data.Value.Enable = false;
+            }
+
+            foreach (var data in datas)
+            {
+                _usingMapDatas[data].Enable = true;
+            }
+            Draw();
+        }
+        public void RemoveTemporary()
+        {
+            if(_temporaryDisableData.Any())
+            {
+                foreach (var data in _temporaryDisableData)
+                {
+                    _usingMapDatas[data.Key].Enable = data.Value;
+                }
+            }
+            Draw();
+        }
+        public void Dispose()
+        {
+            _canvasControl.RemoveFromVisualTree();
+            _canvasControl = null;
+            _selectedCanvasControl.RemoveFromVisualTree();
+            _selectedCanvasControl = null;
+            _otherCanvasControl.RemoveFromVisualTree();
+            _otherCanvasControl = null;
+            _findDataTimer.Stop();
+            _findDataTimer = null;
+            Services.Settings.ThemeSelectorService.OnChangedTheme -= ThemeSelectorService_OnChangedTheme;
+        }
         public delegate void SelectedSystemChangedEventHandel(MapData mapData);
         private SelectedSystemChangedEventHandel PointedSystemChanged;
         public event SelectedSystemChangedEventHandel OnPointedSystemChanged
@@ -488,16 +554,66 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 SelectedSystemChanged -= value;
             }
         }
+
         #endregion
 
-        public void Dispose()
+        public enum MapGraphType
         {
-            _canvasControl.RemoveFromVisualTree();
-            _canvasControl = null;
-            _selectedCanvasControl.RemoveFromVisualTree();
-            _selectedCanvasControl = null;
-            _findDataTimer.Stop();
-            _findDataTimer = null;
+            Circle, Line
+        }
+        public abstract class MapGraphBase
+        {
+            public MapGraphType GraphType { get; set; }
+            public abstract void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas);
+        }
+        public class CircleMapGraph: MapGraphBase
+        {
+            public CircleMapGraph()
+            {
+                GraphType = MapGraphType.Circle;
+            }
+            public int CenterDataId { get; set; }
+            public List<int> CoverDataIds { get; set; }
+            public Windows.UI.Color Color { get; set; } = Windows.UI.Color.FromArgb(100, Colors.White.R, Colors.White.G, Colors.White.B);
+            public float Margin { get; set; } = 1;
+
+            public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas)
+            {
+                var centerData = datas[CenterDataId];
+                float r = centerData.W + Margin;
+                MapData farthestData = centerData;
+                if (CoverDataIds != null && CoverDataIds.Any())
+                {
+                    foreach (var coverDataId in CoverDataIds)
+                    {
+                        var data = datas[coverDataId];
+                        var curR = Math.Sqrt(Math.Pow(centerData.X - data.X, 2) + Math.Pow(centerData.Y - data.Y, 2));
+                        if(curR > r)
+                        {
+                            r = (float)curR;
+                            farthestData = data;
+                        }
+                    }
+                }
+                args.DrawingSession.FillCircle(centerData.CenterX, centerData.CenterY, r, Windows.UI.Color.FromArgb(100, centerData.BgColor.R, centerData.BgColor.G, centerData.BgColor.B));
+            }
+        }
+        public class LineMapGraph : MapGraphBase
+        {
+            public LineMapGraph()
+            {
+                GraphType = MapGraphType.Line;
+            }
+            public int Data1Id { get; set; }
+            public int Data2Id { get; set; }
+            public Windows.UI.Color Color { get; set; } = Windows.UI.Color.FromArgb(255, Colors.LightSeaGreen.R, Colors.LightSeaGreen.G, Colors.LightSeaGreen.B);
+            public float StrokeWidth { get; set; } = 3;
+            public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas)
+            {
+                var data1 = datas[Data1Id];
+                var data2 = datas[Data2Id];
+                args.DrawingSession.DrawLine(data1.CenterX, data1.CenterY, data2.CenterX, data2.CenterY, Color, StrokeWidth);
+            }
         }
     }
 }
