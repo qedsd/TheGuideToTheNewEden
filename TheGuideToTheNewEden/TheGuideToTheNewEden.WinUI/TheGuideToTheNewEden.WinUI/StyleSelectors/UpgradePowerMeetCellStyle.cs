@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.PlanetResources;
-using static TheGuideToTheNewEden.WinUI.Dialogs.SystemResourceDialog;
+using static TheGuideToTheNewEden.WinUI.Dialogs.MapSystemDetailDialog;
 
 namespace TheGuideToTheNewEden.WinUI.StyleSelectors
 {

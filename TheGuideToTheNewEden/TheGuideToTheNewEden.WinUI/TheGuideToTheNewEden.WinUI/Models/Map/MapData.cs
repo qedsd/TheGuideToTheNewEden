@@ -21,8 +21,8 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public float X { get; set; }
         public float Y { get; set; }
 
-        public float OriginalW { get; set; } = 5;
-        public float OriginalH { get; set; } = 5;
+        public float OriginalW { get; set; } = 4;
+        public float OriginalH { get; set; } = 4;
         public float W { get; set; } = 4;
         public float H { get; set; } = 4;
         public string InnerText { get; set; }
@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
             X = (float)SolarSystemPosition.X;
             Y = (float)SolarSystemPosition.Y;
             MainText = MapSolarSystem.SolarSystemName;
-            InnerText = MapSolarSystem.Security.ToString("N1");
+            InnerText = MapSolarSystem.Security.ToString("N2");
             BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;
             LinkTo = SolarSystemPosition.JumpTo;
         }

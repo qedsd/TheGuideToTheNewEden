@@ -22,8 +22,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class SystemFilterControl : UserControl
     {
-        private List<Core.DBModels.MapSolarSystem> _mapSolarSystems;
-        private List<Core.DBModels.MapRegion> _mapRegions;
+        private Dictionary<int, Core.DBModels.MapSolarSystem> _mapSolarSystems;
+        private Dictionary<int, Core.DBModels.MapRegion> _mapRegions;
         private List<ToggleButton> _regionToggleButton = new List<ToggleButton>();
         private HashSet<int> _selectedRegions = new HashSet<int>();
         private HashSet<int> _selectedSystems = new HashSet<int>();
@@ -35,14 +35,14 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
             TextBlock_AllFilteredSystemCount.Text = _mapSolarSystems.Count.ToString();
             TextBlock_FilteredSystemCount.Text = TextBlock_AllFilteredSystemCount.Text;
-            GridView_Region.ItemsSource = _mapRegions;
+            GridView_Region.ItemsSource = _mapRegions.Values;
             TextBlock_AllRegionCount.Text = _mapRegions.Count.ToString();
             TextBlock_SelectedRegionCount.Text = _mapRegions.Count.ToString();
             TextBlock_AllSystemCount.Text = _mapSolarSystems.Count.ToString();
             TextBlock_SelectedSystemCount.Text = "0";
             foreach (var region in _mapRegions)
             {
-                _selectedRegions.Add(region.RegionID);
+                _selectedRegions.Add(region.Value.RegionID);
             }
             GridView_System.ItemsSource = new ObservableCollection<Core.DBModels.MapSolarSystem>();
 
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             ListView_SOV.SelectAll();
         }
 
-        public void SetData(List<Core.DBModels.MapSolarSystem> systems, List<Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
+        public void SetData(Dictionary<int, Core.DBModels.MapSolarSystem> systems, Dictionary<int, Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
         {
             _mapSolarSystems = systems;
             _mapRegions = regions;
@@ -70,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 foreach(var region in _mapRegions)
                 {
-                    _selectedRegions.Add(region.RegionID);
+                    _selectedRegions.Add(region.Value.RegionID);
                 }
             }
             else
@@ -167,7 +167,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private List<int> Cal()
         {
             //计算显示的星系id
-            var allSystemDic = _mapSolarSystems.ToDictionary(p => p.SolarSystemID);
+            var allSystemDic = _mapSolarSystems;
             Dictionary<int, MapSolarSystem> filtedSystems = new Dictionary<int, MapSolarSystem>();
             //星域
             if (_selectedRegions.Count == 0)
@@ -178,9 +178,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 foreach(var system in _mapSolarSystems)
                 {
-                    if(_selectedRegions.Contains(system.RegionID))
+                    if(_selectedRegions.Contains(system.Value.RegionID))
                     {
-                        filtedSystems.Add(system.SolarSystemID, system);
+                        filtedSystems.Add(system.Value.SolarSystemID, system.Value);
                     }
                 }
             }
@@ -240,21 +240,108 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
 
             //安全等级
+            List<int> removedIds2 = new List<int>();
             if (SecuritySlider.RangeStart != SecuritySlider.Minimum || SecuritySlider.RangeEnd != SecuritySlider.Maximum)
             {
                 //仅当选择范围不是最大范围时才需要判断一遍
-                List<int> removedIds = new List<int>();
                 foreach (var sys in filtedSystems)
                 {
                     if (sys.Value.Security < SecuritySlider.RangeStart || sys.Value.Security > SecuritySlider.RangeEnd)
                     {
-                        removedIds.Add(sys.Key);
+                        removedIds2.Add(sys.Key);
                     }
                 }
-                foreach (var id in removedIds)
+            }
+            if (Security1CheckBox.IsChecked == false ||
+                Security2CheckBox.IsChecked == false ||
+                Security3CheckBox.IsChecked == false ||
+                Security4CheckBox.IsChecked == false ||
+                Security5CheckBox.IsChecked == false || 
+                
+                SecurityACheckBox.IsChecked == false ||
+                SecurityBCheckBox.IsChecked == false ||
+                SecurityCCheckBox.IsChecked == false ||
+                SecurityDCheckBox.IsChecked == false ||
+                SecurityECheckBox.IsChecked == false)
+            {
+                foreach (var sys in filtedSystems)
                 {
-                    filtedSystems.Remove(id);
+                    double sec = sys.Value.Security;
+                    if (sec >= 0.85)
+                    {
+                        if (Security1CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if(sec >= 0.75)
+                    {
+                        if (Security2CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= 0.65)
+                    {
+                        if (Security3CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= 0.5)
+                    {
+                        if (Security4CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec > 0.0)
+                    {
+                        if (Security5CheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.24)
+                    {
+                        if (SecurityACheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.44)
+                    {
+                        if (SecurityBCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.64)
+                    {
+                        if (SecurityCCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else if (sec >= -0.84)
+                    {
+                        if (SecurityDCheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
+                    else
+                    {
+                        if (SecurityECheckBox.IsChecked == false)
+                        {
+                            removedIds2.Add(sys.Key);
+                        }
+                    }
                 }
+            }
+            foreach (var id in removedIds2)
+            {
+                filtedSystems.Remove(id);
             }
             return filtedSystems.Keys.ToList();
         }

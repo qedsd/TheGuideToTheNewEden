@@ -12,7 +12,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.9.0.0</AssemblyVersion>
+	<AssemblyVersion>2.9.1.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
@@ -246,7 +246,7 @@
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
-    <None Remove="Dialogs\SystemResourceDialog.xaml" />
+    <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
     <None Remove="logo_128.ico" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -291,6 +291,9 @@
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
+    <None Remove="Views\Map\Tools\MapGIS.xaml" />
+    <None Remove="Views\Map\Tools\MapNavigation.xaml" />
+    <None Remove="Views\Map\Tools\OneJumpCover.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -416,13 +419,16 @@
     <Page Update="Controls\SystemFilterControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Dialogs\SystemResourceDialog.xaml">
+    <Page Update="Dialogs\MapSystemDetailDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Configs\CapitalJumpShipInfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\ChatSystemContentFormat.json">
@@ -548,6 +554,15 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Map\Tools\MapGIS.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\OneJumpCover.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\MapNavigation.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Map\MapPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

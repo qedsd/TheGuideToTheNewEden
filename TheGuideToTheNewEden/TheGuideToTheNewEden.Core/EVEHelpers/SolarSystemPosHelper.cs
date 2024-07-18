@@ -378,5 +378,17 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         {
             return PositionDic.Values.ToList();
         }
+
+        public static HashSet<int> GetJumpTo(int systemId)
+        {
+            if(PositionDic.TryGetValue(systemId, out var pos))
+            {
+                return pos.JumpTo?.ToHashSet2();
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

@@ -61,6 +61,7 @@
     <x:String x:Key="General_No">否</x:String>
     <x:String x:Key="General_Yes">是</x:String>
     <x:String x:Key="General_Close">关闭</x:String>
+    <x:String x:Key="General_Sec">安等</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -786,6 +787,7 @@
     <x:String x:Key="MapPage_SearchRegion">星域</x:String>
     <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
     <x:String x:Key="MapPage_Setting">设置</x:String>
+    <x:String x:Key="MapPage_Tools">工具</x:String>
     <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
@@ -803,6 +805,17 @@
     <x:String x:Key="MapPage_SelectedSystem_Region">星域</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">插件需求</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">插件名</x:String>
+    <x:String x:Key="MapPage_Tools_None">无</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Region">星域资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System">星系资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_All">所有星系</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_Filtered">筛选后的</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">插件需求表</x:String>
+    <x:String x:Key="MapPage_Tools_InOneJumpSystems">一跳范围内星系</x:String>
+    <x:String x:Key="MapPage_Tools_Navigation">导航</x:String>
+    <x:String x:Key="MapPage_Tools_GIS">地理信息统计</x:String>
+    <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>
@@ -819,6 +832,16 @@
     <x:String x:Key="SystemFilterControl_Sov_ContainNoneSOV">包含无主权星系</x:String>
     <x:String x:Key="SystemFilterControl_Confirm">更新地图显示</x:String>
     <x:String x:Key="SystemFilterControl_SOV_Count">主权数量</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_1">[1.0,0.85]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_2">[0.84,0.75]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_3">[0.74,0.65]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_4">[0.64,0.5]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_5">(0.5,0.0)</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_A">[0.0,-0.24]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_B">[-0.25,-0.44]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_C">[-0.45,-0.64]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_D">[-0.65,-0.84]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_E">[-0.85,-1.0]</x:String>
 
     <!--  MapDataTypeControl  -->
     <x:String x:Key="MapDataTypeControl_SOV_AllianceName">联盟</x:String>
@@ -828,10 +851,57 @@
     <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">重置分组</x:String>
     <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">资源类型</x:String>
 
-    <!--  SystemResourceDialog  -->
-    <x:String x:Key="SystemResourceDialog_UpgradeList">插件需求</x:String>
-    <x:String x:Key="SystemResourceDialog_PlanetResourceList">行星资源</x:String>
-    <x:String x:Key="SystemResourceDialog_PlanetID">行星ID</x:String>
-    <x:String x:Key="SystemResourceDialog_Reagent">试剂</x:String>
-    <x:String x:Key="SystemResourceDialog_HarvestAmount">产量/小时</x:String>
+    <!--  MapSystemDetailDialog  -->
+    <x:String x:Key="MapSystemDetailDialog_Statistics">统计信息</x:String>
+    <x:String x:Key="MapSystemDetailDialog_UpgradeList">插件需求</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">行星资源</x:String>
+    <x:String x:Key="MapSystemDetailDialog_JumpTos">相邻星系</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetID">行星ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Reagent">试剂</x:String>
+    <x:String x:Key="MapSystemDetailDialog_HarvestAmount">产量/小时</x:String>
+
+    <!--  MapNavigation  -->
+    <x:String x:Key="MapNavigation_Setting">导航设置</x:String>
+    <x:String x:Key="MapNavigation_Result">导航结果</x:String>
+    <x:String x:Key="MapNavigation_AddWaypoint">添加航点</x:String>
+    <x:String x:Key="MapNavigation_NavType">导航方式</x:String>
+    <x:String x:Key="MapNavigation_NavType_Stargate">星门</x:String>
+    <x:String x:Key="MapNavigation_NavType_CapitalJump">旗舰跳</x:String>
+    <x:String x:Key="MapNavigation_AvoidSystem">避开星系</x:String>
+    <x:String x:Key="MapNavigation_AvoidRegion">避开星域</x:String>
+    <x:String x:Key="MapNavigation_ShipType">舰船</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration">跳跃引擎校对理论</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration_Tip">每升一级，最大跳跃距离增加20%</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation">跳跃引擎燃料节约技术</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation_Tip">每升一级，每光年的跳跃操作所消耗的同位素减少10%</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters">战略货舰操作</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters_Tip">每升一级，跳跃燃料需求减少10%</x:String>
+    <x:String x:Key="MapNavigation_UseStargate">使用星门</x:String>
+    <x:String x:Key="MapNavigation_PreferPath">优先路线</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Faster">省时优先</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Cheaper">省钱优先</x:String>
+    <x:String x:Key="MapNavigation_MaxJump">最大跳跃距离</x:String>
+    <x:String x:Key="MapNavigation_PerLyFuel">每光年消耗燃料</x:String>
+    <x:String x:Key="MapNavigation_MapOnlyShowPath">星图仅显示途径星系</x:String>
+    <x:String x:Key="MapNavigation_Go">计算导航</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview">导航总览</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">直线距离</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassSystemCount">途径星系数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassStargateCount">过星门次数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpCount">旗舰跳次数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpDistance">旗舰跳距离</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_RequireFuel">燃料消耗量</x:String>
+    <x:String x:Key="MapNavigation_Result_Null">无导航结果，请检查目的地是否可达</x:String>
+    <x:String x:Key="MapNavigation_Result_Distance">距离（ly）</x:String>
+    <x:String x:Key="MapNavigation_Result_RequireFuel">燃料</x:String>
+    <x:String x:Key="MapNavigation_Result_SOV">主权</x:String>
+    <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_NpcKills">NPC击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
+
+    <!--  OneJumpCover  -->
+    <x:String x:Key="OneJumpCover_Start">计算</x:String>
+    <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
 </ResourceDictionary>

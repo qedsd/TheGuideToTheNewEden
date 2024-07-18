@@ -65,6 +65,7 @@ namespace TheGuideToTheNewEden.DevTools.Map
                 {
                     item.X = Math.Round(mapSolarSystem.X / Math.Pow(10, 15), 3);
                     item.Y = Math.Round(mapSolarSystem.Z / Math.Pow(10, 15), 3);//Z才是Y
+                    item.Z = Math.Round(mapSolarSystem.Y / Math.Pow(10, 15), 3);
                 }
             }
             var maxX = solarSystems.Max(p => p.X);
@@ -72,6 +73,7 @@ namespace TheGuideToTheNewEden.DevTools.Map
             var maxY = solarSystems.Max(p => p.Y);
             var minY = solarSystems.Min(p => p.Y);
             //将xy平移到0
+            //z保持不变
             var xOffset = 0 - minX;
             var yOffset = 0 - minY;
             var afterOffsetMaxY = maxY + yOffset;
@@ -80,16 +82,6 @@ namespace TheGuideToTheNewEden.DevTools.Map
                 sys.X = sys.X + xOffset;
                 sys.Y = afterOffsetMaxY - (sys.Y + yOffset);//将Y从向上递增改为向下递增从而符合window绘制
             }
-            ////将xy缩放到最大范围内
-            //double maxYUnit = 100;
-            //double maxXUnit = 100;
-            //var xScale = maxXUnit / (maxX + xOffset);
-            //var yScale = maxYUnit / (maxY + yOffset);
-            //foreach (var sys in solarSystems)
-            //{
-            //    sys.X = (sys.X + xOffset) * xScale;
-            //    sys.Y = maxYUnit - (sys.Y + yOffset) * yScale;
-            //}  
         }
     }
 }
