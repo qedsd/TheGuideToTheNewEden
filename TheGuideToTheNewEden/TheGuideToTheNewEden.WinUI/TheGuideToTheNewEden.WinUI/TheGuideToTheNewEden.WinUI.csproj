@@ -291,6 +291,7 @@
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
+    <None Remove="Views\Map\Tools\MapGIS.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
     <None Remove="Views\Map\Tools\OneJumpCover.xaml" />
     <None Remove="Views\MarketPage.xaml" />
@@ -553,6 +554,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Map\Tools\MapGIS.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Map\Tools\OneJumpCover.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

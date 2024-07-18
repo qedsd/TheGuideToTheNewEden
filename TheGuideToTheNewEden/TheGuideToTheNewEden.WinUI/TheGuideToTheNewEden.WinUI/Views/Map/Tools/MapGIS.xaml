@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Map.Tools.MapGIS"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <dataGrid:SfDataGrid
+                            CellDoubleTapped="ResultList_CellDoubleTapped"
+x:Name="ResultList"
+HorizontalAlignment="Left"
+AllowDraggingColumns="True"
+AllowEditing="True"
+AllowFiltering="False"
+AllowGrouping="False"
+AllowResizingColumns="True"
+AllowSorting="True"
+AutoGenerateColumns="False"
+Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+ColumnWidthMode="Auto"
+GridLinesVisibility="Both"
+GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+HeaderLinesVisibility="Both"
+                        FrozenColumnsCount="2"
+SelectionMode="Extended"
+ShowGroupDropArea="False">
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="System.SolarSystemName" 
+                                                     Width="110"/>
+                <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="Region.RegionName" 
+                                                     Width="110"/>
+                <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N2"
+                                HeaderText="{StaticResource MapNavigation_Result_Sec}"
+                                MappingName="System.Security"  
+                        AllowEditing="False"
+                                Width="60"/>
+                <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
+                        AllowEditing="False"
+                                MappingName="ShipKills" 
+                                ColumnWidthMode="Auto"/>
+                <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapNavigation_Result_PodKills}"
+                        AllowEditing="False"
+                                MappingName="PodKills"
+                                ColumnWidthMode="Auto"/>
+                <dataGrid:GridNumericColumn
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapNavigation_Result_Jumps}"
+                        AllowEditing="False"
+                                MappingName="Jumps" 
+                                ColumnWidthMode="Auto"/>
+                <dataGrid:GridTextColumn HeaderText="{StaticResource MapNavigation_Result_SOV}" MappingName="Sov" 
+                                     Width="200"/>
+            </dataGrid:SfDataGrid.Columns>
+        </dataGrid:SfDataGrid>
+    </Grid>
+</Page>

@@ -180,7 +180,8 @@ SelectionMode="Extended"
 ShowGroupDropArea="False">
                 <dataGrid:SfDataGrid.Columns>
                     <dataGrid:GridTextColumn HeaderText="No." MappingName="Id" AllowFiltering="False" AllowSorting="False"
-                                                     Width="50"/>
+                                                     Width="50"
+                                             AllowEditing="False"/>
                     <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="System.SolarSystemName" 
                                                      Width="110"/>
                     <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="Region.RegionName" 
@@ -189,6 +190,7 @@ ShowGroupDropArea="False">
                                 DisplayNumberFormat="N2"
                                 HeaderText="{StaticResource MapNavigation_Result_Sec}"
                                 MappingName="System.Security"  
+                        AllowEditing="False"
                                 Width="60"/>
                     <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N2"
@@ -205,16 +207,19 @@ ShowGroupDropArea="False">
                     <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
+                        AllowEditing="False"
                                 MappingName="ShipKills" 
                                 ColumnWidthMode="Auto"/>
                     <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_PodKills}"
+                        AllowEditing="False"
                                 MappingName="PodKills"
                                 ColumnWidthMode="Auto"/>
                     <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_Jumps}"
+                        AllowEditing="False"
                                 MappingName="Jumps" 
                                 ColumnWidthMode="Auto"/>
                 </dataGrid:SfDataGrid.Columns>

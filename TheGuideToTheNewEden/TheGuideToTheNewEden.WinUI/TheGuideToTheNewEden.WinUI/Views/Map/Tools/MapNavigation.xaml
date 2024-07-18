@@ -428,7 +428,7 @@ VerticalAlignment="Center"/>
 x:Name="ResultList"
 HorizontalAlignment="Left"
 AllowDraggingColumns="True"
-AllowEditing="False"
+AllowEditing="True"
 AllowFiltering="False"
 AllowGrouping="False"
 AllowResizingColumns="True"
@@ -444,7 +444,8 @@ SelectionMode="Extended"
 ShowGroupDropArea="False">
                             <dataGrid:SfDataGrid.Columns>
                                 <dataGrid:GridTextColumn HeaderText="No." MappingName="Id" AllowFiltering="False" AllowSorting="False"
-                                                     Width="50"/>
+                                                     Width="50"
+                                                         AllowEditing="False"/>
                                 <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="System.SolarSystemName" 
                                                      Width="110"/>
                                 <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="Region.RegionName" 
@@ -452,6 +453,7 @@ ShowGroupDropArea="False">
                                 <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N2"
                                 HeaderText="{StaticResource MapNavigation_Result_Sec}"
+                                    AllowEditing="False"
                                 MappingName="System.Security"  
                                 Width="60"/>
                                 <dataGrid:GridTemplateColumn HeaderText="{StaticResource MapNavigation_NavType}" MappingName="IsGate"
@@ -478,16 +480,19 @@ ShowGroupDropArea="False">
                                 <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
+                                    AllowEditing="False"
                                 MappingName="ShipKills" 
                                 ColumnWidthMode="Auto"/>
                                 <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_PodKills}"
+                                    AllowEditing="False"
                                 MappingName="PodKills"
                                 ColumnWidthMode="Auto"/>
                                 <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N0"
                                 HeaderText="{StaticResource MapNavigation_Result_Jumps}"
+                                    AllowEditing="False"
                                 MappingName="Jumps" 
                                 ColumnWidthMode="Auto"/>
                             </dataGrid:SfDataGrid.Columns>

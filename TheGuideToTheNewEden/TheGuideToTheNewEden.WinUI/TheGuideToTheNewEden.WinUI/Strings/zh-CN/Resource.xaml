@@ -811,9 +811,9 @@
     <x:String x:Key="MapPage_Tools_PlanetResource_System_All">所有星系</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_System_Filtered">筛选后的</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">插件需求表</x:String>
-    <x:String x:Key="MapPage_Tools_PlanetResource_TowSystemsDistance">星系距离计算</x:String>
-    <x:String x:Key="MapPage_Tools_PlanetResource_InOneJumpSystems">一跳范围内星系</x:String>
-    <x:String x:Key="MapPage_Tools_PlanetResource_Navigation">导航</x:String>
+    <x:String x:Key="MapPage_Tools_InOneJumpSystems">一跳范围内星系</x:String>
+    <x:String x:Key="MapPage_Tools_Navigation">导航</x:String>
+    <x:String x:Key="MapPage_Tools_GIS">地理信息统计</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
 
 

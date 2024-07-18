@@ -5,15 +5,9 @@ using TheGuideToTheNewEden.Core.DBModels;
 
 namespace TheGuideToTheNewEden.Core.Models.Map
 {
-    public class MapNavigationPoint
+    public class MapNavigationPoint: MapSystemInfo
     {
         public int Id { get; set; }
-        public MapSolarSystem System { get; set; }
-        public MapRegion Region { get; set; }
-        public int ShipKills { get; set; }
-        public int PodKills { get; set; }
-        public int Jumps { get; set; }
-        public string Sov {  get; set; }
         /// <summary>
         /// 从上一个点旗舰跳到此距离
         /// </summary>
