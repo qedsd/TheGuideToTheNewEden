@@ -544,6 +544,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         System = _mapSolarSystems[id],
                     };
                     mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
+                    if(_sovDatas.TryGetValue(id,out var sov))
+                    {
+                        mapSystemInfo.Sov = sov.AllianceName;
+                    }
                     jumpTos.Add(mapSystemInfo);
                 }
             }
@@ -555,13 +559,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 Resources = resource,
                 JumpTos = jumpTos
             };
-            if(_systemKills.TryGetValue(data.MapSolarSystem.RegionID,out var kills))
+            if(_systemKills.TryGetValue(data.MapSolarSystem.SolarSystemID,out var kills))
             {
                 mapSystemDetailInfo.ShipKills = kills.ShipKills;
                 mapSystemDetailInfo.NpcKills = kills.NpcKills;
                 mapSystemDetailInfo.PodKills = kills.PodKills;
             }
-            if(_systemJumps.TryGetValue(data.MapSolarSystem.RegionID, out var jumps))
+            if(_systemJumps.TryGetValue(data.MapSolarSystem.SolarSystemID, out var jumps))
             {
                 mapSystemDetailInfo.Jumps = jumps;
             }

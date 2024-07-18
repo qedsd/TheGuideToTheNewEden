@@ -91,5 +91,20 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             public Upgrade Upgrade { get; set; }
             public bool Fit { get; set; }
         }
+
+        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            StatisticsGrid.Visibility = Visibility.Collapsed;
+            UpgradeListGrid.Visibility = Visibility.Collapsed;
+            ResourceDetailListGrid.Visibility = Visibility.Collapsed;
+            JumpTosListGrid.Visibility = Visibility.Collapsed;
+            switch ((sender as Pivot).SelectedIndex)
+            {
+                case 0: StatisticsGrid.Visibility = Visibility.Visible;break;
+                case 1: UpgradeListGrid.Visibility = Visibility.Visible; break;
+                case 2: ResourceDetailListGrid.Visibility = Visibility.Visible; break;
+                case 3: JumpTosListGrid.Visibility = Visibility.Visible; break;
+            }
+        }
     }
 }
