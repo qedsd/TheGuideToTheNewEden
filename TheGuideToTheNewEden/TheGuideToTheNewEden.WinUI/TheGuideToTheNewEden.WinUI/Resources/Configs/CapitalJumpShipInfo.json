@@ -1,4 +1,104 @@
 ﻿[
+  //方舟级
+  {
+    "GroupID": 1089,
+    "TypeID": 28850,
+    "MaxLY": 5,
+    "PerLYFuel": 8800
+  },
+  //安莎尔级
+  {
+    "GroupID": 1089,
+    "TypeID": 28848,
+    "MaxLY": 5,
+    "PerLYFuel": 8800
+  },
+  //奥鸟级
+  {
+    "GroupID": 1089,
+    "TypeID": 28844,
+    "MaxLY": 5,
+    "PerLYFuel": 8800
+  },
+  //游牧者级
+  {
+    "GroupID": 1089,
+    "TypeID": 28846,
+    "MaxLY": 5,
+    "PerLYFuel": 8800
+  },
+
+  //万古级
+  {
+    "GroupID": 817,
+    "TypeID": 23919,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //执政官级
+  {
+    "GroupID": 817,
+    "TypeID": 23757,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //绝念级
+  {
+    "GroupID": 817,
+    "TypeID": 23911,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //夜神级
+  {
+    "GroupID": 817,
+    "TypeID": 23913,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //飞龙级
+  {
+    "GroupID": 817,
+    "TypeID": 23917,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //奇美拉级
+  {
+    "GroupID": 817,
+    "TypeID": 23915,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //冥府级
+  {
+    "GroupID": 817,
+    "TypeID": 22852,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //尼铎格尔级
+  {
+    "GroupID": 817,
+    "TypeID": 24483,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //归魂者级
+  {
+    "GroupID": 817,
+    "TypeID": 3514,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+  //仇恨级
+  {
+    "GroupID": 817,
+    "TypeID": 42125,
+    "MaxLY": 3,
+    "PerLYFuel": 3000
+  },
+
   {
     //神示级
     "GroupID": 761,
@@ -169,112 +269,12 @@
     "PerLYFuel": 3000
   },
 
-  //万古级
-  {
-    "GroupID": 817,
-    "TypeID": 23919,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //执政官级
-  {
-    "GroupID": 817,
-    "TypeID": 23757,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //绝念级
-  {
-    "GroupID": 817,
-    "TypeID": 23911,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //夜神级
-  {
-    "GroupID": 817,
-    "TypeID": 23913,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //飞龙级
-  {
-    "GroupID": 817,
-    "TypeID": 23917,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //奇美拉级
-  {
-    "GroupID": 817,
-    "TypeID": 23915,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //冥府级
-  {
-    "GroupID": 817,
-    "TypeID": 22852,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //尼铎格尔级
-  {
-    "GroupID": 817,
-    "TypeID": 24483,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //归魂者级
-  {
-    "GroupID": 817,
-    "TypeID": 3514,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-  //仇恨级
-  {
-    "GroupID": 817,
-    "TypeID": 42125,
-    "MaxLY": 3,
-    "PerLYFuel": 3000
-  },
-
   //长须鲸级
   {
     "GroupID": 1047,
     "TypeID": 28352,
     "MaxLY": 5,
     "PerLYFuel": 4000
-  },
-
-  //方舟级
-  {
-    "GroupID": 1089,
-    "TypeID": 28850,
-    "MaxLY": 5,
-    "PerLYFuel": 8800
-  },
-  //安莎尔级
-  {
-    "GroupID": 1089,
-    "TypeID": 28848,
-    "MaxLY": 5,
-    "PerLYFuel": 8800
-  },
-  //奥鸟级
-  {
-    "GroupID": 1089,
-    "TypeID": 28844,
-    "MaxLY": 5,
-    "PerLYFuel": 8800
-  },
-  //游牧者级
-  {
-    "GroupID": 1089,
-    "TypeID": 28846,
-    "MaxLY": 5,
-    "PerLYFuel": 8800
   },
 
   //使徒级
