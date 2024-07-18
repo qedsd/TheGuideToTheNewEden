@@ -35,6 +35,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// 当前缩放
         /// </summary>
         private float _currentZoom = 1;
+        /// <summary>
+        /// 当前图形缩放
+        /// </summary>
+        private float _currentWHZoom = 1;
         private const float _stepZoom = 0.2f;
         private const float _lineZoom = 2;
         private const float _detailZoom = 8;
@@ -238,6 +242,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
             if (pointerPoint.Properties.IsLeftButtonPressed)//拖拽移动布局
             {
+                _lastMovedX = 0;
+                _lastMovedY = 0;
                 if (_lastPressedX != 0 && _lastPressedY != 0)
                 {
                     Debug.WriteLine($"PointerMoved:({_lastPressedX},{_lastPressedY}) -> ({pointerPoint.Position.X},{pointerPoint.Position.Y})");
@@ -305,7 +311,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 //星系图形表示
                 TurnRGB turnRGB = _isDark ? TurnRGBToDark : TurnRGBToLight;
-                if (_currentZoom >= _detailZoom)//画星系详细信息：安全等级、名称等
+                //if (_currentZoom >= 19)//画星系详细信息：安全等级、名称等
                 {
                     foreach (var data in visibleDatas)
                     {
@@ -317,35 +323,44 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //内图形
                         args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(fColor,data.Enable));
                         //内文字
-                        CanvasTextFormat innerTextFormat = new CanvasTextFormat()
+                        if (_currentZoom >= 24)
                         {
-                            FontSize = 12,
-                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                            VerticalAlignment = CanvasVerticalAlignment.Center,
-                            //Options = CanvasDrawTextOptions.Clip
-                        };
-                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetEnableColor(Colors.White, data.Enable), innerTextFormat);
-                        //外图形
-                        var borderWidth = data.W * 0.2f;
-                        args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetEnableColor(tColor, data.Enable));
-                        //外文字
-                        CanvasTextFormat mainTextFormat = new CanvasTextFormat()
+                            CanvasTextFormat innerTextFormat = new CanvasTextFormat()
+                            {
+                                FontSize = 12,
+                                HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                                VerticalAlignment = CanvasVerticalAlignment.Center,
+                                //Options = CanvasDrawTextOptions.Clip
+                            };
+                            args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetEnableColor(Colors.White, data.Enable), innerTextFormat);
+                        }
+                        if (_currentZoom >= 24)
                         {
-                            FontSize = 12,
-                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                            VerticalAlignment = CanvasVerticalAlignment.Top,
-                        };
-                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetEnableColor(_mainTextColor, data.Enable), mainTextFormat);
+                            //外图形
+                            var borderWidth = data.W * 0.2f;
+                            args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetEnableColor(tColor, data.Enable));
+                        }
+                        if (_currentZoom >= 13)
+                        {
+                            //外文字
+                            CanvasTextFormat mainTextFormat = new CanvasTextFormat()
+                            {
+                                FontSize = 12,
+                                HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                                VerticalAlignment = CanvasVerticalAlignment.Top,
+                            };
+                            args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetEnableColor(_mainTextColor, data.Enable), mainTextFormat);
+                        }
                     }
                 }
-                else//只画大概的内图形
-                {
-                    foreach (var data in visibleDatas)
-                    {
-                        //只有内图形
-                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(data.BgColor, data.Enable));
-                    }
-                }
+                //else//只画大概的内图形
+                //{
+                //    foreach (var data in visibleDatas)
+                //    {
+                //        //只有内图形
+                //        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(data.BgColor, data.Enable));
+                //    }
+                //}
             }
         }
         delegate byte TurnRGB(float s);
@@ -388,8 +403,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(zoom != 1)//仅平移则无需缩放图形大小
             {
-                var z = _currentZoom > _maxScaleWHZoom ? _maxScaleWHZoom : _currentZoom;
-                var whZoom = (float)(z / zoom * (zoom * Math.Pow(0.95, z)));
+                var z = _currentZoom > 26 ? 26 : _currentZoom;
+                var whZoom = 1+ (z - 1) / 4;
                 foreach (var data in _usingMapDatas.Values)
                 {
                     data.W = data.OriginalW * whZoom;
