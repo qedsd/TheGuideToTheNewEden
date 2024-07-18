@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Map;
 
@@ -62,7 +63,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             Dijkstras dijkstras = new Dijkstras();
             var avoidIdsHashSet = avoidIds.ToHashSet2();
             var ps = SolarSystemPosHelper.PositionDic;
-            var notCapJumpSystems = Services.DB.MapSolarSystemService.QueryByMinSec(0.5).Select(p=>p.SolarSystemID).ToHashSet2();
+            var notCapJumpSystems = Services.DB.MapSolarSystemService.QueryByMinSec(0.45).Select(p=>p.SolarSystemID).ToHashSet2();
 
             double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
             double gateWeight = mode == 0 ? maxJump2 : 1;
@@ -101,6 +102,22 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                 }
             }
             return dijkstras.CalShortestPath(start, end);
+        }
+
+        public static List<MapSolarSystem> CalOneJumpCover(int systemId, double maxJump)
+        {
+            double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
+            var ps = SolarSystemPosHelper.PositionDic;
+            var centerSystem = ps[systemId];
+            var coversPos = ps.Values.Where(p => Math.Abs(centerSystem.X - p.X) <= maxJump2 && Math.Abs(centerSystem.Y - p.Y) <= maxJump2 && Math.Abs(centerSystem.Z - p.Z) <= maxJump2 && Math.Sqrt(Math.Pow(centerSystem.X - p.X, 2) + Math.Pow(centerSystem.Y - p.Y, 2) + Math.Pow(centerSystem.Z - p.Z, 2)) <= maxJump2).ToList();
+            if(coversPos.NotNullOrEmpty())
+            {
+                return Services.DB.MapSolarSystemService.Query(coversPos.Select(p => p.SolarSystemID).ToList()).Where(p => p.Security < 0.45).ToList();
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

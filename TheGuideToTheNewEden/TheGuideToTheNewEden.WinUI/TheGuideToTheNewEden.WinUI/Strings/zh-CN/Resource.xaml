@@ -899,8 +899,12 @@
     <x:String x:Key="MapNavigation_Result_Distance">距离（ly）</x:String>
     <x:String x:Key="MapNavigation_Result_RequireFuel">燃料</x:String>
     <x:String x:Key="MapNavigation_Result_SOV">主权</x:String>
-    <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数</x:String>
-    <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数</x:String>
-    <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数</x:String>
+    <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
+
+    <!--  OneJumpCover  -->
+    <x:String x:Key="OneJumpCover_Start">计算</x:String>
+    <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
 </ResourceDictionary>

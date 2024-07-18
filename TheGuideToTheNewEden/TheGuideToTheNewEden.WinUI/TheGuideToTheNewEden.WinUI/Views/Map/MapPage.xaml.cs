@@ -25,6 +25,7 @@ using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Converters;
 using TheGuideToTheNewEden.WinUI.Dialogs;
 using TheGuideToTheNewEden.WinUI.Models.Map;
+using TheGuideToTheNewEden.WinUI.Views.Map.Tools;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
@@ -87,6 +88,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _window?.ShowWaiting("Loading Statistics data");
             await InitStatistics();
             MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
+            OneJumpCover.SetData(MapCanvas, _systemKills, _systemJumps, _sovDatas);
             _window?.HideWaiting();
         }
         private async Task InitData()

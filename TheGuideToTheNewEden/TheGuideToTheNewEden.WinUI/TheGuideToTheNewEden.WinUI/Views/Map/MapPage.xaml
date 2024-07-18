@@ -143,7 +143,7 @@ ShowGroupDropArea="False">
                         </Grid.RowDefinitions>
                         <Grid>
                             <ComboBox x:Name="Tool_SystemPlanetResourcList_Mode"
-          Margin="0,-8,0,4"
+          Margin="0,-4,0,4"
           SelectedIndex="0"
           SelectionChanged="Tool_SystemPlanetResourcList_Mode_SelectionChanged">
                                 <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_All}"/>
