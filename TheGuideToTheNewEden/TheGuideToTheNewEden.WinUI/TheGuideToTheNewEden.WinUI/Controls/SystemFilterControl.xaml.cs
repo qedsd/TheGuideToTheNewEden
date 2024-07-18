@@ -22,8 +22,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class SystemFilterControl : UserControl
     {
-        private List<Core.DBModels.MapSolarSystem> _mapSolarSystems;
-        private List<Core.DBModels.MapRegion> _mapRegions;
+        private Dictionary<int, Core.DBModels.MapSolarSystem> _mapSolarSystems;
+        private Dictionary<int, Core.DBModels.MapRegion> _mapRegions;
         private List<ToggleButton> _regionToggleButton = new List<ToggleButton>();
         private HashSet<int> _selectedRegions = new HashSet<int>();
         private HashSet<int> _selectedSystems = new HashSet<int>();
@@ -35,14 +35,14 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
             TextBlock_AllFilteredSystemCount.Text = _mapSolarSystems.Count.ToString();
             TextBlock_FilteredSystemCount.Text = TextBlock_AllFilteredSystemCount.Text;
-            GridView_Region.ItemsSource = _mapRegions;
+            GridView_Region.ItemsSource = _mapRegions.Values;
             TextBlock_AllRegionCount.Text = _mapRegions.Count.ToString();
             TextBlock_SelectedRegionCount.Text = _mapRegions.Count.ToString();
             TextBlock_AllSystemCount.Text = _mapSolarSystems.Count.ToString();
             TextBlock_SelectedSystemCount.Text = "0";
             foreach (var region in _mapRegions)
             {
-                _selectedRegions.Add(region.RegionID);
+                _selectedRegions.Add(region.Value.RegionID);
             }
             GridView_System.ItemsSource = new ObservableCollection<Core.DBModels.MapSolarSystem>();
 
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             ListView_SOV.SelectAll();
         }
 
-        public void SetData(List<Core.DBModels.MapSolarSystem> systems, List<Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
+        public void SetData(Dictionary<int, Core.DBModels.MapSolarSystem> systems, Dictionary<int, Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
         {
             _mapSolarSystems = systems;
             _mapRegions = regions;
@@ -70,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 foreach(var region in _mapRegions)
                 {
-                    _selectedRegions.Add(region.RegionID);
+                    _selectedRegions.Add(region.Value.RegionID);
                 }
             }
             else
@@ -167,7 +167,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private List<int> Cal()
         {
             //计算显示的星系id
-            var allSystemDic = _mapSolarSystems.ToDictionary(p => p.SolarSystemID);
+            var allSystemDic = _mapSolarSystems;
             Dictionary<int, MapSolarSystem> filtedSystems = new Dictionary<int, MapSolarSystem>();
             //星域
             if (_selectedRegions.Count == 0)
@@ -178,9 +178,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 foreach(var system in _mapSolarSystems)
                 {
-                    if(_selectedRegions.Contains(system.RegionID))
+                    if(_selectedRegions.Contains(system.Value.RegionID))
                     {
-                        filtedSystems.Add(system.SolarSystemID, system);
+                        filtedSystems.Add(system.Value.SolarSystemID, system.Value);
                     }
                 }
             }

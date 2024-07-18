@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using System.Timers;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.EVEHelpers;
+using TheGuideToTheNewEden.Core.Models.Map;
+using TheGuideToTheNewEden.Core.Models.PlanetResources;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Converters;
@@ -41,8 +43,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
         private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
-        private List<MapSolarSystem> _mapSolarSystems;
-        private List<MapRegion> _mapRegions;
+        private Dictionary<int, MapSolarSystem> _mapSolarSystems;
+        private Dictionary<int, MapRegion> _mapRegions;
         /// <summary>
         /// keyÎªÐÇÏµid
         /// </summary>
@@ -94,9 +96,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
-            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
+            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p=>p.SolarSystemID);
             _systemDatas = new Dictionary<int, MapData>();
-            foreach (var mapSolarSystem in _mapSolarSystems)
+            foreach (var mapSolarSystem in _mapSolarSystems.Values)
             {
                 if(posDic.TryGetValue(mapSolarSystem.SolarSystemID, out var pos))
                 {
@@ -104,7 +106,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
                 }
             }
-            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToList();
+            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p => p.RegionID);
             ResetXYToFix(_systemDatas);
         }
         private async Task<List<SovData>> InitSOV()
@@ -335,7 +337,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             await Task.Run(() =>
             {
-                var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_mapSolarSystems.Where(p=>p.Security <= 0).Select(p=>p.SolarSystemID).ToList());
+                var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_mapSolarSystems.Values.Where(p=>p.Security <= 0).Select(p=>p.SolarSystemID).ToList());
 
                 #region region
                 _regionResourcesDic = new Dictionary<int, Core.Models.PlanetResources.RegionResources>();
@@ -504,7 +506,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if (_systemResourcesDic != null && _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource))
             {
-                SystemResourceDetailButton.Visibility = Visibility.Visible;
                 SelectedSystemResourceGrid.Visibility = Visibility.Visible;
                 SelectedSystemPowerTextBlock.Text = resource.Power.ToString("N0");
                 SelectedSystemWorkforceTextBlock.Text = resource.Workforce.ToString("N0");
@@ -513,7 +514,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             else
             {
-                SystemResourceDetailButton.Visibility = Visibility.Collapsed;
                 SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
             }
         }
@@ -525,8 +525,47 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             var data = (sender as Button).Tag as MapSystemData;
             _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
-            _systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out var resource);
-            await SystemResourceDialog.ShowAsync(data.MapSolarSystem, _mapRegions.First(p => p.RegionID == data.MapSolarSystem.RegionID), sovData, resource, this.XamlRoot);
+            SolarSystemResources resource = null;
+            if(!_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out resource))
+            {
+                resource = new SolarSystemResources()
+                {
+                    MapSolarSystem = data.MapSolarSystem
+                };
+            }
+            List<MapSystemInfo> jumpTos = new List<MapSystemInfo>();
+            var jumpToIds = SolarSystemPosHelper.GetJumpTo(data.Id);
+            if(jumpToIds != null)
+            {
+                foreach(var id in jumpToIds)
+                {
+                    MapSystemInfo mapSystemInfo = new MapSystemInfo()
+                    {
+                        System = _mapSolarSystems[id],
+                    };
+                    mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
+                    jumpTos.Add(mapSystemInfo);
+                }
+            }
+            MapSystemDetailInfo mapSystemDetailInfo = new MapSystemDetailInfo()
+            {
+                System = data.MapSolarSystem,
+                Region = _mapRegions[data.MapSolarSystem.RegionID],
+                Sov = sovData,
+                Resources = resource,
+                JumpTos = jumpTos
+            };
+            if(_systemKills.TryGetValue(data.MapSolarSystem.RegionID,out var kills))
+            {
+                mapSystemDetailInfo.ShipKills = kills.ShipKills;
+                mapSystemDetailInfo.NpcKills = kills.NpcKills;
+                mapSystemDetailInfo.PodKills = kills.PodKills;
+            }
+            if(_systemJumps.TryGetValue(data.MapSolarSystem.RegionID, out var jumps))
+            {
+                mapSystemDetailInfo.Jumps = jumps;
+            }
+            await MapSystemDetailDialog.ShowAsync(mapSystemDetailInfo, this.XamlRoot);
         }
         #endregion
 

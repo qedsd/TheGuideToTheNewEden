@@ -851,18 +851,14 @@
     <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">重置分组</x:String>
     <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">资源类型</x:String>
 
-    <!--  SystemResourceDialog  -->
-    <x:String x:Key="SystemResourceDialog_UpgradeList">插件需求</x:String>
-    <x:String x:Key="SystemResourceDialog_PlanetResourceList">行星资源</x:String>
-    <x:String x:Key="SystemResourceDialog_PlanetID">行星ID</x:String>
-    <x:String x:Key="SystemResourceDialog_Reagent">试剂</x:String>
-    <x:String x:Key="SystemResourceDialog_HarvestAmount">产量/小时</x:String>
-
-    <!--  SystemResourceDialog  -->
-    <x:String x:Key="TowSystemsDistance_System1">星系1</x:String>
-    <x:String x:Key="TowSystemsDistance_System2">星系2</x:String>
-    <x:String x:Key="TowSystemsDistance_Distance">距离</x:String>
-    <x:String x:Key="TowSystemsDistance_Jumps">跳</x:String>
+    <!--  MapSystemDetailDialog  -->
+    <x:String x:Key="MapSystemDetailDialog_Statistics">统计信息</x:String>
+    <x:String x:Key="MapSystemDetailDialog_UpgradeList">插件需求</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">行星资源</x:String>
+    <x:String x:Key="MapSystemDetailDialog_JumpTos">相邻星系</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetID">行星ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Reagent">试剂</x:String>
+    <x:String x:Key="MapSystemDetailDialog_HarvestAmount">产量/小时</x:String>
 
     <!--  MapNavigation  -->
     <x:String x:Key="MapNavigation_Setting">导航设置</x:String>
@@ -901,6 +897,7 @@
     <x:String x:Key="MapNavigation_Result_SOV">主权</x:String>
     <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_NpcKills">NPC击毁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
 

@@ -246,7 +246,7 @@
     <None Remove="Dialogs\AddToShoppingCartDialog.xaml" />
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
-    <None Remove="Dialogs\SystemResourceDialog.xaml" />
+    <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
     <None Remove="logo_128.ico" />
     <None Remove="Strings\zh-CN\Resource.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -419,7 +419,7 @@
     <Page Update="Controls\SystemFilterControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Dialogs\SystemResourceDialog.xaml">
+    <Page Update="Dialogs\MapSystemDetailDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
