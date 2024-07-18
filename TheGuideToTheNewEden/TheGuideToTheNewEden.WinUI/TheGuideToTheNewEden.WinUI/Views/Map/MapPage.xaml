@@ -90,8 +90,6 @@
                         <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="{StaticResource MapPage_Tools_Navigation}" Click="Tools_Click" Tag="Navigation"/>
                         <MenuFlyoutItem Text="{StaticResource MapPage_Tools_InOneJumpSystems}" Click="Tools_Click" Tag="OneJumpCover"/>
-                        <MenuFlyoutSeparator/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_GIS}" Click="Tools_Click" Tag="GIS"/>
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
@@ -238,9 +236,6 @@ ShowGroupDropArea="False">
                     </Grid>
                     <Grid x:Name="Tool_Navigation" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
                         <tools:MapNavigation Margin="8" x:Name="MapNavigation"/>
-                    </Grid>
-                    <Grid x:Name="Tool_GIS" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
-                        <tools:MapGIS Margin="8" x:Name="MapGIS"/>
                     </Grid>
                 </Grid>
             </Expander>

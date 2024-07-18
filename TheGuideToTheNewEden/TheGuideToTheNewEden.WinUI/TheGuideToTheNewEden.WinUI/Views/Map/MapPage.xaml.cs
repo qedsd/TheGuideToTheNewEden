@@ -89,7 +89,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             await InitStatistics();
             MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
             OneJumpCover.SetData(MapCanvas, _systemKills, _systemJumps, _sovDatas);
-            MapGIS.SetData(_mapSolarSystems, _mapRegions, MapCanvas, _systemKills, _systemJumps, _sovDatas);
             _window?.HideWaiting();
         }
         private async Task InitData()
@@ -603,7 +602,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
                 case "OneJumpCover": targetTool = Tool_OneJumpCover; break;
                 case "Navigation": targetTool = Tool_Navigation; break;
-                case "GIS": targetTool = Tool_GIS; break;
             }
             if(targetTool == null)
             {
