@@ -612,6 +612,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 ToolPanel.Visibility = Visibility.Visible;
                 targetTool.Visibility = Visibility.Visible;
                 ToolExpander.Header = menuFlyoutItem.Text;
+                ToolExpander.IsExpanded = true;
             }
         }
         #endregion

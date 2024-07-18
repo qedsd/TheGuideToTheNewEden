@@ -224,7 +224,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private void MinContentButton_Click(object sender, RoutedEventArgs e)
         {
-            this.MaxWidth = 656;
+            this.MaxWidth = 560;
             MaxContentButton.Visibility = Visibility.Visible;
             MinContentButton.Visibility = Visibility.Collapsed;
         }

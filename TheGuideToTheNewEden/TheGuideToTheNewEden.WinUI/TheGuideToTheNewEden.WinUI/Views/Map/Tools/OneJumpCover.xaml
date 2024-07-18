@@ -7,10 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid" xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls" xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     mc:Ignorable="d"
-    Background="Transparent">
-    <Page.Resources>
-        <converters:MapNavTypeConverter x:Key="MapNavTypeConverter" />
-    </Page.Resources>
+    Background="Transparent"
+    MaxWidth="560">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -192,15 +190,6 @@ ShowGroupDropArea="False">
                                 HeaderText="{StaticResource MapNavigation_Result_Sec}"
                                 MappingName="System.Security"  
                                 Width="60"/>
-                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource MapNavigation_NavType}" MappingName="IsGate"
-                                                         Width="100">
-                        <dataGrid:GridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding NavType, Converter={StaticResource MapNavTypeConverter}}" VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"/>
-                            </DataTemplate>
-                        </dataGrid:GridTemplateColumn.CellTemplate>
-                    </dataGrid:GridTemplateColumn>
                     <dataGrid:GridNumericColumn
                                 DisplayNumberFormat="N2"
                                 HeaderText="{StaticResource MapNavigation_Result_Distance}"
