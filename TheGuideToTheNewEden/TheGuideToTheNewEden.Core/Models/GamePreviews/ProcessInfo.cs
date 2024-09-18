@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 int index = WindowTitle.IndexOf('-');
                 if(index > -1)
                 {
-                    return WindowTitle.Substring(index);
+                    return WindowTitle.Substring(index + 1).Trim();
                 }
             }
             return null;
