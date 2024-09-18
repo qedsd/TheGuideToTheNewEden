@@ -1,14 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="TheGuideToTheNewEden.WinUI.Views.Map.Tools.MapNavigation"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls" xmlns:editors="using:Syncfusion.UI.Xaml.Editors" xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid" xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
-    mc:Ignorable="d"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    MaxWidth="656"
     Background="Transparent"
-    MaxWidth="656">
+    mc:Ignorable="d">
     <Page.Resources>
         <converters:MapNavTypeConverter x:Key="MapNavTypeConverter" />
     </Page.Resources>
@@ -16,53 +20,56 @@
         <Pivot x:Name="MainPivot">
             <PivotItem>
                 <PivotItem.Header>
-                    <TextBlock Text="{StaticResource MapNavigation_Setting}" FontSize="16"/>
+                    <TextBlock FontSize="16" Text="{StaticResource MapNavigation_Setting}" />
                 </PivotItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="32"/>
+                        <RowDefinition />
+                        <RowDefinition Height="32" />
                     </Grid.RowDefinitions>
                     <ScrollViewer>
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <!--航点设置-->
+                            <!--  航点设置  -->
                             <Grid>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_AddWaypoint}" VerticalAlignment="Center"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_AddWaypoint}" />
                                     <controls:MapSystemSelectorControl
-         x:Name="MapSystemSelector"
-         Grid.Column="1"
-         Height="34"
-         Margin="0,4"
-         OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+                                        x:Name="MapSystemSelector"
+                                        Grid.Column="1"
+                                        Height="34"
+                                        Margin="0,4"
+                                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
                                 </Grid>
                                 <ListView x:Name="WaypointsListView" Grid.Row="1">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding SolarSystemName}"/>
-                                                <Button Grid.Column="1" Style="{ThemeResource TransparentButton}" Click="RemoveWaypointButton_Click">
+                                                <TextBlock Text="{Binding SolarSystemName}" />
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Click="RemoveWaypointButton_Click"
+                                                    Style="{ThemeResource TransparentButton}">
                                                     <Button.Content>
-                                                        <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets"/>
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" />
                                                     </Button.Content>
                                                 </Button>
                                             </Grid>
@@ -70,65 +77,82 @@
                                     </ListView.ItemTemplate>
                                 </ListView>
                             </Grid>
-                            <Rectangle Height="1" Grid.Row="1" Fill="LightGray" Margin="4,8"/>
-                            <!--通用导航设置-->
+                            <Rectangle
+                                Grid.Row="1"
+                                Height="1"
+                                Margin="4,8"
+                                Fill="LightGray" />
+                            <!--  通用导航设置  -->
                             <Grid Grid.Row="2">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid Margin="0,4">
-                                    <TextBlock Text="{StaticResource MapNavigation_NavType}" VerticalAlignment="Center"/>
-                                    <ComboBox HorizontalAlignment="Right" x:Name="NavTypeComboBox" SelectedIndex="0" MinWidth="100">
-                                        <ComboBoxItem Content="{StaticResource MapNavigation_NavType_Stargate}"/>
-                                        <ComboBoxItem Content="{StaticResource MapNavigation_NavType_CapitalJump}"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_NavType}" />
+                                    <ComboBox
+                                        x:Name="NavTypeComboBox"
+                                        MinWidth="100"
+                                        HorizontalAlignment="Right"
+                                        SelectedIndex="0">
+                                        <ComboBoxItem Content="{StaticResource MapNavigation_NavType_Stargate}" />
+                                        <ComboBoxItem Content="{StaticResource MapNavigation_NavType_CapitalJump}" />
                                     </ComboBox>
                                 </Grid>
                                 <Grid Grid.Row="1">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid Margin="0,4">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{StaticResource MapNavigation_AvoidSystem}" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="1" Content="0"  Width="100" HorizontalAlignment="Right"  Margin="8,0,0,0" x:Name="AvoidSystemButton">
+                                            <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_AvoidSystem}" />
+                                            <Button
+                                                x:Name="AvoidSystemButton"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Margin="8,0,0,0"
+                                                HorizontalAlignment="Right"
+                                                Content="0">
                                                 <Button.Flyout>
                                                     <Flyout>
                                                         <Grid>
                                                             <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto"/>
-                                                                <RowDefinition/>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition />
                                                             </Grid.RowDefinitions>
                                                             <controls:MapSystemSelectorControl
-x:Name="AvoidSystemSelector"
-Grid.Column="1"
-Height="32"
-                                            Width="200"
-Margin="0,4"
-OnSelectedItemChanged="AvoidSystemSelector_OnSelectedItemChanged" />
+                                                                x:Name="AvoidSystemSelector"
+                                                                Grid.Column="1"
+                                                                Width="200"
+                                                                Height="32"
+                                                                Margin="0,4"
+                                                                OnSelectedItemChanged="AvoidSystemSelector_OnSelectedItemChanged" />
                                                             <ListView x:Name="AvoidSystemListView" Grid.Row="1">
                                                                 <ListView.ItemTemplate>
                                                                     <DataTemplate>
                                                                         <Grid>
                                                                             <Grid.ColumnDefinitions>
-                                                                                <ColumnDefinition/>
-                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                <ColumnDefinition />
+                                                                                <ColumnDefinition Width="Auto" />
                                                                             </Grid.ColumnDefinitions>
-                                                                            <TextBlock Text="{Binding SolarSystemName}"/>
-                                                                            <Button Grid.Column="1" Style="{ThemeResource TransparentButton}" Click="RemoveAvoidSystemButton_Click">
+                                                                            <TextBlock Text="{Binding SolarSystemName}" />
+                                                                            <Button
+                                                                                Grid.Column="1"
+                                                                                Click="RemoveAvoidSystemButton_Click"
+                                                                                Style="{ThemeResource TransparentButton}">
                                                                                 <Button.Content>
-                                                                                    <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets"/>
+                                                                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" />
                                                                                 </Button.Content>
                                                                             </Button>
                                                                         </Grid>
@@ -144,42 +168,51 @@ OnSelectedItemChanged="AvoidSystemSelector_OnSelectedItemChanged" />
                                     </Grid>
                                     <Grid Grid.Row="1" Margin="0,4">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{StaticResource MapNavigation_AvoidRegion}" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="1" Content="0" Width="100" HorizontalAlignment="Right" Margin="8,0,0,0" x:Name="AvoidRegionButton">
+                                            <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_AvoidRegion}" />
+                                            <Button
+                                                x:Name="AvoidRegionButton"
+                                                Grid.Column="1"
+                                                Width="100"
+                                                Margin="8,0,0,0"
+                                                HorizontalAlignment="Right"
+                                                Content="0">
                                                 <Button.Flyout>
                                                     <Flyout>
                                                         <Grid>
                                                             <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto"/>
-                                                                <RowDefinition/>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition />
                                                             </Grid.RowDefinitions>
                                                             <controls:SelecteRegionControl
-x:Name="AvoidRegionSelector"
-Grid.Column="1"
-Height="32"
-Margin="0,4"
-                                            Width="200"
-                            OnSelectedItemChanged="AvoidRegionSelector_OnSelectedItemChanged"/>
+                                                                x:Name="AvoidRegionSelector"
+                                                                Grid.Column="1"
+                                                                Width="200"
+                                                                Height="32"
+                                                                Margin="0,4"
+                                                                OnSelectedItemChanged="AvoidRegionSelector_OnSelectedItemChanged" />
                                                             <ListView x:Name="AvoidRegionListView" Grid.Row="1">
                                                                 <ListView.ItemTemplate>
                                                                     <DataTemplate>
                                                                         <Grid>
                                                                             <Grid.ColumnDefinitions>
-                                                                                <ColumnDefinition/>
-                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                <ColumnDefinition />
+                                                                                <ColumnDefinition Width="Auto" />
                                                                             </Grid.ColumnDefinitions>
-                                                                            <TextBlock Text="{Binding RegionName}"/>
-                                                                            <Button Grid.Column="1" Style="{ThemeResource TransparentButton}" Click="RemoveAvoidRegionButton_Click">
+                                                                            <TextBlock Text="{Binding RegionName}" />
+                                                                            <Button
+                                                                                Grid.Column="1"
+                                                                                Click="RemoveAvoidRegionButton_Click"
+                                                                                Style="{ThemeResource TransparentButton}">
                                                                                 <Button.Content>
-                                                                                    <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets"/>
+                                                                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" />
                                                                                 </Button.Content>
                                                                             </Button>
                                                                         </Grid>
@@ -194,326 +227,415 @@ Margin="0,4"
                                     </Grid>
                                 </Grid>
                             </Grid>
-                            <!--旗舰跳设置-->
-                            <Grid Grid.Row="3" x:Name="CapitalJumpGrid" Visibility="Collapsed">
+                            <!--  旗舰跳设置  -->
+                            <Grid
+                                x:Name="CapitalJumpGrid"
+                                Grid.Row="3"
+                                Visibility="Collapsed">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid Margin="0,4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_ShipType}" VerticalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1" x:Name="ShipTypeComboBox" DisplayMemberPath="Name" HorizontalAlignment="Right" MinWidth="100" Margin="8,0,0,0"
-                              SelectedIndex="0"
-                                          SelectionChanged="ShipTypeComboBox_SelectionChanged"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_ShipType}" />
+                                    <ComboBox
+                                        x:Name="ShipTypeComboBox"
+                                        Grid.Column="1"
+                                        MinWidth="100"
+                                        Margin="8,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        DisplayMemberPath="Name"
+                                        SelectedIndex="0"
+                                        SelectionChanged="ShipTypeComboBox_SelectionChanged" />
                                 </Grid>
                                 <Grid Grid.Row="1" Margin="0,4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_JumpDriveCalibration}" 
-                           ToolTipService.ToolTip="{StaticResource MapNavigation_JumpDriveCalibration_Tip}"
-                           VerticalAlignment="Center"/>
-                                    <NumberBox x:Name="JumpDriveCalibrationNumberBox"
-                           Grid.Column="1"
-                           Value="4"
-                           SpinButtonPlacementMode="Compact"
-                           SmallChange="1"
-                           LargeChange="1"
-                           Minimum="0"
-                           Maximum="5"
-                                           ValueChanged="JumpDriveCalibrationNumberBox_ValueChanged"/>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource MapNavigation_JumpDriveCalibration}"
+                                        ToolTipService.ToolTip="{StaticResource MapNavigation_JumpDriveCalibration_Tip}" />
+                                    <NumberBox
+                                        x:Name="JumpDriveCalibrationNumberBox"
+                                        Grid.Column="1"
+                                        LargeChange="1"
+                                        Maximum="5"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        ValueChanged="JumpDriveCalibrationNumberBox_ValueChanged"
+                                        Value="4" />
                                 </Grid>
                                 <Grid Grid.Row="2" Margin="0,4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_JumpFuelConservation}" 
-               ToolTipService.ToolTip="{StaticResource MapNavigation_JumpFuelConservation_Tip}"
-                           VerticalAlignment="Center"/>
-                                    <NumberBox x:Name="JumpFuelConservationNumberBox"
-               Grid.Column="1"
-               Value="4"
-               SpinButtonPlacementMode="Compact"
-               SmallChange="1"
-               LargeChange="1"
-               Minimum="0"
-               Maximum="5"
-                                           ValueChanged="JumpFuelConservationNumberBox_ValueChanged"/>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource MapNavigation_JumpFuelConservation}"
+                                        ToolTipService.ToolTip="{StaticResource MapNavigation_JumpFuelConservation_Tip}" />
+                                    <NumberBox
+                                        x:Name="JumpFuelConservationNumberBox"
+                                        Grid.Column="1"
+                                        LargeChange="1"
+                                        Maximum="5"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        ValueChanged="JumpFuelConservationNumberBox_ValueChanged"
+                                        Value="4" />
                                 </Grid>
-                                <Grid Grid.Row="3" Margin="0,4" x:Name="JumpFreightersGrid" Visibility="Collapsed">
+                                <Grid
+                                    x:Name="JumpFreightersGrid"
+                                    Grid.Row="3"
+                                    Margin="0,4"
+                                    Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_JumpFreighters}" 
-    ToolTipService.ToolTip="{StaticResource MapNavigation_JumpFreighters_Tip}"
-                           VerticalAlignment="Center"/>
-                                    <NumberBox x:Name="JumpFreightersNumberBox"
-    Grid.Column="1"
-    Value="4"
-    SpinButtonPlacementMode="Compact"
-    SmallChange="1"
-    LargeChange="1"
-    Minimum="0"
-    Maximum="5"
-                                           ValueChanged="JumpFreightersNumberBox_ValueChanged"/>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource MapNavigation_JumpFreighters}"
+                                        ToolTipService.ToolTip="{StaticResource MapNavigation_JumpFreighters_Tip}" />
+                                    <NumberBox
+                                        x:Name="JumpFreightersNumberBox"
+                                        Grid.Column="1"
+                                        LargeChange="1"
+                                        Maximum="5"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        ValueChanged="JumpFreightersNumberBox_ValueChanged"
+                                        Value="4" />
                                 </Grid>
-                                <Grid Margin="0,4" Grid.Row="4">
+                                <Grid Grid.Row="4" Margin="0,4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_PreferPath}" VerticalAlignment="Center"/>
-                                    <ComboBox Grid.Column="1" x:Name="PreferPathComboBox" HorizontalAlignment="Right" Margin="8,0,0,0"
-                                              SelectedIndex="0">
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_PreferPath}" />
+                                    <ComboBox
+                                        x:Name="PreferPathComboBox"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        SelectedIndex="0">
                                         <ComboBoxItem>
-                                            <TextBlock Text="{StaticResource MapNavigation_PreferPath_Faster}"/>
+                                            <TextBlock Text="{StaticResource MapNavigation_PreferPath_Faster}" />
                                         </ComboBoxItem>
                                         <ComboBoxItem>
-                                            <TextBlock Text="{StaticResource MapNavigation_PreferPath_Cheaper}"/>
+                                            <TextBlock Text="{StaticResource MapNavigation_PreferPath_Cheaper}" />
                                         </ComboBoxItem>
                                     </ComboBox>
                                 </Grid>
                                 <Grid Grid.Row="5" Margin="0,4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition  Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_UseStargate}" 
-VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="UseStargateCheckBox" IsChecked="False" Grid.Column="1" Margin="8,0,0,0"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_UseStargate}" />
+                                    <CheckBox
+                                        x:Name="UseStargateCheckBox"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        IsChecked="False" />
                                 </Grid>
                                 <Grid Grid.Row="6" Margin="0,4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition  Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_MaxJump}" 
-VerticalAlignment="Center"/>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <TextBlock x:Name="MaxJumpTextBlock" VerticalAlignment="Center"/>
-                                        <TextBlock Text="ly" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_MaxJump}" />
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <TextBlock x:Name="MaxJumpTextBlock" VerticalAlignment="Center" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="ly" />
                                     </StackPanel>
 
                                 </Grid>
                                 <Grid Grid.Row="7" Margin="0,8">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition  Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_PerLyFuel}" 
-VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="PerLyFuelTextBlock" Grid.Column="1" HorizontalAlignment="Right"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_PerLyFuel}" />
+                                    <TextBlock
+                                        x:Name="PerLyFuelTextBlock"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Right" />
                                 </Grid>
                             </Grid>
-                            <!--结果显示设置-->
+                            <!--  结果显示设置  -->
                             <Grid Grid.Row="4">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0" Margin="0,4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition  Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource MapNavigation_MapOnlyShowPath}" 
-                                               VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="MapOnlyShowPathCheckBox" IsChecked="True" Grid.Column="1" Margin="8,0,0,0"/>
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_MapOnlyShowPath}" />
+                                    <CheckBox
+                                        x:Name="MapOnlyShowPathCheckBox"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        IsChecked="True" />
                                 </Grid>
                             </Grid>
                         </Grid>
                     </ScrollViewer>
 
-                    <!--计算-->
+                    <!--  计算  -->
                     <Grid Grid.Row="1">
-                        <Button HorizontalAlignment="Stretch" Content="{StaticResource MapNavigation_Go}"
-                        Style="{ThemeResource AccentButtonStyle}"
-                        Click="StartNavigateButton_Click"/>
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Click="StartNavigateButton_Click"
+                            Content="{StaticResource MapNavigation_Go}"
+                            Style="{ThemeResource AccentButtonStyle}" />
                     </Grid>
                 </Grid>
             </PivotItem>
             <PivotItem>
                 <PivotItem.Header>
-                    <TextBlock Text="{StaticResource MapNavigation_Result}" FontSize="16"/>
+                    <TextBlock FontSize="16" Text="{StaticResource MapNavigation_Result}" />
                 </PivotItem.Header>
-                <Grid HorizontalAlignment="Stretch" x:Name="ResultGrid">
+                <Grid x:Name="ResultGrid" HorizontalAlignment="Stretch">
                     <Grid x:Name="HasResultGrid" Visibility="Collapsed">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
                         </Grid.RowDefinitions>
                         <Grid Margin="0,4">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="32"/>
-                                <RowDefinition Height="32"/>
+                                <RowDefinition Height="32" />
+                                <RowDefinition Height="32" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="64"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="64"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_LinearDistance}" VerticalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" Margin="24,0,0,0" Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock  x:Name="LinearDistanceTextBlock" Text="0"/>
-                                    <TextBlock Text="ly" Margin="4,0,0,0"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_LinearDistance}" />
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <TextBlock x:Name="LinearDistanceTextBlock" Text="0" />
+                                    <TextBlock Margin="4,0,0,0" Text="ly" />
                                 </StackPanel>
                             </Grid>
                             <Grid Grid.Column="2">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_PassSystemCount}" VerticalAlignment="Center"/>
-                                <TextBlock  Grid.Column="1"  Margin="24,0,0,0"  x:Name="PassSystemCountTextBlock" Text="0" VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_PassSystemCount}" />
+                                <TextBlock
+                                    x:Name="PassSystemCountTextBlock"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="0" />
                             </Grid>
 
                             <Grid Grid.Column="4">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_PassStargateCount}" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1"  Margin="24,0,0,0"  x:Name="PassStargateCountTextBlock" Text="0" VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_PassStargateCount}" />
+                                <TextBlock
+                                    x:Name="PassStargateCountTextBlock"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="0" />
                             </Grid>
 
-                            <Grid Grid.Column="0" Grid.Row="1">
+                            <Grid Grid.Row="1" Grid.Column="0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpCount}" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Margin="24,0,0,0" x:Name="CapitalJumpCountTextBlock" Text="0" VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpCount}" />
+                                <TextBlock
+                                    x:Name="CapitalJumpCountTextBlock"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="0" />
                             </Grid>
 
-                            <Grid Grid.Column="2" Grid.Row="1">
+                            <Grid Grid.Row="1" Grid.Column="2">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpDistance}" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1"  Margin="24,0,0,0"  x:Name="CapitalJumpDistanceTextBlock" Text="0" VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpDistance}" />
+                                <TextBlock
+                                    x:Name="CapitalJumpDistanceTextBlock"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="0" />
                             </Grid>
 
-                            <Grid Grid.Column="4" Grid.Row="1">
+                            <Grid Grid.Row="1" Grid.Column="4">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{StaticResource MapNavigation_Result_Overview_RequireFuel}" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="1"  Margin="24,0,0,0"  x:Name="RequireFuelTextBlock" Text="0" VerticalAlignment="Center"/>
+                                <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_RequireFuel}" />
+                                <TextBlock
+                                    x:Name="RequireFuelTextBlock"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Text="0" />
                             </Grid>
                         </Grid>
                         <dataGrid:SfDataGrid
+                            x:Name="ResultList"
+                            Grid.Row="1"
+                            HorizontalAlignment="Left"
+                            AllowDraggingColumns="True"
+                            AllowEditing="True"
+                            AllowFiltering="False"
+                            AllowGrouping="False"
+                            AllowResizingColumns="True"
+                            AllowSorting="False"
+                            AutoGenerateColumns="False"
+                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
                             CellDoubleTapped="ResultList_CellDoubleTapped"
-                        Grid.Row="1"
-x:Name="ResultList"
-HorizontalAlignment="Left"
-AllowDraggingColumns="True"
-AllowEditing="True"
-AllowFiltering="False"
-AllowGrouping="False"
-AllowResizingColumns="True"
-AllowSorting="False"
-AutoGenerateColumns="False"
-Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-ColumnWidthMode="Auto"
-GridLinesVisibility="Both"
-GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-HeaderLinesVisibility="Both"
-                        FrozenColumnsCount="2"
-SelectionMode="Extended"
-ShowGroupDropArea="False">
+                            ColumnWidthMode="Auto"
+                            FrozenColumnsCount="2"
+                            GridLinesVisibility="Both"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="False">
                             <dataGrid:SfDataGrid.Columns>
-                                <dataGrid:GridTextColumn HeaderText="No." MappingName="Id" AllowFiltering="False" AllowSorting="False"
-                                                     Width="50"
-                                                         AllowEditing="False"/>
-                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="System.SolarSystemName" 
-                                                     Width="110"/>
-                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_RegionName}" MappingName="Region.RegionName" 
-                                                     Width="110"/>
-                                <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource MapNavigation_Result_Sec}"
+                                <dataGrid:GridTextColumn
+                                    Width="50"
                                     AllowEditing="False"
-                                MappingName="System.Security"  
-                                Width="60"/>
-                                <dataGrid:GridTemplateColumn HeaderText="{StaticResource MapNavigation_NavType}" MappingName="IsGate"
-                                                         Width="100">
+                                    AllowFiltering="False"
+                                    AllowSorting="False"
+                                    HeaderText="No."
+                                    MappingName="Id" />
+                                <dataGrid:GridTextColumn
+                                    Width="110"
+                                    HeaderText="{StaticResource General_SolarSystemName}"
+                                    MappingName="System.SolarSystemName" />
+                                <dataGrid:GridTextColumn
+                                    Width="110"
+                                    HeaderText="{StaticResource General_RegionName}"
+                                    MappingName="Region.RegionName" />
+                                <dataGrid:GridNumericColumn
+                                    Width="60"
+                                    AllowEditing="False"
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MapNavigation_Result_Sec}"
+                                    MappingName="System.Security" />
+                                <dataGrid:GridTemplateColumn
+                                    Width="100"
+                                    HeaderText="{StaticResource MapNavigation_NavType}"
+                                    MappingName="IsGate">
                                     <dataGrid:GridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding NavType, Converter={StaticResource MapNavTypeConverter}}" VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"/>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding NavType, Converter={StaticResource MapNavTypeConverter}}" />
                                         </DataTemplate>
                                     </dataGrid:GridTemplateColumn.CellTemplate>
                                 </dataGrid:GridTemplateColumn>
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource MapNavigation_Result_Distance}"
-                                MappingName="Distance" 
-                                Width="80"/>
+                                    Width="80"
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MapNavigation_Result_Distance}"
+                                    MappingName="Distance" />
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource MapNavigation_Result_RequireFuel}"
-                                MappingName="Fuel"
-                                Width="120"/>
-                                <dataGrid:GridTextColumn HeaderText="{StaticResource MapNavigation_Result_SOV}" MappingName="Sov" 
-                                                     Width="200"/>
+                                    Width="120"
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MapNavigation_Result_RequireFuel}"
+                                    MappingName="Fuel" />
+                                <dataGrid:GridTextColumn
+                                    Width="200"
+                                    HeaderText="{StaticResource MapNavigation_Result_SOV}"
+                                    MappingName="Sov" />
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
                                     AllowEditing="False"
-                                MappingName="ShipKills" 
-                                ColumnWidthMode="Auto"/>
+                                    ColumnWidthMode="Auto"
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
+                                    MappingName="ShipKills" />
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapNavigation_Result_PodKills}"
                                     AllowEditing="False"
-                                MappingName="PodKills"
-                                ColumnWidthMode="Auto"/>
+                                    ColumnWidthMode="Auto"
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapNavigation_Result_PodKills}"
+                                    MappingName="PodKills" />
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapNavigation_Result_Jumps}"
                                     AllowEditing="False"
-                                MappingName="Jumps" 
-                                ColumnWidthMode="Auto"/>
+                                    ColumnWidthMode="Auto"
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapNavigation_Result_Jumps}"
+                                    MappingName="Jumps" />
                             </dataGrid:SfDataGrid.Columns>
                         </dataGrid:SfDataGrid>
                     </Grid>
                     <Grid x:Name="NoResultGrid" Visibility="Collapsed">
-                        <TextBlock Text="{StaticResource MapNavigation_Result_Null}" HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{StaticResource MapNavigation_Result_Null}" />
                     </Grid>
                     <Grid x:Name="WaitingResultGrid" Visibility="Collapsed">
-                        <ProgressRing IsActive="False" x:Name="WaitingResultRing"/>
+                        <ProgressRing x:Name="WaitingResultRing" IsActive="False" />
                     </Grid>
                 </Grid>
             </PivotItem>
         </Pivot>
-        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0">
+        <Grid
+            Margin="0,8,8,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
             <Button x:Name="MaxContentButton" Click="MaxContentButton_Click">
-                <TextBlock Text="&#xE1D9;" FontFamily="Segoe MDL2 Assets"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE1D9;" />
             </Button>
-            <Button x:Name="MinContentButton" Click="MinContentButton_Click" Visibility="Collapsed">
-                <TextBlock Text="&#xE1D8;" FontFamily="Segoe MDL2 Assets"/>
+            <Button
+                x:Name="MinContentButton"
+                Click="MinContentButton_Click"
+                Visibility="Collapsed">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE1D8;" />
             </Button>
         </Grid>
     </Grid>
