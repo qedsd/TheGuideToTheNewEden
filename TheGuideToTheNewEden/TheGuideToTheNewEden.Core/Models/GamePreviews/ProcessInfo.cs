@@ -27,11 +27,10 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             if(!string.IsNullOrEmpty(WindowTitle))
             {
-                var array = WindowTitle.Split('-');
-                if(array.Length == 2)
+                int index = WindowTitle.IndexOf('-');
+                if(index > -1)
                 {
-                    string name =  array[1].Trim();
-                    return name == "{[character]player.name}" ? null : name;
+                    return WindowTitle.Substring(index);
                 }
             }
             return null;
