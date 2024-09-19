@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Intel;
@@ -315,8 +316,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if(Setting.SubZKB)
                     {
                         _zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
-                        await _zkbIntel.Start();
-                        _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        try
+                        {
+                            await _zkbIntel.Start();
+                            _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        }
+                        catch(Exception ex)
+                        {
+                            Log.Error(ex);
+                            ShowError($"{Helpers.ResourcesHelper.GetString("EarlyWarningPage_SubZKB_Error")} :{ex.Message}");
+                        }
                     }
                     WarningService.Current.Add(Setting, IntelMap);
                     var intelWindow = WarningService.Current.GetIntelWindow(Setting.Listener);
