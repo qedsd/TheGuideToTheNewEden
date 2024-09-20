@@ -16,12 +16,13 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
                 var content1 = content.TrimStart(' ');
                 if (content1.Length > 1)
                 {
-                    if (content1[0] == '[' || content1[1] == '[')
+                    int startIndex = content1.IndexOf('[');
+                    if (startIndex > -1)
                     {
                         int index = content1.IndexOf(']');
                         if (index > 0)
                         {
-                            string evetimeStr = content1.Substring(2, index - 2).Trim();
+                            string evetimeStr = content1.Substring(startIndex + 1, index - 2).Trim();
                             if (DateTime.TryParse(evetimeStr, out var eveTime))
                             {
                                 string content2 = content1.Substring(index + 1)?.TrimStart(' ');
