@@ -162,6 +162,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                     }
                     _intelings.Add(content.SolarSystemId);
                     _downgradeds.Remove(content.SolarSystemId);
+                    _intelContent.Remove(content.SolarSystemId);
                     _intelContent.Add(content.SolarSystemId, content.Content);
                 }
                 else if (content.IntelType == Core.Enums.IntelChatType.Clear)
