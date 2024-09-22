@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -22,10 +23,14 @@ namespace EVESimulation
         private System.Timers.Timer _simuChatlogTimer;
         private Dictionary<string, int> _speakerIds = new Dictionary<string, int>();
         private readonly string _configPath = "Configs.json";
+        private List<MapRegion> _mapRegions;
+        private List<MapSystem> _mapSystems;
+        private List<MapSystem> _simuSystems = new List<MapSystem> ();
         public MainWindow()
         {
             InitializeComponent();
             InitConfig();
+            InitMap();
             InitUI();
             _simuChatlogTimer = new System.Timers.Timer();
             _simuChatlogTimer.Elapsed += SimuChatlogTimer_Elapsed;
@@ -74,9 +79,10 @@ namespace EVESimulation
         private void InitUI()
         {
             LogRootPath.Text = _config.RootPath;
-            Characters.ItemsSource = _config.CharacterConfigs.Select(p => p.Listener);
+            Characters.ItemsSource = _config.CharacterConfigs.Select(p => p.Listener).ToObservableCollection();
             _characterConfig = _config.CharacterConfigs.FirstOrDefault();
             Characters.SelectedItem = _characterConfig.Listener;
+            RegionListBox.ItemsSource = _mapRegions;
             InitCharacterUI();
         }
         private void InitCharacterUI()
@@ -99,7 +105,32 @@ namespace EVESimulation
             stringBuilder.Remove(stringBuilder.Length - 1, 1);
             SpeakerList.Text = stringBuilder.ToString();
         }
-
+        private void InitMap()
+        {
+            _mapRegions = new List<MapRegion>();
+            var regionLines = File.ReadLines("regions.csv");
+            foreach (var line in regionLines)
+            {
+                var array = line.Split(',');
+                _mapRegions.Add(new MapRegion()
+                {
+                    Id = int.Parse(array[0]),
+                    Name = array[1]
+                });
+            }
+            _mapSystems = new List<MapSystem>();
+            var systemLines = File.ReadLines("systems.csv");
+            foreach (var line in systemLines)
+            {
+                var array = line.Split(",");
+                _mapSystems.Add(new MapSystem()
+                {
+                    Id = int.Parse(array[0]),
+                    Name = array[1],
+                    RegionId = int.Parse(array[2])
+                });
+            }
+        }
         private void Characters_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if(Characters.SelectedItem != null)
@@ -114,6 +145,12 @@ namespace EVESimulation
             _simuChatlogTimer.Stop();
             if ((sender as CheckBox).IsChecked == true)
             {
+                _simuSystems.Clear();
+                foreach (var item in RegionListBox.SelectedItems)
+                {
+                    var region = item as MapRegion;
+                    _simuSystems.AddRange(_mapSystems.Where(p => p.RegionId == region.Id));
+                }
                 _simuChatlogTimer.Interval = double.Parse(AutoSimuChatlogSpan.Text) * 1000;
                 _simuChatlogTimer.Start();
             }
@@ -129,7 +166,18 @@ namespace EVESimulation
             Random random = new Random();
             int speaker = random.Next(0, _characterConfig.Speakers.Count);
             int chanel = random.Next(0, _characterConfig.ChatChanels.Count);
-            _characterConfig.ChatChanels[chanel].Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), _characterConfig.Speakers[speaker], random.Next(0,100).ToString());
+            int system = random.Next(0, _simuSystems.Count);
+            int mark = random.Next(0, 4);
+            StringBuilder stringBuilder = new StringBuilder();
+            if (mark == 0)
+            {
+                stringBuilder.Append('*');
+            }
+            stringBuilder.Append(_simuSystems[system].Name);
+            stringBuilder.Append(' '); 
+            stringBuilder.Append(random.Next(0, 100).ToString());
+            
+            _characterConfig.ChatChanels[chanel].Write(DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss"), _characterConfig.Speakers[speaker], stringBuilder.ToString());
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
@@ -139,6 +187,15 @@ namespace EVESimulation
             SettingPanel.IsEnabled = false;
             AutoSimuChatlog.IsChecked = false;
             RunningGrid.IsEnabled = true;
+            if(_config.CharacterConfigs.FirstOrDefault(p=>p.Listener == Characters.Text) == null)
+            {
+                _characterConfig = _characterConfig.DepthClone<CharacterConfig>();
+                _config.CharacterConfigs.Add(_characterConfig);
+                (Characters.ItemsSource as ObservableCollection<string>).Add(Characters.Text);
+            }
+
+            _characterConfig.Listener = Characters.Text;
+            _characterConfig.ListenerID = int.Parse(CharacterID.Text);
             var lines = ChatChanelList.Text.Split("\r\n");
             _characterConfig.ChatChanels.Clear();
             foreach (var line in lines)

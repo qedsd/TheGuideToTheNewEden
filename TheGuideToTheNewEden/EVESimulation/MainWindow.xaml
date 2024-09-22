@@ -1,155 +1,218 @@
-﻿<Window x:Class="EVESimulation.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:EVESimulation"
-        mc:Ignorable="d"
-        Title="EVE" Height="660" Width="800">
-    <Grid>
+﻿<Window
+    x:Class="EVESimulation.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:EVESimulation"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="EVE"
+    Width="800"
+    Height="660"
+    mc:Ignorable="d">
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel x:Name="SettingPanel">
-                <StackPanel Orientation="Horizontal" Margin="8">
-                    <Label Content="日志路径："/>
-                    <TextBox x:Name="LogRootPath" Width="300"/>
+                <StackPanel Margin="8" Orientation="Horizontal">
+                    <Label Content="日志路径：" />
+                    <TextBox x:Name="LogRootPath" Width="300" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8">
-                    <Label Content="角色名称："/>
-                    <ComboBox x:Name="Characters" IsEditable="True" Width="300"
-                          SelectionChanged="Characters_SelectionChanged"/>
+                <StackPanel Margin="8" Orientation="Horizontal">
+                    <Label Content="角色名称：" />
+                    <ComboBox
+                        x:Name="Characters"
+                        Width="300"
+                        IsEditable="True"
+                        SelectionChanged="Characters_SelectionChanged" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8">
-                    <Label Content="角色ID   ："/>
-                    <TextBox x:Name="CharacterID" Width="300"/>
+                <StackPanel Margin="8" Orientation="Horizontal">
+                    <Label Content="角色ID   ：" />
+                    <TextBox x:Name="CharacterID" Width="300" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8">
-                    <Label Content="模拟系统日志："/>
-                    <CheckBox x:Name="SimuGamelog" VerticalAlignment="Center"/>
+                <StackPanel Margin="8" Orientation="Horizontal">
+                    <Label Content="模拟系统日志：" />
+                    <CheckBox x:Name="SimuGamelog" VerticalAlignment="Center" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8">
-                    <Label Content="模拟聊天频道："/>
-                    <CheckBox x:Name="SimuChatlog" VerticalAlignment="Center"/>
+                <StackPanel Margin="8" Orientation="Horizontal">
+                    <Label Content="模拟聊天频道：" />
+                    <CheckBox x:Name="SimuChatlog" VerticalAlignment="Center" />
                 </StackPanel>
-                <Label Content="聊天频道：" Margin="8,8,0,0"/>
-                <TextBox x:Name="ChatChanelList"
-         FontSize="16"
-         Margin="8"
-         HorizontalAlignment="Stretch"
-                     Height="200"
-         TextWrapping="Wrap"
-         AcceptsReturn="True"/>
-                <Label Content="发言人：" Margin="8,8,0,0"/>
-                <TextBox x:Name="SpeakerList" 
-FontSize="16"
-Margin="8"
-HorizontalAlignment="Stretch"
-            Height="60"
-TextWrapping="Wrap"
-AcceptsReturn="True"/>
+                <Label Margin="8,8,0,0" Content="聊天频道：" />
+                <TextBox
+                    x:Name="ChatChanelList"
+                    Height="200"
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    AcceptsReturn="True"
+                    FontSize="16"
+                    TextWrapping="Wrap" />
+                <Label Margin="8,8,0,0" Content="发言人：" />
+                <TextBox
+                    x:Name="SpeakerList"
+                    Height="60"
+                    Margin="8"
+                    HorizontalAlignment="Stretch"
+                    AcceptsReturn="True"
+                    FontSize="16"
+                    TextWrapping="Wrap" />
             </StackPanel>
             <Grid Grid.Row="1">
-                <Button Content="开始" Margin="8" x:Name="StartButton" Click="StartButton_Click" Height="32"/>
-                <Button Content="停止" Margin="8" x:Name="StopButton" Click="StopButton_Click" Visibility="Collapsed" Height="32"/>
+                <Button
+                    x:Name="StartButton"
+                    Height="32"
+                    Margin="8"
+                    Click="StartButton_Click"
+                    Content="开始" />
+                <Button
+                    x:Name="StopButton"
+                    Height="32"
+                    Margin="8"
+                    Click="StopButton_Click"
+                    Content="停止"
+                    Visibility="Collapsed" />
             </Grid>
         </Grid>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Grid x:Name="RunningGrid" IsEnabled="False">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Border BorderThickness="1" BorderBrush="Gray">
+                <Border BorderBrush="Gray" BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Label Content="频道日志" HorizontalAlignment="Center" Opacity="0.6"/>
-                        <StackPanel Orientation="Horizontal" Margin="8" Grid.Row="1">
-                            <Label Content="自动模拟聊天频道："/>
-                            <CheckBox x:Name="AutoSimuChatlog" VerticalAlignment="Center" Click="AutoSimuChatlog_Click"/>
-                            <Label Content="间隔时间：" Margin="16,0,0,0"/>
-                            <TextBox x:Name="AutoSimuChatlogSpan" VerticalAlignment="Center" Width="60"/>
-                            <Label Content="s" Margin="4,0,0,0"/>
+                        <Label
+                            HorizontalAlignment="Center"
+                            Content="频道日志"
+                            Opacity="0.6" />
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="8"
+                            Orientation="Horizontal">
+                            <Label Content="自动模拟聊天频道：" />
+                            <CheckBox
+                                x:Name="AutoSimuChatlog"
+                                VerticalAlignment="Center"
+                                Click="AutoSimuChatlog_Click" />
+                            <Label Margin="16,0,0,0" Content="间隔时间：" />
+                            <TextBox
+                                x:Name="AutoSimuChatlogSpan"
+                                Width="60"
+                                VerticalAlignment="Center"
+                                Text="5" />
+                            <Label Margin="4,0,0,0" Content="s" />
                         </StackPanel>
-                        <Grid Margin="8" Grid.Row="2">
+                        <ListBox
+                            x:Name="RegionListBox"
+                            Grid.Row="2"
+                            Height="140"
+                            DisplayMemberPath="Name"
+                            SelectionMode="Multiple" />
+                        <Grid Grid.Row="3" Margin="8">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
+                                        <RowDefinition />
+                                        <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid Margin="0,4">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
-                                        <Label Content="频道："/>
-                                        <ComboBox x:Name="ChatChanels" IsEditable="False" Grid.Column="1"
-                                  DisplayMemberPath="ChannelName"/>
+                                        <Label Content="频道：" />
+                                        <ComboBox
+                                            x:Name="ChatChanels"
+                                            Grid.Column="1"
+                                            DisplayMemberPath="ChannelName"
+                                            IsEditable="False" />
                                     </Grid>
                                     <Grid Grid.Row="1" Margin="0,4">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
-                                        <Label Content="发言人："/>
-                                        <ComboBox x:Name="Speakers" IsEditable="True" Grid.Column="1"/>
+                                        <Label Content="发言人：" />
+                                        <ComboBox
+                                            x:Name="Speakers"
+                                            Grid.Column="1"
+                                            IsEditable="True" />
                                     </Grid>
                                 </Grid>
-                                <Button Content="发言" Margin="8,0,0,0" Width="80" Grid.Column="2"
-                        Click="Button_ChatSpeak_Click"/>
+                                <Button
+                                    Grid.Column="2"
+                                    Width="80"
+                                    Margin="8,0,0,0"
+                                    Click="Button_ChatSpeak_Click"
+                                    Content="发言" />
                             </Grid>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <Label Content="内容："/>
-                                <TextBox x:Name="SpeakContent" TextWrapping="Wrap" Grid.Row="2"
- Height="100"
- Margin="8"
- Grid.Column="1"/>
+                                <Label Content="内容：" />
+                                <TextBox
+                                    x:Name="SpeakContent"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="100"
+                                    Margin="8"
+                                    TextWrapping="Wrap" />
                             </Grid>
                         </Grid>
                     </Grid>
                 </Border>
-                <Border BorderThickness="1" BorderBrush="Gray" Grid.Row="1" Margin="0,16,0,0">
+                <Border
+                    Grid.Row="1"
+                    Margin="0,16,0,0"
+                    BorderBrush="Gray"
+                    BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Label Content="游戏日志" HorizontalAlignment="Center" Opacity="0.6"/>
-                        <TextBox x:Name="GamelogContent" TextWrapping="Wrap"
-                                 Height="100"
-                                 Margin="8"
-                                 Grid.Row="1"/>
-                        <Button Content="发言" Width="80" Grid.Row="2"
-                                Click="Button_Gamelog_Click"/>
+                        <Label
+                            HorizontalAlignment="Center"
+                            Content="游戏日志"
+                            Opacity="0.6" />
+                        <TextBox
+                            x:Name="GamelogContent"
+                            Grid.Row="1"
+                            Height="100"
+                            Margin="8"
+                            TextWrapping="Wrap" />
+                        <Button
+                            Grid.Row="2"
+                            Width="80"
+                            Click="Button_Gamelog_Click"
+                            Content="发言" />
                     </Grid>
                 </Border>
             </Grid>
