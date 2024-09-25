@@ -161,7 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (resp.Data.Any())
                     {
                         orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (orders.Count < 1000)
+                        if (resp.Data.Count < 1000)
                         {
                             break;
                         }
@@ -241,7 +241,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (resp.Data.Any())
                     {
                         orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (orders.Count < 1000)
+                        if (resp.Data.Count < 1000)
                         {
                             break;
                         }
@@ -282,7 +282,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (resp.Data.Any())
                     {
                         orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (orders.Count < 1000)
+                        if (resp.Data.Count < 1000)
                         {
                             break;
                         }
@@ -739,7 +739,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if (resp.Data.Any())
                     {
                         orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (orders.Count < 1000)
+                        if (resp.Data.Count < 1000)
                         {
                             break;
                         }
