@@ -118,7 +118,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                         new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
                         new ParamModifierData(ParamModifier.Page, page.ToString()),
                     }, page, modifiers?.ToArray());
-                return await KBHelpers.CreateKBItemInfoAsync(killmails);
+                return (await KBHelpers.CreateKBItemInfoAsync(killmails))?.OrderByDescending(p=>p.SKBDetail.KillmailTime).ToList();
             }
             catch (Exception ex)
             {

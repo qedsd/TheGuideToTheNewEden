@@ -37,9 +37,10 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid
+        <Grid CornerRadius="6,6,6,6"
             MinWidth="200"
             MaxWidth="300"
+              Margin="8"
             Padding="8,8"
             Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
             <Grid.ContextFlyout>
