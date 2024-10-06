@@ -1,4 +1,5 @@
-﻿using ESI.NET.Models.Character;
+﻿using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using ESI.NET.Models.Character;
 using Microsoft.UI.Xaml;
 using Newtonsoft.Json;
 using System;
@@ -11,11 +12,13 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using static TheGuideToTheNewEden.WinUI.Services.MarketOrderService;
+using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class MarketOrderService
     {
+        private readonly static string NOTPAGE = "Requested page does not exist!";
         private static string StructureOrderFolder => MarketOrderSettingService.StructureOrderFolder;
         private static string RegionOrderFolder => MarketOrderSettingService.RegionOrderFolder;
         private static string HistoryOrderFolder => MarketOrderSettingService.HistoryOrderFolder;
@@ -173,8 +176,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    Core.Log.Error(resp?.Message);
-                    break;
+                    if (resp?.Message == NOTPAGE)
+                    {
+                        break;//获取到末页
+                    }
+                    else
+                    {
+                        throw new Exception(resp?.Message);
+                    }
                 }
             }
             if (orders.Any())
@@ -253,8 +262,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    Core.Log.Error(resp?.Message);
-                    break;
+                    if(resp?.Message == NOTPAGE)
+                    {
+                        break;//获取到末页
+                    }
+                    else
+                    {
+                        throw new Exception(resp?.Message);
+                    }
                 }
             }
             if (orders.Any())
@@ -294,8 +309,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    Core.Log.Error(resp?.Message);
-                    break;
+                    if (resp?.Message == NOTPAGE)
+                    {
+                        break;//获取到末页
+                    }
+                    else
+                    {
+                        throw new Exception(resp?.Message);
+                    }
                 }
             }
             if (orders.Any())
@@ -361,23 +382,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if(strutures.NotNullOrEmpty())
             {
-                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p=>p.Id), MaxThread, GetStructureOrdersAsync);
-                if(result.NotNullOrEmpty())
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                foreach (var s in strutures)
                 {
-                    List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
-                    foreach(var list in result)
+                    var list = await GetStructureOrdersAsync(s.Id, typeId);
+                    if (list.NotNullOrEmpty())
                     {
-                        if(list != null)
-                        {
-                            var targetOrders = list.Where(p => p.TypeId == typeId).ToList();
-                            if (targetOrders.NotNullOrEmpty())
-                            {
-                                orders.AddRange(targetOrders);
-                            }
-                        }
+                        orders.AddRange(list);
                     }
-                    return orders;
                 }
+                return orders.Where(p => p.TypeId == typeId).ToList();
             }
             return null;
         }
@@ -391,23 +405,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if (strutures.NotNullOrEmpty())
             {
-                async Task<List<Core.Models.Market.Order>> getStructureOrdersAsync(long id)
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                foreach (var s in strutures)
                 {
-                    return await GetStructureOrdersAsync(id, pageCallBack);
-                }
-                var result = await Core.Helpers.ThreadHelper.RunAsync(strutures.Select(p => p.Id), MaxThread, getStructureOrdersAsync);
-                if (result.NotNullOrEmpty())
-                {
-                    List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
-                    foreach (var list in result)
+                    var result = await GetStructureOrdersAsync(s.Id, pageCallBack);
+                    if (result.NotNullOrEmpty())
                     {
-                        if (list.NotNullOrEmpty())
-                        {
-                            orders.AddRange(list);
-                        }
+                        orders.AddRange(result);
                     }
-                    return orders;
                 }
+                return orders;
             }
             return null;
         }
@@ -576,35 +583,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             else
             {
                 Core.Log.Error(resp?.Message);
-                return null;
+                throw new Exception(resp?.Message);
             }
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ids">[0] regionId [1] typeId</param>
-        /// <returns></returns>
-        public async Task<List<Core.Models.Market.Statistic>> GetHistory(int[] ids)
-        {
-            try
-            {
-                var data = await GetHistoryAsync(ids[1], ids[0]);
-                if (data.NotNullOrEmpty())
-                {
-                    return data.Select(p => new Core.Models.Market.Statistic(p, ids[1])).ToList();
-                }
-                else
-                {
-                    Core.Log.Info($"获取{ids[0]} {ids[1]}历史记录为空");
-                    return null;
-                }
-            }
-            catch(Exception ex)
-            {
-                Core.Log.Error(ex);
-                return null;
-            }
-        }
+        
         public async Task<List<Core.Models.Market.Statistic>> GetHistory(int typeId, int regionId)
         {
             var data = await GetHistoryAsync(regionId, typeId);
@@ -618,27 +600,35 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
-        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeIds, int regionId, PageCallBackDelegate pageCallBack = null)
         {
             int doneCount = 0;
-            object locker = new object();
-            async Task<List<Core.Models.Market.Statistic>> getHistory(int[] parms)
-            {
-                var result =  await GetHistory(parms);
-                lock(locker)
-                {
-                    doneCount++;
-                    pageCallBack?.Invoke(doneCount, "History");
-                }
-                return result;
-            }
-            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId.Select(p=> new int[] { regionId, p}), MaxThread, getHistory);
-            var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
             Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
-            foreach(var list in valid)
+            foreach (var id in typeIds)
             {
-                var key = list.First().InvTypeId;
-                dic.TryAdd(key, list);
+                List<Core.Models.Market.Statistic> statistics = null;
+                try
+                {
+                    var result = await GetHistoryAsync(id, regionId);
+                    if (result.NotNullOrEmpty())
+                    {
+                        if(statistics == null)
+                        {
+                            statistics = new List<Core.Models.Market.Statistic>();
+                        }
+                        statistics.AddRange(result.Select(p => new Core.Models.Market.Statistic(p, id)));
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
+                }
+                doneCount++;
+                pageCallBack?.Invoke(doneCount, "History");
+                if (statistics.NotNullOrEmpty())
+                {
+                    dic.Add(id, statistics);
+                }
             }
             return dic;
         }
@@ -751,8 +741,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    Core.Log.Error(resp?.Message);
-                    break;
+                    if (resp?.Message == NOTPAGE)
+                    {
+                        break;//获取到末页
+                    }
+                    else
+                    {
+                        throw new Exception(resp?.Message);
+                    }
                 }
             }
             if (orders.Any())
