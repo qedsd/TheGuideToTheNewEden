@@ -27,20 +27,21 @@ using TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using Newtonsoft.Json.Linq;
+using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
     public sealed partial class IntelWindow
     {
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
-        private Core.Models.EarlyWarningSetting Setting;
+        private ChannelIntelSetting Setting;
         private readonly BaseWindow Window = new BaseWindow();
         private DispatcherTimer autoIntelTimer;
         private AppWindow AppWindow;
         private Interfaces.IIntelOverlapPage _intelPage;
         private HashSet<int> _allSolarSystem = new HashSet<int>();
         private IntelBasePage _intelBasePage;
-        public IntelWindow(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public IntelWindow(ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             _intelPage = null;
             switch((Core.Enums.IntelOverlapStyle)setting.OverlapStyle)
@@ -147,7 +148,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="intelMap"></param>
-        public void Init(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public void Init(ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             _allSolarSystem.Clear();
             var all = intelMap.GetAllSolarSystem();

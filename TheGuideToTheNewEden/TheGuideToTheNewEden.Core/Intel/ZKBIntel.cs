@@ -12,8 +12,8 @@ namespace TheGuideToTheNewEden.Core.Intel
     public class ZKBIntel
     {
         private Models.Map.IntelSolarSystemMap _intelMap { get; set; }
-        private EarlyWarningSetting _setting;
-        public ZKBIntel(EarlyWarningSetting setting, Models.Map.IntelSolarSystemMap map)
+        private Models.ChannelIntel.ChannelIntelSetting _setting;
+        public ZKBIntel(Models.ChannelIntel.ChannelIntelSetting setting, Models.Map.IntelSolarSystemMap map)
         {
             _setting = setting;
             _intelMap = map;

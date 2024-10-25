@@ -20,7 +20,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
     public sealed partial class SMTIntelOverlapPage : Page, IIntelOverlapPage
     {
         private Core.Models.Map.IntelSolarSystemMap _intelMap;
-        private Core.Models.EarlyWarningSetting _setting;
+        private Core.Models.ChannelIntel.ChannelIntelSetting _setting;
         private readonly SolidColorBrush _defaultBrush = new SolidColorBrush(Colors.DarkGray);
         private readonly SolidColorBrush _homeBrush = new SolidColorBrush(Colors.MediumSeaGreen);
         private readonly SolidColorBrush _intelBrush = new SolidColorBrush(Colors.OrangeRed);
@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         {
             this.InitializeComponent();
         }
-        void IIntelOverlapPage.Init(BaseWindow window, EarlyWarningSetting setting, IntelSolarSystemMap intelMap)
+        void IIntelOverlapPage.Init(BaseWindow window, Core.Models.ChannelIntel.ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
         {
             _window = window;
             _intelMap = intelMap;

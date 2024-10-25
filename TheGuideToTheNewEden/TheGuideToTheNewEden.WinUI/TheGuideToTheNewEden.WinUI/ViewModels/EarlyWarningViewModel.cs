@@ -221,10 +221,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
             var setting = Services.Settings.IntelSettingService.GetValue(selectedCharacter);
-            setting ??= new Core.Models.EarlyWarningSetting();
-            setting.Listener = SelectedCharacter;
-            FixSoundSetting(setting);
-            Setting = setting;
+            //setting ??= new Core.Models.EarlyWarningSetting();
+            //setting.Listener = SelectedCharacter;
+            //FixSoundSetting(setting);
+            //Setting = setting;
             LoadSetting();
             
             if (Setting.AutoUpdateLocaltion)
@@ -642,7 +642,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
                 setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
                 setting.NameDbs = SelectedNameDbs.ToList();
-                IntelSettingService.SetValue(setting);
+                //IntelSettingService.SetValue(setting);
             }
         }
     }

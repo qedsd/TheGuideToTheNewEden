@@ -259,6 +259,7 @@
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
+    <None Remove="Views\ChannelIntelPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
@@ -556,6 +557,9 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\ChannelIntelPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Map\Tools\MapGIS.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

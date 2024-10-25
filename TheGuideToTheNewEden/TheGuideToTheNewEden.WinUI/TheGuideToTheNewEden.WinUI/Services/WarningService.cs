@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 一个角色绑定一个
         /// </summary>
         private Dictionary<string, SoundNotifyItem> SoundNotifyItems = new Dictionary<string, SoundNotifyItem>();
-        public bool Add(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public bool Add(Core.Models.ChannelIntel.ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
             if(setting.OverlapType != 2)//初始化小窗
             {
