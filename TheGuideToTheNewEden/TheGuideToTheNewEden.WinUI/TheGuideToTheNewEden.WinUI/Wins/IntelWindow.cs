@@ -227,7 +227,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 StartTimes.Remove(item);
             }
             _intelPage.Clear(remove);
-            TyrHideWindow();
+            if(remove.Any())
+            {
+                TyrHideWindow();
+            }
         }
         private void DowngradeElapsed()
         {

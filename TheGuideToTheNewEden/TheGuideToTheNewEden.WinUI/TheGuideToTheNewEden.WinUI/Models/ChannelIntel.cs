@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.IO;
 using Microsoft.UI.Xaml;
+using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models;
+using System.Windows.Input;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
@@ -15,14 +20,15 @@ namespace TheGuideToTheNewEden.WinUI.Models
     /// </summary>
     internal class ChannelIntel:ObservableObject
     {
-        private List<ChatChanelInfo> _chatChanelInfos;
         private List<Core.DBModels.MapSolarSystemBase> _mapSolarSystems;
         private List<string> _nameDbs;
         private Core.Models.Map.IntelSolarSystemMap _intelMap { get; set; }
         private List<Core.Models.ChannelIntel.ChannelIntelObserver> _observers = new List<Core.Models.ChannelIntel.ChannelIntelObserver>();
         private Core.Models.ChannelIntel.ChannelIntelObserver _localObservers;
         private Core.Intel.ZKBIntel _zkbIntel;
+        private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
 
+        private List<ChatChanelInfo> _chatChanelInfos;
         /// <summary>
         /// 当前角色所有聊天频道
         /// </summary>
@@ -66,12 +72,14 @@ namespace TheGuideToTheNewEden.WinUI.Models
             set => SetProperty(ref _running, value);
         }
 
-        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs)
+        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs,
+            Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue)
         {
             Listener = listener;
             _chatChanelInfos = chatChanelInfos;
             _mapSolarSystems = mapSolarSystems;
             _nameDbs = nameDbs;
+            _dispatcherQueue = dispatcherQueue;
             Setting = Services.Settings.IntelSettingService.GetValue(listener);
             if(Setting == null)
             {
@@ -218,7 +226,22 @@ namespace TheGuideToTheNewEden.WinUI.Models
         }
         public void UpdateChannels(List<ChatChanelInfo> chatChanelInfos)
         {
-            _chatChanelInfos = chatChanelInfos;
+            ChatChanelInfos = chatChanelInfos;
+            if (Setting.ChannelIDs.NotNullOrEmpty())
+            {
+                foreach (var id in Setting.ChannelIDs)
+                {
+                    var target = ChatChanelInfos.FirstOrDefault(p => p.ChannelID == id);
+                    if (target != null)
+                    {
+                        target.IsChecked = true;
+                    }
+                }
+            }
+            else
+            {
+                ChatChanelInfos.ForEach(p => p.IsChecked = false);
+            }
         }
 
         public async Task Start()
@@ -300,21 +323,79 @@ namespace TheGuideToTheNewEden.WinUI.Models
 
         private void Observer_OnWarningUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            throw new NotImplementedException();
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (var ch in news)
+                {
+                    if (ch.IntelType == Core.Enums.IntelChatType.Intel)
+                    {
+                        Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting = null;
+                        if (Setting.Sounds.Count >= ch.Jumps)
+                        {
+                            soundSetting = Setting.Sounds[ch.Jumps];
+                        }
+                        WarningService.Current.Notify(channelIntelObserver.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, channelIntelObserver.ChatChanelInfo.ChannelName, ch);
+                    }
+                    else
+                    {
+                        //只clr
+                        WarningService.Current.GetIntelWindow(channelIntelObserver.ChatChanelInfo.Listener)?.Intel(ch);
+                    }
+                }
+            });
         }
-
+        public event EventHandler<IEnumerable<Core.Models.EVELogs.IntelChatContent>> ChatContentEvent;
         private void Observer_OnContentUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EVELogs.IntelChatContent> news)
         {
-            throw new NotImplementedException();
+            ChatContentEvent?.Invoke(this, news);
         }
-        private void Observer_LocalChanged(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EVELogs.IntelChatContent> news)
+        private async void Observer_LocalChanged(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EVELogs.IntelChatContent> news)
         {
-            throw new NotImplementedException();
+            for (int i = news.Count() - 1; i >= 0; i--)//从后面往回找，新消息位于后面
+            {
+                var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i), _nameDbs);
+                if (id > 0)
+                {
+                    _dispatcherQueue.TryEnqueue(async () =>
+                    {
+                        Setting.LocationID = id;
+                        SelectedMapSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
+                        _intelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
+                        Core.EVEHelpers.SolarSystemPosHelper.ResetXY(_intelMap.GetAllSolarSystem());
+                        foreach (var item in _observers)
+                        {
+                            item.IntelMap = _intelMap;
+                        }
+                        WarningService.Current.UpdateWindowHome(Setting.Listener, _intelMap);
+                    });
+                    break;
+                }
+            }
         }
         public event EventHandler<Core.Models.EarlyWarningContent> ZKBIntelEvent;
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
             ZKBIntelEvent?.Invoke(this, e);
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                var span = DateTime.UtcNow - e.Time;
+                string desc;
+                if (span.TotalMinutes > 1)
+                {
+                    desc = $" {span.TotalMinutes.ToString("N1")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Min")}";
+                }
+                else
+                {
+                    desc = $" {span.TotalSeconds.ToString("N0")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Sec")}";
+                }
+                e.Content += desc;
+                Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting = null;
+                if (Setting.Sounds.Count >= e.Jumps)
+                {
+                    soundSetting = Setting.Sounds[e.Jumps];
+                }
+                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
+            });
         }
         private void IntelWindow_OnStop()
         {
@@ -322,7 +403,31 @@ namespace TheGuideToTheNewEden.WinUI.Models
         }
         public void Stop()
         {
-
+            Core.Services.ObservableFileService.Remove(_observers);
+            _observers.Clear();
+            Running = false;
+            _localObservers = null;
+            _zkbIntel?.Stop();
+            Services.WarningService.Current.Remove(Setting?.Listener);
+            GC.Collect();
+        }
+        public void StopSound()
+        {
+            if (!string.IsNullOrEmpty(Setting?.Listener))
+            {
+                WarningService.Current.StopSound(Setting.Listener);
+            }
+        }
+        public bool RestorePos()
+        {
+            if (!string.IsNullOrEmpty(Setting?.Listener))
+            {
+                return WarningService.Current.RestoreWindowPos(Setting.Listener);
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

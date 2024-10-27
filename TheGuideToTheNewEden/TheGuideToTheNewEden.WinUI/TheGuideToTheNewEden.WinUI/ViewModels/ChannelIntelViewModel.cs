@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class ChannelIntelViewModel : BaseViewModel
     {
-        private string _logPath;
+        private readonly string _logPath;
         /// <summary>
         /// key为角色名
         /// value为角色下所有的不重复频道
@@ -74,6 +74,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 SetProperty(ref _channelIntel, value);
             }
+        }
+
+        private bool _running;
+        public bool Running
+        {
+            get => _running;
+            set => SetProperty(ref _running, value);
+        }
+
+        public ObservableCollection<IntelChatContent> ChatContents { get; set; } = new ObservableCollection<IntelChatContent>();
+        public ObservableCollection<Core.Models.EarlyWarningContent> ZKBIntelContents { get; set; } = new ObservableCollection<Core.Models.EarlyWarningContent>();
+
+        private List<Core.DBModels.MapSolarSystemBase> searchMapSolarSystems;
+        public List<Core.DBModels.MapSolarSystemBase> SearchMapSolarSystems
+        {
+            get => searchMapSolarSystems;
+            set => SetProperty(ref searchMapSolarSystems, value);
         }
 
         public ChannelIntelViewModel()
@@ -147,155 +164,124 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                return new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs);
+                return new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs, Window.DispatcherQueue);
             }
         }
-
-        public ICommand StartCommand => new RelayCommand(async () =>
+        private async Task<bool> Start(ChannelIntel channelIntel, ChannelIntelListener channelIntelListener)
         {
-            if (SelectedCharacter == null)
+            if (channelIntel == null)
             {
                 Window.ShowError("请选择角色");
-                return;
+                return false;
             }
-            
+            try
+            {
+                await channelIntel.Start();
+                channelIntelListener.Running = true;
+                channelIntel.ChatContentEvent -= ChannelIntel_ChatContentEvent;
+                channelIntel.ChatContentEvent += ChannelIntel_ChatContentEvent;
+                channelIntel.ZKBIntelEvent -= ChannelIntel_ZKBIntelEvent;
+                channelIntel.ZKBIntelEvent += ChannelIntel_ZKBIntelEvent;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window.ShowError(ex.Message);
+                return false;
+            }
+        }
+        public ICommand StartCommand => new RelayCommand(async() =>
+        {
+            ShowWaiting();
+            if(await Start(ChannelIntel, SelectedCharacter))
+            {
+                Running = true;
+            }
             HideWaiting();
         });
-
-        private void IntelWindow_OnStop()
+        public ICommand StartAllCommand => new RelayCommand(async () =>
         {
-            StopCommand.Execute(null);
-        }
-
+            foreach(var c in Characters)
+            {
+                await Start(GetChannelIntel(c.Name), c);
+            }
+            Running = true;
+        });
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            Core.Services.ObservableFileService.Remove(EarlyWarningItems);
-            EarlyWarningItems.Clear();
-            ChatContents.Clear();
-            IsRunning = false;
-            LocalEarlyWarningItem = null;
-            _zkbIntel?.Stop();
-            Services.WarningService.Current.Remove(Setting?.Listener);
-            GC.Collect();
+            ChannelIntel.Stop();
+            SelectedCharacter.Running = false;
+            if(Characters.Count(p => p.Running) == 0)
+            {
+                Running = false;
+            }
+        });
+        public ICommand StopAllCommand => new RelayCommand(() =>
+        {
+            foreach(var c in _channelIntels.Values)
+            {
+                c.Stop();
+            }
+            Running = false;
         });
 
         public ICommand RestorePosCommand => new RelayCommand(() =>
         {
-            if (!string.IsNullOrEmpty(Setting?.Listener))
+            if (ChannelIntel.RestorePos())
             {
-                if (WarningService.Current.RestoreWindowPos(Setting.Listener))
-                {
-                    Window?.ShowSuccess("重置成功");
-                }
-                else
-                {
-                    Window?.ShowError("重置失败");
-                }
+                Window?.ShowSuccess("重置成功");
+            }
+            else
+            {
+                Window?.ShowError("重置失败");
             }
         });
 
         public ICommand StopSoundCommand => new RelayCommand(() =>
         {
-            if (!string.IsNullOrEmpty(Setting?.Listener))
-            {
-                WarningService.Current.StopSound(Setting.Listener);
-            }
+            ChannelIntel?.StopSound();
         });
-
-        /// <summary>
-        /// 预警更新
-        /// </summary>
-        /// <param name="earlyWarningItem"></param>
-        /// <param name="news"></param>
-        private void EarlyWarningItem_OnWarningUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<Core.Models.EarlyWarningContent> news)
+        public ICommand RefreshChannelsCommand => new RelayCommand(async () =>
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            string name = ChannelIntel.Listener;
+            ShowWaiting();
+            var channels = await Task.Run(() =>
             {
-                foreach (var ch in news)
+                var dic = GameLogHelper.GetChatChanelInfos(_logPath, Services.Settings.GameLogsSettingService.EVELogsChannelDurationValue);
+                if(dic.TryGetValue(name, out var list))
                 {
-                    if (ch.IntelType == Core.Enums.IntelChatType.Intel)
+                    List<ChatChanelInfo> chatChanelInfos = new List<ChatChanelInfo>();
+                    foreach (var coreChatChanelInfos in list)
                     {
-                        Core.Models.WarningSoundSetting soundSetting = null;
-                        if (Setting.Sounds.Count >= ch.Jumps)
-                        {
-                            soundSetting = Setting.Sounds[ch.Jumps];
-                        }
-                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                        chatChanelInfos.Add(ChatChanelInfo.Create(coreChatChanelInfos));
                     }
-                    else
-                    {
-                        //只clr
-                        WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
-                    }
-                }
-            });
-        }
-        /// <summary>
-        /// 频道内容更新
-        /// </summary>
-        /// <param name="earlyWarningItem"></param>
-        /// <param name="newlines"></param>
-        private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
-        {
-            Window.DispatcherQueue.TryEnqueue(() =>
-            {
-                foreach (var line in news)
-                {
-                    ChatContents.Add(line);
-                }
-            });
-        }
-        /// <summary>
-        /// 本地频道内容更新
-        /// 判断是否更新位置
-        /// </summary>
-        /// <param name="earlyWarningItem"></param>
-        /// <param name="news"></param>
-        private async void EarlyWarningItem_LocalChanged(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
-        {
-            for (int i = news.Count() - 1; i >= 0; i--)//从后面往回找，新消息位于后面
-            {
-                var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i), NameDbs);
-                if (id > 0)
-                {
-                    Window.DispatcherQueue.TryEnqueue(async () =>
-                    {
-                        Setting.LocationID = id;
-                        SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
-                        IntelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
-                        Core.EVEHelpers.SolarSystemPosHelper.ResetXY(IntelMap.GetAllSolarSystem());
-                        foreach (var item in EarlyWarningItems)
-                        {
-                            item.IntelMap = IntelMap;
-                        }
-                        WarningService.Current.UpdateWindowHome(Setting.Listener, IntelMap);
-                    });
-                    break;
-                }
-            }
-        }
-        private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
-        {
-            Window.DispatcherQueue.TryEnqueue(() =>
-            {
-                var span = DateTime.UtcNow - e.Time;
-                string desc;
-                if (span.TotalMinutes > 1)
-                {
-                    desc = $" {span.TotalMinutes.ToString("N1")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Min")}";
+                    return chatChanelInfos;
                 }
                 else
                 {
-                    desc = $" {span.TotalSeconds.ToString("N0")}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Befor_Sec")}";
+                    return null;
                 }
-                e.Content += desc;
-                Core.Models.WarningSoundSetting soundSetting = null;
-                if (Setting.Sounds.Count >= e.Jumps)
-                {
-                    soundSetting = Setting.Sounds[e.Jumps];
-                }
+            });
+            ChannelIntel.UpdateChannels(channels);
+            HideWaiting();
+        });
+        private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
                 ZKBIntelContents.Add(e);
-                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
+            });
+        }
+
+        private void ChannelIntel_ChatContentEvent(object sender, IEnumerable<IntelChatContent> e)
+        {
+            Window.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (IntelChatContent content in e)
+                {
+                    ChatContents.Add(content);
+                }
             });
         }
     }

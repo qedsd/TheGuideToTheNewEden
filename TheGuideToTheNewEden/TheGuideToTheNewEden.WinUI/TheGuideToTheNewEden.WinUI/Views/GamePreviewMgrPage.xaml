@@ -689,14 +689,16 @@
                         </Button>
                     </Grid>
 
-                    <ComboBox Header="{StaticResource GamePreviewMgrPage_PreviewWindowMode}" SelectedIndex="{x:Bind VM.Setting.ShowPreviewWindowMode,Mode=TwoWay}"
-                              HorizontalAlignment="Stretch"
-                              Margin="0,16,0,8">
+                    <ComboBox
+                        Margin="0,16,0,8"
+                        HorizontalAlignment="Stretch"
+                        Header="{StaticResource GamePreviewMgrPage_PreviewWindowMode}"
+                        SelectedIndex="{x:Bind VM.Setting.ShowPreviewWindowMode, Mode=TwoWay}">
                         <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode1}" />
                         <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode2}" />
                         <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode3}" />
                     </ComboBox>
-                    
+
                     <Grid Margin="0,8">
                         <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
                     </Grid>

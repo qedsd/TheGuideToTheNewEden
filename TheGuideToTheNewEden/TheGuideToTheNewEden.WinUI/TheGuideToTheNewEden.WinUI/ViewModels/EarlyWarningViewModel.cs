@@ -315,19 +315,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     if(Setting.SubZKB)
                     {
-                        _zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
-                        try
-                        {
-                            await _zkbIntel.Start();
-                            _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
-                        }
-                        catch(Exception ex)
-                        {
-                            Log.Error(ex);
-                            ShowError($"{Helpers.ResourcesHelper.GetString("EarlyWarningPage_SubZKB_Error")} :{ex.Message}");
-                        }
+                        //_zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
+                        //try
+                        //{
+                        //    await _zkbIntel.Start();
+                        //    _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        //}
+                        //catch(Exception ex)
+                        //{
+                        //    Log.Error(ex);
+                        //    ShowError($"{Helpers.ResourcesHelper.GetString("EarlyWarningPage_SubZKB_Error")} :{ex.Message}");
+                        //}
                     }
-                    WarningService.Current.Add(Setting, IntelMap);
+                    //WarningService.Current.Add(Setting, IntelMap);
                     var intelWindow = WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
                     {
@@ -402,12 +402,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             soundSetting = Setting.Sounds[ch.Jumps];
                         }
-                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                        //WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
                     }
                     else
                     {
                         //只clr
-                        WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
+                        //WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
                     }
                 }
             });
@@ -477,7 +477,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     soundSetting = Setting.Sounds[e.Jumps];
                 }
                 ZKBIntelContents.Add(e);
-                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
+                //WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
             });
         }
 

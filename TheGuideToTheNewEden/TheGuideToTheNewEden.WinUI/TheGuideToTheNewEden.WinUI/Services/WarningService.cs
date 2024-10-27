@@ -100,7 +100,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private object _notifyLocker = new object();
-        public bool Notify(string listener, WarningSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
+        public bool Notify(string listener, Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
         {
             try
             {
@@ -200,7 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             Listener = listener;
         }
-        public void PlaySound(WarningSoundSetting soundSetting)
+        public void PlaySound(Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting)
         {
             string soundFile = string.IsNullOrEmpty(soundSetting.FilePath) ? DefaultMediaFile : soundSetting.FilePath;
             MediaPlayer mediaPlayer;

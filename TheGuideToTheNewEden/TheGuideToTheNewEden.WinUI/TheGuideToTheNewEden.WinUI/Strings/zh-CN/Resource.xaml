@@ -52,7 +52,9 @@
     <x:String x:Key="General_Minute">分钟</x:String>
     <x:String x:Key="General_Second">秒</x:String>
     <x:String x:Key="General_Start">开始</x:String>
+    <x:String x:Key="General_StartAll">开始全部</x:String>
     <x:String x:Key="General_Stop">停止</x:String>
+    <x:String x:Key="General_StopAll">停止全部</x:String>
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
@@ -905,4 +907,39 @@
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">计算</x:String>
     <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
+
+    <!--  ChannelIntelPage  -->
+    <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Running">预警中</x:String>
+    <x:String x:Key="ChannelIntelPage_Characters">角色列表</x:String>
+    <x:String x:Key="ChannelIntelPage_Setting">预警设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ChannelName">频道名称</x:String>
+    <x:String x:Key="ChannelIntelPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelIntelPage_Channels">频道列表</x:String>
+    <x:String x:Key="ChannelIntelPage_RefreshChannels">刷新列表</x:String>
+    <x:String x:Key="ChannelIntelPage_LocalSystem">角色所处星系</x:String>
+    <x:String x:Key="ChannelIntelPage_SearchSystem">搜索星系</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoUpdateLocation">自动更新位置</x:String>
+    <x:String x:Key="ChannelIntelPage_Jumps">预警跳数</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapShowType">预警窗口</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Alwasys">一直显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_WhenNeed">必要时显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Never">不显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle">预警窗口样式</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Default">默认</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_SMT">SMT</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Near2">Near2</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapOpacity">预警窗口透明度</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear">自动解除预警</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade">自动降低预警级别</x:String>
+    <x:String x:Key="ChannelIntelPage_MakeSound">预警声</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords">忽视预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords">解除预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs">星系名语言数据库</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">聊天日志匹配预警星系时，需要支持哪些语言的星系名称</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
 </ResourceDictionary>
