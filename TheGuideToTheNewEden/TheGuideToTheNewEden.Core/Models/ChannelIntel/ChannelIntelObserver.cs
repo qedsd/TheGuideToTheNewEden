@@ -124,6 +124,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                     {
                                         Content = chatContent.Content,
                                         Time = chatContent.EVETime,
+                                        Listener = ChatChanelInfo.Listener,
                                         SolarSystemId = name.Value,
                                         SolarSystemName = name.Key,
                                         Level = 3,//TODO:预警等级划分

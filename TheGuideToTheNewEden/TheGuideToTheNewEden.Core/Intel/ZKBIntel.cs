@@ -45,6 +45,7 @@ namespace TheGuideToTheNewEden.Core.Intel
                     {
                         Content = $"{info.Type.TypeName}({detail.Attackers.Count})",
                         Time = detail.KillmailTime,
+                        Listener = _setting.Listener,
                         SolarSystemId = detail.SolarSystemId,
                         SolarSystemName = info.SolarSystem.SolarSystemName,
                         IntelType = Enums.IntelChatType.Intel,

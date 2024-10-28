@@ -54,13 +54,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (SetProperty(ref _selectedCharacter, value))
                 {
-                    UpdateSelectedCharacter(value.Name);
+                    UpdateSelectedCharacter(value?.Name);
                 }
             }
         }
 
-        private List<ChannelIntelListener> _characters;
-        public List<ChannelIntelListener> Characters
+        private ObservableCollection<ChannelIntelListener> _characters;
+        public ObservableCollection<ChannelIntelListener> Characters
         {
             get => _characters;
             set => SetProperty(ref _characters, value);
@@ -114,10 +114,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async void InitDicAsync()
         {
+            await LoadListenerChannelDic();
+            if (_listenerChannelDic.Count != 0)
+            {
+                Characters = _listenerChannelDic.Select(p => new ChannelIntelListener(p.Key)).ToObservableCollection();
+            }
+            else
+            {
+                Characters = null;
+            }
+        }
+        private async Task LoadListenerChannelDic()
+        {
             _listenerChannelDic.Clear();
             if (System.IO.Directory.Exists(_logPath))
             {
-                await Task.Run(() => 
+                await Task.Run(() =>
                 {
                     var dic = GameLogHelper.GetChatChanelInfos(_logPath, Services.Settings.GameLogsSettingService.EVELogsChannelDurationValue);
                     if (dic != null)
@@ -134,14 +146,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 });
             }
-            if (_listenerChannelDic.Count != 0)
-            {
-                Characters = _listenerChannelDic.Select(p => new ChannelIntelListener(p.Key)).ToList();
-            }
-            else
-            {
-                Characters = null;
-            }
         }
         private async void InitSolarSystems()
         {
@@ -154,7 +158,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void UpdateSelectedCharacter(string name)
         {
-            ChannelIntel = GetChannelIntel(name);
+            ChannelIntel = string.IsNullOrEmpty(name) ? null : GetChannelIntel(name);
         }
         private ChannelIntel GetChannelIntel(string name)
         {
@@ -164,7 +168,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                return new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs, Window.DispatcherQueue);
+                ChannelIntel c =  new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs, Window.DispatcherQueue);
+                _channelIntels.Add(name, c);
+                return c;
             }
         }
         private async Task<bool> Start(ChannelIntel channelIntel, ChannelIntelListener channelIntelListener)
@@ -223,6 +229,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 c.Stop();
             }
+            foreach(var c in Characters)
+            {
+                c.Running = false;
+            }
             Running = false;
         });
 
@@ -266,6 +276,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ChannelIntel.UpdateChannels(channels);
             HideWaiting();
         });
+        public ICommand RefreshCharactersCommand => new RelayCommand(async () =>
+        {
+            ShowWaiting();
+            await LoadListenerChannelDic();
+            if (_listenerChannelDic.Any())
+            {
+                foreach(var item in _listenerChannelDic)
+                {
+                    if(Characters.FirstOrDefault(p=>p.Name == item.Key) == null)
+                    {
+                        Characters.Add(new ChannelIntelListener(item.Key));
+                    }
+                }
+            }
+            SelectedCharacter = null;
+            HideWaiting();
+        });
+
         private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)
         {
             Window.DispatcherQueue.TryEnqueue(() =>

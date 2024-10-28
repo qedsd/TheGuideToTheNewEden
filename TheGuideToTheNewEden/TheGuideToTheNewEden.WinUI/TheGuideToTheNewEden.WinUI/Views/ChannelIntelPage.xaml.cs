@@ -29,17 +29,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             _runningPageCount++;
             this.InitializeComponent();
-            Loaded += EarlyWarningPage_Loaded;
+            Loaded += ChannelIntelPage_Loaded;
         }
 
-        private void EarlyWarningPage_Loaded(object sender, RoutedEventArgs e)
+        private void ChannelIntelPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Loaded -= EarlyWarningPage_Loaded;
+            Loaded -= ChannelIntelPage_Loaded;
             ChatContents.Blocks.Add(new Paragraph());
             VM.ChatContents.CollectionChanged += ChatContents_CollectionChanged;
             VM.ZKBIntelContents.CollectionChanged += ZKBIntelContents_CollectionChanged;
             ChatContentsScroll.LayoutUpdated += ChatContentsScroll_LayoutUpdated;
-            VM.PropertyChanged += EarlyWarningItemPage_PropertyChanged;
+            VM.PropertyChanged += ChannelIntelPage_PropertyChanged;
         }
 
         private void ZKBIntelContents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -94,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void EarlyWarningItemPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ChannelIntelPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(VM.ChannelIntel.SelectedNameDbs))
             {
@@ -198,6 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         #endregion
         private void ListView_Loaded(object sender, RoutedEventArgs e)
         {
+            (sender as ListView).Loaded -= ListView_Loaded;
             if (VM.ChannelIntel.SelectedNameDbs != null)
             {
                 foreach (var item in VM.ChannelIntel.SelectedNameDbs)

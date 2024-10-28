@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
     /// <summary>
     /// 一个角色频道预警实例
     /// </summary>
-    internal class ChannelIntel:ObservableObject
+    internal class ChannelIntel : ObservableObject
     {
         private List<Core.DBModels.MapSolarSystemBase> _mapSolarSystems;
         private List<string> _nameDbs;
@@ -27,6 +27,12 @@ namespace TheGuideToTheNewEden.WinUI.Models
         private Core.Models.ChannelIntel.ChannelIntelObserver _localObservers;
         private Core.Intel.ZKBIntel _zkbIntel;
         private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+
+        private MapSolarSystemBase _nullSolarSystem = new MapSolarSystemBase()
+        {
+            SolarSystemID = -1,
+            SolarSystemName = string.Empty
+        };
 
         private List<ChatChanelInfo> _chatChanelInfos;
         /// <summary>
@@ -47,22 +53,25 @@ namespace TheGuideToTheNewEden.WinUI.Models
             set => SetProperty(ref _selectedNameDbs, value);
         }
 
-        private Core.DBModels.MapSolarSystemBase selectedMapSolarSystem;
-        public Core.DBModels.MapSolarSystemBase SelectedMapSolarSystem
+        private MapSolarSystemBase _localSolarSystem;
+        public MapSolarSystemBase LocalSolarSystem
         {
-            get => selectedMapSolarSystem;
-            set
-            {
-                SetProperty(ref selectedMapSolarSystem, value);
-                LocationSolarSystem = value?.SolarSystemName;
-            }
+            get => _localSolarSystem;
+            set => SetProperty(ref _localSolarSystem, value);
         }
 
-        private string locationSolarSystem;
-        public string LocationSolarSystem
-        { 
-            get => locationSolarSystem; 
-            set => SetProperty(ref locationSolarSystem, value);
+        private MapSolarSystem _searchSolarSystem;
+        public MapSolarSystem SearchSolarSystem
+        {
+            get => _searchSolarSystem;
+            set 
+            {
+                if(SetProperty(ref _searchSolarSystem, value) && value != null)
+                {
+                    LocalSolarSystem = value;
+                    Setting.LocationID = value.SolarSystemID;
+                }
+            }
         }
 
         private bool _running;
@@ -80,12 +89,14 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _mapSolarSystems = mapSolarSystems;
             _nameDbs = nameDbs;
             _dispatcherQueue = dispatcherQueue;
-            Setting = Services.Settings.IntelSettingService.GetValue(listener);
-            if(Setting == null)
+            var setting = Services.Settings.IntelSettingService.GetValue(listener);
+            if(setting == null)
             {
-                Setting = new Core.Models.ChannelIntel.ChannelIntelSetting();
-                Setting.Listener = listener;
+                setting = new Core.Models.ChannelIntel.ChannelIntelSetting();
+                setting.Listener = listener;
             }
+            FixSoundSetting(setting);
+            Setting = setting;
             LoadSetting();
             Setting.PropertyChanged += Setting_PropertyChanged;
         }
@@ -107,14 +118,16 @@ namespace TheGuideToTheNewEden.WinUI.Models
             {
                 ChatChanelInfos.ForEach(p => p.IsChecked = false);
             }
+
             if (Setting.LocationID > 1)
             {
-                SelectedMapSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == Setting.LocationID);
+                LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == Setting.LocationID);
             }
             else
             {
-                SelectedMapSolarSystem = null;
+                LocalSolarSystem = _nullSolarSystem;
             }
+
             if (Setting.NameDbs.NotNullOrEmpty())
             {
                 foreach (var db in Setting.NameDbs)
@@ -137,24 +150,85 @@ namespace TheGuideToTheNewEden.WinUI.Models
                         _nameDbs.FirstOrDefault()
                     };
             }
-        }
 
+            if (Setting.AutoUpdateLocaltion)
+            {
+                UpdateCharacterLocation();
+            }
+        }
+        private static void FixSoundSetting(Core.Models.ChannelIntel.ChannelIntelSetting setting)
+        {
+            if (setting != null)
+            {
+                int diff = setting.IntelJumps + 1 - setting.Sounds.Count;
+                if (diff != 0)
+                {
+                    if (diff < 0)
+                    {
+                        for (int i = 0; i < -diff; i++)
+                        {
+                            setting.Sounds.RemoveAt(setting.Sounds.Count - 1);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < diff; i++)
+                        {
+                            setting.Sounds.Add(new Core.Models.ChannelIntel.ChannelIntelSoundSetting()
+                            {
+                                Id = setting.Sounds.Count
+                            });
+                        }
+                    }
+                }
+
+            }
+        }
         private void SaveSetting()
         {
             Setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelID).ToList();
-            Setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
+            //Setting.LocationID = LocalSolarSystem == null ? -1 : LocalSolarSystem.SolarSystemID;
             Setting.NameDbs = SelectedNameDbs.ToList();
             Services.Settings.IntelSettingService.SetValue(Setting);
         }
         private void Setting_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Core.Models.EarlyWarningSetting.AutoUpdateLocaltion))
+            switch(e.PropertyName)
             {
-                //如果勾选上自动更新位置，立即获取当前位置
-                if (Setting.AutoUpdateLocaltion)
-                {
-                    UpdateCharacterLocation();
-                }
+                case nameof(Core.Models.EarlyWarningSetting.AutoUpdateLocaltion):
+                    {
+                        //如果勾选上自动更新位置，立即获取当前位置
+                        if (Setting.AutoUpdateLocaltion)
+                        {
+                            UpdateCharacterLocation();
+                        }
+                    }
+                    break;
+                case nameof(Core.Models.EarlyWarningSetting.IntelJumps):
+                    {
+                        if (!double.IsNaN(Setting.IntelJumps))
+                        {
+                            int diff = (int)(Setting.IntelJumps - Setting.Sounds.Count + 1);
+                            if (diff < 0)
+                            {
+                                for (int i = 0; i < -diff; i++)
+                                {
+                                    Setting.Sounds.RemoveAt(Setting.Sounds.Count - 1);
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < diff; i++)
+                                {
+                                    Setting.Sounds.Add(new Core.Models.ChannelIntel.ChannelIntelSoundSetting()
+                                    {
+                                        Id = Setting.Sounds.Count
+                                    });
+                                }
+                            }
+                        }
+                    }break;
+                default:break;
             }
         }
         private async void UpdateCharacterLocation()
@@ -195,7 +269,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     }
                     if (systemId != -1)
                     {
-                        SelectedMapSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == systemId);
+                        LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == systemId);
                         Setting.LocationID = systemId;
                     }
                 }
@@ -246,20 +320,18 @@ namespace TheGuideToTheNewEden.WinUI.Models
 
         public async Task Start()
         {
-            if (string.IsNullOrEmpty(LocationSolarSystem))
+            if (Setting.LocationID <= 0)
             {
                 throw new Exception("请设置角色当前所处星系");
             }
-            var location = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemName == LocationSolarSystem);
-            if (location == null)
+            if(LocalSolarSystem.IsSpecial())
             {
-                throw new Exception("无效的星系名称");
+                throw new Exception("当前星系不支持频道预警");
             }
             if (ChatChanelInfos.NotNullOrEmpty())
             {
                 _observers.Clear();
-                SelectedMapSolarSystem = location;
-                Setting.LocationID = location.SolarSystemID;
+                //Setting.LocationID = LocalSolarSystem.SolarSystemID;
                 var checkedItems = ChatChanelInfos.Where(p => p.IsChecked).ToList();
                 if (checkedItems.NotNullOrEmpty())
                 {
@@ -359,7 +431,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     _dispatcherQueue.TryEnqueue(async () =>
                     {
                         Setting.LocationID = id;
-                        SelectedMapSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
+                        //LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
                         _intelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
                         Core.EVEHelpers.SolarSystemPosHelper.ResetXY(_intelMap.GetAllSolarSystem());
                         foreach (var item in _observers)

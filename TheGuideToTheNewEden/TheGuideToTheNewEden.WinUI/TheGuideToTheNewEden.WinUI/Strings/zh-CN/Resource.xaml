@@ -942,4 +942,8 @@
     <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">聊天日志匹配预警星系时，需要支持哪些语言的星系名称</x:String>
     <x:String x:Key="ChannelIntelPage_RestorePos">重置位置</x:String>
     <x:String x:Key="ChannelIntelPage_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="ChannelIntelPage_StopSound">停止声音</x:String>
+    <x:String x:Key="ChannelIntelPage_LatestIntelInfo">最新预警信息</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearAllIntel">清除所有预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Contents">频道内容</x:String>
 </ResourceDictionary>

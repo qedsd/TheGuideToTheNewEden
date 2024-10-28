@@ -18,6 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class MapSystemSelectorControl : UserControl
     {
+        //private Dictionary<int, MapSolarSystem> _systemDict;
         public List<MapSolarSystem> MapSolarSystems { get; set; }
         public MapSystemSelectorControl()
         {
@@ -27,6 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private async void Init()
         {
             MapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).OrderBy(p => p.SolarSystemID).ToList();
+            //_systemDict = MapSolarSystems.ToDictionary(p => p.SolarSystemID);
             ListView_Systems.ItemsSource = MapSolarSystems;
         }
 
@@ -72,6 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private static void SelectedItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            //(d as MapSystemSelectorControl).SelectedId = (e.NewValue as MapSolarSystem).SolarSystemID;
             (d as MapSystemSelectorControl).SelectedItemChanged?.Invoke(e.NewValue as MapSolarSystem);
         }
         public delegate void SelectedItemChangedEventHandel(MapSolarSystem selectedItem);
@@ -87,5 +90,30 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 SelectedItemChanged -= value;
             }
         }
+
+        //public static readonly DependencyProperty SelectedIdProperty
+        //    = DependencyProperty.Register(
+        //        nameof(SelectedItem),
+        //        typeof(int),
+        //        typeof(MapSystemSelectorControl),
+        //        new PropertyMetadata(null, new PropertyChangedCallback(SelectedIdPropertyChanged)));
+
+        //public int SelectedId
+        //{
+        //    get => (int)GetValue(SelectedIdProperty);
+        //    set => SetValue(SelectedIdProperty, value);
+        //}
+        //private static void SelectedIdPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        //{
+        //    (d as MapSystemSelectorControl).SetSelectedId((int)e.NewValue);
+        //}
+
+        //internal void SetSelectedId(int id)
+        //{
+        //    if(_systemDict.TryGetValue(id, out var v))
+        //    {
+        //        SelectedItem = v;
+        //    }
+        //}
     }
 }

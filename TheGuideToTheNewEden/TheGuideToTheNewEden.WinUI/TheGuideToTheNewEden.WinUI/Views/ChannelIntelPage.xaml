@@ -10,7 +10,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:TheGuideToTheNewEden.WinUI.Models"
-    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels" xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -20,7 +20,7 @@
     <Grid x:Name="ContentGrid" Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="740" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid Margin="0,0,0,0">
@@ -84,13 +84,20 @@
                 <AppBarButton
                     Command="{x:Bind VM.StartAllCommand}"
                     Icon="Play"
-                    Label="{StaticResource General_StartAll}" />
+                    Label="{StaticResource General_StartAll}" 
+                    Margin="0,0,16,0"/>
                 <AppBarButton
                     Command="{x:Bind VM.StopAllCommand}"
                     Foreground="OrangeRed"
                     Icon="Stop"
                     Label="{StaticResource General_StopAll}"
                     Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.RefreshCharactersCommand}"
+                    Icon="Refresh"
+                    Label="{StaticResource ChannelIntelPage_RefreshChannels}" 
+                    Margin="16,0,0,0"/>
             </StackPanel>
         </Grid>
         <Grid
@@ -173,62 +180,34 @@
                 <ScrollViewer Grid.Row="0" IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
                     <StackPanel x:Name="SettingArea" Margin="10,0">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <TextBox Header="{StaticResource ChannelIntelPage_LocalSystem}" Text="{x:Bind VM.ChannelIntel.LocationSolarSystem, Mode=TwoWay}" />
-                            <Button
-                                Grid.Column="1"
-                                Height="32"
-                                VerticalAlignment="Bottom"
-                                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_SearchSystem}">
-                                <Button.Content>
-                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11A;" />
-                                </Button.Content>
-                                <Button.Flyout>
-                                    <Flyout Placement="BottomEdgeAlignedRight">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition />
-                                            </Grid.RowDefinitions>
-                                            <TextBox x:Name="TextBox_SearchMapSolarSystem" TextChanged="TextBox_SearchMapSolarSystem_TextChanged" />
-                                            <ListBox
-                                                Grid.Row="1"
-                                                Width="200"
-                                                MaxHeight="300"
-                                                Margin="0,20,0,10"
-                                                ItemsSource="{x:Bind VM.SearchMapSolarSystems, Mode=OneWay}"
-                                                SelectedItem="{x:Bind VM.ChannelIntel.SelectedMapSolarSystem, Mode=TwoWay}">
-                                                <ListBox.ItemContainerStyle>
-                                                    <Style TargetType="ListBoxItem">
-                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                    </Style>
-                                                </ListBox.ItemContainerStyle>
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate x:DataType="dbmodels:MapSolarSystemBase">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{x:Bind SolarSystemName}" />
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
-                                        </Grid>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                            <CheckBox
-                                Grid.Column="2"
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Bottom"
-                                Content="{StaticResource ChannelIntelPage_AutoUpdateLocation}"
-                                IsChecked="{x:Bind VM.ChannelIntel.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{StaticResource ChannelIntelPage_LocalSystem}" Margin="0,0,0,4"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Button Content="{x:Bind VM.ChannelIntel.LocalSolarSystem.SolarSystemName,Mode=TwoWay}" HorizontalAlignment="Stretch"
+                                        Height="32">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <Grid  Height="400" Width="300">
+                                                <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem,Mode=TwoWay}"/>
+                                            </Grid>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                                <CheckBox
+    Grid.Column="1"
+    Margin="10,0,0,0"
+    VerticalAlignment="Bottom"
+    Content="{StaticResource ChannelIntelPage_AutoUpdateLocation}"
+    IsChecked="{x:Bind VM.ChannelIntel.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
+                            </Grid>
+                            
                         </Grid>
                         <Grid Margin="0,10">
                             <Grid.ColumnDefinitions>
@@ -243,7 +222,6 @@
                                 Minimum="0"
                                 SmallChange="1"
                                 SpinButtonPlacementMode="Compact"
-                                ValueChanged="NumberBox_ValueChanged"
                                 Value="{x:Bind VM.ChannelIntel.Setting.IntelJumps, Mode=TwoWay}" />
                             <ComboBox
                                 Grid.Column="1"
@@ -507,20 +485,45 @@
                             HorizontalAlignment="Center"
                             Command="{x:Bind VM.StopSoundCommand}"
                             Icon="Mute"
-                            Label="{StaticResource EarlyWarningItemPage_StopSound}"
+                            Label="{StaticResource ChannelIntelPage_StopSound}"
                             Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     </StackPanel>
                 </Grid>
             </Grid>
         </Grid>
-        <ScrollViewer x:Name="ChatContentsScroll" Grid.Column="2">
-            <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="True">
-                <RichTextBlock.ContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
-                    </MenuFlyout>
-                </RichTextBlock.ContextFlyout>
-            </RichTextBlock>
-        </ScrollViewer>
+        <Grid Grid.Column="2" Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="64"/>
+            </Grid.RowDefinitions>
+            <ScrollViewer x:Name="ChatContentsScroll" 
+                          BorderThickness="1"
+                          BorderBrush="LightGray">
+                <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="True" Margin="4,0">
+                    <RichTextBlock.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                        </MenuFlyout>
+                    </RichTextBlock.ContextFlyout>
+                </RichTextBlock>
+            </ScrollViewer>
+            <Grid Grid.Row="1" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                <TextBlock
+        Grid.Column="1"
+        Margin="8,0"
+        Text="{StaticResource ChannelIntelPage_Contents}" />
+                <Rectangle
+        Grid.Column="2"
+        Height="1"
+        Fill="{ThemeResource SystemAccentColor}" />
+            </Grid>
+        </Grid>
     </Grid>
 </Page>
