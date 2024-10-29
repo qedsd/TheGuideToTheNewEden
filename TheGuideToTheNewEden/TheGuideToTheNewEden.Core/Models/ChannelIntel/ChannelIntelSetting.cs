@@ -63,12 +63,23 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         private int overlapType;
         /// <summary>
         /// 预警窗口显示方式
-        /// 0 一直显示 1 必要时 2 不显示
+        /// 0 一直显示 1 必要时
         /// </summary>
         public int OverlapType
         {
             get => overlapType; set => SetProperty(ref overlapType, value);
         }
+
+        private bool overlapNotify = true;
+        /// <summary>
+        /// 弹窗通知
+        /// </summary>
+        public bool OverlapNotify
+        {
+            get => overlapNotify;
+            set => SetProperty(ref overlapNotify, value);
+        }
+
         private int overlapStyle;
         public int OverlapStyle { get => overlapStyle; set => SetProperty(ref overlapStyle, value); }
         private bool makeSound = true;

@@ -40,7 +40,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private Dictionary<string, SoundNotifyItem> SoundNotifyItems = new Dictionary<string, SoundNotifyItem>();
         public bool Add(Core.Models.ChannelIntel.ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            if(setting.OverlapType != 2)//初始化小窗
+            if(setting.OverlapNotify)//初始化小窗
             {
                 if (WarningWindows.ContainsKey(setting.Listener))
                 {

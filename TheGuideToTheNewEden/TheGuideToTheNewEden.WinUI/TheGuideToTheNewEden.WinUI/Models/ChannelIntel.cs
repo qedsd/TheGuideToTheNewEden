@@ -322,11 +322,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
         {
             if (Setting.LocationID <= 0)
             {
-                throw new Exception("请设置角色当前所处星系");
+                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_NoLocaction"));
             }
             if(LocalSolarSystem.IsSpecial())
             {
-                throw new Exception("当前星系不支持频道预警");
+                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_SystemNotSupport"));
             }
             if (ChatChanelInfos.NotNullOrEmpty())
             {
@@ -337,6 +337,10 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 {
                     _intelMap = await Core.EVEHelpers.SolarSystemPosHelper.GetIntelSolarSystemMapAsync(Setting.LocationID, Setting.IntelJumps);
                     Core.EVEHelpers.SolarSystemPosHelper.ResetXY(_intelMap.GetAllSolarSystem());
+                    if (!Services.WarningService.Current.Add(Setting, _intelMap))
+                    {
+                        throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_WarningServiceError"));
+                    }
                     foreach (var ch in checkedItems)
                     {
                         Core.Models.ChannelIntel.ChannelIntelObserver observer = new Core.Models.ChannelIntel.ChannelIntelObserver(ch, Setting);
@@ -376,7 +380,6 @@ namespace TheGuideToTheNewEden.WinUI.Models
                         await _zkbIntel.Start();
                         _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
                     }
-                    Services.WarningService.Current.Add(Setting, _intelMap);
                     var intelWindow = Services.WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
                     {
@@ -387,7 +390,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 }
                 else
                 {
-                    throw new Exception("请选择预警频道");
+                    throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_UnselectedChatChanel"));
                 }
             }
             SaveSetting();

@@ -96,7 +96,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ChannelIntelPage_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(VM.ChannelIntel.SelectedNameDbs))
+            if (e.PropertyName == nameof(VM.ChannelIntel.SelectedNameDbs) || e.PropertyName == nameof(VM.ChannelIntel))
             {
                 SetSelectedNameDbs();
             }
@@ -127,6 +127,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     {
                         Margin = new Thickness(0, 8, 0, 8),
                     };
+
+                    Run listener = new Run()
+                    {
+                        FontWeight = FontWeights.Bold,
+                        Text = $"{chatContent.Listener} : "
+                    };
                     Run timeRun = new Run()
                     {
                         FontWeight = FontWeights.Light,
@@ -147,6 +153,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         case Core.Enums.IntelChatType.Intel: contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed); break;
                         case Core.Enums.IntelChatType.Clear: contentRun.Foreground = new SolidColorBrush(Colors.SeaGreen); break;
                     }
+                    paragraph.Inlines.Add(listener);
                     paragraph.Inlines.Add(timeRun);
                     paragraph.Inlines.Add(nameRun);
                     paragraph.Inlines.Add(contentRun);
@@ -178,22 +185,26 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
 
         #region 星系名语言数据库
-        private bool IgnoreNameDbsSelectionChanged;
+        private bool _ignoreNameDbsSelectionChanged;
         private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IgnoreNameDbsSelectionChanged)
+            if (!_ignoreNameDbsSelectionChanged)
             {
                 VM.ChannelIntel.SelectedNameDbs = (sender as ListView).SelectedItems?.ToList<string>();
             }
         }
         private void SetSelectedNameDbs()
         {
-            IgnoreNameDbsSelectionChanged = true;
-            foreach (var item in VM.ChannelIntel.SelectedNameDbs)
+            _ignoreNameDbsSelectionChanged = true;
+            SelectedNameDbsListView.SelectedItems.Clear();
+            if(VM.ChannelIntel != null)
             {
-                SelectedNameDbsListView.SelectedItems.Add(item);
+                foreach (var item in VM.ChannelIntel.SelectedNameDbs)
+                {
+                    SelectedNameDbsListView.SelectedItems.Add(item);
+                }
             }
-            IgnoreNameDbsSelectionChanged = false;
+            _ignoreNameDbsSelectionChanged = false;
         }
         #endregion
         private void ListView_Loaded(object sender, RoutedEventArgs e)
@@ -214,43 +225,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             if (info != null)
             {
                 System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
-            }
-        }
-
-        private void TextBox_SearchMapSolarSystem_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty((sender as TextBox).Text))
-            {
-                VM.SearchMapSolarSystems = VM.MapSolarSystems;
-            }
-            else
-            {
-                VM.SearchMapSolarSystems = VM.MapSolarSystems.Where(p => p.SolarSystemName.Contains((sender as TextBox).Text)).ToList();
-            }
-        }
-
-        private void NumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
-        {
-            if (!double.IsNaN(args.OldValue))
-            {
-                int diff = (int)(args.NewValue - args.OldValue);
-                if (diff < 0)
-                {
-                    for (int i = 0; i < -diff; i++)
-                    {
-                        VM.ChannelIntel.Setting.Sounds.RemoveAt(VM.ChannelIntel.Setting.Sounds.Count - 1);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < diff; i++)
-                    {
-                        VM.ChannelIntel.Setting.Sounds.Add(new Core.Models.ChannelIntel.ChannelIntelSoundSetting()
-                        {
-                            Id = VM.ChannelIntel.Setting.Sounds.Count
-                        });
-                    }
-                }
             }
         }
 

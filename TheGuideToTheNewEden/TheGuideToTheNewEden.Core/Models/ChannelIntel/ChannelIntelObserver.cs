@@ -61,6 +61,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                             var chatContent = IntelChatContent.Create(line);
                             if (chatContent != null)
                             {
+                                chatContent.Listener = ChatChanelInfo.Listener;
                                 TrySetIntelType(chatContent);
                                 newContents.Add(chatContent);
                             }
