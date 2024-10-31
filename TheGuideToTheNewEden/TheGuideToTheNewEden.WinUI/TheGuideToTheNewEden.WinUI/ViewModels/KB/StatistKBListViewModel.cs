@@ -113,11 +113,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                         (TypeModifier)(KBModifierIndex - 1)
                     };
                 }
-                var killmails = await Helpers.ZKBHelper.GetKillmaillAsync(new List<ParamModifierData>
-                    {
-                        new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
-                        new ParamModifierData(ParamModifier.Page, page.ToString()),
-                    }, page, modifiers?.ToArray());
+                ParamModifierData[] param = new ParamModifierData[]
+                {
+                    new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
+                        new ParamModifierData(ParamModifier.Page, page.ToString())
+                };
+                var killmails = await ZKB.NET.ZKB.GetKillmaillAsync(param, modifiers?.ToArray());
+                //var killmails = await Helpers.ZKBHelper.GetKillmaillAsync(new List<ParamModifierData>
+                //    {
+                //        new ParamModifierData(_paramModifier, _statistic.Id.ToString()),
+                //        new ParamModifierData(ParamModifier.Page, page.ToString()),
+                //    }, page, modifiers?.ToArray());
                 return (await KBHelpers.CreateKBItemInfoAsync(killmails))?.OrderByDescending(p=>p.SKBDetail.KillmailTime).ToList();
             }
             catch (Exception ex)
