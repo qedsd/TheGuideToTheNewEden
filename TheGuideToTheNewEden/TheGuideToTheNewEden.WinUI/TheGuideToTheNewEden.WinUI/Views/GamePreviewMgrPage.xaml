@@ -139,17 +139,6 @@
                         <Flyout>
                             <StackPanel>
                                 <CheckBox Content="开始无保存设置的进程" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
-                                <Rectangle
-                                    Height="1"
-                                    Margin="0,8"
-                                    Fill="{ThemeResource SystemAccentColor}" />
-                                <ComboBox
-                                    Header="加载配置方式"
-                                    IsEnabled="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=OneWay}"
-                                    SelectedIndex="{x:Bind VM.PreviewSetting.StartAllDefaultLoadType, Mode=TwoWay}">
-                                    <ComboBoxItem Content="优先依序使用保存列表中的配置" />
-                                    <ComboBoxItem Content="使用默认配置" />
-                                </ComboBox>
                             </StackPanel>
                         </Flyout>
                     </SplitButton.Flyout>

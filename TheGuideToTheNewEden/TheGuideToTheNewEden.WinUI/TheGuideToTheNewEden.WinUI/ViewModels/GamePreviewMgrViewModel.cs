@@ -1193,32 +1193,37 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         void LoadDefaultSetting(out PreviewItem setting, ProcessInfo processInfo, string name)
         {
-            if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
+            setting = new PreviewItem()
             {
-                //加载第一个不在运行中的配置
-                var firstNoRunning = Settings.FirstOrDefault(p => p.ProcessInfo == null);
-                if (firstNoRunning != null)
-                {
-                    setting = firstNoRunning;
-                }
-                else
-                {
-                    //没有不在运行中的配置，新建
-                    setting = new PreviewItem()
-                    {
-                        Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-                        UserName = processInfo.GetUserName()
-                    };
-                }
-            }
-            else//新建默认
-            {
-                setting = new PreviewItem()
-                {
-                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-                    UserName = processInfo.GetUserName()
-                };
-            }
+                Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+                UserName = processInfo.GetUserName()
+            };
+            //if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
+            //{
+            //    //加载第一个不在运行中的配置
+            //    var firstNoRunning = Settings.FirstOrDefault(p => p.ProcessInfo == null);
+            //    if (firstNoRunning != null)
+            //    {
+            //        setting = firstNoRunning;
+            //    }
+            //    else
+            //    {
+            //        //没有不在运行中的配置，新建
+            //        setting = new PreviewItem()
+            //        {
+            //            Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+            //            UserName = processInfo.GetUserName()
+            //        };
+            //    }
+            //}
+            //else//新建默认
+            //{
+            //    setting = new PreviewItem()
+            //    {
+            //        Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+            //        UserName = processInfo.GetUserName()
+            //    };
+            //}
         }
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
