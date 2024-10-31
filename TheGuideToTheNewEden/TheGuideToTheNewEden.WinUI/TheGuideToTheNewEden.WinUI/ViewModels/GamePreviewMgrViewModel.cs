@@ -153,19 +153,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             bool result2 = RegisterBackwardHotkey();
             if(result1 && result2)
             {
-                Window.ShowSuccess("注册切换热键成功");
+                return;
             }
             else if(!result1 && !result2)
             {
-                Window.ShowError("注册热键失败，请检查是否按键冲突、按键名称是否规范");
+                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterHotkeyFailed"));
             }
             else if(result1)
             {
-                Window.ShowSuccess($"注册切换热键{PreviewSetting.SwitchHotkey_Forward}成功");
+                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed"));
             }
             else if(result2)
             {
-                Window.ShowSuccess($"注册切换热键{PreviewSetting.SwitchHotkey_Backward}成功");
+                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
             }
         }
         private bool RegisterForwardHotkey()
@@ -250,22 +250,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(RegisterForwardHotkey())
             {
-                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Forward}成功");
+                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Forward}");
             }
             else
             {
-                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Forward}失败，请检查是否按键冲突、按键名称是否规范");
+                Window.ShowError($"{ Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{ PreviewSetting.SwitchHotkey_Forward}");
             }
         });
         public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
         {
             if (RegisterBackwardHotkey())
             {
-                Window.ShowSuccess($"注册热键{PreviewSetting.SwitchHotkey_Backward}成功");
+                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
             else
             {
-                Window.ShowError($"注册热键{PreviewSetting.SwitchHotkey_Backward}失败，请检查是否按键冲突、按键名称是否规范");
+                Window.ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
         });
 
@@ -644,7 +644,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                         else
                         {
-                            Window.ShowMsg("设置名称为空，将不保存设置");
+                            Window.ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
                         }
                     }
                 }
@@ -708,7 +708,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                Window.ShowError("不存在目标进程窗口");
+                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
             }
         }
         public ICommand NewSettingCommand => new RelayCommand(() =>
@@ -758,7 +758,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(!_runningDic.NotNullOrEmpty())
             {
-                Window.ShowError("无激活窗口", true);
+                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NoRunning"), true);
             }
             else
             {
@@ -766,7 +766,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     window.SetSize(PreviewSetting.UniformWidth, PreviewSetting.UniformHeight);
                 }
-                Window.ShowSuccess("已应用窗口尺寸");
+                Window.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_SetUniformSizeSuccessful"));
                 SaveSetting();
             }
         });

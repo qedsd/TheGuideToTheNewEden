@@ -30,14 +30,14 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
-                    PlaceholderText="多个关键词时，使用符号,分割"
+                    PlaceholderText="{StaticResource GamePreviewMgrPage_ProcessKeywords_PlaceholderText}"
                     Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}"
-                    ToolTipService.ToolTip="进程关键词" />
+                    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ProcessKeywords_Tip}" />
                 <Button
                     Grid.Column="1"
                     VerticalAlignment="Stretch"
                     Command="{x:Bind VM.RefreshProcessListCommand}"
-                    ToolTipService.ToolTip="刷新列表">
+                    ToolTipService.ToolTip="{StaticResource General_Refresh}">
                     <Button.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE149;" />
                     </Button.Content>
@@ -101,7 +101,7 @@
                                 Fill="{ThemeResource SystemAccentColor}"
                                 RadiusX="10"
                                 RadiusY="10"
-                                ToolTipService.ToolTip="预览中"
+                                ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_Running_Tip}"
                                 Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                         </Grid>
                     </DataTemplate>
@@ -117,7 +117,7 @@
                 <TextBlock
                     Grid.Column="1"
                     Margin="8,0"
-                    Text="游戏列表" />
+                    Text="{StaticResource GamePreviewMgrPage_ProcessList}" />
                 <Rectangle
                     Grid.Column="2"
                     Height="1"
@@ -131,14 +131,14 @@
                 <SplitButton
                     Height="32"
                     Command="{x:Bind VM.StartAllCommand}"
-                    ToolTipService.ToolTip="开始全部">
+                    ToolTipService.ToolTip="{StaticResource General_StartAll}">
                     <SplitButton.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE102;" />
                     </SplitButton.Content>
                     <SplitButton.Flyout>
                         <Flyout>
                             <StackPanel>
-                                <CheckBox Content="开始无保存设置的进程" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
+                                <CheckBox Content="{StaticResource GamePreviewMgrPage_StartAllWithNoneSetting}" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
                             </StackPanel>
                         </Flyout>
                     </SplitButton.Flyout>
@@ -148,7 +148,7 @@
                     Height="32"
                     Margin="4,0"
                     Command="{x:Bind VM.StopAllCommand}"
-                    ToolTipService.ToolTip="暂停全部"
+                    ToolTipService.ToolTip="{StaticResource General_StopAll}"
                     Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                     <Button.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE103;" />
@@ -157,7 +157,7 @@
                 <Button
                     Grid.Column="2"
                     Height="32"
-                    ToolTipService.ToolTip="全局设置">
+                    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_GlobalSetting}">
                     <Button.Content>
                         <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
                     </Button.Content>
@@ -181,7 +181,7 @@
                                             Grid.Column="1"
                                             Margin="8,0"
                                             Orientation="Horizontal">
-                                            <TextBlock Text="切换快捷键" />
+                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey}" />
                                             <Button
                                                 Width="24"
                                                 Height="24"
@@ -191,7 +191,7 @@
                                                 Content="!">
                                                 <Button.Flyout>
                                                     <Flyout>
-                                                        <TextBlock Text="按下快捷键时，按激活顺序依次切换显示相应的游戏窗口" />
+                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey_Tip}" />
                                                     </Flyout>
                                                 </Button.Flyout>
                                             </Button>
@@ -211,7 +211,7 @@
                                         <TextBox
                                             Grid.Column="1"
                                             Margin="4,0"
-                                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
+                                            PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
                                             Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
                                         <Button
                                             Grid.Column="2"
@@ -228,7 +228,7 @@
                                         <TextBox
                                             Grid.Column="1"
                                             Margin="4,0"
-                                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
+                                            PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
                                             Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
                                         <Button
                                             Grid.Column="2"
@@ -259,7 +259,7 @@
                                             Grid.Column="1"
                                             Margin="8,0"
                                             Orientation="Horizontal">
-                                            <TextBlock Text="统一窗口大小" />
+                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize}" />
                                             <Button
                                                 Width="24"
                                                 Height="24"
@@ -269,7 +269,7 @@
                                                 Content="!">
                                                 <Button.Flyout>
                                                     <Flyout>
-                                                        <TextBlock Text="将所有的预览窗口设置为指定的大小" />
+                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize_Tip}" />
                                                     </Flyout>
                                                 </Button.Flyout>
                                             </Button>
@@ -287,8 +287,8 @@
                                         </Grid.ColumnDefinitions>
                                         <NumberBox
                                             Minimum="1"
-                                            PlaceholderText="窗口宽度"
-                                            ToolTipService.ToolTip="窗口宽度"
+                                            PlaceholderText="{StaticResource GamePreviewMgrPage_UniformWidth}"
+                                            ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformWidth}"
                                             Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
                                         <TextBlock
                                             Grid.Column="1"
@@ -298,15 +298,15 @@
                                         <NumberBox
                                             Grid.Column="2"
                                             Minimum="1"
-                                            PlaceholderText="窗口高度"
-                                            ToolTipService.ToolTip="窗口高度"
+                                            PlaceholderText="{StaticResource GamePreviewMgrPage_UniformHeight}"
+                                            ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformHeight}"
                                             Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
                                     </Grid>
                                     <Button
                                         Margin="0,8,0,0"
                                         HorizontalAlignment="Stretch"
                                         Command="{x:Bind VM.SetUniformSizeCommand}"
-                                        Content="应用" />
+                                        Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                 </StackPanel>
                                 <StackPanel Grid.Row="2" Margin="0,8,0,16">
                                     <Grid Margin="8,8">
@@ -320,7 +320,7 @@
                                             Grid.Column="1"
                                             Margin="8,0"
                                             Orientation="Horizontal">
-                                            <TextBlock Text="自动对齐窗口" />
+                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayout}" />
                                             <Button
                                                 Width="24"
                                                 Height="24"
@@ -332,7 +332,7 @@
                                                     <Flyout>
                                                         <TextBlock
                                                             Width="300"
-                                                            Text="以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐"
+                                                            Text="{StaticResource GamePreviewMgrPage_AutoLayoutTip}"
                                                             TextWrapping="Wrap" />
                                                     </Flyout>
                                                 </Button.Flyout>
@@ -382,7 +382,7 @@
                                         </Grid.ColumnDefinitions>
                                         <ComboBox
                                             Width="140"
-                                            Header="对齐方式"
+                                            Header="{StaticResource GamePreviewMgrPage_AutoLayout_Mode}"
                                             SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayout, Mode=TwoWay}">
                                             <ComboBoxItem>
                                                 <StackPanel Orientation="Horizontal">
@@ -418,7 +418,7 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             Width="140"
-                                            Header="对齐位置"
+                                            Header="{StaticResource GamePreviewMgrPage_AutoLayoutAnchor}"
                                             SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
                                             Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=0}">
                                             <ComboBoxItem>
@@ -453,7 +453,7 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             Width="140"
-                                            Header="对齐位置"
+                                            Header="{StaticResource GamePreviewMgrPage_AutoLayoutAnchor}"
                                             SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
                                             Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=1}">
                                             <ComboBoxItem>
@@ -488,7 +488,7 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             Width="140"
-                                            Header="对齐位置"
+                                            Header="{StaticResource GamePreviewMgrPage_AutoLayoutAnchor}"
                                             SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
                                             Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=2}">
                                             <ComboBoxItem>
@@ -523,7 +523,7 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             Width="140"
-                                            Header="对齐位置"
+                                            Header="{StaticResource GamePreviewMgrPage_AutoLayoutAnchor}"
                                             SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
                                             Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=3}">
                                             <ComboBoxItem>
@@ -560,7 +560,7 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock VerticalAlignment="Center" Text="对齐间隔" />
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_AutoLayoutSpan}" />
                                         <NumberBox
                                             Grid.Column="1"
                                             Margin="16,0,0,0"
@@ -580,7 +580,7 @@
                                     <Button
                                         HorizontalAlignment="Stretch"
                                         Command="{x:Bind VM.SetAutoLayoutCommand}"
-                                        Content="应用" />
+                                        Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                 </StackPanel>
                             </Grid>
                         </Flyout>
@@ -610,7 +610,7 @@
                     </ComboBox>
 
                     <Grid Margin="0,8">
-                        <CheckBox Content="游戏窗口活动时隐藏预览窗口" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
+                        <CheckBox Content="{StaticResource GamePreviewMgrPage_HideOnForeground}" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
                     </Grid>
 
                     <Grid Margin="0,8" Visibility="{x:Bind VM.Setting.HideOnForeground, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
@@ -618,7 +618,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <CheckBox Content="激活窗口时高亮" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" />
+                        <CheckBox Content="{StaticResource GamePreviewMgrPage_Highlight}" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" />
                         <StackPanel
                             Grid.Row="1"
                             Margin="0,4,0,0"
@@ -735,7 +735,7 @@
 
                     <Grid Margin="0,8">
                         <Slider
-                            Header="窗口透明度"
+                            Header="{StaticResource GamePreviewMgrPage_OverlapOpacity}"
                             Maximum="100"
                             Minimum="1"
                             Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
@@ -743,8 +743,8 @@
 
                     <Grid Margin="0,8">
                         <TextBox
-                            Header="激活快捷键"
-                            PlaceholderText="组合键使用+拼接 eg： Ctrl+1"
+                            Header="{StaticResource GamePreviewMgrPage_ActiveHotKey}"
+                            PlaceholderText="{StaticResource GamePreviewMgrPage_ActiveHotKey_Tip}"
                             Text="{x:Bind VM.Setting.HotKey, Mode=TwoWay}" />
                     </Grid>
 
@@ -768,7 +768,7 @@
                 <TextBlock
                     Grid.Column="1"
                     Margin="8,0"
-                    Text="预览设置" />
+                    Text="{StaticResource GamePreviewMgrPage_PreviewItemSetting}" />
                 <Rectangle
                     Grid.Column="2"
                     Height="1"
@@ -780,13 +780,13 @@
                         HorizontalAlignment="Center"
                         Click="Start_Click"
                         Icon="Play"
-                        Label="开始"
+                        Label="{StaticResource General_Start}"
                         Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
                     <AppBarButton
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.StopCommand}"
                         Icon="Stop"
-                        Label="停止"
+                        Label="{StaticResource General_Stop}"
                         Visibility="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     <AppBarButton
                         HorizontalAlignment="Center"

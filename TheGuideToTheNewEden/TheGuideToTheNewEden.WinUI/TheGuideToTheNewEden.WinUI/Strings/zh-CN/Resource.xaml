@@ -478,6 +478,47 @@
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode1">模式1（WinUI带标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode2">模式2（WinUI无标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode3">模式3（WPF无标题栏）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">注册热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">注册向后热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">注册向前热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeySuccessful">注册向后热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeySuccessful">注册向前热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_EmptyCharacterName">未识别到角色名称，将不保存设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_CannotFindTargetWindow">不存在目标进程窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NoRunning">无激活窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetUniformSizeSuccessful">已应用窗口尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_Tip">进程关键词</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_PlaceholderText">多个关键词时，使用符号,分割</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Running_Tip">预览中</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessList">进程列表</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始无保存设置的进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize">统一窗口大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">将所有的预览窗口设置为指定的大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformWidth">窗口宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformHeight">窗口高度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Apply">应用</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout">自动对齐窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutTip">以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout_Mode">对齐方式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutAnchor">对齐位置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutSpan">对齐间隔</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HideOnForeground">游戏窗口活动时隐藏预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Highlight">激活窗口时高亮</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">窗口透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey">激活快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
@@ -539,15 +580,6 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
-
-    <!--  TestSettingPage  -->
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
-    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
 
     <!--  LinksPage  -->
     <x:String x:Key="LinksPage_Name">名字</x:String>
