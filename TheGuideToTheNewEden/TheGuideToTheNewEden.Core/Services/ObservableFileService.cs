@@ -113,9 +113,14 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 if(item.Value.IsReplaced(file))
                 {
-                    ItemsDic.Remove(item.Key);
-                    ItemsDic.Add(file,item.Value);
-                    item.Value.Update();
+                    if (FileWatcherDic.TryGetValue(Path.GetDirectoryName(file), out var watcher))
+                    {
+                        watcher.RemoveFile(item.Key);
+                        watcher.AddFile(file);
+                        ItemsDic.Remove(item.Key);
+                        ItemsDic.Add(file, item.Value);
+                        item.Value.Update();
+                    }
                     break;
                 }
                 item.Value.CreatedFile(file);

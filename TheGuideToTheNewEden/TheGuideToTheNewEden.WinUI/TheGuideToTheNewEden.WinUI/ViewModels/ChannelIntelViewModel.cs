@@ -121,7 +121,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                Characters = null;
+                Characters = new ObservableCollection<ChannelIntelListener>();
             }
         }
         private async Task LoadListenerChannelDic()
