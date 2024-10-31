@@ -125,7 +125,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            VM.Setting.Name = SettingNameBox.Text;//只在开始后才保存修改的名字
+            //VM.Setting.Name = SettingNameBox.Text;//只在开始后才保存修改的名字
             VM.StartCommand.Execute(null);
         }
 
@@ -140,7 +140,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void SettingList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SettingListFlyout.Hide();
+            //SettingListFlyout.Hide();
         }
 
         private void ProcessList_DragEnter(object sender, DragEventArgs e)
