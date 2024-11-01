@@ -169,84 +169,133 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <StackPanel>
-                                    <Grid Margin="8,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            Margin="8,0"
-                                            Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey}" />
-                                            <Button
-                                                Width="24"
+                                <Grid Margin="0,10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
+                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey}" VerticalAlignment="Center"
+                                                   FontWeight="Bold"/>
+                                        <Button Width="24"
                                                 Height="24"
                                                 Margin="4,0,0,0"
                                                 Padding="0"
                                                 BorderThickness="0"
                                                 Content="!">
-                                                <Button.Flyout>
-                                                    <Flyout>
-                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey_Tip}" />
-                                                    </Flyout>
-                                                </Button.Flyout>
-                                            </Button>
-                                        </StackPanel>
-                                        <Rectangle
-                                            Grid.Column="2"
-                                            Height="1"
-                                            Fill="{ThemeResource SystemAccentColor}" />
-                                    </Grid>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
-                                        <TextBox
-                                            Grid.Column="1"
-                                            Margin="4,0"
-                                            PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
-                                            Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
-                                        <Button
-                                            Grid.Column="2"
-                                            Command="{x:Bind VM.SetForwardHotkeyCommand}"
-                                            Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
-                                    </Grid>
-                                    <Grid Margin="0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
-                                        <TextBox
-                                            Grid.Column="1"
-                                            Margin="4,0"
-                                            PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
-                                            Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
-                                        <Button
-                                            Grid.Column="2"
-                                            Command="{x:Bind VM.SetBackwardHotkeyCommand}"
-                                            Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
-                                    </Grid>
-                                    <ComboBox
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey_Tip}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
+                                                <TextBox
+Grid.Column="1"
+Margin="4,0"
+PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
+Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
+                                                <Button
+Grid.Column="2"
+Command="{x:Bind VM.SetForwardHotkeyCommand}"
+Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
+                                            </Grid>
+                                            <Grid Margin="0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
+                                                <TextBox
+Grid.Column="1"
+Margin="4,0"
+PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
+Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
+                                                <Button
+Grid.Column="2"
+Command="{x:Bind VM.SetBackwardHotkeyCommand}"
+Content="{StaticResource GamePreviewMgrPage_SetHotKey}" />
+                                            </Grid>
+                                            <ComboBox
                                         Margin="0,8,0,0"
                                         HorizontalAlignment="Stretch"
                                         Header="{StaticResource GamePreviewMgrPage_SwitchMode}"
                                         SelectedIndex="{x:Bind VM.PreviewSetting.SetForegroundWindowMode, Mode=TwoWay}">
-                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_0}" />
-                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_1}" />
-                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_2}" />
-                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_3}" />
-                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_4}" />
-                                    </ComboBox>
-                                </StackPanel>
+                                                <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_0}" />
+                                                <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_1}" />
+                                                <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_2}" />
+                                                <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_3}" />
+                                                <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_4}" />
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                                <Grid Margin="0,10" Grid.Row="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
+                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize}" VerticalAlignment="Center"
+                                                   FontWeight="Bold"/>
+                                        <Button Width="24"
+                                                Height="24"
+                                                Margin="4,0,0,0"
+                                                Padding="0"
+                                                BorderThickness="0"
+                                                Content="!">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize_Tip}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <NumberBox
+        Minimum="1"
+        PlaceholderText="{StaticResource GamePreviewMgrPage_UniformWidth}"
+        ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformWidth}"
+        Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
+                                            <TextBlock
+        Grid.Column="1"
+        Margin="4,0"
+        VerticalAlignment="Center"
+        Text="×" />
+                                            <NumberBox
+        Grid.Column="2"
+        Minimum="1"
+        PlaceholderText="{StaticResource GamePreviewMgrPage_UniformHeight}"
+        ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformHeight}"
+        Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
+                                        </Grid>
+                                        <Button Grid.Row="1"
+    Margin="0,8,0,0"
+    HorizontalAlignment="Stretch"
+    Command="{x:Bind VM.SetUniformSizeCommand}"
+    Content="{StaticResource GamePreviewMgrPage_Apply}" />
+                                    </Grid>
+                                </Grid>
                                 <StackPanel Grid.Row="1" Margin="0,24">
                                     <Grid Margin="8,8">
                                         <Grid.ColumnDefinitions>
