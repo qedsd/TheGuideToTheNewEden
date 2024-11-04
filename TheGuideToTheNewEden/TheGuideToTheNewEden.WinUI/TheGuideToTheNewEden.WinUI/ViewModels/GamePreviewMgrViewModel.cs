@@ -1193,11 +1193,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         void LoadDefaultSetting(out PreviewItem setting, ProcessInfo processInfo, string name)
         {
-            setting = new PreviewItem()
+            if (PreviewSetting.StartAllWithNoneSetting)
             {
-                Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-                UserName = processInfo.GetUserName()
-            };
+                setting = new PreviewItem()
+                {
+                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
+                    UserName = processInfo.GetUserName()
+                };
+            }
+            else
+            {
+                setting = null;
+            }
+                
             //if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
             //{
             //    //加载第一个不在运行中的配置

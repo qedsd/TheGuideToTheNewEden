@@ -37,6 +37,7 @@
     <x:String x:Key="General_Name">名称</x:String>
     <x:String x:Key="General_Quantity">数量</x:String>
     <x:String x:Key="General_Refresh">刷新</x:String>
+    <x:String x:Key="General_RefreshList">刷新列表</x:String>
     <x:String x:Key="General_Update">更新</x:String>
     <x:String x:Key="General_RemoveSelected">删除选中</x:String>
     <x:String x:Key="General_Remove">删除</x:String>
@@ -474,7 +475,7 @@
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">行/列最大窗口个数</x:String>
     <x:String x:Key="GamePreviewMgrPage_RespondGlobalHotKey">响应全局切换快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ShowPreviewWindow">显示预览窗口</x:String>
-    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">显示预览窗口模式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">显示模式</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode1">模式1（WinUI带标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode2">模式2（WinUI无标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode3">模式3（WPF无标题栏）</x:String>
@@ -498,7 +499,7 @@
     <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_PlaceholderText">多个关键词时，使用符号,分割</x:String>
     <x:String x:Key="GamePreviewMgrPage_Running_Tip">预览中</x:String>
     <x:String x:Key="GamePreviewMgrPage_ProcessList">进程列表</x:String>
-    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始无保存设置的进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始全部时包含未开始过的进程</x:String>
     <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>
@@ -514,12 +515,17 @@
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutAnchor">对齐位置</x:String>
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutSpan">对齐间隔</x:String>
     <x:String x:Key="GamePreviewMgrPage_HideOnForeground">游戏窗口活动时隐藏预览窗口</x:String>
-    <x:String x:Key="GamePreviewMgrPage_Highlight">激活窗口时高亮</x:String>
-    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">窗口透明度</x:String>
-    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey">激活快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">预览窗口高亮</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">游戏窗口活动时高亮预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
-
+    <x:String x:Key="GamePreviewMgrPage_StartAllSetting">开始全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindow">预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HotKeySetting">激活快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightBorder">边框宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
     <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
