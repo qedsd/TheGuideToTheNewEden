@@ -1,18 +1,25 @@
 ﻿TypeID,Upgrade Name,Power,Workforce,Superionic Ice / Hour,Magmatic Gas / Hour
-81623,Supercapital Construction Facilities,1750,17500,145,0
-81621,Advanced Logistics Network,1250,25000,40,0
-81619,Cynosural Suppression,500,5000,0,2480
-81615,Cynosural Navigation,250,1500,0,1095
-82499,Minor Threat Detection Array 1,270,1890,0,0
-82500,Minor Threat Detection Array 2,550,3850,0,0
-82492,Minor Threat Detection Array 3,850,5950,0,0
-82496,Major Threat Detection Array 1,450,2700,0,0
+81623,Supercapital Construction Facilities,1750,17500,90,0
+81621,Advanced Logistics Network,500,18100,25,0
+81619,Cynosural Suppression,250,4500,0,205
+81615,Cynosural Navigation,250,1500,0,205
+82499,Minor Threat Detection Array 1,200,1800,0,0
+82500,Minor Threat Detection Array 2,500,3800,0,0
+82492,Minor Threat Detection Array 3,700,5400,0,0
+82496,Major Threat Detection Array 1,400,2700,0,0
 82497,Major Threat Detection Array 2,900,5400,0,0
-82498,Major Threat Detection Array 3,1450,8700,0,0
-82592,Tritanium Prospecting Array,1750,14000,0,0
-82588,Pyerite Prospecting Array,1750,14000,0,0
-82590,Mexallon Prospecting Array,1750,14000,0,0
-82580,Isogen Prospecting Array,1750,14000,0,0
-82582,Nocxium Prospecting Array,1750,14000,0,0
-82584,Zydrine Prospecting Array,1750,14000,0,0
-82586,Megacyte Prospecting Arra,1750,14000,0,0
+82498,Major Threat Detection Array 3,1300,7300,0,0
+82579,Tritanium Prospecting Array 1,500,6400,0,0
+82592,Tritanium Prospecting Array 2,1350,12700,0,0
+82589,Pyerite Prospecting Array 1,500,6400,0,0
+82588,Pyerite Prospecting Array 2,1350,12700,0,0
+82591,Mexallon Prospecting Array 1,500,6400,0,0
+82590,Mexallon Prospecting Array 2,1350,12700,0,0
+82581,Isogen Prospecting Array 1,500,6400,0,0
+82580,Isogen Prospecting Array 2,1350,12700,0,0
+82583,Nocxium Prospecting Array 1,500,6400,0,0
+82582,Nocxium Prospecting Array 2,1350,12700,0,0
+82585,Zydrine Prospecting Array 1,500,6400,0,0
+82584,Zydrine Prospecting Array 2,1350,12700,0,0
+82587,Megacyte Prospecting Array 1,500,6400,0,0
+82586,Megacyte Prospecting Array 2,1350,12700,0,0
