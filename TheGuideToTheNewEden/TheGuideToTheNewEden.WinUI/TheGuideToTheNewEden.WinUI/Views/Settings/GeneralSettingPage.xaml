@@ -58,7 +58,10 @@
 
             <controls:ExpandableSettingControl Title="{StaticResource Setting_LocalDb_Title}" Description="{StaticResource Setting_LocalDb_Description}">
                 <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="{StaticResource GeneralSettingPage_NeedLocalization}"
+                              IsChecked="{x:Bind VM.NeedLocalization, Mode=TwoWay}" />
                     <ComboBox
+                        Margin="16,0,0,0"
                         Width="128"
                         ItemsSource="{x:Bind VM.LocalDbs}"
                         SelectedItem="{x:Bind VM.SelectedLocalDb, Mode=TwoWay}">
@@ -68,10 +71,6 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <CheckBox
-                        Margin="8,0,0,0"
-                        Content="{StaticResource GeneralSettingPage_NeedLocalization}"
-                        IsChecked="{x:Bind VM.NeedLocalization, Mode=TwoWay}" />
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
