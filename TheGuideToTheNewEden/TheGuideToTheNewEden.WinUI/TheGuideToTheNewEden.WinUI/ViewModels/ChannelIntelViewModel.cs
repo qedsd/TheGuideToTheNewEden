@@ -192,6 +192,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             catch (Exception ex)
             {
+                Services.WarningService.Current.Remove(channelIntel.Listener);
                 Core.Log.Error(ex);
                 Window.ShowError(ex.Message);
                 return false;

@@ -80,11 +80,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     window.Dispose();
                 }
                 WarningWindows.Remove(listener);
-                //if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
-                //{
-                //    mediaPlayer.Dispose();
-                //}
-                //MediaPlayers.Remove(listener);
+                if (SoundNotifyItems.TryGetValue(listener, out var item))
+                {
+                    item.Dispose();
+                }
+                SoundNotifyItems.Remove(listener);
             }
             return true;
         }
