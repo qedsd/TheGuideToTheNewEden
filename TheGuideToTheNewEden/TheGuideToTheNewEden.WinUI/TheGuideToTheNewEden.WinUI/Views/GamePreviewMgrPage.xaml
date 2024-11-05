@@ -135,7 +135,7 @@
                                                 </Button.Flyout>
                                             </Button>
                                         </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                                             <StackPanel>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -209,7 +209,7 @@
                                                 </Button.Flyout>
                                             </Button>
                                         </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
@@ -265,7 +265,7 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                                 </Button.Flyout>
                                             </Button>
                                         </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                                             <Grid.Resources>
                                                 <Style x:Key="MainItemGrid" TargetType="Grid">
                                                     <Setter Property="Margin" Value="2" />
@@ -507,7 +507,7 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                             <TextBlock Text="{StaticResource GamePreviewMgrPage_OtherSetting}" VerticalAlignment="Center"
            FontWeight="Bold"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                                             <CheckBox Content="{StaticResource GamePreviewMgrPage_StartAllWithNoneSetting}" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -550,7 +550,7 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                             <TextBlock Text="{StaticResource GamePreviewMgrPage_PreviewWindow}" VerticalAlignment="Center"
            FontWeight="Bold"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                             <CheckBox Content="{StaticResource GamePreviewMgrPage_ShowPreviewWindow}" IsChecked="{x:Bind VM.Setting.ShowPreviewWindow, Mode=TwoWay}" />
                             <Grid Margin="0,8">
                                 <Grid.ColumnDefinitions>
@@ -594,7 +594,7 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                             <TextBlock Text="{StaticResource GamePreviewMgrPage_HighlightPreviewWindow}" VerticalAlignment="Center"
 FontWeight="Bold"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -719,7 +719,7 @@ HorizontalAlignment="Stretch">
                             <TextBlock Text="{StaticResource GamePreviewMgrPage_HotKeySetting}" VerticalAlignment="Center"
             FontWeight="Bold"/>
                         </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="LightGray" BorderThickness="1">
+                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>

@@ -21,6 +21,7 @@
                 x:Key="ItemContentBg"
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
+            <SolidColorBrush x:Key="ThemeBorderBrush">Gray</SolidColorBrush>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Color x:Key="ThemeMainColor">White</Color>
@@ -49,6 +50,7 @@
                 x:Key="ItemContentBg"
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
+            <SolidColorBrush x:Key="ThemeBorderBrush">LightGray</SolidColorBrush>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <SolidColorBrush x:Key="SystemSecurityForeground1" Color="#24d7f9" />
