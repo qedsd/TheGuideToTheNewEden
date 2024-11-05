@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI
                 ThemeService = new WinUICommunity.ThemeService();
                 ThemeService.Initialize(this, false);
                 ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
-                ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
+                ThemeService.ConfigBackdrop();
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
@@ -43,6 +44,7 @@ namespace TheGuideToTheNewEden.WinUI
             SetTitleBar(AppTitleBar);
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
+            BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
         }
 
         public object MainContent
@@ -234,7 +236,7 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
-            if (BackdropSelectorService.Value == WinUICommunity.BackdropType.None)
+            if (BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.None)
             {
                 switch (theme)
                 {
@@ -256,15 +258,18 @@ namespace TheGuideToTheNewEden.WinUI
             }
         }
 
-        private void BackdropSelectorService_OnBackdropTypeChanged(object sender, WinUICommunity.BackdropType e)
+        private void BackdropSelectorService_OnBackdropTypeChanged(object sender, BackdropSelectorService.BackdropType e)
         {
-            if(e == WinUICommunity.BackdropType.None)
+            switch(e)
             {
-                ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
-            }
-            else
-            {
-                MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);
+                case BackdropSelectorService.BackdropType.None: ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);break;
+                case BackdropSelectorService.BackdropType.CustomPicture:
+                    {
+                        ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+
+                    }
+                    break;
+                default: MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);break;
             }
         }
     }

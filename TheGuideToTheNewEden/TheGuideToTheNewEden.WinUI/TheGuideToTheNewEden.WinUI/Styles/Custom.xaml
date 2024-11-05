@@ -197,9 +197,8 @@
         TargetType="Button">
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style x:Key="StretchExpander"
-           TargetType="Expander">
-        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Style x:Key="StretchExpander" TargetType="Expander">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
 </ResourceDictionary>

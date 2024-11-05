@@ -12,6 +12,19 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
+        <Grid Grid.RowSpan="2">
+            <Grid.Background>
+                <ImageBrush
+                    x:Name="BannerImage"
+                    Opacity="1"
+                    Stretch="UniformToFill" />
+            </Grid.Background>
+            <Grid>
+                <Grid.Background>
+                    <SolidColorBrush Color="#B3FFFFFF" />
+                </Grid.Background>
+            </Grid>
+        </Grid>
         <Grid
             x:Name="AppTitleBarGrid"
             Height="32"

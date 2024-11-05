@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        private int selectedBackdropIndex = (int)BackdropSelectorService.Value;
+        private int selectedBackdropIndex = (int)BackdropSelectorService.BackdropTypeValue;
         public int SelectedBackdropIndex
         {
             get => selectedBackdropIndex;
@@ -46,6 +46,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 selectedBackdropIndex = value;
                 BackdropSelectorService.Set(selectedBackdropIndex);
+                CustomBackdropPicture = value == (int)BackdropSelectorService.BackdropType.CustomPicture;
+            }
+        }
+
+        private bool _customBackdropPicture = BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture;
+        public bool CustomBackdropPicture
+        {
+            get => _customBackdropPicture;
+            set
+            {
+                _customBackdropPicture = value;
+            }
+        }
+
+        private Windows.UI.Color _customPictureOverlapColor = Microsoft.UI.Colors.Transparent;
+        public Windows.UI.Color CustomPictureOverlapColor
+        {
+            get => _customPictureOverlapColor;
+            set
+            {
+                if(SetProperty(ref _customPictureOverlapColor, value))
+                {
+                    BackdropSelectorService.SetCustomPictureOverlapColor(value.ToString());
+                }
             }
         }
 

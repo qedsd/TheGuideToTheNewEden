@@ -32,15 +32,57 @@
 
             <controls:ExpandableSettingControl Title="{StaticResource Setting_Backdrop_Title}">
                 <StackPanel Orientation="Horizontal">
-                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedBackdropIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="None" />
+                    <ComboBox
+                        Width="128"
+                        HorizontalAlignment="Right"
+                        SelectedIndex="{x:Bind VM.SelectedBackdropIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{StaticResource Setting_Backdrop_None}" />
                         <ComboBoxItem Content="Mica" />
                         <ComboBoxItem Content="MicaAlt" />
                         <ComboBoxItem Content="DesktopAcrylic" />
                         <ComboBoxItem Content="AcrylicThin" />
                         <ComboBoxItem Content="AcrylicBase" />
-                        <ComboBoxItem Content="Transparent" />
+                        <ComboBoxItem Content="{StaticResource Setting_Backdrop_Transparent}" />
+                        <ComboBoxItem Content="{StaticResource Setting_Backdrop_CustomPicture}" />
                     </ComboBox>
+                    <StackPanel
+                        Margin="16,0,0,0"
+                        Orientation="Horizontal"
+                        Visibility="{x:Bind VM.CustomBackdropPicture, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource Setting_Backdrop_CustomPicture_File}" />
+                            <TextBox Width="200" Margin="8,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource Setting_Backdrop_CustomPicture_OverlapColor}" />
+                            <Button
+                                Grid.Column="1"
+                                Margin="16,0,0,0"
+                                Padding="4"
+                                HorizontalAlignment="Stretch">
+                                <Button.Flyout>
+                                    <Flyout Placement="Left">
+                                        <ColorPicker
+                                            ColorSpectrumShape="Box"
+                                            IsAlphaEnabled="True"
+                                            IsAlphaSliderVisible="True"
+                                            IsAlphaTextInputVisible="True"
+                                            IsColorChannelTextInputVisible="True"
+                                            IsColorSliderVisible="True"
+                                            IsHexInputVisible="True"
+                                            IsMoreButtonVisible="False"
+                                            Color="{x:Bind VM.CustomPictureOverlapColor, Mode=TwoWay}" />
+                                    </Flyout>
+                                </Button.Flyout>
+                                <Button.Content>
+                                    <Rectangle
+                                        Width="128"
+                                        Height="24"
+                                        Fill="{x:Bind VM.CustomPictureOverlapColor, Mode=OneWay}" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </controls:ExpandableSettingControl>
 
@@ -58,11 +100,10 @@
 
             <controls:ExpandableSettingControl Title="{StaticResource Setting_LocalDb_Title}" Description="{StaticResource Setting_LocalDb_Description}">
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox Content="{StaticResource GeneralSettingPage_NeedLocalization}"
-                              IsChecked="{x:Bind VM.NeedLocalization, Mode=TwoWay}" />
+                    <CheckBox Content="{StaticResource GeneralSettingPage_NeedLocalization}" IsChecked="{x:Bind VM.NeedLocalization, Mode=TwoWay}" />
                     <ComboBox
-                        Margin="16,0,0,0"
                         Width="128"
+                        Margin="16,0,0,0"
                         ItemsSource="{x:Bind VM.LocalDbs}"
                         SelectedItem="{x:Bind VM.SelectedLocalDb, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
