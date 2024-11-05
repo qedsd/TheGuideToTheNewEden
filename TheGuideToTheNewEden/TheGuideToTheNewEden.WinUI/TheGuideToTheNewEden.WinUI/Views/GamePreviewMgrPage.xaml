@@ -114,102 +114,66 @@
                         <Flyout>
                             <ScrollViewer>
                                 <StackPanel Width="320">
-                                    <Grid Margin="0,0,0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey}" VerticalAlignment="Center"
-                                               FontWeight="Bold"/>
-                                            <Button Width="24"
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Content="!">
-                                                <Button.Flyout>
-                                                    <Flyout>
-                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchHotkey_Tip}" />
-                                                    </Flyout>
-                                                </Button.Flyout>
-                                            </Button>
-                                        </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
-                                            <StackPanel>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
-                                                    <TextBox Grid.Column="1"
-                                                     Margin="8,0,0,0"
-                                                     PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
-                                                     Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
-                                                    <Button Grid.Column="2"
-                                                    Command="{x:Bind VM.SetForwardHotkeyCommand}"
-                                                    Content="{StaticResource GamePreviewMgrPage_Apply}" />
-                                                </Grid>
-                                                <Grid Margin="0,8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
-                                                    <TextBox Grid.Column="1"
-                                                     Margin="8,0,0,0"
-                                                     PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
-                                                     Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
-                                                    <Button Grid.Column="2"
-                                                    Command="{x:Bind VM.SetBackwardHotkeyCommand}"
-                                                    Content="{StaticResource GamePreviewMgrPage_Apply}" />
-                                                </Grid>
-                                                <Grid Margin="0,8,0,0">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchMode}" VerticalAlignment="Center"/>
-                                                    <ComboBox Grid.Column="1"
-                                                      Margin="8,0,0,0"
-                                                      HorizontalAlignment="Stretch"
-                                                      SelectedIndex="{x:Bind VM.PreviewSetting.SetForegroundWindowMode, Mode=TwoWay}">
-                                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_0}" />
-                                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_1}" />
-                                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_2}" />
-                                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_3}" />
-                                                        <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_4}" />
-                                                    </ComboBox>
-                                                </Grid>
+                                    <Expander Header="{StaticResource GamePreviewMgrPage_SwitchHotkey}"
+                                              Margin="0,0,0,4"
+                                              IsExpanded="True"
+                                              Style="{StaticResource StretchExpander}">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
+                                                <TextBox Grid.Column="1"
+                                                         Margin="8,0,0,0"
+                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
+                                                         Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
+                                                <Button Grid.Column="2"
+                                                        Command="{x:Bind VM.SetForwardHotkeyCommand}"
+                                                        Content="{StaticResource GamePreviewMgrPage_Apply}" />
+                                            </Grid>
+                                            <Grid Margin="0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
+                                                <TextBox Grid.Column="1"
+                                                         Margin="8,0,0,0"
+                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
+                                                         Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
+                                                <Button Grid.Column="2"
+                                                        Command="{x:Bind VM.SetBackwardHotkeyCommand}"
+                                                        Content="{StaticResource GamePreviewMgrPage_Apply}" />
+                                            </Grid>
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{StaticResource GamePreviewMgrPage_SwitchMode}" VerticalAlignment="Center"/>
+                                                <ComboBox Grid.Column="1"
+                                                          Margin="8,0,0,0"
+                                                          HorizontalAlignment="Stretch"
+                                                          SelectedIndex="{x:Bind VM.PreviewSetting.SetForegroundWindowMode, Mode=TwoWay}">
+                                                    <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_0}" />
+                                                    <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_1}" />
+                                                    <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_2}" />
+                                                    <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_3}" />
+                                                    <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_SwitchMode_4}" />
+                                                </ComboBox>
+                                            </Grid>
 
-                                            </StackPanel>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid Margin="0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize}" VerticalAlignment="Center"
-                                               FontWeight="Bold"/>
-                                            <Button Width="24"
-                                            Height="24"
-                                            Margin="4,0,0,0"
-                                            Padding="0"
-                                            BorderThickness="0"
-                                            Content="!">
-                                                <Button.Flyout>
-                                                    <Flyout>
-                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_UniformSize_Tip}" />
-                                                    </Flyout>
-                                                </Button.Flyout>
-                                            </Button>
                                         </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                                    </Expander>
+                                    <Expander Header="{StaticResource GamePreviewMgrPage_UniformSize}"
+                                              Margin="0,4"
+                                              IsExpanded="True"
+                                              Style="{StaticResource StretchExpander}">
+                                        <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
@@ -221,51 +185,34 @@
                                                     <ColumnDefinition />
                                                 </Grid.ColumnDefinitions>
                                                 <NumberBox
-    Minimum="1"
-    PlaceholderText="{StaticResource GamePreviewMgrPage_UniformWidth}"
-    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformWidth}"
-    Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
+                                                    Minimum="1"
+                                                    PlaceholderText="{StaticResource GamePreviewMgrPage_UniformWidth}"
+                                                    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformWidth}"
+                                                    Value="{x:Bind VM.PreviewSetting.UniformWidth, Mode=TwoWay}" />
                                                 <TextBlock
-    Grid.Column="1"
-    Margin="4,0"
-    VerticalAlignment="Center"
-    Text="×" />
+                                                    Grid.Column="1"
+                                                    Margin="4,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="×" />
                                                 <NumberBox
-    Grid.Column="2"
-    Minimum="1"
-    PlaceholderText="{StaticResource GamePreviewMgrPage_UniformHeight}"
-    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformHeight}"
-    Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
+                                                    Grid.Column="2"
+                                                    Minimum="1"
+                                                    PlaceholderText="{StaticResource GamePreviewMgrPage_UniformHeight}"
+                                                    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_UniformHeight}"
+                                                    Value="{x:Bind VM.PreviewSetting.UniformHeight, Mode=TwoWay}" />
                                             </Grid>
                                             <Button Grid.Row="1"
-Margin="0,8,0,0"
-HorizontalAlignment="Stretch"
-Command="{x:Bind VM.SetUniformSizeCommand}"
-Content="{StaticResource GamePreviewMgrPage_Apply}" />
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Command="{x:Bind VM.SetUniformSizeCommand}"
+                                                    Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                         </Grid>
-                                    </Grid>
-                                    <Grid Margin="0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayout}" VerticalAlignment="Center"
-                                           FontWeight="Bold"/>
-                                            <Button Width="24"
-                                        Height="24"
-                                        Margin="4,0,0,0"
-                                        Padding="0"
-                                        BorderThickness="0"
-                                        Content="!">
-                                                <Button.Flyout>
-                                                    <Flyout>
-                                                        <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayoutTip}" />
-                                                    </Flyout>
-                                                </Button.Flyout>
-                                            </Button>
-                                        </StackPanel>
-                                        <Grid Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                                    </Expander>
+                                    <Expander Header="{StaticResource GamePreviewMgrPage_AutoLayout}"
+                                              Margin="0,4"
+                                              IsExpanded="True"
+                                              Style="{StaticResource StretchExpander}">
+                                        <Grid>
                                             <Grid.Resources>
                                                 <Style x:Key="MainItemGrid" TargetType="Grid">
                                                     <Setter Property="Margin" Value="2" />
@@ -309,10 +256,10 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                             </Grid.ColumnDefinitions>
 
                                             <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayout_Mode}"
-                                               VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center"/>
                                             <Grid Grid.Column="1" Margin="0,4">
                                                 <ComboBox SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayout, Mode=TwoWay}"
-                                                  HorizontalAlignment="Stretch">
+                                                          HorizontalAlignment="Stretch">
                                                     <ComboBoxItem>
                                                         <StackPanel Orientation="Horizontal">
                                                             <Grid Style="{StaticResource MainItemGrid}" />
@@ -348,166 +295,161 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                             <Grid Grid.Row="1" Grid.Column="1" Margin="0,4">
                                                 <!--  左对齐  -->
                                                 <ComboBox SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                                  HorizontalAlignment="Stretch"
-                                                  Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=0}">
+                                                          HorizontalAlignment="Stretch"
+                                                          Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=0}">
                                                     <ComboBoxItem>
                                                         <!--  右上  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  右中  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Right"
-        VerticalAlignment="Center"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Center"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  右下  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Bottom"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                 </ComboBox>
                                                 <!--  右对齐  -->
                                                 <ComboBox
-                                            SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                            HorizontalAlignment="Stretch"
-                                            Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=1}">
+                                                    SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=1}">
                                                     <ComboBoxItem>
                                                         <!--  左上  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Left"
-        VerticalAlignment="Top"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  左中  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Left"
-        VerticalAlignment="Center"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Center"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  左下  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Left"
-        VerticalAlignment="Bottom"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Bottom"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                 </ComboBox>
                                                 <!--  上对齐  -->
                                                 <ComboBox SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                                  HorizontalAlignment="Stretch"
-                                                  Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=2}">
+                                                          HorizontalAlignment="Stretch"
+                                                          Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=2}">
                                                     <ComboBoxItem>
                                                         <!--  左下  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Left"
-        VerticalAlignment="Bottom"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Bottom"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  中下  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Center"
-        VerticalAlignment="Bottom"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Bottom"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  右下  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Bottom"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                 </ComboBox>
                                                 <!--  下对齐  -->
                                                 <ComboBox SelectedIndex="{x:Bind VM.PreviewSetting.AutoLayoutAnchor, Mode=TwoWay}"
-                                                  HorizontalAlignment="Stretch"
-                                                  Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=3}">
+                                                          HorizontalAlignment="Stretch"
+                                                          Visibility="{x:Bind VM.PreviewSetting.AutoLayout, Mode=OneWay, Converter={StaticResource StringMatchToVisibleConverter}, ConverterParameter=3}">
                                                     <ComboBoxItem>
                                                         <!--  左上  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Left"
-        VerticalAlignment="Top"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Left"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  中上  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Center"
-        VerticalAlignment="Top"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                     <ComboBoxItem>
                                                         <!--  右上  -->
                                                         <Grid Style="{StaticResource BorderGrid}">
                                                             <Grid
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top"
-        Style="{StaticResource MainPointGrid}" />
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                Style="{StaticResource MainPointGrid}" />
                                                         </Grid>
                                                     </ComboBoxItem>
                                                 </ComboBox>
                                             </Grid>
 
                                             <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayoutSpan}" Grid.Row="2"
-                                               VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center"/>
                                             <NumberBox Grid.Column="1"
-                                               Grid.Row="2"
-                                               Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}" 
-                                               Margin="0,4"/>
+                                                       Grid.Row="2"
+                                                       Value="{x:Bind VM.PreviewSetting.AutoLayoutSpan, Mode=TwoWay}"
+                                                       Margin="0,4"/>
 
                                             <TextBlock Text="{StaticResource GamePreviewMgrPage_AutoLayoutCount}" Grid.Row="3"
-                                               VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center"/>
                                             <NumberBox Grid.Column="1"
-                                               Grid.Row="3"
-                                               Value="{x:Bind VM.PreviewSetting.AutoLayoutCount, Mode=TwoWay}"
-                                               Margin="0,4"/>
+                                                       Grid.Row="3"
+                                                       Value="{x:Bind VM.PreviewSetting.AutoLayoutCount, Mode=TwoWay}"
+                                                       Margin="0,4"/>
 
                                             <Button Grid.Row="4" Grid.ColumnSpan="2"
-                                            Margin="0,4,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            Command="{x:Bind VM.SetAutoLayoutCommand}"
-                                            Content="{StaticResource GamePreviewMgrPage_Apply}" />
+                                                    Margin="0,4,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Command="{x:Bind VM.SetAutoLayoutCommand}"
+                                                    Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                         </Grid>
-                                    </Grid>
-                                    <Grid Margin="0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                                            <TextBlock Text="{StaticResource GamePreviewMgrPage_OtherSetting}" VerticalAlignment="Center"
-           FontWeight="Bold"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                                    </Expander>
+                                    <Expander Header="{StaticResource GamePreviewMgrPage_OtherSetting}"
+                                              Margin="0,4"
+                                              IsExpanded="True"
+                                              Style="{StaticResource StretchExpander}">
+                                        <StackPanel>
                                             <CheckBox Content="{StaticResource GamePreviewMgrPage_StartAllWithNoneSetting}" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -522,7 +464,7 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                                          Margin="8,0,0,0"/>
                                             </Grid>
                                         </StackPanel>
-                                    </Grid>
+                                    </Expander>
                                 </StackPanel>
                             </ScrollViewer>
                         </Flyout>
@@ -539,18 +481,14 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ScrollViewer Grid.Row="0" IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+            <ScrollViewer Grid.Row="0">
                 <StackPanel x:Name="SettingArea" Margin="4,0">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                            <TextBlock Text="{StaticResource GamePreviewMgrPage_PreviewWindow}" VerticalAlignment="Center"
-           FontWeight="Bold"/>
-                        </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                    <Expander Header="{StaticResource GamePreviewMgrPage_PreviewWindow}"
+                              IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                              Margin="0,0,0,4"
+                              IsExpanded="True"
+                              Style="{StaticResource StretchExpander}">
+                        <StackPanel>
                             <CheckBox Content="{StaticResource GamePreviewMgrPage_ShowPreviewWindow}" IsChecked="{x:Bind VM.Setting.ShowPreviewWindow, Mode=TwoWay}" />
                             <Grid Margin="0,8">
                                 <Grid.ColumnDefinitions>
@@ -560,8 +498,8 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                 <TextBlock Text="{StaticResource GamePreviewMgrPage_PreviewWindowMode}" VerticalAlignment="Center"/>
                                 <ComboBox Grid.Column="1"
                                           Margin="8,0,0,0"
-                                    HorizontalAlignment="Stretch"
-                                    SelectedIndex="{x:Bind VM.Setting.ShowPreviewWindowMode, Mode=TwoWay}">
+                                          HorizontalAlignment="Stretch"
+                                          SelectedIndex="{x:Bind VM.Setting.ShowPreviewWindowMode, Mode=TwoWay}">
                                     <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode1}" />
                                     <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode2}" />
                                     <ComboBoxItem Content="{StaticResource GamePreviewMgrPage_PreviewWindowMode3}" />
@@ -580,21 +518,17 @@ Content="{StaticResource GamePreviewMgrPage_Apply}" />
                                         Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
                             </Grid>
                             <CheckBox Margin="0,4" Content="{StaticResource GamePreviewMgrPage_HideOnForeground}" IsChecked="{x:Bind VM.Setting.HideOnForeground, Mode=TwoWay}" />
-                            <CheckBox Margin="0,4" Content="{StaticResource GamePreviewMgrPage_HighlightWhenActive}" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}" 
+                            <CheckBox Margin="0,4" Content="{StaticResource GamePreviewMgrPage_HighlightWhenActive}" IsChecked="{x:Bind VM.Setting.Highlight, Mode=TwoWay}"
                                       Visibility="{x:Bind VM.Setting.HideOnForeground, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}"/>
                         </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,8" Visibility="{x:Bind VM.Setting.Highlight, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                            <TextBlock Text="{StaticResource GamePreviewMgrPage_HighlightPreviewWindow}" VerticalAlignment="Center"
-FontWeight="Bold"/>
-                        </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                    </Expander>
+                    <Expander Header="{StaticResource GamePreviewMgrPage_HighlightPreviewWindow}"
+                              IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                              Visibility="{x:Bind VM.Setting.Highlight, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}"
+                              Margin="0,4"
+                              IsExpanded="True"
+                              Style="{StaticResource StretchExpander}">
+                        <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -614,12 +548,12 @@ FontWeight="Bold"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Top}" />
                                             <NumberBox
-Grid.Column="1"
-Margin="4,0,0,0"
-Minimum="0"
-SmallChange="1"
-SpinButtonPlacementMode="Compact"
-Value="{x:Bind VM.Setting.HighlightMarginTop, Mode=TwoWay}" />
+                                                Grid.Column="1"
+                                                Margin="4,0,0,0"
+                                                Minimum="0"
+                                                SmallChange="1"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind VM.Setting.HighlightMarginTop, Mode=TwoWay}" />
                                         </Grid>
                                         <Grid Grid.Column="1" Margin="8,0,0,0">
                                             <Grid.ColumnDefinitions>
@@ -628,12 +562,12 @@ Value="{x:Bind VM.Setting.HighlightMarginTop, Mode=TwoWay}" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Bottom}" />
                                             <NumberBox
-Grid.Column="1"
-Margin="4,0,0,0"
-Minimum="0"
-SmallChange="1"
-SpinButtonPlacementMode="Compact"
-Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
+                                                Grid.Column="1"
+                                                Margin="4,0,0,0"
+                                                Minimum="0"
+                                                SmallChange="1"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
                                         </Grid>
                                     </Grid>
                                     <Grid Margin="0,4,0,0">
@@ -648,12 +582,12 @@ Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Left}" />
                                             <NumberBox
-        Grid.Column="1"
-        Margin="4,0,0,0"
-        Minimum="0"
-        SmallChange="1"
-        SpinButtonPlacementMode="Compact"
-        Value="{x:Bind VM.Setting.HighlightMarginLeft, Mode=TwoWay}" />
+                                                Grid.Column="1"
+                                                Margin="4,0,0,0"
+                                                Minimum="0"
+                                                SmallChange="1"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind VM.Setting.HighlightMarginLeft, Mode=TwoWay}" />
                                         </Grid>
                                         <Grid Grid.Column="1" Margin="8,0,0,0">
                                             <Grid.ColumnDefinitions>
@@ -662,15 +596,15 @@ Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightMargin_Right}" />
                                             <NumberBox
-        Grid.Column="1"
-        Margin="4,0,0,0"
-        Minimum="0"
-        SmallChange="1"
-        SpinButtonPlacementMode="Compact"
-        Value="{x:Bind VM.Setting.HighlightMarginRight, Mode=TwoWay}" />
+                                                Grid.Column="1"
+                                                Margin="4,0,0,0"
+                                                Minimum="0"
+                                                SmallChange="1"
+                                                SpinButtonPlacementMode="Compact"
+                                                Value="{x:Bind VM.Setting.HighlightMarginRight, Mode=TwoWay}" />
                                         </Grid>
                                     </Grid>
-                                    
+
                                 </StackPanel>
                             </Grid>
 
@@ -681,45 +615,40 @@ Value="{x:Bind VM.Setting.HighlightMarginBottom, Mode=TwoWay}" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightColor}" />
                                 <Button
-                                Margin="16,0,0,0"
-Grid.Column="1"
-Padding="4"
-HorizontalAlignment="Stretch">
+                                    Margin="16,0,0,0"
+                                    Grid.Column="1"
+                                    Padding="4"
+                                    HorizontalAlignment="Stretch">
                                     <Button.Flyout>
                                         <Flyout Placement="Left">
                                             <ColorPicker
-            ColorSpectrumShape="Box"
-            IsAlphaEnabled="True"
-            IsAlphaSliderVisible="True"
-            IsAlphaTextInputVisible="True"
-            IsColorChannelTextInputVisible="True"
-            IsColorSliderVisible="True"
-            IsHexInputVisible="True"
-            IsMoreButtonVisible="False"
-            Color="{x:Bind VM.Setting.HighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
+                                                ColorSpectrumShape="Box"
+                                                IsAlphaEnabled="True"
+                                                IsAlphaSliderVisible="True"
+                                                IsAlphaTextInputVisible="True"
+                                                IsColorChannelTextInputVisible="True"
+                                                IsColorSliderVisible="True"
+                                                IsHexInputVisible="True"
+                                                IsMoreButtonVisible="False"
+                                                Color="{x:Bind VM.Setting.HighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
                                         </Flyout>
                                     </Button.Flyout>
                                     <Button.Content>
                                         <Rectangle
-        Width="210"
-        Height="24"
-        Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
+                                            Width="210"
+                                            Height="24"
+                                            Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
                                     </Button.Content>
                                 </Button>
                             </Grid>
                         </StackPanel>
-                    </Grid>
-
-                    <Grid Margin="0,8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4" >
-                            <TextBlock Text="{StaticResource GamePreviewMgrPage_HotKeySetting}" VerticalAlignment="Center"
-            FontWeight="Bold"/>
-                        </StackPanel>
-                        <StackPanel Grid.Row="1" CornerRadius="4" Padding="8" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                    </Expander>
+                    <Expander Header="{StaticResource GamePreviewMgrPage_HotKeySetting}"
+                              IsEnabled="{x:Bind VM.SelectedProcess.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                              Margin="0,4"
+                              IsExpanded="True"
+                              Style="{StaticResource StretchExpander}">
+                        <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -735,7 +664,7 @@ HorizontalAlignment="Stretch">
                                 <CheckBox Content="{StaticResource GamePreviewMgrPage_RespondGlobalHotKey}" IsChecked="{x:Bind VM.Setting.RespondGlobalHotKey, Mode=TwoWay}" />
                             </Grid>
                         </StackPanel>
-                    </Grid>
+                    </Expander>
                 </StackPanel>
             </ScrollViewer>
             <Grid Grid.Row="1" Margin="0">
