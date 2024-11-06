@@ -11,7 +11,7 @@
     <x:String x:Key="Setting_Backdrop_None">无</x:String>
     <x:String x:Key="Setting_Backdrop_Transparent">透明</x:String>
     <x:String x:Key="Setting_Backdrop_CustomPicture">自定义图片</x:String>
-    <x:String x:Key="Setting_Backdrop_CustomPicture_File">文件路径</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_File">图片路径</x:String>
     <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">覆盖图层颜色</x:String>
     <x:String x:Key="Setting_UILanguage_Description">修改界面语言后，需要重启应用程序</x:String>
     <x:String x:Key="Setting_UILanguage_Title">界面语言</x:String>

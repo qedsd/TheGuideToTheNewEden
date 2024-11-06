@@ -35,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
         private ChannelIntelSetting Setting;
-        private readonly BaseWindow Window = new BaseWindow();
+        private readonly BaseWindow Window = new BaseWindow(true, false);
         private DispatcherTimer autoIntelTimer;
         private AppWindow AppWindow;
         private Interfaces.IIntelOverlapPage _intelPage;

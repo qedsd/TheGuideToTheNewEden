@@ -24,7 +24,19 @@ namespace TheGuideToTheNewEden.WinUI
     public partial class BaseWindow : Window
     {
         public WinUICommunity.IThemeService ThemeService { get; set; }
-        public BaseWindow(bool useThemeService = true)
+        public BaseWindow()
+        {
+            Init(true, true);
+        }
+        public BaseWindow(bool useThemeService)
+        {
+            Init(useThemeService, true);
+        }
+        public BaseWindow(bool useThemeService, bool useBackgroun)
+        {
+            Init(useThemeService, useBackgroun);
+        }
+        public void Init(bool useThemeService, bool useBackground)
         {
             this.InitializeComponent();
             if(useThemeService)
@@ -46,11 +58,11 @@ namespace TheGuideToTheNewEden.WinUI
             SetTitleBar(AppTitleBar);
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
-            if (BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
+            if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
             {
-                if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue) && File.Exists(BackdropSelectorService.CustomPictureFileValue))
+                if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue))
                 {
-                    BackgroundImage.ImageSource = new BitmapImage(new Uri(BackdropSelectorService.CustomPictureFileValue));
+                    LoadCustomPicture();
                 }
             }
         }
@@ -274,10 +286,15 @@ namespace TheGuideToTheNewEden.WinUI
                 case BackdropSelectorService.BackdropType.CustomPicture:
                     {
                         ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
-
+                        LoadCustomPicture();
                     }
                     break;
-                default: MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);break;
+                default:
+                    {
+                        MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);
+                        UnloadCustomPicture();
+                    }
+                    break;
             }
         }
 
@@ -288,7 +305,21 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void BackdropSelectorService_OnCustomPictureFileChanged(object sender, string e)
         {
-            BackgroundImage.ImageSource = new BitmapImage(new Uri(e));
+            LoadCustomPicture();
+        }
+
+        private void LoadCustomPicture()
+        {
+            BackgroundGrid.Visibility = Visibility.Visible;
+            BackgroundBrush.Color = BackdropSelectorService.GetCustomPictureOverlapColor();
+            if (File.Exists(BackdropSelectorService.CustomPictureFileValue))
+            {
+                BackgroundImage.ImageSource = new BitmapImage(new Uri(BackdropSelectorService.CustomPictureFileValue));
+            }
+        }
+        private void UnloadCustomPicture()
+        {
+            BackgroundGrid.Visibility = Visibility.Collapsed;
         }
     }
 }
