@@ -30,6 +30,10 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         public static BackdropType BackdropTypeValue { get; set; }
         public static string CustomPictureFileValue {  get; set; }
         public static string CustomPictureOverlapColorValue { get; set; }
+        public static byte CustomPictureOverlapColorValue_A
+        {
+            get => byte.Parse(CustomPictureOverlapColorValue.Substring(1, 2));
+        }
         public static void Initialize()
         {
             BackdropTypeValue = LoadFromSettings();
@@ -60,6 +64,14 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         public static WinUICommunity.BackdropType GetWinUICommunityBackdropTypeValue()
         {
             return (WinUICommunity.BackdropType)(((int)BackdropTypeValue) % 7);
+        }
+        public static Windows.UI.Color GetCustomPictureOverlapColor()
+        {
+            byte a = Convert.ToByte(CustomPictureOverlapColorValue.Substring(1, 2), 16);
+            byte r = Convert.ToByte(CustomPictureOverlapColorValue.Substring(3, 2), 16);
+            byte g = Convert.ToByte(CustomPictureOverlapColorValue.Substring(5, 2), 16);
+            byte b = Convert.ToByte(CustomPictureOverlapColorValue.Substring(7, 2), 16);
+            return Windows.UI.Color.FromArgb(a,r,g,b);
         }
         private static BackdropType LoadFromSettings()
         {

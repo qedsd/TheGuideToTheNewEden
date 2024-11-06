@@ -51,7 +51,11 @@
                         Visibility="{x:Bind VM.CustomBackdropPicture, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="{StaticResource Setting_Backdrop_CustomPicture_File}" />
-                            <TextBox Width="200" Margin="8,0,0,0" />
+                            <TextBox Width="200" Margin="8,0,0,0" Text="{x:Bind VM.CustomPictureFile,Mode=TwoWay}"/>
+                            <Button
+                                Margin="4,0,0,0"
+                                Command="{x:Bind VM.PickCustomBackdropPictureCommand}"
+                                Content="+"/>
                         </StackPanel>
                         <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
                             <TextBlock VerticalAlignment="Center" Text="{StaticResource Setting_Backdrop_CustomPicture_OverlapColor}" />
@@ -77,8 +81,11 @@
                                 <Button.Content>
                                     <Rectangle
                                         Width="128"
-                                        Height="24"
-                                        Fill="{x:Bind VM.CustomPictureOverlapColor, Mode=OneWay}" />
+                                        Height="24">
+                                        <Rectangle.Fill>
+                                            <SolidColorBrush Color="{x:Bind VM.CustomPictureOverlapColor, Mode=OneWay}"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
                                 </Button.Content>
                             </Button>
                         </StackPanel>

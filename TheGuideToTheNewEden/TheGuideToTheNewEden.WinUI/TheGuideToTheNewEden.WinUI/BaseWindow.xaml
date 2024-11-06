@@ -15,13 +15,13 @@
         <Grid Grid.RowSpan="2">
             <Grid.Background>
                 <ImageBrush
-                    x:Name="BannerImage"
+                    x:Name="BackgroundImage"
                     Opacity="1"
                     Stretch="UniformToFill" />
             </Grid.Background>
             <Grid>
                 <Grid.Background>
-                    <SolidColorBrush Color="#B3FFFFFF" />
+                    <SolidColorBrush Color="Transparent" x:Name="BackgroundBrush"/>
                 </Grid.Background>
             </Grid>
         </Grid>

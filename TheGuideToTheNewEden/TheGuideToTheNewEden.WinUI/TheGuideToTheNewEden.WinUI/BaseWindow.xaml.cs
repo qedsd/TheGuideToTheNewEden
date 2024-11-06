@@ -36,6 +36,8 @@ namespace TheGuideToTheNewEden.WinUI
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
+                BackdropSelectorService.OnCustomPictureFileChanged += BackdropSelectorService_OnCustomPictureFileChanged;
+                BackdropSelectorService.OnCustomPictureOverlapColorChanged += BackdropSelectorService_OnCustomPictureOverlapColorChanged;
             }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
@@ -44,7 +46,13 @@ namespace TheGuideToTheNewEden.WinUI
             SetTitleBar(AppTitleBar);
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
-            BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
+            if (BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
+            {
+                if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue) && File.Exists(BackdropSelectorService.CustomPictureFileValue))
+                {
+                    BackgroundImage.ImageSource = new BitmapImage(new Uri(BackdropSelectorService.CustomPictureFileValue));
+                }
+            }
         }
 
         public object MainContent
@@ -271,6 +279,16 @@ namespace TheGuideToTheNewEden.WinUI
                     break;
                 default: MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);break;
             }
+        }
+
+        private void BackdropSelectorService_OnCustomPictureOverlapColorChanged(object sender, string e)
+        {
+            BackgroundBrush.Color = BackdropSelectorService.GetCustomPictureOverlapColor();
+        }
+
+        private void BackdropSelectorService_OnCustomPictureFileChanged(object sender, string e)
+        {
+            BackgroundImage.ImageSource = new BitmapImage(new Uri(e));
         }
     }
 }
