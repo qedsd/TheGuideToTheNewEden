@@ -54,29 +54,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => settings;
             set => SetProperty(ref settings, value);
         }
-        private Core.Models.GamePreviews.PreviewItem selectedSetting;
-        /// <summary>
-        /// 标识保存列表被选中项，当前设置可能不在保存列表中，所以需要和Setting区分开
-        /// </summary>
-        public Core.Models.GamePreviews.PreviewItem SelectedSetting
-        {
-            get => selectedSetting;
-            set
-            {
-                SetProperty(ref selectedSetting, value);
-                if (value != null)
-                {
-                    Setting = value;
-                }
-                //else
-                //{
-                //    Setting = new PreviewItem()
-                //    {
-                //        Name = SelectedProcess.GetCharacterName()
-                //    };
-                //}
-            }
-        }
         private ObservableCollection<ProcessInfo> processes = new ObservableCollection<ProcessInfo>();
         public ObservableCollection<ProcessInfo> Processes
         {
@@ -91,16 +68,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(SetProperty(ref selectedProcess, value))
                 {
-                    SetProcess();
+                    var setting = GetProcessSetting(value);
+                    if (setting != null)
+                    {
+                        if (_lastHighlightWindow != null)
+                        {
+                            _lastHighlightWindow.CancelHighlight();
+                            _lastHighlightWindow = null;
+                        }
+                        if (_runningDic.TryGetValue(value.GUID, out var window))
+                        {
+                            window.Highlight();
+                            _lastHighlightWindow = window;
+                        }
+                    }
+                    Setting = setting;
                 }
             }
         }
-        private Visibility settingVisible = Visibility.Collapsed;
-        public Visibility SettingVisible
-        {
-            get => settingVisible;
-            set => SetProperty(ref settingVisible,value);
-        }
+
         private bool running;
         public bool Running
         {
@@ -485,6 +471,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 TryClearProcesses();
             }
+            SelectedProcess = null;
             Processes.CollectionChanged += Processes_CollectionChanged;
             StartGameMonitor();
             Window?.HideWaiting();
@@ -518,84 +505,104 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
         private IGamePreviewWindow _lastHighlightWindow;
+
+
         /// <summary>
-        /// 加载相应设置
+        /// 加载进程已保存设置，若不存在则创建默认设置
         /// </summary>
-        private void SetProcess()
+        private PreviewItem GetProcessSetting(ProcessInfo processInfo)
         {
-            if (_lastHighlightWindow != null)
+            if (processInfo != null)
             {
-                _lastHighlightWindow.CancelHighlight();
-                _lastHighlightWindow = null;
-            }
-            if (SelectedProcess != null)
-            {
-                SettingVisible = Visibility.Visible;
-                if(SelectedProcess.Setting != null)//运行中
+                PreviewItem setting = null;
+                if (processInfo.Setting != null)//运行中、运行过
                 {
-                    Setting = SelectedProcess.Setting;
-                    SelectedSetting = Settings.Contains(Setting) ? Setting : null;
-                    if (_runningDic.TryGetValue(SelectedProcess.GUID,out var window))
-                    {
-                        window.Highlight();
-                        _lastHighlightWindow = window;
-                    }
+                    setting = processInfo.Setting;
                 }
-                else //进程未运行中
+                else //未创建过设置
                 {
-                    var characterName = SelectedProcess.GetCharacterName();
+                    var characterName = processInfo.GetCharacterName();
                     if (!string.IsNullOrEmpty(characterName))
                     {
                         //从保存列表里找出第一个同名且不在运行中的设置
                         var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
                         if (targetSetting != null)
                         {
-                            Setting = targetSetting;
-                            SelectedSetting = targetSetting;
+                            setting = targetSetting;
                         }
                         else//没有找到则新建
                         {
-                            Setting = new PreviewItem()
+                            setting = new PreviewItem()
                             {
-                                Name = characterName,
-                                UserName = SelectedProcess.GetUserName()
+                                Name = characterName
                             };
-                            SelectedSetting = null;
                         }
                     }
                     else
                     {
-                        var username = SelectedProcess.GetUserName();
-                        if(!string.IsNullOrEmpty(username))//没有角色名则找账号名
+                        setting = new PreviewItem();//不赋予配置名称则不会保存
+                    }
+                    setting.ProcessInfo = processInfo;
+                    processInfo.Setting = setting;
+                }
+                return setting;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private bool Start(ProcessInfo processInfo, PreviewItem setting, PreviewSetting previewSetting)
+        {
+            if (processInfo != null && setting != null)
+            {
+                try
+                {
+                    IGamePreviewWindow gamePreviewWindow;
+                    switch (setting.ShowPreviewWindowMode)
+                    {
+                        case 0: gamePreviewWindow = new GamePreviewWindow1(setting, previewSetting); break;
+                        case 1: gamePreviewWindow = new GamePreviewWindow2(setting, previewSetting); break;
+                        case 2: gamePreviewWindow = new GamePreviewWindow3(setting, previewSetting); break;
+                        default: throw new NotImplementedException();
+                    }
+                    if (_runningDic.TryAdd(processInfo.GUID, gamePreviewWindow))
+                    {
+                        gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
+                        gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
+                        gamePreviewWindow.Start(processInfo.MainWindowHandle);
+                        processInfo.Running = true;
+                        //保存
+                        if (!string.IsNullOrEmpty(setting.Name))
                         {
-                            //从保存列表里找出第一个同名且不在运行中的设置
-                            var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
-                            if (targetSetting != null)
+                            if (!PreviewSetting.PreviewItems.Contains(setting))
                             {
-                                Setting = targetSetting;
-                                SelectedSetting = targetSetting;
+                                PreviewSetting.PreviewItems.Add(setting);
                             }
-                            else//没有找到则新建
+                            if (!Settings.Contains(setting))
                             {
-                                Setting = new PreviewItem()
-                                {
-                                    Name = username,
-                                    UserName = username
-                                };
-                                SelectedSetting = null;
+                                Settings.Add(setting);
                             }
+                            SaveSetting();
                         }
-                        else//如果不设置名称，不会保存，直接新建
+                        else
                         {
-                            Setting = new PreviewItem();
-                            SelectedSetting = null;
+                            Window.ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
                         }
                     }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                    Window.ShowError(ex.Message, false);
+                    return false;
                 }
             }
             else
             {
-                SettingVisible = Visibility.Collapsed;
+                return false;
             }
         }
 
@@ -606,53 +613,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            if(Setting != null)
+            if(Start(SelectedProcess, Setting, PreviewSetting))
             {
-                try
-                {
-                    IGamePreviewWindow gamePreviewWindow;;
-                    switch(Setting.ShowPreviewWindowMode)
-                    {
-                        case 0: gamePreviewWindow = new GamePreviewWindow1(Setting, PreviewSetting);break;
-                        case 1: gamePreviewWindow = new GamePreviewWindow2(Setting, PreviewSetting); break;
-                        case 2: gamePreviewWindow = new GamePreviewWindow3(Setting, PreviewSetting); break;
-                        default:throw new NotImplementedException();
-                    }
-                    if (_runningDic.TryAdd(SelectedProcess.GUID, gamePreviewWindow))
-                    {
-                        gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
-                        gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
-                        gamePreviewWindow.Start(SelectedProcess.MainWindowHandle);
-                        SelectedProcess.Setting = Setting;
-                        Setting.ProcessInfo = SelectedProcess;
-                        SelectedProcess.Running = true;
-                        SelectedProcess.SettingName = Setting.Name;
-                        Running = true;
-                        //保存
-                        if (!string.IsNullOrEmpty(Setting.Name))
-                        {
-                            if(!PreviewSetting.PreviewItems.Contains(Setting))
-                            {
-                                PreviewSetting.PreviewItems.Add(Setting);
-                            }
-                            if(!Settings.Contains(Setting))
-                            {
-                                Settings.Add(Setting);
-                            }
-                            SelectedSetting = Setting;
-                            SaveSetting();
-                        }
-                        else
-                        {
-                            Window.ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                    Window.ShowError(ex.Message, false);
-                }
+                Running = true;
             }
         });
 
@@ -698,8 +661,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
-                previewItem.ProcessInfo.Setting = null;
-                previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
@@ -711,46 +672,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
             }
         }
-        public ICommand NewSettingCommand => new RelayCommand(() =>
-        {
-            SelectedSetting = null;
-        });
-        public ICommand RemoveSettingCommand => new RelayCommand<PreviewItem>((item) =>
-        {
-            if(item != null)
-            {
-                if(Settings.Remove(item))
-                {
-                    if(PreviewSetting.PreviewItems.Remove(item))
-                    {
-                        SaveSetting();
-                        if(item == SelectedSetting)
-                        {
-                            SelectedSetting = null;
-                        }
-                    }
-                }
-            }
-        });
+
         public void StopAll()
         {
             _lastHighlightWindow = null;
             var list = Processes?.Where(p => p.Running).ToList();
             if (list.NotNullOrEmpty())
             {
-                foreach (var item in Processes.Where(p => p.Running).ToList())
+                foreach (var item in list)
                 {
-                    if (_runningDic.TryGetValue(item.GUID, out var window))
-                    {
-                        _runningDic.Remove(item.GUID);
-                        item.Running = false;
-                        item.Setting = null;
-                        window.Stop();
-                        if (_runningDic.Count == 0)
-                        {
-                            Running = false;
-                        }
-                    }
+                    Stop(item.Setting);
                 }
             }
         }
@@ -1086,104 +1017,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 SelectedProcess = null;
                 List<PreviewItem> needRunItems = new List<PreviewItem>();
-                #region 模拟选择进程步骤
                 foreach (var pro in Processes)
                 {
                     if (!pro.Running)
                     {
-                        PreviewItem setting = null;
-                        var characterName = pro.GetCharacterName();
-                        if (!string.IsNullOrEmpty(characterName))
-                        {
-                            //从保存列表里找出第一个同名且不在运行中的设置
-                            var targetSetting = Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
-                            if (targetSetting != null)
-                            {
-                                setting = targetSetting;
-                            }
-                            else//没有找到则按加载方式选择
-                            {
-                                LoadDefaultSetting(out setting, pro, characterName);
-                            }
-                        }
-                        else//无法找到名称，如中文下
-                        {
-                            var username = pro.GetUserName();
-                            if (!string.IsNullOrEmpty(username))//没有角色名则找账号名
-                            {
-                                //从保存列表里找出第一个同名且不在运行中的设置
-                                var targetSetting = Settings.FirstOrDefault(p => p.UserName == username && p.ProcessInfo == null);
-                                if (targetSetting != null)
-                                {
-                                    setting = targetSetting;
-                                }
-                                else//没有找到则新建
-                                {
-                                    LoadDefaultSetting(out setting, pro, characterName);
-                                }
-                            }
-                            else//如果不设置名称，不会保存，直接新建
-                            {
-                                LoadDefaultSetting(out setting, pro, characterName);
-                            }
-                        }
+                        var setting = GetProcessSetting(pro);
                         if (setting != null)
                         {
-                            setting.ProcessInfo = pro;
-                            needRunItems.Add(setting);
+                            Start(pro, setting, PreviewSetting);
                         }
                     }
                 }
-                #endregion
-
-                #region 模拟开始步骤
-                bool save = false;
-                foreach (var item in needRunItems)
-                {
-                    try
-                    {
-                        IGamePreviewWindow gamePreviewWindow;
-                        switch (item.ShowPreviewWindowMode)
-                        {
-                            case 0: gamePreviewWindow = new GamePreviewWindow1(item, PreviewSetting); break;
-                            case 1: gamePreviewWindow = new GamePreviewWindow2(item, PreviewSetting); break;
-                            case 2: gamePreviewWindow = new GamePreviewWindow3(item, PreviewSetting); break;
-                            default: throw new NotImplementedException();
-                        }
-                        if (_runningDic.TryAdd(item.ProcessInfo.GUID, gamePreviewWindow))
-                        {
-                            gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
-                            gamePreviewWindow.OnStop += GamePreviewWindow_OnStop;
-                            gamePreviewWindow.Start(item.ProcessInfo.MainWindowHandle);
-                            item.ProcessInfo.Setting = item;
-                            item.ProcessInfo.Running = true;
-                            item.ProcessInfo.SettingName = item.Name;
-                            Running = true;
-                            if (!string.IsNullOrEmpty(item.Name))
-                            {
-                                if (!PreviewSetting.PreviewItems.Contains(item))
-                                {
-                                    PreviewSetting.PreviewItems.Add(item);
-                                }
-                                if (!Settings.Contains(item))
-                                {
-                                    Settings.Add(item);
-                                }
-                                save = true;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex);
-                        Window.ShowError(ex.Message, false);
-                    }
-                }
-                if (save)
-                {
-                    SaveSetting();
-                }
-                #endregion
             }
             catch(Exception ex)
             {
@@ -1197,64 +1041,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 setting = new PreviewItem()
                 {
-                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-                    UserName = processInfo.GetUserName()
+                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name
                 };
             }
             else
             {
                 setting = null;
             }
-                
-            //if (PreviewSetting.StartAllDefaultLoadType == 0)//依序使用已保存列表
-            //{
-            //    //加载第一个不在运行中的配置
-            //    var firstNoRunning = Settings.FirstOrDefault(p => p.ProcessInfo == null);
-            //    if (firstNoRunning != null)
-            //    {
-            //        setting = firstNoRunning;
-            //    }
-            //    else
-            //    {
-            //        //没有不在运行中的配置，新建
-            //        setting = new PreviewItem()
-            //        {
-            //            Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-            //            UserName = processInfo.GetUserName()
-            //        };
-            //    }
-            //}
-            //else//新建默认
-            //{
-            //    setting = new PreviewItem()
-            //    {
-            //        Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name,
-            //        UserName = processInfo.GetUserName()
-            //    };
-            //}
         }
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
-            _lastHighlightWindow = null;
-            SelectedProcess = null;
-            foreach (var pro in Processes)
-            {
-                if (pro.Running)
-                {
-                    if (_runningDic.TryGetValue(pro.GUID, out var window))
-                    {
-                        _runningDic.Remove(pro.GUID);
-                        pro.Running = false;
-                        pro.Setting.ProcessInfo = null;
-                        pro.Setting = null;
-                        window.Stop();
-                    }
-                }
-            }
-            if (_runningDic.Count == 0)
-            {
-                Running = false;
-            }
+            StopAll();
         });
         #endregion
 

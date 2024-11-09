@@ -225,6 +225,7 @@
     <None Remove="Assets\Icon\WindowIcons\warreport.png" />
     <None Remove="Assets\Icon\WindowIcons\wars.png" />
     <None Remove="BaseWindow.xaml" />
+    <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
@@ -423,6 +424,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Dialogs\MapSystemDetailDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\CardControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">

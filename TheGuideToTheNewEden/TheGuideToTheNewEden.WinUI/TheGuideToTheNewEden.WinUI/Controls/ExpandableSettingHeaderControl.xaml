@@ -35,11 +35,13 @@
             x:Name="SettingIconElement"
             Width="20"
             Margin="2,0,20,0"
-            Content="{x:Bind Icon, Mode=OneWay}" />
+            Content="{x:Bind Icon, Mode=OneWay}"
+            Visibility="Collapsed" />
 
         <Grid
             x:Name="DescriptionPanel"
             Grid.Column="1"
+            Margin="4,0,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center">
             <Grid.RowDefinitions>

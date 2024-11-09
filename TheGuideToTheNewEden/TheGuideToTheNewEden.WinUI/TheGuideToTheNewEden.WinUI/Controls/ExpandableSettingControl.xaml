@@ -29,7 +29,6 @@
                 VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
-                CornerRadius="4"
                 IsExpanded="{x:Bind IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 Loaded="Expander_Loaded">
                 <muxc:Expander.Header>

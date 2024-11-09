@@ -60,16 +60,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 
         private string _guid = Guid.NewGuid().ToString();
 
-        private string settingName;
-        public string SettingName
-        {
-            get => settingName;
-            set
-            {
-                SetProperty(ref settingName, value);
-                ShowSettingName = !string.IsNullOrEmpty(value);
-            }
-        }
 
         private bool showSettingName;
         public bool ShowSettingName
