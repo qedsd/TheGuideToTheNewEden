@@ -506,6 +506,7 @@
     <x:String x:Key="GamePreviewMgrPage_Running_Tip">预览中</x:String>
     <x:String x:Key="GamePreviewMgrPage_ProcessList">进程列表</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始全部时包含未开始过的进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">自动开始预览新进程</x:String>
     <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>

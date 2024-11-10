@@ -156,6 +156,19 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
-        public string[] ProcessOrder { get; set; }
+        public List<string> ProcessOrder { get; set; } = new List<string>();
+
+        private bool _autoStartNewProcess = true;
+        /// <summary>
+        /// 自动开始新进程预览
+        /// </summary>
+        public bool AutoStartNewProcess
+        {
+            get => _autoStartNewProcess;
+            set
+            {
+                SetProperty(ref _autoStartNewProcess, value);
+            }
+        }
     }
 }

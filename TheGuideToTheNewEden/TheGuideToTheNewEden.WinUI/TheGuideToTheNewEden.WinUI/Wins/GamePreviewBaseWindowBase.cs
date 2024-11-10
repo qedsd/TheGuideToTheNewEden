@@ -75,12 +75,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             return _setting.Highlight;
         }
+        public bool IsClosed { get; private set; } = true;
         public abstract void SetPos(int x, int y);
         public abstract void SetSize(int w, int h);
         public abstract void ShowWindow(bool hHighlight = false);
         public abstract void Start(IntPtr sourceHWnd);
         public virtual void Stop()
         {
+            IsClosed = true;
             HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
         }
         public abstract void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);

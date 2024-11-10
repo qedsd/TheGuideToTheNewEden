@@ -12,7 +12,9 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
     {
         public System.Diagnostics.Process Process { get; set; }
         public IntPtr MainWindowHandle { get; set; }
-        public string WindowTitle { get; set; }
+        private string _windowTitle;
+        public string WindowTitle{ get => _windowTitle; set => SetProperty(ref _windowTitle, value); }
+        
         public string ProcessName { get; set; }
         private bool running;
         public bool Running

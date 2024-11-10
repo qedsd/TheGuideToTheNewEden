@@ -56,7 +56,7 @@
                                 <Grid>
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{x:Bind WindowTitle}"
+                                        Text="{x:Bind WindowTitle, Mode=OneWay}"
                                         ToolTipService.ToolTip="{x:Bind WindowTitle}" />
                                 </Grid>
                                 <Rectangle
@@ -98,9 +98,10 @@
                         Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     <AppBarButton
                         Margin="4,0"
+                        AllowFocusOnInteraction="True"
                         Icon="Setting"
                         Label="{StaticResource GamePreviewMgrPage_GlobalSetting}">
-                        <Button.Flyout>
+                        <AppBarButton.Flyout>
                             <Flyout>
                                 <ScrollViewer>
                                     <StackPanel Width="320">
@@ -463,6 +464,7 @@
                                             Style="{StaticResource StretchExpander}">
                                             <StackPanel>
                                                 <CheckBox Content="{StaticResource GamePreviewMgrPage_StartAllWithNoneSetting}" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
+                                                <CheckBox Content="{StaticResource GamePreviewMgrPage_AutoStartNewProcess}" IsChecked="{x:Bind VM.PreviewSetting.AutoStartNewProcess, Mode=TwoWay}" />
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto" />
@@ -471,7 +473,7 @@
                                                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_ProcessKeywords_Tip}" />
                                                     <TextBox
                                                         Grid.Column="1"
-                                                        Margin="8,0,0,0"
+                                                        Margin="8,4,0,0"
                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_ProcessKeywords_PlaceholderText}"
                                                         Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}" />
                                                 </Grid>
@@ -480,7 +482,7 @@
                                     </StackPanel>
                                 </ScrollViewer>
                             </Flyout>
-                        </Button.Flyout>
+                        </AppBarButton.Flyout>
                     </AppBarButton>
                 </StackPanel>
             </controls:CardControl.Fonter>

@@ -215,6 +215,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void ShowWindow(bool hHighlight = false)
         {
+            if(IsClosed) return;
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 RestoreTitlebarOp();
