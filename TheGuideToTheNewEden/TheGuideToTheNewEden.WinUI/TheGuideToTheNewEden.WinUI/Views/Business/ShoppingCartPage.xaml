@@ -14,7 +14,10 @@
             <ColumnDefinition Width="240" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid
+            Padding="8"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            CornerRadius="4">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
@@ -95,6 +98,7 @@
         <dataGrid:SfDataGrid
             x:Name="ItemsDataGrid"
             Grid.Column="1"
+            Margin="8,0,0,4"
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="False"
@@ -103,6 +107,7 @@
             AllowResizingColumns="True"
             AllowSorting="True"
             AutoGenerateColumns="False"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
             ColumnWidthMode="Auto"
             DoubleTapped="SfDataGrid_DoubleTapped"
             GridLinesVisibility="None"

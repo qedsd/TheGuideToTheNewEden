@@ -5,12 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:channelintel="using:TheGuideToTheNewEden.Core.Models.ChannelIntel"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dbmodels="using:TheGuideToTheNewEden.Core.DBModels"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:TheGuideToTheNewEden.WinUI.Models"
-    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels" xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -21,99 +22,78 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid Margin="0,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="64" />
-            </Grid.RowDefinitions>
-            <ListView
-                x:Name="ProcessList"
-                Background="Transparent"
-                CanDragItems="True"
-                CanReorderItems="True"
-                ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
-                Style="{StaticResource StretchListView}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="channelintel:ChannelIntelListener">
-                        <Grid Margin="4,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+        <controls1:CardControl>
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Characters}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView
+                    x:Name="ProcessList"
+                    Background="Transparent"
+                    CanDragItems="True"
+                    CanReorderItems="True"
+                    ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                    SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
+                    Style="{StaticResource StretchListView}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="channelintel:ChannelIntelListener">
                             <Grid>
-                                <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind Name}" />
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind Name}" />
+                                </Grid>
+                                <Rectangle
+                                    Grid.Column="1"
+                                    Width="10"
+                                    Height="10"
+                                    Margin="4,0,0,0"
+                                    Fill="{ThemeResource SystemAccentColor}"
+                                    RadiusX="10"
+                                    RadiusY="10"
+                                    ToolTipService.ToolTip="{StaticResource ChannelIntelPage_Running}"
+                                    Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                             </Grid>
-                            <Rectangle
-                                Grid.Column="1"
-                                Width="10"
-                                Height="10"
-                                Margin="4,0,0,0"
-                                Fill="{ThemeResource SystemAccentColor}"
-                                RadiusX="10"
-                                RadiusY="10"
-                                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_Running}"
-                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <Grid Grid.Row="1" Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0"
-                    Text="{StaticResource ChannelIntelPage_Characters}" />
-                <Rectangle
-                    Grid.Column="2"
-                    Height="1"
-                    Fill="{ThemeResource SystemAccentColor}" />
-            </Grid>
-            <StackPanel
-                Grid.Row="2"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal">
-                <AppBarButton
-                    Command="{x:Bind VM.StartAllCommand}"
-                    Icon="Play"
-                    Label="{StaticResource General_StartAll}"
-                    Margin="0,0,16,0"/>
-                <AppBarButton
-                    Command="{x:Bind VM.StopAllCommand}"
-                    Foreground="OrangeRed"
-                    Icon="Stop"
-                    Label="{StaticResource General_StopAll}"
-                    Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                <AppBarButton
-                    HorizontalAlignment="Center"
-                    Command="{x:Bind VM.RefreshCharactersCommand}"
-                    Icon="Refresh"
-                    Label="{StaticResource ChannelIntelPage_RefreshChannels}"
-                    Margin="16,0,0,0"/>
-            </StackPanel>
-        </Grid>
-        <Grid
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                        Margin="0,0,16,0"
+                        Command="{x:Bind VM.StartAllCommand}"
+                        Icon="Play"
+                        Label="{StaticResource General_StartAll}" />
+                    <AppBarButton
+                        Command="{x:Bind VM.StopAllCommand}"
+                        Foreground="OrangeRed"
+                        Icon="Stop"
+                        Label="{StaticResource General_StopAll}"
+                        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.RefreshCharactersCommand}"
+                        Icon="Refresh"
+                        Label="{StaticResource ChannelIntelPage_RefreshChannels}" />
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
             Grid.Column="1"
-            Margin="10,0,0,0"
+            Width="300"
+            Margin="8,0,4,0"
             Visibility="{x:Bind VM.ChannelIntel, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Channels}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
                 <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChannelIntel.ChatChanelInfos, Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:ChatChanelInfo">
@@ -143,26 +123,9 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <Grid Grid.Row="1" Margin="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        Margin="8,0"
-                        Text="{StaticResource ChannelIntelPage_Channels}" />
-                    <Rectangle
-                        Grid.Column="2"
-                        Height="1"
-                        Fill="{ThemeResource SystemAccentColor}" />
-                </Grid>
-                <StackPanel
-                    Grid.Row="2"
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal">
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.RefreshChannelsCommand}"
@@ -170,141 +133,187 @@
                         IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
                         Label="{StaticResource ChannelIntelPage_RefreshChannels}" />
                 </StackPanel>
-            </Grid>
-            <Grid Grid.Column="1" Margin="8,0,0,0" Width="416">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <ScrollViewer Grid.Row="0">
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+            Grid.Column="2"
+            Margin="2,0,4,0"
+            Padding="4,4"
+            Visibility="{x:Bind VM.ChannelIntel, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Setting}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ScrollViewer>
                     <Grid>
-                        <StackPanel x:Name="SettingArea" Margin="10,0">
-                            <!--预警范围-->
-                            <Expander Header="{StaticResource ChannelIntelPage_RangeSetting}"
-                                      Style="{StaticResource StretchExpander}"
-                                      Margin="0,0,0,4"
-                                      IsExpanded="True"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                        <StackPanel x:Name="SettingArea">
+                            <!--  预警范围  -->
+                            <Expander
+                                Margin="0,0,0,4"
+                                Header="{StaticResource ChannelIntelPage_RangeSetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_LocalSystem}" Grid.Row="0" VerticalAlignment="Center"/>
-                                    <Button Content="{x:Bind VM.ChannelIntel.LocalSolarSystem.SolarSystemName,Mode=TwoWay}"
-                                            Margin="16,0,0,0"
-                                            HorizontalAlignment="Stretch"
-                                            Height="32"
-                                            Grid.Column="1">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_LocalSystem}" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Height="32"
+                                        Margin="16,0,0,0"
+                                        HorizontalAlignment="Stretch"
+                                        Content="{x:Bind VM.ChannelIntel.LocalSolarSystem.SolarSystemName, Mode=TwoWay}">
                                         <Button.Flyout>
                                             <Flyout>
-                                                <Grid  Height="400" Width="300">
-                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem,Mode=TwoWay}"/>
+                                                <Grid Width="300" Height="400">
+                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem, Mode=TwoWay}" />
                                                 </Grid>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_Jumps}" Grid.Row="1" VerticalAlignment="Center"/>
-                                    <NumberBox LargeChange="1"
-                                               Margin="16,0,0,0"
-                                               Maximum="8"
-                                               Minimum="0"
-                                               Height="32"
-                                               SmallChange="1"
-                                               SpinButtonPlacementMode="Inline"
-                                               Value="{x:Bind VM.ChannelIntel.Setting.IntelJumps, Mode=TwoWay}"
-                                               Grid.Row="1"
-                                               Grid.Column="1"/>
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_Jumps}" />
+                                    <NumberBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Height="32"
+                                        Margin="16,0,0,0"
+                                        LargeChange="1"
+                                        Maximum="8"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Value="{x:Bind VM.ChannelIntel.Setting.IntelJumps, Mode=TwoWay}" />
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_AutoUpdateLocation}" Grid.Row="2" VerticalAlignment="Center"/>
-                                    <ToggleSwitch Grid.Column="1"
-                                                  OnContent="{StaticResource General_Yes}"
-                                                  OffContent="{StaticResource General_No}"
-                                                  Margin="16,0,0,0"
-                                                  VerticalAlignment="Center"
-                                                  Grid.Row="2"
-                                                  IsOn="{x:Bind VM.ChannelIntel.Setting.AutoUpdateLocaltion, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_AutoUpdateLocation}" />
+                                    <ToggleSwitch
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="16,0,0,0"
+                                        VerticalAlignment="Center"
+                                        IsOn="{x:Bind VM.ChannelIntel.Setting.AutoUpdateLocaltion, Mode=TwoWay}"
+                                        OffContent="{StaticResource General_No}"
+                                        OnContent="{StaticResource General_Yes}" />
                                 </Grid>
                             </Expander>
-                            <!--预警通知方式-->
-                            <Expander Header="{StaticResource ChannelIntelPage_NotifySetting}"
-                                      IsExpanded="True"
-                                      Margin="0,4"
-                                      Style="{StaticResource StretchExpander}"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <!--  预警通知方式  -->
+                            <Expander
+                                Margin="0,4"
+                                Header="{StaticResource ChannelIntelPage_NotifySetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <CheckBox Content="{StaticResource ChannelIntelPage_Notify_Overlap}" IsChecked="{x:Bind VM.ChannelIntel.Setting.OverlapNotify, Mode=TwoWay}"  Grid.Column="0"/>
-                                    <CheckBox Content="{StaticResource ChannelIntelPage_Notify_Sound}" IsChecked="{x:Bind VM.ChannelIntel.Setting.MakeSound, Mode=TwoWay}"  Grid.Column="1"/>
-                                    <CheckBox Content="{StaticResource ChannelIntelPage_Notify_System}" IsChecked="{x:Bind VM.ChannelIntel.Setting.SystemNotify, Mode=TwoWay}"  Grid.Column="2"/>
+                                    <CheckBox
+                                        Grid.Column="0"
+                                        Content="{StaticResource ChannelIntelPage_Notify_Overlap}"
+                                        IsChecked="{x:Bind VM.ChannelIntel.Setting.OverlapNotify, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Grid.Column="1"
+                                        Content="{StaticResource ChannelIntelPage_Notify_Sound}"
+                                        IsChecked="{x:Bind VM.ChannelIntel.Setting.MakeSound, Mode=TwoWay}" />
+                                    <CheckBox
+                                        Grid.Column="2"
+                                        Content="{StaticResource ChannelIntelPage_Notify_System}"
+                                        IsChecked="{x:Bind VM.ChannelIntel.Setting.SystemNotify, Mode=TwoWay}" />
                                 </Grid>
                             </Expander>
-                            <!--预警窗口-->
-                            <Expander Header="{StaticResource ChannelIntelPage_OverlapSetting}"
-                                      Style="{StaticResource StretchExpander}"
-                                      IsExpanded="True"
-                                      Margin="0,4"
-                                      Visibility="{x:Bind VM.ChannelIntel.Setting.OverlapNotify,Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <!--  预警窗口  -->
+                            <Expander
+                                Margin="0,4"
+                                Header="{StaticResource ChannelIntelPage_OverlapSetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}"
+                                Visibility="{x:Bind VM.ChannelIntel.Setting.OverlapNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_OverlapShowType}" Grid.Row="0" VerticalAlignment="Center"/>
-                                    <ComboBox Grid.Row="0"
-                                              Grid.Column="1"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Center"
-                                              SelectedIndex="{x:Bind VM.ChannelIntel.Setting.OverlapType, Mode=TwoWay}">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_OverlapShowType}" />
+                                    <ComboBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        SelectedIndex="{x:Bind VM.ChannelIntel.Setting.OverlapType, Mode=TwoWay}">
                                         <ComboBoxItem Content="{StaticResource ChannelIntelPage_OverlapType_Alwasys}" />
                                         <ComboBoxItem Content="{StaticResource ChannelIntelPage_OverlapType_WhenNeed}" />
                                     </ComboBox>
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_OverlapStyle}" Grid.Row="1" VerticalAlignment="Center"/>
-                                    <ComboBox HorizontalAlignment="Stretch"
-                                              SelectedIndex="{x:Bind VM.ChannelIntel.Setting.OverlapStyle, Mode=TwoWay}"
-                                              Grid.Row="1"
-                                              Grid.Column="1">
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_OverlapStyle}" />
+                                    <ComboBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        SelectedIndex="{x:Bind VM.ChannelIntel.Setting.OverlapStyle, Mode=TwoWay}">
                                         <ComboBoxItem Content="{StaticResource ChannelIntelPage_OverlapStyle_Default}" />
                                         <ComboBoxItem Content="{StaticResource ChannelIntelPage_OverlapStyle_SMT}" />
                                         <ComboBoxItem Content="{StaticResource ChannelIntelPage_OverlapStyle_Near2}" />
                                     </ComboBox>
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_OverlapOpacity}" Grid.Row="2" VerticalAlignment="Center"/>
-                                    <Slider Maximum="100"
-                                            Margin="8,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Minimum="1"
-                                            Value="{x:Bind VM.ChannelIntel.Setting.OverlapOpacity, Mode=TwoWay}"
-                                            Grid.Row="2"
-                                            Grid.Column="1"/>
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_OverlapOpacity}" />
+                                    <Slider
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Maximum="100"
+                                        Minimum="1"
+                                        Value="{x:Bind VM.ChannelIntel.Setting.OverlapOpacity, Mode=TwoWay}" />
                                 </Grid>
                             </Expander>
-                            <!--预警声音-->
-                            <Expander Header="{StaticResource ChannelIntelPage_SoundSetting}"
-                                      Margin="0,4"
-                                      IsExpanded="True"
-                                      Visibility="{x:Bind VM.ChannelIntel.Setting.MakeSound,Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}"
-                                      Style="{StaticResource StretchExpander}"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
-                                <Grid Grid.Row="1" CornerRadius="4" Padding="0" BorderBrush="{ThemeResource ThemeBorderBrush}" BorderThickness="1">
+                            <!--  预警声音  -->
+                            <Expander
+                                Margin="0,4"
+                                Header="{StaticResource ChannelIntelPage_SoundSetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}"
+                                Visibility="{x:Bind VM.ChannelIntel.Setting.MakeSound, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                <Grid
+                                    Grid.Row="1"
+                                    Padding="0"
+                                    BorderBrush="{ThemeResource ThemeBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
                                     <controls:DataGrid
                                         Grid.Row="1"
                                         HorizontalAlignment="Stretch"
@@ -378,47 +387,60 @@
                                     </controls:DataGrid>
                                 </Grid>
                             </Expander>
-                            <!--预警关键词-->
-                            <Expander Header="{StaticResource ChannelIntelPage_KeywordSetting}"
-                                      Margin="0,4"
-                                      IsExpanded="True"
-                                      Style="{StaticResource StretchExpander}"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <!--  预警关键词  -->
+                            <Expander
+                                Margin="0,4"
+                                Header="{StaticResource ChannelIntelPage_KeywordSetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_IgnoreWords}" Grid.Row="0" VerticalAlignment="Center"/>
-                                    <TextBox Margin="16,0,0,0"
-                                             Grid.Column="1"
-                                             Height="32"
-                                             PlaceholderText="{StaticResource ChannelIntelPage_IgnoreWords_Tips}"
-                                             Text="{x:Bind VM.ChannelIntel.Setting.IgnoreWords, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_IgnoreWords}" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        Height="32"
+                                        Margin="16,0,0,0"
+                                        PlaceholderText="{StaticResource ChannelIntelPage_IgnoreWords_Tips}"
+                                        Text="{x:Bind VM.ChannelIntel.Setting.IgnoreWords, Mode=TwoWay}" />
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_ClearWords}" Grid.Row="1" VerticalAlignment="Center"/>
-                                    <TextBox Margin="16,0,0,0"
-                                             Grid.Column="1"
-                                             Height="32"
-                                             Grid.Row="1"
-                                             PlaceholderText="{StaticResource ChannelIntelPage_ClearWords_Tips}"
-                                             Text="{x:Bind VM.ChannelIntel.Setting.ClearWords, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelIntelPage_ClearWords}" />
+                                    <TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Height="32"
+                                        Margin="16,0,0,0"
+                                        PlaceholderText="{StaticResource ChannelIntelPage_ClearWords_Tips}"
+                                        Text="{x:Bind VM.ChannelIntel.Setting.ClearWords, Mode=TwoWay}" />
 
-                                    <TextBlock Text="{StaticResource ChannelIntelPage_SystemNameDbs}" Grid.Row="2" VerticalAlignment="Top"
-                                               Margin="0,8,0,0"/>
-                                    <ListView x:Name="SelectedNameDbsListView"
-                                              Margin="16,8,0,0"
-                                              Grid.Column="1"
-                                              Grid.Row="2"
-                                              ItemsSource="{x:Bind VM.NameDbs}"
-                                              Loaded="ListView_Loaded"
-                                              SelectionChanged="GridView_SelectionChanged"
-                                              SelectionMode="Multiple">
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,8,0,0"
+                                        VerticalAlignment="Top"
+                                        Text="{StaticResource ChannelIntelPage_SystemNameDbs}" />
+                                    <ListView
+                                        x:Name="SelectedNameDbsListView"
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="16,8,0,0"
+                                        ItemsSource="{x:Bind VM.NameDbs}"
+                                        Loaded="ListView_Loaded"
+                                        SelectionChanged="GridView_SelectionChanged"
+                                        SelectionMode="Multiple">
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid>
@@ -429,167 +451,158 @@
                                     </ListView>
                                 </Grid>
                             </Expander>
-                            <!--其他-->
-                            <Expander Header="{StaticResource ChannelIntelPage_OtherSetting}"
-                                      Margin="0,4"
-                                      IsExpanded="True"
-                                      Style="{StaticResource StretchExpander}"
-                                      IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <!--  其他  -->
+                            <Expander
+                                Margin="0,4"
+                                Header="{StaticResource ChannelIntelPage_OtherSetting}"
+                                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                IsExpanded="True"
+                                Style="{StaticResource StretchExpander}">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
-                                        <RowDefinition Height="42"/>
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
+                                        <RowDefinition Height="42" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                     <CheckBox Content="{StaticResource ChannelIntelPage_AutoClear}" IsChecked="{x:Bind VM.ChannelIntel.Setting.AutoClear, Mode=TwoWay}" />
-                                    <Grid Grid.Column="1" Margin="16,0,0,0"
-                                          Visibility="{x:Bind VM.ChannelIntel.Setting.AutoClear,Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                    <Grid
+                                        Grid.Column="1"
+                                        Margin="16,0,0,0"
+                                        Visibility="{x:Bind VM.ChannelIntel.Setting.AutoClear, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <NumberBox Minimum="1"
-                                                   SmallChange="0.5"
-                                                   SpinButtonPlacementMode="Inline"
-                                                   Value="{x:Bind VM.ChannelIntel.Setting.AutoClearMinute, Mode=TwoWay}"
-                                                   Height="32"
-                                                   ToolTipService.ToolTip="{StaticResource ChannelIntelPage_AutoClear_Tip}"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Margin="4,0,0,0"
-                                                   VerticalAlignment="Center"
-                                                   Text="min" />
+                                        <NumberBox
+                                            Height="32"
+                                            Minimum="1"
+                                            SmallChange="0.5"
+                                            SpinButtonPlacementMode="Inline"
+                                            ToolTipService.ToolTip="{StaticResource ChannelIntelPage_AutoClear_Tip}"
+                                            Value="{x:Bind VM.ChannelIntel.Setting.AutoClearMinute, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="min" />
                                     </Grid>
 
-                                    <CheckBox Grid.Row="1" Content="{StaticResource ChannelIntelPage_AutoDowngrade}" IsChecked="{x:Bind VM.ChannelIntel.Setting.AutoDowngrade, Mode=TwoWay}" />
-                                    <Grid Grid.Column="1" Grid.Row="1"  Margin="16,0,0,0"
-                                          Visibility="{x:Bind VM.ChannelIntel.Setting.AutoDowngrade,Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                    <CheckBox
+                                        Grid.Row="1"
+                                        Content="{StaticResource ChannelIntelPage_AutoDowngrade}"
+                                        IsChecked="{x:Bind VM.ChannelIntel.Setting.AutoDowngrade, Mode=TwoWay}" />
+                                    <Grid
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="16,0,0,0"
+                                        Visibility="{x:Bind VM.ChannelIntel.Setting.AutoDowngrade, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <NumberBox Minimum="0.5"
-                                                   SmallChange="0.5"
-                                                   SpinButtonPlacementMode="Inline"
-                                                   Value="{x:Bind VM.ChannelIntel.Setting.AutoDowngradeMinute, Mode=TwoWay}"
-                                                   Height="32"
-                                                   ToolTipService.ToolTip="{StaticResource ChannelIntelPage_AutoDowngrade_Tip}"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Margin="4,0,0,0"
-                                                   VerticalAlignment="Center"
-                                                   Text="min" />
+                                        <NumberBox
+                                            Height="32"
+                                            Minimum="0.5"
+                                            SmallChange="0.5"
+                                            SpinButtonPlacementMode="Inline"
+                                            ToolTipService.ToolTip="{StaticResource ChannelIntelPage_AutoDowngrade_Tip}"
+                                            Value="{x:Bind VM.ChannelIntel.Setting.AutoDowngradeMinute, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="min" />
                                     </Grid>
 
-                                    <CheckBox Content="{StaticResource ChannelIntelPage_SubZKB}" IsChecked="{x:Bind VM.ChannelIntel.Setting.SubZKB, Mode=TwoWay}" Grid.Row="2" />
-                                    <Grid Grid.Column="1" Grid.Row="2"  Margin="16,0,0,0"
-                                          Visibility="{x:Bind VM.ChannelIntel.Setting.SubZKB,Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                    <CheckBox
+                                        Grid.Row="2"
+                                        Content="{StaticResource ChannelIntelPage_SubZKB}"
+                                        IsChecked="{x:Bind VM.ChannelIntel.Setting.SubZKB, Mode=TwoWay}" />
+                                    <Grid
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="16,0,0,0"
+                                        Visibility="{x:Bind VM.ChannelIntel.Setting.SubZKB, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <NumberBox Minimum="1"
-                                                   SmallChange="1"
-                                                   SpinButtonPlacementMode="Inline"
-                                                   Value="{x:Bind VM.ChannelIntel.Setting.KBTime, Mode=TwoWay}"
-                                                   ToolTipService.ToolTip="{StaticResource ChannelIntelPage_SubZKB_Tip}"
-                                                   Height="32"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Margin="4,0,0,0"
-                                                   VerticalAlignment="Center"
-                                                   Text="sec" />
+                                        <NumberBox
+                                            Height="32"
+                                            Minimum="1"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Inline"
+                                            ToolTipService.ToolTip="{StaticResource ChannelIntelPage_SubZKB_Tip}"
+                                            Value="{x:Bind VM.ChannelIntel.Setting.KBTime, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="sec" />
                                     </Grid>
                                 </Grid>
                             </Expander>
                         </StackPanel>
                     </Grid>
-
                 </ScrollViewer>
-                <Grid Grid.Row="1" Margin="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        Margin="8,0"
-                        Text="{StaticResource ChannelIntelPage_Setting}" />
-                    <Rectangle
-                        Grid.Column="2"
-                        Height="1"
-                        Fill="{ThemeResource SystemAccentColor}" />
-                </Grid>
-                <Grid Grid.Row="2">
-                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                        <AppBarButton
-                            HorizontalAlignment="Center"
-                            Command="{x:Bind VM.RestorePosCommand}"
-                            Icon="Refresh"
-                            Label="{StaticResource ChannelIntelPage_RestorePos}"
-                            ToolTipService.ToolTip="{StaticResource ChannelIntelPage_RestorePos_Tip}"
-                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                        <AppBarButton
-                            HorizontalAlignment="Center"
-                            Command="{x:Bind VM.StartCommand}"
-                            Icon="Play"
-                            Label="{StaticResource ChannelIntelPage_Start}"
-                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                        <AppBarButton
-                            Margin="16,0"
-                            HorizontalAlignment="Center"
-                            Command="{x:Bind VM.StopCommand}"
-                            Foreground="OrangeRed"
-                            Icon="Stop"
-                            Label="{StaticResource General_Stop}"
-                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                        <AppBarButton
-                            HorizontalAlignment="Center"
-                            Command="{x:Bind VM.StopSoundCommand}"
-                            Icon="Mute"
-                            Label="{StaticResource ChannelIntelPage_StopSound}"
-                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
-        </Grid>
-        <Grid Grid.Column="2" Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" Margin="10,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="64"/>
-            </Grid.RowDefinitions>
-            <ScrollViewer x:Name="ChatContentsScroll"
-                          BorderThickness="1"
-                          BorderBrush="{ThemeResource ThemeBorderBrush}"
-                          CornerRadius="4">
-                <RichTextBlock x:Name="ChatContents" IsRightTapEnabled="True" Margin="4,0">
-                    <RichTextBlock.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
-                        </MenuFlyout>
-                    </RichTextBlock.ContextFlyout>
-                </RichTextBlock>
-            </ScrollViewer>
-            <Grid Grid.Row="1" Margin="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0"
-                    Text="{StaticResource ChannelIntelPage_Contents}" />
-                <Rectangle
-                    Grid.Column="2"
-                    Height="1"
-                    Fill="{ThemeResource SystemAccentColor}" />
-            </Grid>
-        </Grid>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.RestorePosCommand}"
+                        Icon="Refresh"
+                        Label="{StaticResource ChannelIntelPage_RestorePos}"
+                        ToolTipService.ToolTip="{StaticResource ChannelIntelPage_RestorePos_Tip}"
+                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StartCommand}"
+                        Icon="Play"
+                        Label="{StaticResource ChannelIntelPage_Start}"
+                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                    <AppBarButton
+                        Margin="16,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopCommand}"
+                        Foreground="OrangeRed"
+                        Icon="Stop"
+                        Label="{StaticResource ChannelIntelPage_Stop}"
+                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopSoundCommand}"
+                        Icon="Mute"
+                        Label="{StaticResource ChannelIntelPage_StopSound}"
+                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+            Grid.Column="3"
+            Margin="4,0"
+            Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Contents}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ScrollViewer x:Name="ChatContentsScroll">
+                    <RichTextBlock
+                        x:Name="ChatContents"
+                        Margin="4,0"
+                        IsRightTapEnabled="True">
+                        <RichTextBlock.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                            </MenuFlyout>
+                        </RichTextBlock.ContextFlyout>
+                    </RichTextBlock>
+                </ScrollViewer>
+            </controls1:CardControl.Content>
+        </controls1:CardControl>
     </Grid>
 </Page>

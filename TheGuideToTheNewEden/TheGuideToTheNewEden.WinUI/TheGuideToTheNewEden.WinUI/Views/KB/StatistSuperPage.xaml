@@ -8,7 +8,7 @@
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ContentBackgroudBrush}"
+    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistSuperViewModel x:Name="VM" />
@@ -70,8 +70,9 @@
                         </GridView.ItemTemplate>
                     </GridView>
                 </Expander>
-                <Expander Margin="0,4,0,0"
+                <Expander
                     Grid.Row="1"
+                    Margin="0,4,0,0"
                     HorizontalAlignment="Stretch"
                     Header="{StaticResource StatistSuperPage_Supercarrier}">
                     <GridView HorizontalAlignment="Stretch" ItemsSource="{x:Bind VM.Supercarriers, Mode=OneWay}">

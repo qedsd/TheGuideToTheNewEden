@@ -227,6 +227,7 @@
     <x:String x:Key="StructuresSettingPage_EmptyTip">请前往设置-玩家建筑添加建筑</x:String>
 
     <!--  MarketPage  -->
+    <x:String x:Key="MarketPage_TargetMarket">当前市场</x:String>
     <x:String x:Key="MarketPage_AllList">列表</x:String>
     <x:String x:Key="MarketPage_Star">收藏</x:String>
     <x:String x:Key="MarketPage_AddStar">添加收藏</x:String>
@@ -550,7 +551,8 @@
     <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
     <x:String x:Key="GameLogMonitorPage_Running">监控中</x:String>
     <x:String x:Key="GameLogMonitorPage_AddKey">添加关键词</x:String>
-    <x:String x:Key="GameLogMonitorPage_Start">开始</x:String>
+    <x:String x:Key="GameLogMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="GameLogMonitorPage_Stop">停止监控</x:String>
     <x:String x:Key="GameLogMonitorPage_StopNotify">清除通知</x:String>
     <x:String x:Key="GameLogMonitorPage_StopNotify_Tip">停止播放通知声等</x:String>
     <x:String x:Key="GameLogMonitorPage_SystemNotify">系统通知</x:String>
@@ -560,7 +562,7 @@
     <x:String x:Key="GameLogMonitorPage_Default">默认</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey">监控关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
-    <x:String x:Key="GameLogMonitorPage_Setting">设置</x:String>
+    <x:String x:Key="GameLogMonitorPage_Setting">监控设置</x:String>
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
@@ -576,6 +578,8 @@
     <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
     <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
+    <x:String x:Key="GameLogMonitorPage_Logs">实时日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundFile">音频文件</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>
@@ -615,10 +619,15 @@
     <x:String x:Key="LinksPage_Remove">删除链接</x:String>
 
     <!--  ChannelMonitorPage  -->
+    <x:String x:Key="ChannelMonitorPage_TargetCharacter">监控角色</x:String>
     <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
     <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
     <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
     <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelLogs">频道内容</x:String>
+    <x:String x:Key="ChannelMonitorPage_SoundFile">音频文件</x:String>
+    <x:String x:Key="ChannelMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="ChannelMonitorPage_Stop">停止监控</x:String>
 
     <!--  ZKB  -->
     <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
@@ -956,6 +965,7 @@
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Stop">停止预警</x:String>
     <x:String x:Key="ChannelIntelPage_Running">预警中</x:String>
     <x:String x:Key="ChannelIntelPage_Characters">角色列表</x:String>
     <x:String x:Key="ChannelIntelPage_Setting">预警设置</x:String>
@@ -990,7 +1000,7 @@
     <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">聊天日志匹配预警星系时，需要支持哪些语言的星系名称</x:String>
     <x:String x:Key="ChannelIntelPage_RestorePos">重置位置</x:String>
     <x:String x:Key="ChannelIntelPage_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
-    <x:String x:Key="ChannelIntelPage_StopSound">停止声音</x:String>
+    <x:String x:Key="ChannelIntelPage_StopSound">清除声音</x:String>
     <x:String x:Key="ChannelIntelPage_LatestIntelInfo">最新预警信息</x:String>
     <x:String x:Key="ChannelIntelPage_ClearAllIntel">清除所有预警</x:String>
     <x:String x:Key="ChannelIntelPage_Contents">频道内容</x:String>

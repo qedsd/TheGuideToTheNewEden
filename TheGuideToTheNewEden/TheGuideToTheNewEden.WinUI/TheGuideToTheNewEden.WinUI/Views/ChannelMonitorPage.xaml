@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:coreModels="using:TheGuideToTheNewEden.Core.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
@@ -14,103 +15,100 @@
     <Page.DataContext>
         <viewmodels:ChannelMonitorViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid>
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ComboBox
-                    Margin="4,4,0,4"
-                    HorizontalAlignment="Stretch"
-                    ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                    SelectedIndex="-1"
-                    SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="coreModels:ChannelMonitorItem">
-                            <Grid>
+        <controls1:CardControl>
+            <controls1:CardControl.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelMonitorPage_TargetCharacter}" />
+                    <ComboBox
+                        Grid.Column="1"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                        SelectedIndex="-1"
+                        SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="coreModels:ChannelMonitorItem">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind Name}" />
+                                    <Rectangle
+                                        Grid.Column="1"
+                                        Width="10"
+                                        Height="10"
+                                        Margin="4,0,0,0"
+                                        Fill="{ThemeResource SystemAccentColor}"
+                                        RadiusX="10"
+                                        RadiusY="10"
+                                        Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChatChanelInfo">
+                            <Grid Padding="0,4">
+                                <Grid.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFile_Click" Text="{StaticResource General_OpenFile}" />
+                                    </MenuFlyout>
+                                </Grid.ContextFlyout>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48" />
                                     <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind Name}" />
-                                <Rectangle
-                                    Grid.Column="1"
-                                    Width="10"
-                                    Height="10"
-                                    Margin="4,0,0,0"
-                                    Fill="{ThemeResource SystemAccentColor}"
-                                    RadiusX="10"
-                                    RadiusY="10"
-                                    Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <CheckBox VerticalAlignment="Center" IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                <Grid Grid.Column="1" HorizontalAlignment="Left">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{x:Bind ChannelName}" ToolTipService.ToolTip="{StaticResource ChannelMonitorPage_ChannelName}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Text="{x:Bind SessionStarted}"
+                                        ToolTipService.ToolTip="{StaticResource ChannelMonitorPage_LastUpdateTime}" />
+                                </Grid>
                             </Grid>
                         </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <Button
-                    Grid.Column="1"
-                    Height="32"
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <AppBarButton
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Stretch"
                     Command="{x:Bind VM.RefreshListCommand}"
-                    ToolTipService.ToolTip="{StaticResource General_Refresh}">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE149;" />
-                    </Button.Content>
-                </Button>
-            </Grid>
-            <ListView
-                Grid.Row="1"
-                IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
-                ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:ChatChanelInfo">
-                        <Grid Margin="10,4">
-                            <Grid.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem Click="MenuFlyoutItem_OpenFile_Click" Text="{StaticResource General_OpenFile}" />
-                                </MenuFlyout>
-                            </Grid.ContextFlyout>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="48" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox VerticalAlignment="Center" IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
-                            <Grid Grid.Column="1" HorizontalAlignment="Left">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <TextBlock Text="{x:Bind ChannelName}" ToolTipService.ToolTip="{StaticResource ChannelMonitorPage_ChannelName}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Text="{x:Bind SessionStarted}"
-                                    ToolTipService.ToolTip="{StaticResource ChannelMonitorPage_LastUpdateTime}" />
-                            </Grid>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
-        <Grid Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid Margin="0" Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+                    Icon="Refresh"
+                    IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                    Label="{StaticResource General_RefreshList}" />
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+            Grid.Column="1"
+            Width="400"
+            Margin="4,0"
+            Visibility="{x:Bind VM.SelectedCharacter,Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
                 <ScrollViewer IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
                     <StackPanel Margin="10,0">
                         <Grid Margin="0,10">
@@ -151,18 +149,24 @@
 
                                 <Grid
                                     Grid.Row="1"
-                                    Margin="0,4,0,0"
+                                    Margin="0,8,0,0"
                                     Visibility="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Margin="0,0,4,0"
+                                        VerticalAlignment="Center"
+                                        Text="{StaticResource ChannelMonitorPage_SoundFile}" />
                                     <TextBox
+                                        Grid.Column="1"
                                         IsEnabled="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay}"
                                         PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
                                         Text="{x:Bind VM.SelectedCharacter.Setting.SoundFile, Mode=TwoWay}" />
                                     <Button
-                                        Grid.Column="1"
+                                        Grid.Column="2"
                                         Margin="4,0,0,0"
                                         Command="{x:Bind VM.PickSoundFileCommand}"
                                         Content="+"
@@ -225,7 +229,7 @@
                             VerticalScrollBarVisibility="Visible">
                             <controls:DataGrid.Columns>
                                 <controls:DataGridTextColumn
-                                    Width="220"
+                                    Width="260"
                                     Binding="{Binding Pattern, Mode=TwoWay}"
                                     Header="{StaticResource GameLogMonitorPage_Regex}" />
                                 <controls:DataGridTemplateColumn Header="{StaticResource General_Remove}">
@@ -250,49 +254,39 @@
                         </controls:DataGrid>
                     </StackPanel>
                 </ScrollViewer>
-                <Grid Grid.Row="1" Margin="8,8,8,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        Margin="8,0"
-                        Text="{StaticResource GameLogMonitorPage_Setting}" />
-                    <Rectangle
-                        Grid.Column="2"
-                        Height="1"
-                        Fill="{ThemeResource SystemAccentColor}" />
-                </Grid>
-                <StackPanel
-                    Grid.Row="2"
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal">
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.StartCommand}"
                         Icon="Play"
-                        Label="{StaticResource General_Start}"
+                        Label="{StaticResource ChannelMonitorPage_Start}"
                         Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
                     <AppBarButton
+                        Margin="8,0"
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.StopCommand}"
+                        Foreground="OrangeRed"
                         Icon="Stop"
-                        Label="{StaticResource General_Stop}"
+                        Label="{StaticResource ChannelMonitorPage_Stop}"
                         Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                     <AppBarButton
+                        Margin="8,0"
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.StopNotifyCommand}"
-                        Icon="Refresh"
+                        Icon="Mute"
                         Label="{StaticResource GameLogMonitorPage_StopNotify}"
                         ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_StopNotify_Tip}"
                         Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                 </StackPanel>
-            </Grid>
-
-            <Grid Grid.Column="1">
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl Grid.Column="2">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelMonitorPage_ChannelLogs}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
                 <ScrollViewer x:Name="GameLogContentsScroll" Margin="8">
                     <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="True">
                         <RichTextBlock.ContextFlyout>
@@ -302,7 +296,7 @@
                         </RichTextBlock.ContextFlyout>
                     </RichTextBlock>
                 </ScrollViewer>
-            </Grid>
-        </Grid>
+            </controls1:CardControl.Content>
+        </controls1:CardControl>
     </Grid>
 </Page>

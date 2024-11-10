@@ -37,12 +37,12 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid CornerRadius="6,6,6,6"
-            MinWidth="200"
-            MaxWidth="300"
-              Margin="8"
+        <Grid
+            Width="300"
+            Margin="8"
             Padding="8,8"
-            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+            CornerRadius="6,6,6,6">
             <Grid.ContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Click="Menu_OpenInZKB_Click" Text="zkillboard.com" />

@@ -11,7 +11,7 @@
     xmlns:kb2="using:ZKB.NET.Models.Statistics"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ContentBackgroudBrush}"
+    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistMonthViewModel x:Name="VM" />

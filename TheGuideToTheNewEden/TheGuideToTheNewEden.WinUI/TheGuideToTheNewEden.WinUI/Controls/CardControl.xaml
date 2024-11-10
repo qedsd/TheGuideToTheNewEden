@@ -58,7 +58,7 @@
         <ContentPresenter
             x:Name="FonterPresenter"
             Grid.Row="3"
-            Padding="16"
+            Padding="16,4"
             HorizontalAlignment="Stretch"
             VerticalContentAlignment="Center"
             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"

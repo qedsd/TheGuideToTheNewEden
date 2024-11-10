@@ -18,7 +18,7 @@
         <!--<Border.Background>
             <ImageBrush x:Name="ImageBrush_Background" />
         </Border.Background>-->
-        <Grid Padding="4" Background="{ThemeResource ContentBackgroudBrush}">
+        <Grid Padding="4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
             <!--<Grid.Background>
                 <SolidColorBrush Opacity="1" Color="{ThemeResource ContentBackgroudBrush}" />
             </Grid.Background>-->
