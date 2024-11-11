@@ -67,20 +67,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => selectedProcess;
             set
             {
-                if(SetProperty(ref selectedProcess, value))
+                var last = selectedProcess;
+                if(last != null &&  _runningDic.TryGetValue(last.GUID, out var lastWindow))
+                {
+                    lastWindow.CancelHighlight();
+                }
+                if (SetProperty(ref selectedProcess, value))
                 {
                     var setting = GetProcessSetting(value);
                     if (setting != null)
                     {
-                        if (_lastHighlightWindow != null)
-                        {
-                            _lastHighlightWindow.CancelHighlight();
-                            _lastHighlightWindow = null;
-                        }
                         if (_runningDic.TryGetValue(value.GUID, out var window))
                         {
                             window.Highlight();
-                            _lastHighlightWindow = window;
                         }
                     }
                     Setting = setting;
@@ -289,7 +288,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private void SwitchForward()
         {
             //筛选出正在运行中的和响应全局快捷键的
-            var targetProcesses = Processes.Where(p => p.Running && p.Setting.RespondGlobalHotKey).ToList();
+            var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             if (_lastActiveProcessGUID == null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
@@ -338,7 +337,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private void SwitchBackward()
         {
             //筛选出正在运行中的和响应全局快捷键的
-            var targetProcesses = Processes.Where(p => p.Running && p.Setting.RespondGlobalHotKey).ToList();
+            var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             if (_lastActiveProcessGUID == null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
@@ -538,7 +537,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-        private IGamePreviewWindow _lastHighlightWindow;
 
 
         /// <summary>
@@ -690,12 +688,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             if (_runningDic.TryGetValue(previewItem.ProcessInfo.GUID, out var window))
             {
-                if(_lastHighlightWindow == window)
-                {
-                    _lastHighlightWindow = null;
-                }
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
+                previewItem.ProcessInfo.Setting = null;
+                previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
@@ -710,7 +706,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public void StopAll()
         {
-            _lastHighlightWindow = null;
+            //_lastHighlightWindow = null;
             var list = Processes?.Where(p => p.Running).ToList();
             if (list.NotNullOrEmpty())
             {
@@ -775,41 +771,44 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             _processMonitor?.Stop();
         }
         #endregion
-        private IGamePreviewWindow _lastHideWindow;
+
         /// <summary>
         /// 当前活动窗口变化
         /// </summary>
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
         {
-            if(_lastHighlightWindow != null)
+            foreach(var process in Processes)
             {
-                _lastHighlightWindow.CancelHighlight();
-                _lastHighlightWindow = null;
-            }
-            if(_lastHideWindow != null)
-            {
-                _lastHideWindow.ShowWindow();
-                _lastHideWindow = null;
-            }
-            var targetProcess = Processes?.FirstOrDefault(p=>p.Running && p.MainWindowHandle == hWnd);
-            if(targetProcess != null)
-            {
-                if(_runningDic.TryGetValue(targetProcess.GUID, out var item))
+                if(process.Running)
                 {
-                    _lastActiveProcessGUID = targetProcess.GUID;
-                    if (item.IsHideOnForeground())
+                    if (_runningDic.TryGetValue(process.GUID, out var previewWindow))
                     {
-                        item.HideWindow();
-                        _lastHideWindow = item;
-                    }
-                    else if (item.IsHighlight())
-                    {
-                        _lastHighlightWindow = item;
-                        item.ShowWindow(true);
+                        if (process.MainWindowHandle == hWnd)
+                        {
+                            _lastActiveProcessGUID = process.GUID;
+                            if (previewWindow.IsHideOnForeground())
+                            {
+                                previewWindow.HideWindow();
+                            }
+                            else
+                            {
+                                previewWindow.ShowWindow();
+                                if (previewWindow.IsHighlight())
+                                {
+                                    previewWindow.Highlight();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            previewWindow.CancelHighlight();
+                            previewWindow.ShowWindow();
+                        }
                     }
                 }
             }
+
         }
 
         #region 自动窗口布局
@@ -1038,6 +1037,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                 }
+                if(_runningDic.Any())
+                {
+                    Running = true;
+                }
             }
             catch(Exception ex)
             {
@@ -1045,20 +1048,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Window?.ShowError(ex.Message);
             }
         });
-        void LoadDefaultSetting(out PreviewItem setting, ProcessInfo processInfo, string name)
-        {
-            if (PreviewSetting.StartAllWithNoneSetting)
-            {
-                setting = new PreviewItem()
-                {
-                    Name = string.IsNullOrEmpty(name) ? processInfo.GetUserName() : name
-                };
-            }
-            else
-            {
-                setting = null;
-            }
-        }
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
             StopAll();

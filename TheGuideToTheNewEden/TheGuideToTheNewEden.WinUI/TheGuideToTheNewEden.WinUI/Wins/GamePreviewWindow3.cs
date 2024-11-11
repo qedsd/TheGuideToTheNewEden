@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             });
         }
 
-        public override void CancelHighlight()
+        public override void PrivateCancelHighlight()
         {
             if(_setting.ShowPreviewWindow)
                 _previewIPC.SendMsg(IPCOp.CancelHighlight);
@@ -80,13 +80,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 return 0;
         }
 
-        public override void HideWindow()
+        public override void PrivateHideWindow()
         {
             if (_setting.ShowPreviewWindow)
                 _previewIPC.SendMsg(IPCOp.Hide);
         }
 
-        public override void Highlight()
+        public override void PrivateHighlight()
         {
             if (_setting.ShowPreviewWindow)
             {
@@ -117,7 +117,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-        public override void ShowWindow(bool hHighlight = false)
+        public override void PrivateShowWindow(bool hHighlight = false)
         {
             if (_setting.ShowPreviewWindow)
             {
@@ -130,7 +130,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         private IPreviewIPC _previewIPC;
-        public override void Start(IntPtr sourceHWnd)
+        public override void PrivateStart(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
             if (_setting.ShowPreviewWindow)

@@ -61,12 +61,30 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public abstract event IGamePreviewWindow.StopDelegate OnStop;
 
         public abstract void ActiveSourceWindow();
-        public abstract void CancelHighlight();
+        public void CancelHighlight()
+        {
+            if (!Isighlight) return;
+            Isighlight = false;
+            PrivateCancelHighlight();
+        }
+        public abstract void PrivateCancelHighlight();
         public abstract int GetHeight();
         public abstract void GetSizeAndPos(out int x, out int y, out int w, out int h);
         public abstract int GetWidth();
-        public abstract void HideWindow();
-        public abstract void Highlight();
+        public void HideWindow()
+        {
+            if (!IsShowing) return;
+            IsShowing = false;
+            PrivateHideWindow();
+        }
+        public abstract void PrivateHideWindow();
+        public void Highlight()
+        {
+            if (Isighlight) return;
+            Isighlight = true;
+            PrivateHighlight();
+        }
+        public abstract void PrivateHighlight();
         public virtual bool IsHideOnForeground()
         {
             return _setting.HideOnForeground;
@@ -75,11 +93,24 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             return _setting.Highlight;
         }
-        public bool IsClosed { get; private set; } = true;
+        public bool IsClosed { get; private set; } = false;
+        public bool IsShowing { get; set; } = true;
+        public bool Isighlight { get; set; } = false;
         public abstract void SetPos(int x, int y);
         public abstract void SetSize(int w, int h);
-        public abstract void ShowWindow(bool hHighlight = false);
-        public abstract void Start(IntPtr sourceHWnd);
+        public void ShowWindow(bool hHighlight = false)
+        {
+            if (IsClosed || IsShowing) return;
+            IsShowing = true;
+            PrivateShowWindow(hHighlight);
+        }
+        public abstract void PrivateShowWindow(bool hHighlight = false);
+        public void Start(IntPtr sourceHWnd)
+        {
+            IsShowing = true;
+            PrivateStart(sourceHWnd);
+        }
+        public abstract void PrivateStart(IntPtr sourceHWnd);
         public virtual void Stop()
         {
             IsClosed = true;
