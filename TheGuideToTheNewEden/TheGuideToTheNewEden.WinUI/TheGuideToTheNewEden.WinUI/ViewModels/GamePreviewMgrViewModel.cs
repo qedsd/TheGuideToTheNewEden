@@ -438,25 +438,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     foreach (var newProc in allProcessDict)
                     {
-                        //int sortOfNew = PreviewSetting.ProcessOrder.IndexOf(newProc.Value.WindowTitle);
-                        //if (sortOfNew > -1)//保存过，需要判断保存顺序
-                        //{
-                        //    int nowSortOfNew = _processes.Count;
-                        //    for(int i = 0; i < _processes.Count; i++)
-                        //    {
-                        //        int sort = PreviewSetting.ProcessOrder.IndexOf(_processes[i].WindowTitle);
-                        //        if(sort > sortOfNew)
-                        //        {
-                        //            nowSortOfNew = i;
-                        //            break;
-                        //        }
-                        //    }
-                        //    Processes.Insert(nowSortOfNew, newProc.Value);
-                        //}
-                        //else//未保存过，直接加到末尾
-                        //{
-                        //    Processes.Add(newProc.Value);
-                        //}
                         Processes.Add(newProc.Value);
                     }
                     newList ??= new List<ProcessInfo>();
@@ -525,16 +506,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var runnings = Processes.Where(p => p.Running).ToList();
                 if (runnings.NotNullOrEmpty())
                 {
-                    Processes.Clear();
-                    foreach (var item in runnings)
+                    foreach (var process in runnings)//停止已退出进程预览
                     {
-                        Processes.Add(item);
+                        Stop(process.Setting);
                     }
                 }
-                else
-                {
-                    Processes.Clear();
-                }
+                Processes.Clear();
             }
         }
 
@@ -690,8 +667,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
-                previewItem.ProcessInfo.Setting = null;
-                previewItem.ProcessInfo = null;
+                //previewItem.ProcessInfo.Setting = null;
+                //previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
