@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Intel;
@@ -220,10 +221,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             OnSelectedCharacterChanged?.Invoke(selectedCharacter);
             var setting = Services.Settings.IntelSettingService.GetValue(selectedCharacter);
-            setting ??= new Core.Models.EarlyWarningSetting();
-            setting.Listener = SelectedCharacter;
-            FixSoundSetting(setting);
-            Setting = setting;
+            //setting ??= new Core.Models.EarlyWarningSetting();
+            //setting.Listener = SelectedCharacter;
+            //FixSoundSetting(setting);
+            //Setting = setting;
             LoadSetting();
             
             if (Setting.AutoUpdateLocaltion)
@@ -314,11 +315,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     if(Setting.SubZKB)
                     {
-                        _zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
-                        await _zkbIntel.Start();
-                        _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        //_zkbIntel = new Core.Intel.ZKBIntel(Setting, IntelMap);
+                        //try
+                        //{
+                        //    await _zkbIntel.Start();
+                        //    _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        //}
+                        //catch(Exception ex)
+                        //{
+                        //    Log.Error(ex);
+                        //    ShowError($"{Helpers.ResourcesHelper.GetString("EarlyWarningPage_SubZKB_Error")} :{ex.Message}");
+                        //}
                     }
-                    WarningService.Current.Add(Setting, IntelMap);
+                    //WarningService.Current.Add(Setting, IntelMap);
                     var intelWindow = WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
                     {
@@ -393,12 +402,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             soundSetting = Setting.Sounds[ch.Jumps];
                         }
-                        WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
+                        //WarningService.Current.Notify(earlyWarningItem.ChatChanelInfo.Listener, soundSetting, Setting.SystemNotify, earlyWarningItem.ChatChanelInfo.ChannelName, ch);
                     }
                     else
                     {
                         //只clr
-                        WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
+                        //WarningService.Current.GetIntelWindow(earlyWarningItem.ChatChanelInfo.Listener)?.Intel(ch);
                     }
                 }
             });
@@ -468,7 +477,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     soundSetting = Setting.Sounds[e.Jumps];
                 }
                 ZKBIntelContents.Add(e);
-                WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
+                //WarningService.Current.Notify((sender as Core.Intel.ZKBIntel).GetListener(), soundSetting, Setting.SystemNotify, "KB", e);
             });
         }
 
@@ -633,7 +642,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 setting.ChannelIDs = ChatChanelInfos.Where(p => p.IsChecked).Select(p=>p.ChannelID).ToList();
                 setting.LocationID = SelectedMapSolarSystem == null ? -1 : SelectedMapSolarSystem.SolarSystemID;
                 setting.NameDbs = SelectedNameDbs.ToList();
-                IntelSettingService.SetValue(setting);
+                //IntelSettingService.SetValue(setting);
             }
         }
     }

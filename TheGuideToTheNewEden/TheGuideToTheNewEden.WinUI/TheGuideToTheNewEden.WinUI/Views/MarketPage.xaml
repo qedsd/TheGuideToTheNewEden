@@ -18,551 +18,620 @@
     <Page.DataContext>
         <viewmodels:MarketViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="0,0,0,8">
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid Width="300">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
-            <Button
-                Grid.Row="1"
-                Height="32"
-                Margin="16,4,16,0"
-                HorizontalAlignment="Stretch"
-                Content="{x:Bind VM.SelectedMarketName, Mode=OneWay}">
-                <Button.Flyout>
-                    <Flyout>
-                        <Grid
-                            x:Name="Flyout_SelecteMarket"
-                            Width="300"
-                            Height="400"
-                            Margin="-12">
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Pivot SelectedIndex="{x:Bind VM.SelectedMarketTypeIndex, Mode=TwoWay}">
-                                <PivotItem Margin="-4,0">
-                                    <PivotItem.Header>
-                                        <TextBlock FontSize="14" Text="{StaticResource General_Region}" />
-                                    </PivotItem.Header>
-                                    <controls:SelecteRegionControl SelectedItem="{x:Bind VM.SelectedRegion, Mode=TwoWay}" />
-                                </PivotItem>
-                                <PivotItem Margin="-4,0">
-                                    <PivotItem.Header>
-                                        <TextBlock FontSize="14" Text="{StaticResource General_Structure}" />
-                                    </PivotItem.Header>
-                                    <controls:StructureSelectorControl SelectedItem="{x:Bind VM.SelectedStructure, Mode=TwoWay}" />
-                                </PivotItem>
-                            </Pivot>
-                            <Grid Grid.Row="1" Margin="8,8,8,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Margin="8,0"
-                                    Text="{StaticResource MarketPage_SelecteMarket}" />
-                                <Rectangle
-                                    Grid.Column="2"
-                                    Height="1"
-                                    Fill="{ThemeResource SystemAccentColor}" />
-                            </Grid>
-                        </Grid>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-        </Grid>
-        <Grid Grid.Column="1" Margin="8,0"  Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Image
-                    Width="48"
-                    Height="48"
-                    Source="{x:Bind VM.SelectedInvTypeIcon, Mode=OneWay}" />
-                <Grid Grid.Column="1" Margin="8,0,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Margin="0,8"
-                            FontSize="18"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource SystemAccentColor}"
-                            Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
-                        <Button
-                            VerticalAlignment="Center"
-                            Margin="4,0,0,0"
-                            Background="Transparent"
-                            BorderThickness="0">
-                            <TextBlock
-                                FontFamily="Segoe MDL2 Assets"
-                                Text="&#xE171;"/>
-                            <Button.Flyout>
-                                <Flyout>
-                                    <TextBlock
-                                        MaxWidth="400"
-                                        Text="{x:Bind VM.SelectedInvType.Description, Mode=OneWay}"
-                                        TextWrapping="WrapWholeWords" />
-                                </Flyout>
-                            </Button.Flyout>
-                        </Button>
-                        <Button 
-                                VerticalAlignment="Center"
-                                ToolTipService.ToolTip="{StaticResource MarketPage_AddStar}"
-                                Background="Transparent"
-                                Command="{x:Bind VM.StarCommand}"
-                                BorderThickness="0"
-                                Margin="4,0,0,0"
-                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
-                            <TextBlock
-                                FontFamily="Segoe MDL2 Assets"
-                                Text="&#xE1CE;"/>
-                        </Button>
-                        <Button 
-                                VerticalAlignment="Center"
-                                ToolTipService.ToolTip="{StaticResource MarketPage_CancelStar}"
-                                Background="Transparent"
-                                Command="{x:Bind VM.StarCommand}"
-                                Foreground="LightSeaGreen"
-                                BorderThickness="0"
-                                Margin="4,0,0,0"
-                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                            <TextBlock
-                                FontFamily="Segoe MDL2 Assets"
-                                Text="&#xE1CE;"/>
-                        </Button>
-                        <Button 
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Margin="4,0,0,0">
-                            <TextBlock
-                                FontFamily="Segoe MDL2 Assets"
-                                Text="&#xE1D0;"/>
-                            <Button.Flyout>
-                                <Flyout>
-                                    <Grid Width="300">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <StackPanel>
-                                            <TextBlock Text="{StaticResource MarketPage_Cal_Buy}" FontSize="18" Foreground="{ThemeResource SystemAccentColor}"/>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_Amount}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <NumberBox Value="{x:Bind VM.CalBuyAmount, Mode=TwoWay}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
-                                                           HorizontalAlignment="Stretch"
-                                                           Grid.Column="1"/>
-                                            </Grid>
-                                            <CheckBox Content="{StaticResource MarketPage_Cal_AutoSetBuyPrice}"
-                                                      IsChecked="{x:Bind VM.AutoSetBuyPrice,Mode=TwoWay}"/>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch"
-                                                  Visibility="{x:Bind VM.AutoSetBuyPrice,Mode=OneWay,Converter={StaticResource FalseToVisibleConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_BuyPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <NumberBox Value="{x:Bind VM.CalBuyPrice, Mode=TwoWay}" Minimum="1" SpinButtonPlacementMode="Inline"
-                                                           HorizontalAlignment="Stretch"
-                                                           Grid.Column="1"/>
-                                            </Grid>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_TotalBuyPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="{x:Bind VM.CalBuyResult, Mode=OneWay,Converter={StaticResource StringFormatConverter},ConverterParameter={}{0:N2}}" VerticalAlignment="Center" Grid.Column="1"
-                                                           HorizontalAlignment="Right"
-                                                           Foreground="OrangeRed"
-                                                           FontSize="18"/>
-                                                <TextBlock Text="ISK" VerticalAlignment="Center" Margin="8,0,0,0" 
-                                                           Grid.Column="2"/>
-                                            </Grid>
-                                        </StackPanel>
-                                        <Rectangle Height="1" Margin="0,16" Fill="LightGray" Grid.Row="1"/>
-                                        <StackPanel Grid.Row="2">
-                                            <TextBlock Text="{StaticResource MarketPage_Cal_Sell}" FontSize="18" Foreground="{ThemeResource SystemAccentColor}"/>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_Amount}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <NumberBox Value="{x:Bind VM.CalSellAmount, Mode=TwoWay}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Inline"
-                                                           HorizontalAlignment="Stretch"
-                                                           Grid.Column="1"/>
-                                            </Grid>
-                                            <CheckBox Content="{StaticResource MarketPage_Cal_Sell_Immediately}"
-                                                      IsChecked="{x:Bind VM.CalSellImmediately,Mode=TwoWay}"/>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_SellPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <NumberBox Value="{x:Bind VM.CalSellPrice, Mode=TwoWay}" Minimum="1" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
-                                                           Grid.Column="1"/>
-                                            </Grid>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition/>
-                                                </Grid.ColumnDefinitions>
-                                                <NumberBox Value="{x:Bind VM.CalSalesTax, Mode=TwoWay,Converter={StaticResource N2DecimaFormatConverter},ConverterParameter={}{0:N2}}" Minimum="0" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
-                                                           Header="{StaticResource MarketPage_Cal_SalesTax}"
-                                                           SmallChange="0.1"/>
-                                                <NumberBox Value="{x:Bind VM.CalAgentTax, Mode=TwoWay,Converter={StaticResource N2DecimaFormatConverter},ConverterParameter={}{0:N2}}" Minimum="0" SpinButtonPlacementMode="Inline" HorizontalAlignment="Stretch"
-                                                           Grid.Column="1"
-                                                           SmallChange="0.1"
-                                                           Header="{StaticResource MarketPage_Cal_AgentTax}"
-                                                           Visibility="{x:Bind VM.CalSellImmediately,Mode=OneWay,Converter={StaticResource FalseToVisibleConverter}}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{StaticResource MarketPage_Cal_TotalSellPrice}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <TextBlock Text="{x:Bind VM.CalSellResult, Mode=OneWay,Converter={StaticResource StringFormatConverter},ConverterParameter={}{0:N2}}" VerticalAlignment="Center" Grid.Column="1"
-                                                           HorizontalAlignment="Right"
-                                                           Foreground="MediumSeaGreen"
-                                                           FontSize="18"/>
-                                                <TextBlock Text="ISK" VerticalAlignment="Center" Margin="8,0,0,0" 
-                                                           Grid.Column="2"/>
-                                            </Grid>
-                                        </StackPanel>
-                                    </Grid>
-                                </Flyout>
-                            </Button.Flyout>
-                        </Button>
-                    </StackPanel>
-                    <StackPanel
-                        Grid.Row="1"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock Text="{x:Bind VM.SelectedInvType.Volume, Mode=OneWay}" />
-                        <TextBlock Margin="2,0,0,0" Text="m³" />
-                    </StackPanel>
-                </Grid>
-                <Grid
-                    Grid.Column="3"
-                    Margin="0,0,8,0"
-                    HorizontalAlignment="Right">
-                    <Grid.Resources>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Center" />
-                        </Style>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
+        <controls:CardControl Width="300" Padding="0">
+            <controls:CardControl.Header>
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="48" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <TextBlock
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Text="{StaticResource MarketPage_TargetMarket}" />
+                    <Button
                         Grid.Column="1"
-                        Margin="8,0"
-                        Text="5%" />
-                    <TextBlock
-                        Grid.Column="2"
-                        Margin="8,0"
-                        Text="{StaticResource MarketPage_Mean}" />
-                    <TextBlock
-                        Grid.Column="3"
-                        Margin="8,0"
-                        Text="{StaticResource MarketPage_Amount}" />
-
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Text="{StaticResource MarketPage_Sell}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Margin="8,0"
-                        Text="{x:Bind VM.Sell5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="2"
-                        Margin="8,0"
-                        Text="{x:Bind VM.SellMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.Column="3"
-                        Margin="8,0"
-                        Text="{x:Bind VM.SellAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
-
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Text="{StaticResource MarketPage_Buy}" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Margin="8,0"
-                        Text="{x:Bind VM.Buy5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="2"
-                        Margin="8,0"
-                        Text="{x:Bind VM.BuyMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="3"
-                        Margin="8,0"
-                        Text="{x:Bind VM.BuyAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+                        Height="32"
+                        HorizontalAlignment="Stretch"
+                        Content="{x:Bind VM.SelectedMarketName, Mode=OneWay}">
+                        <Button.Flyout>
+                            <Flyout>
+                                <Grid
+                                    x:Name="Flyout_SelecteMarket"
+                                    Width="300"
+                                    Height="400"
+                                    Margin="-12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Pivot SelectedIndex="{x:Bind VM.SelectedMarketTypeIndex, Mode=TwoWay}">
+                                        <PivotItem Margin="-4,0">
+                                            <PivotItem.Header>
+                                                <TextBlock FontSize="14" Text="{StaticResource General_Region}" />
+                                            </PivotItem.Header>
+                                            <controls:SelecteRegionControl SelectedItem="{x:Bind VM.SelectedRegion, Mode=TwoWay}" />
+                                        </PivotItem>
+                                        <PivotItem Margin="-4,0">
+                                            <PivotItem.Header>
+                                                <TextBlock FontSize="14" Text="{StaticResource General_Structure}" />
+                                            </PivotItem.Header>
+                                            <controls:StructureSelectorControl SelectedItem="{x:Bind VM.SelectedStructure, Mode=TwoWay}" />
+                                        </PivotItem>
+                                    </Pivot>
+                                    <Grid Grid.Row="1" Margin="8,8,8,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Height="1" Fill="{ThemeResource SystemAccentColor}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="8,0"
+                                            Text="{StaticResource MarketPage_SelecteMarket}" />
+                                        <Rectangle
+                                            Grid.Column="2"
+                                            Height="1"
+                                            Fill="{ThemeResource SystemAccentColor}" />
+                                    </Grid>
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </Grid>
-            </Grid>
-            <Pivot Grid.Row="1" Margin="-10,0">
-                <PivotItem>
-                    <PivotItem.Header>
-                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
-                    </PivotItem.Header>
-                    <dataGrid:SfDataGrid
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Stretch"
-                        AllowDraggingColumns="True"
-                        AllowEditing="False"
-                        AllowFiltering="True"
-                        AllowGrouping="True"
-                        AllowResizingColumns="True"
-                        AllowSorting="True"
-                        AutoGenerateColumns="False"
-                        CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
-                        ColumnWidthMode="Auto"
-                        GridLinesVisibility="None"
-                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                        HeaderLinesVisibility="Both"
-                        ItemsSource="{x:Bind VM.SellOrders, Mode=OneWay}"
-                        SelectionMode="Extended"
-                        ShowGroupDropArea="True">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MarketPage_Amount}"
-                                MappingName="VolumeRemain" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource MarketPage_Price}"
-                                MappingName="Price" />
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
-                            <dataGrid:GridTextColumn
-                                DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
-                                HeaderText="{StaticResource MarketPage_Duration}"
-                                MappingName="RemainTime" />
-                            <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
-                </PivotItem>
-                <PivotItem>
-                    <PivotItem.Header>
-                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
-                    </PivotItem.Header>
-                    <dataGrid:SfDataGrid
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Stretch"
-                        AllowDraggingColumns="True"
-                        AllowEditing="False"
-                        AllowFiltering="True"
-                        AllowGrouping="True"
-                        AllowResizingColumns="True"
-                        AllowSorting="True"
-                        AutoGenerateColumns="False"
-                        CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
-                        ColumnWidthMode="Auto"
-                        GridLinesVisibility="None"
-                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                        HeaderLinesVisibility="Both"
-                        ItemsSource="{x:Bind VM.BuyOrders, Mode=OneWay}"
-                        SelectionMode="Extended"
-                        ShowGroupDropArea="True">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MarketPage_Amount}"
-                                MappingName="VolumeRemain" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource MarketPage_Price}"
-                                MappingName="Price" />
-                            <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MarketPage_MinVolume}"
-                                MappingName="MinVolume" />
-                            <dataGrid:GridTextColumn
-                                DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
-                                HeaderText="{StaticResource MarketPage_Duration}"
-                                MappingName="RemainTime" />
-                            <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
-                </PivotItem>
-                <PivotItem>
-                    <PivotItem.Header>
-                        <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
-                    </PivotItem.Header>
-                    <Grid>
-                        <Pivot Margin="-12,-18,-10,0">
-                            <PivotItem>
-                                <PivotItem.Header>
-                                    <TextBlock FontSize="13" Text="{StaticResource MarketPage_Price}" />
-                                </PivotItem.Header>
-                                <chart:SfCartesianChart Margin="0,2,0,0">
-                                    <chart:SfCartesianChart.XAxes>
-                                        <chart:DateTimeAxis
-                                            Interval="1"
-                                            IntervalType="Months"
-                                            PlotOffsetEnd="15"
-                                            PlotOffsetStart="15"
-                                            ShowMajorGridLines="False"
-                                            ShowTrackballLabel="True">
-                                            <chart:DateTimeAxis.LabelStyle>
-                                                <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
-                                            </chart:DateTimeAxis.LabelStyle>
-                                        </chart:DateTimeAxis>
 
-                                    </chart:SfCartesianChart.XAxes>
-
-                                    <chart:SfCartesianChart.YAxes>
-                                        <chart:NumericalAxis ShowTrackballLabel="True">
-                                            <chart:NumericalAxis.LabelStyle>
-                                                <chart:LabelStyle LabelFormat="n2" />
-                                            </chart:NumericalAxis.LabelStyle>
-                                        </chart:NumericalAxis>
-                                    </chart:SfCartesianChart.YAxes>
-
-                                    <chart:FastLineSeries
-                                        EnableAnimation="True"
-                                        EnableTooltip="False"
-                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
-                                        Label="{StaticResource MarketPage_StatisticHighest}"
-                                        XBindingPath="Date"
-                                        YBindingPath="Highest" />
-                                    <chart:FastLineSeries
-                                        EnableAnimation="True"
-                                        EnableTooltip="False"
-                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
-                                        Label="{StaticResource MarketPage_StatisticAverage}"
-                                        XBindingPath="Date"
-                                        YBindingPath="Average" />
-                                    <chart:FastLineSeries
-                                        EnableAnimation="True"
-                                        EnableTooltip="False"
-                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
-                                        Label="{StaticResource MarketPage_StatisticLowest}"
-                                        XBindingPath="Date"
-                                        YBindingPath="Lowest" />
-
-                                    <chart:SfCartesianChart.ZoomPanBehavior>
-                                        <chart:ChartZoomPanBehavior
-                                            EnableMouseWheelZooming="True"
-                                            EnablePanning="True"
-                                            EnablePinchZooming="True"
-                                            ZoomMode="XY" />
-                                    </chart:SfCartesianChart.ZoomPanBehavior>
-                                    <chart:SfCartesianChart.TrackballBehavior>
-                                        <chart:ChartTrackballBehavior UseSeriesPalette="True" />
-                                    </chart:SfCartesianChart.TrackballBehavior>
-                                </chart:SfCartesianChart>
-                            </PivotItem>
-                            <PivotItem>
-                                <PivotItem.Header>
-                                    <TextBlock FontSize="13" Text="{StaticResource MarketPage_StatisticVolume}" />
-                                </PivotItem.Header>
-                                <chart:SfCartesianChart Margin="0,2,0,0">
-                                    <chart:SfCartesianChart.XAxes>
-                                        <chart:DateTimeAxis
-                                            Interval="1"
-                                            IntervalType="Months"
-                                            PlotOffsetEnd="15"
-                                            PlotOffsetStart="15"
-                                            ShowMajorGridLines="False"
-                                            ShowTrackballLabel="True">
-                                            <chart:DateTimeAxis.LabelStyle>
-                                                <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
-                                            </chart:DateTimeAxis.LabelStyle>
-                                        </chart:DateTimeAxis>
-
-                                    </chart:SfCartesianChart.XAxes>
-
-                                    <chart:SfCartesianChart.YAxes>
-                                        <chart:NumericalAxis ShowTrackballLabel="True">
-                                            <chart:NumericalAxis.LabelStyle>
-                                                <chart:LabelStyle LabelFormat="n2" />
-                                            </chart:NumericalAxis.LabelStyle>
-                                        </chart:NumericalAxis>
-                                    </chart:SfCartesianChart.YAxes>
-
-                                    <chart:FastLineSeries
-                                        EnableAnimation="True"
-                                        EnableTooltip="False"
-                                        ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
-                                        Label="{StaticResource MarketPage_StatisticVolume}"
-                                        XBindingPath="Date"
-                                        YBindingPath="Volume" />
-
-                                    <chart:SfCartesianChart.ZoomPanBehavior>
-                                        <chart:ChartZoomPanBehavior
-                                            EnableMouseWheelZooming="True"
-                                            EnablePanning="True"
-                                            EnablePinchZooming="True"
-                                            ZoomMode="XY" />
-                                    </chart:SfCartesianChart.ZoomPanBehavior>
-                                    <chart:SfCartesianChart.TrackballBehavior>
-                                        <chart:ChartTrackballBehavior UseSeriesPalette="True" />
-                                    </chart:SfCartesianChart.TrackballBehavior>
-                                </chart:SfCartesianChart>
-                            </PivotItem>
-                        </Pivot>
-                        <ComboBox HorizontalAlignment="Right" SelectedIndex="{x:Bind VM.HistoryRangeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="{StaticResource MarketPage_History1}" />
-                            <ComboBoxItem Content="{StaticResource MarketPage_History3}" />
-                            <ComboBoxItem Content="{StaticResource MarketPage_History6}" />
-                            <ComboBoxItem Content="{StaticResource MarketPage_History12}" />
-                            <ComboBoxItem Content="{StaticResource MarketPage_HistoryAll}" />
-                        </ComboBox>
+            </controls:CardControl.Header>
+            <controls:CardControl.Content>
+                <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
+            </controls:CardControl.Content>
+        </controls:CardControl>
+        <controls:CardControl
+            Grid.Column="1"
+            Margin="8,0,0,0"
+            Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls:CardControl.Header>
+                <Grid Margin="0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Width="48"
+                        Height="48"
+                        Source="{x:Bind VM.SelectedInvTypeIcon, Mode=OneWay}" />
+                    <Grid Grid.Column="1" Margin="8,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,8"
+                                VerticalAlignment="Center"
+                                FontSize="18"
+                                Foreground="{ThemeResource SystemAccentColor}"
+                                Text="{x:Bind VM.SelectedInvType.TypeName, Mode=OneWay}" />
+                            <Button
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE171;" />
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <TextBlock
+                                            MaxWidth="400"
+                                            Text="{x:Bind VM.SelectedInvType.Description, Mode=OneWay}"
+                                            TextWrapping="WrapWholeWords" />
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                            <Button
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{x:Bind VM.StarCommand}"
+                                ToolTipService.ToolTip="{StaticResource MarketPage_AddStar}"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE1CE;" />
+                            </Button>
+                            <Button
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{x:Bind VM.StarCommand}"
+                                Foreground="LightSeaGreen"
+                                ToolTipService.ToolTip="{StaticResource MarketPage_CancelStar}"
+                                Visibility="{x:Bind VM.Stared, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE1CE;" />
+                            </Button>
+                            <Button
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE1D0;" />
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <Grid Width="300">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontSize="18"
+                                                    Foreground="{ThemeResource SystemAccentColor}"
+                                                    Text="{StaticResource MarketPage_Cal_Buy}" />
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_Amount}" />
+                                                    <NumberBox
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        Minimum="1"
+                                                        SmallChange="1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Value="{x:Bind VM.CalBuyAmount, Mode=TwoWay}" />
+                                                </Grid>
+                                                <CheckBox Content="{StaticResource MarketPage_Cal_AutoSetBuyPrice}" IsChecked="{x:Bind VM.AutoSetBuyPrice, Mode=TwoWay}" />
+                                                <Grid
+                                                    Margin="0,8"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind VM.AutoSetBuyPrice, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_BuyPrice}" />
+                                                    <NumberBox
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        Minimum="1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Value="{x:Bind VM.CalBuyPrice, Mode=TwoWay}" />
+                                                </Grid>
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_TotalBuyPrice}" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="18"
+                                                        Foreground="OrangeRed"
+                                                        Text="{x:Bind VM.CalBuyResult, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="ISK" />
+                                                </Grid>
+                                            </StackPanel>
+                                            <Rectangle
+                                                Grid.Row="1"
+                                                Height="1"
+                                                Margin="0,16"
+                                                Fill="LightGray" />
+                                            <StackPanel Grid.Row="2">
+                                                <TextBlock
+                                                    FontSize="18"
+                                                    Foreground="{ThemeResource SystemAccentColor}"
+                                                    Text="{StaticResource MarketPage_Cal_Sell}" />
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_Amount}" />
+                                                    <NumberBox
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        Minimum="1"
+                                                        SmallChange="1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Value="{x:Bind VM.CalSellAmount, Mode=TwoWay}" />
+                                                </Grid>
+                                                <CheckBox Content="{StaticResource MarketPage_Cal_Sell_Immediately}" IsChecked="{x:Bind VM.CalSellImmediately, Mode=TwoWay}" />
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_SellPrice}" />
+                                                    <NumberBox
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        Minimum="1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Value="{x:Bind VM.CalSellPrice, Mode=TwoWay}" />
+                                                </Grid>
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <NumberBox
+                                                        HorizontalAlignment="Stretch"
+                                                        Header="{StaticResource MarketPage_Cal_SalesTax}"
+                                                        Minimum="0"
+                                                        SmallChange="0.1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Value="{x:Bind VM.CalSalesTax, Mode=TwoWay, Converter={StaticResource N2DecimaFormatConverter}, ConverterParameter={}{0:N2}}" />
+                                                    <NumberBox
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        Header="{StaticResource MarketPage_Cal_AgentTax}"
+                                                        Minimum="0"
+                                                        SmallChange="0.1"
+                                                        SpinButtonPlacementMode="Inline"
+                                                        Visibility="{x:Bind VM.CalSellImmediately, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}"
+                                                        Value="{x:Bind VM.CalAgentTax, Mode=TwoWay, Converter={StaticResource N2DecimaFormatConverter}, ConverterParameter={}{0:N2}}" />
+                                                </Grid>
+                                                <Grid Margin="0,8" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{StaticResource MarketPage_Cal_TotalSellPrice}" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="18"
+                                                        Foreground="MediumSeaGreen"
+                                                        Text="{x:Bind VM.CalSellResult, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="ISK" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Row="1"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind VM.SelectedInvType.Volume, Mode=OneWay}" />
+                            <TextBlock Margin="2,0,0,0" Text="m³" />
+                        </StackPanel>
                     </Grid>
-                </PivotItem>
-            </Pivot>
-        </Grid>
+                    <Grid
+                        Grid.Column="3"
+                        Margin="0,0,8,0"
+                        HorizontalAlignment="Right">
+                        <Grid.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                            </Style>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="8,0"
+                            Text="5%" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="8,0"
+                            Text="{StaticResource MarketPage_Mean}" />
+                        <TextBlock
+                            Grid.Column="3"
+                            Margin="8,0"
+                            Text="{StaticResource MarketPage_Amount}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Text="{StaticResource MarketPage_Sell}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="8,0"
+                            Text="{x:Bind VM.Sell5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Margin="8,0"
+                            Text="{x:Bind VM.SellMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Margin="8,0"
+                            Text="{x:Bind VM.SellAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Text="{StaticResource MarketPage_Buy}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="8,0"
+                            Text="{x:Bind VM.Buy5P, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Margin="8,0"
+                            Text="{x:Bind VM.BuyMean, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Margin="8,0"
+                            Text="{x:Bind VM.BuyAmount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
+                    </Grid>
+                </Grid>
+            </controls:CardControl.Header>
+            <controls:CardControl.Content>
+                <Pivot Margin="-10,0">
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowResizingColumns="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            ItemsSource="{x:Bind VM.SellOrders, Mode=OneWay}"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
+                        </PivotItem.Header>
+                        <dataGrid:SfDataGrid
+                            Margin="0,4,0,0"
+                            HorizontalAlignment="Stretch"
+                            AllowDraggingColumns="True"
+                            AllowEditing="False"
+                            AllowFiltering="True"
+                            AllowGrouping="True"
+                            AllowResizingColumns="True"
+                            AllowSorting="True"
+                            AutoGenerateColumns="False"
+                            CellStyleSelector="{StaticResource SystemSecurityCellStyleSelector}"
+                            ColumnWidthMode="Auto"
+                            GridLinesVisibility="None"
+                            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                            HeaderLinesVisibility="Both"
+                            ItemsSource="{x:Bind VM.BuyOrders, Mode=OneWay}"
+                            SelectionMode="Extended"
+                            ShowGroupDropArea="True">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_Amount}"
+                                    MappingName="VolumeRemain" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource MarketPage_Price}"
+                                    MappingName="Price" />
+                                <dataGrid:GridNumericColumn HeaderText="{StaticResource MarketPage_Security}" MappingName="Security" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="LocationName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="SolarSystem.SolarSystemName" />
+                                <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Range" />
+                                <dataGrid:GridNumericColumn
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MarketPage_MinVolume}"
+                                    MappingName="MinVolume" />
+                                <dataGrid:GridTextColumn
+                                    DisplayBinding="{Binding RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                                    HeaderText="{StaticResource MarketPage_Duration}"
+                                    MappingName="RemainTime" />
+                                <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="LocationId" />
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource MarketPage_History}" />
+                        </PivotItem.Header>
+                        <Grid>
+                            <Pivot Margin="-12,-18,-10,0">
+                                <PivotItem>
+                                    <PivotItem.Header>
+                                        <TextBlock FontSize="13" Text="{StaticResource MarketPage_Price}" />
+                                    </PivotItem.Header>
+                                    <chart:SfCartesianChart Margin="0,2,0,0">
+                                        <chart:SfCartesianChart.XAxes>
+                                            <chart:DateTimeAxis
+                                                Interval="1"
+                                                IntervalType="Months"
+                                                PlotOffsetEnd="15"
+                                                PlotOffsetStart="15"
+                                                ShowMajorGridLines="False"
+                                                ShowTrackballLabel="True">
+                                                <chart:DateTimeAxis.LabelStyle>
+                                                    <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                </chart:DateTimeAxis.LabelStyle>
+                                            </chart:DateTimeAxis>
+
+                                        </chart:SfCartesianChart.XAxes>
+
+                                        <chart:SfCartesianChart.YAxes>
+                                            <chart:NumericalAxis ShowTrackballLabel="True">
+                                                <chart:NumericalAxis.LabelStyle>
+                                                    <chart:LabelStyle LabelFormat="n2" />
+                                                </chart:NumericalAxis.LabelStyle>
+                                            </chart:NumericalAxis>
+                                        </chart:SfCartesianChart.YAxes>
+
+                                        <chart:FastLineSeries
+                                            EnableAnimation="True"
+                                            EnableTooltip="False"
+                                            ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                            Label="{StaticResource MarketPage_StatisticHighest}"
+                                            XBindingPath="Date"
+                                            YBindingPath="Highest" />
+                                        <chart:FastLineSeries
+                                            EnableAnimation="True"
+                                            EnableTooltip="False"
+                                            ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                            Label="{StaticResource MarketPage_StatisticAverage}"
+                                            XBindingPath="Date"
+                                            YBindingPath="Average" />
+                                        <chart:FastLineSeries
+                                            EnableAnimation="True"
+                                            EnableTooltip="False"
+                                            ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                            Label="{StaticResource MarketPage_StatisticLowest}"
+                                            XBindingPath="Date"
+                                            YBindingPath="Lowest" />
+
+                                        <chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:ChartZoomPanBehavior
+                                                EnableMouseWheelZooming="True"
+                                                EnablePanning="True"
+                                                EnablePinchZooming="True"
+                                                ZoomMode="XY" />
+                                        </chart:SfCartesianChart.ZoomPanBehavior>
+                                        <chart:SfCartesianChart.TrackballBehavior>
+                                            <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                        </chart:SfCartesianChart.TrackballBehavior>
+                                    </chart:SfCartesianChart>
+                                </PivotItem>
+                                <PivotItem>
+                                    <PivotItem.Header>
+                                        <TextBlock FontSize="13" Text="{StaticResource MarketPage_StatisticVolume}" />
+                                    </PivotItem.Header>
+                                    <chart:SfCartesianChart Margin="0,2,0,0">
+                                        <chart:SfCartesianChart.XAxes>
+                                            <chart:DateTimeAxis
+                                                Interval="1"
+                                                IntervalType="Months"
+                                                PlotOffsetEnd="15"
+                                                PlotOffsetStart="15"
+                                                ShowMajorGridLines="False"
+                                                ShowTrackballLabel="True">
+                                                <chart:DateTimeAxis.LabelStyle>
+                                                    <chart:LabelStyle LabelFormat="yyyy.MM.dd" />
+                                                </chart:DateTimeAxis.LabelStyle>
+                                            </chart:DateTimeAxis>
+
+                                        </chart:SfCartesianChart.XAxes>
+
+                                        <chart:SfCartesianChart.YAxes>
+                                            <chart:NumericalAxis ShowTrackballLabel="True">
+                                                <chart:NumericalAxis.LabelStyle>
+                                                    <chart:LabelStyle LabelFormat="n2" />
+                                                </chart:NumericalAxis.LabelStyle>
+                                            </chart:NumericalAxis>
+                                        </chart:SfCartesianChart.YAxes>
+
+                                        <chart:FastLineSeries
+                                            EnableAnimation="True"
+                                            EnableTooltip="False"
+                                            ItemsSource="{x:Bind VM.StatisticsForShow, Mode=OneWay}"
+                                            Label="{StaticResource MarketPage_StatisticVolume}"
+                                            XBindingPath="Date"
+                                            YBindingPath="Volume" />
+
+                                        <chart:SfCartesianChart.ZoomPanBehavior>
+                                            <chart:ChartZoomPanBehavior
+                                                EnableMouseWheelZooming="True"
+                                                EnablePanning="True"
+                                                EnablePinchZooming="True"
+                                                ZoomMode="XY" />
+                                        </chart:SfCartesianChart.ZoomPanBehavior>
+                                        <chart:SfCartesianChart.TrackballBehavior>
+                                            <chart:ChartTrackballBehavior UseSeriesPalette="True" />
+                                        </chart:SfCartesianChart.TrackballBehavior>
+                                    </chart:SfCartesianChart>
+                                </PivotItem>
+                            </Pivot>
+                            <ComboBox HorizontalAlignment="Right" SelectedIndex="{x:Bind VM.HistoryRangeIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="{StaticResource MarketPage_History1}" />
+                                <ComboBoxItem Content="{StaticResource MarketPage_History3}" />
+                                <ComboBoxItem Content="{StaticResource MarketPage_History6}" />
+                                <ComboBoxItem Content="{StaticResource MarketPage_History12}" />
+                                <ComboBoxItem Content="{StaticResource MarketPage_HistoryAll}" />
+                            </ComboBox>
+                        </Grid>
+                    </PivotItem>
+                </Pivot>
+            </controls:CardControl.Content>
+        </controls:CardControl>
     </Grid>
 </Page>

@@ -38,9 +38,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// 一个角色绑定一个
         /// </summary>
         private Dictionary<string, SoundNotifyItem> SoundNotifyItems = new Dictionary<string, SoundNotifyItem>();
-        public bool Add(Core.Models.EarlyWarningSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
+        public bool Add(Core.Models.ChannelIntel.ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
-            if(setting.OverlapType != 2)//初始化小窗
+            if(setting.OverlapNotify)//初始化小窗
             {
                 if (WarningWindows.ContainsKey(setting.Listener))
                 {
@@ -80,11 +80,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     window.Dispose();
                 }
                 WarningWindows.Remove(listener);
-                //if (MediaPlayers.TryGetValue(listener, out var mediaPlayer))
-                //{
-                //    mediaPlayer.Dispose();
-                //}
-                //MediaPlayers.Remove(listener);
+                if (SoundNotifyItems.TryGetValue(listener, out var item))
+                {
+                    item.Dispose();
+                }
+                SoundNotifyItems.Remove(listener);
             }
             return true;
         }
@@ -100,7 +100,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private object _notifyLocker = new object();
-        public bool Notify(string listener, WarningSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
+        public bool Notify(string listener, Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting, bool sendToast, string chanel, EarlyWarningContent content)
         {
             try
             {
@@ -200,7 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             Listener = listener;
         }
-        public void PlaySound(WarningSoundSetting soundSetting)
+        public void PlaySound(Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting)
         {
             string soundFile = string.IsNullOrEmpty(soundSetting.FilePath) ? DefaultMediaFile : soundSetting.FilePath;
             MediaPlayer mediaPlayer;

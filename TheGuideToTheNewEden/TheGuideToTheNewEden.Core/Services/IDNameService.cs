@@ -46,9 +46,9 @@ namespace TheGuideToTheNewEden.Core.Services
                             }
                             IDNameDBService.Insert(dic.Values.ToList());
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
-                            Core.Log.Error(ex);
+                            //Core.Log.Error(ex);
                         }
                         Thread.Sleep(1000);//一秒钟检查一次是否有插入
                     }

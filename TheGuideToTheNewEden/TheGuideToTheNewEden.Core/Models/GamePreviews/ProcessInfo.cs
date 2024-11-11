@@ -12,7 +12,9 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
     {
         public System.Diagnostics.Process Process { get; set; }
         public IntPtr MainWindowHandle { get; set; }
-        public string WindowTitle { get; set; }
+        private string _windowTitle;
+        public string WindowTitle{ get => _windowTitle; set => SetProperty(ref _windowTitle, value); }
+        
         public string ProcessName { get; set; }
         private bool running;
         public bool Running
@@ -27,11 +29,10 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             if(!string.IsNullOrEmpty(WindowTitle))
             {
-                var array = WindowTitle.Split('-');
-                if(array.Length == 2)
+                int index = WindowTitle.IndexOf('-');
+                if(index > -1)
                 {
-                    string name =  array[1].Trim();
-                    return name == "{[character]player.name}" ? null : name;
+                    return WindowTitle.Substring(index + 1).Trim();
                 }
             }
             return null;
@@ -61,16 +62,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
 
         private string _guid = Guid.NewGuid().ToString();
 
-        private string settingName;
-        public string SettingName
-        {
-            get => settingName;
-            set
-            {
-                SetProperty(ref settingName, value);
-                ShowSettingName = !string.IsNullOrEmpty(value);
-            }
-        }
 
         private bool showSettingName;
         public bool ShowSettingName

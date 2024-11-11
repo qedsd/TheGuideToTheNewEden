@@ -14,6 +14,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             //Time = DateTime.Now;
         }
+        public string Listener { get; set; }
         public DateTime Time { get; set; }
         public int SolarSystemId { get; set; }
         public string SolarSystemName { get; set; }

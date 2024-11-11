@@ -8,10 +8,15 @@
     <x:String x:Key="Setting_Theme_Default">系统默认</x:String>
     <x:String x:Key="Setting_Theme_Light">亮</x:String>
     <x:String x:Key="Setting_Backdrop_Title">背景</x:String>
+    <x:String x:Key="Setting_Backdrop_None">无</x:String>
+    <x:String x:Key="Setting_Backdrop_Transparent">透明</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture">自定义图片</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_File">图片路径</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">覆盖图层颜色</x:String>
     <x:String x:Key="Setting_UILanguage_Description">修改界面语言后，需要重启应用程序</x:String>
     <x:String x:Key="Setting_UILanguage_Title">界面语言</x:String>
-    <x:String x:Key="Setting_LocalDb_Description">物品数据库显示语言。修改后需要重启软件</x:String>
-    <x:String x:Key="Setting_LocalDb_Title">数据库语言</x:String>
+    <x:String x:Key="Setting_LocalDb_Description">本地化物品数据库显示语言，修改后需要重启软件</x:String>
+    <x:String x:Key="Setting_LocalDb_Title">本地化数据库语言</x:String>
     <x:String x:Key="Setting_GameServer_Description">修改使用的游戏服务器后，部分功能可能需要重启生效</x:String>
     <x:String x:Key="Setting_GameServer_Title">游戏服务器</x:String>
     <x:String x:Key="Setting_PlayerStatus_Description">统计服务器在线人数、贴吧活跃度的API服务器地址</x:String>
@@ -37,6 +42,7 @@
     <x:String x:Key="General_Name">名称</x:String>
     <x:String x:Key="General_Quantity">数量</x:String>
     <x:String x:Key="General_Refresh">刷新</x:String>
+    <x:String x:Key="General_RefreshList">刷新列表</x:String>
     <x:String x:Key="General_Update">更新</x:String>
     <x:String x:Key="General_RemoveSelected">删除选中</x:String>
     <x:String x:Key="General_Remove">删除</x:String>
@@ -52,7 +58,9 @@
     <x:String x:Key="General_Minute">分钟</x:String>
     <x:String x:Key="General_Second">秒</x:String>
     <x:String x:Key="General_Start">开始</x:String>
+    <x:String x:Key="General_StartAll">开始全部</x:String>
     <x:String x:Key="General_Stop">停止</x:String>
+    <x:String x:Key="General_StopAll">停止全部</x:String>
     <x:String x:Key="General_OK">确定</x:String>
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
@@ -219,6 +227,7 @@
     <x:String x:Key="StructuresSettingPage_EmptyTip">请前往设置-玩家建筑添加建筑</x:String>
 
     <!--  MarketPage  -->
+    <x:String x:Key="MarketPage_TargetMarket">当前市场</x:String>
     <x:String x:Key="MarketPage_AllList">列表</x:String>
     <x:String x:Key="MarketPage_Star">收藏</x:String>
     <x:String x:Key="MarketPage_AddStar">添加收藏</x:String>
@@ -379,7 +388,7 @@
     <x:String x:Key="DEDPage_Guristas">古斯塔斯</x:String>
     <x:String x:Key="DEDPage_UnkownLevel">未定级</x:String>
 
-    <x:String x:Key="GeneralSettingPage_NeedLocalization">本地化数据库</x:String>
+    <x:String x:Key="GeneralSettingPage_NeedLocalization">使用本地化数据库</x:String>
 
     <x:String x:Key="AddSerenityAuthDialog_Step0">步骤0：点击下方按钮退出浏览器已登陆的账号，无视页面错误然后开始步骤1</x:String>
     <x:String x:Key="AddSerenityAuthDialog_Step0Button">登出</x:String>
@@ -472,10 +481,60 @@
     <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">行/列最大窗口个数</x:String>
     <x:String x:Key="GamePreviewMgrPage_RespondGlobalHotKey">响应全局切换快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ShowPreviewWindow">显示预览窗口</x:String>
-    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">显示预览窗口模式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">显示模式</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode1">模式1（WinUI带标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode2">模式2（WinUI无标题栏）</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode3">模式3（WPF无标题栏）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">注册热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">注册向后热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">注册向前热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeySuccessful">注册向后热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeySuccessful">注册向前热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_EmptyCharacterName">未识别到角色名称，将不保存设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_CannotFindTargetWindow">不存在目标进程窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NoRunning">无激活窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetUniformSizeSuccessful">已应用窗口尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_Tip">进程关键词</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_PlaceholderText">多个关键词时，使用符号,分割</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Running_Tip">预览中</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessList">进程列表</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始全部时包含未开始过的进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">自动开始预览新进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize">统一窗口大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">将所有的预览窗口设置为指定的大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformWidth">窗口宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformHeight">窗口高度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Apply">应用</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout">自动对齐窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutTip">以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout_Mode">对齐方式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutAnchor">对齐位置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutSpan">对齐间隔</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HideOnForeground">游戏窗口活动时隐藏预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">预览窗口高亮</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">游戏窗口活动时高亮预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllSetting">开始全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindow">预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HotKeySetting">激活快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightBorder">边框宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartPrivew">开始预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StopPrivew">停止预览</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
@@ -493,7 +552,8 @@
     <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
     <x:String x:Key="GameLogMonitorPage_Running">监控中</x:String>
     <x:String x:Key="GameLogMonitorPage_AddKey">添加关键词</x:String>
-    <x:String x:Key="GameLogMonitorPage_Start">开始</x:String>
+    <x:String x:Key="GameLogMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="GameLogMonitorPage_Stop">停止监控</x:String>
     <x:String x:Key="GameLogMonitorPage_StopNotify">清除通知</x:String>
     <x:String x:Key="GameLogMonitorPage_StopNotify_Tip">停止播放通知声等</x:String>
     <x:String x:Key="GameLogMonitorPage_SystemNotify">系统通知</x:String>
@@ -503,7 +563,7 @@
     <x:String x:Key="GameLogMonitorPage_Default">默认</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey">监控关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
-    <x:String x:Key="GameLogMonitorPage_Setting">设置</x:String>
+    <x:String x:Key="GameLogMonitorPage_Setting">监控设置</x:String>
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
@@ -519,6 +579,8 @@
     <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
     <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
+    <x:String x:Key="GameLogMonitorPage_Logs">实时日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundFile">音频文件</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>
@@ -537,15 +599,6 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
-
-    <!--  TestSettingPage  -->
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
-    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
 
     <!--  LinksPage  -->
     <x:String x:Key="LinksPage_Name">名字</x:String>
@@ -567,10 +620,15 @@
     <x:String x:Key="LinksPage_Remove">删除链接</x:String>
 
     <!--  ChannelMonitorPage  -->
+    <x:String x:Key="ChannelMonitorPage_TargetCharacter">监控角色</x:String>
     <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
     <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
     <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
     <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelLogs">频道内容</x:String>
+    <x:String x:Key="ChannelMonitorPage_SoundFile">音频文件</x:String>
+    <x:String x:Key="ChannelMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="ChannelMonitorPage_Stop">停止监控</x:String>
 
     <!--  ZKB  -->
     <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
@@ -742,6 +800,7 @@
 
     <!--  EarlyWarningPage  -->
     <x:String x:Key="EarlyWarningPage_SubZKB">ZKB预警</x:String>
+    <x:String x:Key="EarlyWarningPage_SubZKB_Error">订阅ZKB预警失败</x:String>
     <x:String x:Key="EarlyWarningPage_KBTime">有效时长(s)</x:String>
     <x:String x:Key="EarlyWarningPage_Befor_Min">分钟前</x:String>
     <x:String x:Key="EarlyWarningPage_Befor_Sec">秒前</x:String>
@@ -904,4 +963,61 @@
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">计算</x:String>
     <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
+
+    <!--  ChannelIntelPage  -->
+    <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Stop">停止预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Running">预警中</x:String>
+    <x:String x:Key="ChannelIntelPage_Characters">角色列表</x:String>
+    <x:String x:Key="ChannelIntelPage_Setting">预警设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ChannelName">频道名称</x:String>
+    <x:String x:Key="ChannelIntelPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelIntelPage_Channels">频道列表</x:String>
+    <x:String x:Key="ChannelIntelPage_RefreshChannels">刷新列表</x:String>
+    <x:String x:Key="ChannelIntelPage_LocalSystem">本地位置</x:String>
+    <x:String x:Key="ChannelIntelPage_SearchSystem">搜索星系</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoUpdateLocation">自动更新本地位置</x:String>
+    <x:String x:Key="ChannelIntelPage_Jumps">范围跳数</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapShowType">显示模式</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Alwasys">一直显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_WhenNeed">必要时显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Never">不显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle">显示样式</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Default">默认</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_SMT">SMT</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Near2">Near2</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear">自动解除预警</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear_Tip">触发预警多少分钟后自动解除相关星系预警</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade">自动降低预警级别</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade_Tip">触发预警多少分钟后自动降低相关星系预警级别</x:String>
+    <x:String x:Key="ChannelIntelPage_MakeSound">预警声</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords">忽视预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords">解除预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs">预警星系名语言</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">聊天日志匹配预警星系时，需要支持哪些语言的星系名称</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="ChannelIntelPage_StopSound">清除声音</x:String>
+    <x:String x:Key="ChannelIntelPage_LatestIntelInfo">最新预警信息</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearAllIntel">清除所有预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Contents">频道内容</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapSetting">预警弹窗</x:String>
+    <x:String x:Key="ChannelIntelPage_RangeSetting">预警范围</x:String>
+    <x:String x:Key="ChannelIntelPage_SoundSetting">预警声音</x:String>
+    <x:String x:Key="ChannelIntelPage_NotifySetting">通知方式</x:String>
+    <x:String x:Key="ChannelIntelPage_KeywordSetting">关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_OtherSetting">其他</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Overlap">弹窗</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Sound">声音</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_System">系统</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB">ZKB预警</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB_Tip">间隔当前多少秒钟内的KB才会触发预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_NoLocaction">请设置角色当前所处星系</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_SystemNotSupport">当前星系不支持频道预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_UnselectedChatChanel">请选择预警频道</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_WarningServiceError">添加预警服务失败</x:String>
 </ResourceDictionary>

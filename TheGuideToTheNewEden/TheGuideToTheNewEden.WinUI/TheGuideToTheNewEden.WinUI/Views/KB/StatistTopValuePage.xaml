@@ -7,7 +7,7 @@
     xmlns:kb="using:TheGuideToTheNewEden.WinUI.ViewModels.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="Transparent"
+    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistTopValueViewModel x:Name="VM" />

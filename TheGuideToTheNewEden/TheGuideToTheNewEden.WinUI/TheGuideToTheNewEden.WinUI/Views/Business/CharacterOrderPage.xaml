@@ -54,7 +54,8 @@
         <Pivot
             x:Name="MainPivot"
             Grid.Row="1"
-            Margin="0,-4,0,0">
+            Margin="0,-4,0,0"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
             <PivotItem>
                 <PivotItem.Header>
                     <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Character}" />

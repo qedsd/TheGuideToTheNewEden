@@ -8,7 +8,7 @@
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="Transparent"
+    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistTopAllTimeViewModel x:Name="VM" />

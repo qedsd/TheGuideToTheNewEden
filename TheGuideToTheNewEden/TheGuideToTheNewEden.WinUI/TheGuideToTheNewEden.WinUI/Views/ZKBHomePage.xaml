@@ -12,7 +12,7 @@
     <Page.DataContext>
         <kb:ZKBHomeViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid>
+    <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -44,7 +44,11 @@
                 </AutoSuggestBox.ItemTemplate>
             </AutoSuggestBox>
         </StackPanel>
-        <Grid Grid.Row="1">
+        <Grid
+            Grid.Row="1"
+            Margin="0,4,0,0"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            CornerRadius="4">
             <controls:KBListControl
                 x:Name="KBListControl"
                 IdNameClicked="KBListControl_IdNameClicked"

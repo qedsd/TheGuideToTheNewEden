@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,19 @@ namespace TheGuideToTheNewEden.WinUI
     public partial class BaseWindow : Window
     {
         public WinUICommunity.IThemeService ThemeService { get; set; }
-        public BaseWindow(bool useThemeService = true)
+        public BaseWindow()
+        {
+            Init(true, true);
+        }
+        public BaseWindow(bool useThemeService)
+        {
+            Init(useThemeService, true);
+        }
+        public BaseWindow(bool useThemeService, bool useBackgroun)
+        {
+            Init(useThemeService, useBackgroun);
+        }
+        public void Init(bool useThemeService, bool useBackground)
         {
             this.InitializeComponent();
             if(useThemeService)
@@ -31,10 +44,12 @@ namespace TheGuideToTheNewEden.WinUI
                 ThemeService = new WinUICommunity.ThemeService();
                 ThemeService.Initialize(this, false);
                 ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
-                ThemeService.ConfigBackdrop(BackdropSelectorService.Value);
+                ThemeService.ConfigBackdrop();
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
+                BackdropSelectorService.OnCustomPictureFileChanged += BackdropSelectorService_OnCustomPictureFileChanged;
+                BackdropSelectorService.OnCustomPictureOverlapColorChanged += BackdropSelectorService_OnCustomPictureOverlapColorChanged;
             }
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
@@ -43,6 +58,13 @@ namespace TheGuideToTheNewEden.WinUI
             SetTitleBar(AppTitleBar);
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
+            if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
+            {
+                if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue))
+                {
+                    LoadCustomPicture();
+                }
+            }
         }
 
         public object MainContent
@@ -234,7 +256,7 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
-            if (BackdropSelectorService.Value == WinUICommunity.BackdropType.None)
+            if (BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.None)
             {
                 switch (theme)
                 {
@@ -256,16 +278,48 @@ namespace TheGuideToTheNewEden.WinUI
             }
         }
 
-        private void BackdropSelectorService_OnBackdropTypeChanged(object sender, WinUICommunity.BackdropType e)
+        private void BackdropSelectorService_OnBackdropTypeChanged(object sender, BackdropSelectorService.BackdropType e)
         {
-            if(e == WinUICommunity.BackdropType.None)
+            switch(e)
             {
-                ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+                case BackdropSelectorService.BackdropType.None: ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);break;
+                case BackdropSelectorService.BackdropType.CustomPicture:
+                    {
+                        ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+                        LoadCustomPicture();
+                    }
+                    break;
+                default:
+                    {
+                        MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);
+                        UnloadCustomPicture();
+                    }
+                    break;
             }
-            else
+        }
+
+        private void BackdropSelectorService_OnCustomPictureOverlapColorChanged(object sender, string e)
+        {
+            BackgroundBrush.Color = BackdropSelectorService.GetCustomPictureOverlapColor();
+        }
+
+        private void BackdropSelectorService_OnCustomPictureFileChanged(object sender, string e)
+        {
+            LoadCustomPicture();
+        }
+
+        private void LoadCustomPicture()
+        {
+            BackgroundGrid.Visibility = Visibility.Visible;
+            BackgroundBrush.Color = BackdropSelectorService.GetCustomPictureOverlapColor();
+            if (File.Exists(BackdropSelectorService.CustomPictureFileValue))
             {
-                MainWindowGrid.Background = new SolidColorBrush(Colors.Transparent);
+                BackgroundImage.ImageSource = new BitmapImage(new Uri(BackdropSelectorService.CustomPictureFileValue));
             }
+        }
+        private void UnloadCustomPicture()
+        {
+            BackgroundGrid.Visibility = Visibility.Collapsed;
         }
     }
 }

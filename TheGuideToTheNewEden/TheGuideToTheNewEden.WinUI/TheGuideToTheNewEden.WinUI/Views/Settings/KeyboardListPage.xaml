@@ -20,6 +20,7 @@
         AllowResizingColumns="True"
         AllowSorting="True"
         AutoGenerateColumns="False"
+        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
         ColumnWidthMode="Star"
         GridLinesVisibility="Both"
         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"

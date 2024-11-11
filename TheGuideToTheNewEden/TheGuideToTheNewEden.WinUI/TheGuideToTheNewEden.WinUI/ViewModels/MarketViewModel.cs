@@ -243,9 +243,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Window?.ShowWaiting("获取订单中...");
             try
             {
-                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID); ;
-                BuyOrders = orders.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
-                SellOrders = orders.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
+                BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
+                SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
                 SetOrderStatisticalInfo(SellOrders, BuyOrders);
             }
             catch (Exception ex)
@@ -263,10 +263,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             catch(Exception ex)
             {
-                Window?.HideWaiting();
                 Window?.ShowError(ex.Message);
                 Core.Log.Error(ex);
-                return;
+                StatisticsForShow = null;
+                Statistics = null;
             }
             Window?.HideWaiting();
         }
@@ -279,8 +279,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
             Window?.ShowWaiting("获取历史记录中...");
-            Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedStructure.RegionId);
-            SetStatistics();
+            try
+            {
+                Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedStructure.RegionId);
+                SetStatistics();
+            }
+            catch (Exception ex)
+            {
+                Window?.ShowError(ex.Message);
+                Core.Log.Error(ex);
+                StatisticsForShow = null;
+                Statistics = null;
+            }
             Window?.HideWaiting();
         }
         private void SetOrderStatisticalInfo(IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders)

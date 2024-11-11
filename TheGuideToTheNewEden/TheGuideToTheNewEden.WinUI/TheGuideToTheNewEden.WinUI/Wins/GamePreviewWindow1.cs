@@ -82,7 +82,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerWheelChanged += Content_PointerWheelChanged;
             MainUIElement.PointerPressed += Content_PointerPressed;
             MainUIElement.PointerReleased += Content_PointerReleased1;
-            _appWindow.Closing += AppWindow_Closing;
+            //_appWindow.Closing += AppWindow_Closing;
         }
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -119,6 +119,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         #region 屏蔽标题栏操作
         private void StopTitlebarOp()
         {
+            RestoreTitlebarOp();
             _appWindow.Closing += AppWindow_Closing;
             _appWindow.Changed += AppWindow_Changed;
         }
@@ -179,7 +180,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             });
         }
-        public override void Start(IntPtr sourceHWnd)
+        public override void PrivateStart(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
             _thumbHWnd = WindowCaptureHelper.Show(_windowHandle, sourceHWnd);
@@ -201,9 +202,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
             UpdateThumbnail();
             this.Activate();
-            _appWindow.Changed += AppWindow_Changed;
+            //_appWindow.Changed += AppWindow_Changed;
         }
-        public override void HideWindow()
+        public override void PrivateHideWindow()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -213,7 +214,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             });
         }
-        public override void ShowWindow(bool hHighlight = false)
+        public override void PrivateShowWindow(bool hHighlight = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -301,7 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <summary>
         /// 高亮
         /// </summary>
-        public override void Highlight()
+        public override void PrivateHighlight()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -314,7 +315,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <summary>
         /// 取消高亮
         /// </summary>
-        public override void CancelHighlight()
+        public override void PrivateCancelHighlight()
         {
             UpdateThumbnail();
         }

@@ -38,14 +38,51 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
-        private int selectedBackdropIndex = (int)BackdropSelectorService.Value;
+        private int selectedBackdropIndex = (int)BackdropSelectorService.BackdropTypeValue;
         public int SelectedBackdropIndex
         {
             get => selectedBackdropIndex;
             set
             {
-                selectedBackdropIndex = value;
+                SetProperty(ref selectedBackdropIndex, value);
                 BackdropSelectorService.Set(selectedBackdropIndex);
+                CustomBackdropPicture = value == (int)BackdropSelectorService.BackdropType.CustomPicture;
+            }
+        }
+
+        private bool _customBackdropPicture = BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture;
+        public bool CustomBackdropPicture
+        {
+            get => _customBackdropPicture;
+            set
+            {
+                SetProperty(ref _customBackdropPicture, value);
+            }
+        }
+
+        private Windows.UI.Color _customPictureOverlapColor = BackdropSelectorService.GetCustomPictureOverlapColor();
+        public Windows.UI.Color CustomPictureOverlapColor
+        {
+            get => _customPictureOverlapColor;
+            set
+            {
+                if(SetProperty(ref _customPictureOverlapColor, value))
+                {
+                    BackdropSelectorService.SetCustomPictureOverlapColor(value.ToString());
+                }
+            }
+        }
+
+        private string _customPictureFile = BackdropSelectorService.CustomPictureFileValue;
+        public string CustomPictureFile
+        {
+            get => _customPictureFile;
+            set
+            {
+                if (SetProperty(ref _customPictureFile, value))
+                {
+                    BackdropSelectorService.SetCustomPictureFile(value);
+                }
             }
         }
 
@@ -168,6 +205,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand CheckConfigCommand => new RelayCommand(() =>
         {
             System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs"));
+        });
+
+        public ICommand PickCustomBackdropPictureCommand => new RelayCommand(async () =>
+        {
+            try
+            {
+                var file = await Helpers.PickHelper.PickFileAsync(Helpers.WindowHelper.MainWindow);
+                if (file != null)
+                {
+                    CustomPictureFile = file.Path;
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                (Helpers.WindowHelper.MainWindow as BaseWindow)?.ShowError(ex.Message);
+            }
         });
     }
 }

@@ -182,10 +182,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         public ICommand GetOrdersCommand => new RelayCommand(async () =>
         {
             Window?.ShowWaiting("获取订单中");
-            if (IsValid())
+            try
             {
-                SaveSetting();
-                await GetOrders();
+                if (IsValid())
+                {
+                    SaveSetting();
+                    await GetOrders();
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
             }
             Window?.HideWaiting();
         });
@@ -259,91 +267,93 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取源市场订单历史中（{page}物品）");
+                Window?.ShowWaiting($"获取源市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private void GetDestinationHistoryPageCallBack(int page, string tag)
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取目的市场订单历史中（{page}物品）");
+                Window?.ShowWaiting($"获取目的市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
         {
-            try
+            List<Core.Models.Market.Order> orders = null;
+            switch (Setting.SourceMarketLocation.Type)
             {
-                List<Core.Models.Market.Order> orders = null;
-                switch (Setting.SourceMarketLocation.Type)
-                {
-                    case MarketLocationType.Region:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                        }
-                        break;
-                    case MarketLocationType.SolarSystem:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                        }
-                        break;
-                    case MarketLocationType.Structure:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
-                        }
-                        break;
-                }
-                return orders;
+                case MarketLocationType.Region:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                    }
+                    break;
+                case MarketLocationType.SolarSystem:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                    }
+                    break;
+                case MarketLocationType.Structure:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                    }
+                    break;
             }
-            catch(Exception ex)
-            {
-                Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
-                return null;
-            }
+            return orders;
         }
         private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
         {
-            try
+            List<Core.Models.Market.Order> orders = null;
+            switch (Setting.DestinationMarketLocation.Type)
             {
-                List<Core.Models.Market.Order> orders = null;
-                switch (Setting.DestinationMarketLocation.Type)
-                {
-                    case MarketLocationType.Region:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                        }
-                        break;
-                    case MarketLocationType.SolarSystem:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                        }
-                        break;
-                    case MarketLocationType.Structure:
-                        {
-                            orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
-                        }
-                        break;
-                }
-                return orders;
+                case MarketLocationType.Region:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                    }
+                    break;
+                case MarketLocationType.SolarSystem:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                    }
+                    break;
+                case MarketLocationType.Structure:
+                    {
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                    }
+                    break;
             }
-            catch(Exception ex)
-            {
-                Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
-                return null;
-            }
+            return orders;
         }
+        private int _typeCount = 0;
         private async Task GetOrders()
         {
             long errorCount = Core.Log.GetErrorCount();
             long infoCount = Core.Log.GetInfoCount();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
+            List<Order> allSourceOrders = null;
+            List<Order> allDestinationOrders = null;
             Window?.ShowWaiting("获取源市场订单中");
-            var allSourceOrders = await GetAllSourceOrders();
+            try
+            {
+                allSourceOrders = await GetAllSourceOrders();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError($"获取源市场订单出错：{ex.Message}");
+                return;
+            }
             Window?.ShowWaiting("获取目的市场订单中");
-            var allDestinationOrders = await GetAllDestinationOrders();
-            if(FilterTypes.NotNullOrEmpty())//移除过滤物品
+            try
+            {
+                allDestinationOrders = await GetAllDestinationOrders();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError($"获取目的市场订单出错：{ex.Message}");
+            }
+            if (FilterTypes.NotNullOrEmpty())//移除过滤物品
             {
                 await Task.Run(() =>
                 {
@@ -362,12 +372,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     scalperItems = GetScalperItems(allSourceOrders, allDestinationOrders,subGroupsIds);
                     typeIds = scalperItems.Select(p=>p.InvType.TypeID).ToList().Distinct().ToList();
                 });
-                if(scalperItems.NotNullOrEmpty())
+                _typeCount = typeIds.Count;
+                int sourceNoHistoryCount = -1;
+                int destinatioNoHistoryCount = -1;
+                if (scalperItems.NotNullOrEmpty())
                 {
                     Window?.ShowWaiting("获取源市场订单历史中");
                     var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
+                    sourceNoHistoryCount = typeIds.Count - sourceHistory.Count;
                     Window?.ShowWaiting("获取目的市场订单历史中");
                     var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
+                    destinatioNoHistoryCount = typeIds.Count - destinationHistory.Count;
                     Window?.ShowWaiting("匹配订单历史中");
                     await Task.Run(() =>
                     {
@@ -379,7 +394,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 stopwatch.Stop();
                 long errorCount2 = Core.Log.GetErrorCount();
                 long infoCount2 = Core.Log.GetInfoCount();
-                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时：{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟  错误：{errorCount2 - errorCount}  异常：{infoCount2 - infoCount})",false);
+                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时：{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟  错误：{errorCount2 - errorCount}  异常：{infoCount2 - infoCount}) 无历史记录：{sourceNoHistoryCount} + {destinatioNoHistoryCount}",false);
             }
             else
             {

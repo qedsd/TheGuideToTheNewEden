@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dbmodels="using:TheGuideToTheNewEden.Core.DBModels"
@@ -51,92 +52,87 @@
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <AutoSuggestBox
-                Name="Search_AutoSuggestBox"
-                Margin="16,4,8,4"
-                HorizontalAlignment="Stretch"
-                Background="Transparent"
-                BorderThickness="0,0,0,1"
-                ItemTemplate="{StaticResource BackstoryDataTemplate}"
-                QueryIcon="Find"
-                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                TextChanged="AutoSuggestBox_TextChanged" />
-            <ListView
-                Grid.Row="1"
-                ItemTemplate="{StaticResource BackstoryDataTemplate}"
-                ItemsSource="{x:Bind VM.Backstories, Mode=TwoWay}"
-                SelectedItem="{x:Bind VM.SelectedListBackstory, Mode=TwoWay}"
-                Style="{StaticResource StretchListView}" />
-            <ComboBox
-                Grid.Row="2"
-                Margin="4"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Center"
-                SelectedIndex="{x:Bind VM.BackstoryType, Mode=TwoWay}">
-                <ComboBoxItem Content="{StaticResource Backstory_Type_Race}" />
-                <ComboBoxItem Content="{StaticResource Backstory_Type_History}" />
-                <ComboBoxItem Content="{StaticResource Backstory_Type_Technology}" />
-                <ComboBoxItem Content="{StaticResource Backstory_Type_Organization}" />
-            </ComboBox>
-        </Grid>
-        <Grid
-            Grid.Column="1"
-            Margin="16,8"
-            Visibility="{x:Bind VM.BackstoryContent, Converter={StaticResource NullToCollapsedConverter}, Mode=OneWay}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <TextBlock
-                HorizontalAlignment="Center"
-                FontSize="18"
-                Foreground="{ThemeResource SystemAccentColor}"
-                Text="{x:Bind VM.SelectedBackstory.Title_En, Mode=OneWay}" />
-            <TextBlock
-                Grid.Row="1"
-                HorizontalAlignment="Center"
-                FontSize="14"
-                Text="{x:Bind VM.SelectedBackstory.Title_Zh, Mode=OneWay}" />
-            <Pivot Grid.Row="2" Margin="0,-16,0,0">
-                <PivotItem>
-                    <PivotItem.Header>
-                        <TextBlock FontSize="16" Text="{StaticResource General_En}" />
-                    </PivotItem.Header>
-                    <ScrollViewer Grid.Row="2" Margin="0,8,0,0">
-                        <controls:MarkdownTextBlock
-                            Grid.Row="0"
-                            Background="Transparent"
-                            FontSize="16"
-                            ParagraphMargin="0,14"
-                            SchemeList="companyportal,randomscheme"
-                            ScrollViewer.IsVerticalRailEnabled="True"
-                            Text="{x:Bind VM.BackstoryContentEn, Mode=OneWay}" />
-                    </ScrollViewer>
-                </PivotItem>
-                <PivotItem>
-                    <PivotItem.Header>
-                        <TextBlock FontSize="16" Text="{StaticResource General_Zh}" />
-                    </PivotItem.Header>
-                    <ScrollViewer Grid.Row="2" Margin="0,8,0,0">
-                        <controls:MarkdownTextBlock
-                            Grid.Row="0"
-                            Background="Transparent"
-                            FontSize="16"
-                            ParagraphMargin="0,14"
-                            SchemeList="companyportal,randomscheme"
-                            ScrollViewer.IsVerticalRailEnabled="True"
-                            Text="{x:Bind VM.BackstoryContentZh, Mode=OneWay}" />
-                    </ScrollViewer>
-                </PivotItem>
-            </Pivot>
-
-        </Grid>
+        <controls1:CardControl>
+            <controls1:CardControl.Header>
+                <AutoSuggestBox
+                    Name="Search_AutoSuggestBox"
+                    Margin="0,14"
+                    HorizontalAlignment="Stretch"
+                    Background="Transparent"
+                    ItemTemplate="{StaticResource BackstoryDataTemplate}"
+                    QueryIcon="Find"
+                    SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                    TextChanged="AutoSuggestBox_TextChanged" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView
+                    ItemTemplate="{StaticResource BackstoryDataTemplate}"
+                    ItemsSource="{x:Bind VM.Backstories, Mode=TwoWay}"
+                    SelectedItem="{x:Bind VM.SelectedListBackstory, Mode=TwoWay}"
+                    Style="{StaticResource StretchListView}" />
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <ComboBox
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    SelectedIndex="{x:Bind VM.BackstoryType, Mode=TwoWay}">
+                    <ComboBoxItem Content="{StaticResource Backstory_Type_Race}" />
+                    <ComboBoxItem Content="{StaticResource Backstory_Type_History}" />
+                    <ComboBoxItem Content="{StaticResource Backstory_Type_Technology}" />
+                    <ComboBoxItem Content="{StaticResource Backstory_Type_Organization}" />
+                </ComboBox>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl Grid.Column="1" Visibility="{x:Bind VM.BackstoryContent, Converter={StaticResource NullToCollapsedConverter}, Mode=OneWay}"
+                               Margin="4,0">
+            <controls1:CardControl.Header>
+                <StackPanel Margin="0,8">
+                    <TextBlock
+                        HorizontalAlignment="Left"
+                        FontSize="18"
+                        Foreground="{ThemeResource SystemAccentColor}"
+                        Text="{x:Bind VM.SelectedBackstory.Title_En, Mode=OneWay}" />
+                    <TextBlock
+                        HorizontalAlignment="Left"
+                        FontSize="14"
+                        Text="{x:Bind VM.SelectedBackstory.Title_Zh, Mode=OneWay}" />
+                </StackPanel>
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <Pivot Margin="0,-16,0,0">
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="16" Text="{StaticResource General_En}" />
+                        </PivotItem.Header>
+                        <ScrollViewer Grid.Row="2" Margin="0,8,0,0">
+                            <controls:MarkdownTextBlock
+                                Grid.Row="0"
+                                Background="Transparent"
+                                FontSize="16"
+                                ParagraphMargin="0,14"
+                                SchemeList="companyportal,randomscheme"
+                                ScrollViewer.IsVerticalRailEnabled="True"
+                                Text="{x:Bind VM.BackstoryContentEn, Mode=OneWay}" />
+                        </ScrollViewer>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="16" Text="{StaticResource General_Zh}" />
+                        </PivotItem.Header>
+                        <ScrollViewer Grid.Row="2" Margin="0,8,0,0">
+                            <controls:MarkdownTextBlock
+                                Grid.Row="0"
+                                Background="Transparent"
+                                FontSize="16"
+                                ParagraphMargin="0,14"
+                                SchemeList="companyportal,randomscheme"
+                                ScrollViewer.IsVerticalRailEnabled="True"
+                                Text="{x:Bind VM.BackstoryContentZh, Mode=OneWay}" />
+                        </ScrollViewer>
+                    </PivotItem>
+                </Pivot>
+            </controls1:CardControl.Content>
+        </controls1:CardControl>
     </Grid>
 </Page>

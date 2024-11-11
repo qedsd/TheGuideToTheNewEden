@@ -24,33 +24,33 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
         }
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "IntelSettings.json");
-        private Dictionary<string, EarlyWarningSetting> Values { get; set; }
+        private Dictionary<string, Core.Models.ChannelIntel.ChannelIntelSetting> Values { get; set; }
         private IntelSettingService()
         {
             if (System.IO.File.Exists(Path))
             {
                 string json = System.IO.File.ReadAllText(Path);
-                var values = JsonConvert.DeserializeObject<List<EarlyWarningSetting>>(json);
+                var values = JsonConvert.DeserializeObject<List<Core.Models.ChannelIntel.ChannelIntelSetting>>(json);
                 if (values != null)
                 {
                     Values = values.ToDictionary(p => p.Listener);
                 }
                 else
                 {
-                    Values = new Dictionary<string, EarlyWarningSetting>();
+                    Values = new Dictionary<string, Core.Models.ChannelIntel.ChannelIntelSetting>();
                 }
             }
             else
             {
-                Values = new Dictionary<string, EarlyWarningSetting>();
+                Values = new Dictionary<string, Core.Models.ChannelIntel.ChannelIntelSetting>();
             }
         }
 
-        public static EarlyWarningSetting GetValue(string characterName)
+        public static Core.Models.ChannelIntel.ChannelIntelSetting GetValue(string characterName)
         {
             if (Current.Values.TryGetValue(characterName, out var value))
             {
-                return value.DepthClone<EarlyWarningSetting>();
+                return value.DepthClone<Core.Models.ChannelIntel.ChannelIntelSetting>();
             }
             else
             {
@@ -67,7 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
             System.IO.File.WriteAllText(Path, json);
         }
-        public static void SetValue(EarlyWarningSetting value)
+        public static void SetValue(Core.Models.ChannelIntel.ChannelIntelSetting value)
         {
             Current.Values.Remove(value.Listener);
             Current.Values.Add(value.Listener, value);

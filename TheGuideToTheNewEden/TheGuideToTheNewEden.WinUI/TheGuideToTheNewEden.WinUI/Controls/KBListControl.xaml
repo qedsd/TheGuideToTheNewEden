@@ -36,6 +36,7 @@
                 <dataGrid:GridTemplateColumn
                     Width="80"
                     HeaderText="{StaticResource KBListControl_Time}"
+                    AllowSorting="True"
                     MappingName="SKBDetail.KillmailTime">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="kb:KBItemInfo">

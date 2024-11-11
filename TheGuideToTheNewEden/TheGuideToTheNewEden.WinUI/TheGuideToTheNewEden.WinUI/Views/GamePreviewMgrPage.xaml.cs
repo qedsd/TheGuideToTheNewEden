@@ -125,22 +125,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            VM.Setting.Name = SettingNameBox.Text;//只在开始后才保存修改的名字
+            //VM.Setting.Name = SettingNameBox.Text;//只在开始后才保存修改的名字
             VM.StartCommand.Execute(null);
-        }
-
-        private void RemoveSetting_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            if (button != null)
-            {
-                VM.RemoveSettingCommand.Execute(button.DataContext as PreviewItem);
-            }
-        }
-
-        private void SettingList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SettingListFlyout.Hide();
         }
 
         private void ProcessList_DragEnter(object sender, DragEventArgs e)

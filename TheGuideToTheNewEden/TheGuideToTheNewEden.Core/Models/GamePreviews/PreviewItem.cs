@@ -17,15 +17,6 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => name;
             set => SetProperty(ref name, value);
         }
-        private string username;
-        /// <summary>
-        /// 账号名
-        /// </summary>
-        public string UserName
-        {
-            get => username;
-            set => SetProperty(ref username, value);
-        }
 
         /// <summary>
         /// 窗口透明度

@@ -179,7 +179,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
         #endregion
-        public override void HideWindow()
+        public override void PrivateHideWindow()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -190,7 +190,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 UpdateThumbnail();
             });
         }
-        public override void ShowWindow(bool hHighlight = false)
+        public override void PrivateShowWindow(bool hHighlight = false)
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
@@ -266,7 +266,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             });
         }
 
-        public override void Start(IntPtr sourceHWnd)
+        public override void PrivateStart(IntPtr sourceHWnd)
         {
             if (_setting.WinW == 0 || _setting.WinH == 0)
             {
@@ -330,7 +330,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             this.Close();
         }
 
-        public override void Highlight()
+        public override void PrivateHighlight()
         {
             UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
@@ -338,7 +338,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 (int)_setting.HighlightMarginBottom);
         }
 
-        public override void CancelHighlight()
+        public override void PrivateCancelHighlight()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {

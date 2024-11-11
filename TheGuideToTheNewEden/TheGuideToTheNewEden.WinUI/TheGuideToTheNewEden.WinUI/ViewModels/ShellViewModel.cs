@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ToolItems = new List<ToolItem>()
             {
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Character"),ResourcesHelper.GetString("ShellPage_Character_Desc"), typeof(CharacterPage)),
-                new ToolItem(ResourcesHelper.GetString("ShellPage_EarlyWarning"),ResourcesHelper.GetString("ShellPage_EarlyWarning_Desc"), typeof(EarlyWarningPage)),
+                new ToolItem(ResourcesHelper.GetString("ShellPage_EarlyWarning"),ResourcesHelper.GetString("ShellPage_EarlyWarning_Desc"), typeof(ChannelIntelPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_GamePreview"),ResourcesHelper.GetString("ShellPage_GamePreview_Desc"), typeof(GamePreviewMgrPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Market"),ResourcesHelper.GetString("ShellPage_Market_Desc"), typeof(MarketPage)),
                 new ToolItem(ResourcesHelper.GetString("ShellPage_Business"),ResourcesHelper.GetString("ShellPage_Business_Desc"),typeof(BusinessPage)),
