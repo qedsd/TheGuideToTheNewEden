@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         }
 
         /// <summary>
-        /// 窗口透明度
+        /// 窗口不透明度
         /// 0-100
         /// </summary>
         private int overlapOpacity = 100;
@@ -159,7 +159,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             set => SetProperty(ref showPreviewWindow, value);
         }
 
-        private int showPreviewWindowMode = 0;
+        private int showPreviewWindowMode = 1;
         /// <summary>
         /// 显示预览窗口模式
         /// </summary>
