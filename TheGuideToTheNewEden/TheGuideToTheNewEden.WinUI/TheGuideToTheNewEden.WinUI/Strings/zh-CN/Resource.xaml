@@ -491,7 +491,8 @@
     <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
     <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_BorderHighlightColor">边框颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NameHighlightColor">名称颜色</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">注册热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">注册向后热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">注册向前热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
@@ -525,6 +526,7 @@
     <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">预览窗口高亮</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">游戏窗口活动时高亮预览窗口</x:String>
     <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">名称颜色</x:String>
     <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>

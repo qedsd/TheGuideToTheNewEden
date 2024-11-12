@@ -53,12 +53,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         #region UI
         private TextBlock _titleTextBlock;
-        private SolidColorBrush _hightLightBrush;
-        private SolidColorBrush _normalBrush;
         private void InitUI(string title)
         {
-            _hightLightBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B));
-            _normalBrush = new SolidColorBrush(Microsoft.UI.Colors.White);
             _pointerTimer = new System.Timers.Timer()
             {
                 AutoReset = true,
@@ -79,7 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 Margin = new Thickness(10),
                 FontSize = 16,
-                Foreground = _normalBrush,
+                Foreground = TitleNormalBrush,
                 Text = title
             };
             content.Children.Add(_titleTextBlock);
@@ -301,7 +297,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = _hightLightBrush,
+                Background = BorderHightLightBrush,
             };
             content.Children.Add(new TextBlock()
             {
@@ -340,7 +336,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                _titleTextBlock.Foreground = _hightLightBrush;
+                _titleTextBlock.Foreground = TitleHighlightBrush;
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
                 (int)_setting.HighlightMarginTop + 2,
@@ -352,7 +348,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                _titleTextBlock.Foreground = _normalBrush;
+                _titleTextBlock.Foreground = TitleNormalBrush;
                 UpdateThumbnail();
             });
         }

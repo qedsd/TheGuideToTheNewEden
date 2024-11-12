@@ -5,6 +5,7 @@
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gamepreviews="using:TheGuideToTheNewEden.Core.Models.GamePreviews"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,6 +15,9 @@
     <Page.DataContext>
         <viewmodels:GamePreviewMgrViewModel x:Name="VM" />
     </Page.DataContext>
+    <Page.Resources>
+        <converters:TargetStringToVisibilityConverter x:Key="ShowMode2ToVisibleConverter" TargetValue="1" />
+    </Page.Resources>
     <Grid x:Name="ContentGrid" Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" />
@@ -539,6 +543,39 @@
                                             Minimum="1"
                                             Value="{x:Bind VM.Setting.OverlapOpacity, Mode=TwoWay}" />
                                     </Grid>
+                                    <Grid Margin="0,8" Visibility="{x:Bind VM.Setting.ShowPreviewWindowMode, Mode=OneWay, Converter={StaticResource ShowMode2ToVisibleConverter}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_OverlapNameForeground}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Margin="8,0,0,0"
+                                            Padding="4"
+                                            HorizontalAlignment="Stretch">
+                                            <Button.Flyout>
+                                                <Flyout Placement="Left">
+                                                    <ColorPicker
+                                                        ColorSpectrumShape="Box"
+                                                        IsAlphaEnabled="True"
+                                                        IsAlphaSliderVisible="True"
+                                                        IsAlphaTextInputVisible="True"
+                                                        IsColorChannelTextInputVisible="True"
+                                                        IsColorSliderVisible="True"
+                                                        IsHexInputVisible="True"
+                                                        IsMoreButtonVisible="False"
+                                                        Color="{x:Bind VM.Setting.TitleNormalColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                            <Button.Content>
+                                                <Rectangle
+                                                    Width="210"
+                                                    Height="24"
+                                                    Fill="{x:Bind VM.Setting.TitleNormalColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
+                                            </Button.Content>
+                                        </Button>
+                                    </Grid>
                                     <CheckBox
                                         Margin="0,4"
                                         Content="{StaticResource GamePreviewMgrPage_HideOnForeground}"
@@ -645,7 +682,7 @@
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_HighlightColor}" />
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_BorderHighlightColor}" />
                                                 <Button
                                                     Grid.Column="1"
                                                     Margin="16,0,0,0"
@@ -670,6 +707,39 @@
                                                             Width="210"
                                                             Height="24"
                                                             Fill="{x:Bind VM.Setting.HighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
+                                                    </Button.Content>
+                                                </Button>
+                                            </Grid>
+                                            <Grid Margin="0,12,0,0" Visibility="{x:Bind VM.Setting.ShowPreviewWindowMode, Mode=OneWay, Converter={StaticResource ShowMode2ToVisibleConverter}}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_NameHighlightColor}" />
+                                                <Button
+                                                    Grid.Column="1"
+                                                    Margin="16,0,0,0"
+                                                    Padding="4"
+                                                    HorizontalAlignment="Stretch">
+                                                    <Button.Flyout>
+                                                        <Flyout Placement="Left">
+                                                            <ColorPicker
+                                                                ColorSpectrumShape="Box"
+                                                                IsAlphaEnabled="True"
+                                                                IsAlphaSliderVisible="True"
+                                                                IsAlphaTextInputVisible="True"
+                                                                IsColorChannelTextInputVisible="True"
+                                                                IsColorSliderVisible="True"
+                                                                IsHexInputVisible="True"
+                                                                IsMoreButtonVisible="False"
+                                                                Color="{x:Bind VM.Setting.TitleHighlightColor, Mode=TwoWay, Converter={StaticResource DrawColorToUIColorConverter}}" />
+                                                        </Flyout>
+                                                    </Button.Flyout>
+                                                    <Button.Content>
+                                                        <Rectangle
+                                                            Width="210"
+                                                            Height="24"
+                                                            Fill="{x:Bind VM.Setting.TitleHighlightColor, Mode=OneWay, Converter={StaticResource DrawColorToBrushConverter}}" />
                                                     </Button.Content>
                                                 </Button>
                                             </Grid>
