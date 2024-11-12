@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
-        public GamePreviewWindow1(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
+        public GamePreviewWindow1(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting,true, false)
         {
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             _presenter.IsAlwaysOnTop = true;

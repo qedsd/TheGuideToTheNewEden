@@ -30,11 +30,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
         private WinUICommunity.ThemeService _themeService;
-        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false)
+        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
-            ExtendsContentIntoTitleBar = true;
+            //ExtendsContentIntoTitleBar = true;
             _appWindow.IsShownInSwitchers = false;
             HideAppDisplayName();
             Title = _setting.Name;
@@ -310,6 +310,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Content = content
             };
             _thumbnailWindow.ExtendsContentIntoTitleBar = true;
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(_thumbnailWindow);
+            presenter.SetBorderAndTitleBar(true, false);
             _thumbnailWindow.SetIsShownInSwitchers(false);
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));

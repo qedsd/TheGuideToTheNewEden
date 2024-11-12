@@ -26,17 +26,21 @@ namespace TheGuideToTheNewEden.WinUI
         public WinUICommunity.IThemeService ThemeService { get; set; }
         public BaseWindow()
         {
-            Init(true, true);
+            Init(true, true, false);
         }
         public BaseWindow(bool useThemeService)
         {
-            Init(useThemeService, true);
+            Init(useThemeService, true, false);
         }
         public BaseWindow(bool useThemeService, bool useBackgroun)
         {
-            Init(useThemeService, useBackgroun);
+            Init(useThemeService, useBackgroun, false);
         }
-        public void Init(bool useThemeService, bool useBackground)
+        public BaseWindow(bool useThemeService, bool useBackgroun, bool hideCaptionButton)
+        {
+            Init(useThemeService, useBackgroun, hideCaptionButton);
+        }
+        public void Init(bool useThemeService, bool useBackground, bool hideCaptionButton)
         {
             this.InitializeComponent();
             if(useThemeService)
@@ -54,8 +58,7 @@ namespace TheGuideToTheNewEden.WinUI
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
             Helpers.WindowHelper.TrackWindow(this);
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(AppTitleBar);
+            
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
             if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
@@ -65,8 +68,28 @@ namespace TheGuideToTheNewEden.WinUI
                     LoadCustomPicture();
                 }
             }
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
+            if (hideCaptionButton)
+            {
+                var presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
+                presenter.SetBorderAndTitleBar(true, false);
+            }
+            
+            //var titleBar = WindowHelper.GetAppWindow(this).TitleBar;
+            //titleBar.ForegroundColor = Colors.Green;
+            //titleBar.BackgroundColor = Colors.Green;
+            //titleBar.ButtonForegroundColor = Colors.Yellow;
+            //titleBar.ButtonBackgroundColor = Colors.Transparent;
+            //titleBar.ButtonHoverForegroundColor = Colors.Gainsboro;
+            //titleBar.ButtonHoverBackgroundColor = Colors.DarkSeaGreen;
+            //titleBar.ButtonPressedForegroundColor = Colors.Gray;
+            //titleBar.ButtonPressedBackgroundColor = Colors.LightGreen;
+            //titleBar.InactiveForegroundColor = Colors.Yellow;
+            //titleBar.InactiveBackgroundColor = Colors.Yellow;
+            //titleBar.ButtonInactiveForegroundColor = Colors.Yellow;
+            //titleBar.ButtonInactiveBackgroundColor = Colors.Yellow;
         }
-
         public object MainContent
         {
             get => ContentFrame.Content;

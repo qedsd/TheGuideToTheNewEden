@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         internal readonly PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
-        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService = true) : base(useThemeService)
+        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton) : base(useThemeService,false, hideCaptionButton)
         {
             _previewSetting = previewSetting;
             _setting = setting;
