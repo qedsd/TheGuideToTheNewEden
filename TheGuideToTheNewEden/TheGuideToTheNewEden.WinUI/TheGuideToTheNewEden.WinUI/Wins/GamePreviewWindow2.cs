@@ -52,9 +52,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             MonitorWindow();
         }
         #region UI
-        private TextBlock _TitleTextBlock;
+        private TextBlock _titleTextBlock;
+        private SolidColorBrush _hightLightBrush;
+        private SolidColorBrush _normalBrush;
         private void InitUI(string title)
         {
+            _hightLightBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B));
+            _normalBrush = new SolidColorBrush(Microsoft.UI.Colors.White);
             _pointerTimer = new System.Timers.Timer()
             {
                 AutoReset = true,
@@ -71,14 +75,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerReleased += Content_PointerReleased;
             content.PointerReleased += Content_PointerReleased1;
             content.PointerWheelChanged += Content_PointerWheelChanged;
-            _TitleTextBlock = new TextBlock()
+            _titleTextBlock = new TextBlock()
             {
                 Margin = new Thickness(10),
                 FontSize = 16,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                Foreground = _normalBrush,
                 Text = title
             };
-            content.Children.Add(_TitleTextBlock);
+            content.Children.Add(_titleTextBlock);
             this.Content = content;
         }
 
@@ -297,7 +301,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
+                Background = _hightLightBrush,
             };
             content.Children.Add(new TextBlock()
             {
@@ -334,16 +338,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateHighlight()
         {
-            UpdateThumbnail((int)_setting.HighlightMarginLeft,
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                _titleTextBlock.Foreground = _hightLightBrush;
+                UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
-                (int)_setting.HighlightMarginTop,
+                (int)_setting.HighlightMarginTop + 2,
                 (int)_setting.HighlightMarginBottom);
+            });
         }
 
         public override void PrivateCancelHighlight()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
+                _titleTextBlock.Foreground = _normalBrush;
                 UpdateThumbnail();
             });
         }
