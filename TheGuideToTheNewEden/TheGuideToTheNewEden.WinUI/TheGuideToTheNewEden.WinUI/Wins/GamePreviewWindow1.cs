@@ -308,7 +308,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
-                (int)_setting.HighlightMarginTop + 8,
+                (int)_setting.HighlightMarginTop + 2,
                 (int)_setting.HighlightMarginBottom);
             });
         }
