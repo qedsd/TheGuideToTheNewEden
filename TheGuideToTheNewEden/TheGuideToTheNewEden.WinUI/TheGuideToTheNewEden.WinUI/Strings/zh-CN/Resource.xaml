@@ -1025,4 +1025,7 @@
     <x:String x:Key="ChannelIntelPage_Error_SystemNotSupport">当前星系不支持频道预警</x:String>
     <x:String x:Key="ChannelIntelPage_Error_UnselectedChatChanel">请选择预警频道</x:String>
     <x:String x:Key="ChannelIntelPage_Error_WarningServiceError">添加预警服务失败</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">同步当前设置到其他角色需停止所有运行中的预警，是否继续？</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">同步完成</x:String>
 </ResourceDictionary>

@@ -294,7 +294,55 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SelectedCharacter = null;
             HideWaiting();
         });
-
+        public ICommand ApplySettingToAllCommand => new RelayCommand(async () =>
+        {
+            Microsoft.UI.Xaml.Controls.ContentDialog contentDialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+            {
+                XamlRoot = Window.Content.XamlRoot,
+                Title = Helpers.ResourcesHelper.GetString("ChannelIntelPage_ApplySettingToAll"),
+                Content = new Microsoft.UI.Xaml.Controls.TextBlock()
+                {
+                    Text = Helpers.ResourcesHelper.GetString("ChannelIntelPage_ApplySettingToAll_Tip")
+                },
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+            };
+            if (await contentDialog.ShowAsync() == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+            {
+                StopAllCommand.Execute(null);
+                foreach (var item in Characters)
+                {
+                    var intelItem = GetChannelIntel(item.Name);
+                    if(intelItem != null && intelItem != ChannelIntel)
+                    {
+                        intelItem.Setting.AutoUpdateLocaltion = ChannelIntel.Setting.AutoUpdateLocaltion;
+                        intelItem.Setting.IntelJumps = ChannelIntel.Setting.IntelJumps;
+                        intelItem.Setting.OverlapType = ChannelIntel.Setting.OverlapType;
+                        intelItem.Setting.OverlapNotify = ChannelIntel.Setting.OverlapNotify;
+                        intelItem.Setting.OverlapStyle = ChannelIntel.Setting.OverlapStyle;
+                        intelItem.Setting.MakeSound = ChannelIntel.Setting.MakeSound;
+                        intelItem.Setting.Sounds.Clear();
+                        foreach (var sound in ChannelIntel.Setting.Sounds)
+                        {
+                            intelItem.Setting.Sounds.Add(sound.DepthClone<ChannelIntelSoundSetting>());
+                        }
+                        intelItem.Setting.SystemNotify = ChannelIntel.Setting.SystemNotify;
+                        intelItem.Setting.NameDbs = ChannelIntel.Setting.NameDbs;
+                        intelItem.Setting.IgnoreWords = ChannelIntel.Setting.IgnoreWords;
+                        intelItem.Setting.ClearWords = ChannelIntel.Setting.ClearWords;
+                        intelItem.Setting.AutoClear = ChannelIntel.Setting.AutoClear;
+                        intelItem.Setting.AutoClearMinute = ChannelIntel.Setting.AutoClearMinute;
+                        intelItem.Setting.AutoDowngrade = ChannelIntel.Setting.AutoDowngrade;
+                        intelItem.Setting.AutoDowngradeMinute = ChannelIntel.Setting.AutoDowngradeMinute;
+                        intelItem.Setting.OverlapOpacity = ChannelIntel.Setting.OverlapOpacity;
+                        intelItem.Setting.SubZKB = ChannelIntel.Setting.SubZKB;
+                        intelItem.Setting.KBTime = ChannelIntel.Setting.KBTime;
+                        Services.Settings.IntelSettingService.SetValue(intelItem.Setting);
+                    }
+                }
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelIntelPage_ApplySettingToAll_Succes"));
+            }
+        });
         private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)
         {
             Window.DispatcherQueue.TryEnqueue(() =>

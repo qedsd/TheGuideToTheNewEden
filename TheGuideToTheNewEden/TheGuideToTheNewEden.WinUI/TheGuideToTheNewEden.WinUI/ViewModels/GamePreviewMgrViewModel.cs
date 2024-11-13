@@ -1077,7 +1077,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 foreach(var pro in Processes)
                 {
                     var setting = GetProcessSetting(pro);
-                    if (setting != null)
+                    if (setting != null && setting != Setting)
                     {
                         setting.OverlapOpacity = Setting.OverlapOpacity;
                         setting.HideOnForeground = Setting.HideOnForeground;
