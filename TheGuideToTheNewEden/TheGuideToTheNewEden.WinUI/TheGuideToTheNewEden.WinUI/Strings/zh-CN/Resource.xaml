@@ -537,6 +537,9 @@
     <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartPrivew">开始预览</x:String>
     <x:String x:Key="GamePreviewMgrPage_StopPrivew">停止预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">同步当前设置到其他进程需停止所有运行中的预览，是否继续？</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">同步完成</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>

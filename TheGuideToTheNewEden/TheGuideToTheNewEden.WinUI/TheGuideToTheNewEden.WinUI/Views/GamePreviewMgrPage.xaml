@@ -500,6 +500,16 @@
             <controls:CardControl.Header>
                 <Grid>
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_PreviewItemSetting}" />
+                    <Button ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource TransparentButton}"
+                            Width="48"
+                            Height="32"
+                            Command="{x:Bind VM.ApplySettingToAllCommand}">
+                        <Button.Content>
+                            <TextBlock Text="&#xE81E;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
+                        </Button.Content>
+                    </Button>
                 </Grid>
             </controls:CardControl.Header>
             <controls:CardControl.Content>

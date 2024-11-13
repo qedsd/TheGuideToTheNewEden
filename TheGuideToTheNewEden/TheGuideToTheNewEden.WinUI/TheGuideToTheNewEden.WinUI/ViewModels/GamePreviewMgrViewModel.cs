@@ -1055,6 +1055,50 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
 
+        public event EventHandler HideThumbRequsted;
+        public event EventHandler ShowThumbRequsted;
+        public ICommand ApplySettingToAllCommand => new RelayCommand(async () =>
+        {
+            HideThumbRequsted?.Invoke(null, EventArgs.Empty);
+            Microsoft.UI.Xaml.Controls.ContentDialog contentDialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+            {
+                XamlRoot = Window.Content.XamlRoot,
+                Title = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll"),
+                Content = new Microsoft.UI.Xaml.Controls.TextBlock()
+                {
+                    Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Tip")
+                },
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+            };
+            if (await contentDialog.ShowAsync() == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+            {
+                StopAllCommand.Execute(null);
+                foreach(var pro in Processes)
+                {
+                    var setting = GetProcessSetting(pro);
+                    if (setting != null)
+                    {
+                        setting.OverlapOpacity = Setting.OverlapOpacity;
+                        setting.HideOnForeground = Setting.HideOnForeground;
+                        setting.Highlight = Setting.Highlight;
+                        setting.HighlightColor = System.Drawing.Color.FromArgb(Setting.HighlightColor.ToArgb());
+                        setting.TitleHighlightColor = System.Drawing.Color.FromArgb(Setting.TitleHighlightColor.ToArgb());
+                        setting.TitleNormalColor = System.Drawing.Color.FromArgb(Setting.TitleNormalColor.ToArgb());
+                        setting.HighlightMarginLeft = Setting.HighlightMarginLeft;
+                        setting.HighlightMarginTop = Setting.HighlightMarginTop;
+                        setting.HighlightMarginRight = Setting.HighlightMarginRight;
+                        setting.HighlightMarginBottom = Setting.HighlightMarginBottom;
+                        setting.RespondGlobalHotKey = Setting.RespondGlobalHotKey;
+                        setting.ShowPreviewWindow = Setting.ShowPreviewWindow;
+                        setting.ShowPreviewWindowMode = Setting.ShowPreviewWindowMode;
+                    }
+                }
+                SaveSetting();
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
+            }
+            ShowThumbRequsted.Invoke(null, EventArgs.Empty);
+        });
         public void Dispose()
         {
             StopAll();
