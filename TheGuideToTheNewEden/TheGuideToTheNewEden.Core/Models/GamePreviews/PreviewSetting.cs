@@ -156,6 +156,10 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
+        /// <summary>
+        /// 所有启动过的进程均按顺序保存至此
+        /// 而不仅是上一回检测到的进程
+        /// </summary>
         public List<string> ProcessOrder { get; set; } = new List<string>();
 
         private bool _autoStartNewProcess = true;

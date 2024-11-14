@@ -35,6 +35,22 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded += GamePreviewMgrPage_Loaded;
             Loaded += GamePreviewMgrPage_Loaded2;
             Unloaded += GamePreviewMgrPage_Unloaded;
+            VM.HideThumbRequsted += VM_HideThumbRequsted;
+            VM.ShowThumbRequsted += VM_ShowThumbRequsted;
+        }
+
+        private void VM_ShowThumbRequsted(object sender, EventArgs e)
+        {
+            lastThumb = WindowCaptureHelper.Show(windowHandle, (ProcessList.SelectedItem as ProcessInfo).MainWindowHandle);
+            UpdateThumbDestination();
+        }
+
+        private void VM_HideThumbRequsted(object sender, EventArgs e)
+        {
+            if (lastThumb != IntPtr.Zero)
+            {
+                WindowCaptureHelper.HideThumb(lastThumb);
+            }
         }
 
         private void GamePreviewMgrPage_Unloaded(object sender, RoutedEventArgs e)

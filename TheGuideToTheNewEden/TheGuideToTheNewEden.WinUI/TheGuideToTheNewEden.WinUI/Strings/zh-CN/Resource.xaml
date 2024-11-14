@@ -491,7 +491,8 @@
     <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
     <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
-    <x:String x:Key="GamePreviewMgrPage_HighlightColor">高亮颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_BorderHighlightColor">边框颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NameHighlightColor">名称颜色</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">注册热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">注册向后热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
     <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">注册向前热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
@@ -525,6 +526,7 @@
     <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">预览窗口高亮</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">游戏窗口活动时高亮预览窗口</x:String>
     <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">名称颜色</x:String>
     <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
@@ -535,6 +537,9 @@
     <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartPrivew">开始预览</x:String>
     <x:String x:Key="GamePreviewMgrPage_StopPrivew">停止预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">同步当前设置到其他进程需停止所有运行中的预览，是否继续？</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">同步完成</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
@@ -1020,4 +1025,7 @@
     <x:String x:Key="ChannelIntelPage_Error_SystemNotSupport">当前星系不支持频道预警</x:String>
     <x:String x:Key="ChannelIntelPage_Error_UnselectedChatChanel">请选择预警频道</x:String>
     <x:String x:Key="ChannelIntelPage_Error_WarningServiceError">添加预警服务失败</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">同步当前设置到其他角色需停止所有运行中的预警，是否继续？</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">同步完成</x:String>
 </ResourceDictionary>

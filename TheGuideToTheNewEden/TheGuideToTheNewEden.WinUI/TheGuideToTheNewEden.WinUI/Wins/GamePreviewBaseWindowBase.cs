@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +20,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         internal readonly PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
-        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService = true) : base(useThemeService)
+        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton) : base(useThemeService,false, hideCaptionButton)
         {
             _previewSetting = previewSetting;
             _setting = setting;
             InitHotkey();
+            BorderHightLightBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B));
+            TitleHighlightBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.TitleHighlightColor.A, _setting.TitleHighlightColor.R, _setting.TitleHighlightColor.G, _setting.TitleHighlightColor.B));
+            TitleNormalBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.TitleNormalColor.A, _setting.TitleNormalColor.R, _setting.TitleNormalColor.G, _setting.TitleNormalColor.B));
         }
 
         #region 快捷键
@@ -96,6 +100,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public bool IsClosed { get; private set; } = false;
         public bool IsShowing { get; set; } = true;
         public bool Isighlight { get; set; } = false;
+        public SolidColorBrush BorderHightLightBrush { get;private set; }
+        public SolidColorBrush TitleHighlightBrush { get; private set; }
+        public SolidColorBrush TitleNormalBrush { get; private set; }
         public abstract void SetPos(int x, int y);
         public abstract void SetSize(int w, int h);
         public void ShowWindow(bool hHighlight = false)

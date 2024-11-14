@@ -13,7 +13,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.9.2.0</AssemblyVersion>
+	<AssemblyVersion>2.9.3.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->

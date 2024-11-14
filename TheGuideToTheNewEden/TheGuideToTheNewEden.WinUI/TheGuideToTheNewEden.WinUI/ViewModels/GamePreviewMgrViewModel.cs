@@ -401,26 +401,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 var allProcessDict = targetProcesses.ToDictionary(p => p.MainWindowHandle);
                 List<ProcessInfo> exitedList = new List<ProcessInfo>();//已退出的进程
+                List<ProcessInfo> renameList = new List<ProcessInfo>();
                 foreach (var process in Processes)
                 {
                     if(allProcessDict.TryGetValue(process.MainWindowHandle,out var targetProcess))
                     {
                         //进程还存在
-                        allProcessDict.Remove(process.MainWindowHandle);
-                        //判断进程名称是否需要更新，刚进入游戏时尚无角色名称
+                        //判断进程名称是否需要更新，刚进入游戏时尚无角色名称，若名称改变，当作新进程处理
                         if(process.WindowTitle != targetProcess.WindowTitle)
                         {
-                            process.WindowTitle = targetProcess.WindowTitle;
-                            newList ??= new List<ProcessInfo>();
-                            newList.Add(process);
-                            if (process.Setting != null)
-                            {
-                                if (process.Running)
-                                {
-                                    Stop(process.Setting);
-                                }
-                                process.Setting.Name = targetProcess.GetCharacterName();
-                            }
+                            renameList.Add(process);
+                        }
+                        else
+                        {
+                            allProcessDict.Remove(process.MainWindowHandle);
                         }
                     }
                     else
@@ -429,16 +423,53 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         exitedList.Add(process);
                     }
                 }
+                foreach(var process in renameList)
+                {
+                    Processes.Remove(process);
+                }
                 foreach(var process in exitedList)//停止已退出进程预览
                 {
                     Stop(process.Setting);
+                    process.Setting.ProcessInfo = null;
+                    process.Setting = null;
                     Processes.Remove(process);
                 }
                 if(allProcessDict.Any())//此时还剩下的allProcessDict进程均为新加
                 {
                     foreach (var newProc in allProcessDict)
                     {
-                        Processes.Add(newProc.Value);
+                        if(!string.IsNullOrEmpty(newProc.Value.GetCharacterName()))//仅当带角色名称的需要考虑排序
+                        {
+                            int orderOfNewProcess = PreviewSetting.ProcessOrder.IndexOf(newProc.Value.WindowTitle);
+                            if (orderOfNewProcess == -1)
+                            {
+                                Processes.Add(newProc.Value);//新增直接加到末尾
+                                PreviewSetting.ProcessOrder.Add(newProc.Value.WindowTitle);
+                            }
+                            else//非新增，与当前列表对比，插在排序在新进程后面的进程前面
+                            {
+                                bool found = false;
+                                foreach (var p in Processes)
+                                {
+                                    int orderOfProc = PreviewSetting.ProcessOrder.IndexOf(p.WindowTitle);
+                                    if (orderOfProc > orderOfNewProcess)//当前列表进程排序在当前新增进程后面，将新进程插入到当前列表进程前面
+                                    {
+                                        int curShowingIndex = Processes.IndexOf(p);
+                                        Processes.Insert(curShowingIndex, newProc.Value);
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found)//说明列表所有进程都排在该新增进程前面，新增进程只能插在末尾
+                                {
+                                    Processes.Add(newProc.Value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Processes.Add(newProc.Value);
+                        }
                     }
                     newList ??= new List<ProcessInfo>();
                     newList.AddRange(allProcessDict.Values);
@@ -618,7 +649,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand RefreshProcessListCommand => new RelayCommand(() =>
         {
             Init();
-            SaveOrder();
+            SaveSetting();
         });
 
         public ICommand StartCommand => new RelayCommand(() =>
@@ -644,13 +675,44 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
             }
-            PreviewSetting.ProcessOrder = Processes.Select(p => p.WindowTitle).ToList();
             string json = JsonConvert.SerializeObject(PreviewSetting);
             System.IO.File.WriteAllText(Path,json);
         }
 
         public void SaveOrder()
         {
+            // 调换相对顺序
+            var processes = Processes.Where(p => !string.IsNullOrEmpty(p.GetCharacterName())).ToList();
+            for (int i = 0; i < processes.Count - 1; i++)
+            {
+                var p1 = processes[i];
+                var p2 = processes[i + 1];
+                int p1Order = PreviewSetting.ProcessOrder.IndexOf(p1.WindowTitle);
+                int p2Order = PreviewSetting.ProcessOrder.IndexOf(p2.WindowTitle);
+                if(p1Order == -1 && p2Order == -1)//均为新增
+                {
+                    PreviewSetting.ProcessOrder.Insert(0, p1.WindowTitle);
+                    PreviewSetting.ProcessOrder.Insert(1, p2.WindowTitle);
+                }
+                else if(p1Order == -1)//p1新增
+                {
+                    PreviewSetting.ProcessOrder.Insert(p2Order, p1.WindowTitle);//p1插在p2前面
+                }
+                else if(p2Order == -1)//p2新增
+                {
+                    PreviewSetting.ProcessOrder.Insert(p1Order + 1, p2.WindowTitle);//p2插在p1后面
+                }
+                else//均不为新增
+                {
+                    if(p1Order > p2Order)//仅当索引p1大于p2才表示相对顺序发生了改变，p1从原本在p2后面变成了在p2前面
+                    {
+                        //将p2顺序移动到p1后面
+                        PreviewSetting.ProcessOrder.Remove(p2.WindowTitle);
+                        int newP1Order = PreviewSetting.ProcessOrder.IndexOf(p1.WindowTitle);
+                        PreviewSetting.ProcessOrder.Insert(newP1Order + 1, p2.WindowTitle);
+                    }
+                }
+            }
             SaveSetting();
         }
         public ICommand StopCommand => new RelayCommand(() =>
@@ -667,8 +729,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
-                //previewItem.ProcessInfo.Setting = null;
-                //previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
@@ -739,6 +799,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             Start(item, item.Setting, PreviewSetting);
                         }
                     }
+                    SaveSetting();
                 }
             }
         }
@@ -1055,6 +1116,50 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         });
 
+        public event EventHandler HideThumbRequsted;
+        public event EventHandler ShowThumbRequsted;
+        public ICommand ApplySettingToAllCommand => new RelayCommand(async () =>
+        {
+            HideThumbRequsted?.Invoke(null, EventArgs.Empty);
+            Microsoft.UI.Xaml.Controls.ContentDialog contentDialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
+            {
+                XamlRoot = Window.Content.XamlRoot,
+                Title = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll"),
+                Content = new Microsoft.UI.Xaml.Controls.TextBlock()
+                {
+                    Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Tip")
+                },
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+            };
+            if (await contentDialog.ShowAsync() == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+            {
+                StopAllCommand.Execute(null);
+                foreach(var pro in Processes)
+                {
+                    var setting = GetProcessSetting(pro);
+                    if (setting != null && setting != Setting)
+                    {
+                        setting.OverlapOpacity = Setting.OverlapOpacity;
+                        setting.HideOnForeground = Setting.HideOnForeground;
+                        setting.Highlight = Setting.Highlight;
+                        setting.HighlightColor = System.Drawing.Color.FromArgb(Setting.HighlightColor.ToArgb());
+                        setting.TitleHighlightColor = System.Drawing.Color.FromArgb(Setting.TitleHighlightColor.ToArgb());
+                        setting.TitleNormalColor = System.Drawing.Color.FromArgb(Setting.TitleNormalColor.ToArgb());
+                        setting.HighlightMarginLeft = Setting.HighlightMarginLeft;
+                        setting.HighlightMarginTop = Setting.HighlightMarginTop;
+                        setting.HighlightMarginRight = Setting.HighlightMarginRight;
+                        setting.HighlightMarginBottom = Setting.HighlightMarginBottom;
+                        setting.RespondGlobalHotKey = Setting.RespondGlobalHotKey;
+                        setting.ShowPreviewWindow = Setting.ShowPreviewWindow;
+                        setting.ShowPreviewWindowMode = Setting.ShowPreviewWindowMode;
+                    }
+                }
+                SaveSetting();
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
+            }
+            ShowThumbRequsted.Invoke(null, EventArgs.Empty);
+        });
         public void Dispose()
         {
             StopAll();

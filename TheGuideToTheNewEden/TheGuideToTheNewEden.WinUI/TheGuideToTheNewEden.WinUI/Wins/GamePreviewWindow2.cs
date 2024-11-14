@@ -30,11 +30,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
         private WinUICommunity.ThemeService _themeService;
-        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false)
+        public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
-            ExtendsContentIntoTitleBar = true;
+            //ExtendsContentIntoTitleBar = true;
             _appWindow.IsShownInSwitchers = false;
             HideAppDisplayName();
             Title = _setting.Name;
@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             MonitorWindow();
         }
         #region UI
-        private TextBlock _TitleTextBlock;
+        private TextBlock _titleTextBlock;
         private void InitUI(string title)
         {
             _pointerTimer = new System.Timers.Timer()
@@ -71,14 +71,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerReleased += Content_PointerReleased;
             content.PointerReleased += Content_PointerReleased1;
             content.PointerWheelChanged += Content_PointerWheelChanged;
-            _TitleTextBlock = new TextBlock()
+            _titleTextBlock = new TextBlock()
             {
                 Margin = new Thickness(10),
                 FontSize = 16,
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+                Foreground = TitleNormalBrush,
                 Text = title
             };
-            content.Children.Add(_TitleTextBlock);
+            content.Children.Add(_titleTextBlock);
             this.Content = content;
         }
 
@@ -297,7 +297,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
+                Background = BorderHightLightBrush,
             };
             content.Children.Add(new TextBlock()
             {
@@ -310,6 +310,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Content = content
             };
             _thumbnailWindow.ExtendsContentIntoTitleBar = true;
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(_thumbnailWindow);
+            presenter.SetBorderAndTitleBar(true, false);
             _thumbnailWindow.SetIsShownInSwitchers(false);
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
@@ -332,16 +334,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateHighlight()
         {
-            UpdateThumbnail((int)_setting.HighlightMarginLeft,
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                _titleTextBlock.Foreground = TitleHighlightBrush;
+                UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
-                (int)_setting.HighlightMarginTop,
+                (int)_setting.HighlightMarginTop + 2,
                 (int)_setting.HighlightMarginBottom);
+            });
         }
 
         public override void PrivateCancelHighlight()
         {
             this.DispatcherQueue.TryEnqueue(() =>
             {
+                _titleTextBlock.Foreground = TitleNormalBrush;
                 UpdateThumbnail();
             });
         }

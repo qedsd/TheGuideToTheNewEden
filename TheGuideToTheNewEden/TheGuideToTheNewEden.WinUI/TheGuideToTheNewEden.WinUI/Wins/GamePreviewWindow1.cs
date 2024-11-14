@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
-        public GamePreviewWindow1(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
+        public GamePreviewWindow1(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting,true, false)
         {
             _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
             _presenter.IsAlwaysOnTop = true;
@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(_setting.HighlightColor.A, _setting.HighlightColor.R, _setting.HighlightColor.G, _setting.HighlightColor.B)),
+                Background = BorderHightLightBrush,
             };
             content.Children.Add(new TextBlock()
             {
@@ -308,7 +308,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             {
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
-                (int)_setting.HighlightMarginTop,
+                (int)_setting.HighlightMarginTop + 2,
                 (int)_setting.HighlightMarginBottom);
             });
         }
