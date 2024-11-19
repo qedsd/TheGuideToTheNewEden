@@ -257,6 +257,7 @@ namespace EVESimulation
                 chanel.Dispose();
             }
             _characterConfig.GameLog.Dispose();
+            Title = "EVE";
         }
 
         private void Button_ChatSpeak_Click(object sender, RoutedEventArgs e)
