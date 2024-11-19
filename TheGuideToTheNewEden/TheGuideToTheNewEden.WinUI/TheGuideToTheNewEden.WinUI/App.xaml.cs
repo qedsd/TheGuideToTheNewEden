@@ -14,24 +14,13 @@ namespace TheGuideToTheNewEden.WinUI
     {
         public static bool HandleClosedEvents { get; set; } = true;
         private NotificationManager notificationManager;
-        private bool _launch = true;
         public App()
         {
-            IntPtr same = GetSameProcess();
-            if (same == IntPtr.Zero)
-            {
-                this.InitializeComponent();
-                AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-                UnhandledException += App_UnhandledException;//UI线程
-                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
-                Log.Init();
-            }
-            else
-            {
-                Helpers.WindowHelper.SetForegroundWindow1(same);
-                _launch = false;
-                Exit();
-            }
+            this.InitializeComponent();
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+            UnhandledException += App_UnhandledException;//UI线程
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
+            Log.Init();
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -61,19 +50,16 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            if(_launch)
+            Services.ActivationService.Init();
+            m_window = new BaseWindow()
             {
-                Services.ActivationService.Init();
-                m_window = new BaseWindow()
-                {
-                    MainContent = new Views.HomePage()
-                };
-                m_window.Closed += M_window_Closed;
-                (m_window as BaseWindow).SetTavViewHomeMode();
-                WindowHelper.SetMainWindow(m_window);
-                m_window.Activated += M_window_Activated;
-                m_window.Activate();
-            }
+                MainContent = new Views.HomePage()
+            };
+            m_window.Closed += M_window_Closed;
+            (m_window as BaseWindow).SetTavViewHomeMode();
+            WindowHelper.SetMainWindow(m_window);
+            m_window.Activated += M_window_Activated;
+            m_window.Activate();
         }
 
         private IntPtr GetSameProcess()
