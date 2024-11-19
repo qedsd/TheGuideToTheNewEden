@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using System.IO;
+using System.Linq;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
@@ -12,14 +14,24 @@ namespace TheGuideToTheNewEden.WinUI
     {
         public static bool HandleClosedEvents { get; set; } = true;
         private NotificationManager notificationManager;
+        private bool _launch = true;
         public App()
         {
-            this.InitializeComponent();
-            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-            UnhandledException += App_UnhandledException;//UI线程
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
-            Log.Init();
-            
+            IntPtr same = GetSameProcess();
+            if (same == IntPtr.Zero)
+            {
+                this.InitializeComponent();
+                AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+                UnhandledException += App_UnhandledException;//UI线程
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
+                Log.Init();
+            }
+            else
+            {
+                Helpers.WindowHelper.SetForegroundWindow1(same);
+                _launch = false;
+                Exit();
+            }
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -49,16 +61,38 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            Services.ActivationService.Init();
-            m_window = new BaseWindow()
+            if(_launch)
             {
-                MainContent = new Views.HomePage()
-            };
-            m_window.Closed += M_window_Closed;
-            (m_window as BaseWindow).SetTavViewHomeMode();
-            WindowHelper.SetMainWindow(m_window);
-            m_window.Activated += M_window_Activated;
-            m_window.Activate();
+                Services.ActivationService.Init();
+                m_window = new BaseWindow()
+                {
+                    MainContent = new Views.HomePage()
+                };
+                m_window.Closed += M_window_Closed;
+                (m_window as BaseWindow).SetTavViewHomeMode();
+                WindowHelper.SetMainWindow(m_window);
+                m_window.Activated += M_window_Activated;
+                m_window.Activate();
+            }
+        }
+
+        private IntPtr GetSameProcess()
+        {
+            var allProcesses = System.Diagnostics.Process.GetProcesses();
+            if (allProcesses.Any())
+            {
+                var targets = allProcesses.Where(p => p.ProcessName == "TheGuideToTheNewEden").ToList();
+                if(targets.Any())
+                {
+                    string dir = System.AppDomain.CurrentDomain.BaseDirectory;
+                    var p = targets.FirstOrDefault(p => Path.GetDirectoryName(p.MainModule.FileName) == dir);
+                    if (p != null)
+                    {
+                        return p.MainWindowHandle;
+                    }
+                }
+            }
+            return IntPtr.Zero;
         }
 
         private void M_window_Closed(object sender, WindowEventArgs args)
