@@ -803,7 +803,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         if (!item.Running && item.GetCharacterName() != null)
                         {
                             item.Setting = GetProcessSetting(item);
-                            Start(item, item.Setting, PreviewSetting);
+                            if(Start(item, item.Setting, PreviewSetting))
+                            {
+                                Running = true;
+                            }
                         }
                     }
                     SaveSetting();
