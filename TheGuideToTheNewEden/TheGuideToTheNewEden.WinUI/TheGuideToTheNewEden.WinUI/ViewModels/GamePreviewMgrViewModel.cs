@@ -793,24 +793,31 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private async void ProcessMonitor_Tick(object sender, object e)
         {
-            var newList = await RefreshProcesses();
-            if (PreviewSetting.AutoStartNewProcess)
+            try
             {
-                if(newList.NotNullOrEmpty())
+                var newList = await RefreshProcesses();
+                if (PreviewSetting.AutoStartNewProcess)
                 {
-                    foreach (var item in newList)
+                    if (newList.NotNullOrEmpty())
                     {
-                        if (!item.Running && item.GetCharacterName() != null)
+                        foreach (var item in newList)
                         {
-                            item.Setting = GetProcessSetting(item);
-                            if(Start(item, item.Setting, PreviewSetting))
+                            if (!item.Running && item.GetCharacterName() != null)
                             {
-                                Running = true;
+                                item.Setting = GetProcessSetting(item);
+                                if (Start(item, item.Setting, PreviewSetting))
+                                {
+                                    Running = true;
+                                }
                             }
                         }
+                        SaveSetting();
                     }
-                    SaveSetting();
                 }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
             }
         }
 
