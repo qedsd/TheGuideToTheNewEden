@@ -1,0 +1,1030 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:String x:Key="AppDisplayName">The Guide To The New Eden</x:String>
+
+    <!--  Setting  -->
+    <x:String x:Key="Setting_Theme_Description">Select which app theme to display</x:String>
+    <x:String x:Key="Setting_Theme_Title">App Theme</x:String>
+    <x:String x:Key="Setting_Theme_Dark">Dark</x:String>
+    <x:String x:Key="Setting_Theme_Default">System Default</x:String>
+    <x:String x:Key="Setting_Theme_Light">Light</x:String>
+    <x:String x:Key="Setting_Backdrop_Title">Nackdrop</x:String>
+    <x:String x:Key="Setting_Backdrop_None">None</x:String>
+    <x:String x:Key="Setting_Backdrop_Transparent">Transparent</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture">Custom Picture</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_File">Custom Picture File Path</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">Overlap Color</x:String>
+    <x:String x:Key="Setting_UILanguage_Description">After modifying the language, it is necessary to restart the application</x:String>
+    <x:String x:Key="Setting_UILanguage_Title">Language</x:String>
+    <x:String x:Key="Setting_LocalDb_Description">Localized game database display language, application needs to be restarted after modification</x:String>
+    <x:String x:Key="Setting_LocalDb_Title">Localized Database Language</x:String>
+    <x:String x:Key="Setting_GameServer_Description">After modifying the game server used, it is necessary to restart the application</x:String>
+    <x:String x:Key="Setting_GameServer_Title">Game Server</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Description">API server address for counting the number of online players on the server and the activity level of Tieba</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Title">Player Statistics API Address</x:String>
+    <x:String x:Key="Setting_Log_Description">Record Application Exception Information</x:String>
+    <x:String x:Key="Setting_Log_Title">Application Log</x:String>
+    <x:String x:Key="Setting_Log_Check">Check</x:String>
+    <x:String x:Key="Setting_Config_Title">Application Config</x:String>
+    <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
+    <x:String x:Key="Setting_Config_Check">Check</x:String>
+    <x:String x:Key="Setting_About_Title">About</x:String>
+    <x:String x:Key="Setting_Update_Update">APP Update</x:String>
+    <x:String x:Key="Setting_Update_AutoUpdate">Auto Update</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Description">Just select the logs folder</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Title">Game Log Path</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Title">Number of valid days for chat channel files</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Description">When searching for chat channels, only search for files from the past few days to avoid slow search caused by too many channel files</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Title">Number of logs displayed</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Description">The functions of channel intel, channel monitoring, log monitoring, etc. that display real-time log information can display the maximum amount of information, and the more displayed, the more CPU and memory occupied the computer will be</x:String>
+
+    <!--  General  -->
+    <x:String x:Key="General_GroupDropAreaText">Drag the cell header here to group</x:String>
+    <x:String x:Key="General_Name">Name</x:String>
+    <x:String x:Key="General_Quantity">Quantity</x:String>
+    <x:String x:Key="General_Refresh">Refresh</x:String>
+    <x:String x:Key="General_RefreshList">Refresh List</x:String>
+    <x:String x:Key="General_Update">Update</x:String>
+    <x:String x:Key="General_RemoveSelected">Remove Selected</x:String>
+    <x:String x:Key="General_Remove">Remove</x:String>
+    <x:String x:Key="General_AddSelected">Add Selected</x:String>
+    <x:String x:Key="General_SolarSystemName">Solar System</x:String>
+    <x:String x:Key="General_SolarSystem">Solar System</x:String>
+    <x:String x:Key="General_RegionName">Region</x:String>
+    <x:String x:Key="General_Character">Character</x:String>
+    <x:String x:Key="General_Region">Region</x:String>
+    <x:String x:Key="General_Structure">Structure</x:String>
+    <x:String x:Key="General_Day">Day</x:String>
+    <x:String x:Key="General_Hour">Hour</x:String>
+    <x:String x:Key="General_Minute">Minute</x:String>
+    <x:String x:Key="General_Second">Second</x:String>
+    <x:String x:Key="General_Start">Start</x:String>
+    <x:String x:Key="General_StartAll">Start All</x:String>
+    <x:String x:Key="General_Stop">Stop</x:String>
+    <x:String x:Key="General_StopAll">Stop All</x:String>
+    <x:String x:Key="General_OK">OK</x:String>
+    <x:String x:Key="General_Cancel">Cancel</x:String>
+    <x:String x:Key="General_TryNotAdmin">Please try running the software without using administrator mode</x:String>
+    <x:String x:Key="General_OpenFile">Open File</x:String>
+    <x:String x:Key="General_Clear">Clear"</x:String>
+    <x:String x:Key="General_No">No</x:String>
+    <x:String x:Key="General_Yes">Yes</x:String>
+    <x:String x:Key="General_Close">Close</x:String>
+    <x:String x:Key="General_Sec">Sec</x:String>
+
+    <x:String x:Key="General_En">En</x:String>
+    <x:String x:Key="General_Zh">中文</x:String>
+
+    <x:String x:Key="ShellPage_Players">Players: </x:String>
+    <x:String x:Key="ShellPage_APPVersion">APP Version</x:String>
+    <x:String x:Key="ShellPage_Character">Character</x:String>
+    <x:String x:Key="ShellPage_Character_Desc">View character skills, emails, contracts, and other information</x:String>
+    <x:String x:Key="ShellPage_Market">Market</x:String>
+    <x:String x:Key="ShellPage_Market_Desc">Check market order</x:String>
+    <x:String x:Key="ShellPage_Business">Business</x:String>
+    <x:String x:Key="ShellPage_Business_Desc">Market price comparison</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning">Intel</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning_Desc">Chat channel manual warning</x:String>
+    <x:String x:Key="ShellPage_GamePreview">Game Preview</x:String>
+    <x:String x:Key="ShellPage_GamePreview_Desc">Game window top preview</x:String>
+    <x:String x:Key="ShellPage_Contract">Public Contract</x:String>
+    <x:String x:Key="ShellPage_Contract_Desc">View the public contract</x:String>
+    <x:String x:Key="ShellPage_ServerPing">Delay testing</x:String>
+    <x:String x:Key="ShellPage_ServerPing_Desc">Test latency between local and game servers</x:String>
+    <x:String x:Key="ShellPage_Translation">Translation</x:String>
+    <x:String x:Key="ShellPage_Translation_Desc">View localized translations of game proprietary terms</x:String>
+    <x:String x:Key="ShellPage_DED">DED</x:String>
+    <x:String x:Key="ShellPage_DED_Desc">DED strategy</x:String>
+    <x:String x:Key="ShellPage_Wormhole">Wormhole</x:String>
+    <x:String x:Key="ShellPage_Wormhole_Desc">Wormhole information</x:String>
+    <x:String x:Key="ShellPage_Backstory">Backstory</x:String>
+    <x:String x:Key="ShellPage_Backstory_Desc">Race, history, technology, organization</x:String>
+    <x:String x:Key="ShellPage_Mission">Mission</x:String>
+    <x:String x:Key="ShellPage_Mission_Desc">Expired mission wiki</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor">Game Log Monitor</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor_Desc">Monitor game logs</x:String>
+    <x:String x:Key="ShellPage_Links">Links</x:String>
+    <x:String x:Key="ShellPage_Links_Desc">Commonly used official and third-party website links</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor">Channel Monitor</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor_Desc">Monitor chat channel logs</x:String>
+    <x:String x:Key="ShellPage_Setting">Setting</x:String>
+    <x:String x:Key="ShellPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="ShellPage_ZKB_Desc">https://zkillboard.com/</x:String>
+    <x:String x:Key="ShellPage_Database">Database</x:String>
+    <x:String x:Key="ShellPage_Database_Desc">Browse database content</x:String>
+    <x:String x:Key="ShellPage_Map">Map</x:String>
+    <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
+
+    <!--  Skill  -->
+    <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
+    <x:String x:Key="SkillPage_TrainedSkillLevel">Trained skill level</x:String>
+    <x:String x:Key="SkillPage_SkillpointsInSkill">Trained skill points</x:String>
+
+    <!--  Clone  -->
+    <x:String x:Key="ClonePage_HomeLocation">Location</x:String>
+    <x:String x:Key="ClonePage_LastStationChangeDate">Last change</x:String>
+    <x:String x:Key="ClonePage_LastCloneJumpDate">Last Jump</x:String>
+    <x:String x:Key="ClonePage_JumpCloneCount">Number Of Jump Clone</x:String>
+    <x:String x:Key="ClonePage_CurrentClone">Current Clone</x:String>
+    <x:String x:Key="ClonePage_ImplantCount">Number Of Implant</x:String>
+    <x:String x:Key="ClonePage_ActiveClone">Current Clone</x:String>
+
+    <!--  Wallet  -->
+    <x:String x:Key="WalletPage_CharacterJournal">Character - Journal</x:String>
+    <x:String x:Key="WalletPage_CharacterTransaction">Character - Transaction</x:String>
+    <x:String x:Key="WalletPage_CorpJournal">Corporation - Journal</x:String>
+    <x:String x:Key="WalletPage_CorpTransaction">Corporation - Transaction</x:String>
+    <x:String x:Key="WalletPage_JournalDate">Time</x:String>
+    <x:String x:Key="WalletPage_JournalAmount">Amount</x:String>
+    <x:String x:Key="WalletPage_JournalBalance">Balance</x:String>
+    <x:String x:Key="WalletPage_JournalDescription">Description</x:String>
+    <x:String x:Key="WalletPage_JournalReason">Reason</x:String>
+    <x:String x:Key="WalletPage_JournalRefType">RefType</x:String>
+    <x:String x:Key="WalletPage_TransactionDate">Time</x:String>
+    <x:String x:Key="WalletPage_TransactionType">Type</x:String>
+    <x:String x:Key="WalletPage_TransactionUnitPrice">Unit Price</x:String>
+    <x:String x:Key="WalletPage_TransactionTotalPrice">Total Price"</x:String>
+    <x:String x:Key="WalletPage_TransactionQuantity">Quantity</x:String>
+    <x:String x:Key="WalletPage_TransactionIsBuy">Transaction type</x:String>
+    <x:String x:Key="WalletPage_TransactionClient">Client</x:String>
+    <x:String x:Key="WalletPage_TransactionLocation">Location</x:String>
+    <x:String x:Key="WalletPage_TransactionBuy">Buy</x:String>
+    <x:String x:Key="WalletPage_TransactionSell">Sell</x:String>
+    <x:String x:Key="WalletPage_GroupTotalISK">Total: {TotalISK}</x:String>
+    <x:String x:Key="WalletPage_Division">Division</x:String>
+
+    <!--  Mail  -->
+    <x:String x:Key="Inbox">Inbox</x:String>
+    <x:String x:Key="Sent">Sent</x:String>
+    <x:String x:Key="[Corp]">Corpration</x:String>
+    <x:String x:Key="[Alliance]">Alliance</x:String>
+    <x:String x:Key="MailPage_UnreadCount">Unread email</x:String>
+    <x:String x:Key="MailPage_Unread">Unread</x:String>
+    <x:String x:Key="MailPage_From">From</x:String>
+    <x:String x:Key="MailPage_Recipients">Recipients: </x:String>
+    <x:String x:Key="MailPage_Label">Label: </x:String>
+    <x:String x:Key="MailPage_Mail">Mail</x:String>
+
+    <!--  Contract  -->
+    <x:String x:Key="ContractPage_Character">Character</x:String>
+    <x:String x:Key="ContractPage_Corp">Corpration</x:String>
+    <x:String x:Key="ContractPage_Type_All">All</x:String>
+    <x:String x:Key="ContractPage_Type_Unknown">Unknown</x:String>
+    <x:String x:Key="ContractPage_Type_ItemExchange">Item Exchange</x:String>
+    <x:String x:Key="ContractPage_Type_Auction">Auction</x:String>
+    <x:String x:Key="ContractPage_Type_Courier">Courier</x:String>
+    <x:String x:Key="ContractPage_Type_Loan">Loan</x:String>
+    <x:String x:Key="ContractPage_Region">Range Region</x:String>
+
+    <x:String x:Key="ContractPage_Issuer">Issuer</x:String>
+    <x:String x:Key="ContractPage_Assignee">Assignee</x:String>
+    <x:String x:Key="ContractPage_Acceptor">Acceptor</x:String>
+    <x:String x:Key="ContractPage_StartLocation">Start Location</x:String>
+    <x:String x:Key="ContractPage_EndLocation">End Location</x:String>
+    <x:String x:Key="ContractPage_Type">Type</x:String>
+    <x:String x:Key="ContractPage_Status">Status</x:String>
+    <x:String x:Key="ContractPage_Title">Title</x:String>
+    <x:String x:Key="ContractPage_ForCorporation">Corporation</x:String>
+    <x:String x:Key="ContractPage_Availability">Availability</x:String>
+    <x:String x:Key="ContractPage_DateIssued">Issued Date"</x:String>
+    <x:String x:Key="ContractPage_DateExpired">Expiration Date</x:String>
+    <x:String x:Key="ContractPage_DateAccepted">Date Of Acceptance</x:String>
+    <x:String x:Key="ContractPage_DaysToComplete">Days To Complete</x:String>
+    <x:String x:Key="ContractPage_DateCompleted">Completed In</x:String>
+    <x:String x:Key="ContractPage_Price">Price</x:String>
+    <x:String x:Key="ContractPage_Reward">Reward</x:String>
+    <x:String x:Key="ContractPage_Collateral">Collateral</x:String>
+    <x:String x:Key="ContractPage_Buyout">Buyout</x:String>
+    <x:String x:Key="ContractPage_Volume">Volume</x:String>
+    <x:String x:Key="ContractPage_Detail">Detail</x:String>
+    <x:String x:Key="ContractPage_StartingBid">Starting Bid</x:String>
+    <x:String x:Key="ContractPage_CurrentBid">Current Bid</x:String>
+    <x:String x:Key="ContractPage_WillGet">Will Get</x:String>
+    <x:String x:Key="ContractPage_WillPay">Will Pay</x:String>
+
+    <x:String x:Key="ContractPage_IsSingleton">Is Singleton</x:String>
+    <!--  Blueprint  -->
+    <x:String x:Key="Blueprint_MaterialEfficiency">Material Efficiency</x:String>
+    <x:String x:Key="Blueprint_TimeEfficiency">Time Efficiency</x:String>
+    <x:String x:Key="Blueprint_Runs">Runs</x:String>
+    <x:String x:Key="Blueprint_Copy">Copy</x:String>
+    <x:String x:Key="Blueprint_Original">Original</x:String>
+    <x:String x:Key="Blueprint_BlueprintType">Blueprint Type</x:String>
+    <x:String x:Key="Blueprint_RawQuantity">Raw Quantity</x:String>
+    <x:String x:Key="Blueprint_InfiniteRuns">Infinite Runs</x:String>
+
+    <!--  StructuresSettingPage  -->
+    <x:String x:Key="StructuresSettingPage_AddedStructureList">Structures Already Added</x:String>
+    <x:String x:Key="StructuresSettingPage_AddStructureList">Add Structure</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay1">Mode 1: Structure ID</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay2">Mode 2: Search By Character</x:String>
+    <x:String x:Key="StructuresSettingPage_Character">Character</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchPublic">Public Structure</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchAsset">Character Asset</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchClone">Character Clone</x:String>
+    <x:String x:Key="StructuresSettingPage_Search">Search</x:String>
+    <x:String x:Key="StructuresSettingPage_StructureID">Structure ID</x:String>
+    <x:String x:Key="StructuresSettingPage_CharacterID">Character ID</x:String>
+    <x:String x:Key="StructuresSettingPage_EmptyTip">Add Structure In Setting - Structure</x:String>
+
+    <!--  MarketPage  -->
+    <x:String x:Key="MarketPage_TargetMarket">Target Market</x:String>
+    <x:String x:Key="MarketPage_AllList">Items</x:String>
+    <x:String x:Key="MarketPage_Star">Collection</x:String>
+    <x:String x:Key="MarketPage_AddStar">Add To Collection</x:String>
+    <x:String x:Key="MarketPage_CancelStar">Remove From Collection</x:String>
+    <x:String x:Key="MarketPage_SelecteMarket">Selecte Market</x:String>
+    <x:String x:Key="MarketPage_Mean">Mean</x:String>
+    <x:String x:Key="MarketPage_Amount">Amount</x:String>
+    <x:String x:Key="MarketPage_Sell">Sell</x:String>
+    <x:String x:Key="MarketPage_Buy">Buy</x:String>
+    <x:String x:Key="MarketPage_History">History</x:String>
+    <x:String x:Key="MarketPage_Price">Price</x:String>
+    <x:String x:Key="MarketPage_Location">Location</x:String>
+    <x:String x:Key="MarketPage_Security">Security</x:String>
+    <x:String x:Key="MarketPage_Duration">Duration</x:String>
+    <x:String x:Key="MarketPage_Range">Range</x:String>
+    <x:String x:Key="MarketPage_MinVolume">Min Volume</x:String>
+    <x:String x:Key="MarketPage_StatisticVolume">Volume</x:String>
+    <x:String x:Key="MarketPage_StatisticHighest">Highest</x:String>
+    <x:String x:Key="MarketPage_StatisticAverage">Average</x:String>
+    <x:String x:Key="MarketPage_StatisticLowest">Lowest</x:String>
+    <x:String x:Key="MarketPage_History1">Last Month</x:String>
+    <x:String x:Key="MarketPage_History3">Last 3 Months</x:String>
+    <x:String x:Key="MarketPage_History6">Last 6 Months年</x:String>
+    <x:String x:Key="MarketPage_History12">Last Year</x:String>
+    <x:String x:Key="MarketPage_HistoryAll">All</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy">Buy</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell">Sell</x:String>
+    <x:String x:Key="MarketPage_Cal_Amount">Amount</x:String>
+    <x:String x:Key="MarketPage_Cal_AutoSetBuyPrice">Auto set price by amount</x:String>
+    <x:String x:Key="MarketPage_Cal_BuyPrice">Buying Price</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalBuyPrice">Total Cost</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy_NoEnoughSellOrder">The sales order cannot meet the quantity, and the remaining quantity will be calculated based on the lowest price on the sales order</x:String>
+    <x:String x:Key="MarketPage_Cal_SellPrice">Selling price</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalSellPrice">Total Income</x:String>
+    <x:String x:Key="MarketPage_Cal_SalesTax">销售税（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_AgentTax">中介税（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell_Immediately">立即卖出</x:String>
+
+    <!--  BusinessPage  -->
+    <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>
+    <x:String x:Key="BusinessPage_AddToUpdatedScalperShoppingItem">从购物车中减去相应物品数量</x:String>
+    <x:String x:Key="BusinessPage_Character">个人</x:String>
+    <x:String x:Key="BusinessPage_Corp">军团</x:String>
+    <x:String x:Key="BusinessPage_CharacterOrders">订单</x:String>
+    <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
+    <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
+    <x:String x:Key="BusinessPage_HistoryShopping">记录</x:String>
+    <x:String x:Key="BusinessPage_Setting">设置</x:String>
+    <x:String x:Key="BusinessPage_FilterList">排除列表</x:String>
+    <x:String x:Key="BusinessPage_SourceMarket">源市场</x:String>
+    <x:String x:Key="BusinessPage_DestinationMarket">目的市场</x:String>
+    <x:String x:Key="BusinessPage_BuyPrice">买入价格</x:String>
+    <x:String x:Key="BusinessPage_SellPrice">卖出价格</x:String>
+    <x:String x:Key="BusinessPage_PriceType">价格类型</x:String>
+    <x:String x:Key="BusinessPage_HistoryDay">历史价格统计天数</x:String>
+    <x:String x:Key="BusinessPage_PriceScale">价格缩放系数</x:String>
+
+    <x:String x:Key="BusinessPage_SellTop5">卖单前5%最低价格订单平均价格</x:String>
+    <x:String x:Key="BusinessPage_SellAvailable">卖单实际数量的相应价格</x:String>
+    <x:String x:Key="BusinessPage_SellTop">卖单最低价格</x:String>
+    <x:String x:Key="BusinessPage_BuyTop5">买单前5%最高价格订单平均价格</x:String>
+    <x:String x:Key="BusinessPage_BuyAvailable">买单实际数量的相应价格</x:String>
+    <x:String x:Key="BusinessPage_BuyTop">买单最高价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighest">历史最高价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverage">历史平均价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowest">历史最低价格</x:String>
+    <x:String x:Key="BusinessPage_HistoryMedian">历史中位数</x:String>
+
+    <x:String x:Key="BusinessPage_DaySales">日销量</x:String>
+    <x:String x:Key="BusinessPage_SourceSalesDay">源市场统计天数</x:String>
+    <x:String x:Key="BusinessPage_DestinationSalesDay">目的市场统计天数</x:String>
+    <x:String x:Key="BusinessPage_RemoveExtremum">去极值</x:String>
+    <x:String x:Key="BusinessPage_HistoryPriceFluctuationDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_DestinationHistoryPriceFluctuation">历史价格波动</x:String>
+    <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">当前价格波动</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturation">卖单饱和度</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">有效订单价格波动范围（%）</x:String>
+    <x:String x:Key="BusinessPage_HeatValue">热力值</x:String>
+    <x:String x:Key="BusinessPage_HeatValueDay">历史价格天数</x:String>
+    <x:String x:Key="BusinessPage_HeatValueThreshold">销量阈值</x:String>
+
+    <x:String x:Key="BusinessPage_SuggestionWeight">推荐值来源权重</x:String>
+    <x:String x:Key="BusinessPage_ROI">回报率</x:String>
+    <x:String x:Key="BusinessPage_ROIPercent">回报率(%)</x:String>
+    <x:String x:Key="BusinessPage_NetProfit">净利润</x:String>
+    <x:String x:Key="BusinessPage_SingleNetProfit">单位净利润</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesNetProfit">目标销量净利润</x:String>
+    <x:String x:Key="BusinessPage_Principal">本金</x:String>
+    <x:String x:Key="BusinessPage_BaseSetting">基本设置</x:String>
+    <x:String x:Key="BusinessPage_MarketGroup">物品类型</x:String>
+    <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">过滤源市场无卖单的物品</x:String>
+    <x:String x:Key="BusinessPage_GetOrders">获取订单</x:String>
+    <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
+
+    <x:String x:Key="BusinessPage_Type">物品</x:String>
+    <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">源市场日销量</x:String>
+    <x:String x:Key="BusinessPage_DestinationSellPrice">目的市场卖出价格</x:String>
+    <x:String x:Key="BusinessPage_DestinationSales">目的市场日销量</x:String>
+    <x:String x:Key="BusinessPage_ScalperItemDetail">倒货物品详情</x:String>
+    <x:String x:Key="BusinessPage_Suggestion">推荐度</x:String>
+    <x:String x:Key="BusinessPage_Volume">体积</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesPercent">目标销量百分比</x:String>
+    <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
+    <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</x:String>
+    <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
+    <x:String x:Key="BusinessPage_Edit">编辑</x:String>
+    <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">添加选中到购物车</x:String>
+    <x:String x:Key="BusinessPage_SalesType">销量计算方式</x:String>
+    <x:String x:Key="BusinessPage_SalesDay">统计历史天数</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighestSalse">历史最高销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverageSalse">历史平均销量</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowestSalse">历史最低销量</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem1">已更新</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem2">个物品</x:String>
+    <x:String x:Key="BusinessPage_NoUpdatedScalperShoppingItem">无物品需要更新</x:String>
+    <x:String x:Key="BusinessPage_NotPasteItem">未识别到物品订单</x:String>
+
+    <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread">ESI查询线程数</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread_Desc">理论上越大越快，但过快会触发ESI请求限制</x:String>
+    <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
+
+    <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>
+    <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
+    <x:String x:Key="SettingPage_Market">市场</x:String>
+    <x:String x:Key="SettingPage_Test">测试</x:String>
+    <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="SettingPage_KeyboardList">按键列表</x:String>
+
+    <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
+    <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
+    <x:String x:Key="ServerPingPage_Host">域名/IP</x:String>
+    <x:String x:Key="ServerPingPage_Port">端口</x:String>
+    <x:String x:Key="ServerPingPage_Times">次数</x:String>
+    <x:String x:Key="ServerPingPage_Span">间隔(ms)</x:String>
+    <x:String x:Key="ServerPingPage_Start">开始</x:String>
+    <x:String x:Key="ServerPingPage_Des">利用TCP握手实现的延迟测试，可以获取到真实的延迟</x:String>
+    <x:String x:Key="ServerPingPage_RTTAverage">平均延迟</x:String>
+    <x:String x:Key="ServerPingPage_RTTFluctuation">延迟波动</x:String>
+    <x:String x:Key="ServerPingPage_PacketLossRate">丢包率</x:String>
+
+    <x:String x:Key="TranslationPage_EN">英文</x:String>
+    <x:String x:Key="TranslationPage_Local">本地</x:String>
+
+    <x:String x:Key="HomePage_Home">主页</x:String>
+
+    <x:String x:Key="DEDPage_Drone">无人机</x:String>
+    <x:String x:Key="DEDPage_Serpentis">天蛇</x:String>
+    <x:String x:Key="DEDPage_BloodRaider">血袭者</x:String>
+    <x:String x:Key="DEDPage_Sansha">萨沙</x:String>
+    <x:String x:Key="DEDPage_Angel">天使</x:String>
+    <x:String x:Key="DEDPage_Guristas">古斯塔斯</x:String>
+    <x:String x:Key="DEDPage_UnkownLevel">未定级</x:String>
+
+    <x:String x:Key="GeneralSettingPage_NeedLocalization">使用本地化数据库</x:String>
+
+    <x:String x:Key="AddSerenityAuthDialog_Step0">步骤0：点击下方按钮退出浏览器已登陆的账号，无视页面错误然后开始步骤1</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step0Button">登出</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Title">新增国服玩家角色授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址到下面输入框</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3">步骤3：点击下面按钮开始校验授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3Button">校验授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifySuccess">校验授权成功，请点击关闭按钮完成授权</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifyFailed">校验授权失败</x:String>
+
+    <x:String x:Key="AddTranquilityAuthDialog_Title">新增国际服玩家角色授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0">步骤0：点击下方按钮跳转浏览器下载并安装.Net6桌面运行时（已安装请跳过）</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0Button">下载 .NET 6.0</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1">步骤1：点击下方按钮跳转浏览器登陆EVE账号并授权，然后按浏览器提示打开AuthListener.exe</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1Button">login.eveonline.com</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2">步骤2：等待写入授权信息</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Success">已获取到授权信息</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Failed">写入的授权信息为空</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3">步骤3：校验授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3Button">重新校验授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifyFailed">校验授权失败</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifySuccess">校验授权成功，请点击关闭按钮完成授权</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3_Failed">请更换网络/挂梯子/更换梯子节后点击此按钮重试</x:String>
+
+    <x:String x:Key="WormholePage_Search">搜索虫洞...</x:String>
+    <x:String x:Key="WormholePage_Home">显示洞口列表</x:String>
+    <x:String x:Key="WormholePage_Class">等级</x:String>
+    <x:String x:Key="WormholePage_Static">永联</x:String>
+    <x:String x:Key="WormholePage_Wandering">漫游</x:String>
+    <x:String x:Key="WormholePage_Phenomena">天象</x:String>
+
+    <x:String x:Key="WormholePage_Class_1">c1</x:String>
+    <x:String x:Key="WormholePage_Class_2">c2</x:String>
+    <x:String x:Key="WormholePage_Class_3">c3</x:String>
+    <x:String x:Key="WormholePage_Class_4">c4</x:String>
+    <x:String x:Key="WormholePage_Class_5">c5</x:String>
+    <x:String x:Key="WormholePage_Class_6">c6</x:String>
+    <x:String x:Key="WormholePage_Class_12">c12 希拉</x:String>
+    <x:String x:Key="WormholePage_Class_13">c13 破碎虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_14">c14 流浪者岗哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_15">c15 流浪者碉堡虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_16">c16 流浪者游哨虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_17">c17 流浪者合流虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_18">c18 流浪者堡垒虫洞</x:String>
+    <x:String x:Key="WormholePage_Class_100">高安</x:String>
+    <x:String x:Key="WormholePage_Class_101">低安</x:String>
+    <x:String x:Key="WormholePage_Class_102">00</x:String>
+
+    <x:String x:Key="WormholePage_Phenomena_0">红巨星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_1">激变变星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_2">磁星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_3">脉冲星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_4">沃尔夫-拉叶星</x:String>
+    <x:String x:Key="WormholePage_Phenomena_5">黑洞</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Destination">通往</x:String>
+    <x:String x:Key="WormholePage_Portal_AppearsIn">位于</x:String>
+    <x:String x:Key="WormholePage_Portal_Lifetime">最大稳定时间</x:String>
+    <x:String x:Key="WormholePage_Portal_MaxMassPerJump">最大跳跃质量</x:String>
+    <x:String x:Key="WormholePage_Portal_TotalJumpMass">最大稳定质量</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn">再生位置</x:String>
+    <x:String x:Key="WormholePage_Portal_MassRegen">再生质量</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Static">固定</x:String>
+
+    <x:String x:Key="Backstory_Type_Race">种族</x:String>
+    <x:String x:Key="Backstory_Type_History">历史</x:String>
+    <x:String x:Key="Backstory_Type_Technology">科技</x:String>
+    <x:String x:Key="Backstory_Type_Organization">组织</x:String>
+
+    <x:String x:Key="Mission_Level_1">1级</x:String>
+    <x:String x:Key="Mission_Level_2">2级</x:String>
+    <x:String x:Key="Mission_Level_3">3级</x:String>
+    <x:String x:Key="Mission_Level_4">4级</x:String>
+    <x:String x:Key="Mission_Level_5">5级</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode">激活模式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">模式1（EVE-O-P）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">模式2（2.5.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">模式3（2.4.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">模式4（2.4.0.0修正）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">模式5（触发空键盘事件，慎用）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetHotKey">更新</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Backward">向后</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Forward">向前</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">行/列最大窗口个数</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RespondGlobalHotKey">响应全局切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ShowPreviewWindow">显示预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">显示模式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode1">模式1（WinUI带标题栏）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode2">模式2（WinUI无标题栏）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode3">模式3（WPF无标题栏）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">高亮状态尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">左</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">右</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">上</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">下</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">固定XY比例</x:String>
+    <x:String x:Key="GamePreviewMgrPage_BorderHighlightColor">边框颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NameHighlightColor">名称颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">注册热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">注册向后热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">注册向前热键失败，请检查是否按键冲突、按键名称是否规范</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeySuccessful">注册向后热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeySuccessful">注册向前热键成功</x:String>
+    <x:String x:Key="GamePreviewMgrPage_EmptyCharacterName">未识别到角色名称，将不保存设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_CannotFindTargetWindow">不存在目标进程窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NoRunning">无激活窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetUniformSizeSuccessful">已应用窗口尺寸</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_Tip">进程关键词</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_PlaceholderText">多个关键词时，使用符号,分割</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Running_Tip">预览中</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessList">进程列表</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始全部时包含未开始过的进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">自动开始预览新进程</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize">统一窗口大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">将所有的预览窗口设置为指定的大小</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformWidth">窗口宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformHeight">窗口高度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Apply">应用</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout">自动对齐窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutTip">以当前游戏进程的预览窗口作为参考，自动将其余预览窗口按照指定布局对齐</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout_Mode">对齐方式</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutAnchor">对齐位置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutSpan">对齐间隔</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HideOnForeground">游戏窗口活动时隐藏预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">预览窗口高亮</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">游戏窗口活动时高亮预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">名称颜色</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllSetting">开始全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindow">预览窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HotKeySetting">激活快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightBorder">边框宽度</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartPrivew">开始预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StopPrivew">停止预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">同步当前设置到其他进程需停止所有运行中的预览，是否继续？</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">同步完成</x:String>
+
+    <!--  EarlyWarningItemPage  -->
+    <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Stop">停止</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="EarlyWarningItemPage_SoundFilePath">音频文件</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">跳数</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Volume">音量</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Loop">循环</x:String>
+    <x:String x:Key="EarlyWarningItemPage_DefaultFile">默认</x:String>
+    <x:String x:Key="EarlyWarningItemPage_StopSound">停止声音</x:String>
+
+    <!--  GameLogMonitorPage  -->
+    <x:String x:Key="GameLogMonitorPage_StartTime">开始时间</x:String>
+    <x:String x:Key="GameLogMonitorPage_Running">监控中</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddKey">添加关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="GameLogMonitorPage_Stop">停止监控</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify">清除通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify_Tip">停止播放通知声等</x:String>
+    <x:String x:Key="GameLogMonitorPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_WindowNotify">弹窗通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_CharacterList">角色列表</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundNotify">声音通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_Default">默认</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey">监控关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
+    <x:String x:Key="GameLogMonitorPage_Setting">监控设置</x:String>
+    <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
+    <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
+    <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
+    <x:String x:Key="GameLogMonitorPage_Regex">正则表达式</x:String>
+    <x:String x:Key="GameLogMonitorPage_ShowGame">显示游戏窗口</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode">监控模式</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_0">出现关键词时通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_1">停止出现关键词后通知</x:String>
+    <x:String x:Key="GameLogMonitorPage_DisappearDelay">判定时间间隔（s）</x:String>
+    <x:String x:Key="GameLogMonitorPage_DelayExpireTip">已停止触发关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_RepeatSound">循环播放</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
+    <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
+    <x:String x:Key="GameLogMonitorPage_Logs">实时日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundFile">音频文件</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Desc">检测系统是否支持系统通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_SendToast">发送通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSetting">检测环境</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Enabled">应用通知已启用</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForApplication">用户定义的应用设置阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForUser">用户定义的全局设置会阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByGroupPolicy">组策略阻止应用通知</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByManifest">应用通知被清单中的设置阻止。 此值仅适用于打包的应用程序</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Unsupported">应用通知不支持</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSettingResult">系统通知检测结果</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer">声音播放</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Desc">检测系统声音播放是否正常</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
+
+    <!--  LinksPage  -->
+    <x:String x:Key="LinksPage_Name">名字</x:String>
+    <x:String x:Key="LinksPage_Url">链接</x:String>
+    <x:String x:Key="LinksPage_ShortDescription">概述</x:String>
+    <x:String x:Key="LinksPage_Description">描述</x:String>
+    <x:String x:Key="LinksPage_Lang">语言</x:String>
+    <x:String x:Key="LinksPage_Lang_Tip">多个语言使用,分割</x:String>
+    <x:String x:Key="LinksPage_Platforms">平台</x:String>
+    <x:String x:Key="LinksPage_Platforms_Tip">多个平台使用,分割</x:String>
+    <x:String x:Key="LinksPage_Categories">分类</x:String>
+    <x:String x:Key="LinksPage_Categories_Tip">多个分类使用,分割</x:String>
+    <x:String x:Key="LinksPage_CopyUrl">复制链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl">图标链接</x:String>
+    <x:String x:Key="LinksPage_IconUrl_Tip">支持网络链接</x:String>
+    <x:String x:Key="LinksPage_Open">打开链接</x:String>
+    <x:String x:Key="LinksPage_Add">新建链接</x:String>
+    <x:String x:Key="LinksPage_Edit">编辑链接</x:String>
+    <x:String x:Key="LinksPage_Remove">删除链接</x:String>
+
+    <!--  ChannelMonitorPage  -->
+    <x:String x:Key="ChannelMonitorPage_TargetCharacter">监控角色</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelName">频道名字</x:String>
+    <x:String x:Key="ChannelMonitorPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">未选择监控频道</x:String>
+    <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">角色频道列表</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelLogs">频道内容</x:String>
+    <x:String x:Key="ChannelMonitorPage_SoundFile">音频文件</x:String>
+    <x:String x:Key="ChannelMonitorPage_Start">开始监控</x:String>
+    <x:String x:Key="ChannelMonitorPage_Stop">停止监控</x:String>
+
+    <!--  ZKB  -->
+    <x:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</x:String>
+    <x:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</x:String>
+    <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
+    <x:String x:Key="ZKBHomePage_AutoConnect">自动连接KB流</x:String>
+    <x:String x:Key="ZKBHomePage_Connect">连接ZKB服务器</x:String>
+    <x:String x:Key="KBListControl_Date">日期</x:String>
+    <x:String x:Key="KBListControl_Time">时间</x:String>
+    <x:String x:Key="KBListControl_TotalValue">估价</x:String>
+    <x:String x:Key="KBListControl_Location">位置</x:String>
+    <x:String x:Key="KBListControl_Type">飞船/建筑</x:String>
+    <x:String x:Key="KBListControl_Victim">受害者</x:String>
+    <x:String x:Key="KBListControl_FinalBlow">最后一击</x:String>
+    <x:String x:Key="KBListControl_OpenBrowser">浏览器查看</x:String>
+
+
+    <x:String x:Key="KB_Point">点数</x:String>
+    <x:String x:Key="KB_Damage">伤害</x:String>
+    <x:String x:Key="KB_ShipFitValue">装配</x:String>
+    <x:String x:Key="KB_DroppedValue">掉落</x:String>
+    <x:String x:Key="KB_DestroyedValue">损毁</x:String>
+    <x:String x:Key="KB_TotalValue">总价</x:String>
+    <x:String x:Key="KB_Dropped">掉落</x:String>
+    <x:String x:Key="KB_Destroyed">损毁</x:String>
+    <x:String x:Key="KB_FinalBlow">最后一击</x:String>
+    <x:String x:Key="KB_TopDamage">最高伤害</x:String>
+    <x:String x:Key="KB_AttackerCount">参与者</x:String>
+    <x:String x:Key="KB_Solo">单挑</x:String>
+
+    <x:String x:Key="CategoryEnum_Alliance">联盟</x:String>
+    <x:String x:Key="CategoryEnum_Character">角色</x:String>
+    <x:String x:Key="CategoryEnum_Constellation">星座</x:String>
+    <x:String x:Key="CategoryEnum_Corporation">军团</x:String>
+    <x:String x:Key="CategoryEnum_InventoryType">物品</x:String>
+    <x:String x:Key="CategoryEnum_Region">星域</x:String>
+    <x:String x:Key="CategoryEnum_SolarSystem">星系</x:String>
+    <x:String x:Key="CategoryEnum_Station">空间站</x:String>
+    <x:String x:Key="CategoryEnum_Faction">势力</x:String>
+    <x:String x:Key="CategoryEnum_Structure">建筑</x:String>
+
+    <x:String x:Key="EntityStatistPage_Character">角色</x:String>
+    <x:String x:Key="EntityStatistPage_Corporation">军团</x:String>
+    <x:String x:Key="EntityStatistPage_Alliance">联盟</x:String>
+    <x:String x:Key="EntityStatistPage_CEO">CEO</x:String>
+    <x:String x:Key="EntityStatistPage_Members">成员</x:String>
+    <x:String x:Key="EntityStatistPage_Executor">执行军团</x:String>
+    <x:String x:Key="EntityStatistPage_Sec">安全等级</x:String>
+    <x:String x:Key="EntityStatistPage_Ship">舰船</x:String>
+    <x:String x:Key="EntityStatistPage_Class">类别</x:String>
+    <x:String x:Key="EntityStatistPage_System">星系</x:String>
+    <x:String x:Key="EntityStatistPage_Constellation">星座</x:String>
+    <x:String x:Key="EntityStatistPage_Region">星域</x:String>
+    <x:String x:Key="EntityStatistPage_Destroyed">击杀</x:String>
+    <x:String x:Key="EntityStatistPage_Lost">损失</x:String>
+    <x:String x:Key="EntityStatistPage_DangerRatio">危险系数</x:String>
+    <x:String x:Key="EntityStatistPage_GangRatio">抱团概率</x:String>
+    <x:String x:Key="EntityStatistPage_HasSupers">拥有超期</x:String>
+    <x:String x:Key="EntityStatistPage_RecentActivity">最近活跃</x:String>
+    <x:String x:Key="EntityStatistPage_KBList">KB列表</x:String>
+    <x:String x:Key="EntityStatistPage_Overview">概览</x:String>
+    <x:String x:Key="EntityStatistPage_Recent">最近</x:String>
+    <x:String x:Key="EntityStatistPage_Kills">击杀</x:String>
+    <x:String x:Key="EntityStatistPage_Solo">单挑</x:String>
+    <x:String x:Key="EntityStatistPage_Losses">损失</x:String>
+    <x:String x:Key="EntityStatistPage_TopValue">最贵击杀</x:String>
+    <x:String x:Key="EntityStatistPage_TopStatist">最高击杀</x:String>
+    <x:String x:Key="EntityStatistPage_GroupSummary">分类统计</x:String>
+    <x:String x:Key="EntityStatistPage_MonthSummary">月份统计</x:String>
+    <x:String x:Key="EntityStatistPage_SupperSummary">超期击杀</x:String>
+
+    <x:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</x:String>
+    <x:String x:Key="StatistTopValuePage_Top7dDays">最近7天最高价值KB</x:String>
+
+    <x:String x:Key="StatistKBListPage_KBModifier">类型</x:String>
+    <x:String x:Key="StatistKBListPage_All">所有</x:String>
+    <x:String x:Key="StatistKBListPage_Kills">击杀</x:String>
+    <x:String x:Key="StatistKBListPage_Losses">损失</x:String>
+    <x:String x:Key="StatistKBListPage_Wormhole">虫洞</x:String>
+    <x:String x:Key="StatistKBListPage_Solo">单挑</x:String>
+    <x:String x:Key="StatistKBListPage_Finalblow">最后一击</x:String>
+    <x:String x:Key="StatistKBListPage_Awox">Awox</x:String>
+    <x:String x:Key="StatistKBListPage_Npc">Npc</x:String>
+
+    <x:String x:Key="StatistTopAllTimePage_Character">最高击杀玩家</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Corporation">最高击杀军团</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Alliance">最高击杀联盟</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Faction">最高击杀势力</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Ship">最高击杀舰船</x:String>
+    <x:String x:Key="StatistTopAllTimePage_System">最高击杀星系</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Kills">击杀数</x:String>
+    <x:String x:Key="StatistTopAllTimePage_No">排名</x:String>
+
+    <x:String x:Key="StatistGroupPage_No">击杀排名</x:String>
+    <x:String x:Key="StatistGroupPage_Kills">击杀数</x:String>
+    <x:String x:Key="StatistGroupPage_Losses">损失数</x:String>
+
+    <x:String x:Key="StatistMonthPage_Year">年</x:String>
+    <x:String x:Key="StatistMonthPage_Month">月</x:String>
+    <x:String x:Key="StatistMonthPage_ItemDestroyed">击杀舰船</x:String>
+    <x:String x:Key="StatistMonthPage_PointsDestroyed">击杀点数</x:String>
+    <x:String x:Key="StatistMonthPage_IskDestroyed">击杀ISK</x:String>
+    <x:String x:Key="StatistMonthPage_ItemLost">损失舰船</x:String>
+    <x:String x:Key="StatistMonthPage_PointsLost">损失点数</x:String>
+    <x:String x:Key="StatistMonthPage_IskLost">损失ISK</x:String>
+
+    <x:String x:Key="StatistSuperPage_Titan">泰坦</x:String>
+    <x:String x:Key="StatistSuperPage_Supercarrier">大航</x:String>
+    <x:String x:Key="StatistSuperPage_No">击杀排名</x:String>
+    <x:String x:Key="StatistSuperPage_Kills">击杀数</x:String>
+
+    <x:String x:Key="ZKBSettingPage_AutoConnect">自动接收KB流</x:String>
+    <x:String x:Key="ZKBSettingPage_AutoConnect_Desc">打开ZKillborad功能时是否自动连接服务器以接收KB流</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify">击杀系统通知</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify_Desc">KB流有新KB时是否弹出系统通知</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue">击杀通知最小价值</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">仅当KB价值大于此值才通知，设为0则全部通知</x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems">最大显示KB数</x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems_Desc">KB流每次最多显示多少个KB</x:String>
+    <x:String x:Key="ZKBSettingPage_Types">舰船/建筑/物品ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Systems">星系ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Regions">星域ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Characters">角色ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Corps">军团ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Alliances">联盟ID</x:String>
+    <x:String x:Key="ZKBSettingPage_IdsDesc">仅对列出的ID进行通知，多个ID请用符号,分割，留空则通知全部</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_MoveUp">上移</x:String>
+    <x:String x:Key="GamePreviewMgrPage_MoveDown">下移</x:String>
+
+    <!--  TaskbarIcon  -->
+    <x:String x:Key="TaskbarIcon_Show">显示</x:String>
+    <x:String x:Key="TaskbarIcon_Exit">退出</x:String>
+
+    <!--  DatabasePage  -->
+    <x:String x:Key="DatabasePage_SearchResult">搜索结果</x:String>
+    <x:String x:Key="DatabasePage_InvType">物品</x:String>
+    <x:String x:Key="DatabasePage_InvGroup">分类</x:String>
+    <x:String x:Key="DatabasePage_MapSystem">星系</x:String>
+    <x:String x:Key="DatabasePage_MapRegion">星域</x:String>
+    <x:String x:Key="DatabasePage_Station">空间站</x:String>
+    <x:String x:Key="DatabasePage_IdName">缓存ID名称</x:String>
+
+    <!--  KeyboardListPage  -->
+    <x:String x:Key="KeyboardListPage_Name">按键名称</x:String>
+    <x:String x:Key="KeyboardListPage_Code">按键代码</x:String>
+    <x:String x:Key="KeyboardListPage_Note">备注</x:String>
+
+    <!--  IndustryPage  -->
+    <x:String x:Key="IndustryPage_Blueprint">蓝图</x:String>
+    <x:String x:Key="IndustryPage_Product">产品</x:String>
+    <x:String x:Key="IndustryPage_Location">位置</x:String>
+    <x:String x:Key="IndustryPage_Cost">项目费用</x:String>
+    <x:String x:Key="IndustryPage_Duration">项目周期</x:String>
+    <x:String x:Key="IndustryPage_StartDate">开始时间</x:String>
+    <x:String x:Key="IndustryPage_EndDate">完成时间</x:String>
+    <x:String x:Key="IndustryPage_Status">状态</x:String>
+    <x:String x:Key="IndustryPage_Runs">流程</x:String>
+    <x:String x:Key="IndustryPage_SuccessfulRuns">成功流程</x:String>
+    <x:String x:Key="IndustryPage_Probability">成功率</x:String>
+    <x:String x:Key="IndustryPage_Status_Done">完成</x:String>
+    <x:String x:Key="IndustryPage_Status_active">运行中</x:String>
+    <x:String x:Key="IndustryPage_Status_cancelled">已取消</x:String>
+    <x:String x:Key="IndustryPage_Status_delivered">已交付</x:String>
+    <x:String x:Key="IndustryPage_Status_paused">已暂停</x:String>
+    <x:String x:Key="IndustryPage_Status_ready">准备</x:String>
+    <x:String x:Key="IndustryPage_Status_reverted ">已恢复</x:String>
+
+    <!--  EarlyWarningPage  -->
+    <x:String x:Key="EarlyWarningPage_SubZKB">ZKB预警</x:String>
+    <x:String x:Key="EarlyWarningPage_SubZKB_Error">订阅ZKB预警失败</x:String>
+    <x:String x:Key="EarlyWarningPage_KBTime">有效时长(s)</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Min">分钟前</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Sec">秒前</x:String>
+    <x:String x:Key="EarlyWarningPage_Jumps">跳</x:String>
+
+    <!--  CharacterPage  -->
+    <x:String x:Key="CharacterPage_Add">添加角色</x:String>
+    <x:String x:Key="CharacterPage_AddSuccess">添加成功</x:String>
+    <x:String x:Key="CharacterPage_RegistyProtocol">注册授权服务失败，请使用管理员模式运行</x:String>
+    <x:String x:Key="CharacterPage_Overview">概要</x:String>
+    <x:String x:Key="CharacterPage_Skill">技能</x:String>
+    <x:String x:Key="CharacterPage_Clone">克隆</x:String>
+    <x:String x:Key="CharacterPage_Wallet">钱包</x:String>
+    <x:String x:Key="CharacterPage_Mail">邮件</x:String>
+    <x:String x:Key="CharacterPage_Contract">合同</x:String>
+    <x:String x:Key="CharacterPage_Industry">工业</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">公司钱包：</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包：</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">安全等级：</x:String>
+    <x:String x:Key="CharacterPage_LP">忠诚点：</x:String>
+    <x:String x:Key="CharacterPage_UnallocatedSp">未使用技能点</x:String>
+    <x:String x:Key="CharacterPage_Sp">技能点：</x:String>
+    <x:String x:Key="CharacterPage_Birthday">出生：</x:String>
+    <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
+
+    <!--  CharacterOrderPage  -->
+    <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status">订单状态</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">被压单</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">正常</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType">订单类型</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Buy">买单</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Sell">卖单</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame">在游戏中查看</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Succcess">操作成功</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Falied">操作失败</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame">复制被压订单为游戏批量购买订单</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Success">复制成功！在游戏批量购买界面粘贴即可</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Failed">无物品可复制</x:String>
+
+    <!--  MapPage  -->
+    <x:String x:Key="MapPage_SearchSystem">星系</x:String>
+    <x:String x:Key="MapPage_SearchRegion">星域</x:String>
+    <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
+    <x:String x:Key="MapPage_Setting">设置</x:String>
+    <x:String x:Key="MapPage_Tools">工具</x:String>
+    <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_PlanetResource">行星资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region">星域资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region_Name">星域名称</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Power">能量</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Workforce">劳动力</x:String>
+    <x:String x:Key="MapPage_PlanetResource_MagmaticGas">岩浆气</x:String>
+    <x:String x:Key="MapPage_PlanetResource_SuperionicIce">离子冰</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System">星系资源</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System_Name">星系名称</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Security">安全等级</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_SOV">主权</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Region">星域</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">插件需求</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">插件名</x:String>
+    <x:String x:Key="MapPage_Tools_None">无</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Region">星域资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System">星系资源表</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_All">所有星系</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_Filtered">筛选后的</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">插件需求表</x:String>
+    <x:String x:Key="MapPage_Tools_InOneJumpSystems">一跳范围内星系</x:String>
+    <x:String x:Key="MapPage_Tools_Navigation">导航</x:String>
+    <x:String x:Key="MapPage_Tools_GIS">地理信息统计</x:String>
+    <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+
+
+    <!--  SystemFilterControl  -->
+    <x:String x:Key="SystemFilterControl_Region">星域</x:String>
+    <x:String x:Key="SystemFilterControl_System">星系</x:String>
+    <x:String x:Key="SystemFilterControl_Security">安全等级</x:String>
+    <x:String x:Key="SystemFilterControl_Sov">主权</x:String>
+    <x:String x:Key="SystemFilterControl_Npc">怪类型</x:String>
+    <x:String x:Key="SystemFilterControl_SelectAll">全选</x:String>
+    <x:String x:Key="SystemFilterControl_System_Mode">显示模式</x:String>
+    <x:String x:Key="SystemFilterControl_System_OnlyInList">仅显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_NotInList">不显示列表中的</x:String>
+    <x:String x:Key="SystemFilterControl_System_Search">搜索星系</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_UpdateSovList">刷新主权列表</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_ContainNoneSOV">包含无主权星系</x:String>
+    <x:String x:Key="SystemFilterControl_Confirm">更新地图显示</x:String>
+    <x:String x:Key="SystemFilterControl_SOV_Count">主权数量</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_1">[1.0,0.85]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_2">[0.84,0.75]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_3">[0.74,0.65]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_4">[0.64,0.5]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_5">(0.5,0.0)</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_A">[0.0,-0.24]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_B">[-0.25,-0.44]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_C">[-0.45,-0.64]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_D">[-0.65,-0.84]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_E">[-0.85,-1.0]</x:String>
+
+    <!--  MapDataTypeControl  -->
+    <x:String x:Key="MapDataTypeControl_SOV_AllianceName">联盟</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Count">数量</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Group">分组</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Confirm">更新地图显示</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">重置分组</x:String>
+    <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">资源类型</x:String>
+
+    <!--  MapSystemDetailDialog  -->
+    <x:String x:Key="MapSystemDetailDialog_Statistics">统计信息</x:String>
+    <x:String x:Key="MapSystemDetailDialog_UpgradeList">插件需求</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">行星资源</x:String>
+    <x:String x:Key="MapSystemDetailDialog_JumpTos">相邻星系</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetID">行星ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Reagent">试剂</x:String>
+    <x:String x:Key="MapSystemDetailDialog_HarvestAmount">产量/小时</x:String>
+
+    <!--  MapNavigation  -->
+    <x:String x:Key="MapNavigation_Setting">导航设置</x:String>
+    <x:String x:Key="MapNavigation_Result">导航结果</x:String>
+    <x:String x:Key="MapNavigation_AddWaypoint">添加航点</x:String>
+    <x:String x:Key="MapNavigation_NavType">导航方式</x:String>
+    <x:String x:Key="MapNavigation_NavType_Stargate">星门</x:String>
+    <x:String x:Key="MapNavigation_NavType_CapitalJump">旗舰跳</x:String>
+    <x:String x:Key="MapNavigation_AvoidSystem">避开星系</x:String>
+    <x:String x:Key="MapNavigation_AvoidRegion">避开星域</x:String>
+    <x:String x:Key="MapNavigation_ShipType">舰船</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration">跳跃引擎校对理论</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration_Tip">每升一级，最大跳跃距离增加20%</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation">跳跃引擎燃料节约技术</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation_Tip">每升一级，每光年的跳跃操作所消耗的同位素减少10%</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters">战略货舰操作</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters_Tip">每升一级，跳跃燃料需求减少10%</x:String>
+    <x:String x:Key="MapNavigation_UseStargate">使用星门</x:String>
+    <x:String x:Key="MapNavigation_PreferPath">优先路线</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Faster">省时优先</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Cheaper">省钱优先</x:String>
+    <x:String x:Key="MapNavigation_MaxJump">最大跳跃距离</x:String>
+    <x:String x:Key="MapNavigation_PerLyFuel">每光年消耗燃料</x:String>
+    <x:String x:Key="MapNavigation_MapOnlyShowPath">星图仅显示途径星系</x:String>
+    <x:String x:Key="MapNavigation_Go">计算导航</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview">导航总览</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">直线距离</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassSystemCount">途径星系数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassStargateCount">过星门次数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpCount">旗舰跳次数</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpDistance">旗舰跳距离</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_RequireFuel">燃料消耗量</x:String>
+    <x:String x:Key="MapNavigation_Result_Null">无导航结果，请检查目的地是否可达</x:String>
+    <x:String x:Key="MapNavigation_Result_Distance">距离（ly）</x:String>
+    <x:String x:Key="MapNavigation_Result_RequireFuel">燃料</x:String>
+    <x:String x:Key="MapNavigation_Result_SOV">主权</x:String>
+    <x:String x:Key="MapNavigation_Result_ShipKills">船击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_PodKills">蛋击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_NpcKills">NPC击毁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
+
+    <!--  OneJumpCover  -->
+    <x:String x:Key="OneJumpCover_Start">计算</x:String>
+    <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
+
+    <!--  ChannelIntelPage  -->
+    <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Stop">停止预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Running">预警中</x:String>
+    <x:String x:Key="ChannelIntelPage_Characters">角色列表</x:String>
+    <x:String x:Key="ChannelIntelPage_Setting">预警设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ChannelName">频道名称</x:String>
+    <x:String x:Key="ChannelIntelPage_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="ChannelIntelPage_Channels">频道列表</x:String>
+    <x:String x:Key="ChannelIntelPage_RefreshChannels">刷新列表</x:String>
+    <x:String x:Key="ChannelIntelPage_LocalSystem">本地位置</x:String>
+    <x:String x:Key="ChannelIntelPage_SearchSystem">搜索星系</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoUpdateLocation">自动更新本地位置</x:String>
+    <x:String x:Key="ChannelIntelPage_Jumps">范围跳数</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapShowType">显示模式</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Alwasys">一直显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_WhenNeed">必要时显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Never">不显示</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle">显示样式</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Default">默认</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_SMT">SMT</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Near2">Near2</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapOpacity">不透明度</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear">自动解除预警</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear_Tip">触发预警多少分钟后自动解除相关星系预警</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade">自动降低预警级别</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade_Tip">触发预警多少分钟后自动降低相关星系预警级别</x:String>
+    <x:String x:Key="ChannelIntelPage_MakeSound">预警声</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNotify">系统通知</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords">忽视预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords">解除预警关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords_Tips">每个关键词使用,隔开</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs">预警星系名语言</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">聊天日志匹配预警星系时，需要支持哪些语言的星系名称</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos">重置位置</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="ChannelIntelPage_StopSound">清除声音</x:String>
+    <x:String x:Key="ChannelIntelPage_LatestIntelInfo">最新预警信息</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearAllIntel">清除所有预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Contents">频道内容</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapSetting">预警弹窗</x:String>
+    <x:String x:Key="ChannelIntelPage_RangeSetting">预警范围</x:String>
+    <x:String x:Key="ChannelIntelPage_SoundSetting">预警声音</x:String>
+    <x:String x:Key="ChannelIntelPage_NotifySetting">通知方式</x:String>
+    <x:String x:Key="ChannelIntelPage_KeywordSetting">关键词</x:String>
+    <x:String x:Key="ChannelIntelPage_OtherSetting">其他</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Overlap">弹窗</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Sound">声音</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_System">系统</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB">ZKB预警</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB_Tip">间隔当前多少秒钟内的KB才会触发预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_NoLocaction">请设置角色当前所处星系</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_SystemNotSupport">当前星系不支持频道预警</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_UnselectedChatChanel">请选择预警频道</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_WarningServiceError">添加预警服务失败</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">同步当前设置到其他角色需停止所有运行中的预警，是否继续？</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">同步完成</x:String>
+</ResourceDictionary>
