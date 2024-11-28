@@ -74,7 +74,7 @@
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
 
-    <x:String x:Key="ShellPage_Players">Players: </x:String>
+    <x:String x:Key="ShellPage_Players">Players</x:String>
     <x:String x:Key="ShellPage_APPVersion">APP Version</x:String>
     <x:String x:Key="ShellPage_Character">Character</x:String>
     <x:String x:Key="ShellPage_Character_Desc">View character skills, emails, contracts, and other information</x:String>

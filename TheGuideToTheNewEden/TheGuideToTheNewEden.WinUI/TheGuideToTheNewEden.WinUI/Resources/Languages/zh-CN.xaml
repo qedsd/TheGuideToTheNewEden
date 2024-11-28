@@ -74,7 +74,7 @@
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
 
-    <x:String x:Key="ShellPage_Players">在线玩家：</x:String>
+    <x:String x:Key="ShellPage_Players">在线玩家</x:String>
     <x:String x:Key="ShellPage_APPVersion">软件版本</x:String>
     <x:String x:Key="ShellPage_Character">角色</x:String>
     <x:String x:Key="ShellPage_Character_Desc">查看角色技能、邮件、合同等信息</x:String>
