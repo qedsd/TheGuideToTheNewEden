@@ -426,6 +426,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 foreach(var process in renameList)
                 {
                     Processes.Remove(process);
+                    //若开启还需关闭
+                    if(process.Running && process.Setting != null)
+                    {
+                        Stop(process.Setting);
+                        process.Setting.ProcessInfo = null;
+                        process.Setting = null;
+                    }
                 }
                 foreach(var process in exitedList)//停止已退出进程预览
                 {
@@ -786,21 +793,31 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private async void ProcessMonitor_Tick(object sender, object e)
         {
-            var newList = await RefreshProcesses();
-            if (PreviewSetting.AutoStartNewProcess)
+            try
             {
-                if(newList.NotNullOrEmpty())
+                var newList = await RefreshProcesses();
+                if (PreviewSetting.AutoStartNewProcess)
                 {
-                    foreach (var item in newList)
+                    if (newList.NotNullOrEmpty())
                     {
-                        if (!item.Running && item.GetCharacterName() != null)
+                        foreach (var item in newList)
                         {
-                            item.Setting = GetProcessSetting(item);
-                            Start(item, item.Setting, PreviewSetting);
+                            if (!item.Running && item.GetCharacterName() != null)
+                            {
+                                item.Setting = GetProcessSetting(item);
+                                if (Start(item, item.Setting, PreviewSetting))
+                                {
+                                    Running = true;
+                                }
+                            }
                         }
+                        SaveSetting();
                     }
-                    SaveSetting();
                 }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
             }
         }
 

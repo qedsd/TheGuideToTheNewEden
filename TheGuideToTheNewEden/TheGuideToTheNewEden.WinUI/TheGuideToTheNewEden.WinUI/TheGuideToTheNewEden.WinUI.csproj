@@ -13,7 +13,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.9.3.0</AssemblyVersion>
+	<AssemblyVersion>2.9.4.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
@@ -251,7 +251,8 @@
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
     <None Remove="logo_128.ico" />
-    <None Remove="Strings\zh-CN\Resource.xaml" />
+    <None Remove="Resources\Languages\en-US\English.xaml" />
+    <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
@@ -702,9 +703,6 @@
     <Page Update="Views\Character\MailDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Strings\zh-CN\Resource.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\IntelOverlapPages\Near2IntelOverlapPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -789,9 +787,5 @@
     <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Strings\en-US\" />
   </ItemGroup>
 </Project>

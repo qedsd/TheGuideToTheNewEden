@@ -1,0 +1,1030 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:String x:Key="AppDisplayName">The Guide To The New Eden</x:String>
+
+    <!--  Setting  -->
+    <x:String x:Key="Setting_Theme_Description">Select which app theme to display</x:String>
+    <x:String x:Key="Setting_Theme_Title">App Theme</x:String>
+    <x:String x:Key="Setting_Theme_Dark">Dark</x:String>
+    <x:String x:Key="Setting_Theme_Default">System Default</x:String>
+    <x:String x:Key="Setting_Theme_Light">Light</x:String>
+    <x:String x:Key="Setting_Backdrop_Title">Backdrop</x:String>
+    <x:String x:Key="Setting_Backdrop_None">None</x:String>
+    <x:String x:Key="Setting_Backdrop_Transparent">Transparent</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture">Custom Picture</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_File">Custom Picture File Path</x:String>
+    <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">Overlap Color</x:String>
+    <x:String x:Key="Setting_UILanguage_Description">After modifying the language, it is necessary to restart the application</x:String>
+    <x:String x:Key="Setting_UILanguage_Title">Language</x:String>
+    <x:String x:Key="Setting_LocalDb_Description">Localized game database display language, application needs to be restarted after modification</x:String>
+    <x:String x:Key="Setting_LocalDb_Title">Localized Database Language</x:String>
+    <x:String x:Key="Setting_GameServer_Description">After modifying the game server used, it is necessary to restart the application</x:String>
+    <x:String x:Key="Setting_GameServer_Title">Game Server</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Description">API server address for counting the number of online players on the server and the activity level of Tieba</x:String>
+    <x:String x:Key="Setting_PlayerStatus_Title">Player Statistics API Address</x:String>
+    <x:String x:Key="Setting_Log_Description">Record Application Exception Information</x:String>
+    <x:String x:Key="Setting_Log_Title">Application Log</x:String>
+    <x:String x:Key="Setting_Log_Check">Check</x:String>
+    <x:String x:Key="Setting_Config_Title">Application Config</x:String>
+    <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
+    <x:String x:Key="Setting_Config_Check">Check</x:String>
+    <x:String x:Key="Setting_About_Title">About</x:String>
+    <x:String x:Key="Setting_Update_Update">APP Update</x:String>
+    <x:String x:Key="Setting_Update_AutoUpdate">Auto Update</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Description">Just select the logs folder</x:String>
+    <x:String x:Key="Setting_GameLog_EVELogsPath_Title">Game Log Path</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Title">Number of valid days for chat channel files</x:String>
+    <x:String x:Key="Setting_GameLog_ChannelDuration_Description">When searching for chat channels, only search for files from the past few days to avoid slow search caused by too many channel files</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Title">Number of logs displayed</x:String>
+    <x:String x:Key="Setting_GameLog_MaxShowItems_Description">The functions of channel intel, channel monitoring, log monitoring, etc. that display real-time log information can display the maximum amount of information, and the more displayed, the more CPU and memory occupied the computer will be</x:String>
+
+    <!--  General  -->
+    <x:String x:Key="General_GroupDropAreaText">Drag the cell header here to group</x:String>
+    <x:String x:Key="General_Name">Name</x:String>
+    <x:String x:Key="General_Quantity">Quantity</x:String>
+    <x:String x:Key="General_Refresh">Refresh</x:String>
+    <x:String x:Key="General_RefreshList">Refresh List</x:String>
+    <x:String x:Key="General_Update">Update</x:String>
+    <x:String x:Key="General_RemoveSelected">Remove Selected</x:String>
+    <x:String x:Key="General_Remove">Remove</x:String>
+    <x:String x:Key="General_AddSelected">Add Selected</x:String>
+    <x:String x:Key="General_SolarSystemName">Solar System</x:String>
+    <x:String x:Key="General_SolarSystem">Solar System</x:String>
+    <x:String x:Key="General_RegionName">Region</x:String>
+    <x:String x:Key="General_Character">Character</x:String>
+    <x:String x:Key="General_Region">Region</x:String>
+    <x:String x:Key="General_Structure">Structure</x:String>
+    <x:String x:Key="General_Day">Day</x:String>
+    <x:String x:Key="General_Hour">Hour</x:String>
+    <x:String x:Key="General_Minute">Minute</x:String>
+    <x:String x:Key="General_Second">Second</x:String>
+    <x:String x:Key="General_Start">Start</x:String>
+    <x:String x:Key="General_StartAll">Start All</x:String>
+    <x:String x:Key="General_Stop">Stop</x:String>
+    <x:String x:Key="General_StopAll">Stop All</x:String>
+    <x:String x:Key="General_OK">OK</x:String>
+    <x:String x:Key="General_Cancel">Cancel</x:String>
+    <x:String x:Key="General_TryNotAdmin">Please try running the software without using administrator mode</x:String>
+    <x:String x:Key="General_OpenFile">Open File</x:String>
+    <x:String x:Key="General_Clear">Clear"</x:String>
+    <x:String x:Key="General_No">No</x:String>
+    <x:String x:Key="General_Yes">Yes</x:String>
+    <x:String x:Key="General_Close">Close</x:String>
+    <x:String x:Key="General_Sec">Sec</x:String>
+
+    <x:String x:Key="General_En">En</x:String>
+    <x:String x:Key="General_Zh">中文</x:String>
+
+    <x:String x:Key="ShellPage_Players">Players</x:String>
+    <x:String x:Key="ShellPage_APPVersion">APP Version</x:String>
+    <x:String x:Key="ShellPage_Character">Character</x:String>
+    <x:String x:Key="ShellPage_Character_Desc">View character skills, emails, contracts, and other information</x:String>
+    <x:String x:Key="ShellPage_Market">Market</x:String>
+    <x:String x:Key="ShellPage_Market_Desc">Check market order</x:String>
+    <x:String x:Key="ShellPage_Business">Business</x:String>
+    <x:String x:Key="ShellPage_Business_Desc">Market price comparison</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning">Intel</x:String>
+    <x:String x:Key="ShellPage_EarlyWarning_Desc">Chat channel manual warning</x:String>
+    <x:String x:Key="ShellPage_GamePreview">Game Preview</x:String>
+    <x:String x:Key="ShellPage_GamePreview_Desc">Game window top preview</x:String>
+    <x:String x:Key="ShellPage_Contract">Public Contract</x:String>
+    <x:String x:Key="ShellPage_Contract_Desc">View the public contract</x:String>
+    <x:String x:Key="ShellPage_ServerPing">Delay Test</x:String>
+    <x:String x:Key="ShellPage_ServerPing_Desc">Test latency between local and game servers</x:String>
+    <x:String x:Key="ShellPage_Translation">Translation</x:String>
+    <x:String x:Key="ShellPage_Translation_Desc">View localized translations of game proprietary terms</x:String>
+    <x:String x:Key="ShellPage_DED">DED</x:String>
+    <x:String x:Key="ShellPage_DED_Desc">DED strategy</x:String>
+    <x:String x:Key="ShellPage_Wormhole">Wormhole</x:String>
+    <x:String x:Key="ShellPage_Wormhole_Desc">Wormhole information</x:String>
+    <x:String x:Key="ShellPage_Backstory">Backstory</x:String>
+    <x:String x:Key="ShellPage_Backstory_Desc">Race, history, technology, organization</x:String>
+    <x:String x:Key="ShellPage_Mission">Mission</x:String>
+    <x:String x:Key="ShellPage_Mission_Desc">Expired mission wiki</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor">Game Log Monitor</x:String>
+    <x:String x:Key="ShellPage_GameLogMonitor_Desc">Monitor game logs</x:String>
+    <x:String x:Key="ShellPage_Links">Links</x:String>
+    <x:String x:Key="ShellPage_Links_Desc">Commonly used official and third-party website links</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor">Channel Monitor</x:String>
+    <x:String x:Key="ShellPage_ChannelMonitor_Desc">Monitor chat channel logs</x:String>
+    <x:String x:Key="ShellPage_Setting">Setting</x:String>
+    <x:String x:Key="ShellPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="ShellPage_ZKB_Desc">https://zkillboard.com/</x:String>
+    <x:String x:Key="ShellPage_Database">Database</x:String>
+    <x:String x:Key="ShellPage_Database_Desc">Browse database content</x:String>
+    <x:String x:Key="ShellPage_Map">Map</x:String>
+    <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
+
+    <!--  Skill  -->
+    <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
+    <x:String x:Key="SkillPage_TrainedSkillLevel">Trained skill level</x:String>
+    <x:String x:Key="SkillPage_SkillpointsInSkill">Trained skill points</x:String>
+
+    <!--  Clone  -->
+    <x:String x:Key="ClonePage_HomeLocation">Location</x:String>
+    <x:String x:Key="ClonePage_LastStationChangeDate">Last change</x:String>
+    <x:String x:Key="ClonePage_LastCloneJumpDate">Last Jump</x:String>
+    <x:String x:Key="ClonePage_JumpCloneCount">Number Of Jump Clone</x:String>
+    <x:String x:Key="ClonePage_CurrentClone">Current Clone</x:String>
+    <x:String x:Key="ClonePage_ImplantCount">Number Of Implant</x:String>
+    <x:String x:Key="ClonePage_ActiveClone">Current Clone</x:String>
+
+    <!--  Wallet  -->
+    <x:String x:Key="WalletPage_CharacterJournal">Character - Journal</x:String>
+    <x:String x:Key="WalletPage_CharacterTransaction">Character - Transaction</x:String>
+    <x:String x:Key="WalletPage_CorpJournal">Corporation - Journal</x:String>
+    <x:String x:Key="WalletPage_CorpTransaction">Corporation - Transaction</x:String>
+    <x:String x:Key="WalletPage_JournalDate">Time</x:String>
+    <x:String x:Key="WalletPage_JournalAmount">Amount</x:String>
+    <x:String x:Key="WalletPage_JournalBalance">Balance</x:String>
+    <x:String x:Key="WalletPage_JournalDescription">Description</x:String>
+    <x:String x:Key="WalletPage_JournalReason">Reason</x:String>
+    <x:String x:Key="WalletPage_JournalRefType">RefType</x:String>
+    <x:String x:Key="WalletPage_TransactionDate">Time</x:String>
+    <x:String x:Key="WalletPage_TransactionType">Type</x:String>
+    <x:String x:Key="WalletPage_TransactionUnitPrice">Unit Price</x:String>
+    <x:String x:Key="WalletPage_TransactionTotalPrice">Total Price"</x:String>
+    <x:String x:Key="WalletPage_TransactionQuantity">Quantity</x:String>
+    <x:String x:Key="WalletPage_TransactionIsBuy">Transaction type</x:String>
+    <x:String x:Key="WalletPage_TransactionClient">Client</x:String>
+    <x:String x:Key="WalletPage_TransactionLocation">Location</x:String>
+    <x:String x:Key="WalletPage_TransactionBuy">Buy</x:String>
+    <x:String x:Key="WalletPage_TransactionSell">Sell</x:String>
+    <x:String x:Key="WalletPage_GroupTotalISK">Total: {TotalISK}</x:String>
+    <x:String x:Key="WalletPage_Division">Division</x:String>
+
+    <!--  Mail  -->
+    <x:String x:Key="Inbox">Inbox</x:String>
+    <x:String x:Key="Sent">Sent</x:String>
+    <x:String x:Key="[Corp]">Corpration</x:String>
+    <x:String x:Key="[Alliance]">Alliance</x:String>
+    <x:String x:Key="MailPage_UnreadCount">Unread email</x:String>
+    <x:String x:Key="MailPage_Unread">Unread</x:String>
+    <x:String x:Key="MailPage_From">From</x:String>
+    <x:String x:Key="MailPage_Recipients">Recipients: </x:String>
+    <x:String x:Key="MailPage_Label">Label: </x:String>
+    <x:String x:Key="MailPage_Mail">Mail</x:String>
+
+    <!--  Contract  -->
+    <x:String x:Key="ContractPage_Character">Character</x:String>
+    <x:String x:Key="ContractPage_Corp">Corpration</x:String>
+    <x:String x:Key="ContractPage_Type_All">All</x:String>
+    <x:String x:Key="ContractPage_Type_Unknown">Unknown</x:String>
+    <x:String x:Key="ContractPage_Type_ItemExchange">Item Exchange</x:String>
+    <x:String x:Key="ContractPage_Type_Auction">Auction</x:String>
+    <x:String x:Key="ContractPage_Type_Courier">Courier</x:String>
+    <x:String x:Key="ContractPage_Type_Loan">Loan</x:String>
+    <x:String x:Key="ContractPage_Region">Range Region</x:String>
+
+    <x:String x:Key="ContractPage_Issuer">Issuer</x:String>
+    <x:String x:Key="ContractPage_Assignee">Assignee</x:String>
+    <x:String x:Key="ContractPage_Acceptor">Acceptor</x:String>
+    <x:String x:Key="ContractPage_StartLocation">Start Location</x:String>
+    <x:String x:Key="ContractPage_EndLocation">End Location</x:String>
+    <x:String x:Key="ContractPage_Type">Type</x:String>
+    <x:String x:Key="ContractPage_Status">Status</x:String>
+    <x:String x:Key="ContractPage_Title">Title</x:String>
+    <x:String x:Key="ContractPage_ForCorporation">Corporation</x:String>
+    <x:String x:Key="ContractPage_Availability">Availability</x:String>
+    <x:String x:Key="ContractPage_DateIssued">Issued Date"</x:String>
+    <x:String x:Key="ContractPage_DateExpired">Expiration Date</x:String>
+    <x:String x:Key="ContractPage_DateAccepted">Date Of Acceptance</x:String>
+    <x:String x:Key="ContractPage_DaysToComplete">Days To Complete</x:String>
+    <x:String x:Key="ContractPage_DateCompleted">Completed In</x:String>
+    <x:String x:Key="ContractPage_Price">Price</x:String>
+    <x:String x:Key="ContractPage_Reward">Reward</x:String>
+    <x:String x:Key="ContractPage_Collateral">Collateral</x:String>
+    <x:String x:Key="ContractPage_Buyout">Buyout</x:String>
+    <x:String x:Key="ContractPage_Volume">Volume</x:String>
+    <x:String x:Key="ContractPage_Detail">Detail</x:String>
+    <x:String x:Key="ContractPage_StartingBid">Starting Bid</x:String>
+    <x:String x:Key="ContractPage_CurrentBid">Current Bid</x:String>
+    <x:String x:Key="ContractPage_WillGet">Will Get</x:String>
+    <x:String x:Key="ContractPage_WillPay">Will Pay</x:String>
+
+    <x:String x:Key="ContractPage_IsSingleton">Is Singleton</x:String>
+    <!--  Blueprint  -->
+    <x:String x:Key="Blueprint_MaterialEfficiency">Material Efficiency</x:String>
+    <x:String x:Key="Blueprint_TimeEfficiency">Time Efficiency</x:String>
+    <x:String x:Key="Blueprint_Runs">Runs</x:String>
+    <x:String x:Key="Blueprint_Copy">Copy</x:String>
+    <x:String x:Key="Blueprint_Original">Original</x:String>
+    <x:String x:Key="Blueprint_BlueprintType">Blueprint Type</x:String>
+    <x:String x:Key="Blueprint_RawQuantity">Raw Quantity</x:String>
+    <x:String x:Key="Blueprint_InfiniteRuns">Infinite Runs</x:String>
+
+    <!--  StructuresSettingPage  -->
+    <x:String x:Key="StructuresSettingPage_AddedStructureList">Structures Already Added</x:String>
+    <x:String x:Key="StructuresSettingPage_AddStructureList">Add Structure</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay1">Mode 1: Structure ID</x:String>
+    <x:String x:Key="StructuresSettingPage_AddWay2">Mode 2: Search By Character</x:String>
+    <x:String x:Key="StructuresSettingPage_Character">Character</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchPublic">Public Structure</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchAsset">Character Asset</x:String>
+    <x:String x:Key="StructuresSettingPage_SearchClone">Character Clone</x:String>
+    <x:String x:Key="StructuresSettingPage_Search">Search</x:String>
+    <x:String x:Key="StructuresSettingPage_StructureID">Structure ID</x:String>
+    <x:String x:Key="StructuresSettingPage_CharacterID">Character ID</x:String>
+    <x:String x:Key="StructuresSettingPage_EmptyTip">Add Structure In Setting - Structure</x:String>
+
+    <!--  MarketPage  -->
+    <x:String x:Key="MarketPage_TargetMarket">Target Market</x:String>
+    <x:String x:Key="MarketPage_AllList">Items</x:String>
+    <x:String x:Key="MarketPage_Star">Collection</x:String>
+    <x:String x:Key="MarketPage_AddStar">Add To Collection</x:String>
+    <x:String x:Key="MarketPage_CancelStar">Remove From Collection</x:String>
+    <x:String x:Key="MarketPage_SelecteMarket">Selecte Market</x:String>
+    <x:String x:Key="MarketPage_Mean">Mean</x:String>
+    <x:String x:Key="MarketPage_Amount">Amount</x:String>
+    <x:String x:Key="MarketPage_Sell">Sell</x:String>
+    <x:String x:Key="MarketPage_Buy">Buy</x:String>
+    <x:String x:Key="MarketPage_History">History</x:String>
+    <x:String x:Key="MarketPage_Price">Price</x:String>
+    <x:String x:Key="MarketPage_Location">Location</x:String>
+    <x:String x:Key="MarketPage_Security">Security</x:String>
+    <x:String x:Key="MarketPage_Duration">Duration</x:String>
+    <x:String x:Key="MarketPage_Range">Range</x:String>
+    <x:String x:Key="MarketPage_MinVolume">Min Volume</x:String>
+    <x:String x:Key="MarketPage_StatisticVolume">Volume</x:String>
+    <x:String x:Key="MarketPage_StatisticHighest">Highest</x:String>
+    <x:String x:Key="MarketPage_StatisticAverage">Average</x:String>
+    <x:String x:Key="MarketPage_StatisticLowest">Lowest</x:String>
+    <x:String x:Key="MarketPage_History1">Last Month</x:String>
+    <x:String x:Key="MarketPage_History3">Last 3 Months</x:String>
+    <x:String x:Key="MarketPage_History6">Last 6 Months年</x:String>
+    <x:String x:Key="MarketPage_History12">Last Year</x:String>
+    <x:String x:Key="MarketPage_HistoryAll">All</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy">Buy</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell">Sell</x:String>
+    <x:String x:Key="MarketPage_Cal_Amount">Amount</x:String>
+    <x:String x:Key="MarketPage_Cal_AutoSetBuyPrice">Auto set price by amount</x:String>
+    <x:String x:Key="MarketPage_Cal_BuyPrice">Buying Price</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalBuyPrice">Total Cost</x:String>
+    <x:String x:Key="MarketPage_Cal_Buy_NoEnoughSellOrder">The sales order cannot meet the quantity, and the remaining quantity will be calculated based on the lowest price on the sales order</x:String>
+    <x:String x:Key="MarketPage_Cal_SellPrice">Selling price</x:String>
+    <x:String x:Key="MarketPage_Cal_TotalSellPrice">Total Income</x:String>
+    <x:String x:Key="MarketPage_Cal_SalesTax">Sales Tax（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_AgentTax">Agent Tax（%）</x:String>
+    <x:String x:Key="MarketPage_Cal_Sell_Immediately">Sell Immediately</x:String>
+
+    <!--  BusinessPage  -->
+    <x:String x:Key="BusinessPage_AddToFilterList">Add to scalper filter list</x:String>
+    <x:String x:Key="BusinessPage_AddToUpdatedScalperShoppingItem">Subtract the corresponding item quantity from the shopping cart</x:String>
+    <x:String x:Key="BusinessPage_Character">Character</x:String>
+    <x:String x:Key="BusinessPage_Corp">Corporation</x:String>
+    <x:String x:Key="BusinessPage_CharacterOrders">Orders</x:String>
+    <x:String x:Key="BusinessPage_Scalper">Scalper</x:String>
+    <x:String x:Key="BusinessPage_ShoppingCart">Shopping Cart</x:String>
+    <x:String x:Key="BusinessPage_HistoryShopping">History</x:String>
+    <x:String x:Key="BusinessPage_Setting">Setting</x:String>
+    <x:String x:Key="BusinessPage_FilterList">Filter List</x:String>
+    <x:String x:Key="BusinessPage_SourceMarket">Source Market</x:String>
+    <x:String x:Key="BusinessPage_DestinationMarket">Destination Market</x:String>
+    <x:String x:Key="BusinessPage_BuyPrice">Buying Price</x:String>
+    <x:String x:Key="BusinessPage_SellPrice">Selling Price</x:String>
+    <x:String x:Key="BusinessPage_PriceType">Price Type</x:String>
+    <x:String x:Key="BusinessPage_HistoryDay">Days Of History</x:String>
+    <x:String x:Key="BusinessPage_PriceScale">Price Scaling Factor</x:String>
+
+    <x:String x:Key="BusinessPage_SellTop5">The average price of the lowest price order in the top 5% of sales orders</x:String>
+    <x:String x:Key="BusinessPage_SellAvailable">The price of the actual quantity of the sales order</x:String>
+    <x:String x:Key="BusinessPage_SellTop">Minimum selling price</x:String>
+    <x:String x:Key="BusinessPage_BuyTop5">Top 5% highest price order average price before purchase</x:String>
+    <x:String x:Key="BusinessPage_BuyAvailable">The price of the actual quantity paid</x:String>
+    <x:String x:Key="BusinessPage_BuyTop">Highest buying price</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighest">Historical highest price</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverage">Historical average price</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowest">Historical lowest price</x:String>
+    <x:String x:Key="BusinessPage_HistoryMedian">Historical median price</x:String>
+
+    <x:String x:Key="BusinessPage_DaySales">Daily Sales Volume</x:String>
+    <x:String x:Key="BusinessPage_SourceSalesDay">Source market statistics days</x:String>
+    <x:String x:Key="BusinessPage_DestinationSalesDay">Destination market statistics days</x:String>
+    <x:String x:Key="BusinessPage_RemoveExtremum">Remove extreme values</x:String>
+    <x:String x:Key="BusinessPage_HistoryPriceFluctuationDay">Days of historical prices</x:String>
+    <x:String x:Key="BusinessPage_DestinationHistoryPriceFluctuation">Historical price fluctuations</x:String>
+    <x:String x:Key="BusinessPage_DestinationNowPriceFluctuationDay">Current price fluctuations</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturation">Saturation of sell orders</x:String>
+    <x:String x:Key="BusinessPage_SellOrderSaturationFluctuation">Effective order price fluctuation range（%）</x:String>
+    <x:String x:Key="BusinessPage_HeatValue">Thermal value</x:String>
+    <x:String x:Key="BusinessPage_HeatValueDay">Days of historical prices</x:String>
+    <x:String x:Key="BusinessPage_HeatValueThreshold">Sales threshold</x:String>
+
+    <x:String x:Key="BusinessPage_SuggestionWeight">Recommended Value Source Weight</x:String>
+    <x:String x:Key="BusinessPage_ROI">Rate of return</x:String>
+    <x:String x:Key="BusinessPage_ROIPercent">ROI(%)</x:String>
+    <x:String x:Key="BusinessPage_NetProfit">Net profit</x:String>
+    <x:String x:Key="BusinessPage_SingleNetProfit">Unit net profit</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesNetProfit">Net profit from target sales volume</x:String>
+    <x:String x:Key="BusinessPage_Principal">Principal</x:String>
+    <x:String x:Key="BusinessPage_BaseSetting">Base Setting</x:String>
+    <x:String x:Key="BusinessPage_MarketGroup">Market Group</x:String>
+    <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">Filter out items with no sell orders in the source market</x:String>
+    <x:String x:Key="BusinessPage_GetOrders">Get Orders</x:String>
+    <x:String x:Key="BusinessPage_Analyse">Analyse Orders</x:String>
+
+    <x:String x:Key="BusinessPage_Type">Item</x:String>
+    <x:String x:Key="BusinessPage_SourceBuyPrice">Source Market Buying Price</x:String>
+    <x:String x:Key="BusinessPage_SourceSales">Daily Sales Volume Of Source Market</x:String>
+    <x:String x:Key="BusinessPage_DestinationSellPrice">Destination Market Selling Price</x:String>
+    <x:String x:Key="BusinessPage_DestinationSales">Daily Sales Volume Of Destination Market</x:String>
+    <x:String x:Key="BusinessPage_ScalperItemDetail">Item Detail</x:String>
+    <x:String x:Key="BusinessPage_Suggestion">Recommendation</x:String>
+    <x:String x:Key="BusinessPage_Volume">Volume</x:String>
+    <x:String x:Key="BusinessPage_TargetSalesPercent">Target Sales As A Percentage Of The Market</x:String>
+    <x:String x:Key="BusinessPage_TargetSales">Target Sales</x:String>
+    <x:String x:Key="BusinessPage_AddToShoppingCart">Add To Shopping Cart</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder">Copy as game bulk purchase order</x:String>
+    <x:String x:Key="BusinessPage_PasteFromGameOrder">Import and update the quantity of related items from individual orders in the game</x:String>
+    <x:String x:Key="BusinessPage_SaveOrder">Save shopping cart list</x:String>
+    <x:String x:Key="BusinessPage_Edit">Edit</x:String>
+    <x:String x:Key="BusinessPage_AddSelectedToShoppingCart">Add selected items to shopping cart</x:String>
+    <x:String x:Key="BusinessPage_SalesType">Calculation Mode For Sales Volume</x:String>
+    <x:String x:Key="BusinessPage_SalesDay">Historical Days Of Statistics</x:String>
+    <x:String x:Key="BusinessPage_HistoryHighestSalse">Historical highest sales volume</x:String>
+    <x:String x:Key="BusinessPage_HistoryAverageSalse">Historical average sales volume</x:String>
+    <x:String x:Key="BusinessPage_HistoryLowestSalse">Historical lowest sales volume</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem1">Updated</x:String>
+    <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem2">items</x:String>
+    <x:String x:Key="BusinessPage_NoUpdatedScalperShoppingItem">No items need to be updated</x:String>
+    <x:String x:Key="BusinessPage_NotPasteItem">Unrecognized item order</x:String>
+
+    <x:String x:Key="MarketSettingPage_OrderDuration">Duration of order</x:String>
+    <x:String x:Key="MarketSettingPage_HistoryDuration">Effective duration of historical records</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread">ESI Thread count</x:String>
+    <x:String x:Key="MarketSettingPage_MaxThread_Desc">In theory, the larger the size, the faster, but if it is too fast, it will trigger ESI request restriction</x:String>
+    <x:String x:Key="MarketSettingPage_ClearCache">Clear cache</x:String>
+
+    <x:String x:Key="SettingPage_General">General</x:String>
+    <x:String x:Key="SettingPage_GameLog">Game Log</x:String>
+    <x:String x:Key="SettingPage_Structures">Structures</x:String>
+    <x:String x:Key="SettingPage_Market">Market</x:String>
+    <x:String x:Key="SettingPage_Test">Test</x:String>
+    <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="SettingPage_KeyboardList">Hotkey Name List</x:String>
+
+    <x:String x:Key="ServerPingPage_TranquilityHost">Tranquility</x:String>
+    <x:String x:Key="ServerPingPage_SerenityHost">Serenity</x:String>
+    <x:String x:Key="ServerPingPage_Host">Host/IP</x:String>
+    <x:String x:Key="ServerPingPage_Port">Port</x:String>
+    <x:String x:Key="ServerPingPage_Times">Times</x:String>
+    <x:String x:Key="ServerPingPage_Span">Span(ms)</x:String>
+    <x:String x:Key="ServerPingPage_Start">Start</x:String>
+    <x:String x:Key="ServerPingPage_Des">The delay test implemented using TCP handshake can obtain the actual latency</x:String>
+    <x:String x:Key="ServerPingPage_RTTAverage">Average latency</x:String>
+    <x:String x:Key="ServerPingPage_RTTFluctuation">Latency fluctuation</x:String>
+    <x:String x:Key="ServerPingPage_PacketLossRate">Packet loss rate</x:String>
+
+    <x:String x:Key="TranslationPage_EN">En</x:String>
+    <x:String x:Key="TranslationPage_Local">Local</x:String>
+
+    <x:String x:Key="HomePage_Home">Home</x:String>
+
+    <x:String x:Key="DEDPage_Drone">Drone</x:String>
+    <x:String x:Key="DEDPage_Serpentis">Serpentis</x:String>
+    <x:String x:Key="DEDPage_BloodRaider">BloodRaider</x:String>
+    <x:String x:Key="DEDPage_Sansha">Sansha</x:String>
+    <x:String x:Key="DEDPage_Angel">Angel</x:String>
+    <x:String x:Key="DEDPage_Guristas">Guristas</x:String>
+    <x:String x:Key="DEDPage_UnkownLevel">UnkownLevel</x:String>
+
+    <x:String x:Key="GeneralSettingPage_NeedLocalization">Using a localized database</x:String>
+
+    <x:String x:Key="AddSerenityAuthDialog_Step0">Step 0: Click the button below to exit the logged in account in the browser, ignore the page error, and then start Step 1</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step0Button">Log off</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Title">Add serenity character authorization</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step1">Step 1: Click the button below to open the browser and jump to NetEase's role authorization website, select the role and authorize it</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step2">Step 2: Copy the url of the blank page from the first step to the input box below</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3">Step 3: Click the button below to start verifying authorization</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_Step3Button">Verify authorization</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifySuccess">Verification authorization successful, please click the close button to complete authorization</x:String>
+    <x:String x:Key="AddSerenityAuthDialog_VerifyFailed">Verification authorization failed</x:String>
+
+    <x:String x:Key="AddTranquilityAuthDialog_Title">Add tranquility character authorization</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0">Step 0: Click the button below to jump to the browser to download and install Net6 desktop runtime (please skip if installed)</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step0Button">Download .NET 6.0</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1">Step 1: Click the button below to jump to the browser, log in to EVE account and authorize, then follow the browser prompts to open AuthListener.exe</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1Button">login.eveonline.com</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2">Step 2: Wait for authorization information to be written</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Success">Authorization information has been obtained</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step2_Failed">The authorization information written is empty</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3">Step 3: Verify Authorization</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3Button">Re verify authorization</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifyFailed">Verification authorization failed</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_VerifySuccess">Verification authorization successful, please click the close button to complete authorization</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step3_Failed">Please change the network and click this button to retry</x:String>
+
+    <x:String x:Key="WormholePage_Search">Search for wormholes...</x:String>
+    <x:String x:Key="WormholePage_Home">Display the list of openings</x:String>
+    <x:String x:Key="WormholePage_Class">Class</x:String>
+    <x:String x:Key="WormholePage_Static">Static</x:String>
+    <x:String x:Key="WormholePage_Wandering">Wandering</x:String>
+    <x:String x:Key="WormholePage_Phenomena">Phenomena</x:String>
+
+    <x:String x:Key="WormholePage_Class_1">c1</x:String>
+    <x:String x:Key="WormholePage_Class_2">c2</x:String>
+    <x:String x:Key="WormholePage_Class_3">c3</x:String>
+    <x:String x:Key="WormholePage_Class_4">c4</x:String>
+    <x:String x:Key="WormholePage_Class_5">c5</x:String>
+    <x:String x:Key="WormholePage_Class_6">c6</x:String>
+    <x:String x:Key="WormholePage_Class_12">c12 Thera</x:String>
+    <x:String x:Key="WormholePage_Class_13">c13 Shattered Frigate</x:String>
+    <x:String x:Key="WormholePage_Class_14">c14 Sentinel Drifter</x:String>
+    <x:String x:Key="WormholePage_Class_15">c15 Barbican Drifter</x:String>
+    <x:String x:Key="WormholePage_Class_16">c16 Vidette Drifter</x:String>
+    <x:String x:Key="WormholePage_Class_17">c17 Conflux Drifter</x:String>
+    <x:String x:Key="WormholePage_Class_18">c18 Redoubt Drifter</x:String>
+    <x:String x:Key="WormholePage_Class_100">Highsec</x:String>
+    <x:String x:Key="WormholePage_Class_101">Lowsec</x:String>
+    <x:String x:Key="WormholePage_Class_102">Nullsec</x:String>
+
+    <x:String x:Key="WormholePage_Phenomena_0">Red Giant</x:String>
+    <x:String x:Key="WormholePage_Phenomena_1">Cataclysmic Variable</x:String>
+    <x:String x:Key="WormholePage_Phenomena_2">Magnetar</x:String>
+    <x:String x:Key="WormholePage_Phenomena_3">Pulsar</x:String>
+    <x:String x:Key="WormholePage_Phenomena_4">Wolf-Rayet Star</x:String>
+    <x:String x:Key="WormholePage_Phenomena_5">Black Hole</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Destination">Destination</x:String>
+    <x:String x:Key="WormholePage_Portal_AppearsIn">Appears In</x:String>
+    <x:String x:Key="WormholePage_Portal_Lifetime">Lifetime</x:String>
+    <x:String x:Key="WormholePage_Portal_MaxMassPerJump">Max Mass per Jump</x:String>
+    <x:String x:Key="WormholePage_Portal_TotalJumpMass">Total Jump Mass</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn">Respawn</x:String>
+    <x:String x:Key="WormholePage_Portal_MassRegen">Mass Regen</x:String>
+
+    <x:String x:Key="WormholePage_Portal_Respawn_Wandering">Wandering</x:String>
+    <x:String x:Key="WormholePage_Portal_Respawn_Static">Static</x:String>
+
+    <x:String x:Key="Backstory_Type_Race">Race</x:String>
+    <x:String x:Key="Backstory_Type_History">History</x:String>
+    <x:String x:Key="Backstory_Type_Technology">Technology</x:String>
+    <x:String x:Key="Backstory_Type_Organization">Organization</x:String>
+
+    <x:String x:Key="Mission_Level_1">Level 1</x:String>
+    <x:String x:Key="Mission_Level_2">Level 2</x:String>
+    <x:String x:Key="Mission_Level_3">Level 3</x:String>
+    <x:String x:Key="Mission_Level_4">Level 4</x:String>
+    <x:String x:Key="Mission_Level_5">Level 5</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode">Activation mode</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">Mode 1（EVE-O-P）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">Mode 2（2.5.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">Mode 3（2.4.0.0）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">Mode 4（2.4.0.0修正）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">Mode 5（Trigger an empty keyboard event, use with caution）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetHotKey">Update</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Backward">Backward</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Forward">Forward</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutCount">Maximum number of windows in rows/columns</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RespondGlobalHotKey">Respond to global hotkey</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ShowPreviewWindow">Show overlap window</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode">Overlap window style</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode1">Style 1（WinUI with title bar）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode2">Style 2（WinUI Without title bar）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindowMode3">Style 3（WPF Without title bar）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin">Highlight border</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Left">Left</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Right">Right</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Top">Top</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightMargin_Bottom">Bottom</x:String>
+    <x:String x:Key="GamePreviewMgrPage_FreezeXY">Freeze XY</x:String>
+    <x:String x:Key="GamePreviewMgrPage_BorderHighlightColor">Border color</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NameHighlightColor">Name color</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterHotkeyFailed">Registration of hotkeys failed. Please check if there are any key conflicts and if the key names are standardized</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeyFailed">Registration for backward hotkeys failed. Please check if there are any key conflicts and if the key names are standardized</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeyFailed">Registration for forward hotkeys failed. Please check if there are any key conflicts and if the key names are standardized</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterBackwardHotkeySuccessful">Registration with backward hotkey successful</x:String>
+    <x:String x:Key="GamePreviewMgrPage_RegisterForwardHotkeySuccessful">Registration forward hotkey successful</x:String>
+    <x:String x:Key="GamePreviewMgrPage_EmptyCharacterName">Character name not recognized, settings will not be saved</x:String>
+    <x:String x:Key="GamePreviewMgrPage_CannotFindTargetWindow">There is no target process window</x:String>
+    <x:String x:Key="GamePreviewMgrPage_NoRunning">No activation window</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SetUniformSizeSuccessful">Window size applied</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_Tip">Process keywords</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessKeywords_PlaceholderText">When using multiple keywords, use ',' to separate</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Running_Tip">Previewing</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ProcessList">Processes</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">Start with all processes that have not been started yet</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">Automatically start new processes</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GlobalSetting">Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">Switch Hotkey</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">When pressing the hotkey, switch and display game windows in order of activation</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">Combination key usage + splicing. eg: Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize">Uniform Window Size</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">Set all preview windows to the specified size</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformWidth">Width</x:String>
+    <x:String x:Key="GamePreviewMgrPage_UniformHeight">Height</x:String>
+    <x:String x:Key="GamePreviewMgrPage_Apply">Apply</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout">Automatically Align Windows</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutTip">Using the preview window of the current game progress as a reference, automatically align the remaining preview windows according to the specified layout</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayout_Mode">Align mode</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutAnchor">Align anchor</x:String>
+    <x:String x:Key="GamePreviewMgrPage_AutoLayoutSpan">Align span</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HideOnForeground">Hide overlap window during game window activity</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightPreviewWindow">Highlight Overlap Window</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightWhenActive">Highlight overlap window during game window activity</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapOpacity">Opacity</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">Name foreground</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">HotKey</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">Combination key usage + splicing. eg: Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">Preview Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartAllSetting">Setting of start all</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewWindow">Overlap window</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HotKeySetting">Hotkey To Activation</x:String>
+    <x:String x:Key="GamePreviewMgrPage_HighlightBorder">Border</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OtherSetting">Other Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StartPrivew">Start</x:String>
+    <x:String x:Key="GamePreviewMgrPage_StopPrivew">Stop</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">Synchronize setting to all</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">To synchronize the current settings to other processes, all running previews need to be stopped. Do you want to continue?</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
+
+    <!--  EarlyWarningItemPage  -->
+    <x:String x:Key="EarlyWarningItemPage_Start">Start</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Stop">Stop</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos">Reset position</x:String>
+    <x:String x:Key="EarlyWarningItemPage_RestorePos_Desc">Reset the intel window position to the center of the screen</x:String>
+    <x:String x:Key="EarlyWarningItemPage_SoundFilePath">Audio file</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Jump">Jump</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Volume">Volume</x:String>
+    <x:String x:Key="EarlyWarningItemPage_Loop">Loop</x:String>
+    <x:String x:Key="EarlyWarningItemPage_DefaultFile">Default</x:String>
+    <x:String x:Key="EarlyWarningItemPage_StopSound">Stop the sound</x:String>
+
+    <!--  GameLogMonitorPage  -->
+    <x:String x:Key="GameLogMonitorPage_StartTime">Start time</x:String>
+    <x:String x:Key="GameLogMonitorPage_Running">Running</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddKey">Add key</x:String>
+    <x:String x:Key="GameLogMonitorPage_Start">Start monitor</x:String>
+    <x:String x:Key="GameLogMonitorPage_Stop">Stop monitor</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify">Clear notification</x:String>
+    <x:String x:Key="GameLogMonitorPage_StopNotify_Tip">Stop playing notification sounds, etc</x:String>
+    <x:String x:Key="GameLogMonitorPage_SystemNotify">System notification</x:String>
+    <x:String x:Key="GameLogMonitorPage_WindowNotify">Pop up notification</x:String>
+    <x:String x:Key="GameLogMonitorPage_CharacterList">Characters</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundNotify">Sound notification</x:String>
+    <x:String x:Key="GameLogMonitorPage_Default">Default</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey">Monitoring keywords</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">When keywords appear in the game log, a notification will be issued, supporting regular expressions</x:String>
+    <x:String x:Key="GameLogMonitorPage_Setting">Setting</x:String>
+    <x:String x:Key="GameLogMonitorPage_OpenLogFile">Open log file</x:String>
+    <x:String x:Key="GameLogMonitorPage_NoneKeyError">Keywords cannot be empty</x:String>
+    <x:String x:Key="GameLogMonitorPage_SameKeyError">Keywords cannot be repeated</x:String>
+    <x:String x:Key="GameLogMonitorPage_Regex">Regular expression</x:String>
+    <x:String x:Key="GameLogMonitorPage_ShowGame">Show game window</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode">Monitor mode</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_0">Notify when keywords appear</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorMode_1">Notify after keywords stop appearing</x:String>
+    <x:String x:Key="GameLogMonitorPage_DisappearDelay">Determination time interval (s)</x:String>
+    <x:String x:Key="GameLogMonitorPage_DelayExpireTip">Keyword triggering has been stopped</x:String>
+    <x:String x:Key="GameLogMonitorPage_RepeatSound">Loop playback</x:String>
+    <x:String x:Key="GameLogMonitorPage_NotifyMode">Notify mode</x:String>
+    <x:String x:Key="GameLogMonitorPage_MonitorThreadError">Monitor process exception logs</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">Add keyword</x:String>
+    <x:String x:Key="GameLogMonitorPage_Span">Span（s）</x:String>
+    <x:String x:Key="GameLogMonitorPage_Logs">Logs</x:String>
+    <x:String x:Key="GameLogMonitorPage_SoundFile">Audio file</x:String>
+
+    <!--  TestSettingPage  -->
+    <x:String x:Key="TestSettingPage_SystemNotify">System notification</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Desc">Check if the system supports system notifications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_SendToast">Send notifications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSetting">Testing environment</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Enabled">Application notification enabled</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForApplication">User defined application settings prevent application notifications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledForUser">User defined global settings will prevent app notifications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByGroupPolicy">Group policy blocks application notifications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_DisabledByManifest">The application notification is blocked by the settings in the manifest. This value is only applicable to packaged applications</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_Setting_Unsupported">Application notifications are not supported</x:String>
+    <x:String x:Key="TestSettingPage_SystemNotify_CheckSettingResult">Result of system notification test</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer">Sound playback</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Desc">Check if the sound playback of the system is normal</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Play">Play</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_Pause">Pause</x:String>
+    <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">Pick file</x:String>
+
+    <!--  LinksPage  -->
+    <x:String x:Key="LinksPage_Name">Name</x:String>
+    <x:String x:Key="LinksPage_Url">Url</x:String>
+    <x:String x:Key="LinksPage_ShortDescription">Description</x:String>
+    <x:String x:Key="LinksPage_Description">Description</x:String>
+    <x:String x:Key="LinksPage_Lang">Language</x:String>
+    <x:String x:Key="LinksPage_Lang_Tip">Multiple languages using ',' segmentation</x:String>
+    <x:String x:Key="LinksPage_Platforms">Platforms</x:String>
+    <x:String x:Key="LinksPage_Platforms_Tip">Multiple platforms using ',' segmentation</x:String>
+    <x:String x:Key="LinksPage_Categories">Categories</x:String>
+    <x:String x:Key="LinksPage_Categories_Tip">Multiple classifications using ',' segmentation</x:String>
+    <x:String x:Key="LinksPage_CopyUrl">Copy URL</x:String>
+    <x:String x:Key="LinksPage_IconUrl">Icon URL</x:String>
+    <x:String x:Key="LinksPage_IconUrl_Tip">Support network URL</x:String>
+    <x:String x:Key="LinksPage_Open">Open URL</x:String>
+    <x:String x:Key="LinksPage_Add">Add</x:String>
+    <x:String x:Key="LinksPage_Edit">Edit</x:String>
+    <x:String x:Key="LinksPage_Remove">Remove</x:String>
+
+    <!--  ChannelMonitorPage  -->
+    <x:String x:Key="ChannelMonitorPage_TargetCharacter">Target character</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelName">Channel name</x:String>
+    <x:String x:Key="ChannelMonitorPage_LastUpdateTime">Last update time</x:String>
+    <x:String x:Key="ChannelMonitorPage_NoneSelectedChannel">No monitoring channel selected</x:String>
+    <x:String x:Key="ChannelMonitorPage_CharacterAndChannels">Channels</x:String>
+    <x:String x:Key="ChannelMonitorPage_ChannelLogs">Logs</x:String>
+    <x:String x:Key="ChannelMonitorPage_SoundFile">Audio file</x:String>
+    <x:String x:Key="ChannelMonitorPage_Start">Start</x:String>
+    <x:String x:Key="ChannelMonitorPage_Stop">Stop</x:String>
+
+    <!--  ZKB  -->
+    <x:String x:Key="ZKBHomePage_ConnectingToWSS">Connecting...</x:String>
+    <x:String x:Key="ZKBHomePage_Connected">Connected</x:String>
+    <x:String x:Key="ZKBHomePage_KillStream">KB stream</x:String>
+    <x:String x:Key="ZKBHomePage_AutoConnect">Auto start kb stream</x:String>
+    <x:String x:Key="ZKBHomePage_Connect">Connect to ZKB server</x:String>
+    <x:String x:Key="KBListControl_Date">Date</x:String>
+    <x:String x:Key="KBListControl_Time">Time</x:String>
+    <x:String x:Key="KBListControl_TotalValue">TotalValue</x:String>
+    <x:String x:Key="KBListControl_Location">Location</x:String>
+    <x:String x:Key="KBListControl_Type">Type</x:String>
+    <x:String x:Key="KBListControl_Victim">Victim</x:String>
+    <x:String x:Key="KBListControl_FinalBlow">Final blow</x:String>
+    <x:String x:Key="KBListControl_OpenBrowser">Open by browser</x:String>
+
+
+    <x:String x:Key="KB_Point">Point</x:String>
+    <x:String x:Key="KB_Damage">Damage</x:String>
+    <x:String x:Key="KB_ShipFitValue">Fit value</x:String>
+    <x:String x:Key="KB_DroppedValue">Dropped value</x:String>
+    <x:String x:Key="KB_DestroyedValue">Destroyed value</x:String>
+    <x:String x:Key="KB_TotalValue">Total value</x:String>
+    <x:String x:Key="KB_Dropped">Dropped</x:String>
+    <x:String x:Key="KB_Destroyed">Destroyed</x:String>
+    <x:String x:Key="KB_FinalBlow">Final blow</x:String>
+    <x:String x:Key="KB_TopDamage">Top damage</x:String>
+    <x:String x:Key="KB_AttackerCount">Attackers</x:String>
+    <x:String x:Key="KB_Solo">Solo</x:String>
+
+    <x:String x:Key="CategoryEnum_Alliance">Alliance</x:String>
+    <x:String x:Key="CategoryEnum_Character">Character</x:String>
+    <x:String x:Key="CategoryEnum_Constellation">Constellation</x:String>
+    <x:String x:Key="CategoryEnum_Corporation">Corporation</x:String>
+    <x:String x:Key="CategoryEnum_InventoryType">Inventory Type</x:String>
+    <x:String x:Key="CategoryEnum_Region">Region</x:String>
+    <x:String x:Key="CategoryEnum_SolarSystem">SolarSystem</x:String>
+    <x:String x:Key="CategoryEnum_Station">Station</x:String>
+    <x:String x:Key="CategoryEnum_Faction">Faction</x:String>
+    <x:String x:Key="CategoryEnum_Structure">Structure</x:String>
+
+    <x:String x:Key="EntityStatistPage_Character">Character</x:String>
+    <x:String x:Key="EntityStatistPage_Corporation">Corporation</x:String>
+    <x:String x:Key="EntityStatistPage_Alliance">Alliance</x:String>
+    <x:String x:Key="EntityStatistPage_CEO">CEO</x:String>
+    <x:String x:Key="EntityStatistPage_Members">Members</x:String>
+    <x:String x:Key="EntityStatistPage_Executor">Executor</x:String>
+    <x:String x:Key="EntityStatistPage_Sec">Sec</x:String>
+    <x:String x:Key="EntityStatistPage_Ship">Ship</x:String>
+    <x:String x:Key="EntityStatistPage_Class">Class</x:String>
+    <x:String x:Key="EntityStatistPage_System">System</x:String>
+    <x:String x:Key="EntityStatistPage_Constellation">Constellation</x:String>
+    <x:String x:Key="EntityStatistPage_Region">Region</x:String>
+    <x:String x:Key="EntityStatistPage_Destroyed">Destroyed</x:String>
+    <x:String x:Key="EntityStatistPage_Lost">Lost</x:String>
+    <x:String x:Key="EntityStatistPage_DangerRatio">Danger Ratio</x:String>
+    <x:String x:Key="EntityStatistPage_GangRatio">Gang Ratio</x:String>
+    <x:String x:Key="EntityStatistPage_HasSupers">Has Supers</x:String>
+    <x:String x:Key="EntityStatistPage_RecentActivity">Recent Activity</x:String>
+    <x:String x:Key="EntityStatistPage_KBList">KB</x:String>
+    <x:String x:Key="EntityStatistPage_Overview">Overview</x:String>
+    <x:String x:Key="EntityStatistPage_Recent">Recent</x:String>
+    <x:String x:Key="EntityStatistPage_Kills">Kills</x:String>
+    <x:String x:Key="EntityStatistPage_Solo">Solo</x:String>
+    <x:String x:Key="EntityStatistPage_Losses">Losses</x:String>
+    <x:String x:Key="EntityStatistPage_TopValue">Top Value</x:String>
+    <x:String x:Key="EntityStatistPage_TopStatist">Top Statist</x:String>
+    <x:String x:Key="EntityStatistPage_GroupSummary">Group Summary</x:String>
+    <x:String x:Key="EntityStatistPage_MonthSummary">Month Summary</x:String>
+    <x:String x:Key="EntityStatistPage_SupperSummary">Supper Summary</x:String>
+
+    <x:String x:Key="StatistTopValuePage_TopAllTime">Top All Time</x:String>
+    <x:String x:Key="StatistTopValuePage_Top7dDays">Top 7 Days</x:String>
+
+    <x:String x:Key="StatistKBListPage_KBModifier">Modifier</x:String>
+    <x:String x:Key="StatistKBListPage_All">All</x:String>
+    <x:String x:Key="StatistKBListPage_Kills">Kills</x:String>
+    <x:String x:Key="StatistKBListPage_Losses">Losses</x:String>
+    <x:String x:Key="StatistKBListPage_Wormhole">Wormhole</x:String>
+    <x:String x:Key="StatistKBListPage_Solo">Solo</x:String>
+    <x:String x:Key="StatistKBListPage_Finalblow">Final Blow</x:String>
+    <x:String x:Key="StatistKBListPage_Awox">Awox</x:String>
+    <x:String x:Key="StatistKBListPage_Npc">Npc</x:String>
+
+    <x:String x:Key="StatistTopAllTimePage_Character">Character</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Corporation">Corporation</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Alliance">Alliance</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Faction">Faction</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Ship">Ship</x:String>
+    <x:String x:Key="StatistTopAllTimePage_System">System</x:String>
+    <x:String x:Key="StatistTopAllTimePage_Kills">Kills</x:String>
+    <x:String x:Key="StatistTopAllTimePage_No">No</x:String>
+
+    <x:String x:Key="StatistGroupPage_No">No</x:String>
+    <x:String x:Key="StatistGroupPage_Kills">Kills</x:String>
+    <x:String x:Key="StatistGroupPage_Losses">Losses</x:String>
+
+    <x:String x:Key="StatistMonthPage_Year">Year</x:String>
+    <x:String x:Key="StatistMonthPage_Month">Month</x:String>
+    <x:String x:Key="StatistMonthPage_ItemDestroyed">Items Destroyed</x:String>
+    <x:String x:Key="StatistMonthPage_PointsDestroyed">Points Destroyed</x:String>
+    <x:String x:Key="StatistMonthPage_IskDestroyed">ISK Destroyed</x:String>
+    <x:String x:Key="StatistMonthPage_ItemLost">Items Lost</x:String>
+    <x:String x:Key="StatistMonthPage_PointsLost">Points Lost</x:String>
+    <x:String x:Key="StatistMonthPage_IskLost">ISK Lost</x:String>
+
+    <x:String x:Key="StatistSuperPage_Titan">Titan</x:String>
+    <x:String x:Key="StatistSuperPage_Supercarrier">Supercarrier</x:String>
+    <x:String x:Key="StatistSuperPage_No">No</x:String>
+    <x:String x:Key="StatistSuperPage_Kills">Kills</x:String>
+
+    <x:String x:Key="ZKBSettingPage_AutoConnect">Auto Connect</x:String>
+    <x:String x:Key="ZKBSettingPage_AutoConnect_Desc">Automatically connect to the server to receive KB stream when the ZKillborad feature is enabled</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify">System Notification</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify_Desc">Pop up system notification when there is a new KB</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue">Minimum value of notification</x:String>
+    <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">Notify only when KB value is greater than this value, set to 0 to notify all</x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems">Maximum KB To Displayed </x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems_Desc">KB stream can display up to KB quantity at a time</x:String>
+    <x:String x:Key="ZKBSettingPage_Types">Ship/Structure/Item ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Systems">System ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Regions">Region ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Characters">Character ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Corps">Corporation ID</x:String>
+    <x:String x:Key="ZKBSettingPage_Alliances">Alliance ID</x:String>
+    <x:String x:Key="ZKBSettingPage_IdsDesc">Notify only the listed IDs, separate multiple IDs with ',' and leave blank to notify all</x:String>
+
+    <!--  GamePreviewMgrPage  -->
+    <x:String x:Key="GamePreviewMgrPage_MoveUp">Move Up</x:String>
+    <x:String x:Key="GamePreviewMgrPage_MoveDown">Move Down</x:String>
+
+    <!--  TaskbarIcon  -->
+    <x:String x:Key="TaskbarIcon_Show">Show</x:String>
+    <x:String x:Key="TaskbarIcon_Exit">Exit</x:String>
+
+    <!--  DatabasePage  -->
+    <x:String x:Key="DatabasePage_SearchResult">Results</x:String>
+    <x:String x:Key="DatabasePage_InvType">Type</x:String>
+    <x:String x:Key="DatabasePage_InvGroup">Group</x:String>
+    <x:String x:Key="DatabasePage_MapSystem">Map System</x:String>
+    <x:String x:Key="DatabasePage_MapRegion">Map Region</x:String>
+    <x:String x:Key="DatabasePage_Station">Station</x:String>
+    <x:String x:Key="DatabasePage_IdName">Cached Id And Name</x:String>
+
+    <!--  KeyboardListPage  -->
+    <x:String x:Key="KeyboardListPage_Name">Key Name</x:String>
+    <x:String x:Key="KeyboardListPage_Code">Key code</x:String>
+    <x:String x:Key="KeyboardListPage_Note">Note</x:String>
+
+    <!--  IndustryPage  -->
+    <x:String x:Key="IndustryPage_Blueprint">Blueprint</x:String>
+    <x:String x:Key="IndustryPage_Product">Product</x:String>
+    <x:String x:Key="IndustryPage_Location">Location</x:String>
+    <x:String x:Key="IndustryPage_Cost">Cost</x:String>
+    <x:String x:Key="IndustryPage_Duration">Duration</x:String>
+    <x:String x:Key="IndustryPage_StartDate">Start Date</x:String>
+    <x:String x:Key="IndustryPage_EndDate">End Date</x:String>
+    <x:String x:Key="IndustryPage_Status">Status</x:String>
+    <x:String x:Key="IndustryPage_Runs">Runs</x:String>
+    <x:String x:Key="IndustryPage_SuccessfulRuns">Successful Runs</x:String>
+    <x:String x:Key="IndustryPage_Probability">Probability</x:String>
+    <x:String x:Key="IndustryPage_Status_Done">Done</x:String>
+    <x:String x:Key="IndustryPage_Status_active">Active</x:String>
+    <x:String x:Key="IndustryPage_Status_cancelled">Cancelled</x:String>
+    <x:String x:Key="IndustryPage_Status_delivered">Delivered</x:String>
+    <x:String x:Key="IndustryPage_Status_paused">Paused</x:String>
+    <x:String x:Key="IndustryPage_Status_ready">Ready</x:String>
+    <x:String x:Key="IndustryPage_Status_reverted">Reverted</x:String>
+
+    <!--  EarlyWarningPage  -->
+    <x:String x:Key="EarlyWarningPage_SubZKB">ZKB</x:String>
+    <x:String x:Key="EarlyWarningPage_SubZKB_Error">Sub ZKB failed</x:String>
+    <x:String x:Key="EarlyWarningPage_KBTime">Effective duration(s)</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Min">Minutes ago</x:String>
+    <x:String x:Key="EarlyWarningPage_Befor_Sec">Second ago</x:String>
+    <x:String x:Key="EarlyWarningPage_Jumps">Jump</x:String>
+
+    <!--  CharacterPage  -->
+    <x:String x:Key="CharacterPage_Add">Add</x:String>
+    <x:String x:Key="CharacterPage_AddSuccess">Added successfully</x:String>
+    <x:String x:Key="CharacterPage_RegistyProtocol">Registration authorization service failed, please run in administrator mode</x:String>
+    <x:String x:Key="CharacterPage_Overview">Overview</x:String>
+    <x:String x:Key="CharacterPage_Skill">Skill</x:String>
+    <x:String x:Key="CharacterPage_Clone">Clone</x:String>
+    <x:String x:Key="CharacterPage_Wallet">Wallet</x:String>
+    <x:String x:Key="CharacterPage_Mail">Mail</x:String>
+    <x:String x:Key="CharacterPage_Contract">Contract</x:String>
+    <x:String x:Key="CharacterPage_Industry">Industry</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet：</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet：</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">Security：</x:String>
+    <x:String x:Key="CharacterPage_LP">LP：</x:String>
+    <x:String x:Key="CharacterPage_UnallocatedSp">Unallocated Sp</x:String>
+    <x:String x:Key="CharacterPage_Sp">SP：</x:String>
+    <x:String x:Key="CharacterPage_Birthday">Birthday：</x:String>
+    <x:String x:Key="CharacterPage_Characters">Characters</x:String>
+
+    <!--  CharacterOrderPage  -->
+    <x:String x:Key="CharacterOrderPage_Difference_Detail">Price difference</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status">Status</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">Backward</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">Normal</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType">Order Type</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Buy">Buy</x:String>
+    <x:String x:Key="CharacterOrderPage_OrderType_Sell">Sell</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame">Show in game</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Succcess">Succcess</x:String>
+    <x:String x:Key="CharacterOrderPage_ShowInGame_Falied">Falied"</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame">Copy the backward order as a bulk purchase order for the game</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Success">Copy successful! Simply paste on the bulk purchase interface of the game</x:String>
+    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Failed">No items to copy</x:String>
+
+    <!--  MapPage  -->
+    <x:String x:Key="MapPage_SearchSystem">System</x:String>
+    <x:String x:Key="MapPage_SearchRegion">Region</x:String>
+    <x:String x:Key="MapPage_SystemFilter">System Filter</x:String>
+    <x:String x:Key="MapPage_Setting">Setting</x:String>
+    <x:String x:Key="MapPage_Tools">Tools</x:String>
+    <x:String x:Key="MapPage_Setting_DataType">Show Mode</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_Security">Security</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_SOV">SOV</x:String>
+    <x:String x:Key="MapPage_Setting_DataType_PlanetResource">Planet Resource</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region">Planet Resource Of Region</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Region_Name">Region Name</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Power">Power</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Workforce">Workforce</x:String>
+    <x:String x:Key="MapPage_PlanetResource_MagmaticGas">Magmatic Gas</x:String>
+    <x:String x:Key="MapPage_PlanetResource_SuperionicIce">Superionic Ice</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System">Planet Resource Of System</x:String>
+    <x:String x:Key="MapPage_PlanetResource_System_Name">System Name</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Security">Security</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_SOV">SOV</x:String>
+    <x:String x:Key="MapPage_SelectedSystem_Region">Region</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">Upgrade</x:String>
+    <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">Upgrade</x:String>
+    <x:String x:Key="MapPage_Tools_None">None</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Region">Planet Resource of Region</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System">Planet Resource of System</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_All">All System</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_System_Filtered">Filtered</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource_Upgrade">Upgrade</x:String>
+    <x:String x:Key="MapPage_Tools_InOneJumpSystems">Systems In One Jump</x:String>
+    <x:String x:Key="MapPage_Tools_Navigation">Navigation</x:String>
+    <x:String x:Key="MapPage_Tools_GIS">GIS</x:String>
+    <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+
+
+    <!--  SystemFilterControl  -->
+    <x:String x:Key="SystemFilterControl_Region">Region</x:String>
+    <x:String x:Key="SystemFilterControl_System">System</x:String>
+    <x:String x:Key="SystemFilterControl_Security">Security</x:String>
+    <x:String x:Key="SystemFilterControl_Sov">Sov</x:String>
+    <x:String x:Key="SystemFilterControl_Npc">Npc</x:String>
+    <x:String x:Key="SystemFilterControl_SelectAll">Select All</x:String>
+    <x:String x:Key="SystemFilterControl_System_Mode">Show Mode</x:String>
+    <x:String x:Key="SystemFilterControl_System_OnlyInList">Only In List</x:String>
+    <x:String x:Key="SystemFilterControl_System_NotInList">Not In List</x:String>
+    <x:String x:Key="SystemFilterControl_System_Search">Search"</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_UpdateSovList">Update Sov List</x:String>
+    <x:String x:Key="SystemFilterControl_Sov_ContainNoneSOV">Contain None NPC System</x:String>
+    <x:String x:Key="SystemFilterControl_Confirm">Confirm</x:String>
+    <x:String x:Key="SystemFilterControl_SOV_Count">Count</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_1">[1.0,0.85]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_2">[0.84,0.75]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_3">[0.74,0.65]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_4">[0.64,0.5]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_5">(0.5,0.0)</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_A">[0.0,-0.24]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_B">[-0.25,-0.44]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_C">[-0.45,-0.64]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_D">[-0.65,-0.84]</x:String>
+    <x:String x:Key="SystemFilterControl_SecurityMode_Level_E">[-0.85,-1.0]</x:String>
+
+    <!--  MapDataTypeControl  -->
+    <x:String x:Key="MapDataTypeControl_SOV_AllianceName">Alliance</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Count">Count</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Group">Group</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_Confirm">Confirm</x:String>
+    <x:String x:Key="MapDataTypeControl_SOV_ResetGroup">Reset Group</x:String>
+    <x:String x:Key="MapDataTypeControl_PlanetResource_ShowDataType">Planet Resource Type</x:String>
+
+    <!--  MapSystemDetailDialog  -->
+    <x:String x:Key="MapSystemDetailDialog_Statistics">Statistics</x:String>
+    <x:String x:Key="MapSystemDetailDialog_UpgradeList">Upgrade</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">Planet Resource</x:String>
+    <x:String x:Key="MapSystemDetailDialog_JumpTos">Next To</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetID">Planet ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Reagent">Reagent</x:String>
+    <x:String x:Key="MapSystemDetailDialog_HarvestAmount">Harvest Amount/Hour</x:String>
+
+    <!--  MapNavigation  -->
+    <x:String x:Key="MapNavigation_Setting">Setting</x:String>
+    <x:String x:Key="MapNavigation_Result">Result</x:String>
+    <x:String x:Key="MapNavigation_AddWaypoint">Add Waypoint</x:String>
+    <x:String x:Key="MapNavigation_NavType">Navigation Type</x:String>
+    <x:String x:Key="MapNavigation_NavType_Stargate">Stargate</x:String>
+    <x:String x:Key="MapNavigation_NavType_CapitalJump">CapitalJump</x:String>
+    <x:String x:Key="MapNavigation_AvoidSystem">Avoid System</x:String>
+    <x:String x:Key="MapNavigation_AvoidRegion">Avoid Region</x:String>
+    <x:String x:Key="MapNavigation_ShipType">Ship</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration">Jump Drive Calibration</x:String>
+    <x:String x:Key="MapNavigation_JumpDriveCalibration_Tip">For each level, the maximum jumping distance increases by 20%</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation">Jump Fuel Conservation</x:String>
+    <x:String x:Key="MapNavigation_JumpFuelConservation_Tip">For every level upgrade, the isotope consumption for jumping operations per light year decreases by 10%</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters">Jump Freighters</x:String>
+    <x:String x:Key="MapNavigation_JumpFreighters_Tip">Each level reduces jumping fuel demand by 10%</x:String>
+    <x:String x:Key="MapNavigation_UseStargate">Use Stargate</x:String>
+    <x:String x:Key="MapNavigation_PreferPath">Prefer Path</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Faster">Faster</x:String>
+    <x:String x:Key="MapNavigation_PreferPath_Cheaper">Cheaper</x:String>
+    <x:String x:Key="MapNavigation_MaxJump">Max Jump</x:String>
+    <x:String x:Key="MapNavigation_PerLyFuel">Fuel Of Per Ly</x:String>
+    <x:String x:Key="MapNavigation_MapOnlyShowPath">Only Show Path In Map</x:String>
+    <x:String x:Key="MapNavigation_Go">Go</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview">Overview</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">Linear Distance</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassSystemCount">Pass Systems</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_PassStargateCount">Pass Stargates</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpCount">Capital Jumps</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_CapitalJumpDistance">Capital Jump Distance</x:String>
+    <x:String x:Key="MapNavigation_Result_Overview_RequireFuel">Require Fuel</x:String>
+    <x:String x:Key="MapNavigation_Result_Null">No results, please check if the destination is reachable</x:String>
+    <x:String x:Key="MapNavigation_Result_Distance">Distance（ly）</x:String>
+    <x:String x:Key="MapNavigation_Result_RequireFuel">Fuel</x:String>
+    <x:String x:Key="MapNavigation_Result_SOV">SOV</x:String>
+    <x:String x:Key="MapNavigation_Result_ShipKills">Ship Kills(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_PodKills">Pod Kills(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_NpcKills">NPC Kills(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Jumps">Jumps(1h)</x:String>
+    <x:String x:Key="MapNavigation_Result_Sec">Sec</x:String>
+
+    <!--  OneJumpCover  -->
+    <x:String x:Key="OneJumpCover_Start">Cal</x:String>
+    <x:String x:Key="OneJumpCover_Count">Count</x:String>
+
+    <!--  ChannelIntelPage  -->
+    <x:String x:Key="ChannelIntelPage_Start">Start</x:String>
+    <x:String x:Key="ChannelIntelPage_Stop">Stop</x:String>
+    <x:String x:Key="ChannelIntelPage_Running">Running</x:String>
+    <x:String x:Key="ChannelIntelPage_Characters">Characters</x:String>
+    <x:String x:Key="ChannelIntelPage_Setting">Setting</x:String>
+    <x:String x:Key="ChannelIntelPage_ChannelName">Channel Name</x:String>
+    <x:String x:Key="ChannelIntelPage_LastUpdateTime">Last Update Time</x:String>
+    <x:String x:Key="ChannelIntelPage_Channels">Channels</x:String>
+    <x:String x:Key="ChannelIntelPage_RefreshChannels">Refresh</x:String>
+    <x:String x:Key="ChannelIntelPage_LocalSystem">Local System</x:String>
+    <x:String x:Key="ChannelIntelPage_SearchSystem">Search System</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoUpdateLocation">Auto Update Location</x:String>
+    <x:String x:Key="ChannelIntelPage_Jumps">Jumps</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapShowType">Overlap Mode</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Alwasys">Alwasys</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_WhenNeed">When Need</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapType_Never">Never</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle">Overlap Style</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Default">Default</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_SMT">SMT</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapStyle_Near2">Near2</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapOpacity">Opacity</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear">Auto Clear</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoClear_Tip">Automatically clear after triggering the warning</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade">Auto Downgrade</x:String>
+    <x:String x:Key="ChannelIntelPage_AutoDowngrade_Tip">Automatically downgrade level after triggering the warning</x:String>
+    <x:String x:Key="ChannelIntelPage_MakeSound">Sound Notification</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNotify">System Notification</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords">Ignore Words</x:String>
+    <x:String x:Key="ChannelIntelPage_IgnoreWords_Tips">Separate each keyword with ','</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords">Clear Words</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearWords_Tips">Separate each keyword with ','</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs">System Name Database</x:String>
+    <x:String x:Key="ChannelIntelPage_SystemNameDbs_Tips">What languages of system names need to be supported when matching warning system in chat logs</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos">Reset Position</x:String>
+    <x:String x:Key="ChannelIntelPage_RestorePos_Tip">Reset overlap window position to the center of the screen</x:String>
+    <x:String x:Key="ChannelIntelPage_StopSound">Stop Sound</x:String>
+    <x:String x:Key="ChannelIntelPage_LatestIntelInfo">Latest Intel Info</x:String>
+    <x:String x:Key="ChannelIntelPage_ClearAllIntel">Clear All Intel</x:String>
+    <x:String x:Key="ChannelIntelPage_Contents">Contents</x:String>
+    <x:String x:Key="ChannelIntelPage_OverlapSetting">Overlap Setting</x:String>
+    <x:String x:Key="ChannelIntelPage_RangeSetting">Range</x:String>
+    <x:String x:Key="ChannelIntelPage_SoundSetting">Sound</x:String>
+    <x:String x:Key="ChannelIntelPage_NotifySetting">Notify</x:String>
+    <x:String x:Key="ChannelIntelPage_KeywordSetting">Keyword</x:String>
+    <x:String x:Key="ChannelIntelPage_OtherSetting">Other</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Overlap">Overlap</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_Sound">Sound</x:String>
+    <x:String x:Key="ChannelIntelPage_Notify_System">System</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB">ZKB</x:String>
+    <x:String x:Key="ChannelIntelPage_SubZKB_Tip">How many seconds will the KB interval trigger the alert</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_NoLocaction">Please set the system where the character is located</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_SystemNotSupport">The system does not support</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_UnselectedChatChanel">Please select channel</x:String>
+    <x:String x:Key="ChannelIntelPage_Error_WarningServiceError">Add Warning Service Error</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll">Synchronize all settings</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
+    <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
+</ResourceDictionary>

@@ -20,6 +20,17 @@
                     <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
+            <controls:ExpandableSettingControl
+                Title="{StaticResource Setting_UILanguage_Title}"
+                Description="{StaticResource Setting_UILanguage_Description}">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="中文" />
+                        <ComboBoxItem Content="English" />
+                    </ComboBox>
+                </StackPanel>
+            </controls:ExpandableSettingControl>
+
             <controls:ExpandableSettingControl Title="{StaticResource Setting_Theme_Title}" Description="{StaticResource Setting_Theme_Description}">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedThemeIndex, Mode=TwoWay}">
@@ -91,18 +102,6 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </controls:ExpandableSettingControl>
-
-            <controls:ExpandableSettingControl
-                Title="{StaticResource Setting_UILanguage_Title}"
-                Description="{StaticResource Setting_UILanguage_Description}"
-                Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal">
-                    <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="中文" />
-                        <ComboBoxItem Content="English" />
-                    </ComboBox>
                 </StackPanel>
             </controls:ExpandableSettingControl>
 

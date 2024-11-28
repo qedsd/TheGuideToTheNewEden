@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using System.IO;
+using System.Linq;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
@@ -19,7 +21,6 @@ namespace TheGuideToTheNewEden.WinUI
             UnhandledException += App_UnhandledException;//UI线程
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             Log.Init();
-            
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -59,6 +60,25 @@ namespace TheGuideToTheNewEden.WinUI
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();
+        }
+
+        private IntPtr GetSameProcess()
+        {
+            var allProcesses = System.Diagnostics.Process.GetProcesses();
+            if (allProcesses.Any())
+            {
+                var targets = allProcesses.Where(p => p.ProcessName == "TheGuideToTheNewEden").ToList();
+                if(targets.Any())
+                {
+                    string dir = System.AppDomain.CurrentDomain.BaseDirectory;
+                    var p = targets.FirstOrDefault(p => Path.GetDirectoryName(p.MainModule.FileName) == dir);
+                    if (p != null)
+                    {
+                        return p.MainWindowHandle;
+                    }
+                }
+            }
+            return IntPtr.Zero;
         }
 
         private void M_window_Closed(object sender, WindowEventArgs args)

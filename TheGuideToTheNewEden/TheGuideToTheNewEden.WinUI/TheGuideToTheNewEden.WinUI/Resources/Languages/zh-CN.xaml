@@ -13,8 +13,8 @@
     <x:String x:Key="Setting_Backdrop_CustomPicture">自定义图片</x:String>
     <x:String x:Key="Setting_Backdrop_CustomPicture_File">图片路径</x:String>
     <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">覆盖图层颜色</x:String>
-    <x:String x:Key="Setting_UILanguage_Description">修改界面语言后，需要重启应用程序</x:String>
-    <x:String x:Key="Setting_UILanguage_Title">界面语言</x:String>
+    <x:String x:Key="Setting_UILanguage_Description">修改语言后，需要重启应用程序</x:String>
+    <x:String x:Key="Setting_UILanguage_Title">语言</x:String>
     <x:String x:Key="Setting_LocalDb_Description">本地化物品数据库显示语言，修改后需要重启软件</x:String>
     <x:String x:Key="Setting_LocalDb_Title">本地化数据库语言</x:String>
     <x:String x:Key="Setting_GameServer_Description">修改使用的游戏服务器后，部分功能可能需要重启生效</x:String>
@@ -74,7 +74,7 @@
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
 
-    <x:String x:Key="ShellPage_Players">在线玩家：</x:String>
+    <x:String x:Key="ShellPage_Players">在线玩家</x:String>
     <x:String x:Key="ShellPage_APPVersion">软件版本</x:String>
     <x:String x:Key="ShellPage_Character">角色</x:String>
     <x:String x:Key="ShellPage_Character_Desc">查看角色技能、邮件、合同等信息</x:String>
@@ -244,7 +244,6 @@
     <x:String x:Key="MarketPage_Duration">过期时间</x:String>
     <x:String x:Key="MarketPage_Range">范围</x:String>
     <x:String x:Key="MarketPage_MinVolume">最小数量</x:String>
-    <x:String x:Key="MarketPage_RemainTimeFormat">剩余时间: 天数.小时:分钟:秒</x:String>
     <x:String x:Key="MarketPage_StatisticVolume">销量</x:String>
     <x:String x:Key="MarketPage_StatisticHighest">最高</x:String>
     <x:String x:Key="MarketPage_StatisticAverage">平均</x:String>
@@ -801,7 +800,7 @@
     <x:String x:Key="IndustryPage_Status_delivered">已交付</x:String>
     <x:String x:Key="IndustryPage_Status_paused">已暂停</x:String>
     <x:String x:Key="IndustryPage_Status_ready">准备</x:String>
-    <x:String x:Key="IndustryPage_Status_reverted ">已恢复</x:String>
+    <x:String x:Key="IndustryPage_Status_reverted">已恢复</x:String>
 
     <!--  EarlyWarningPage  -->
     <x:String x:Key="EarlyWarningPage_SubZKB">ZKB预警</x:String>

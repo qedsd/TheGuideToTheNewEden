@@ -43,6 +43,7 @@
                             Foreground="White"
                             Text="{StaticResource ShellPage_Players}" />
                         <TextBlock
+                            Margin="8,0,0,0"
                             FontSize="12"
                             Foreground="White"
                             Text="{x:Bind VM.Players,Mode=OneWay}" />
@@ -53,7 +54,7 @@
                         VerticalAlignment="Bottom"
                         FontSize="12"
                         Foreground="White"
-                        Text="{x:Bind VM.VersionDescription}" 
+                        Text="{x:Bind VM.VersionDescription}"
                         ToolTipService.ToolTip="{StaticResource ShellPage_APPVersion}"/>
                 </Grid>
             </Border>

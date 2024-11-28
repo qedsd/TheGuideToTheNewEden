@@ -17,13 +17,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static void Initialize()
         {
             Value = LoadLanguageFromSettings();
-            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Value;//仅打包版本支持切换
+            SetLanguage(Value);
         }
 
         public static async Task SetLangAsync(string language)
         {
             Value = language;
-            await SaveThemeInSettingsAsync(Value);
+            await SaveAsync(Value);
+            SetLanguage(Value);
         }
 
         private static string LoadLanguageFromSettings()
@@ -39,9 +40,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return cacheLanguage;
         }
 
-        private static async Task SaveThemeInSettingsAsync(string language)
+        private static async Task SaveAsync(string language)
         {
             await SettingService.SetValueAsync(Key, language);
+        }
+        private static void SetLanguage(string lang)
+        {
+            var oldRes = Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.FirstOrDefault(p => p.Source.OriginalString.Contains("Resources/Languages"));
+            if (oldRes != null)
+                Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Remove(oldRes);
+            string newStr = $"ms-appx:///Resources/Languages/{lang}.xaml";
+            var resource = new Microsoft.UI.Xaml.ResourceDictionary()
+            {
+                Source = new Uri(newStr, UriKind.Absolute)
+            };
+            Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(resource);
         }
     }
 }
