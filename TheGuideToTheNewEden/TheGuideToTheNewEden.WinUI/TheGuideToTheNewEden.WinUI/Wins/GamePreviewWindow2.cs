@@ -28,13 +28,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private readonly AppWindow _appWindow;
         private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
-        private readonly OverlappedPresenter _presenter;
         private WinUICommunity.ThemeService _themeService;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
-            _presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
-            //ExtendsContentIntoTitleBar = true;
             _appWindow.IsShownInSwitchers = false;
             HideAppDisplayName();
             Title = _setting.Name;
@@ -47,7 +44,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _themeService = new WinUICommunity.ThemeService();
             _themeService.Initialize(this);
             _themeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
-            StopTitlebarOp();
             InitUI(_setting.Name);
             MonitorWindow();
         }
@@ -135,18 +131,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             if (e.GetCurrentPoint(sender as UIElement).Properties.PointerUpdateKind == Microsoft.UI.Input.PointerUpdateKind.LeftButtonReleased)
                 WindowHelper.SetForegroundWindow_Click(_sourceHWnd);
-        }
-        #endregion
-        #region 屏蔽标题栏操作
-        private void StopTitlebarOp()
-        {
-            _appWindow.Closing += AppWindow_Closing;
-            //_appWindow.Changed += AppWindow_Changed;
-        }
-        private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
-        {
-            args.Cancel = true;//取消关闭
-            OnStop?.Invoke(_setting);//交给调用者处理关闭
         }
         #endregion
         #region 检测窗口大小、位置更新
@@ -337,7 +321,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _thumbnailWindow.Close();
                 _thumbHWnd = IntPtr.Zero;
             }
-            //RestoreTitlebarOp();
             this.Close();
         }
 
