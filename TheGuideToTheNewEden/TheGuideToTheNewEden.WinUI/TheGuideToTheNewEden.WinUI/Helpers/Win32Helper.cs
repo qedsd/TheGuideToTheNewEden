@@ -26,5 +26,23 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static extern IntPtr GetParent(IntPtr hWnd);
         [DllImport("kernel32.dll")]
         public static extern uint GetCurrentThreadId();
+        /// <summary>
+        /// 获取按键按下、抬起、切换状态
+        /// </summary>
+        /// <param name="nVirtKey">https://learn.microsoft.com/zh-cn/windows/win32/inputdev/virtual-key-codes</param>
+        /// <returns></returns>
+
+        [DllImport("user32.dll", EntryPoint = "GetKeyState")]
+        public static extern int GetKeyState(int nVirtKey);
+
+        /// <summary>
+        /// 按键是否按下
+        /// </summary>
+        /// <param name="nVirtKey"></param>
+        /// <returns></returns>
+        public static bool IsKeyDown(int nVirtKey)
+        {
+            return ((GetKeyState(nVirtKey) & 0x8000) != 0) ? true : false;
+        }
     }
 }

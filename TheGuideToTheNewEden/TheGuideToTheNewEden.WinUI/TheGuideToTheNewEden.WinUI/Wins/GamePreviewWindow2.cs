@@ -68,6 +68,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
             };
             content.PointerPressed += Content_PointerPressed;
+            content.PointerCaptureLost += Content_PointerCaptureLost;
             content.PointerReleased += Content_PointerReleased;
             content.PointerReleased += Content_PointerReleased1;
             content.PointerWheelChanged += Content_PointerWheelChanged;
@@ -80,6 +81,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(_titleTextBlock);
             this.Content = content;
+        }
+
+        private void Content_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            _pointerTimer.Stop();
         }
 
         private void Content_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -100,9 +106,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            System.Drawing.Point lpPoint = new System.Drawing.Point();
-            Helpers.Win32Helper.GetCursorPos(ref lpPoint);
-            _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
+            if(Helpers.Win32Helper.IsKeyDown(0x02))
+            {
+                System.Drawing.Point lpPoint = new System.Drawing.Point();
+                Helpers.Win32Helper.GetCursorPos(ref lpPoint);
+                _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
+            }
         }
 
         private System.Timers.Timer _pointerTimer;
