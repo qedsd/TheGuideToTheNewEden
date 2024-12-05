@@ -289,7 +289,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
-            if (_lastActiveProcessGUID == null)
+            var lastActiveProcess = Processes.FirstOrDefault(p=>p.GUID == _lastActiveProcessGUID);
+            if (lastActiveProcess == null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -338,7 +339,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
-            if (_lastActiveProcessGUID == null)
+            var lastActiveProcess = Processes.FirstOrDefault(p => p.GUID == _lastActiveProcessGUID);
+            if (lastActiveProcess == null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -607,13 +609,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 try
                 {
                     IGamePreviewWindow gamePreviewWindow;
-                    switch (setting.ShowPreviewWindowMode)
+                    if(setting.ShowPreviewWindow)
                     {
-                        case 0: gamePreviewWindow = new GamePreviewWindow1(setting, previewSetting); break;
-                        case 1: gamePreviewWindow = new GamePreviewWindow2(setting, previewSetting); break;
-                        case 2: gamePreviewWindow = new GamePreviewWindow3(setting, previewSetting); break;
-                        default: throw new NotImplementedException();
+                        switch (setting.ShowPreviewWindowMode)
+                        {
+                            case 0: gamePreviewWindow = new GamePreviewWindow1(setting, previewSetting); break;
+                            case 1: gamePreviewWindow = new GamePreviewWindow2(setting, previewSetting); break;
+                            case 2: gamePreviewWindow = new GamePreviewWindow3(setting, previewSetting); break;
+                            default: throw new NotImplementedException();
+                        }
                     }
+                    else
+                    {
+                        gamePreviewWindow = new InvisibleGamePreviewWindow(setting, previewSetting);
+                    }
+                    
                     if (_runningDic.TryAdd(processInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;

@@ -26,7 +26,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         private Window _thumbnailWindow;
         private readonly AppWindow _appWindow;
-        private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private WinUICommunity.ThemeService _themeService;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
@@ -241,22 +240,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     }
                 }
             }
-        }
-
-        public override void ActiveSourceWindow()
-        {
-            Task.Run(() =>
-            {
-                switch (_previewSetting.SetForegroundWindowMode)
-                {
-                    case 0: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                    case 1: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
-                    case 2: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
-                    case 3: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
-                    case 4: Helpers.WindowHelper.SetForegroundWindow5(_sourceHWnd); break;
-                    default: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                }
-            });
         }
 
         public override void PrivateStart(IntPtr sourceHWnd)

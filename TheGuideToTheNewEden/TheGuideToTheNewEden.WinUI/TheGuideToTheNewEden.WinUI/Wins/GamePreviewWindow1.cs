@@ -24,7 +24,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow1 : GamePreviewBaseWindowBase
     {
-        private IntPtr _sourceHWnd = IntPtr.Zero;
         private IntPtr _thumbHWnd = IntPtr.Zero;
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
@@ -162,24 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         #endregion
-        /// <summary>
-        /// 显示目标窗口
-        /// </summary>
-        public override void ActiveSourceWindow()
-        {
-            Task.Run(() =>
-            {
-                switch (_previewSetting.SetForegroundWindowMode)
-                {
-                    case 0: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                    case 1: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
-                    case 2: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
-                    case 3: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
-                    case 4: Helpers.WindowHelper.SetForegroundWindow5(_sourceHWnd); break;
-                    default: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                }
-            });
-        }
+        
         public override void PrivateStart(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;

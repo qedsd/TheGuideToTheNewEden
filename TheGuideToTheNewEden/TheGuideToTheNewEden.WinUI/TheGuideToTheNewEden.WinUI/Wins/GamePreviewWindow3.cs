@@ -19,29 +19,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow3 : GamePreviewWindowBase
     {
-        private IntPtr _sourceHWnd;
         public GamePreviewWindow3(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting)
         {
 
         }
         public override event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
         public override event IGamePreviewWindow.StopDelegate OnStop;
-
-        public override void ActiveSourceWindow()
-        {
-            Task.Run(() =>
-            {
-                switch (_previewSetting.SetForegroundWindowMode)
-                {
-                    case 0: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                    case 1: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
-                    case 2: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
-                    case 3: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
-                    case 4: Helpers.WindowHelper.SetForegroundWindow5(_sourceHWnd); break;
-                    default: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
-                }
-            });
-        }
 
         public override void PrivateCancelHighlight()
         {

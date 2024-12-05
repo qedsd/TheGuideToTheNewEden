@@ -17,6 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal abstract class GamePreviewWindowBase : IGamePreviewWindow
     {
+        internal IntPtr _sourceHWnd;
         internal readonly PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
         internal GamePreviewWindowBase(PreviewItem setting, PreviewSetting previewSetting) : base()
@@ -60,7 +61,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public abstract event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
         public abstract event IGamePreviewWindow.StopDelegate OnStop;
 
-        public abstract void ActiveSourceWindow();
+        public virtual void ActiveSourceWindow()
+        {
+            Task.Run(() =>
+            {
+                switch (_previewSetting.SetForegroundWindowMode)
+                {
+                    case 0: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
+                    case 1: Helpers.WindowHelper.SetForegroundWindow2(_sourceHWnd); break;
+                    case 2: Helpers.WindowHelper.SetForegroundWindow3(_sourceHWnd); break;
+                    case 3: Helpers.WindowHelper.SetForegroundWindow4(_sourceHWnd); break;
+                    case 4: Helpers.WindowHelper.SetForegroundWindow5(_sourceHWnd); break;
+                    default: Helpers.WindowHelper.SetForegroundWindow1(_sourceHWnd); break;
+                }
+            });
+        }
         public void CancelHighlight()
         {
             if (!Isighlight) return;
@@ -108,6 +123,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Start(IntPtr sourceHWnd)
         {
             IsShowing = true;
+            _sourceHWnd = sourceHWnd;
             PrivateStart(sourceHWnd);
         }
         public abstract void PrivateStart(IntPtr sourceHWnd);
