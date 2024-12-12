@@ -70,6 +70,7 @@
     <x:String x:Key="General_Yes">Yes</x:String>
     <x:String x:Key="General_Close">Close</x:String>
     <x:String x:Key="General_Sec">Sec</x:String>
+    <x:String x:Key="General_Add">Add</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -851,6 +852,8 @@
     <x:String x:Key="MapPage_SystemFilter">System Filter</x:String>
     <x:String x:Key="MapPage_Setting">Setting</x:String>
     <x:String x:Key="MapPage_Tools">Tools</x:String>
+    <x:String x:Key="MapPage_Setting_SystemIconContent">System Icon</x:String>
+    <x:String x:Key="MapPage_Setting_JumpBridge">Jump Bridge</x:String>
     <x:String x:Key="MapPage_Setting_DataType">Show Mode</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">Security</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">SOV</x:String>
@@ -879,6 +882,9 @@
     <x:String x:Key="MapPage_Tools_GIS">GIS</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
 
+    <x:String x:Key="JumpBridgeSetting_SelectSystem">Select System...</x:String>
+    <x:String x:Key="JumpBridgeSetting_ShowInMap_True">Show In Map</x:String>
+    <x:String x:Key="JumpBridgeSetting_ShowInMap_False">Don't Show In Map</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">Region</x:String>
