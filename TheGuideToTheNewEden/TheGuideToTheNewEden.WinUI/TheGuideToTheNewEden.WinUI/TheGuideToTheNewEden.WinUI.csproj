@@ -229,6 +229,7 @@
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
+    <None Remove="Controls\JumpBridgeSetting.xaml" />
     <None Remove="Controls\KBDamageControl.xaml" />
     <None Remove="Controls\KBListCharacterControl.xaml" />
     <None Remove="Controls\KBListControl.xaml" />
@@ -428,6 +429,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\CardControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\JumpBridgeSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">

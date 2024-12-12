@@ -66,12 +66,21 @@
                 </Button.Content>
                 <Button.Flyout>
                     <Flyout>
-                        <controls:MapDataTypeControl
-                            x:Name="MapDataTypeControl"
-                            Width="400"
-                            OnDataTypChanged="MapDataTypeControl_OnDataTypChanged"
-                            OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
-                            OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
+                        <ScrollView>
+                            <StackPanel MinWidth="400">
+                                <Expander Header="{StaticResource MapPage_Setting_SystemIconContent}" Style="{StaticResource StretchExpander}">
+                                    <controls:MapDataTypeControl
+                                        x:Name="MapDataTypeControl"
+                                        Width="400"
+                                        OnDataTypChanged="MapDataTypeControl_OnDataTypChanged"
+                                        OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
+                                        OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
+                                </Expander>
+                                <Expander Header="{StaticResource MapPage_Setting_JumpBridge}" Style="{StaticResource StretchExpander}">
+                                    <controls:JumpBridgeSetting/>
+                                </Expander>
+                            </StackPanel>
+                        </ScrollView>
                     </Flyout>
                 </Button.Flyout>
             </Button>
@@ -100,40 +109,40 @@
                       IsExpanded="True">
                 <Grid x:Name="ToolGrid" Margin="-8">
                     <dataGrid:SfDataGrid Visibility="Collapsed"
-x:Name="RegionPlanetResourcList"
-HorizontalAlignment="Stretch"
-AllowDraggingColumns="True"
-AllowEditing="False"
-AllowFiltering="True"
-AllowGrouping="False"
-AllowResizingColumns="True"
-AllowSorting="True"
-AutoGenerateColumns="False"
-Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-ColumnWidthMode="Auto"
-GridLinesVisibility="Both"
-GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-HeaderLinesVisibility="Both"
-SelectionMode="Extended"
-ShowGroupDropArea="False">
+                                         x:Name="RegionPlanetResourcList"
+                                         HorizontalAlignment="Stretch"
+                                         AllowDraggingColumns="True"
+                                         AllowEditing="False"
+                                         AllowFiltering="True"
+                                         AllowGrouping="False"
+                                         AllowResizingColumns="True"
+                                         AllowSorting="True"
+                                         AutoGenerateColumns="False"
+                                         Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                         ColumnWidthMode="Auto"
+                                         GridLinesVisibility="Both"
+                                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                                         HeaderLinesVisibility="Both"
+                                         SelectionMode="Extended"
+                                         ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Region_Name}" MappingName="Region.RegionName" />
                             <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-        MappingName="Power" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                MappingName="Power" />
                             <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-        MappingName="Workforce" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                MappingName="Workforce" />
                             <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-        MappingName="SuperionicIce" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                MappingName="SuperionicIce" />
                             <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-        MappingName="MagmaticGas" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                     <Grid x:Name="Tool_SystemPlanetResourcList" Visibility="Collapsed">
@@ -143,92 +152,92 @@ ShowGroupDropArea="False">
                         </Grid.RowDefinitions>
                         <Grid>
                             <ComboBox x:Name="Tool_SystemPlanetResourcList_Mode"
-          Margin="0,-4,0,4"
-          SelectedIndex="0"
-          SelectionChanged="Tool_SystemPlanetResourcList_Mode_SelectionChanged">
+                                      Margin="0,-4,0,4"
+                                      SelectedIndex="0"
+                                      SelectionChanged="Tool_SystemPlanetResourcList_Mode_SelectionChanged">
                                 <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_All}"/>
                                 <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_Filtered}"/>
                             </ComboBox>
                             <TextBlock x:Name="Tool_SystemPlanetResourcList_Count" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                         </Grid>
-                            
+
                         <dataGrid:SfDataGrid Grid.Row="1"
-x:Name="SystemPlanetResourcList"
-HorizontalAlignment="Stretch"
-AllowDraggingColumns="True"
-AllowEditing="False"
-AllowFiltering="True"
-AllowGrouping="True"
-AllowResizingColumns="True"
-AllowSorting="True"
-AutoGenerateColumns="False"
-Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-ColumnWidthMode="Auto"
-GridLinesVisibility="Both"
-GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-HeaderLinesVisibility="Both"
-SelectionMode="Extended"
-ShowGroupDropArea="False">
+                                             x:Name="SystemPlanetResourcList"
+                                             HorizontalAlignment="Stretch"
+                                             AllowDraggingColumns="True"
+                                             AllowEditing="False"
+                                             AllowFiltering="True"
+                                             AllowGrouping="True"
+                                             AllowResizingColumns="True"
+                                             AllowSorting="True"
+                                             AutoGenerateColumns="False"
+                                             Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                             ColumnWidthMode="Auto"
+                                             GridLinesVisibility="Both"
+                                             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                                             HeaderLinesVisibility="Both"
+                                             SelectionMode="Extended"
+                                             ShowGroupDropArea="False">
                             <dataGrid:SfDataGrid.Columns>
                                 <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
                                 <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N2"
-                                HeaderText="{StaticResource General_Sec}"
-                                MappingName="MapSolarSystem.Security" />
+                                    DisplayNumberFormat="N2"
+                                    HeaderText="{StaticResource General_Sec}"
+                                    MappingName="MapSolarSystem.Security" />
                                 <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-        MappingName="Power" />
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                    MappingName="Power" />
                                 <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-        MappingName="Workforce" />
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                    MappingName="Workforce" />
                                 <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-        MappingName="SuperionicIce" />
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                    MappingName="SuperionicIce" />
                                 <dataGrid:GridNumericColumn
-        DisplayNumberFormat="N0"
-        HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-        MappingName="MagmaticGas" />
+                                    DisplayNumberFormat="N0"
+                                    HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                    MappingName="MagmaticGas" />
                             </dataGrid:SfDataGrid.Columns>
                         </dataGrid:SfDataGrid>
                     </Grid>
                     <dataGrid:SfDataGrid Visibility="Collapsed"
-     x:Name="UpgradeList"
-     HorizontalAlignment="Stretch"
-     AllowDraggingColumns="True"
-     AllowEditing="False"
-     AllowFiltering="True"
-     AllowGrouping="False"
-     AllowResizingColumns="True"
-     AllowSorting="True"
-     AutoGenerateColumns="False"
-     Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-     ColumnWidthMode="Auto"
-     GridLinesVisibility="Both"
-     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-     HeaderLinesVisibility="Both"
-     SelectionMode="Extended"
-     ShowGroupDropArea="False">
+                                         x:Name="UpgradeList"
+                                         HorizontalAlignment="Stretch"
+                                         AllowDraggingColumns="True"
+                                         AllowEditing="False"
+                                         AllowFiltering="True"
+                                         AllowGrouping="False"
+                                         AllowResizingColumns="True"
+                                         AllowSorting="True"
+                                         AutoGenerateColumns="False"
+                                         Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                         ColumnWidthMode="Auto"
+                                         GridLinesVisibility="Both"
+                                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                                         HeaderLinesVisibility="Both"
+                                         SelectionMode="Extended"
+                                         ShowGroupDropArea="False">
                         <dataGrid:SfDataGrid.Columns>
                             <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Upgrade_Name}" MappingName="Name" />
                             <dataGrid:GridNumericColumn
-             DisplayNumberFormat="N0"
-             HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-             MappingName="Power" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
+                                MappingName="Power" />
                             <dataGrid:GridNumericColumn
-             DisplayNumberFormat="N0"
-             HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-             MappingName="Workforce" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
+                                MappingName="Workforce" />
                             <dataGrid:GridNumericColumn
-             DisplayNumberFormat="N0"
-             HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-             MappingName="SuperionicIce" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
+                                MappingName="SuperionicIce" />
                             <dataGrid:GridNumericColumn
-             DisplayNumberFormat="N0"
-             HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-             MappingName="MagmaticGas" />
+                                DisplayNumberFormat="N0"
+                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
+                                MappingName="MagmaticGas" />
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                     <Grid x:Name="Tool_OneJumpCover" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
@@ -240,7 +249,7 @@ ShowGroupDropArea="False">
                 </Grid>
             </Expander>
         </Grid>
-        
+
         <!--  右侧详细面板  -->
         <Grid
             x:Name="SelectedSystemInfoPanel"

@@ -70,6 +70,7 @@
     <x:String x:Key="General_Yes">是</x:String>
     <x:String x:Key="General_Close">关闭</x:String>
     <x:String x:Key="General_Sec">安等</x:String>
+    <x:String x:Key="General_Add">添加</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -851,6 +852,8 @@
     <x:String x:Key="MapPage_SystemFilter">星系筛选</x:String>
     <x:String x:Key="MapPage_Setting">设置</x:String>
     <x:String x:Key="MapPage_Tools">工具</x:String>
+    <x:String x:Key="MapPage_Setting_SystemIconContent">星系图标</x:String>
+    <x:String x:Key="MapPage_Setting_JumpBridge">跳桥</x:String>
     <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
@@ -879,6 +882,9 @@
     <x:String x:Key="MapPage_Tools_GIS">地理信息统计</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
 
+    <x:String x:Key="JumpBridgeSetting_SelectSystem">选择星系...</x:String>
+    <x:String x:Key="JumpBridgeSetting_ShowInMap_True">在星图上显示</x:String>
+    <x:String x:Key="JumpBridgeSetting_ShowInMap_False">不在星图上显示</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>

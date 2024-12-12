@@ -23,6 +23,7 @@ using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.WinUI.Models.Map;
+using TheGuideToTheNewEden.WinUI.Views.Map.Drawers;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map
 {
@@ -62,6 +63,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private double _lastMovedX = 0;
         private double _lastMovedY = 0;
         private List<MapGraphBase> _otherMapGraphs = new List<MapGraphBase>();
+
+        /// <summary>
+        /// 按绘制顺序存放实例
+        /// </summary>
+        private List<Drawers.IMapDrawer> _mapDrawers = new List<Drawers.IMapDrawer>();
         public MapCanvas()
         {
             _canvasControl = new CanvasControl();
@@ -93,6 +99,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             };
             _findDataTimer.Tick += FindDataTimer_Tick;
             _findDataTimer.Start();
+
+            InitDrawers();
+        }
+        private void InitDrawers()
+        {
+            _mapDrawers.Add(new JumpBridgeDrawer());
+
+            _mapDrawers.ForEach(p =>
+            {
+                p.DrawRequsted += ((s, e) =>
+                {
+                    Draw();
+                });
+            });
         }
 
         private void OtherCanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -279,7 +299,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 {
                     double drawX = data.X;
                     double drawY = data.Y;
-                    if (drawX <= sender.ActualWidth && drawY <= sender.ActualHeight && drawX >= 0 && drawY >= 0)
+                    if (drawX <= sender.ActualWidth * 2 && drawY <= sender.ActualHeight * 2 && drawX >= -sender.ActualWidth && drawY >= -sender.ActualHeight)
                     {
                         data.Visible = true;
                     }
@@ -291,6 +311,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible);
                 _visbleMapDatas = visibleDatas.OrderBy(p=>p.X).ToList();
+                foreach(var drawer in _mapDrawers)
+                {
+                    drawer.Draw(args, _usingMapDatas, visibleDatas);
+                }
                 //先画的会被后画的遮盖
                 //连线
                 if (_currentZoom >= _lineZoom)
