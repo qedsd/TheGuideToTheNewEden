@@ -68,7 +68,8 @@
                     <Flyout>
                         <ScrollView>
                             <StackPanel MinWidth="400">
-                                <Expander Header="{StaticResource MapPage_Setting_SystemIconContent}" Style="{StaticResource StretchExpander}">
+                                <Expander Header="{StaticResource MapPage_Setting_SystemIconContent}" Style="{StaticResource StretchExpander}"
+                                          Margin="0,4">
                                     <controls:MapDataTypeControl
                                         x:Name="MapDataTypeControl"
                                         Width="400"
@@ -76,7 +77,8 @@
                                         OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
                                         OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
                                 </Expander>
-                                <Expander Header="{StaticResource MapPage_Setting_JumpBridge}" Style="{StaticResource StretchExpander}">
+                                <Expander Header="{StaticResource MapPage_Setting_JumpBridge}" Style="{StaticResource StretchExpander}"
+                                          Margin="0,4">
                                     <controls:JumpBridgeSetting/>
                                 </Expander>
                             </StackPanel>

@@ -290,6 +290,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             return enable ? targetColor : Windows.UI.Color.FromArgb(targetColor.A, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
         }
+        private const double _visibleScale = 0.5;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if(_usingMapDatas != null)
@@ -297,9 +298,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 int invisibleCount = 0;
                 foreach (var data in _usingMapDatas.Values)
                 {
+                    double wExt = sender.ActualWidth * _visibleScale;
+                    double hExt = sender.ActualHeight * _visibleScale;
                     double drawX = data.X;
                     double drawY = data.Y;
-                    if (drawX <= sender.ActualWidth * 2 && drawY <= sender.ActualHeight * 2 && drawX >= -sender.ActualWidth && drawY >= -sender.ActualHeight)
+                    if (drawX <= sender.ActualWidth + wExt && drawY <= sender.ActualHeight + hExt && drawX >= -wExt && drawY >= -hExt)
                     {
                         data.Visible = true;
                     }
