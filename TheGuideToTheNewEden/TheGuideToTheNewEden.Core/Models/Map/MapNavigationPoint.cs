@@ -20,6 +20,7 @@ namespace TheGuideToTheNewEden.Core.Models.Map
         /// 0 起始点
         /// 1 星门
         /// 2 诱导
+        /// 3 跳桥
         /// </summary>
         public int NavType {  get; set; }
 

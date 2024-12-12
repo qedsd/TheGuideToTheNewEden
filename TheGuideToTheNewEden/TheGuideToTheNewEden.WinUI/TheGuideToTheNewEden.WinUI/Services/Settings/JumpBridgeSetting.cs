@@ -64,6 +64,10 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             return Current.Values;
         }
+        public static Dictionary<int, int> GetBridgesDict()
+        {
+            return Current.ValuesMap;
+        }
         public static bool GetValue(int systemID, out int toSystemID)
         {
             toSystemID = -1;

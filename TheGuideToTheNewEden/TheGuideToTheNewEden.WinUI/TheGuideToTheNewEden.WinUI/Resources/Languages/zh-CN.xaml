@@ -936,6 +936,7 @@
     <x:String x:Key="MapNavigation_NavType">导航方式</x:String>
     <x:String x:Key="MapNavigation_NavType_Stargate">星门</x:String>
     <x:String x:Key="MapNavigation_NavType_CapitalJump">旗舰跳</x:String>
+    <x:String x:Key="MapNavigation_NavType_JumpBridge">跳桥</x:String>
     <x:String x:Key="MapNavigation_AvoidSystem">避开星系</x:String>
     <x:String x:Key="MapNavigation_AvoidRegion">避开星域</x:String>
     <x:String x:Key="MapNavigation_ShipType">舰船</x:String>

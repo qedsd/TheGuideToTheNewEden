@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
     public static class ShortestPathHelper
     {
-        public static List<int> CalStargatePath(int start, int end, List<int> avoidIds)
+        public static List<int> CalStargatePath(int start, int end, List<int> avoidIds, Dictionary<int, int> bridge)
         {
             Dijkstras dijkstras = new Dijkstras();
             var avoidIdsHashSet =  avoidIds.ToHashSet2();
@@ -20,9 +20,9 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 if(!avoidIdsHashSet.Contains(p.SolarSystemID))
                 {
-                    if (p.JumpTo.NotNullOrEmpty())
+                    Dictionary<int, double> edges = new Dictionary<int, double>();
+                    if (p.JumpTo.NotNullOrEmpty())//添加星门关联的星系
                     {
-                        Dictionary<int, double> edges = new Dictionary<int, double>();
                         foreach (var jump in p.JumpTo)
                         {
                             if (!avoidIdsHashSet.Contains(jump))
@@ -30,6 +30,13 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                                 edges.Add(jump, 1);
                             }
                         }
+                    }
+                    if(bridge.TryGetValue(p.SolarSystemID, out var bridgeTo))//添加跳桥关联的星系
+                    {
+                        edges.Add(bridgeTo, 1);
+                    }
+                    if (edges.Any())
+                    {
                         dijkstras.AddVertex(p.SolarSystemID, edges);
                     }
                 }

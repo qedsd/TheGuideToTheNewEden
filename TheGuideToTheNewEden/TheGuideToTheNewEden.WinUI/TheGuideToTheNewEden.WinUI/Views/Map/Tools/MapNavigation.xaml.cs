@@ -231,7 +231,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 {
                     //ShortestPathHelper返回的数据从终点到起点
                     //需要将数据反转
-                    var pathIds = ShortestPathHelper.CalStargatePath(path[i], path[i + 1], avoidSys);
+                    var pathIds = ShortestPathHelper.CalStargatePath(path[i], path[i + 1], avoidSys, Services.Settings.JumpBridgeSetting.GetBridgesDict());
                     if (pathIds != null)
                     {
                         for (int j = pathIds.Count - 1; j >= 1; j--)
@@ -307,11 +307,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                         }
                         else
                         {
-                            var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
-                            if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
+                            if(Services.Settings.JumpBridgeSetting.GetValue(prevP.System.SolarSystemID, out int bridgeTo) && bridgeTo == path[i])
+                            {
+                                point.NavType = 3;
+                            }
+                            else if(SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID)?.Contains(path[i]) == true)
                             {
                                 point.NavType = 1;
                             }
+                            //var prevPJumpTo = SolarSystemPosHelper.GetJumpTo(prevP.System.SolarSystemID);
+                            //if (prevPJumpTo != null && prevPJumpTo.Contains(path[i]))
+                            //{
+                            //    point.NavType = 1;
+                            //}
                             else
                             {
                                 point.NavType = 2;

@@ -18,7 +18,13 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             }
             else
             {
-                return Helpers.ResourcesHelper.GetString(type == 1 ? "MapNavigation_NavType_Stargate" : "MapNavigation_NavType_CapitalJump");
+                switch(type)
+                {
+                    case 1: return Helpers.ResourcesHelper.GetString("MapNavigation_NavType_Stargate");
+                    case 2: return Helpers.ResourcesHelper.GetString("MapNavigation_NavType_CapitalJump");
+                    case 3: return Helpers.ResourcesHelper.GetString("MapNavigation_NavType_JumpBridge");
+                    default:return type.ToString();
+                }
             }
         }
 

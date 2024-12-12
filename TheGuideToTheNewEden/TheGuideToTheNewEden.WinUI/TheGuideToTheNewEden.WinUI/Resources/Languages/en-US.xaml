@@ -935,7 +935,8 @@
     <x:String x:Key="MapNavigation_AddWaypoint">Add Waypoint</x:String>
     <x:String x:Key="MapNavigation_NavType">Navigation Type</x:String>
     <x:String x:Key="MapNavigation_NavType_Stargate">Stargate</x:String>
-    <x:String x:Key="MapNavigation_NavType_CapitalJump">CapitalJump</x:String>
+    <x:String x:Key="MapNavigation_NavType_CapitalJump">Capital Jump</x:String>
+    <x:String x:Key="MapNavigation_NavType_JumpBridge">Jump Bridge</x:String>
     <x:String x:Key="MapNavigation_AvoidSystem">Avoid System</x:String>
     <x:String x:Key="MapNavigation_AvoidRegion">Avoid Region</x:String>
     <x:String x:Key="MapNavigation_ShipType">Ship</x:String>
