@@ -9,6 +9,7 @@ using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
 using ESI.NET.Models.Universe;
 using Microsoft.UI.Xaml;
+using Microsoft.Graphics.Canvas.Geometry;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
 {
@@ -16,11 +17,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
     {
         private bool _isDark = false;
         private Windows.UI.Color _linkColor;
+        private CanvasStrokeStyle _lineStyle;
         public JumpBridgeDrawer()
         {
             SetColor(Services.Settings.ThemeSelectorService.IsDark);
             JumpBridgeSetting.SettingChanged += JumpBridgeSetting_SettingChanged;
             Services.Settings.ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
+            _lineStyle = new CanvasStrokeStyle()
+            {
+                DashStyle = CanvasDashStyle.Dot
+            };
         }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
@@ -31,8 +37,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         private void SetColor(bool isDark)
         {
             _linkColor = isDark ?
-                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.SkyBlue.R, Microsoft.UI.Colors.SkyBlue.G, Microsoft.UI.Colors.SkyBlue.B) :
-                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.SkyBlue.R, Microsoft.UI.Colors.SkyBlue.G, Microsoft.UI.Colors.SkyBlue.B);
+                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.LightGray.R, Microsoft.UI.Colors.LightGray.G, Microsoft.UI.Colors.LightGray.B) :
+                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.DarkGray.R, Microsoft.UI.Colors.DarkGray.G, Microsoft.UI.Colors.DarkGray.B);
         }
         public event EventHandler DrawRequsted;
 
@@ -54,7 +60,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                         {
                             var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
                             var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
-                            args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 2);
+                            args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 2, _lineStyle);
                         }
                     }
                 }
