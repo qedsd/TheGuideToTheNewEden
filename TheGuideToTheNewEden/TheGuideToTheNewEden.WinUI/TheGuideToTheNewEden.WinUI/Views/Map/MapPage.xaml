@@ -32,7 +32,7 @@
                     <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
                 </ComboBox>
                 <Grid Grid.Column="1" Margin="-4,0,-8,0">
-                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector" />
+                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True"/>
                     <controls:SelecteRegionControl
                         x:Name="RegionSelector"
                         ShowList="False"

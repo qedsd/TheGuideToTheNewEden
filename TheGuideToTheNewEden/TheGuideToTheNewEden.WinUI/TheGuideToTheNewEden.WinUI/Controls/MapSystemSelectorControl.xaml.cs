@@ -20,6 +20,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
     {
         //private Dictionary<int, MapSolarSystem> _systemDict;
         public List<MapSolarSystem> MapSolarSystems { get; set; }
+        private List<MapSolarSystem> _allSystems { get; set; }
         public MapSystemSelectorControl()
         {
             this.InitializeComponent();
@@ -27,7 +28,19 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         private async void Init()
         {
-            MapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).OrderBy(p => p.SolarSystemID).ToList();
+            _allSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).OrderBy(p => p.SolarSystemID).ToList();
+            LoadDatas();
+        }
+        private void LoadDatas()
+        {
+            if(ShowSpecial)
+            {
+                MapSolarSystems = _allSystems;
+            }
+            else
+            {
+                MapSolarSystems = _allSystems.Where(p=>!p.IsSpecial()).ToList();
+            }
             //_systemDict = MapSolarSystems.ToDictionary(p => p.SolarSystemID);
             ListView_Systems.ItemsSource = MapSolarSystems;
         }
@@ -115,5 +128,22 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         //        SelectedItem = v;
         //    }
         //}
+
+        public static readonly DependencyProperty ShowSpecialProperty
+            = DependencyProperty.Register(
+                nameof(ShowSpecial),
+                typeof(bool),
+                typeof(MapSystemSelectorControl),
+                new PropertyMetadata(false, new PropertyChangedCallback(ShowSpecialPropertyChanged)));
+
+        public bool ShowSpecial
+        {
+            get => (bool)GetValue(ShowSpecialProperty);
+            set => SetValue(ShowSpecialProperty, value);
+        }
+        private static void ShowSpecialPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as MapSystemSelectorControl).LoadDatas();
+        }
     }
 }

@@ -81,7 +81,8 @@
                     <Button.Flyout>
                         <Flyout>
                             <Grid Width="300" Height="400">
-                                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged_1"/>
+                                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged_1"
+                                                                ShowSpecial="False"/>
                             </Grid>
                         </Flyout>
                     </Button.Flyout>
@@ -95,7 +96,8 @@
                     <Button.Flyout>
                         <Flyout>
                             <Grid Width="300" Height="400">
-                                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged_2"/>
+                                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged_2"
+                                                                ShowSpecial="False"/>
                             </Grid>
                         </Flyout>
                     </Button.Flyout>

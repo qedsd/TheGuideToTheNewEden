@@ -27,7 +27,7 @@
                 <PivotItem.Header>
                     <TextBlock FontSize="14" Text="{StaticResource General_SolarSystem}" />
                 </PivotItem.Header>
-                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged" />
+                <local:MapSystemSelectorControl OnSelectedItemChanged="MapSystemSelectorControl_OnSelectedItemChanged" ShowSpecial="False"/>
             </PivotItem>
             <PivotItem Margin="-4,0">
                 <PivotItem.Header>

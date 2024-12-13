@@ -189,7 +189,7 @@
                                         <Button.Flyout>
                                             <Flyout>
                                                 <Grid Width="300" Height="400">
-                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem, Mode=TwoWay}" />
+                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem, Mode=TwoWay}" ShowSpecial="True"/>
                                                 </Grid>
                                             </Flyout>
                                         </Button.Flyout>

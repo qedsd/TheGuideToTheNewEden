@@ -110,6 +110,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource SystemFilterControl_System_Search}" />
                     <controls:MapSystemSelectorControl
                         x:Name="MapSystemSelector"
+                        ShowSpecial="False"
                         Grid.Row="1"
                         Grid.Column="1"
                         Height="32"
@@ -141,17 +142,17 @@
         <Expander Header="{StaticResource SystemFilterControl_Security}">
             <StackPanel>
                 <slider:SfRangeSlider
-    x:Name="SecuritySlider"
-    IsEnabled="True"
-    IsInversed="False"
-    Maximum="1"
-    Minimum="-1"
-    RangeEnd="1.0"
-    RangeStart="-1.0"
-    ShowLabels="False"
-    ShowToolTip="True"
-    StepFrequency="0.01"
-    ToolTipOption="BothThumb" />
+                    x:Name="SecuritySlider"
+                    IsEnabled="True"
+                    IsInversed="False"
+                    Maximum="1"
+                    Minimum="-1"
+                    RangeEnd="1.0"
+                    RangeStart="-1.0"
+                    ShowLabels="False"
+                    ShowToolTip="True"
+                    StepFrequency="0.01"
+                    ToolTipOption="BothThumb" />
                 <Grid Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -192,7 +193,7 @@
                         <CheckBox
                             x:Name="ContainNoneSOVCheckBox"
                             Content="{StaticResource SystemFilterControl_Sov_ContainNoneSOV}"
-                            IsChecked="True" 
+                            IsChecked="True"
                             Margin="4,0,0,0"/>
                     </StackPanel>
                     <StackPanel

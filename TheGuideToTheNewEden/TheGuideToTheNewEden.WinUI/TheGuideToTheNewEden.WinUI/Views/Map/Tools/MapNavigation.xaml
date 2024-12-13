@@ -49,6 +49,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_AddWaypoint}" />
                                     <controls:MapSystemSelectorControl
+                                        ShowSpecial="False"
                                         x:Name="MapSystemSelector"
                                         Grid.Column="1"
                                         Height="34"
@@ -132,6 +133,7 @@
                                                                 <RowDefinition />
                                                             </Grid.RowDefinitions>
                                                             <controls:MapSystemSelectorControl
+                                                                ShowSpecial="False"
                                                                 x:Name="AvoidSystemSelector"
                                                                 Grid.Column="1"
                                                                 Width="200"
