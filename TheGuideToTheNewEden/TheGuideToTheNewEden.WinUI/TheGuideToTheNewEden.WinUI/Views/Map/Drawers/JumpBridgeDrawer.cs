@@ -31,8 +31,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         private void SetColor(bool isDark)
         {
             _linkColor = isDark ?
-                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.MediumSeaGreen.R, Microsoft.UI.Colors.MediumSeaGreen.G, Microsoft.UI.Colors.MediumSeaGreen.B) :
-                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.MediumSeaGreen.R, Microsoft.UI.Colors.MediumSeaGreen.G, Microsoft.UI.Colors.MediumSeaGreen.B);
+                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.SkyBlue.R, Microsoft.UI.Colors.SkyBlue.G, Microsoft.UI.Colors.SkyBlue.B) :
+                         Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.SkyBlue.R, Microsoft.UI.Colors.SkyBlue.G, Microsoft.UI.Colors.SkyBlue.B);
         }
         public event EventHandler DrawRequsted;
 
