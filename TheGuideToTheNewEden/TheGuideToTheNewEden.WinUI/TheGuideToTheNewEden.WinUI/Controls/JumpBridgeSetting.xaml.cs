@@ -13,6 +13,9 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Collections.ObjectModel;
+using TheGuideToTheNewEden.WinUI.Helpers;
+using Newtonsoft.Json;
+using SqlSugar.DistributedSystem.Snowflake;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
@@ -112,6 +115,56 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private void ShowToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             Services.Settings.JumpBridgeSetting.SetShowBridge(ShowToggleSwitch.IsOn);
+        }
+
+        private async void Button_Output_Click(object sender, RoutedEventArgs e)
+        {
+            var win = Helpers.WindowHelper.GetWindowForElement(this);
+            var file = await PickHelper.PickSaveFileAsync("JumpBridges.json", win);
+            if (file != null)
+            {
+                File.WriteAllText(file.Path, JsonConvert.SerializeObject(Services.Settings.JumpBridgeSetting.GetValue()));
+                (win as BaseWindow).ShowSuccess(Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Output_Success"));
+            }
+        }
+
+        private async void Button_Input_Click(object sender, RoutedEventArgs e)
+        {
+            var win = Helpers.WindowHelper.GetWindowForElement(this);
+            try
+            {
+                var file = await PickHelper.PickFileAsync(win, ".json");
+                if (file != null)
+                {
+                    string content = File.ReadAllText(file.Path);
+                    if (!string.IsNullOrEmpty(content))
+                    {
+                        var bridges = JsonConvert.DeserializeObject<List<Services.Settings.JumpBridgeSetting.JumpBridge>>(content);
+                        HashSet<int> ids = new HashSet<int>();
+                        foreach (var bridge in bridges)
+                        {
+                            ids.Add(bridge.System1);
+                            ids.Add(bridge.System2);
+                        }
+                        var systemsDic = Core.Services.DB.MapSolarSystemService.Query(ids.ToList()).ToDictionary(p => p.SolarSystemID);
+                        foreach (var bridge in bridges)
+                        {
+                            Core.DBModels.MapSolarSystem system1 = systemsDic[bridge.System1];
+                            Core.DBModels.MapSolarSystem system2 = systemsDic[bridge.System2];
+                            if (Services.Settings.JumpBridgeSetting.Add(bridge.System1, bridge.System2))
+                            {
+                                _bridges.Add(new Tuple<Core.DBModels.MapSolarSystem, Core.DBModels.MapSolarSystem>(system1, system2));
+                            }
+                        }
+                        (win as BaseWindow).ShowSuccess(Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Input_Success"));
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                (win as BaseWindow).ShowError(ex.Message);
+            }
         }
     }
 }

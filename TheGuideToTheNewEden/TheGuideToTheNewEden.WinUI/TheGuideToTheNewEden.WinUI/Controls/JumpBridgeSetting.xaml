@@ -14,8 +14,23 @@
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ToggleSwitch x:Name="ShowToggleSwitch" OnContent="{StaticResource JumpBridgeSetting_ShowInMap_True}"
-                      OffContent="{StaticResource JumpBridgeSetting_ShowInMap_False}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ToggleSwitch x:Name="ShowToggleSwitch" OnContent="{StaticResource JumpBridgeSetting_ShowInMap_True}"
+                          OffContent="{StaticResource JumpBridgeSetting_ShowInMap_False}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Click="Button_Output_Click" ToolTipService.ToolTip="{StaticResource JumpBridgeSetting_Output}">
+                    <TextBlock Text="&#xE72D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                </Button>
+                <Button Click="Button_Input_Click" ToolTipService.ToolTip="{StaticResource JumpBridgeSetting_Input}"
+                        Margin="4,0,0,0">
+                    <TextBlock Text="&#xE8F4;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                </Button>
+            </StackPanel>
+        </Grid>
         <ListView Style="{StaticResource StretchListView}" x:Name="BridgeList"
                   Margin="0,8"
                   Grid.Row="1"
@@ -87,7 +102,7 @@
                 </Button>
             </Grid>
             <Grid Grid.Column="1" x:Name="AddGrid" Grid.Row="1">
-                <Button Grid.Row="1" Click="Button_Add_Click" HorizontalAlignment="Stretch">
+                <Button Click="Button_Add_Click" HorizontalAlignment="Stretch">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE109;" FontFamily="Segoe MDL2 Assets"
                                    Foreground="MediumSeaGreen" VerticalAlignment="Center" FontSize="12"/>

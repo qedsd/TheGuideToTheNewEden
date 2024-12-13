@@ -885,6 +885,10 @@
     <x:String x:Key="JumpBridgeSetting_SelectSystem">选择星系...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">在星图上显示</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_False">不在星图上显示</x:String>
+    <x:String x:Key="JumpBridgeSetting_Output">导出</x:String>
+    <x:String x:Key="JumpBridgeSetting_Output_Success">导出成功</x:String>
+    <x:String x:Key="JumpBridgeSetting_Input">导入</x:String>
+    <x:String x:Key="JumpBridgeSetting_Input_Success">导入成功</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">星域</x:String>

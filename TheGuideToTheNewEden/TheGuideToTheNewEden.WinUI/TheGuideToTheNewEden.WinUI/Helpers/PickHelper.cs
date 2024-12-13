@@ -75,7 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         {
             FileSavePicker savePicker = new FileSavePicker();
             savePicker.SuggestedStartLocation = PickerLocationId.VideosLibrary;
-            savePicker.FileTypeChoices.Add("视频文件", new List<string>() { System.IO.Path.GetExtension(suggestedFileName) });
+            savePicker.FileTypeChoices.Add("保存文件", new List<string>() { System.IO.Path.GetExtension(suggestedFileName) });
             savePicker.SuggestedFileName = suggestedFileName;
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hWnd);

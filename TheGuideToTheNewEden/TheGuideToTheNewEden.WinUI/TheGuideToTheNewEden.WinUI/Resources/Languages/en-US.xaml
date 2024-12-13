@@ -885,6 +885,10 @@
     <x:String x:Key="JumpBridgeSetting_SelectSystem">Select System...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">Show In Map</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_False">Don't Show In Map</x:String>
+    <x:String x:Key="JumpBridgeSetting_Output">Export</x:String>
+    <x:String x:Key="JumpBridgeSetting_Output_Success">Export successful</x:String>
+    <x:String x:Key="JumpBridgeSetting_Input">Import</x:String>
+    <x:String x:Key="JumpBridgeSetting_Input_Success">Import successful</x:String>
 
     <!--  SystemFilterControl  -->
     <x:String x:Key="SystemFilterControl_Region">Region</x:String>

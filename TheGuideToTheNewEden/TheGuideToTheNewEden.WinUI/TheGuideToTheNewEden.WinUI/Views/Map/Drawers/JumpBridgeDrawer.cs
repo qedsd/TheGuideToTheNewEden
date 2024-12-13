@@ -50,10 +50,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                 {
                     if(JumpBridgeSetting.GetValue(data.Id, out int toSystemID))
                     {
-                        var linkToData = allDatas[toSystemID];
-                        var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
-                        var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
-                        args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 2);
+                        if(allDatas.TryGetValue(toSystemID, out var linkToData))
+                        {
+                            var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
+                            var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
+                            args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 2);
+                        }
                     }
                 }
             }
