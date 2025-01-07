@@ -39,14 +39,14 @@
   {
     "GroupID": 817,
     "TypeID": 23757,
-    "MaxLY": 3,
+    "MaxLY": 3.5,
     "PerLYFuel": 3000
   },
   //绝念级
   {
     "GroupID": 817,
     "TypeID": 23911,
-    "MaxLY": 3,
+    "MaxLY": 3.5,
     "PerLYFuel": 3000
   },
   //夜神级
@@ -67,7 +67,7 @@
   {
     "GroupID": 817,
     "TypeID": 23915,
-    "MaxLY": 3,
+    "MaxLY": 3.5,
     "PerLYFuel": 3000
   },
   //冥府级
@@ -81,7 +81,7 @@
   {
     "GroupID": 817,
     "TypeID": 24483,
-    "MaxLY": 3,
+    "MaxLY": 3.5,
     "PerLYFuel": 3000
   },
   //归魂者级
