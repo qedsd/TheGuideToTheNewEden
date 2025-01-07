@@ -67,6 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             content.PointerReleased += Content_PointerReleased;
             content.PointerReleased += Content_PointerReleased1;
             content.PointerWheelChanged += Content_PointerWheelChanged;
+            content.KeyUp += Content_KeyUp;
             _titleTextBlock = new TextBlock()
             {
                 Margin = new Thickness(10),
@@ -76,6 +77,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(_titleTextBlock);
             this.Content = content;
+        }
+
+        private void Content_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Escape)
+            {
+                e.Handled = true;
+                OnStop?.Invoke(_setting);//交给调用者处理关闭
+            }
         }
 
         private void Content_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
