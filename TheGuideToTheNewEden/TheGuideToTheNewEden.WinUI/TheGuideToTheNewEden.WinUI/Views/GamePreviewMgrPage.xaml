@@ -106,7 +106,7 @@
                         Icon="Setting"
                         Label="{StaticResource GamePreviewMgrPage_GlobalSetting}">
                         <AppBarButton.Flyout>
-                            <Flyout>
+                            <Flyout Opened="GlobalSetting_Flyout_Opened">
                                 <ScrollViewer>
                                     <StackPanel Width="320">
                                         <Expander
@@ -481,6 +481,25 @@
                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_ProcessKeywords_PlaceholderText}"
                                                         Text="{x:Bind VM.PreviewSetting.ProcessKeywords, Mode=TwoWay}" />
                                                 </Grid>
+                                            </StackPanel>
+                                        </Expander>
+                                        <Expander
+                                            Margin="0,4"
+                                            Header="{StaticResource GamePreviewMgrPage_OrderSetting}"
+                                            IsExpanded="True"
+                                            Style="{StaticResource StretchExpander}">
+                                            <StackPanel>
+                                                <TextBox TextWrapping="Wrap"
+                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_OrderSetting_CurrentOrder}"
+                                                         AcceptsReturn="True"
+                                                         Text="{x:Bind VM.OrderStr,Mode=TwoWay}"/>
+                                                <Button Content="{StaticResource GamePreviewMgrPage_OrderSetting_UseCurrentProcessList}"
+                                                        Margin="0,8"
+                                                        HorizontalAlignment="Stretch"
+                                                        Command="{x:Bind VM.UpdateOrderByProcessListCommand}"/>
+                                                <Button Content="{StaticResource General_Save}" HorizontalAlignment="Stretch"
+                                                        Foreground="{ThemeResource SystemAccentColor}"
+                                                        Command="{x:Bind VM.SaveOrderByListCommand}"/>
                                             </StackPanel>
                                         </Expander>
                                     </StackPanel>

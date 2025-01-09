@@ -71,6 +71,8 @@
     <x:String x:Key="General_Close">Close</x:String>
     <x:String x:Key="General_Sec">Sec</x:String>
     <x:String x:Key="General_Add">Add</x:String>
+    <x:String x:Key="General_Save">Save</x:String>
+    <x:String x:Key="General_SaveSuccess">Successfully saved</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -535,6 +537,10 @@
     <x:String x:Key="GamePreviewMgrPage_HotKeySetting">Hotkey To Activation</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightBorder">Border</x:String>
     <x:String x:Key="GamePreviewMgrPage_OtherSetting">Other Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting">Order Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_CurrentOrder">The current order of saving, with each process name on one line</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_UseCurrentProcessList">Update to the current process list order</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_SaveSuccess">Saved successfully! Effective after restarting the function</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartPrivew">Start</x:String>
     <x:String x:Key="GamePreviewMgrPage_StopPrivew">Stop</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">Synchronize setting to all</x:String>

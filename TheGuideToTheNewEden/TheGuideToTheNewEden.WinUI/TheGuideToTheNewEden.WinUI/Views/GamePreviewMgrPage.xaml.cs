@@ -237,5 +237,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 }
             }
         }
+
+
+        private void GlobalSetting_Flyout_Opened(object sender, object e)
+        {
+            VM.UpdateOrderCommand.Execute(null);
+        }
     }
 }

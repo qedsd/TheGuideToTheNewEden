@@ -93,8 +93,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => running;
             set => SetProperty(ref running, value);
         }
-        
-        
+
+        public string OrderStr
+        {
+            get => _orderStr;
+            set => SetProperty(ref _orderStr, value);
+        }
+        private string _orderStr;
+
         private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
@@ -1142,6 +1148,51 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         });
+
+        #region 排序设置
+        public ICommand UpdateOrderCommand => new RelayCommand(() =>
+        {
+            if(PreviewSetting.ProcessOrder.NotNullOrEmpty())
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach(var p in PreviewSetting.ProcessOrder)
+                {
+                    stringBuilder.AppendLine(p);
+                }
+                OrderStr = stringBuilder.ToString();
+            }
+        });
+        public ICommand UpdateOrderByProcessListCommand => new RelayCommand(() =>
+        {
+            HashSet<string> strings = new HashSet<string>();
+            foreach(var p in Processes)
+            {
+                strings.Add(p.WindowTitle);
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (var p in strings)
+            {
+                stringBuilder.AppendLine(p);
+            }
+            OrderStr = stringBuilder.ToString();
+        });
+        public ICommand SaveOrderByListCommand => new RelayCommand(() =>
+        {
+            PreviewSetting.ProcessOrder.Clear();
+            var names = OrderStr.Split("\r");
+            foreach(var p in names)
+            {
+                string name = p.Replace("\n", "");
+                if (!string.IsNullOrEmpty(name))
+                {
+                    PreviewSetting.ProcessOrder.Add(name);
+                }
+            }
+            SaveSetting();
+            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_OrderSetting_SaveSuccess"));
+        });
+        #endregion
+
 
         public event EventHandler HideThumbRequsted;
         public event EventHandler ShowThumbRequsted;

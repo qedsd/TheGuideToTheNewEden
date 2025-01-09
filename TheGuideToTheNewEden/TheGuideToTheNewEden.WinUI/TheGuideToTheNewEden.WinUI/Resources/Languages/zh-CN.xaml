@@ -71,6 +71,8 @@
     <x:String x:Key="General_Close">关闭</x:String>
     <x:String x:Key="General_Sec">安等</x:String>
     <x:String x:Key="General_Add">添加</x:String>
+    <x:String x:Key="General_Save">保存</x:String>
+    <x:String x:Key="General_SaveSuccess">保存成功</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -535,6 +537,10 @@
     <x:String x:Key="GamePreviewMgrPage_HotKeySetting">激活快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_HighlightBorder">边框宽度</x:String>
     <x:String x:Key="GamePreviewMgrPage_OtherSetting">其他设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting">排序设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_CurrentOrder">当前保存的顺序，每个进程名称为一行</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_UseCurrentProcessList">更新为当前进程列表顺序</x:String>
+    <x:String x:Key="GamePreviewMgrPage_OrderSetting_SaveSuccess">保存成功！重启功能后生效</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartPrivew">开始预览</x:String>
     <x:String x:Key="GamePreviewMgrPage_StopPrivew">停止预览</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">同步全部设置</x:String>
