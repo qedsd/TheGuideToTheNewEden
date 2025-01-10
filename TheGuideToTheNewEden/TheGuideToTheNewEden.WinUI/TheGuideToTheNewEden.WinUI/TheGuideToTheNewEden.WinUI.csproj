@@ -264,6 +264,7 @@
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
     <None Remove="Views\ChannelIntelPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
+    <None Remove="Views\ChannelScanPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
@@ -312,6 +313,7 @@
     <None Remove="Views\Settings\TestSettingPage.xaml" />
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
+    <None Remove="Views\TabViewBasePage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
@@ -566,6 +568,12 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\TabViewBasePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelScanPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ChannelIntelPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

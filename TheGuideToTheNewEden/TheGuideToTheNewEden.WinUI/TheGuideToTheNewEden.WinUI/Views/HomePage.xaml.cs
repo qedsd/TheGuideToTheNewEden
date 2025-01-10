@@ -13,7 +13,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -128,8 +127,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Header = Helpers.ResourcesHelper.GetString("HomePage_Home"),
                 IsSelected = true,
             };
-            ShellPage content = new ShellPage();
-            item.Content = content;
+            TabViewBasePage page = new TabViewBasePage()
+            {
+                MainContent = new ShellPage(),
+            };
+            item.Content = page;
             sender.TabItems.Add(item);
         }
 
@@ -149,7 +151,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Header = title,
                 IsSelected = true,
             };
-            item.Content = content;
+            TabViewBasePage page = new TabViewBasePage()
+            {
+                MainContent = content,
+            };
+            item.Content = page;
             TabView.TabItems.Add(item);
         }
         public void SetNavigateTo(string title)
@@ -191,5 +197,26 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Helpers.WindowHelper.MainWindow.Close();
         });
         #endregion
+
+        private void TabView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var item = TabView.SelectedItem as TabViewItem;
+            if (item != null)
+            {
+                var basePage = item.Content as TabViewBasePage;
+                if(basePage != null)
+                {
+                    NavigationService.BasePage = basePage;
+                }
+                else
+                {
+                    NavigationService.BasePage = null;
+                }
+            }
+            else
+            {
+                NavigationService.BasePage = null;
+            }
+        }
     }
 }

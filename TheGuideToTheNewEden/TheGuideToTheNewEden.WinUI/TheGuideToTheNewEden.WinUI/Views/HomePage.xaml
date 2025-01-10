@@ -35,6 +35,7 @@
             Padding="0,0,0,0"
             VerticalAlignment="Stretch"
             AddTabButtonClick="TabView_AddTabButtonClick"
+            SelectionChanged="TabView_SelectionChanged"
             Background="Transparent"
             CloseButtonOverlayMode="OnPointerOver"
             TabCloseRequested="TabView_TabCloseRequested">

@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using Windows.ApplicationModel;
 using Windows.Foundation;
@@ -245,6 +246,10 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void ShowWaiting(string tip = null)
         {
+            if (NavigationService.ShowWaiting(tip))
+            {
+                return;
+            }
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 if (string.IsNullOrEmpty(tip))
@@ -262,6 +267,10 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void HideWaiting()
         {
+            if (NavigationService.HideWaiting())
+            {
+                return;
+            }
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;

@@ -10,6 +10,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     internal static class NavigationService
     {
+        internal static TabViewBasePage BasePage { get; set; }
         internal static HomePage HomePage { get; set; }
         internal static void NavigateTo(object content, string title)
         {
@@ -18,6 +19,30 @@ namespace TheGuideToTheNewEden.WinUI.Services
         internal static void SetNavigateTo(string title)
         {
             HomePage.SetNavigateTo(title);
+        }
+        public static bool ShowWaiting(string tip = null)
+        {
+            if(BasePage != null)
+            {
+                BasePage.ShowWaiting(tip);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static bool HideWaiting()
+        {
+            if (BasePage != null)
+            {
+                BasePage.HideWaiting();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
