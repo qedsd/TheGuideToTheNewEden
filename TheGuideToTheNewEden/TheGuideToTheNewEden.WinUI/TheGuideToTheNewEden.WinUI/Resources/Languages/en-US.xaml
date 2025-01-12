@@ -73,6 +73,7 @@
     <x:String x:Key="General_Add">Add</x:String>
     <x:String x:Key="General_Save">Save</x:String>
     <x:String x:Key="General_SaveSuccess">Successfully saved</x:String>
+    <x:String x:Key="General_Setting">Setting</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -116,6 +117,8 @@
     <x:String x:Key="ShellPage_Database_Desc">Browse database content</x:String>
     <x:String x:Key="ShellPage_Map">Map</x:String>
     <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
+    <x:String x:Key="ShellPage_ChannelScan">Channel Player Statistics</x:String>
+    <x:String x:Key="ShellPage_ChannelScan_Desc">Statistics on player faction, zkb, and other information within the channel</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
@@ -163,8 +166,8 @@
     <x:String x:Key="MailPage_UnreadCount">Unread email</x:String>
     <x:String x:Key="MailPage_Unread">Unread</x:String>
     <x:String x:Key="MailPage_From">From</x:String>
-    <x:String x:Key="MailPage_Recipients">Recipients: </x:String>
-    <x:String x:Key="MailPage_Label">Label: </x:String>
+    <x:String x:Key="MailPage_Recipients">Recipients:</x:String>
+    <x:String x:Key="MailPage_Label">Label:</x:String>
     <x:String x:Key="MailPage_Mail">Mail</x:String>
 
     <!--  Contract  -->
@@ -757,7 +760,7 @@
     <x:String x:Key="ZKBSettingPage_Notify_Desc">Pop up system notification when there is a new KB</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue">Minimum value of notification</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">Notify only when KB value is greater than this value, set to 0 to notify all</x:String>
-    <x:String x:Key="ZKBSettingPage_MaxKBItems">Maximum KB To Displayed </x:String>
+    <x:String x:Key="ZKBSettingPage_MaxKBItems">Maximum KB To Displayed</x:String>
     <x:String x:Key="ZKBSettingPage_MaxKBItems_Desc">KB stream can display up to KB quantity at a time</x:String>
     <x:String x:Key="ZKBSettingPage_Types">Ship/Structure/Item ID</x:String>
     <x:String x:Key="ZKBSettingPage_Systems">System ID</x:String>
@@ -1044,4 +1047,24 @@
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll">Synchronize all settings</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
+
+    <!--  ChannelScanPage  -->
+    <x:String x:Key="ChannelScanPage_NameList">名称列表</x:String>
+    <x:String x:Key="ChannelScanPage_Start">分析</x:String>
+    <x:String x:Key="ChannelScanPage_Hide">关闭</x:String>
+    <x:String x:Key="ChannelScanPage_IgnoredEntities">忽略名单</x:String>
+    <x:String x:Key="ChannelScanPage_Results">结果</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Character">角色</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Corporation">军团</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Alliance">联盟</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Kills">击杀数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Losses">损失数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_LastWeek">过去一星期击杀数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_LastLost">最近一次损失</x:String>
+    <x:String x:Key="ChannelScanPage_Result_LastKill">最近一次击杀</x:String>
+    <x:String x:Key="ChannelScanPage_Result_AverageAttackers">平均参与击杀人数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_CovertCyno">黑诱导占比</x:String>
+    <x:String x:Key="ChannelScanPage_Result_RegularCyno">常规诱导占比</x:String>
+    <x:String x:Key="ChannelScanPage_Result_LastCovertCyno">最近一次黑诱导</x:String>
+    <x:String x:Key="ChannelScanPage_Result_LastRegularCyno">最近一次常规诱导</x:String>
 </ResourceDictionary>
