@@ -1,20 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="TheGuideToTheNewEden.WinUI.Views.TabViewBasePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="Transparent"
+    mc:Ignorable="d">
 
     <Grid>
-        <Frame Background="Transparent"
-               x:Name="ContentFrame"/>
+        <Frame x:Name="ContentFrame" Background="Transparent" />
         <Grid x:Name="WaitingGrid" Visibility="Collapsed">
             <Grid.Background>
-                <SolidColorBrush Opacity="0.5" Color="{ThemeResource ThemeMainColor}" />
+                <SolidColorBrush Opacity="0.7" Color="{ThemeResource ThemeMainColor}" />
             </Grid.Background>
             <Grid Height="100">
                 <Grid.RowDefinitions>
