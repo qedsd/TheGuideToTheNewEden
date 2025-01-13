@@ -27,10 +27,13 @@
                 </Grid>
             </controls:CardControl.Header>
             <controls:CardControl.Content>
-                <TextBox
-                    AcceptsReturn="True"
-                    Text="{x:Bind VM.NamesStr, Mode=TwoWay}"
-                    TextWrapping="Wrap" />
+                <TextBox Margin="-8"
+                         PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
+                         AcceptsReturn="True"
+                         BorderThickness="0"
+                         IsSpellCheckEnabled="False"
+                         Text="{x:Bind VM.NamesStr, Mode=TwoWay}"
+                         TextWrapping="Wrap" />
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
                 <StackPanel
@@ -51,8 +54,10 @@
             </controls:CardControl.Fonter>
         </controls:CardControl>
         <controls:CardControl
+            Width="320"
             Grid.Column="1"
             Margin="4"
+            Padding="4"
             Visibility="{x:Bind VM.IsSetting, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
             <controls:CardControl.Header>
                 <Grid>
@@ -61,7 +66,7 @@
             </controls:CardControl.Header>
             <controls:CardControl.Content>
                 <ScrollViewer>
-                    <StackPanel Width="320">
+                    <StackPanel Margin="0,0">
                         <Expander
                             Margin="0,0,0,4"
                             Header="{StaticResource ChannelScanPage_IgnoredEntities}"
@@ -89,6 +94,7 @@
             <controls:CardControl.Content>
                 <dataGrid:SfDataGrid
                     x:Name="ResultDataGrid"
+                    ItemsSource="{x:Bind VM.ScanInfos,Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     AllowDraggingColumns="True"
                     AllowEditing="True"
@@ -98,16 +104,16 @@
                     AllowSorting="True"
                     AutoGenerateColumns="False"
                     Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                    ColumnWidthMode="Star"
+                    ColumnWidthMode="Auto"
                     GridLinesVisibility="Both"
                     GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                     HeaderLinesVisibility="Both"
                     SelectionMode="Extended"
                     ShowGroupDropArea="False">
                     <dataGrid:SfDataGrid.Columns>
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Corporation}" MappingName="Corporation" />
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Alliance}" MappingName="Alliance" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character.Name" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Corporation}" MappingName="Corporation.Name" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Alliance}" MappingName="Alliance.Name" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Kills}" MappingName="Kills" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Losses}" MappingName="Losses" />
                         <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastWeek}" MappingName="LastWee" />

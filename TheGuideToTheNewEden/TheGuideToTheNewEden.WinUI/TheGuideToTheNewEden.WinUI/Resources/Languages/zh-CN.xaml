@@ -1051,6 +1051,7 @@
     <!--  ChannelScanPage  -->
     <x:String x:Key="ChannelScanPage_NameList">名称列表</x:String>
     <x:String x:Key="ChannelScanPage_Start">分析</x:String>
+    <x:String x:Key="ChannelScanPage_NamesTip">在游戏频道玩家列表处Ctrl+C后在此处Ctrl+V</x:String>
     <x:String x:Key="ChannelScanPage_Hide">关闭</x:String>
     <x:String x:Key="ChannelScanPage_IgnoredEntities">忽略名单</x:String>
     <x:String x:Key="ChannelScanPage_Results">结果</x:String>
@@ -1067,4 +1068,5 @@
     <x:String x:Key="ChannelScanPage_Result_RegularCyno">常规诱导占比</x:String>
     <x:String x:Key="ChannelScanPage_Result_LastCovertCyno">最近一次黑诱导</x:String>
     <x:String x:Key="ChannelScanPage_Result_LastRegularCyno">最近一次常规诱导</x:String>
+    <x:String x:Key="ChannelScanPage_NoValidName">未识别到有效角色名称</x:String>
 </ResourceDictionary>

@@ -167,7 +167,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 List<DBModels.IdName> inDbResults = await IDNameDBService.QueryAsync(names);
                 if (inDbResults.NotNullOrEmpty())
                 {
-                    noInDbs = inDbResults.Select(p => p.Name).Except(names).ToList();
+                    noInDbs = names.Except(inDbResults.Select(p => p.Name)).ToList();
                 }
                 else
                 {
