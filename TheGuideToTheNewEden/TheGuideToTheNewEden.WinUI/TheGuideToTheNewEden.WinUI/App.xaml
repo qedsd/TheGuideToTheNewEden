@@ -75,6 +75,7 @@
             <converters:CategoryEnumToStringConverter x:Key="CategoryEnumToStringConverter" />
             <converters:DecimaFormatConverter x:Key="N2DecimaFormatConverter" Decimals="2" />
             <converters:OrderTypeConverter x:Key="OrderTypeConverter" />
+            <converters:IdNameCategoryConverter x:Key="IdNameCategoryConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

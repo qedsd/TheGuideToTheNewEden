@@ -29,8 +29,16 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
             IdName corp = names.FirstOrDefault(p => p.Id == corporationId);
             corp = corp ?? new IdName(corporationId, corporationId.ToString(), IdName.CategoryEnum.Corporation);
 
-            IdName alliance = names.FirstOrDefault(p => p.Id == allianceId);
-            alliance = alliance ?? new IdName(allianceId, allianceId.ToString(), IdName.CategoryEnum.Alliance);
+            IdName alliance = null;
+            if(allianceId > 0)
+            {
+                alliance = names.FirstOrDefault(p => p.Id == allianceId);
+                alliance = alliance ?? new IdName(allianceId, allianceId.ToString(), IdName.CategoryEnum.Alliance);
+            }
+            else
+            {
+                alliance = new IdName(allianceId, "No alliance", IdName.CategoryEnum.Alliance);
+            }
 
             CharacterScanInfo characterScanInfo = new CharacterScanInfo()
             {
@@ -39,6 +47,11 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 Alliance = alliance,
             };
             return characterScanInfo;
+        }
+
+        public bool GetZKBInfo()
+        {
+            return true;
         }
     }
 }

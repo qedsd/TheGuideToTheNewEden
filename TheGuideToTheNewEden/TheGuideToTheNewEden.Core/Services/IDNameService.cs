@@ -176,7 +176,7 @@ namespace TheGuideToTheNewEden.Core.Services
 
                 //2.查找数据库不存在的
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos)
+                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
                 {
                     if (resolvedInfos.NotNullOrEmpty())
                     {
@@ -186,7 +186,7 @@ namespace TheGuideToTheNewEden.Core.Services
                             {
                                 Id = data.Id,
                                 Name = data.Name,
-                                Category = (int)data.Category
+                                Category = (int)category
                             });
                         }
                     }
@@ -194,16 +194,16 @@ namespace TheGuideToTheNewEden.Core.Services
                 var resp = await ESIService.Current.EsiClient.Universe.IDs(noInDbs);
                 if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    AddData(resp.Data.Alliances);
-                    AddData(resp.Data.Characters);
-                    AddData(resp.Data.Constellations);
-                    AddData(resp.Data.Corporations);
-                    AddData(resp.Data.InventoryTypes);
-                    AddData(resp.Data.Regions);
-                    AddData(resp.Data.Systems);
-                    AddData(resp.Data.Stations);
-                    AddData(resp.Data.Factions);
-                    AddData(resp.Data.Structures);
+                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
+                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
+                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
+                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
+                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
                 }
 
                 //3.保存数据库不存在的
