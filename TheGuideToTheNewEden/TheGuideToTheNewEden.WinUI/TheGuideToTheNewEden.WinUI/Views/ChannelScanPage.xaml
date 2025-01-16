@@ -6,9 +6,10 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:dbmodels="using:TheGuideToTheNewEden.Core.DBModels"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels" xmlns:dbmodels="using:TheGuideToTheNewEden.Core.DBModels"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
     <Page.DataContext>
@@ -27,13 +28,14 @@
                 </Grid>
             </controls:CardControl.Header>
             <controls:CardControl.Content>
-                <TextBox Margin="-8"
-                         PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
-                         AcceptsReturn="True"
-                         BorderThickness="0"
-                         IsSpellCheckEnabled="False"
-                         Text="{x:Bind VM.NamesStr, Mode=TwoWay}"
-                         TextWrapping="Wrap" />
+                <TextBox
+                    Margin="-8"
+                    AcceptsReturn="True"
+                    BorderThickness="0"
+                    IsSpellCheckEnabled="False"
+                    PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
+                    Text="{x:Bind VM.NamesStr, Mode=TwoWay}"
+                    TextWrapping="Wrap" />
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
                 <StackPanel
@@ -54,8 +56,8 @@
             </controls:CardControl.Fonter>
         </controls:CardControl>
         <controls:CardControl
-            Width="320"
             Grid.Column="1"
+            Width="320"
             Margin="4"
             Padding="4"
             Visibility="{x:Bind VM.IsSetting, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
@@ -66,14 +68,17 @@
             </controls:CardControl.Header>
             <controls:CardControl.Content>
                 <ScrollViewer>
-                    <StackPanel Margin="0,0">
-                        <Expander IsExpanded="True" Style="{StaticResource StretchExpander}"
-                                  Margin="0,4"
-                                  Header="{StaticResource ChannelScanPage_Setting_ZKB}">
-                            <ToggleSwitch Header="{StaticResource ChannelScanPage_Setting_GetZKB}"
-                                          OnContent="{StaticResource General_Yes}"
-                                          OffContent="{StaticResource General_No}"
-                                          IsOn="{x:Bind VM.Config.GetZKB,Mode=TwoWay}"/>
+                    <StackPanel>
+                        <Expander
+                            Margin="0,4"
+                            Header="{StaticResource ChannelScanPage_Setting_ZKB}"
+                            IsExpanded="True"
+                            Style="{StaticResource StretchExpander}">
+                            <ToggleSwitch
+                                Header="{StaticResource ChannelScanPage_Setting_GetZKB}"
+                                IsOn="{x:Bind VM.Config.GetZKB, Mode=TwoWay}"
+                                OffContent="{StaticResource General_No}"
+                                OnContent="{StaticResource General_Yes}" />
                         </Expander>
 
                         <Expander
@@ -82,112 +87,127 @@
                             IsExpanded="True"
                             Style="{StaticResource StretchExpander}">
                             <StackPanel>
-                                <ToggleSwitch Header="{StaticResource ChannelScanPage_Setting_ActiveIgnoreList}"
-                                              OnContent="{StaticResource General_Yes}"
-                                              OffContent="{StaticResource General_No}"
-                                              IsOn="{x:Bind VM.Config.ActiveIgnoreList,Mode=TwoWay}"/>
-                                <ToggleSwitch Header="{StaticResource ChannelScanPage_Setting_ShowIgnoredInResultStatistics}"
-                                              OnContent="{StaticResource General_Yes}"
-                                              OffContent="{StaticResource General_No}"
-                                              IsOn="{x:Bind VM.Config.ShowIgnoredInResultStatistics,Mode=TwoWay}"/>
-                                <ToggleSwitch Header="{StaticResource ChannelScanPage_Setting_ShowIgnoredInResultDetail}"
-                                              OnContent="{StaticResource General_Yes}"
-                                              OffContent="{StaticResource General_No}"
-                                              IsOn="{x:Bind VM.Config.ShowIgnoredInResultDetail,Mode=TwoWay}"/>
-                                <ListView BorderThickness="1"
-                                          BorderBrush="Gray"
-                                          Margin="0,16,0,0"
-                                          ItemsSource="{x:Bind VM.Config.Ignoreds,Mode=OneWay}"
-                                          Style="{StaticResource StretchListView}"
-                                          MaxHeight="600"
-                                          MinHeight="100">
+                                <ToggleSwitch
+                                    Header="{StaticResource ChannelScanPage_Setting_ActiveIgnoreList}"
+                                    IsOn="{x:Bind VM.Config.ActiveIgnoreList, Mode=TwoWay}"
+                                    OffContent="{StaticResource General_No}"
+                                    OnContent="{StaticResource General_Yes}" />
+                                <ToggleSwitch
+                                    Header="{StaticResource ChannelScanPage_Setting_ShowIgnoredInResultStatistics}"
+                                    IsOn="{x:Bind VM.Config.ShowIgnoredInResultStatistics, Mode=TwoWay}"
+                                    OffContent="{StaticResource General_No}"
+                                    OnContent="{StaticResource General_Yes}" />
+                                <ToggleSwitch
+                                    Header="{StaticResource ChannelScanPage_Setting_ShowIgnoredInResultDetail}"
+                                    IsOn="{x:Bind VM.Config.ShowIgnoredInResultDetail, Mode=TwoWay}"
+                                    OffContent="{StaticResource General_No}"
+                                    OnContent="{StaticResource General_Yes}" />
+                                <ListView
+                                    MinHeight="100"
+                                    MaxHeight="600"
+                                    Margin="0,16,0,0"
+                                    BorderBrush="Gray"
+                                    BorderThickness="1"
+                                    ItemsSource="{x:Bind VM.Config.Ignoreds, Mode=OneWay}"
+                                    Style="{StaticResource StretchListView}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="0,4">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid>
-                                                    <Button Style="{StaticResource ZKBLinkButton}"
-                                                            Content="{Binding Name}"
-                                                            Margin="8,0,0,0"
-                                                            FontSize="16"
-                                                            Click="Button_IdName_Click"
-                                                            ToolTipService.ToolTip="{Binding Id}"/>
+                                                    <Button
+                                                        Margin="8,0,0,0"
+                                                        Click="Button_IdName_Click"
+                                                        Content="{Binding Name}"
+                                                        FontSize="16"
+                                                        Style="{StaticResource ZKBLinkButton}"
+                                                        ToolTipService.ToolTip="{Binding Id}" />
                                                 </Grid>
-                                                <TextBlock Text="{Binding Category,Converter={StaticResource IdNameCategoryConverter}}"
-                                                           Grid.Column="1"
-                                                           Margin="8,0"
-                                                           VerticalAlignment="Center"/>
-                                                <Button Grid.Column="2" Style="{StaticResource TransparentButton}"
-                                                        Click="Button_IgnoreList_Delete">
-                                                    <TextBlock Text="&#xE10A;" FontFamily="Segoe MDL2 Assets"
-                                                               FontSize="12"/>
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="8,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Category, Converter={StaticResource IdNameCategoryConverter}}" />
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Click="Button_IgnoreList_Delete"
+                                                    Style="{StaticResource TransparentButton}">
+                                                    <TextBlock
+                                                        FontFamily="Segoe MDL2 Assets"
+                                                        FontSize="12"
+                                                        Text="&#xE10A;" />
                                                 </Button>
                                             </Grid>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
                                 <Grid Margin="0,8,0,0">
-                                    <Button Content="+" Command="{x:Bind VM.AddIgnoreCommand}"
-                                            HorizontalAlignment="Stretch"
-                                            Visibility="{x:Bind VM.IsAddingIgnore,Mode=OneWay,Converter={StaticResource FalseToVisibleConverter}}"/>
-                                    <Grid Visibility="{x:Bind VM.IsAddingIgnore,Mode=OneWay,Converter={StaticResource TrueToVisibleConverter}}">
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind VM.AddIgnoreCommand}"
+                                        Content="+"
+                                        Visibility="{x:Bind VM.IsAddingIgnore, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                                    <Grid Visibility="{x:Bind VM.IsAddingIgnore, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <Grid Margin="0,4">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="60"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="ID" VerticalAlignment="Center"/>
-                                            <TextBox PlaceholderText="{StaticResource ChannelScanPage_Setting_AddIgnored_IDTip}"
-                                                     Grid.Column="1"
-                                                     Text="{x:Bind VM.AddingIgnoreID,Mode=TwoWay}"/>
+                                            <TextBlock VerticalAlignment="Center" Text="ID" />
+                                            <TextBox
+                                                Grid.Column="1"
+                                                PlaceholderText="{StaticResource ChannelScanPage_Setting_AddIgnored_IDTip}"
+                                                Text="{x:Bind VM.AddingIgnoreID, Mode=TwoWay}" />
                                         </Grid>
                                         <Grid Grid.Row="1" Margin="0,4">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="60"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{StaticResource General_Name}" VerticalAlignment="Center"/>
-                                            <TextBox Grid.Column="1"
-                                                     Text="{x:Bind VM.AddingIgnoreName,Mode=TwoWay}"/>
+                                            <TextBlock VerticalAlignment="Center" Text="{StaticResource General_Name}" />
+                                            <TextBox Grid.Column="1" Text="{x:Bind VM.AddingIgnoreName, Mode=TwoWay}" />
                                         </Grid>
                                         <Grid Grid.Row="2" Margin="0,4">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="60"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="60" />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{StaticResource IdNameCategory}" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="1"
-                                                      HorizontalAlignment="Stretch"
-                                                      SelectedIndex="{x:Bind VM.AddingIgnoreCategory,Mode=TwoWay}">
-                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Character}"></ComboBoxItem>
-                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Corporation}"></ComboBoxItem>
-                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Alliance}"></ComboBoxItem>
+                                            <TextBlock VerticalAlignment="Center" Text="{StaticResource IdNameCategory}" />
+                                            <ComboBox
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Stretch"
+                                                SelectedIndex="{x:Bind VM.AddingIgnoreCategory, Mode=TwoWay}">
+                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Character}" />
+                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Corporation}" />
+                                                <ComboBoxItem Content="{StaticResource IdNameCategory_Alliance}" />
                                             </ComboBox>
                                         </Grid>
                                         <Grid Grid.Row="3" Margin="0,4">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
-                                            <Button Content="{StaticResource General_Cancel}"
-                                                    Margin="8,0"
-                                                    HorizontalAlignment="Stretch"
-                                                    Command="{x:Bind VM.CancelAddIgnoreCommand}"/>
-                                            <Button Content="{StaticResource General_Save}"
-                                                    Grid.Column="1"
-                                                    Margin="8,0"
-                                                    HorizontalAlignment="Stretch"
-                                                    Command="{x:Bind VM.ConfirmAddIgnoreCommand}"/>
+                                            <Button
+                                                Margin="8,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{x:Bind VM.CancelAddIgnoreCommand}"
+                                                Content="{StaticResource General_Cancel}" />
+                                            <Button
+                                                Grid.Column="1"
+                                                Margin="8,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{x:Bind VM.ConfirmAddIgnoreCommand}"
+                                                Content="{StaticResource General_Save}" />
                                         </Grid>
                                     </Grid>
                                 </Grid>
@@ -199,8 +219,8 @@
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
                 <AppBarButton
-                    HorizontalAlignment="Center"
                     Margin="4,0"
+                    HorizontalAlignment="Center"
                     Command="{x:Bind VM.HideSettingCommand}"
                     Icon="ClosePane"
                     Label="{StaticResource ChannelScanPage_Hide}" />
@@ -210,49 +230,62 @@
             <controls:CardControl.Header>
                 <Grid>
                     <TextBlock Text="{StaticResource ChannelScanPage_Results}" />
-                    <TextBlock HorizontalAlignment="Right" Text="{x:Bind VM.ResultCount, Mode=OneWay}"
-                               ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}"/>
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        Text="{x:Bind VM.ResultCount, Mode=OneWay}"
+                        ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
                 </Grid>
             </controls:CardControl.Header>
             <controls:CardControl.Content>
-                <ScrollViewer Margin="-8">
+                <ScrollViewer Margin="-12">
                     <StackPanel Margin="0">
-                        <Expander Header="{StaticResource ChannelScanPage_Result_Statistics}" Style="{StaticResource StretchExpander}"
-                                  IsExpanded="True">
+                        <Expander
+                            Header="{StaticResource ChannelScanPage_Result_Statistics}"
+                            IsExpanded="True"
+                            Style="{StaticResource StretchExpander}">
                             <Grid Margin="-16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 <controls:CardControl Margin="4">
                                     <controls:CardControl.Header>
                                         <Grid>
                                             <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Corporation}" />
-                                            <TextBlock HorizontalAlignment="Right" Text="{x:Bind VM.StatisticsCorporation.Count, Mode=OneWay}" Margin="0,0,8,0"/>
+                                            <TextBlock
+                                                Margin="0,0,8,0"
+                                                HorizontalAlignment="Right"
+                                                Text="{x:Bind VM.StatisticsCorporation.Count, Mode=OneWay}" />
                                         </Grid>
                                     </controls:CardControl.Header>
                                     <controls:CardControl.Content>
-                                        <ListView Style="{StaticResource StretchListView}"
-                                                  ItemsSource="{x:Bind VM.StatisticsCorporation, Mode=OneWay}">
+                                        <ListView ItemsSource="{x:Bind VM.StatisticsCorporation, Mode=OneWay}" Style="{StaticResource StretchListView}">
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                            <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <controls:ImageControl CornerRadius="6" Source="{Binding Item1.Id, Converter={StaticResource CorpImgConverter}}"
-                                                                               Margin="8,8"
-                                                                               Height="32"
-                                                                               Width="32"/>
-                                                        <TextBlock Text="{Binding Item1.Name}" Grid.Column="1"
-                                                                   Margin="8,0,0,0"
-                                                                   VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding Item2}" Grid.Column="1" HorizontalAlignment="Right"
-                                                                   Margin="0,0,8,0"
-                                                                   VerticalAlignment="Center"
-                                                                   ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}"/>
+                                                        <controls:ImageControl
+                                                            Width="32"
+                                                            Height="32"
+                                                            Margin="8,8"
+                                                            CornerRadius="6"
+                                                            Source="{Binding Item1.Id, Converter={StaticResource CorpImgConverter}}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Margin="8,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Item1.Name}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Margin="0,0,8,0"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Item2}"
+                                                            ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListView.ItemTemplate>
@@ -263,31 +296,40 @@
                                     <controls:CardControl.Header>
                                         <Grid>
                                             <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Alliance}" />
-                                            <TextBlock HorizontalAlignment="Right" Text="{x:Bind VM.StatisticsAlliance.Count, Mode=OneWay}" Margin="0,0,8,0"/>
+                                            <TextBlock
+                                                Margin="0,0,8,0"
+                                                HorizontalAlignment="Right"
+                                                Text="{x:Bind VM.StatisticsAlliance.Count, Mode=OneWay}" />
                                         </Grid>
                                     </controls:CardControl.Header>
                                     <controls:CardControl.Content>
-                                        <ListView Style="{StaticResource StretchListView}"
-                                                  ItemsSource="{x:Bind VM.StatisticsAlliance, Mode=OneWay}">
+                                        <ListView ItemsSource="{x:Bind VM.StatisticsAlliance, Mode=OneWay}" Style="{StaticResource StretchListView}">
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                            <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <controls:ImageControl CornerRadius="6" Source="{Binding Item1.Id, Converter={StaticResource AllianceImgConverter}}"
-                                                                               Margin="8,8"
-                                                                               Height="32"
-                                                                               Width="32"/>
-                                                        <TextBlock Text="{Binding Item1.Name}" Grid.Column="1"
-                                                                   Margin="8,0,0,0"
-                                                                   VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding Item2}" Grid.Column="1" HorizontalAlignment="Right"
-                                                                   Margin="0,0,8,0"
-                                                                   VerticalAlignment="Center"
-                                                                   ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}"/>
+                                                        <controls:ImageControl
+                                                            Width="32"
+                                                            Height="32"
+                                                            Margin="8,8"
+                                                            CornerRadius="6"
+                                                            Source="{Binding Item1.Id, Converter={StaticResource AllianceImgConverter}}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Margin="8,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Item1.Name}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Margin="0,0,8,0"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Item2}"
+                                                            ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListView.ItemTemplate>
@@ -296,12 +338,13 @@
                                 </controls:CardControl>
                             </Grid>
                         </Expander>
-                        <Expander Header="{StaticResource ChannelScanPage_Result_Detail}"  Style="{StaticResource StretchExpander}"
-                                  Margin="0,8,0,0"
-                                  IsExpanded="True">
+                        <Expander
+                            Margin="0,4,0,0"
+                            Header="{StaticResource ChannelScanPage_Result_Detail}"
+                            IsExpanded="True"
+                            Style="{StaticResource StretchExpander}">
                             <dataGrid:SfDataGrid
                                 x:Name="ResultDataGrid"
-                                ItemsSource="{x:Bind VM.ScanInfos,Mode=OneWay}"
                                 HorizontalAlignment="Stretch"
                                 AllowDraggingColumns="True"
                                 AllowEditing="True"
@@ -315,6 +358,7 @@
                                 GridLinesVisibility="Both"
                                 GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
                                 HeaderLinesVisibility="Both"
+                                ItemsSource="{x:Bind VM.ScanInfos, Mode=OneWay}"
                                 SelectionMode="Extended"
                                 ShowGroupDropArea="False">
                                 <dataGrid:SfDataGrid.Columns>
