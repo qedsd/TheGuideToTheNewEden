@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 {
     public class ChannelScanConfig : ObservableObject
     {
-        private bool _activeIgnoreList;
+        private bool _activeIgnoreList = true;
         /// <summary>
         /// 是否启用过滤列表
         /// </summary>
@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         /// </summary>
         public bool ShowIgnoredInResultStatistics { get => _showIgnoredInResultStatistics; set => SetProperty(ref _showIgnoredInResultStatistics, value); }
 
-        private bool _getZKB;
+        private bool _getZKB = true;
         /// <summary>
         /// 获取zkb信息
         /// </summary>

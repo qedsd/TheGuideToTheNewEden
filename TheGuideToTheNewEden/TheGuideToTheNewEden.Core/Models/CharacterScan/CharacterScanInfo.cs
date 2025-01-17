@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Helpers;
+using ZKB.NET;
 
 namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 {
@@ -15,6 +18,29 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         public IdName Corporation { get; set; }
         public IdName Alliance { get; set; }
         public IdName Faction { get; set; }
+
+        public ZKB.NET.Models.Statistics.EntityStatistic Statistic { get; set; }
+
+        /// <summary>
+        /// 最常用的船
+        /// </summary>
+        public InvType[] TopShips { get; set; }
+
+        /// <summary>
+        /// 最常用的船分类
+        /// </summary>
+        public InvGroup[] TopGroup { get; set; }
+
+        /// <summary>
+        /// 最常出现的星系
+        /// </summary>
+        public MapSolarSystem[] TopSystem { get; set; }
+
+        /// <summary>
+        /// 最常出现的星域
+        /// </summary>
+        public MapRegion[] TopRegion { get; set; }
+
 
         public static CharacterScanInfo Create(int characterId, int corporationId, int allianceId)
         {
@@ -51,6 +77,33 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 
         public bool GetZKBInfo()
         {
+            try
+            {
+                //todo:先获取EntityStatistic
+
+                //先获取全部，筛选是否足够击杀、损失数据
+                ParamModifierData[] param = new ParamModifierData[]
+                {
+                    new ParamModifierData(ParamModifier.CharacterID, Id.ToString()),
+                    new ParamModifierData(ParamModifier.Page, "1")
+                };
+                var allKills = ZKB.NET.ZKB.GetKillmaillAsync(param, null).Result;
+                if(allKills != null)
+                {
+                    KBHelpers.CreateKBItemInfoForScan(allKills);
+                }
+                List<TypeModifier> modifiers = new List<TypeModifier>
+                {
+                    TypeModifier.Kills,
+                };
+                
+                
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return false;
+            }
             return true;
         }
     }

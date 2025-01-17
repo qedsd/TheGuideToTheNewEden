@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ESI.NET.Models.Killmails;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models.CharacterScan;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.Core.Services.DB;
@@ -162,5 +164,59 @@ namespace TheGuideToTheNewEden.Core.Helpers
                         });
             return CreateKBItemInfo(new List<ZKillmaill>() { km.FirstOrDefault() })?.FirstOrDefault();
         }
+
+        #region 频道扫描获取玩家概括km信息
+        public static KBItemInfoForScan CreateKBItemInfoForScan(SKBDetail detail)
+        {
+            KBItemInfoForScan kbItemInfo = new KBItemInfoForScan(detail);
+            kbItemInfo.SolarSystem = MapSolarSystemService.Query(detail.SolarSystemId);
+            if (kbItemInfo.SolarSystem != null)
+            {
+                kbItemInfo.Region = MapRegionService.Query(kbItemInfo.SolarSystem.RegionID);
+            }
+            kbItemInfo.Type = InvTypeService.QueryType(detail.Victim.ShipTypeId);
+            if (kbItemInfo.Type != null)
+            {
+                kbItemInfo.Group = InvGroupService.QueryGroup(kbItemInfo.Type.GroupID);
+            }
+            return kbItemInfo;
+        }
+
+        /// <summary>
+        /// 频道扫描获取玩家概括km信息
+        /// </summary>
+        /// <param name="killmaills"></param>
+        /// <returns></returns>
+        public static List<KBItemInfoForScan> CreateKBItemInfoForScan(List<ZKillmaill> killmaills)
+        {
+            if (killmaills.NotNullOrEmpty())
+            {
+                List<KBItemInfoForScan> kBItemInfoForScans = new List<KBItemInfoForScan>();
+                foreach(var zKillmaill in killmaills)
+                {
+                    try
+                    {
+                        var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
+                        if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            var detail = resp.Data.DepthClone<SKBDetail>();
+                            detail.Zkb = zKillmaill.Zkb;
+                            kBItemInfoForScans.Add(CreateKBItemInfoForScan(detail));
+                        }
+                        else
+                        {
+                            //暂不处理
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
+                }
+                return kBItemInfoForScans;
+            }
+            return null;
+        }
+        #endregion
     }
 }
