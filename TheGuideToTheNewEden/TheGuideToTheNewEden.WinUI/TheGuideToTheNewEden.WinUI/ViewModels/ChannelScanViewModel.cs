@@ -143,6 +143,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                             characterScanInfos.Add(characterScanInfo);
                                         }
                                     }
+
+                                    await Task.Run(() =>
+                                    {
+                                        foreach(var data in datas)
+                                        {
+                                            data.GetZKBInfo();
+                                        }
+                                    });
                                     ScanInfos = characterScanInfos;
                                     ResultCount = ScanInfos.Count;
                                 }

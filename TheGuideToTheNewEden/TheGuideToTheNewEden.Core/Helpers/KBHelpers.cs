@@ -184,15 +184,48 @@ namespace TheGuideToTheNewEden.Core.Helpers
 
         /// <summary>
         /// 频道扫描获取玩家概括km信息
+        /// 并发
         /// </summary>
         /// <param name="killmaills"></param>
         /// <returns></returns>
+        public static List<KBItemInfoForScan> CreateKBItemInfoForScanBatch(List<ZKillmaill> killmaills)
+        {
+            KBItemInfoForScan getInfo(ZKillmaill zKillmaill)
+            {
+                try
+                {
+                    var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
+                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var detail = resp.Data.DepthClone<SKBDetail>();
+                        detail.Zkb = zKillmaill.Zkb;
+                        return CreateKBItemInfoForScan(detail);
+                    }
+                    else
+                    {
+                        //暂不处理
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex);
+                    return null;
+                }
+            }
+            if (killmaills.NotNullOrEmpty())
+            {
+                return ThreadHelper.Run(killmaills, getInfo).Where(p=>p!=null).ToList();
+            }
+            return null;
+        }
+
         public static List<KBItemInfoForScan> CreateKBItemInfoForScan(List<ZKillmaill> killmaills)
         {
             if (killmaills.NotNullOrEmpty())
             {
                 List<KBItemInfoForScan> kBItemInfoForScans = new List<KBItemInfoForScan>();
-                foreach(var zKillmaill in killmaills)
+                foreach (var zKillmaill in killmaills)
                 {
                     try
                     {

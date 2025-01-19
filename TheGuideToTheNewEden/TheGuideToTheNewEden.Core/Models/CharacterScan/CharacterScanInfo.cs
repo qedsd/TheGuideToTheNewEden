@@ -2,9 +2,11 @@
 using Octokit;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Text;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using ZKB.NET;
 
@@ -21,6 +23,18 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 
         public ZKB.NET.Models.Statistics.EntityStatistic Statistic { get; set; }
 
+        public int ItemLost { get; set; }
+
+        public int ItemDestroyed { get; set; }
+
+        public int SoloKills { get; set; }
+
+        public int DangerRatio { get; set; }
+
+        public int GangRatio { get; set; }
+
+        public bool HasSupers { get; set; }
+
         /// <summary>
         /// 最常用的船
         /// </summary>
@@ -29,7 +43,7 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         /// <summary>
         /// 最常用的船分类
         /// </summary>
-        public InvGroup[] TopGroup { get; set; }
+        public List<InvGroup> TopGroups { get; set; }
 
         /// <summary>
         /// 最常出现的星系
@@ -75,29 +89,34 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
             return characterScanInfo;
         }
 
-        public bool GetZKBInfo()
+        public bool GetZKBInfo(int days = 1)
         {
             try
             {
-                //todo:先获取EntityStatistic
+                Statistic = ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, Id).Result;
+                ItemLost = Statistic.ItemLost;
+                ItemDestroyed = Statistic.ItemDestroyed;
+                SoloKills = Statistic.SoloKills;
+                DangerRatio = Statistic.DangerRatio;
+                GangRatio = Statistic.GangRatio;
+                HasSupers = Statistic.HasSupers;
+                //var lostGroup = Statistic.Groups.Where(p => p.ItemLost > 0);
+                //if(lostGroup.Any())
+                //{
+                //    var topGroup = lostGroup.OrderByDescending(p => p.ItemLost).Take(3).Select(p=>p.GroupID).ToList();
+                //    TopGroups = Core.Services.DB.InvGroupService.QueryGroups(topGroup);
+                //}
 
-                //先获取全部，筛选是否足够击杀、损失数据
-                ParamModifierData[] param = new ParamModifierData[]
+                //击杀、损失数据
+                GetKBItemInfos(out var kills, out var losses);
+                if (losses.NotNullOrEmpty())
                 {
-                    new ParamModifierData(ParamModifier.CharacterID, Id.ToString()),
-                    new ParamModifierData(ParamModifier.Page, "1")
-                };
-                var allKills = ZKB.NET.ZKB.GetKillmaillAsync(param, null).Result;
-                if(allKills != null)
-                {
-                    KBHelpers.CreateKBItemInfoForScan(allKills);
+                    TopShips = losses.GroupBy(p => p.Type.TypeID).OrderByDescending(p => p.Count()).Take(3).Select(p => p.First().Type).ToArray();
+
                 }
-                List<TypeModifier> modifiers = new List<TypeModifier>
-                {
-                    TypeModifier.Kills,
-                };
                 
-                
+
+
             }
             catch (Exception ex)
             {
@@ -105,6 +124,59 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 return false;
             }
             return true;
+        }
+        private void GetKBItemInfos(out List<KBItemInfoForScan> kills, out List<KBItemInfoForScan> losses)
+        {
+            var kill = GetKBItemInfos(TypeModifier.Kills);
+            var loss = GetKBItemInfos(TypeModifier.Losses);
+            // zkb可能返回重复的km，且kill和loss混杂一起
+            Dictionary<string, KBItemInfoForScan> killsDict = new Dictionary<string, KBItemInfoForScan>();
+            Dictionary<string, KBItemInfoForScan> lossesDict = new Dictionary<string, KBItemInfoForScan>();
+            void classify(List<KBItemInfoForScan> items)
+            {
+                if (items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        if (item.SKBDetail.Victim.CharacterId == Id)//loss
+                        {
+                            lossesDict.TryAdd(item.SKBDetail.Zkb.Hash, item);
+                        }
+                        else
+                        {
+                            killsDict.TryAdd(item.SKBDetail.Zkb.Hash, item);
+                        }
+                    }
+                }
+            }
+            classify(kill);
+            classify(loss);
+            kills = killsDict.Values.ToList();
+            losses = lossesDict.Values.ToList();
+        }
+
+        private List<KBItemInfoForScan> GetKBItemInfos(TypeModifier typeModifier) 
+        {
+            DateTime now = DateTime.Now;
+            TypeModifier[] modifiers = new TypeModifier[]
+                {
+                    typeModifier,
+                };
+            ParamModifierData[] param = new ParamModifierData[]
+                {
+                    new ParamModifierData(ParamModifier.CharacterID, Id.ToString()),
+                    new ParamModifierData(ParamModifier.Page, "1")
+                };
+            ParamModifierData param1 = new ParamModifierData(ParamModifier.CharacterID, Id.ToString());
+            var kms = ZKB.NET.ZKB.GetKillmaillAsync(param, modifiers).Result;
+            if (kms.NotNullOrEmpty())
+            {
+                return KBHelpers.CreateKBItemInfoForScanBatch(kms);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
