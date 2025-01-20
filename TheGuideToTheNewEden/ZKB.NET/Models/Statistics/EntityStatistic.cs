@@ -253,7 +253,7 @@ namespace ZKB.NET.Models.Statistics
         public EntityInfo Info { get; set; }
 
         /// <summary>
-        /// 
+        /// 暂无用处
         /// </summary>
         public List<TopKill> TopLists { get; set; }
 

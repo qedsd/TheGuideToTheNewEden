@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ESI.NET.Models.Location;
 using Octokit;
+using SqlSugar.DistributedSystem.Snowflake;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Metadata.Edm;
@@ -9,6 +11,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using ZKB.NET;
+using ZKB.NET.Models.Statistics.Top;
 
 namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 {
@@ -36,9 +39,9 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         public bool HasSupers { get; set; }
 
         /// <summary>
-        /// 最常用的船
+        /// 最常击杀的船
         /// </summary>
-        public InvType[] TopShips { get; set; }
+        public List<InvType> TopKillShips { get; set; }
 
         /// <summary>
         /// 最常用的船分类
@@ -48,12 +51,12 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         /// <summary>
         /// 最常出现的星系
         /// </summary>
-        public MapSolarSystem[] TopSystem { get; set; }
+        public List<MapSolarSystem> TopSystems { get; set; }
 
         /// <summary>
         /// 最常出现的星域
         /// </summary>
-        public MapRegion[] TopRegion { get; set; }
+        public List<MapRegion> TopRegions { get; set; }
 
 
         public static CharacterScanInfo Create(int characterId, int corporationId, int allianceId)
@@ -100,21 +103,80 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 DangerRatio = Statistic.DangerRatio;
                 GangRatio = Statistic.GangRatio;
                 HasSupers = Statistic.HasSupers;
-                //var lostGroup = Statistic.Groups.Where(p => p.ItemLost > 0);
-                //if(lostGroup.Any())
-                //{
-                //    var topGroup = lostGroup.OrderByDescending(p => p.ItemLost).Take(3).Select(p=>p.GroupID).ToList();
-                //    TopGroups = Core.Services.DB.InvGroupService.QueryGroups(topGroup);
-                //}
+                var lostGroup = Statistic.Groups.Where(p => p.ItemLost > 0);
+                if (lostGroup.Any())
+                {
+                    var topGroupIds = lostGroup.OrderByDescending(p => p.ItemLost).Take(3).Select(p => p.GroupID).ToList();
+                    var groups = Core.Services.DB.InvGroupService.QueryGroups(topGroupIds);
+                    TopGroups = new List<InvGroup>(topGroupIds.Count);
+                    foreach (var group in topGroupIds)
+                    {
+                        TopGroups.Add(groups.FirstOrDefault(p => p.GroupID == group));
+                    }
+                }
+
+                var topKillShip = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "ship");
+                if(topKillShip != null && topKillShip.Datas.NotNullOrEmpty())
+                {
+                    var topKillShipIds = topKillShip.Datas.Take(3).Select(p=>p.Id).ToList();
+                    var ships = Services.DB.InvTypeService.QueryTypes(topKillShipIds);
+                    TopKillShips = new List<InvType>(topKillShipIds.Count);
+                    foreach (var id in topKillShipIds)
+                    {
+                        TopKillShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
+                    }
+                }
+
+                var topSystem = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "system");
+                if (topSystem != null && topSystem.Datas.NotNullOrEmpty())
+                {
+                    var allSystemIds = topSystem.Datas.Select(p => p.Id).ToList();
+                    var allsSystemsDict = Services.DB.MapSolarSystemService.Query(allSystemIds).ToDictionary(p=>p.SolarSystemID);
+                    var topSystemIds = allSystemIds.Take(3).ToList();
+                    TopSystems = new List<MapSolarSystem>(topSystemIds.Count);
+                    foreach (var id in topSystemIds)
+                    {
+                        if(allsSystemsDict.TryGetValue(id, out var mapSolarSystem))
+                        {
+                            TopSystems.Add(mapSolarSystem);
+                        }
+                    }
+
+                    Dictionary<int, int> regionKills = new Dictionary<int, int>();
+                    foreach (var data in topSystem.Datas)
+                    {
+                        if (allsSystemsDict.TryGetValue(data.Id, out var mapSolarSystem))
+                        {
+                            int regionId = mapSolarSystem.RegionID;
+                            int oldCount = 0;
+                            if(!regionKills.TryGetValue(regionId, out oldCount))
+                            {
+                                oldCount = 0;
+                            }
+                            regionKills.Remove(regionId);
+                            regionKills.Add(regionId, oldCount + data.Kills);
+                        }
+                    }
+                    var topRegionIds = regionKills.OrderBy(p=>p.Value).Take(3).Select(p=>p.Key).ToList();
+                    var topRegions = Services.DB.MapRegionService.Query(topRegionIds);
+                    TopRegions = new List<MapRegion>(topRegionIds.Count);
+                    foreach (var id in topRegionIds)
+                    {
+                        TopRegions.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
+                    }
+                }
+
+
+
 
                 //击杀、损失数据
-                GetKBItemInfos(out var kills, out var losses);
-                if (losses.NotNullOrEmpty())
-                {
-                    TopShips = losses.GroupBy(p => p.Type.TypeID).OrderByDescending(p => p.Count()).Take(3).Select(p => p.First().Type).ToArray();
+                //GetKBItemInfos(out var kills, out var losses);
+                //if (losses.NotNullOrEmpty())
+                //{
+                //    TopShips = losses.GroupBy(p => p.Type.TypeID).OrderByDescending(p => p.Count()).Take(3).Select(p => p.First().Type).ToArray();
 
-                }
-                
+                //}
+
 
 
             }
