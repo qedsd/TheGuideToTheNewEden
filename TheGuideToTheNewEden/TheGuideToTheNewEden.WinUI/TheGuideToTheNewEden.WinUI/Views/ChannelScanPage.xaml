@@ -274,11 +274,13 @@
                                                             Margin="8,8"
                                                             CornerRadius="6"
                                                             Source="{Binding Item1.Id, Converter={StaticResource CorpImgConverter}}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Item1.Name}" />
+                                                        <Button Style="{StaticResource LinkButton}"
+                                                                Grid.Column="1"
+                                                                Margin="8,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                DataContext="{Binding Item1}"
+                                                                Content="{Binding Name}"
+                                                                Click="Button_IdName_Click"/>
                                                         <TextBlock
                                                             Grid.Column="1"
                                                             Margin="0,0,8,0"
@@ -318,11 +320,13 @@
                                                             Margin="8,8"
                                                             CornerRadius="6"
                                                             Source="{Binding Item1.Id, Converter={StaticResource AllianceImgConverter}}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Item1.Name}" />
+                                                        <Button Style="{StaticResource LinkButton}"
+                                                                Grid.Column="1"
+                                                                Margin="8,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                DataContext="{Binding Item1}"
+                                                                Content="{Binding Name}"
+                                                                Click="Button_IdName_Click"/>
                                                         <TextBlock
                                                             Grid.Column="1"
                                                             Margin="0,0,8,0"
@@ -362,20 +366,79 @@
                                 SelectionMode="Extended"
                                 ShowGroupDropArea="False">
                                 <dataGrid:SfDataGrid.Columns>
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character.Name" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Corporation}" MappingName="Corporation.Name" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Alliance}" MappingName="Alliance.Name" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Kills}" MappingName="Kills" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Losses}" MappingName="Losses" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastWeek}" MappingName="LastWee" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastLost}" MappingName="LastLost" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastKill}" MappingName="LastKill" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_AverageAttackers}" MappingName="AverageAttackers" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_CovertCyno}" MappingName="CovertCyn" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_RegularCyno}" MappingName="RegularCyno" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastCovertCyno}" MappingName="LastCovertCyno" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_LastRegularCyno}" MappingName="LastRegularCyno" />
+                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character.Name">
+                                        <dataGrid:GridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{StaticResource LinkButton}"
+                                                        Content="{Binding Name}"
+                                                        Margin="8,0"
+                                                        DataContext="{Binding Character}"
+                                                        Click="Button_IdName_Click">
+                                                    <Button.ContextFlyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click"
+                                                                            Text="{StaticResource ChannelScanPage_AddIgnored_Character}"/>
+                                                        </MenuFlyout>
+                                                    </Button.ContextFlyout>
+                                                </Button>
+                                            </DataTemplate>
+                                        </dataGrid:GridTemplateColumn.CellTemplate>
+                                    </dataGrid:GridTemplateColumn>
+                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Corporation.Name">
+                                        <dataGrid:GridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{StaticResource LinkButton}"
+                                                        Content="{Binding Name}"
+                                                        Margin="8,0"
+                                                        DataContext="{Binding Corporation}"
+                                                        Click="Button_IdName_Click">
+                                                    <Button.ContextFlyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click"
+                                                                            Text="{StaticResource ChannelScanPage_AddIgnored_Corporation}"/>
+                                                        </MenuFlyout>
+                                                    </Button.ContextFlyout>
+                                                </Button>
+                                            </DataTemplate>
+                                        </dataGrid:GridTemplateColumn.CellTemplate>
+                                    </dataGrid:GridTemplateColumn>
+                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Alliance.Name">
+                                        <dataGrid:GridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Style="{StaticResource LinkButton}"
+                                                        Content="{Binding Name}"
+                                                        Margin="8,0"
+                                                        DataContext="{Binding Alliance}"
+                                                        Click="Button_IdName_Click">
+                                                    <Button.ContextFlyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click"
+                                                                            Text="{StaticResource ChannelScanPage_AddIgnored_Alliance}"/>
+                                                        </MenuFlyout>
+                                                    </Button.ContextFlyout>
+                                                </Button>
+                                            </DataTemplate>
+                                        </dataGrid:GridTemplateColumn.CellTemplate>
+                                    </dataGrid:GridTemplateColumn>
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_DangerRatio}" MappingName="DangerRatio" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_SoloKills}" MappingName="SoloKills" DisplayBinding="{Binding SoloStr}"/>
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Kills}" MappingName="ItemDestroyed" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Losses}" MappingName="ItemLost" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_GangRatio}" MappingName="GangRatio" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_HasSupers}" MappingName="HasSupers" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_CanCovertCyno}" MappingName="CovertCyno" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopShips}" MappingName="TopShipsStr" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopGroups}" MappingName="TopGroupsStr" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopSystems}" MappingName="TopSystemsStr" />
+                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopRegions}" MappingName="TopRegionsStr" />
                                 </dataGrid:SfDataGrid.Columns>
+                                <dataGrid:SfDataGrid.RecordContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem
+                                            Click="MenuFlyoutItem_Reload_Click"
+                                            Text="{StaticResource ChannelScanPage_ReloadResultZKB}" />
+                                    </MenuFlyout>
+                                </dataGrid:SfDataGrid.RecordContextFlyout>
                             </dataGrid:SfDataGrid>
                         </Expander>
                     </StackPanel>

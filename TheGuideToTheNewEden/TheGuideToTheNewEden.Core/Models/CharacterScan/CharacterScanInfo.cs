@@ -32,32 +32,124 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 
         public int SoloKills { get; set; }
 
+        /// <summary>
+        /// solo概率
+        /// 小数形式，eg：0.01
+        /// </summary>
+        public float SoloRatio { get; set; }
+
+        public string SoloStr { get; set; }
+
         public int DangerRatio { get; set; }
 
         public int GangRatio { get; set; }
 
         public bool HasSupers { get; set; }
+        /// <summary>
+        /// 是否使用过支持黑诱导的船
+        /// </summary>
+        public bool CovertCyno { get; set; }
 
         /// <summary>
-        /// 最常击杀的船
+        /// 最常用的船
         /// </summary>
-        public List<InvType> TopKillShips { get; set; }
+        public List<InvType> TopShips { get; set; }
+
+        public string TopShipsStr
+        {
+            get
+            {
+                if(TopShips.NotNullOrEmpty())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var item in TopShips)
+                    {
+                        sb.Append(item.TypeName);
+                        sb.Append("  ");
+                    }
+                    return sb.Remove(sb.Length - 2, 2).ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// 最常用的船分类
         /// </summary>
         public List<InvGroup> TopGroups { get; set; }
+        public string TopGroupsStr
+        {
+            get
+            {
+                if (TopGroups.NotNullOrEmpty())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var item in TopGroups)
+                    {
+                        sb.Append(item.GroupName);
+                        sb.Append("  ");
+                    }
+                    return sb.Remove(sb.Length - 2, 2).ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// 最常出现的星系
         /// </summary>
         public List<MapSolarSystem> TopSystems { get; set; }
+        public string TopSystemsStr
+        {
+            get
+            {
+                if (TopSystems.NotNullOrEmpty())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var item in TopSystems)
+                    {
+                        sb.Append(item.SolarSystemName);
+                        sb.Append("  ");
+                    }
+                    return sb.Remove(sb.Length - 2, 2).ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// 最常出现的星域
         /// </summary>
         public List<MapRegion> TopRegions { get; set; }
-
+        public string TopRegionsStr
+        {
+            get
+            {
+                if (TopRegions.NotNullOrEmpty())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var item in TopRegions)
+                    {
+                        sb.Append(item.RegionName);
+                        sb.Append("  ");
+                    }
+                    return sb.Remove(sb.Length - 2, 2).ToString();
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         public static CharacterScanInfo Create(int characterId, int corporationId, int allianceId)
         {
@@ -92,7 +184,7 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
             return characterScanInfo;
         }
 
-        public bool GetZKBInfo(int days = 1)
+        public bool GetZKBInfo()
         {
             try
             {
@@ -100,10 +192,19 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 ItemLost = Statistic.ItemLost;
                 ItemDestroyed = Statistic.ItemDestroyed;
                 SoloKills = Statistic.SoloKills;
+                SoloRatio = (float)SoloKills / ItemDestroyed;
+                if (SoloKills > 0)
+                {
+                    SoloStr = $"{SoloKills} ({(SoloRatio * 100).ToString("N2")}%)";
+                }
+                else
+                {
+                    SoloStr = "0";
+                }
                 DangerRatio = Statistic.DangerRatio;
                 GangRatio = Statistic.GangRatio;
                 HasSupers = Statistic.HasSupers;
-                var lostGroup = Statistic.Groups.Where(p => p.ItemLost > 0);
+                var lostGroup = Statistic.Groups.Where(p => p.GroupID != 29 && p.ItemLost > 0);//排除太空舱29
                 if (lostGroup.Any())
                 {
                     var topGroupIds = lostGroup.OrderByDescending(p => p.ItemLost).Take(3).Select(p => p.GroupID).ToList();
@@ -113,6 +214,15 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                     {
                         TopGroups.Add(groups.FirstOrDefault(p => p.GroupID == group));
                     }
+
+                    foreach(var group in groups)
+                    {
+                        if(CovertCynoGroup.Contains(group.GroupID))
+                        {
+                            CovertCyno = true;
+                            break;
+                        }
+                    }
                 }
 
                 var topKillShip = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "ship");
@@ -120,10 +230,10 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 {
                     var topKillShipIds = topKillShip.Datas.Take(3).Select(p=>p.Id).ToList();
                     var ships = Services.DB.InvTypeService.QueryTypes(topKillShipIds);
-                    TopKillShips = new List<InvType>(topKillShipIds.Count);
+                    TopShips = new List<InvType>(topKillShipIds.Count);
                     foreach (var id in topKillShipIds)
                     {
-                        TopKillShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
+                        TopShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
                     }
                 }
 
@@ -165,20 +275,6 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         TopRegions.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
                     }
                 }
-
-
-
-
-                //击杀、损失数据
-                //GetKBItemInfos(out var kills, out var losses);
-                //if (losses.NotNullOrEmpty())
-                //{
-                //    TopShips = losses.GroupBy(p => p.Type.TypeID).OrderByDescending(p => p.Count()).Take(3).Select(p => p.First().Type).ToArray();
-
-                //}
-
-
-
             }
             catch (Exception ex)
             {
@@ -240,5 +336,14 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 return null;
             }
         }
+
+        /// <summary>
+        /// 支持开黑诱导的船
+        /// 隐形特勤舰 黑隐特勤舰 战略巡洋舰
+        /// </summary>
+        private static readonly HashSet<int> CovertCynoGroup = new HashSet<int>
+        {
+            830,898,963
+        };
     }
 }

@@ -146,10 +146,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
                                     await Task.Run(() =>
                                     {
-                                        foreach(var data in datas)
+                                        Core.Helpers.ThreadHelper.Run(datas, (data) =>
                                         {
-                                            data.GetZKBInfo();
-                                        }
+                                            return data.GetZKBInfo();
+                                        });
                                     });
                                     ScanInfos = characterScanInfos;
                                     ResultCount = ScanInfos.Count;
@@ -284,5 +284,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             Config.Ignoreds.Remove(item);
         });
+
+        public void AddIgnore(IdName idName)
+        {
+            if(idName.Id > 0)
+            {
+                if (Config.Ignoreds.FirstOrDefault(p => p.Id != -1 && p.Id == idName.Id || p.Name == idName.Name) != null)
+                {
+                    Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSame"));
+                    return;
+                }
+                Config.Ignoreds.Add(idName);
+                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
+            }
+        }
+
+        public async void ReloadZKBInfo(CharacterScanInfo characterScanInfo)
+        {
+            int index = ScanInfos.IndexOf(characterScanInfo);
+            ScanInfos.RemoveAt(index);
+            Window?.ShowWaiting();
+            await Task.Run(()=> characterScanInfo.GetZKBInfo());
+            ScanInfos.Insert(characterScanInfo, index);
+            Window?.HideWaiting();
+        }
     }
 }

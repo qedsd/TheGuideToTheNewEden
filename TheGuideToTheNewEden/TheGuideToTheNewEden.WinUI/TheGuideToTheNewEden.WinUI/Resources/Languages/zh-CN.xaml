@@ -1057,16 +1057,17 @@
     <x:String x:Key="ChannelScanPage_Result_Character">角色</x:String>
     <x:String x:Key="ChannelScanPage_Result_Corporation">军团</x:String>
     <x:String x:Key="ChannelScanPage_Result_Alliance">联盟</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Kills">击杀数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Losses">损失数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastWeek">过去一星期击杀数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastLost">最近一次损失</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastKill">最近一次击杀</x:String>
-    <x:String x:Key="ChannelScanPage_Result_AverageAttackers">平均参与击杀人数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_CovertCyno">黑诱导占比</x:String>
-    <x:String x:Key="ChannelScanPage_Result_RegularCyno">常规诱导占比</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastCovertCyno">最近一次黑诱导</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastRegularCyno">最近一次常规诱导</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Kills">总击杀数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_SoloKills">单挑击杀数 (占比)</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Losses">总损失数</x:String>
+    <x:String x:Key="ChannelScanPage_Result_CanCovertCyno">可开黑诱导</x:String>
+    <x:String x:Key="ChannelScanPage_Result_DangerRatio">威胁值</x:String>
+    <x:String x:Key="ChannelScanPage_Result_GangRatio">抱团概率</x:String>
+    <x:String x:Key="ChannelScanPage_Result_HasSupers">拥有超期</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopShips">最常用的船</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopGroups">最常用的船分类</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopSystems">最常出现的星系</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopRegions">最常出现的星域</x:String>
     <x:String x:Key="ChannelScanPage_Result_Statistics">统计</x:String>
     <x:String x:Key="ChannelScanPage_Result_Statistics_Corporation">军团</x:String>
     <x:String x:Key="ChannelScanPage_Result_Statistics_Alliance">联盟</x:String>
@@ -1084,6 +1085,10 @@
     <x:String x:Key="ChannelScanPage_Setting_AddIgnoredSame">ID或名称已存在</x:String>
     <x:String x:Key="ChannelScanPage_Setting_AddIgnoredSuccessful">添加成功</x:String>
     <x:String x:Key="ChannelScanPage_Setting_AddIgnored_IDTip">数字ID，可留空</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Character">忽略该角色</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Corporation">忽略该军团</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Alliance">忽略该联盟</x:String>
+    <x:String x:Key="ChannelScanPage_ReloadResultZKB">重新获取ZKB信息</x:String>
 
     <!--  IdNameCategory  -->
     <x:String x:Key="IdNameCategory">类型</x:String>

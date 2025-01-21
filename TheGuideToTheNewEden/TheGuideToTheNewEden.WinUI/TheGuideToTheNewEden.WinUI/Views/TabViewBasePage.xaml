@@ -13,7 +13,7 @@
         <Frame x:Name="ContentFrame" Background="Transparent" />
         <Grid x:Name="WaitingGrid" Visibility="Collapsed">
             <Grid.Background>
-                <SolidColorBrush Opacity="0.7" Color="{ThemeResource ThemeMainColor}" />
+                <SolidColorBrush Opacity="0.6" Color="{ThemeResource ThemeMainColor}" />
             </Grid.Background>
             <Grid Height="100">
                 <Grid.RowDefinitions>

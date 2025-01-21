@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Services;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -23,9 +25,15 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
         }
 
-        private void Button_IdName_Click(object sender, RoutedEventArgs e)
+        private async void Button_IdName_Click(object sender, RoutedEventArgs e)
         {
-
+            var data = (sender as FrameworkElement).DataContext as IdName;
+            if (data != null && data.Id > 0)
+            {
+                this.GetBaseWindow().ShowWaiting();
+                await KBNavigationService.Default.NavigationTo(data);
+                this.GetBaseWindow().HideWaiting();
+            }
         }
 
         private void Button_IgnoreList_Delete(object sender, RoutedEventArgs e)
@@ -35,6 +43,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 VM.DeleteIgnoreCommand.Execute(item);
             }
+        }
+
+        private void MenuFlyoutItem_AddIgnore_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as FrameworkElement).DataContext as IdName;
+            if (item != null)
+            {
+                VM.AddIgnore(item);
+            }
+        }
+
+        private void MenuFlyoutItem_Reload_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
