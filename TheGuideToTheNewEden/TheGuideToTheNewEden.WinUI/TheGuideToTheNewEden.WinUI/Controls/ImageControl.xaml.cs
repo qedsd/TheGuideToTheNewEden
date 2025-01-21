@@ -43,8 +43,15 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private static void SourcePropertyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as ImageControl;
-            var value = e.NewValue as string;
-            control.SourceImage.Source = new BitmapImage(new Uri(value));
+            if(e.NewValue != null)
+            {
+                var value = e.NewValue as string;
+                control.SourceImage.Source = new BitmapImage(new Uri(value));
+            }
+            else
+            {
+                control.SourceImage.Source = null;
+            }
         }
 
         public static readonly new DependencyProperty CornerRadiusProperty

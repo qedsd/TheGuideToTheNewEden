@@ -191,20 +191,41 @@ namespace TheGuideToTheNewEden.Core.Services
                         }
                     }
                 }
-                var resp = await ESIService.Current.EsiClient.Universe.IDs(noInDbs);
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                int start = 0;
+                int length = noInDbs.Count > 500 ? 500 : noInDbs.Count;
+                while(true)
                 {
-                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
-                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
-                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
-                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
-                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
-                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
-                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
-                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
-                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
-                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                    var resp = await ESIService.Current.EsiClient.Universe.IDs(noInDbs.Skip(start).Take(length).ToList());
+                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                        AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
+                        AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                        AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                        AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                        AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
+                        AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                        AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
+                        AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
+                        AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                        int found = start + length;
+                        int remain = noInDbs.Count - found;
+                        if (remain > 0)
+                        {
+                            start += length;
+                            length = remain > 500 ? 500 : remain;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
+                
 
                 //3.保存数据库不存在的
                 SaveToDB(noInDbResults);

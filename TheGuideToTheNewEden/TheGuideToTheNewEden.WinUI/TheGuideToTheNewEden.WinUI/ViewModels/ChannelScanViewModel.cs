@@ -94,67 +94,88 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         var characterNames = allNamesDatas.Where(p => p.GetCategory() == Core.DBModels.IdName.CategoryEnum.Character).ToArray();
                         if(characterNames.NotNullOrEmpty())
                         {
-                            var affiliationResult = await ESIService.Current.EsiClient.Character.Affiliation(characterNames.Select(p => p.Id).ToArray());
-                            if (affiliationResult?.StatusCode == System.Net.HttpStatusCode.OK)
+                            int start = 0;
+                            int length = characterNames.Length > 1000 ? 1000 : characterNames.Length;
+                            while (true)
                             {
-                                var datas = await Task.Run(() =>
+                                var affiliationResult = await ESIService.Current.EsiClient.Character.Affiliation(characterNames.Skip(start).Take(length).Select(p => p.Id).ToArray());
+                                if (affiliationResult?.StatusCode == System.Net.HttpStatusCode.OK)
                                 {
-                                    List<CharacterScanInfo> newInfos = new List<CharacterScanInfo>();
-                                    foreach(var affiliation in affiliationResult.Data)
+                                    var datas = await Task.Run(() =>
                                     {
-                                        var info = CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId);
-                                        if(info != null)
+                                        List<CharacterScanInfo> newInfos = new List<CharacterScanInfo>();
+                                        foreach (var affiliation in affiliationResult.Data)
                                         {
-                                            newInfos.Add(info);
+                                            var info = CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId);
+                                            if (info != null)
+                                            {
+                                                newInfos.Add(info);
+                                            }
                                         }
-                                    }
-                                    return newInfos;
-                                });
-                                if(datas.NotNullOrEmpty())
-                                {
-                                    //统计
-                                    var corpGroups = datas.Select(p => p.Corporation).GroupBy(p => p.Id).ToList();
-                                    List<Tuple<Core.DBModels.IdName, int>> statisticsCorporation = new List<Tuple<Core.DBModels.IdName, int>>(corpGroups.Count);
-                                    foreach(var group in corpGroups.OrderByDescending(p=>p.Count()))
-                                    {
-                                        var corp = group.First();
-                                        Core.DBModels.IdName idName = new Core.DBModels.IdName(corp.Id, corp.Name, Core.DBModels.IdName.CategoryEnum.Corporation);
-                                        statisticsCorporation.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
-                                    }
-                                    StatisticsCorporation = statisticsCorporation;
-
-                                    var allianceGroups = datas.Select(p => p.Alliance).GroupBy(p => p.Id).ToList();
-                                    List<Tuple<Core.DBModels.IdName, int>> statisticsAlliance = new List<Tuple<Core.DBModels.IdName, int>>(allianceGroups.Count);
-                                    foreach (var group in allianceGroups.OrderByDescending(p => p.Count()))
-                                    {
-                                        var item = group.First();
-                                        Core.DBModels.IdName idName = new Core.DBModels.IdName(item.Id, item.Name, Core.DBModels.IdName.CategoryEnum.Alliance);
-                                        statisticsAlliance.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
-                                    }
-                                    StatisticsAlliance = statisticsAlliance;
-
-                                    // 排序
-                                    var datasDic = datas.ToDictionary(p => p.Name);
-                                    ObservableCollection<CharacterScanInfo> characterScanInfos = new ObservableCollection<CharacterScanInfo>();
-                                    foreach(var name in namesAfterFiltered)
-                                    {
-                                        if(datasDic.TryGetValue(name, out var characterScanInfo))
-                                        {
-                                            characterScanInfos.Add(characterScanInfo);
-                                        }
-                                    }
-
-                                    await Task.Run(() =>
-                                    {
-                                        Core.Helpers.ThreadHelper.Run(datas, (data) =>
-                                        {
-                                            return data.GetZKBInfo();
-                                        });
+                                        return newInfos;
                                     });
-                                    ScanInfos = characterScanInfos;
-                                    ResultCount = ScanInfos.Count;
+                                    if (datas.NotNullOrEmpty())
+                                    {
+                                        //统计
+                                        var corpGroups = datas.Select(p => p.Corporation).GroupBy(p => p.Id).ToList();
+                                        List<Tuple<Core.DBModels.IdName, int>> statisticsCorporation = new List<Tuple<Core.DBModels.IdName, int>>(corpGroups.Count);
+                                        foreach (var group in corpGroups.OrderByDescending(p => p.Count()))
+                                        {
+                                            var corp = group.First();
+                                            Core.DBModels.IdName idName = new Core.DBModels.IdName(corp.Id, corp.Name, Core.DBModels.IdName.CategoryEnum.Corporation);
+                                            statisticsCorporation.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
+                                        }
+                                        StatisticsCorporation = statisticsCorporation;
+
+                                        var allianceGroups = datas.Select(p => p.Alliance).GroupBy(p => p.Id).ToList();
+                                        List<Tuple<Core.DBModels.IdName, int>> statisticsAlliance = new List<Tuple<Core.DBModels.IdName, int>>(allianceGroups.Count);
+                                        foreach (var group in allianceGroups.OrderByDescending(p => p.Count()))
+                                        {
+                                            var item = group.First();
+                                            Core.DBModels.IdName idName = new Core.DBModels.IdName(item.Id, item.Name, Core.DBModels.IdName.CategoryEnum.Alliance);
+                                            statisticsAlliance.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
+                                        }
+                                        StatisticsAlliance = statisticsAlliance;
+
+                                        // 排序
+                                        var datasDic = datas.ToDictionary(p => p.Name);
+                                        ObservableCollection<CharacterScanInfo> characterScanInfos = new ObservableCollection<CharacterScanInfo>();
+                                        foreach (var name in namesAfterFiltered)
+                                        {
+                                            if (datasDic.TryGetValue(name, out var characterScanInfo))
+                                            {
+                                                characterScanInfos.Add(characterScanInfo);
+                                            }
+                                        }
+
+                                        await Task.Run(() =>
+                                        {
+                                            Core.Helpers.ThreadHelper.Run(datas, (data) =>
+                                            {
+                                                return data.GetZKBInfo();
+                                            });
+                                        });
+                                        ScanInfos = characterScanInfos;
+                                        ResultCount = ScanInfos.Count;
+                                    }
+                                    int found = start + length;
+                                    int remain = characterNames.Length - found;
+                                    if (remain > 0)
+                                    {
+                                        start += length;
+                                        length = remain > 1000 ? 1000 : remain;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
                                 }
                             }
+                                
                         }
                     }
                     else
@@ -305,7 +326,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ScanInfos.RemoveAt(index);
             Window?.ShowWaiting();
             await Task.Run(()=> characterScanInfo.GetZKBInfo());
-            ScanInfos.Insert(characterScanInfo, index);
+            ScanInfos.Insert(index, characterScanInfo);
             Window?.HideWaiting();
         }
     }

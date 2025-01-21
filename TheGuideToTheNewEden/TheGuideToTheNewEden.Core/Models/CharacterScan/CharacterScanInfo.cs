@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
@@ -188,7 +189,15 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         {
             try
             {
-                Statistic = ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, Id).Result;
+                try
+                {
+                    Statistic = ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, Id).Result;
+                }
+                catch
+                {
+                    Thread.Sleep(1000);
+                    Statistic = ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, Id).Result;
+                }
                 ItemLost = Statistic.ItemLost;
                 ItemDestroyed = Statistic.ItemDestroyed;
                 SoloKills = Statistic.SoloKills;
@@ -224,55 +233,57 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         }
                     }
                 }
-
-                var topKillShip = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "ship");
-                if(topKillShip != null && topKillShip.Datas.NotNullOrEmpty())
+                if(Statistic.TopAllTime.NotNullOrEmpty())
                 {
-                    var topKillShipIds = topKillShip.Datas.Take(3).Select(p=>p.Id).ToList();
-                    var ships = Services.DB.InvTypeService.QueryTypes(topKillShipIds);
-                    TopShips = new List<InvType>(topKillShipIds.Count);
-                    foreach (var id in topKillShipIds)
+                    var topKillShip = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "ship");
+                    if (topKillShip != null && topKillShip.Datas.NotNullOrEmpty())
                     {
-                        TopShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
-                    }
-                }
-
-                var topSystem = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "system");
-                if (topSystem != null && topSystem.Datas.NotNullOrEmpty())
-                {
-                    var allSystemIds = topSystem.Datas.Select(p => p.Id).ToList();
-                    var allsSystemsDict = Services.DB.MapSolarSystemService.Query(allSystemIds).ToDictionary(p=>p.SolarSystemID);
-                    var topSystemIds = allSystemIds.Take(3).ToList();
-                    TopSystems = new List<MapSolarSystem>(topSystemIds.Count);
-                    foreach (var id in topSystemIds)
-                    {
-                        if(allsSystemsDict.TryGetValue(id, out var mapSolarSystem))
+                        var topKillShipIds = topKillShip.Datas.Take(3).Select(p => p.Id).ToList();
+                        var ships = Services.DB.InvTypeService.QueryTypes(topKillShipIds);
+                        TopShips = new List<InvType>(topKillShipIds.Count);
+                        foreach (var id in topKillShipIds)
                         {
-                            TopSystems.Add(mapSolarSystem);
+                            TopShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
                         }
                     }
 
-                    Dictionary<int, int> regionKills = new Dictionary<int, int>();
-                    foreach (var data in topSystem.Datas)
+                    var topSystem = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "system");
+                    if (topSystem != null && topSystem.Datas.NotNullOrEmpty())
                     {
-                        if (allsSystemsDict.TryGetValue(data.Id, out var mapSolarSystem))
+                        var allSystemIds = topSystem.Datas.Select(p => p.Id).ToList();
+                        var allsSystemsDict = Services.DB.MapSolarSystemService.Query(allSystemIds).ToDictionary(p => p.SolarSystemID);
+                        var topSystemIds = allSystemIds.Take(3).ToList();
+                        TopSystems = new List<MapSolarSystem>(topSystemIds.Count);
+                        foreach (var id in topSystemIds)
                         {
-                            int regionId = mapSolarSystem.RegionID;
-                            int oldCount = 0;
-                            if(!regionKills.TryGetValue(regionId, out oldCount))
+                            if (allsSystemsDict.TryGetValue(id, out var mapSolarSystem))
                             {
-                                oldCount = 0;
+                                TopSystems.Add(mapSolarSystem);
                             }
-                            regionKills.Remove(regionId);
-                            regionKills.Add(regionId, oldCount + data.Kills);
                         }
-                    }
-                    var topRegionIds = regionKills.OrderBy(p=>p.Value).Take(3).Select(p=>p.Key).ToList();
-                    var topRegions = Services.DB.MapRegionService.Query(topRegionIds);
-                    TopRegions = new List<MapRegion>(topRegionIds.Count);
-                    foreach (var id in topRegionIds)
-                    {
-                        TopRegions.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
+
+                        Dictionary<int, int> regionKills = new Dictionary<int, int>();
+                        foreach (var data in topSystem.Datas)
+                        {
+                            if (allsSystemsDict.TryGetValue(data.Id, out var mapSolarSystem))
+                            {
+                                int regionId = mapSolarSystem.RegionID;
+                                int oldCount = 0;
+                                if (!regionKills.TryGetValue(regionId, out oldCount))
+                                {
+                                    oldCount = 0;
+                                }
+                                regionKills.Remove(regionId);
+                                regionKills.Add(regionId, oldCount + data.Kills);
+                            }
+                        }
+                        var topRegionIds = regionKills.OrderBy(p => p.Value).Take(3).Select(p => p.Key).ToList();
+                        var topRegions = Services.DB.MapRegionService.Query(topRegionIds);
+                        TopRegions = new List<MapRegion>(topRegionIds.Count);
+                        foreach (var id in topRegionIds)
+                        {
+                            TopRegions.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
+                        }
                     }
                 }
             }
