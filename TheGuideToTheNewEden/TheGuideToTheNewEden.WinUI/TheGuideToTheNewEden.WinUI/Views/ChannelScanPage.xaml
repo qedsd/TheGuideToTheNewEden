@@ -74,13 +74,17 @@
                             Header="{StaticResource ChannelScanPage_Setting_ZKB}"
                             IsExpanded="True"
                             Style="{StaticResource StretchExpander}">
-                            <ToggleSwitch
-                                Header="{StaticResource ChannelScanPage_Setting_GetZKB}"
-                                IsOn="{x:Bind VM.Config.GetZKB, Mode=TwoWay}"
-                                OffContent="{StaticResource General_No}"
-                                OnContent="{StaticResource General_Yes}" />
+                            <StackPanel>
+                                <ToggleSwitch
+                                    Header="{StaticResource ChannelScanPage_Setting_GetZKB}"
+                                    IsOn="{x:Bind VM.Config.GetZKB, Mode=TwoWay}"
+                                    OffContent="{StaticResource General_No}"
+                                    OnContent="{StaticResource General_Yes}" />
+                                <NumberBox Header="{StaticResource ChannelScanPage_Setting_MaxZKB}"
+                                           Value="{x:Bind VM.Config.MaxZKB,Mode=TwoWay}"
+                                           />
+                            </StackPanel>
                         </Expander>
-
                         <Expander
                             Margin="0,4"
                             Header="{StaticResource ChannelScanPage_Setting_IgnoredEntities}"
@@ -226,228 +230,217 @@
                     Label="{StaticResource ChannelScanPage_Hide}" />
             </controls:CardControl.Fonter>
         </controls:CardControl>
-        <controls:CardControl Grid.Column="2" Margin="4">
-            <controls:CardControl.Header>
-                <Grid>
-                    <TextBlock Text="{StaticResource ChannelScanPage_Results}" />
-                    <TextBlock
-                        HorizontalAlignment="Right"
-                        Text="{x:Bind VM.ResultCount, Mode=OneWay}"
-                        ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
-                </Grid>
-            </controls:CardControl.Header>
-            <controls:CardControl.Content>
-                <ScrollViewer Margin="-12">
-                    <StackPanel Margin="0">
-                        <Expander
-                            Header="{StaticResource ChannelScanPage_Result_Statistics}"
-                            IsExpanded="True"
-                            Style="{StaticResource StretchExpander}">
-                            <Grid Margin="-16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <controls:CardControl Margin="4">
-                                    <controls:CardControl.Header>
-                                        <Grid>
-                                            <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Corporation}" />
-                                            <TextBlock
-                                                Margin="0,0,8,0"
-                                                HorizontalAlignment="Right"
-                                                Text="{x:Bind VM.StatisticsCorporation.Count, Mode=OneWay}" />
-                                        </Grid>
-                                    </controls:CardControl.Header>
-                                    <controls:CardControl.Content>
-                                        <ListView ItemsSource="{x:Bind VM.StatisticsCorporation, Mode=OneWay}" Style="{StaticResource StretchListView}">
-                                            <ListView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <controls:ImageControl
-                                                            Width="32"
-                                                            Height="32"
-                                                            Margin="8,8"
-                                                            CornerRadius="6"
-                                                            Source="{Binding Item1.Id, Converter={StaticResource CorpImgConverter}}" />
-                                                        <Button
-                                                            Grid.Column="1"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Click="Button_IdName_Click"
-                                                            Content="{Binding Name}"
-                                                            DataContext="{Binding Item1}"
-                                                            Style="{StaticResource LinkButton}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            Margin="0,0,8,0"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Item2}"
-                                                            ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
-                                    </controls:CardControl.Content>
-                                </controls:CardControl>
-                                <controls:CardControl Grid.Column="1" Margin="4">
-                                    <controls:CardControl.Header>
-                                        <Grid>
-                                            <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Alliance}" />
-                                            <TextBlock
-                                                Margin="0,0,8,0"
-                                                HorizontalAlignment="Right"
-                                                Text="{x:Bind VM.StatisticsAlliance.Count, Mode=OneWay}" />
-                                        </Grid>
-                                    </controls:CardControl.Header>
-                                    <controls:CardControl.Content>
-                                        <ListView ItemsSource="{x:Bind VM.StatisticsAlliance, Mode=OneWay}" Style="{StaticResource StretchListView}">
-                                            <ListView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <controls:ImageControl
-                                                            Width="32"
-                                                            Height="32"
-                                                            Margin="8,8"
-                                                            CornerRadius="6"
-                                                            Source="{Binding Item1.Id, Converter={StaticResource AllianceImgConverter}}" />
-                                                        <Button
-                                                            Grid.Column="1"
-                                                            Margin="8,0,0,0"
-                                                            VerticalAlignment="Center"
-                                                            Click="Button_IdName_Click"
-                                                            Content="{Binding Name}"
-                                                            DataContext="{Binding Item1}"
-                                                            Style="{StaticResource LinkButton}" />
-                                                        <TextBlock
-                                                            Grid.Column="1"
-                                                            Margin="0,0,8,0"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Text="{Binding Item2}"
-                                                            ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
-                                    </controls:CardControl.Content>
-                                </controls:CardControl>
-                            </Grid>
-                        </Expander>
-                        <Expander
-                            Margin="0,4,0,0"
-                            Header="{StaticResource ChannelScanPage_Result_Detail}"
-                            IsExpanded="True"
-                            Style="{StaticResource StretchExpander}">
-                            <dataGrid:SfDataGrid
-                                x:Name="ResultDataGrid"
-                                HorizontalAlignment="Stretch"
-                                AllowDraggingColumns="True"
-                                AllowEditing="True"
-                                AllowFiltering="True"
-                                AllowGrouping="True"
-                                AllowResizingColumns="True"
-                                AllowSorting="True"
-                                AutoGenerateColumns="False"
-                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                ColumnWidthMode="Auto"
-                                GridLinesVisibility="Both"
-                                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                                HeaderLinesVisibility="Both"
-                                ItemsSource="{x:Bind VM.ScanInfos, Mode=OneWay}"
-                                SelectionMode="Extended"
-                                ShowGroupDropArea="False">
-                                <dataGrid:SfDataGrid.Columns>
-                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character.Name">
-                                        <dataGrid:GridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
+        <Grid Grid.Column="2">
+            <Pivot>
+                <PivotItem>
+                    <PivotItem.Header>
+                        <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics}"  FontSize="16"/>
+                    </PivotItem.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <controls:CardControl>
+                            <controls:CardControl.Header>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Corporation}" />
+                                    <TextBlock
+                                        Margin="0,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        Text="{x:Bind VM.StatisticsCorporation.Count, Mode=OneWay}" />
+                                </Grid>
+                            </controls:CardControl.Header>
+                            <controls:CardControl.Content>
+                                <ListView ItemsSource="{x:Bind VM.StatisticsCorporation, Mode=OneWay}" Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <controls:ImageControl
+                                                    Width="32"
+                                                    Height="32"
+                                                    Margin="8,8"
+                                                    CornerRadius="6"
+                                                    Source="{Binding Item1.Id, Converter={StaticResource CorpImgConverter}}" />
                                                 <Button
-                                                    Margin="8,0"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
                                                     Click="Button_IdName_Click"
                                                     Content="{Binding Name}"
-                                                    DataContext="{Binding Character}"
-                                                    Style="{StaticResource LinkButton}">
-                                                    <Button.ContextFlyout>
-                                                        <MenuFlyout>
-                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Character}" />
-                                                        </MenuFlyout>
-                                                    </Button.ContextFlyout>
-                                                </Button>
-                                            </DataTemplate>
-                                        </dataGrid:GridTemplateColumn.CellTemplate>
-                                    </dataGrid:GridTemplateColumn>
-                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Corporation}" MappingName="Corporation.Name">
-                                        <dataGrid:GridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
+                                                    DataContext="{Binding Item1}"
+                                                    Style="{StaticResource LinkButton}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="0,0,8,0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Item2}"
+                                                    ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </controls:CardControl.Content>
+                        </controls:CardControl>
+                        <controls:CardControl Grid.Column="1">
+                            <controls:CardControl.Header>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_Alliance}" />
+                                    <TextBlock
+                                        Margin="0,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        Text="{x:Bind VM.StatisticsAlliance.Count, Mode=OneWay}" />
+                                </Grid>
+                            </controls:CardControl.Header>
+                            <controls:CardControl.Content>
+                                <ListView ItemsSource="{x:Bind VM.StatisticsAlliance, Mode=OneWay}" Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <controls:ImageControl
+                                                    Width="32"
+                                                    Height="32"
+                                                    Margin="8,8"
+                                                    CornerRadius="6"
+                                                    Source="{Binding Item1.Id, Converter={StaticResource AllianceImgConverter}}" />
                                                 <Button
-                                                    Margin="8,0"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
                                                     Click="Button_IdName_Click"
                                                     Content="{Binding Name}"
-                                                    DataContext="{Binding Corporation}"
-                                                    Style="{StaticResource LinkButton}">
-                                                    <Button.ContextFlyout>
-                                                        <MenuFlyout>
-                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Corporation}" />
-                                                        </MenuFlyout>
-                                                    </Button.ContextFlyout>
-                                                </Button>
-                                            </DataTemplate>
-                                        </dataGrid:GridTemplateColumn.CellTemplate>
-                                    </dataGrid:GridTemplateColumn>
-                                    <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Alliance}" MappingName="Alliance.Name">
-                                        <dataGrid:GridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button
-                                                    Margin="8,0"
-                                                    Click="Button_IdName_Click"
-                                                    Content="{Binding Name}"
-                                                    DataContext="{Binding Alliance}"
-                                                    Style="{StaticResource LinkButton}">
-                                                    <Button.ContextFlyout>
-                                                        <MenuFlyout>
-                                                            <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Alliance}" />
-                                                        </MenuFlyout>
-                                                    </Button.ContextFlyout>
-                                                </Button>
-                                            </DataTemplate>
-                                        </dataGrid:GridTemplateColumn.CellTemplate>
-                                    </dataGrid:GridTemplateColumn>
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_DangerRatio}" MappingName="DangerRatio" />
-                                    <dataGrid:GridTextColumn
-                                        DisplayBinding="{Binding SoloStr}"
-                                        HeaderText="{StaticResource ChannelScanPage_Result_SoloKills}"
-                                        MappingName="SoloKills" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Kills}" MappingName="ItemDestroyed" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Losses}" MappingName="ItemLost" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_GangRatio}" MappingName="GangRatio" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_HasSupers}" MappingName="HasSupers" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_CanCovertCyno}" MappingName="CovertCyno" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopShips}" MappingName="TopShipsStr" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopGroups}" MappingName="TopGroupsStr" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopSystems}" MappingName="TopSystemsStr" />
-                                    <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopRegions}" MappingName="TopRegionsStr" />
-                                </dataGrid:SfDataGrid.Columns>
-                                <dataGrid:SfDataGrid.RecordContextFlyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Click="MenuFlyoutItem_Reload_Click" Text="{StaticResource ChannelScanPage_ReloadResultZKB}" />
-                                    </MenuFlyout>
-                                </dataGrid:SfDataGrid.RecordContextFlyout>
-                            </dataGrid:SfDataGrid>
-                        </Expander>
-                    </StackPanel>
-                </ScrollViewer>
-            </controls:CardControl.Content>
-            <controls:CardControl.Fonter />
-        </controls:CardControl>
+                                                    DataContext="{Binding Item1}"
+                                                    Style="{StaticResource LinkButton}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="0,0,8,0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Item2}"
+                                                    ToolTipService.ToolTip="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </controls:CardControl.Content>
+                        </controls:CardControl>
+                    </Grid>
+                </PivotItem>
+                <PivotItem>
+                    <PivotItem.Header>
+                        <TextBlock Text="{StaticResource ChannelScanPage_Result_Detail}" FontSize="16"/>
+                    </PivotItem.Header>
+                    <dataGrid:SfDataGrid
+                        x:Name="ResultDataGrid"
+                        HorizontalAlignment="Stretch"
+                        AllowDraggingColumns="True"
+                        AllowEditing="True"
+                        AllowFiltering="True"
+                        AllowGrouping="True"
+                        AllowResizingColumns="True"
+                        AllowSorting="True"
+                        AutoGenerateColumns="False"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                        ColumnWidthMode="Auto"
+                        GridLinesVisibility="Both"
+                        GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                        HeaderLinesVisibility="Both"
+                        ItemsSource="{x:Bind VM.ScanInfos, Mode=OneWay}"
+                        SelectionMode="Extended"
+                        ShowGroupDropArea="False">
+                        <dataGrid:SfDataGrid.Columns>
+                            <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Character}" MappingName="Character.Name">
+                                <dataGrid:GridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Margin="8,0"
+                                            Click="Button_IdName_Click"
+                                            Content="{Binding Name}"
+                                            DataContext="{Binding Character}"
+                                            Style="{StaticResource LinkButton}">
+                                            <Button.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Character}" />
+                                                </MenuFlyout>
+                                            </Button.ContextFlyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </dataGrid:GridTemplateColumn.CellTemplate>
+                            </dataGrid:GridTemplateColumn>
+                            <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Corporation}" MappingName="Corporation.Name">
+                                <dataGrid:GridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Margin="8,0"
+                                            Click="Button_IdName_Click"
+                                            Content="{Binding Name}"
+                                            DataContext="{Binding Corporation}"
+                                            Style="{StaticResource LinkButton}">
+                                            <Button.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Corporation}" />
+                                                </MenuFlyout>
+                                            </Button.ContextFlyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </dataGrid:GridTemplateColumn.CellTemplate>
+                            </dataGrid:GridTemplateColumn>
+                            <dataGrid:GridTemplateColumn HeaderText="{StaticResource ChannelScanPage_Result_Alliance}" MappingName="Alliance.Name">
+                                <dataGrid:GridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Margin="8,0"
+                                            Click="Button_IdName_Click"
+                                            Content="{Binding Name}"
+                                            DataContext="{Binding Alliance}"
+                                            Style="{StaticResource LinkButton}">
+                                            <Button.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Click="MenuFlyoutItem_AddIgnore_Click" Text="{StaticResource ChannelScanPage_AddIgnored_Alliance}" />
+                                                </MenuFlyout>
+                                            </Button.ContextFlyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </dataGrid:GridTemplateColumn.CellTemplate>
+                            </dataGrid:GridTemplateColumn>
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_DangerRatio}" MappingName="DangerRatio" />
+                            <dataGrid:GridTextColumn
+                                DisplayBinding="{Binding SoloStr}"
+                                HeaderText="{StaticResource ChannelScanPage_Result_SoloKills}"
+                                MappingName="SoloKills" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Kills}" MappingName="ItemDestroyed" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_Losses}" MappingName="ItemLost" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_GangRatio}" MappingName="GangRatio" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_HasSupers}" MappingName="HasSupers" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_CanCovertCyno}" MappingName="CovertCyno" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopShips}" MappingName="TopShipsStr" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopGroups}" MappingName="TopGroupsStr" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopSystems}" MappingName="TopSystemsStr" />
+                            <dataGrid:GridTextColumn HeaderText="{StaticResource ChannelScanPage_Result_TopRegions}" MappingName="TopRegionsStr" />
+                        </dataGrid:SfDataGrid.Columns>
+                        <dataGrid:SfDataGrid.RecordContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Click="MenuFlyoutItem_Reload_Click" Text="{StaticResource ChannelScanPage_ReloadResultZKB}" />
+                            </MenuFlyout>
+                        </dataGrid:SfDataGrid.RecordContextFlyout>
+                    </dataGrid:SfDataGrid>
+                </PivotItem>
+            </Pivot>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,16,0" >
+                <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}"/>
+                <TextBlock Text="{x:Bind VM.ResultCount,Mode=OneWay}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

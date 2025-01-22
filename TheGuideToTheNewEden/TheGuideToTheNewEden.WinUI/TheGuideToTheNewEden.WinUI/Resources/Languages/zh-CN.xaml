@@ -1076,6 +1076,7 @@
     <x:String x:Key="ChannelScanPage_NoValidName">未识别到有效角色名称</x:String>
     <x:String x:Key="ChannelScanPage_Setting_ZKB">ZKB</x:String>
     <x:String x:Key="ChannelScanPage_Setting_GetZKB">分析ZKB数据</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_MaxZKB">获取ZKB数据最大数量</x:String>
     <x:String x:Key="ChannelScanPage_Setting_IgnoredEntities">忽略名单</x:String>
     <x:String x:Key="ChannelScanPage_Setting_ActiveIgnoreList">启用忽略名单</x:String>
     <x:String x:Key="ChannelScanPage_Setting_ShowIgnoredInResultDetail">结果详细包含在过滤名单中的角色</x:String>

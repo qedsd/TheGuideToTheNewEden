@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.CharacterScan;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services;
 using Windows.Foundation;
@@ -56,7 +57,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void MenuFlyoutItem_Reload_Click(object sender, RoutedEventArgs e)
         {
-
+            var item = ResultDataGrid.SelectedItem as CharacterScanInfo;
+            if(item != null)
+            {
+                VM.ReloadZKBInfo(item);
+            }
         }
     }
 }

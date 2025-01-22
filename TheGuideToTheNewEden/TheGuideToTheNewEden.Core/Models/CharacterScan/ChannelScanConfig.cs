@@ -40,5 +40,11 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         /// 角色、军团、联盟
         /// </summary>
         public ObservableCollection<IdName> Ignoreds { get => _ignoreds; set => SetProperty(ref _ignoreds, value); }
+
+        private double _maxZKB = 100;
+        /// <summary>
+        /// 最多获取多少个zkb信息
+        /// </summary>
+        public double MaxZKB { get => _maxZKB; set => SetProperty(ref _maxZKB, value); }
     }
 }

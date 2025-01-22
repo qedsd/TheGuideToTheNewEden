@@ -16,7 +16,7 @@ using ZKB.NET.Models.Statistics.Top;
 
 namespace TheGuideToTheNewEden.Core.Models.CharacterScan
 {
-    public class CharacterScanInfo
+    public class CharacterScanInfo : ObservableObject
     {
         public int Id { get => Character.Id;}
         public string Name { get => Character.Name; }
@@ -25,91 +25,113 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         public IdName Alliance { get; set; }
         public IdName Faction { get; set; }
 
-        public ZKB.NET.Models.Statistics.EntityStatistic Statistic { get; set; }
+        private ZKB.NET.Models.Statistics.EntityStatistic _statistic;
+        public ZKB.NET.Models.Statistics.EntityStatistic Statistic { get => _statistic; set => SetProperty(ref _statistic, value); }
 
-        public int ItemLost { get; set; }
+        private int _itemLost;
+        public int ItemLost { get => _itemLost; set => SetProperty(ref _itemLost, value); }
 
-        public int ItemDestroyed { get; set; }
+        private int _itemDestroyed;
+        public int ItemDestroyed { get => _itemDestroyed; set => SetProperty(ref _itemDestroyed, value); }
 
-        public int SoloKills { get; set; }
+        public int _soloKills;
+        public int SoloKills { get => _soloKills; set => SetProperty(ref _soloKills, value); }
 
+        private float _soloRatio;
         /// <summary>
         /// solo概率
         /// 小数形式，eg：0.01
         /// </summary>
-        public float SoloRatio { get; set; }
+        public float SoloRatio { get => _soloRatio; set => SetProperty(ref _soloRatio, value); }
 
-        public string SoloStr { get; set; }
+        private string _soloStr;
+        public string SoloStr { get => _soloStr; set => SetProperty(ref _soloStr, value); }
 
-        public int DangerRatio { get; set; }
+        private int _dangerRatio;
+        public int DangerRatio { get => _dangerRatio; set => SetProperty(ref _dangerRatio, value); }
 
-        public int GangRatio { get; set; }
+        private int gangRatio;
+        public int GangRatio { get => gangRatio; set => SetProperty(ref gangRatio, value); }
 
-        public bool HasSupers { get; set; }
+        private bool _hasSupers;
+        public bool HasSupers { get => _hasSupers; set => SetProperty(ref _hasSupers, value); }
+
+        private bool _covertCyno;
         /// <summary>
         /// 是否使用过支持黑诱导的船
         /// </summary>
-        public bool CovertCyno { get; set; }
+        public bool CovertCyno { get => _covertCyno; set => SetProperty(ref _covertCyno, value); }
 
+        private List<InvType> _topShips;
         /// <summary>
         /// 最常用的船
         /// </summary>
-        public List<InvType> TopShips { get; set; }
-
-        public string TopShipsStr
-        {
-            get
+        public List<InvType> TopShips
+        { 
+            get => _topShips;
+            set 
             {
-                if(TopShips.NotNullOrEmpty())
+                SetProperty(ref _topShips, value);
+                if (value.NotNullOrEmpty())
                 {
                     StringBuilder sb = new StringBuilder();
-                    foreach (var item in TopShips)
+                    foreach (var item in value)
                     {
                         sb.Append(item.TypeName);
                         sb.Append("  ");
                     }
-                    return sb.Remove(sb.Length - 2, 2).ToString();
+                    TopShipsStr = sb.Remove(sb.Length - 2, 2).ToString();
                 }
                 else
                 {
-                    return string.Empty;
+                    TopShipsStr = string.Empty;
                 }
             }
         }
 
+        private string _topShipsStr;
+        public string TopShipsStr { get => _topShipsStr; set => SetProperty(ref _topShipsStr, value); }
+
+        private List<InvGroup> _topGroups;
         /// <summary>
         /// 最常用的船分类
         /// </summary>
-        public List<InvGroup> TopGroups { get; set; }
-        public string TopGroupsStr
+        public List<InvGroup> TopGroups
         {
-            get
+            get => _topGroups;
+            set
             {
-                if (TopGroups.NotNullOrEmpty())
+                SetProperty(ref _topGroups, value);
+                if (value.NotNullOrEmpty())
                 {
                     StringBuilder sb = new StringBuilder();
-                    foreach (var item in TopGroups)
+                    foreach (var item in value)
                     {
                         sb.Append(item.GroupName);
                         sb.Append("  ");
                     }
-                    return sb.Remove(sb.Length - 2, 2).ToString();
+                    TopGroupsStr = sb.Remove(sb.Length - 2, 2).ToString();
                 }
                 else
                 {
-                    return string.Empty;
+                    TopGroupsStr = string.Empty;
                 }
             }
         }
 
+        private string _topGroupsStr;
+        public string TopGroupsStr { get => _topGroupsStr; set => SetProperty(ref _topGroupsStr, value); }
+
+        private List<MapSolarSystem> _topSystems;
         /// <summary>
         /// 最常出现的星系
         /// </summary>
-        public List<MapSolarSystem> TopSystems { get; set; }
-        public string TopSystemsStr
+        public List<MapSolarSystem> TopSystems
         {
-            get
+            get => _topSystems;
+            set
             {
+                SetProperty(ref _topSystems, value);
                 if (TopSystems.NotNullOrEmpty())
                 {
                     StringBuilder sb = new StringBuilder();
@@ -118,23 +140,28 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         sb.Append(item.SolarSystemName);
                         sb.Append("  ");
                     }
-                    return sb.Remove(sb.Length - 2, 2).ToString();
+                    TopSystemsStr = sb.Remove(sb.Length - 2, 2).ToString();
                 }
                 else
                 {
-                    return string.Empty;
+                    TopSystemsStr = string.Empty;
                 }
             }
         }
 
+        private string _topSystemsStr;
+        public string TopSystemsStr { get => _topSystemsStr; set => SetProperty(ref _topSystemsStr, value); }
+
+        private List<MapRegion> _topRegions;
         /// <summary>
         /// 最常出现的星域
         /// </summary>
-        public List<MapRegion> TopRegions { get; set; }
-        public string TopRegionsStr
+        public List<MapRegion> TopRegions
         {
-            get
+            get => _topRegions;
+            set
             {
+                SetProperty(ref _topRegions, value);
                 if (TopRegions.NotNullOrEmpty())
                 {
                     StringBuilder sb = new StringBuilder();
@@ -143,14 +170,17 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         sb.Append(item.RegionName);
                         sb.Append("  ");
                     }
-                    return sb.Remove(sb.Length - 2, 2).ToString();
+                    TopRegionsStr = sb.Remove(sb.Length - 2, 2).ToString();
                 }
                 else
                 {
-                    return string.Empty;
+                    TopRegionsStr = string.Empty;
                 }
             }
         }
+
+        private string _topRegionsStr;
+        public string TopRegionsStr { get => _topRegionsStr; set => SetProperty(ref _topRegionsStr, value); }
 
         public static CharacterScanInfo Create(int characterId, int corporationId, int allianceId)
         {
@@ -218,11 +248,12 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                 {
                     var topGroupIds = lostGroup.OrderByDescending(p => p.ItemLost).Take(3).Select(p => p.GroupID).ToList();
                     var groups = Core.Services.DB.InvGroupService.QueryGroups(topGroupIds);
-                    TopGroups = new List<InvGroup>(topGroupIds.Count);
+                    var topGroups = new List<InvGroup>(topGroupIds.Count);
                     foreach (var group in topGroupIds)
                     {
-                        TopGroups.Add(groups.FirstOrDefault(p => p.GroupID == group));
+                        topGroups.Add(groups.FirstOrDefault(p => p.GroupID == group));
                     }
+                    TopGroups = topGroups;
 
                     foreach(var group in groups)
                     {
@@ -240,11 +271,12 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                     {
                         var topKillShipIds = topKillShip.Datas.Take(3).Select(p => p.Id).ToList();
                         var ships = Services.DB.InvTypeService.QueryTypes(topKillShipIds);
-                        TopShips = new List<InvType>(topKillShipIds.Count);
+                        var topShips = new List<InvType>(topKillShipIds.Count);
                         foreach (var id in topKillShipIds)
                         {
-                            TopShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
+                            topShips.Add(ships.FirstOrDefault(p => p.TypeID == id));
                         }
+                        TopShips = topShips;
                     }
 
                     var topSystem = Statistic.TopAllTime.FirstOrDefault(p => p.Type == "system");
@@ -253,14 +285,15 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         var allSystemIds = topSystem.Datas.Select(p => p.Id).ToList();
                         var allsSystemsDict = Services.DB.MapSolarSystemService.Query(allSystemIds).ToDictionary(p => p.SolarSystemID);
                         var topSystemIds = allSystemIds.Take(3).ToList();
-                        TopSystems = new List<MapSolarSystem>(topSystemIds.Count);
+                        var topSystems = new List<MapSolarSystem>(topSystemIds.Count);
                         foreach (var id in topSystemIds)
                         {
                             if (allsSystemsDict.TryGetValue(id, out var mapSolarSystem))
                             {
-                                TopSystems.Add(mapSolarSystem);
+                                topSystems.Add(mapSolarSystem);
                             }
                         }
+                        TopSystems = topSystems;
 
                         Dictionary<int, int> regionKills = new Dictionary<int, int>();
                         foreach (var data in topSystem.Datas)
@@ -279,11 +312,12 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
                         }
                         var topRegionIds = regionKills.OrderBy(p => p.Value).Take(3).Select(p => p.Key).ToList();
                         var topRegions = Services.DB.MapRegionService.Query(topRegionIds);
-                        TopRegions = new List<MapRegion>(topRegionIds.Count);
+                        var topRegions2 = new List<MapRegion>(topRegionIds.Count);
                         foreach (var id in topRegionIds)
                         {
-                            TopRegions.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
+                            topRegions2.Add(topRegions.FirstOrDefault(p => p.RegionID == id));
                         }
+                        TopRegions = topRegions2;
                     }
                 }
             }

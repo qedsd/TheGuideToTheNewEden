@@ -76,6 +76,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ChannelScanViewModel()
         {
             Config = Services.Settings.ChannelScanSettingService.GetChannelScanConfig();
+            Config.PropertyChanged += Config_PropertyChanged;
+        }
+
+        private void Config_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            SaveConfig();
         }
 
         public ICommand StartCommand => new RelayCommand(async() =>
@@ -88,6 +94,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var namesAfterFiltered = GetFilteredNames(names);
                 if (namesAfterFiltered.NotNullOrEmpty())
                 {
+                    #region 构建忽略id表
+                    HashSet<int> ignoredCharacterIds = new HashSet<int>();
+                    HashSet<int> ignoredCorpIds = new HashSet<int>();
+                    HashSet<int> ignoredAllianceIds = new HashSet<int>();
+                    var ignoredCharacters = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Character);
+                    var ignoredCorps = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Corporation);
+                    var ignoredAlliances = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Alliance);
+                    if (ignoredCharacters.NotNullOrEmpty())
+                    {
+                        ignoredCharacterIds = ignoredCharacters.Select(p => p.Id).ToHashSet2();
+                    }
+                    if (ignoredCorps.NotNullOrEmpty())
+                    {
+                        ignoredCorpIds = ignoredCorps.Select(p => p.Id).ToHashSet2();
+                    }
+                    if (ignoredAlliances.NotNullOrEmpty())
+                    {
+                        ignoredAllianceIds = ignoredAlliances.Select(p => p.Id).ToHashSet2();
+                    }
+                    #endregion
+
                     var allNamesDatas = await Core.Services.IDNameService.GetByNames(namesAfterFiltered);
                     if (allNamesDatas.NotNullOrEmpty())
                     {
@@ -103,41 +130,103 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 {
                                     var datas = await Task.Run(() =>
                                     {
-                                        List<CharacterScanInfo> newInfos = new List<CharacterScanInfo>();
-                                        foreach (var affiliation in affiliationResult.Data)
+                                        List<ESI.NET.Models.Character.Affiliation> affiliations = new List<ESI.NET.Models.Character.Affiliation>();
+                                        if (!Config.ShowIgnoredInResultDetail && !Config.ShowIgnoredInResultStatistics)//统计、详细均不显示忽略后的则可不获取IdName
                                         {
-                                            var info = CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId);
-                                            if (info != null)
+                                            foreach (var affiliation in affiliationResult.Data)
                                             {
-                                                newInfos.Add(info);
+                                                if (ignoredCharacterIds.Contains(affiliation.CharacterId) ||
+                                                    ignoredCorpIds.Contains(affiliation.CorporationId) ||
+                                                    ignoredAllianceIds.Contains(affiliation.AllianceId))
+                                                {
+                                                    continue;//忽略
+                                                }
+                                                else
+                                                {
+                                                    affiliations.Add(affiliation);
+                                                }
                                             }
                                         }
+                                        else
+                                        {
+                                            affiliations = affiliationResult.Data;
+                                        }
+                                        List<CharacterScanInfo> newInfos = Core.Helpers.ThreadHelper.Run(affiliations, (affiliation) =>
+                                        {
+                                            return CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId);
+                                        }).Where(p=>p != null).ToList();
                                         return newInfos;
                                     });
                                     if (datas.NotNullOrEmpty())
                                     {
-                                        //统计
-                                        var corpGroups = datas.Select(p => p.Corporation).GroupBy(p => p.Id).ToList();
+                                        #region 统计
+                                        var corpGroups = datas.GroupBy(p => p.Corporation.Id).ToList();
                                         List<Tuple<Core.DBModels.IdName, int>> statisticsCorporation = new List<Tuple<Core.DBModels.IdName, int>>(corpGroups.Count);
                                         foreach (var group in corpGroups.OrderByDescending(p => p.Count()))
                                         {
-                                            var corp = group.First();
+                                            if (ignoredCorpIds.Contains(group.Key))
+                                            {
+                                                continue;
+                                            }
+                                            var corp = group.First().Corporation;
                                             Core.DBModels.IdName idName = new Core.DBModels.IdName(corp.Id, corp.Name, Core.DBModels.IdName.CategoryEnum.Corporation);
-                                            statisticsCorporation.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
+                                            int countAfterFilter = 0;//剔除忽略后的实际数量
+                                            if(!Config.ShowIgnoredInResultStatistics)
+                                            {
+                                                foreach (var data in group)
+                                                {
+                                                    if (ignoredCharacterIds.Contains(data.Id))
+                                                    {
+                                                        continue;
+                                                    }
+                                                    else
+                                                    {
+                                                        countAfterFilter++;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                countAfterFilter = group.Count();
+                                            }
+                                            statisticsCorporation.Add(new Tuple<Core.DBModels.IdName, int>(idName, countAfterFilter));
                                         }
                                         StatisticsCorporation = statisticsCorporation;
 
-                                        var allianceGroups = datas.Select(p => p.Alliance).GroupBy(p => p.Id).ToList();
+                                        var allianceGroups = datas.GroupBy(p => p.Alliance.Id).ToList();
                                         List<Tuple<Core.DBModels.IdName, int>> statisticsAlliance = new List<Tuple<Core.DBModels.IdName, int>>(allianceGroups.Count);
                                         foreach (var group in allianceGroups.OrderByDescending(p => p.Count()))
                                         {
-                                            var item = group.First();
+                                            if(ignoredAllianceIds.Contains(group.Key))
+                                            {
+                                                continue;
+                                            }
+                                            var item = group.First().Alliance;
                                             Core.DBModels.IdName idName = new Core.DBModels.IdName(item.Id, item.Name, Core.DBModels.IdName.CategoryEnum.Alliance);
-                                            statisticsAlliance.Add(new Tuple<Core.DBModels.IdName, int>(idName, group.Count()));
+                                            int countAfterFilter = 0;//剔除忽略后的实际数量
+                                            if (!Config.ShowIgnoredInResultStatistics)
+                                            {
+                                                foreach (var data in group)
+                                                {
+                                                    if (ignoredCharacterIds.Contains(data.Id))
+                                                    {
+                                                        continue;
+                                                    }
+                                                    else
+                                                    {
+                                                        countAfterFilter++;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                countAfterFilter = group.Count();
+                                            }
+                                            statisticsAlliance.Add(new Tuple<Core.DBModels.IdName, int>(idName, countAfterFilter));
                                         }
                                         StatisticsAlliance = statisticsAlliance;
-
-                                        // 排序
+                                        #endregion
+                                        #region 排序
                                         var datasDic = datas.ToDictionary(p => p.Name);
                                         ObservableCollection<CharacterScanInfo> characterScanInfos = new ObservableCollection<CharacterScanInfo>();
                                         foreach (var name in namesAfterFiltered)
@@ -147,14 +236,46 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                                 characterScanInfos.Add(characterScanInfo);
                                             }
                                         }
-
-                                        await Task.Run(() =>
+                                        #endregion
+                                        #region ZKB
+                                        if (Config.GetZKB)
                                         {
-                                            Core.Helpers.ThreadHelper.Run(datas, (data) =>
+                                            IList<CharacterScanInfo> needGetZKBDatas;
+                                            if (!Config.ShowIgnoredInResultDetail)
                                             {
-                                                return data.GetZKBInfo();
+                                                needGetZKBDatas = new List<CharacterScanInfo>();
+                                                foreach (var data in characterScanInfos)
+                                                {
+                                                    if (ignoredCharacterIds.Contains(data.Character.Id) ||
+                                                        ignoredCorpIds.Contains(data.Corporation.Id) ||
+                                                        ignoredAllianceIds.Contains(data.Alliance.Id))
+                                                    {
+                                                        continue;//忽略
+                                                    }
+                                                    else
+                                                    {
+                                                        needGetZKBDatas.Add(data);
+                                                        if(needGetZKBDatas.Count == (int)Config.MaxZKB)
+                                                        {
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                needGetZKBDatas = characterScanInfos.Count > (int)Config.MaxZKB ? characterScanInfos.Take((int)Config.MaxZKB).ToList() : characterScanInfos;//限制zkb获取数据量
+                                            }
+                                                
+                                            await Task.Run(() =>
+                                            {
+                                                Core.Helpers.ThreadHelper.Run(needGetZKBDatas, (data) =>
+                                                {
+                                                    return data.GetZKBInfo();
+                                                });
                                             });
-                                        });
+                                        }
+                                        #endregion
                                         ScanInfos = characterScanInfos;
                                         ResultCount = ScanInfos.Count;
                                     }
@@ -297,6 +418,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 case 2: category = Core.DBModels.IdName.CategoryEnum.Alliance; break;
             }
             Config.Ignoreds.Add(new Core.DBModels.IdName(id, AddingIgnoreName, category));
+            SaveConfig();
             Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
             IsAddingIgnore = false;
         });
@@ -304,6 +426,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand DeleteIgnoreCommand => new RelayCommand<IdName>((item) =>
         {
             Config.Ignoreds.Remove(item);
+            SaveConfig();
         });
 
         public void AddIgnore(IdName idName)
@@ -316,6 +439,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     return;
                 }
                 Config.Ignoreds.Add(idName);
+                SaveConfig();
                 Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
             }
         }
@@ -325,9 +449,21 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int index = ScanInfos.IndexOf(characterScanInfo);
             ScanInfos.RemoveAt(index);
             Window?.ShowWaiting();
-            await Task.Run(()=> characterScanInfo.GetZKBInfo());
-            ScanInfos.Insert(index, characterScanInfo);
+            var clone = new CharacterScanInfo()
+            {
+                Character = characterScanInfo.Character,
+                Corporation = characterScanInfo.Corporation,
+                Alliance = characterScanInfo.Alliance,
+                Faction = characterScanInfo.Faction
+            };
+            await Task.Run(()=> clone.GetZKBInfo());
+            ScanInfos.Insert(index, clone);
             Window?.HideWaiting();
+        }
+
+        private void SaveConfig()
+        {
+            Services.Settings.ChannelScanSettingService.Save(Config);
         }
     }
 }
