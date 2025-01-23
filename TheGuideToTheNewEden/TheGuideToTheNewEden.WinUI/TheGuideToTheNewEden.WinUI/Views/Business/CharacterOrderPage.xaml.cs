@@ -97,7 +97,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if (SelecteCharacterControl.SelectedItem != null)
             {
-                var orders = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                //可能由于没军团订单权限抛错
+                List<Core.Models.Market.Order> orders = null;
+                try
+                {
+                    orders = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                }
+                catch
+                {
+                    orders = null;
+                }
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);

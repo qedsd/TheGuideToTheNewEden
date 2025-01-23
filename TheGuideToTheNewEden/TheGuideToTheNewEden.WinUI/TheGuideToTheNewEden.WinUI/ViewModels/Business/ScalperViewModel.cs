@@ -378,10 +378,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if (scalperItems.NotNullOrEmpty())
                 {
                     Window?.ShowWaiting("获取源市场订单历史中");
-                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
                     sourceNoHistoryCount = typeIds.Count - sourceHistory.Count;
                     Window?.ShowWaiting("获取目的市场订单历史中");
-                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
                     destinatioNoHistoryCount = typeIds.Count - destinationHistory.Count;
                     Window?.ShowWaiting("匹配订单历史中");
                     await Task.Run(() =>

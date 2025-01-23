@@ -39,8 +39,7 @@
         </controls:ExpandableSettingControl>
         <controls:ExpandableSettingControl
             Title="{StaticResource MarketSettingPage_MaxThread}"
-            Description="{StaticResource MarketSettingPage_MaxThread_Desc}"
-            Visibility="Collapsed">
+            Description="{StaticResource MarketSettingPage_MaxThread_Desc}">
             <StackPanel Orientation="Horizontal">
                 <NumberBox Width="128" Value="{x:Bind VM.MaxThread, Mode=TwoWay}" />
             </StackPanel>

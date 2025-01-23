@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
-using static TheGuideToTheNewEden.WinUI.Services.MarketOrderService;
 using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Services
@@ -109,7 +108,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
 
             //本地不存在或过期或解析失败，重新获取
-            var orders = await GetLatestStructureOrdersAsync(structureId, pageCallBack);
+            List<Core.Models.Market.Order> orders = null;
+            try
+            {
+                orders = await GetLatestStructureOrdersAsync(structureId, pageCallBack);
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                orders = null;
+            }
             if (orders.NotNullOrEmpty())
             {
                 var newOrder = new StructureOrder()
@@ -134,20 +142,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var structure = Services.StructureService.GetStructure(structureId);
             if(structure == null)
             {
-                Core.Log.Error($"未找到建筑{structureId}");
+                Core.Log.Error($"获取建筑订单时，未找到建筑{structureId}");
                 return null;
             }
             var character = CharacterService.GetCharacter(structure.CharacterId);
             if (character == null)
             {
-                Core.Log.Error($"未找到角色{structure.CharacterId}");
+                Core.Log.Error($"获取建筑订单时，未能找到建筑{structureId}对应的角色{structure.CharacterId}");
                 return null;
             }
             if (!character.IsTokenValid())
             {
                 if (!await character.RefreshTokenAsync())
                 {
-                    Core.Log.Error("Token已过期，尝试刷新失败");
+                    Core.Log.Error("获取建筑订单时，角色{structure.CharacterId}的Token已过期，尝试刷新失败");
                     return null;
                 }
             }
@@ -600,6 +608,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
+        /// <summary>
+        /// 逐个获取历史记录
+        /// </summary>
+        /// <param name="typeIds"></param>
+        /// <param name="regionId"></param>
+        /// <param name="pageCallBack"></param>
+        /// <returns></returns>
         public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryAsync(List<int> typeIds, int regionId, PageCallBackDelegate pageCallBack = null)
         {
             int doneCount = 0;
@@ -629,6 +644,51 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     dic.Add(id, statistics);
                 }
+            }
+            return dic;
+        }
+        /// <summary>
+        /// 多线程批量获取历史记录
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <param name="pageCallBack"></param>
+        /// <returns></returns>
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
+        {
+            int doneCount = 0;
+            object locker = new object();
+            async Task<List<Core.Models.Market.Statistic>> getHistory(int typeId)
+            {
+                List<ESI.NET.Models.Market.Statistic> statistics = null;
+                try
+                {
+                    statistics = await GetHistoryAsync(typeId, regionId);
+                }
+                catch(Exception ex)
+                {
+                    System.Threading.Thread.Sleep(1000);//避免esi错误限制
+                    Core.Log.Error(ex);
+                }
+                lock (locker)
+                {
+                    doneCount++;
+                    pageCallBack?.Invoke(doneCount, "History");
+                }
+                if (statistics.NotNullOrEmpty())
+                    return statistics.Select(p => new Core.Models.Market.Statistic(p, typeId)).ToList();
+                else
+                {
+                    return null;
+                }
+            }
+            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId, MaxThread, getHistory);
+            var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
+            Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
+            foreach (var list in valid)
+            {
+                var key = list.First().InvTypeId;
+                dic.TryAdd(key, list);
             }
             return dic;
         }
@@ -699,6 +759,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         /// <summary>
         /// 获取角色的军团订单
+        /// 请注意角色是否有访问军团订单权限
         /// </summary>
         /// <param name="characterId"></param>
         /// <returns></returns>
