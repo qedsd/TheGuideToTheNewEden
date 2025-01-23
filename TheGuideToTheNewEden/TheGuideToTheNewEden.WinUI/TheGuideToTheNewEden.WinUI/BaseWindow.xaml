@@ -48,13 +48,15 @@
                 x:Name="AppTitleContentArea"
                 Grid.Column="1"
                 Orientation="Horizontal">
-                <Grid
-                    Grid.Column="1"
-                    Height="16"
-                    VerticalAlignment="Center"
-                    CornerRadius="8">
-                    <Image HorizontalAlignment="Left" Source="Resources/Images/logo_32.png" />
-                </Grid>
+                <Button BorderBrush="Transparent" Background="Transparent" Padding="4" Margin="-6 0 0 0"
+                        Click="Button_Top_Click">
+                    <Grid
+                        Height="16"
+                        VerticalAlignment="Center"
+                        CornerRadius="8">
+                        <Image HorizontalAlignment="Left" Source="Resources/Images/logo_32.png" />
+                    </Grid>
+                </Button>
 
                 <TextBlock
                     x:Name="AppDisplayNameTextBlock"

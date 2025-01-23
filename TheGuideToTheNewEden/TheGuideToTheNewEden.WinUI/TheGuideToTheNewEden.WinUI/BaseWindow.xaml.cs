@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -352,6 +353,19 @@ namespace TheGuideToTheNewEden.WinUI
         private void UnloadCustomPicture()
         {
             BackgroundGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void Button_Top_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+
+            if(appWindow.IsShownInSwitchers)
+            {
+                var presenter = AppWindow.Presenter as OverlappedPresenter;
+                presenter.IsAlwaysOnTop = !presenter.IsAlwaysOnTop;
+            }
         }
     }
 }
