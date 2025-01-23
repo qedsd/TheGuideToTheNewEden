@@ -365,6 +365,7 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 var presenter = AppWindow.Presenter as OverlappedPresenter;
                 presenter.IsAlwaysOnTop = !presenter.IsAlwaysOnTop;
+                ShowSuccess(Helpers.ResourcesHelper.GetString(presenter.IsAlwaysOnTop ? "Setting_AlwaysOnTop" : "Setting_NotAlwaysOnTop"));
             }
         }
     }

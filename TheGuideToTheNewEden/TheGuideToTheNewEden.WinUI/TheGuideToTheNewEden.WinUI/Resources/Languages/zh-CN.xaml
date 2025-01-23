@@ -2,6 +2,8 @@
     <x:String x:Key="AppDisplayName">新伊甸漫游指南</x:String>
 
     <!--  Setting  -->
+    <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>
+    <x:String x:Key="Setting_NotAlwaysOnTop">已取消置顶显示</x:String>
     <x:String x:Key="Setting_Theme_Description">选择要显示的应用主题</x:String>
     <x:String x:Key="Setting_Theme_Title">主题</x:String>
     <x:String x:Key="Setting_Theme_Dark">暗</x:String>

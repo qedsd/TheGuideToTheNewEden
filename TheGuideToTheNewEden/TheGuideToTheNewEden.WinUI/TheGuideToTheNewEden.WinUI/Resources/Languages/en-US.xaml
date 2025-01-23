@@ -2,6 +2,8 @@
     <x:String x:Key="AppDisplayName">The Guide To The New Eden</x:String>
 
     <!--  Setting  -->
+    <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>
+    <x:String x:Key="Setting_NotAlwaysOnTop">The top display has been cancelled</x:String>
     <x:String x:Key="Setting_Theme_Description">Select which app theme to display</x:String>
     <x:String x:Key="Setting_Theme_Title">App Theme</x:String>
     <x:String x:Key="Setting_Theme_Dark">Dark</x:String>
