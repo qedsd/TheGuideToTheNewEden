@@ -1,7 +1,7 @@
 # 新伊甸漫游指南
 一个EVE Online实用工具集合APP，支持中英文
 
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Home_Light.png?raw=true?raw=true)
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Light.png?raw=true?raw=true)
 
 ---
 
@@ -37,29 +37,29 @@
 
 ## 软件截图
 - 黑暗模式
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Home_Dark.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Dark.png?raw=true?raw=true)
   
 - 频道预警
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/ChannelIntel.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelIntel.png?raw=true?raw=true)
 
 - 市场
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Market.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Market.png?raw=true?raw=true)
 
 - 多开预览
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Overview.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Overview.png?raw=true?raw=true)
 
 - 倒货
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Scalper.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Scalper.png?raw=true?raw=true)
 
 - ZKillboard
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/ZKB.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ZKB.png?raw=true?raw=true)
 
 - 星图
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Map.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Map.png?raw=true?raw=true)
 
 - 频道玩家统计
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/ChannelScan_Statistics.png?raw=true?raw=true)
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/ChannelScan_Detail.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelScan_Statistics.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelScan_Detail.png?raw=true?raw=true)
 
 
 # 下载
