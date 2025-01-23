@@ -164,7 +164,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                         List<Tuple<Core.DBModels.IdName, int>> statisticsCorporation = new List<Tuple<Core.DBModels.IdName, int>>(corpGroups.Count);
                                         foreach (var group in corpGroups.OrderByDescending(p => p.Count()))
                                         {
-                                            if (ignoredCorpIds.Contains(group.Key))
+                                            if (!Config.ShowIgnoredInResultStatistics && ignoredCorpIds.Contains(group.Key))
                                             {
                                                 continue;
                                             }
@@ -197,7 +197,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                         List<Tuple<Core.DBModels.IdName, int>> statisticsAlliance = new List<Tuple<Core.DBModels.IdName, int>>(allianceGroups.Count);
                                         foreach (var group in allianceGroups.OrderByDescending(p => p.Count()))
                                         {
-                                            if(ignoredAllianceIds.Contains(group.Key))
+                                            if(!Config.ShowIgnoredInResultStatistics && ignoredAllianceIds.Contains(group.Key))
                                             {
                                                 continue;
                                             }
