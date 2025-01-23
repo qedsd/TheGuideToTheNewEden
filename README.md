@@ -1,5 +1,5 @@
 # 新伊甸漫游指南
-一个EVE Online实用工具
+一个EVE Online实用工具集合APP，支持中英文
 
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Home_Light.png?raw=true?raw=true)
 
@@ -9,12 +9,10 @@
 
 多年前，闲来无事会弄一些eve的小工具自用，后面慢慢地功能就多了起来，虽然每个功能都很粗糙，代码也很暴力，但发现还是可以与大家分享的，于是推出了第一个版本新伊甸漫游指南
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/homeV1.jpg?raw=true?raw=true)
-如果你有幸看见过上面这个V1版本，那你现在一定是个巨佬了（伸出乞讨的小手）。
-
-但不幸，V1版本后续更新一段时间后，我弃坑了，软件及游戏都暂告一段落。
+如果你有幸看见过上面这个V1版本，那你现在一定是个巨佬了。但不幸，V1版本后续更新一段时间后，我弃坑了，软件及游戏都暂告一段落。
 
 # 新生
-弃坑多年后，发现新伊甸还流传着漫游指南的传说，于是决定重新开坑，把软件重构复活，软件框架从UWP升级到WinUI3，去除一些过时功能，也加入更多新功能。
+弃坑多年后，发现新伊甸还流传着漫游指南的传说，于是决定重新开坑，把软件重构复活，软件框架从UWP升级到WinUI3（从一个坑到另一个坑，微软你行不行啊？），去除一些过时功能，也加入更多好用的新功能。
 
 # 功能
 - **角色:** 管理角色授权中心，以及查看角色个人信息，如技能点、技能训练队列、钱包余额、钱包日志、合同、邮件、工业
@@ -38,6 +36,9 @@
 - **频道玩家统计:** 统计频道内玩家势力，且可通过ZKillboard查询每一个玩家的威胁值、常用船等信息
 
 ## 软件截图
+- 黑暗模式
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/Home_Dark.png?raw=true?raw=true)
+  
 - 频道预警
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/ChannelIntel.png?raw=true?raw=true)
 
@@ -65,7 +66,7 @@
 [Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
 
 # 后续计划
-软件会持续修BUG及添加更多好用的功能，欢迎提bug提需求，但无法保证更新频率。
+软件会持续修BUG及添加更多功能，欢迎提bug提想法，但无法保证更新频率。
 
 # 联系我
 - 游戏ID：QEDSD
