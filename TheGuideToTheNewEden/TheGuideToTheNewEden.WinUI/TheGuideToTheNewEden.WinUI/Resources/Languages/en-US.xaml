@@ -81,7 +81,7 @@
     <x:String x:Key="ShellPage_Players">Players</x:String>
     <x:String x:Key="ShellPage_APPVersion">APP Version</x:String>
     <x:String x:Key="ShellPage_Character">Character</x:String>
-    <x:String x:Key="ShellPage_Character_Desc">View character skills, emails, contracts, and other information</x:String>
+    <x:String x:Key="ShellPage_Character_Desc">View character skills, emails, contracts...</x:String>
     <x:String x:Key="ShellPage_Market">Market</x:String>
     <x:String x:Key="ShellPage_Market_Desc">Check market order</x:String>
     <x:String x:Key="ShellPage_Business">Business</x:String>
@@ -117,8 +117,8 @@
     <x:String x:Key="ShellPage_Database_Desc">Browse database content</x:String>
     <x:String x:Key="ShellPage_Map">Map</x:String>
     <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
-    <x:String x:Key="ShellPage_ChannelScan">Channel Player Statistics</x:String>
-    <x:String x:Key="ShellPage_ChannelScan_Desc">Statistics on player faction, zkb, and other information within the channel</x:String>
+    <x:String x:Key="ShellPage_ChannelScan">Channel Character Statistics</x:String>
+    <x:String x:Key="ShellPage_ChannelScan_Desc">View character faction, zkb...</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
@@ -1049,22 +1049,59 @@
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
 
     <!--  ChannelScanPage  -->
-    <x:String x:Key="ChannelScanPage_NameList">名称列表</x:String>
-    <x:String x:Key="ChannelScanPage_Start">分析</x:String>
-    <x:String x:Key="ChannelScanPage_Hide">关闭</x:String>
-    <x:String x:Key="ChannelScanPage_IgnoredEntities">忽略名单</x:String>
-    <x:String x:Key="ChannelScanPage_Results">结果</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Character">角色</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Corporation">军团</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Alliance">联盟</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Kills">击杀数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_Losses">损失数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastWeek">过去一星期击杀数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastLost">最近一次损失</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastKill">最近一次击杀</x:String>
-    <x:String x:Key="ChannelScanPage_Result_AverageAttackers">平均参与击杀人数</x:String>
-    <x:String x:Key="ChannelScanPage_Result_CovertCyno">黑诱导占比</x:String>
-    <x:String x:Key="ChannelScanPage_Result_RegularCyno">常规诱导占比</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastCovertCyno">最近一次黑诱导</x:String>
-    <x:String x:Key="ChannelScanPage_Result_LastRegularCyno">最近一次常规诱导</x:String>
+    <x:String x:Key="ChannelScanPage_NameList">Characters</x:String>
+    <x:String x:Key="ChannelScanPage_Start">Start</x:String>
+    <x:String x:Key="ChannelScanPage_NamesTip">Ctrl+C in the chat channel of the game, then Ctrl+V here</x:String>
+    <x:String x:Key="ChannelScanPage_Hide">Hide</x:String>
+    <x:String x:Key="ChannelScanPage_Results">Results</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Character">Character</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Corporation">Corporation</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Alliance">Alliance</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Kills">Kills</x:String>
+    <x:String x:Key="ChannelScanPage_Result_SoloKills">Solo Kills (Ratio)</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Losses">Losses</x:String>
+    <x:String x:Key="ChannelScanPage_Result_CanCovertCyno">Covert Cyno</x:String>
+    <x:String x:Key="ChannelScanPage_Result_DangerRatio">Danger Ratio</x:String>
+    <x:String x:Key="ChannelScanPage_Result_GangRatio">Gang Ratio</x:String>
+    <x:String x:Key="ChannelScanPage_Result_HasSupers">Has Supers</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopShips">Top Ships</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopGroups">Top Groups</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopSystems">Top Systems</x:String>
+    <x:String x:Key="ChannelScanPage_Result_TopRegions">Top Regions</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Statistics">Statistics</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Statistics_Corporation">Corporation</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Statistics_Alliance">Alliance</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Statistics_CharacterCount">Number Of Character</x:String>
+    <x:String x:Key="ChannelScanPage_Result_Detail">Detail</x:String>
+    <x:String x:Key="ChannelScanPage_NoValidName">No valid role name recognized</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_ZKB">ZKB</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_GetZKB">Get ZKB Info</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_MaxZKB">Maximum amount of ZKB data</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_IgnoredEntities">Ignored Entities</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_ActiveIgnoreList">Active Ignored Entities</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_ShowIgnoredInResultDetail">Show Ignored Entities In Detail</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_ShowIgnoredInResultStatistics">Show Ignored Entities In Statistics</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_AddIgnoredIdInvalid">Please Enter Numbers</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_AddIgnoredNameInvalid">Please Enter Name</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_AddIgnoredSame">ID or name already exists</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_AddIgnoredSuccessful">Added successfully</x:String>
+    <x:String x:Key="ChannelScanPage_Setting_AddIgnored_IDTip">Number ID, Can be left blank</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Character">Ignore Character</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Corporation">Ignore Corporation</x:String>
+    <x:String x:Key="ChannelScanPage_AddIgnored_Alliance">Ignore Alliance</x:String>
+    <x:String x:Key="ChannelScanPage_ReloadResultZKB">Retrieve ZKB information again</x:String>
+
+    <!--  IdNameCategory  -->
+    <x:String x:Key="IdNameCategory">Category</x:String>
+    <x:String x:Key="IdNameCategory_Alliance">Alliance</x:String>
+    <x:String x:Key="IdNameCategory_Character">Character</x:String>
+    <x:String x:Key="IdNameCategory_Constellation">Constellation</x:String>
+    <x:String x:Key="IdNameCategory_Corporation">Corporation</x:String>
+    <x:String x:Key="IdNameCategory_InventoryType">Inventory Type</x:String>
+    <x:String x:Key="IdNameCategory_Region">Region</x:String>
+    <x:String x:Key="IdNameCategory_SolarSystem">SolarSystem</x:String>
+    <x:String x:Key="IdNameCategory_Station">Station</x:String>
+    <x:String x:Key="IdNameCategory_Faction">Faction</x:String>
+    <x:String x:Key="IdNameCategory_Structure">Structure</x:String>
+    <x:String x:Key="IdNameCategory_Group">Group</x:String>
 </ResourceDictionary>
