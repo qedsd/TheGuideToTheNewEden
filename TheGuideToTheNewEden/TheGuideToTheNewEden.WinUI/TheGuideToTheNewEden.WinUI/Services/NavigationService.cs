@@ -32,6 +32,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return false;
             }
         }
+        public static bool ShowWaiting(TabViewBasePage page, string tip = null)
+        {
+            if (page != null)
+            {
+                page.ShowWaiting(tip);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public static bool HideWaiting()
         {
             if (BasePage != null)
@@ -43,6 +55,23 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 return false;
             }
+        }
+        public static bool HideWaiting(TabViewBasePage page)
+        {
+            if (page != null)
+            {
+                page.HideWaiting();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static TabViewBasePage GetCurrentPage()
+        {
+            return BasePage;
         }
     }
 }

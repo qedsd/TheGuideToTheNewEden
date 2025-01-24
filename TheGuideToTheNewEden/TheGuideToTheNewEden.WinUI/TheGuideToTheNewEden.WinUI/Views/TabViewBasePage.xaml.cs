@@ -15,7 +15,7 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class TabViewBasePage : Page
+    public sealed partial class TabViewBasePage : Page, IPage
     {
         public TabViewBasePage()
         {
@@ -51,6 +51,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 WaitingProgressRing.IsActive = false;
             });
+        }
+
+        public void Close()
+        {
+            (MainContent as IPage).Close();
         }
     }
 }
