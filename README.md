@@ -1,3 +1,5 @@
+[中文](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README.md "中文Reamme")  | [English](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README_en.md "English Reamme") 
+
 # 新伊甸漫游指南
 一个EVE Online实用工具集合APP，支持中英文
 
