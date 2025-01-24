@@ -1,3 +1,5 @@
+[中文](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README.md "中文Reamme")  | [English](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README_en.md "English Reamme") 
+
 # The Guide To The NewEden
 An EVE Online utility collection app. Supports Chinese and English
 
