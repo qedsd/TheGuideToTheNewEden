@@ -16,6 +16,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using TheGuideToTheNewEden.WinUI.Views;
 using Windows.ApplicationModel;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -266,6 +267,10 @@ namespace TheGuideToTheNewEden.WinUI
                 WaitingProgressRing.IsActive = true;
             });
         }
+        public void ShowWaiting(TabViewBasePage page, string tip = null)
+        {
+            NavigationService.ShowWaiting(page, tip);
+        }
         public void HideWaiting()
         {
             if (NavigationService.HideWaiting())
@@ -278,7 +283,10 @@ namespace TheGuideToTheNewEden.WinUI
                 WaitingProgressRing.IsActive = false;
             });
         }
-
+        public void HideWaiting(TabViewBasePage page)
+        {
+            NavigationService.HideWaiting(page);
+        }
         public void Hide()
         {
             this.DispatcherQueue.TryEnqueue(() =>

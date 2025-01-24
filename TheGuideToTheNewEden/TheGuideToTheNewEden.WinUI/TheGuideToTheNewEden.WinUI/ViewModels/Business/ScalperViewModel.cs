@@ -129,6 +129,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
+        private Views.TabViewBasePage _page;
         public ScalperViewModel()
         {
             
@@ -137,7 +138,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         private static readonly string SettingFolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
         public async Task Init()
         {
-            if(System.IO.File.Exists(SettingFilePath))
+            _page = NavigationService.GetCurrentPage();
+            if (System.IO.File.Exists(SettingFilePath))
             {
                 string json = System.IO.File.ReadAllText(SettingFilePath);
                 if(!string.IsNullOrEmpty(json))
@@ -165,14 +167,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             if(ScalperItems.NotNullOrEmpty())
             {
-                Window?.ShowWaiting("计算中");
+                Window?.ShowWaiting(_page, "计算中");
                 if (IsValid())
                 {
                     SaveSetting();
                     await Cal();
                     Window?.ShowSuccess($"完成{ScalperItems.Count}个订单计算");
                 }
-                Window?.HideWaiting();
+                Window?.HideWaiting(_page);
             }
             else
             {
@@ -181,7 +183,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         });
         public ICommand GetOrdersCommand => new RelayCommand(async () =>
         {
-            Window?.ShowWaiting("获取订单中");
+            Window?.ShowWaiting(_page, "获取订单中");
             try
             {
                 if (IsValid())
@@ -195,7 +197,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 Core.Log.Error(ex);
                 Window?.ShowError(ex.Message);
             }
-            Window?.HideWaiting();
+            Window?.HideWaiting(_page);
         });
         private void SaveSetting()
         {
@@ -253,28 +255,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取源市场订单中（{page}页）");
+                Window?.ShowWaiting(_page, $"获取源市场订单中（{page}页）");
             });
         }
         private void GetDestinationOrdersPageCallBack(int page, string tag)
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取目的市场订单中（{page}页）");
+                Window?.ShowWaiting(_page, $"获取目的市场订单中（{page}页）");
             });
         }
         private void GetSourceHistoryPageCallBack(int page, string tag)
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取源市场订单历史中（{page}/{_typeCount}）");
+                Window?.ShowWaiting(_page, $"获取源市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private void GetDestinationHistoryPageCallBack(int page, string tag)
         {
             Window.DispatcherQueue.TryEnqueue(() =>
             {
-                Window?.ShowWaiting($"获取目的市场订单历史中（{page}/{_typeCount}）");
+                Window?.ShowWaiting(_page, $"获取目的市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
@@ -332,7 +334,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             stopwatch.Start();
             List<Order> allSourceOrders = null;
             List<Order> allDestinationOrders = null;
-            Window?.ShowWaiting("获取源市场订单中");
+            Window?.ShowWaiting(_page, "获取源市场订单中");
             try
             {
                 allSourceOrders = await GetAllSourceOrders();
@@ -343,7 +345,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 Window?.ShowError($"获取源市场订单出错：{ex.Message}");
                 return;
             }
-            Window?.ShowWaiting("获取目的市场订单中");
+            Window?.ShowWaiting(_page, "获取目的市场订单中");
             try
             {
                 allDestinationOrders = await GetAllDestinationOrders();
@@ -377,13 +379,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 int destinatioNoHistoryCount = -1;
                 if (scalperItems.NotNullOrEmpty())
                 {
-                    Window?.ShowWaiting("获取源市场订单历史中");
+                    Window?.ShowWaiting(_page, "获取源市场订单历史中");
                     var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
                     sourceNoHistoryCount = typeIds.Count - sourceHistory.Count;
-                    Window?.ShowWaiting("获取目的市场订单历史中");
+                    Window?.ShowWaiting(_page, "获取目的市场订单历史中");
                     var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
                     destinatioNoHistoryCount = typeIds.Count - destinationHistory.Count;
-                    Window?.ShowWaiting("匹配订单历史中");
+                    Window?.ShowWaiting(_page, "匹配订单历史中");
                     await Task.Run(() =>
                     {
                         SetHistory(scalperItems, sourceHistory, destinationHistory);
@@ -400,7 +402,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 Window?.ShowError("未获取到有效订单");
             }
-            Window?.HideWaiting();
+            Window?.HideWaiting(_page);
         }
 
         private List<Order> RemoveFilterTypes(List<Order> orders)
