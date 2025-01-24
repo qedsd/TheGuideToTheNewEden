@@ -30,6 +30,12 @@
     <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
     <x:String x:Key="Setting_Config_Check">Check</x:String>
     <x:String x:Key="Setting_About_Title">About</x:String>
+    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app. </x:String>
+    <x:String x:Key="Setting_About_P2">All free and open-source. If possible, please give the repositories a star.</x:String>
+    <x:String x:Key="Setting_About_P3">Automatic updates rely on Github and may encounter network issues that prevent access to updates or download failures. You can manually download from Github：</x:String>
+    <x:String x:Key="Setting_About_P4">If you have any questions, please contact me in-game：</x:String>
+    <x:String x:Key="Setting_About_P5">Or join a QQ group：</x:String>
+    <x:String x:Key="Setting_About_P6">Welcome to raise bugs and provide feedback.</x:String>
     <x:String x:Key="Setting_Update_Update">APP Update</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">Auto Update</x:String>
     <x:String x:Key="Setting_GameLog_EVELogsPath_Description">Just select the logs folder</x:String>

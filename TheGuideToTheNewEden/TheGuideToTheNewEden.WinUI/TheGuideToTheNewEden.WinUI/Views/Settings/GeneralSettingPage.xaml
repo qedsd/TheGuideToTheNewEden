@@ -163,30 +163,25 @@
                 <controls:ExpandableSettingControl.ExpandableContent>
                     <RichTextBlock Margin="60,10">
                         <Paragraph>
-                            <Run>几年前挖了一个大坑，填了一半就提桶跑路。近来闲着，决定在边上再挖一个坑，不大不小，埋CCP刚刚好。</Run>
-                        </Paragraph>
-                        <Paragraph />
-                        <Paragraph>
-                            <Run>用爱发电，厚颜无耻蹲有缘人施舍个小星星</Run>
+                            <Run Text="{StaticResource Setting_About_P1}"/>
+                            <Run Text="{StaticResource Setting_About_P2}"/>
                             <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
-                            <Run>。</Run>
                         </Paragraph>
                         <Paragraph />
                         <Paragraph>
-                            <Run>自动更新依赖于Github，可能出现网络问题导致无法获取更新、下载失败，可前往Github手动下载：</Run>
+                            <Run Text="{StaticResource Setting_About_P3}"/>
                             <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
                             <Run>。</Run>
                         </Paragraph>
                         <Paragraph />
                         <Paragraph>
-                            <Run>有问题可游戏内联系我：</Run>
+                            <Run Text="{StaticResource Setting_About_P4}"/>
                             <Run FontWeight="Medium">QEDSD</Run>
-                            <Run>（有生之年上线）</Run>
                             <Run>，</Run>
-                            <Run>或加QQ群：</Run>
+                            <Run Text="{StaticResource Setting_About_P5}"/>
                             <Run FontWeight="Medium">784194289</Run>
                             <Run>，</Run>
-                            <Run>欢迎提Bug提意见。</Run>
+                            <Run Text="{StaticResource Setting_About_P6}"/>
                         </Paragraph>
                     </RichTextBlock>
                 </controls:ExpandableSettingControl.ExpandableContent>

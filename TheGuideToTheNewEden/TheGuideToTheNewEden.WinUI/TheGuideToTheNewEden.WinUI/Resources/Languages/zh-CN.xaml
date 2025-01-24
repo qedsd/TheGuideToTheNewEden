@@ -30,6 +30,12 @@
     <x:String x:Key="Setting_Config_Description">App所有参数配置文件均存放于此文件夹内</x:String>
     <x:String x:Key="Setting_Config_Check">查看</x:String>
     <x:String x:Key="Setting_About_Title">关于</x:String>
+    <x:String x:Key="Setting_About_P1">一个EVE Online实用工具集合APP。</x:String>
+    <x:String x:Key="Setting_About_P2">用爱发电，厚颜无耻蹲有缘人施舍个小星星</x:String>
+    <x:String x:Key="Setting_About_P3">自动更新依赖于Github，可能出现网络问题导致无法获取更新、下载失败，可前往Github手动下载：</x:String>
+    <x:String x:Key="Setting_About_P4">有问题可游戏内联系我：</x:String>
+    <x:String x:Key="Setting_About_P5">或加QQ群：</x:String>
+    <x:String x:Key="Setting_About_P6">欢迎提Bug提意见。</x:String>
     <x:String x:Key="Setting_Update_Update">APP更新</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">自动检查更新</x:String>
     <x:String x:Key="Setting_GameLog_EVELogsPath_Description">只需选择logs文件夹</x:String>
