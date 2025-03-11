@@ -44,6 +44,12 @@
         </PivotItem>
         <PivotItem>
             <PivotItem.Header>
+                <TextBlock FontSize="14" Text="{StaticResource SettingPage_ESIScope}" />
+            </PivotItem.Header>
+            <settings:ESIScopeSettingPage />
+        </PivotItem>
+        <PivotItem>
+            <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource SettingPage_Test}" />
             </PivotItem.Header>
             <settings:TestSettingPage />

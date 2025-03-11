@@ -54,7 +54,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             "esi-markets.structure_markets.v1",
             "esi-corporations.read_structures.v1",
             "esi-characters.read_loyalty.v1",
-            "esi-characters.read_opportunities.v1",
             "esi-characters.read_chat_channels.v1",
             "esi-characters.read_medals.v1",
             "esi-characters.read_standings.v1",
