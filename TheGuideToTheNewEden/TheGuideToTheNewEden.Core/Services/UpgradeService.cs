@@ -30,15 +30,19 @@ namespace TheGuideToTheNewEden.Core.Services
                 for(int i =1; i < lines.Length; i++)
                 {
                     var arrays = lines[i].Split(',');
-                    _upgrades.Add(new Models.PlanetResources.Upgrade()
+                    int id = int.Parse(arrays[0]);
+                    if(id > 0)
                     {
-                        Id = int.Parse(arrays[0]),
-                        Power = long.Parse(arrays[2]),
-                        Workforce = long.Parse(arrays[3]),
-                        SuperionicIce = long.Parse(arrays[4]),
-                        MagmaticGas = long.Parse(arrays[5]),
-                        InvType = Services.DB.InvTypeService.QueryType(int.Parse(arrays[0]))
-                    });
+                        _upgrades.Add(new Models.PlanetResources.Upgrade()
+                        {
+                            Id = id,
+                            Power = long.Parse(arrays[2]),
+                            Workforce = long.Parse(arrays[3]),
+                            SuperionicIce = long.Parse(arrays[4]),
+                            MagmaticGas = long.Parse(arrays[5]),
+                            InvType = Services.DB.InvTypeService.QueryType(int.Parse(arrays[0]))
+                        });
+                    }
                 }
             }
             return _upgrades;

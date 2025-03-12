@@ -80,9 +80,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public static void TranInvType(InvType invType)
         {
-            var type = TranInvType(invType.TypeID);
-            invType.TypeName = type?.TypeName;
-            invType.Description = type?.Description;
+            if(invType != null)
+            {
+                var type = TranInvType(invType.TypeID);
+                invType.TypeName = type?.TypeName;
+                invType.Description = type?.Description;
+            }
         }
         #endregion
 
