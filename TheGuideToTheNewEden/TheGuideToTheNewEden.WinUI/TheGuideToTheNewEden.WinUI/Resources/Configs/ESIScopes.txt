@@ -55,4 +55,4 @@ esi-corporations.read_facilities.v1
 esi-corporations.read_medals.v1
 esi-characters.read_titles.v1
 esi-alliances.read_contacts.v1
-esi-characterstats.read.v1"
+esi-characterstats.read.v1
