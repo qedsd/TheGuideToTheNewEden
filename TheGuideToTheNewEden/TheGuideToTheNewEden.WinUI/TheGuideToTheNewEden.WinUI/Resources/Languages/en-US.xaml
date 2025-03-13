@@ -375,6 +375,7 @@
     <x:String x:Key="SettingPage_Test">Test</x:String>
     <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
     <x:String x:Key="SettingPage_KeyboardList">Hotkey Name List</x:String>
+    <x:String x:Key="SettingPage_ESIScope">ESI Scope</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">Tranquility</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">Serenity</x:String>
@@ -1112,4 +1113,7 @@
     <x:String x:Key="IdNameCategory_Faction">Faction</x:String>
     <x:String x:Key="IdNameCategory_Structure">Structure</x:String>
     <x:String x:Key="IdNameCategory_Group">Group</x:String>
+
+    <!--  ESIScopeSettingPage  -->
+    <x:String x:Key="ESIScopeSettingPage_SelectAll">Select All</x:String>
 </ResourceDictionary>

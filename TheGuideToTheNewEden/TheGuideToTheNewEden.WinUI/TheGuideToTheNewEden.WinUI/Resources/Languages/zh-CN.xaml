@@ -375,6 +375,7 @@
     <x:String x:Key="SettingPage_Test">测试</x:String>
     <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
     <x:String x:Key="SettingPage_KeyboardList">按键列表</x:String>
+    <x:String x:Key="SettingPage_ESIScope">ESI权限</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
@@ -1112,4 +1113,7 @@
     <x:String x:Key="IdNameCategory_Faction">势力</x:String>
     <x:String x:Key="IdNameCategory_Structure">建筑</x:String>
     <x:String x:Key="IdNameCategory_Group">分组</x:String>
+
+    <!--  ESIScopeSettingPage  -->
+    <x:String x:Key="ESIScopeSettingPage_SelectAll">选择所有</x:String>
 </ResourceDictionary>
