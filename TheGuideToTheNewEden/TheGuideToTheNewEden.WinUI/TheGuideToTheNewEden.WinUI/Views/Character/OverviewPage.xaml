@@ -75,17 +75,19 @@
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Orientation="Horizontal">
                         <TextBlock x:Name="TextBlock_LocationSataionName" VerticalAlignment="Center" />
-                        <TextBlock
+                        <StackPanel
+                            x:Name="LocationSystemInfoPanel"
                             Margin="8,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="(" />
-                        <TextBlock x:Name="TextBlock_LocationSystemLevel" VerticalAlignment="Center" />
-                        <Button
-                            x:Name="TextBlock_LocationSystemName"
-                            Margin="4,0,0,0"
-                            Padding="0"
-                            BorderThickness="0" />
-                        <TextBlock VerticalAlignment="Center" Text=")" />
+                            Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="(" />
+                            <TextBlock x:Name="TextBlock_LocationSystemLevel" VerticalAlignment="Center" />
+                            <Button
+                                x:Name="TextBlock_LocationSystemName"
+                                Margin="4,0,0,0"
+                                Padding="0"
+                                BorderThickness="0" />
+                            <TextBlock VerticalAlignment="Center" Text=")" />
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
                         <TextBlock x:Name="TextBlock_ShipName" VerticalAlignment="Center" />

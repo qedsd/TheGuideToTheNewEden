@@ -24,26 +24,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class CharacterPage : Page
     {
-        public CharacterPage()
+        internal CharacterViewModel VM { get; private set; }
+        internal CharacterPage(CharacterViewModel vm)
         {
+            VM = vm;
+            DataContext = VM;
             this.InitializeComponent();
             Loaded += CharacterPage_Loaded2;
-            Loaded += CharacterPage_Loaded;
         }
         private void CharacterPage_Loaded2(object sender, RoutedEventArgs e)
         {
             VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-        }
-        private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            VM.OnSelectedCharacter += VM_OnSelectedCharacter;
-            VM.Init();
-            Loaded -= CharacterPage_Loaded;
-        }
-
-        private void VM_OnSelectedCharacter()
-        {
-            ResetPage();
         }
 
         private readonly Dictionary<string, Page> _contentPages = new Dictionary<string, Page>();
@@ -121,12 +112,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
-            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+            
         }
 
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+            
         }
     }
 }

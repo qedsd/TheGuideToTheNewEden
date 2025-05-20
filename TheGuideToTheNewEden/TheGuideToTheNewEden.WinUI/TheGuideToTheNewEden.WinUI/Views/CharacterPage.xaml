@@ -11,38 +11,31 @@
     Background="Transparent"
     NavigationCacheMode="Enabled"
     mc:Ignorable="d">
-    <Page.DataContext>
-        <viewmodels:CharacterViewModel x:Name="VM" />
-    </Page.DataContext>
     <Page.Resources>
         <Style x:Key="InfoStackPanel" TargetType="StackPanel">
             <Setter Property="Margin" Value="32,4" />
             <Setter Property="Orientation" Value="Horizontal" />
         </Style>
     </Page.Resources>
-    <Grid>
-        <Grid Visibility="{x:Bind VM.ExistedCharacter, Converter={StaticResource TrueToVisibleConverter}, Mode=OneWay}">
+    <Grid Margin="12">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Grid>
+            <Grid CornerRadius="12">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid Grid.RowSpan="2" Margin="0,0,0,0">
-                    <Grid.Background>
-                        <ImageBrush
-                            ImageFailed="ImageBrush_ImageFailed"
-                            ImageSource="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
-                            Stretch="UniformToFill" />
-                    </Grid.Background>
-                    <Grid Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
-                </Grid>
-                <Grid>
+                <Grid
+                    Grid.RowSpan="2"
+                    Margin="0,0,0,0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Grid Margin="32,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid>
@@ -58,76 +51,28 @@
                             Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
                             Stretch="Fill" />
                     </Grid>
-
+                    <Grid Grid.Row="1" Margin="0,32,0,0">
+                        <TextBlock
+                            x:Name="CharacterNameTextBlock"
+                            FontSize="18"
+                            FontWeight="Bold" />
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_Birthday}" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind VM.Information.Birthday, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                     <StackPanel
                         Grid.Row="1"
                         VerticalAlignment="Bottom"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                        <Grid Margin="32,10,16,10">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="18"
-                                FontWeight="Medium"
-                                Foreground="{ThemeResource SystemAccentColor}"
-                                Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
-                            <Button
-                                Height="32"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                ToolTipService.ToolTip="{StaticResource CharacterPage_Characters}">
-                                <Button.Content>
-                                    <TextBlock
-                                        FontFamily="Segoe MDL2 Assets"
-                                        FontSize="18"
-                                        Text="&#xE136;" />
-                                </Button.Content>
-                                <Button.Flyout>
-                                    <Flyout Placement="TopEdgeAlignedLeft">
-                                        <Grid Width="200" MaxHeight="400">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <ListView
-                                                ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                                                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
-                                                Style="{StaticResource StretchListView}">
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate x:DataType="sso:AuthorizedCharacterData">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{x:Bind CharacterName}" />
-                                                            <Button
-                                                                Grid.Column="1"
-                                                                Background="Transparent"
-                                                                BorderThickness="0"
-                                                                Click="RemoveButton_Click">
-                                                                <TextBlock
-                                                                    FontFamily="Segoe MDL2 Assets"
-                                                                    Foreground="OrangeRed"
-                                                                    Text="&#xE10A;" />
-                                                            </Button>
-                                                        </Grid>
-
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-                                            <Button
-                                                Grid.Row="1"
-                                                Margin="0,10,0,0"
-                                                HorizontalAlignment="Stretch"
-                                                Command="{x:Bind VM.AddCommand}"
-                                                Content="+" />
-                                        </Grid>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                        </Grid>
                         <StackPanel Style="{StaticResource InfoStackPanel}">
                             <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_Birthday}" />
                             <TextBlock
@@ -217,7 +162,7 @@
             </Grid>
             <NavigationView
                 Grid.Column="1"
-                Margin="0,0,0,0"
+                Margin="12,0,0,0"
                 IsBackButtonVisible="Collapsed"
                 IsSettingsVisible="False"
                 PaneDisplayMode="Top"
@@ -226,6 +171,7 @@
                     <NavigationViewItem
                         x:Name="OverviewNavigationViewItem"
                         Content="{StaticResource CharacterPage_Overview}"
+                        IsSelected="True"
                         Tag="Overview" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Skill}" Tag="Skill" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Clone}" Tag="Clone" />
@@ -248,14 +194,6 @@
                 ToolTipService.ToolTip="{StaticResource General_Refresh}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
             </Button>
-        </Grid>
-        <Grid Visibility="{x:Bind VM.ExistedCharacter, Converter={StaticResource FalseToVisibleConverter}, Mode=OneWay}">
-            <AppBarButton
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Command="{x:Bind VM.AddCommand}"
-                Icon="Add"
-                Label="{StaticResource CharacterPage_Add}" />
         </Grid>
     </Grid>
 </Page>

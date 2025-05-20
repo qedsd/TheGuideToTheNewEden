@@ -19,7 +19,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
-    public sealed partial class ContractPage : Page, ICharacterPage
+    public sealed partial class ContractPage : Page, ICharacterPage, IPage
     {
         private BaseWindow _window;
         private EsiClient _esiClient;
@@ -91,7 +91,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private async void GetCharacterContractInfos(int page)
         {
             _window?.ShowWaiting();
-            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.CharacterContracts(page);
+            var resp = await _esiClient.Contracts.CharacterContracts(page);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
@@ -111,7 +111,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private async void GetCorpContractInfos(int page)
         {
             _window?.ShowWaiting();
-            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.CorporationContracts(page);
+            var resp = await _esiClient.Contracts.CorporationContracts(page);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
@@ -155,6 +155,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 return;
             }
             new Wins.ContractDetailWindow(_esiClient, DataGrid_Corp.SelectedItem as Core.Models.Contract.ContractInfo, 2).Activate();
+        }
+
+        public void Close()
+        {
+            
         }
     }
 }

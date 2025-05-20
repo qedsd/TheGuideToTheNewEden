@@ -23,7 +23,8 @@
                 x:Key="ItemContentBg"
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
-            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" IsNullOrEmptyToCollapsed="True" />
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToVisibleConverter" IsNullOrEmptyToCollapsed="False" />
             <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
             <converters:NullToBooleanConverter x:Key="NullToFalseConverter" IsInverted="True" />
             <converters:NullToBooleanConverter
