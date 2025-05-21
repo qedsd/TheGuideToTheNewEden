@@ -52,6 +52,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             (sender as FrameworkElement).DataContext = VM;
         }
+
+        private void RemoveCharacter_Click(object sender, RoutedEventArgs e)
+        {
+            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+        }
     }
     public class CharacterCardTemplateSelector : DataTemplateSelector
     {

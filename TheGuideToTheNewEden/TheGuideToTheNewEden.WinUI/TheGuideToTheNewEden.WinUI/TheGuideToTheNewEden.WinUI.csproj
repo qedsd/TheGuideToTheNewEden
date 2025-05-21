@@ -242,6 +242,7 @@
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
+    <None Remove="Controls\ProgressBar.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
     <None Remove="Controls\StructureSelectorControl.xaml" />
@@ -435,6 +436,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\JumpBridgeSetting.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ProgressBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">

@@ -113,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Services.CharacterService.Remove(character.SelectedCharacter);
             Characters.Remove(character);
             Calstatistic();
-            Window.ShowSuccess("已删除角色");
+            Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
         });
 
         public ICommand ShowCommand => new RelayCommand<CharacterViewModel>((character) =>

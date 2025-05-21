@@ -58,6 +58,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private string _skillQueueRemainTime;
         private int _skillQueueTotalCount;
         private int _skillQueueUndoneCount;
+        private ESI.NET.Models.Corporation.Corporation _corporation = null;
+        private ESI.NET.Models.Alliance.Alliance _alliance = null;
         #endregion
 
         #region 详细页属性
@@ -73,6 +75,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ESI.NET.Models.Location.Ship Ship { get => _ship; set => SetProperty(ref _ship, value); }
         public List<ESI.NET.Models.Wallet.Wallet> CorpWallets { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
         public decimal CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
+        public ESI.NET.Models.Corporation.Corporation Corporation { get => _corporation; set => SetProperty(ref _corporation, value); }
+        public ESI.NET.Models.Alliance.Alliance Alliance { get => _alliance; set => SetProperty(ref _alliance, value); }
         #endregion
 
         #region 卡片页属性
@@ -97,6 +101,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public string SkillQueueRemainRatio { get => _skillQueueRemainRatio; set => SetProperty(ref _skillQueueRemainRatio, value); }
         #endregion
 
+        #region ZKB
+        private bool _hasZKB;
+        public bool HasZKB { get => _hasZKB; set => SetProperty(ref _hasZKB, value); }
+
+        private int _itemLost;
+        public int ItemLost { get => _itemLost; set => SetProperty(ref _itemLost, value); }
+
+        private int _itemDestroyed;
+        public int ItemDestroyed { get => _itemDestroyed; set => SetProperty(ref _itemDestroyed, value); }
+
+        private long _iskLost;
+        public long ISKLost { get => _iskLost; set => SetProperty(ref _iskLost, value); }
+
+        private long _iskDestroyed;
+        public long ISKDestroyed { get => _iskDestroyed; set => SetProperty(ref _iskDestroyed, value); }
+
+        public int _soloKills;
+        public int SoloKills { get => _soloKills; set => SetProperty(ref _soloKills, value); }
+
+        private int _dangerRatio;
+        public int DangerRatio { get => _dangerRatio; set => SetProperty(ref _dangerRatio, value); }
+
+        private int gangRatio;
+        public int GangRatio { get => gangRatio; set => SetProperty(ref gangRatio, value); }
+        #endregion
+
         public EsiClient EsiClient;
         public CharacterViewModel()
         {
@@ -110,21 +140,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             EsiClient = ESIService.GetDefaultEsi();
             EsiClient.SetCharacterData(SelectedCharacter);
-            GetBaseInfoAsync(SelectedCharacter).Wait();
+            GetBaseInfoAsync().Wait();
         }
         public ICommand RefreshCommand => new RelayCommand(async() =>
         {
             Window?.ShowWaiting();
-            await GetBaseInfoAsync(SelectedCharacter);
+            await GetBaseInfoAsync();
+            await GetZKBInfoAsync();
             Window?.HideWaiting();
         });
-        private async Task GetBaseInfoAsync(AuthorizedCharacterData characterData)
+        public ICommand ZKBCommand => new RelayCommand(async () =>
         {
-            if (characterData == null)
-            {
-                return;
-            }
-            if(!characterData.IsTokenValid())
+            await KBNavigationService.Default.NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
+        });
+        private async Task GetBaseInfoAsync()
+        {
+            var characterData = SelectedCharacter;
+            if (!characterData.IsTokenValid())
             {
                 if(!await characterData.RefreshTokenAsync())
                 {
@@ -141,7 +173,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
             List<ESI.NET.Models.Skills.SkillQueueItem> skillQueueItems = null;
             ESI.NET.Models.Location.Activity onlineStatus = null;
-            var tasks = new Task[]
+
+            ESI.NET.Models.Corporation.Corporation corporation = null;
+            ESI.NET.Models.Alliance.Alliance alliance = null;
+            var tasks = new List<Task>()
             {
                 EsiClient.Character.Information(characterData.CharacterID).ContinueWith((p)=>
                 {
@@ -223,7 +258,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Core.Log.Error(p?.Result.Message);
                     }
                 }),
+                EsiClient.Corporation.Information(characterData.CorporationID).ContinueWith((p) =>
+                {
+                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        corporation = p.Result.Data;
+                    }
+                    else
+                    {
+                        Core.Log.Error(p?.Result.Message);
+                    }
+                })
             };
+            if (characterData.AllianceID > 0)
+            {
+                tasks.Add(EsiClient.Alliance.Information(characterData.AllianceID).ContinueWith((p) =>
+                {
+                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        alliance = p.Result.Data;
+                    }
+                    else
+                    {
+                        Core.Log.Error(p?.Result.Message);
+                    }
+                }));
+            }
             try
             {
                 await Task.WhenAll(tasks);
@@ -285,7 +345,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                 }
-
+                _corporation = corporation;
+                _alliance = alliance;
                 #region skill queue
                 //技能队列要么都在训练，要么都暂停，没有某些训练某些暂停的情况
                 bool running = false;
@@ -330,6 +391,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 
                 #endregion
             });
+        }
+
+        public async Task GetZKBInfoAsync()
+        {
+            try
+            {
+                var statistic = await ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterID);
+                if (statistic != null)
+                {
+                    HasZKB = true;
+                    ItemLost = statistic.ItemLost;
+                    ItemDestroyed = statistic.ItemDestroyed;
+                    ISKLost = statistic.ISKLost;
+                    ISKDestroyed = statistic.ISKDestroyed;
+                    SoloKills = statistic.SoloKills;
+                    DangerRatio = statistic.DangerRatio;
+                    GangRatio = statistic.GangRatio;
+                }
+            }
+            catch(Exception ex)
+            {
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
+            }
         }
     }
 }

@@ -840,13 +840,13 @@
     <x:String x:Key="CharacterPage_Mail">邮件</x:String>
     <x:String x:Key="CharacterPage_Contract">合同</x:String>
     <x:String x:Key="CharacterPage_Industry">工业</x:String>
-    <x:String x:Key="CharacterPage_CorpWallet">公司钱包：</x:String>
-    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包：</x:String>
-    <x:String x:Key="CharacterPage_SecurityStatus">安全等级：</x:String>
-    <x:String x:Key="CharacterPage_LP">忠诚点：</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">公司钱包</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">安全等级</x:String>
+    <x:String x:Key="CharacterPage_LP">忠诚点</x:String>
     <x:String x:Key="CharacterPage_UnallocatedSp">未使用技能点</x:String>
-    <x:String x:Key="CharacterPage_Sp">技能点：</x:String>
-    <x:String x:Key="CharacterPage_Birthday">出生：</x:String>
+    <x:String x:Key="CharacterPage_Sp">技能点</x:String>
+    <x:String x:Key="CharacterPage_Birthday">出生</x:String>
     <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
     <x:String x:Key="CharacterPage_Remove">删除角色</x:String>
     <x:String x:Key="CharacterPage_TryUpdateTokenFailed">Token已过期，尝试刷新失败</x:String>
@@ -859,6 +859,10 @@
     <x:String x:Key="CharacterPage_CharacterCount">角色数量</x:String>
     <x:String x:Key="CharacterPage_Statistic">统计</x:String>
     <x:String x:Key="CharacterPage_CharacterSum">角色总和</x:String>
+    <x:String x:Key="CharacterPage_Faction">势力</x:String>
+    <x:String x:Key="CharacterPage_LoginCount">上线次数</x:String>
+    <x:String x:Key="CharacterPage_LastLogin">最近上线</x:String>
+    <x:String x:Key="CharacterPage_Removed">已删除</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>

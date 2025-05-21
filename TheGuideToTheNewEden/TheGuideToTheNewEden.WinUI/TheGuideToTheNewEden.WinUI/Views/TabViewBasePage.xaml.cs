@@ -55,7 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void Close()
         {
-            (MainContent as IPage).Close();
+            (MainContent as IPage)?.Close();
         }
     }
 }

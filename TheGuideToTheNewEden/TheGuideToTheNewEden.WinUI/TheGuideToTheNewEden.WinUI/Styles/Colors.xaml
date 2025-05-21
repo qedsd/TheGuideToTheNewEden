@@ -1,8 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
+            <Color x:Key="DefaultGray">#59FFFFFF</Color>
             <Color x:Key="ForegroundColor">White</Color>
             <Color x:Key="ThemeMainColor">Black</Color>
+            <SolidColorBrush x:Key="DefaultGrayBrush" Color="{ThemeResource DefaultGray}" />
             <SolidColorBrush x:Key="ForegroundBrush" Color="White" />
             <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
             <SolidColorBrush x:Key="MainBackgroudBrush" Color="#202020" />
@@ -24,8 +26,10 @@
             <SolidColorBrush x:Key="ThemeBorderBrush">Gray</SolidColorBrush>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
+            <Color x:Key="DefaultGray">#30000000</Color>
             <Color x:Key="ThemeMainColor">White</Color>
             <Color x:Key="ForegroundColor">Black</Color>
+            <SolidColorBrush x:Key="DefaultGrayBrush" Color="{ThemeResource DefaultGray}" />
             <SolidColorBrush x:Key="ForegroundBrush" Color="Black" />
             <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#fdfdfe" />
             <SolidColorBrush x:Key="MainBackgroudBrush" Color="#f3f3f3" />
@@ -64,4 +68,7 @@
     <SolidColorBrush x:Key="SystemSecurityForeground02" Color="#eb4909" />
     <SolidColorBrush x:Key="SystemSecurityForeground01" Color="#c4261e" />
     <SolidColorBrush x:Key="SystemSecurityForeground00" Color="#d10202" />
+
+    <SolidColorBrush x:Key="DefaultGreen" Color="#4cd1ac" />
+    <SolidColorBrush x:Key="DefaultRed" Color="OrangeRed" />
 </ResourceDictionary>

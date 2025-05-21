@@ -33,7 +33,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             {
                 _allScopes = new List<string>();
                 var lines = System.IO.File.ReadAllLines(SourceFilePath);
-                for (int i = 1; i < lines.Length; i++)
+                for (int i = 0; i < lines.Length; i++)
                 {
                     _allScopes.Add(lines[i]);
                 }

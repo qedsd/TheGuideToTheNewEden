@@ -30,7 +30,7 @@
     <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
     <x:String x:Key="Setting_Config_Check">Check</x:String>
     <x:String x:Key="Setting_About_Title">About</x:String>
-    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app. </x:String>
+    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app.</x:String>
     <x:String x:Key="Setting_About_P2">All free and open-source. If possible, please give the repositories a star.</x:String>
     <x:String x:Key="Setting_About_P3">Automatic updates rely on Github and may encounter network issues that prevent access to updates or download failures. You can manually download from Github：</x:String>
     <x:String x:Key="Setting_About_P4">If you have any questions, please contact me in-game：</x:String>
@@ -830,7 +830,7 @@
     <x:String x:Key="EarlyWarningPage_Jumps">Jump</x:String>
 
     <!--  CharacterPage  -->
-    <x:String x:Key="CharacterPage_Add">Add</x:String>
+    <x:String x:Key="CharacterPage_Add">Add Character</x:String>
     <x:String x:Key="CharacterPage_AddSuccess">Added successfully</x:String>
     <x:String x:Key="CharacterPage_RegistyProtocol">Registration authorization service failed, please run in administrator mode</x:String>
     <x:String x:Key="CharacterPage_Overview">Overview</x:String>
@@ -840,14 +840,29 @@
     <x:String x:Key="CharacterPage_Mail">Mail</x:String>
     <x:String x:Key="CharacterPage_Contract">Contract</x:String>
     <x:String x:Key="CharacterPage_Industry">Industry</x:String>
-    <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet：</x:String>
-    <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet：</x:String>
-    <x:String x:Key="CharacterPage_SecurityStatus">Security：</x:String>
-    <x:String x:Key="CharacterPage_LP">LP：</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">Security</x:String>
+    <x:String x:Key="CharacterPage_LP">LP</x:String>
     <x:String x:Key="CharacterPage_UnallocatedSp">Unallocated Sp</x:String>
-    <x:String x:Key="CharacterPage_Sp">SP：</x:String>
-    <x:String x:Key="CharacterPage_Birthday">Birthday：</x:String>
+    <x:String x:Key="CharacterPage_Sp">SP</x:String>
+    <x:String x:Key="CharacterPage_Birthday">Birthday</x:String>
     <x:String x:Key="CharacterPage_Characters">Characters</x:String>
+    <x:String x:Key="CharacterPage_Remove">Remove Character</x:String>
+    <x:String x:Key="CharacterPage_TryUpdateTokenFailed">The token has expired and the refresh attempt fails</x:String>
+    <x:String x:Key="CharacterPage_Online">Online</x:String>
+    <x:String x:Key="CharacterPage_Offline">Offline</x:String>
+    <x:String x:Key="CharacterPage_SkillQueue">Skill Queue</x:String>
+    <x:String x:Key="CharacterPage_RemainTime">Remain Time</x:String>
+    <x:String x:Key="CharacterPage_RemainSkill">Running Skill</x:String>
+    <x:String x:Key="CharacterPage_NotRunning">Pause</x:String>
+    <x:String x:Key="CharacterPage_CharacterCount">Count Of Characters</x:String>
+    <x:String x:Key="CharacterPage_Statistic">Statistic</x:String>
+    <x:String x:Key="CharacterPage_CharacterSum">Sum Of Characters</x:String>
+    <x:String x:Key="CharacterPage_Faction">Faction</x:String>
+    <x:String x:Key="CharacterPage_LoginCount">Login Times</x:String>
+    <x:String x:Key="CharacterPage_LastLogin">Last Login</x:String>
+    <x:String x:Key="CharacterPage_Removed">Successfully Remove</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">Price difference</x:String>

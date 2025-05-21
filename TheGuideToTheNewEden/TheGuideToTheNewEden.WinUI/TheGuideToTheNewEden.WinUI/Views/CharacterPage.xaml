@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls2="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,150 +17,345 @@
             <Setter Property="Margin" Value="32,4" />
             <Setter Property="Orientation" Value="Horizontal" />
         </Style>
+        <Style x:Key="InfoCardGrid" TargetType="Grid">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="32,24" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Page.Resources>
     <Grid Margin="12">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="360" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Grid CornerRadius="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid
-                    Grid.RowSpan="2"
-                    Margin="0,0,0,0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-                <Grid Margin="32,0">
+            <ScrollView VerticalScrollBarVisibility="Hidden">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid>
-                        <controls:ImageEx
-                            Name="ImageEx_CharacterAvatar"
-                            Width="160"
-                            Height="160"
-                            Margin="0,60,0,0"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Top"
-                            CornerRadius="999"
-                            ImageExFailed="ImageEx_CharacterAvatar_ImageExFailed"
-                            Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
-                            Stretch="Fill" />
-                    </Grid>
-                    <Grid Grid.Row="1" Margin="0,32,0,0">
-                        <TextBlock
-                            x:Name="CharacterNameTextBlock"
-                            FontSize="18"
-                            FontWeight="Bold" />
-                    </Grid>
-                    <Grid Grid.Row="2" Margin="0,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_Birthday}" />
-                        <TextBlock
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind VM.Information.Birthday, Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                    </Grid>
-                    <StackPanel
-                        Grid.Row="1"
-                        VerticalAlignment="Bottom"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_Birthday}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.Information.Birthday, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_Sp}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.Skill.TotalSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="(" />
-                            <TextBlock
-                                Margin="2,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.Skill.UnallocatedSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
-                                ToolTipService.ToolTip="{StaticResource CharacterPage_UnallocatedSp}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                VerticalAlignment="Center"
-                                Text=")" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_LP}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_SecurityStatus}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.Information.SecurityStatus, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_CharacterWallet}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource InfoStackPanel}">
-                            <TextBlock VerticalAlignment="Center" Text="{StaticResource CharacterPage_CorpWallet}" />
-                            <TextBlock
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="{x:Bind VM.CorpWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <Grid Margin="32,16,16,16">
-                            <StackPanel MaxHeight="32" Orientation="Horizontal">
-                                <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.CorporationID, Converter={StaticResource CorpImgConverter}, Mode=OneWay}" />
-                                <controls:ImageEx Source="{x:Bind VM.SelectedCharacter.AllianceID, Converter={StaticResource AllianceImgConverter}, Mode=OneWay}" />
+                    <Grid Style="{StaticResource InfoCardGrid}">
+                        <Grid Margin="0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <controls:ImageEx
+                                    Name="ImageEx_CharacterAvatar"
+                                    Width="100"
+                                    Height="100"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top"
+                                    CornerRadius="999"
+                                    ImageExFailed="ImageEx_CharacterAvatar_ImageExFailed"
+                                    Source="{x:Bind VM.CharacterAvatar, Mode=OneWay}"
+                                    Stretch="Fill" />
+                            </Grid>
+                            <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                                <TextBlock
+                                    x:Name="CharacterNameTextBlock"
+                                    FontSize="18"
+                                    FontWeight="Bold"
+                                    Text="{x:Bind VM.SelectedCharacter.CharacterName}" />
                             </StackPanel>
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Orientation="Horizontal">
-                                <Button
-                                    Height="32"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Click="Button_Refresh_Click"
-                                    ToolTipService.ToolTip="{StaticResource General_Refresh}">
-                                    <Button.Content>
-                                        <TextBlock
-                                            FontFamily="Segoe MDL2 Assets"
-                                            FontSize="14"
-                                            Text="&#xE117;" />
-                                    </Button.Content>
-                                </Button>
+                            <Grid Grid.Row="2" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition Height="28" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="28" />
+                                </Grid.RowDefinitions>
+                                <!--  出生日期  -->
+                                <TextBlock Text="{StaticResource CharacterPage_Birthday}" />
+                                <TextBlock Grid.Column="2" Text="{x:Bind VM.Information.Birthday, Mode=OneWay}" />
+                                <!--  SP  -->
+                                <TextBlock Grid.Row="1" Text="{StaticResource CharacterPage_Sp}" />
+                                <StackPanel
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    Orientation="Horizontal">
+                                    <TextBlock Text="{x:Bind VM.Skill.TotalSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                                    <TextBlock Margin="4,0,0,0" Text="(" />
+                                    <TextBlock
+                                        Margin="2,0,0,0"
+                                        Text="{x:Bind VM.Skill.UnallocatedSp, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}"
+                                        ToolTipService.ToolTip="{StaticResource CharacterPage_UnallocatedSp}" />
+                                    <TextBlock Margin="2,0,0,0" Text=")" />
+                                </StackPanel>
+                                <!--  LP  -->
+                                <TextBlock Grid.Row="2" Text="{StaticResource CharacterPage_LP}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    Text="{x:Bind VM.LP, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                                <!--  Security  -->
+                                <TextBlock Grid.Row="3" Text="{StaticResource CharacterPage_SecurityStatus}" />
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="2"
+                                    Text="{x:Bind VM.Information.SecurityStatus, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}, Mode=OneWay}" />
+                                <!--  CharacterWallet  -->
+                                <TextBlock Grid.Row="4" Text="{StaticResource CharacterPage_CharacterWallet}" />
+                                <TextBlock
+                                    Grid.Row="4"
+                                    Grid.Column="2"
+                                    Text="{x:Bind VM.CharacterWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}" />
+
+                                <!--  CorpWallet  -->
+                                <Grid
+                                    Grid.Row="5"
+                                    Height="28"
+                                    Visibility="{x:Bind VM.CorpWallets, Converter={StaticResource NullToCollapsedConverter}}">
+                                    <TextBlock Text="{StaticResource CharacterPage_CorpWallet}" />
+                                </Grid>
+
+                                <Grid
+                                    Grid.Row="5"
+                                    Grid.Column="2"
+                                    Height="28"
+                                    Visibility="{x:Bind VM.CorpWallets, Converter={StaticResource NullToCollapsedConverter}}">
+                                    <TextBlock Text="{x:Bind VM.CorpWallet, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}, Mode=OneWay}" />
+                                </Grid>
+
+
+                                <TextBlock Grid.Row="6" Text="{StaticResource CharacterPage_Faction}" />
+                                <StackPanel
+                                    Grid.Row="6"
+                                    Grid.Column="2"
+                                    Orientation="Horizontal">
+                                    <TextBlock Text="{x:Bind VM.Corporation.Name}" />
+                                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind VM.Alliance, Converter={StaticResource NullToCollapsedConverter}}">
+                                        <TextBlock Text="[" />
+                                        <TextBlock Text="{x:Bind VM.Alliance.Ticker}" />
+                                        <TextBlock Text="]" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Row="1" Style="{StaticResource InfoCardGrid}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock FontWeight="Thin" Text="{StaticResource CharacterPage_SkillQueue}" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock Margin="4,0,0,0" Text="{x:Bind VM.SkillQueueRemainRatio}" />
+                                <TextBlock FontSize="12" Text="%" />
                             </StackPanel>
                         </Grid>
-                    </StackPanel>
+                        <controls2:ProgressBar
+                            Grid.Row="1"
+                            Margin="0,8,0,0"
+                            BarHeight="2"
+                            Minimum="0"
+                            ValueColor="{ThemeResource DefaultGreen}"
+                            Value="{x:Bind VM.SkillQueueRemainRatio}" />
+                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" ToolTipService.ToolTip="{StaticResource CharacterPage_RemainTime}">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Text="&#xE2AD;" />
+                                <TextBlock Margin="6,0,0,0" Text="{x:Bind VM.SkillQueueRemainTime}" />
+                                <TextBlock
+                                    Margin="6,0,0,0"
+                                    Foreground="OrangeRed"
+                                    Text="{StaticResource CharacterPage_NotRunning}"
+                                    Visibility="{x:Bind VM.SkillQueueRunning, Converter={StaticResource FalseToVisibleConverter}}" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="1"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                ToolTipService.ToolTip="{StaticResource CharacterPage_RemainSkill}">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="12"
+                                    Text="&#xF003;" />
+                                <TextBlock
+                                    Margin="6,0,0,0"
+                                    FontSize="12"
+                                    Text="{x:Bind VM.SkillQueueUndoneCount}" />
+                                <TextBlock FontSize="12" Text="/" />
+                                <TextBlock FontSize="12" Text="{x:Bind VM.SkillQueueTotalCount}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                    <Grid
+                        Grid.Row="2"
+                        Style="{StaticResource InfoCardGrid}"
+                        Visibility="{x:Bind VM.HasZKB, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="28" />
+                                <RowDefinition Height="42" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock FontWeight="Thin" Text="{StaticResource EntityStatistPage_DangerRatio}" />
+                            <controls2:ProgressBar
+                                Grid.Column="1"
+                                Margin="12,0,8,0"
+                                BarHeight="2"
+                                BgColor="{ThemeResource DefaultGreen}"
+                                Maximum="100"
+                                Minimum="0"
+                                ValueColor="{ThemeResource DefaultRed}"
+                                Value="{x:Bind VM.DangerRatio, Mode=OneWay}" />
+                            <TextBlock Grid.Column="2" Text="{x:Bind VM.DangerRatio, Mode=OneWay}" />
+                            <TextBlock Grid.Column="3" Text="%" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                FontWeight="Thin"
+                                Text="{StaticResource EntityStatistPage_GangRatio}" />
+                            <controls2:ProgressBar
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="12,0,8,0"
+                                BarHeight="2"
+                                BgColor="{ThemeResource DefaultGreen}"
+                                Maximum="100"
+                                Minimum="0"
+                                ValueColor="{ThemeResource DefaultRed}"
+                                Value="{x:Bind VM.GangRatio, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Text="{x:Bind VM.GangRatio, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Text="%" />
+                        </Grid>
+                        <Grid Grid.Row="1" Margin="-16,16,-16,0">
+                            <Grid.Resources>
+                                <Style x:Key="ItemNameTextBlock" TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="12" />
+                                    <Setter Property="FontWeight" Value="Thin" />
+                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                </Style>
+                                <Style x:Key="ItemValueTextBlock" TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="18" />
+                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource ItemNameTextBlock}" Text="{StaticResource StatistMonthPage_ItemDestroyed}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Style="{StaticResource ItemNameTextBlock}"
+                                Text="{StaticResource StatistMonthPage_IskDestroyed}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Style="{StaticResource ItemNameTextBlock}"
+                                Text="{StaticResource StatistMonthPage_ItemLost}" />
+                            <TextBlock
+                                Grid.Column="3"
+                                Style="{StaticResource ItemNameTextBlock}"
+                                Text="{StaticResource StatistMonthPage_IskLost}" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Foreground="{ThemeResource DefaultGreen}"
+                                Style="{StaticResource ItemValueTextBlock}"
+                                Text="{x:Bind VM.ItemDestroyed, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Foreground="{ThemeResource DefaultGreen}"
+                                Style="{StaticResource ItemValueTextBlock}"
+                                Text="{x:Bind VM.ISKDestroyed, Mode=OneWay, Converter={StaticResource ISKNormalizeConverter}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Foreground="{ThemeResource DefaultRed}"
+                                Style="{StaticResource ItemValueTextBlock}"
+                                Text="{x:Bind VM.ItemLost, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Foreground="{ThemeResource DefaultRed}"
+                                Style="{StaticResource ItemValueTextBlock}"
+                                Text="{x:Bind VM.ISKLost, Mode=OneWay, Converter={StaticResource ISKNormalizeConverter}}" />
+                        </Grid>
+                        <Button
+                            Grid.Row="2"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind VM.ZKBCommand}"
+                            Content="ZKB" />
+                    </Grid>
+                    <Button
+                        Height="32"
+                        Margin="0,8,8,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="Button_Refresh_Click"
+                        ToolTipService.ToolTip="{StaticResource General_Refresh}">
+                        <Button.Content>
+                            <TextBlock
+                                FontFamily="Segoe UI Symbol"
+                                FontSize="12"
+                                Text="&#xE117;" />
+                        </Button.Content>
+                    </Button>
                 </Grid>
-            </Grid>
+            </ScrollView>
+
             <NavigationView
                 Grid.Column="1"
                 Margin="12,0,0,0"
@@ -192,7 +388,10 @@
                 BorderThickness="0"
                 Click="RefreshPageButton_Click"
                 ToolTipService.ToolTip="{StaticResource General_Refresh}">
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
+                <TextBlock
+                    FontFamily="Segoe UI Symbol"
+                    FontSize="12"
+                    Text="&#xE117;" />
             </Button>
         </Grid>
     </Grid>

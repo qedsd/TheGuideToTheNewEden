@@ -80,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 EntityStatistPage page = new EntityStatistPage(statistic,this);
                 _window.DispatcherQueue.TryEnqueue(() =>
                 {
-                    _addTabAction(header, page);
+                    _addTabAction($"ZKB - {header}", page);
                 });
             }
         }

@@ -32,8 +32,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             this.InitializeComponent();
             Loaded += OverviewPage_Loaded;
-            TextBlock_lastLoginText.Text = "最近上线：";
-            TextBlock_LoginCountText.Text = "上线次数：";
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -202,6 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
+                        TextBlock_LocationSataionName.Text = location.StructureId.ToString();
                         Log.Error(structureRsp?.Message);
                     }
                 }
