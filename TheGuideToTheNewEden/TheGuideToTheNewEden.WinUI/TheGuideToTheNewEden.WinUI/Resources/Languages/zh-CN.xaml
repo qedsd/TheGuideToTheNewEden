@@ -73,6 +73,7 @@
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
     <x:String x:Key="General_OpenFile">打开文件</x:String>
+    <x:String x:Key="General_OpenFolder">打开文件夹</x:String>
     <x:String x:Key="General_Clear">清除</x:String>
     <x:String x:Key="General_No">否</x:String>
     <x:String x:Key="General_Yes">是</x:String>

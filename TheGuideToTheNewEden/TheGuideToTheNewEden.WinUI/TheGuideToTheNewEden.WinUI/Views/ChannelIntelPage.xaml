@@ -100,7 +100,8 @@
                             <Grid Margin="0,4">
                                 <Grid.ContextFlyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="{StaticResource General_OpenFile}" />
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFile_Click" Text="{StaticResource General_OpenFile}" />
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFoder_Click" Text="{StaticResource General_OpenFolder}" />
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
                                 <Grid.ColumnDefinitions>

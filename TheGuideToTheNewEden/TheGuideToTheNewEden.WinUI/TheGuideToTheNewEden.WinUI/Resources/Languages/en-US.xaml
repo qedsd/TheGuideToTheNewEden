@@ -73,6 +73,7 @@
     <x:String x:Key="General_Cancel">Cancel</x:String>
     <x:String x:Key="General_TryNotAdmin">Please try running the software without using administrator mode</x:String>
     <x:String x:Key="General_OpenFile">Open File</x:String>
+    <x:String x:Key="General_OpenFolder">Open Folder</x:String>
     <x:String x:Key="General_Clear">Clear"</x:String>
     <x:String x:Key="General_No">No</x:String>
     <x:String x:Key="General_Yes">Yes</x:String>

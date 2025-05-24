@@ -284,15 +284,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
-        {
-            var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
-            if (info != null)
-            {
-                System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
-            }
-        }
-
         private async void Button_PickSoundFile_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -324,6 +315,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void MenuFlyoutItem_ClearNews_Click(object sender, RoutedEventArgs e)
         {
             ChatContents.Blocks.Clear();
+        }
+
+        private void MenuFlyoutItem_OpenFoder_Click(object sender, RoutedEventArgs e)
+        {
+
+            var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{info.FilePath}\"");
+            }
+        }
+
+        private void MenuFlyoutItem_OpenFile_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as Models.ChatChanelInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
+            }
         }
     }
 }
