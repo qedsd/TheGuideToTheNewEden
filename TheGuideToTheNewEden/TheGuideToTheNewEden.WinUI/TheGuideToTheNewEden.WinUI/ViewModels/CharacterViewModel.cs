@@ -324,23 +324,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     var offLineDuration = DateTime.UtcNow - _onlineStatus.LastLogout;
                     if (offLineDuration.TotalDays > 365)
                     {
-                        _offLineTime = $"{offLineDuration.TotalDays / 365:N0}y{offLineDuration.TotalDays % 365 / 30 :N1}mo";
+                        _offLineTime = $"{offLineDuration.TotalDays / 365:N0}y {offLineDuration.TotalDays % 365 / 30 :N1}mo";
                     }
                     else
                     {
                         if(offLineDuration.TotalDays > 30)
                         {
-                            _offLineTime = $"{offLineDuration.TotalDays / 30:N0}mo{offLineDuration.TotalDays % 30:N1}d";
+                            _offLineTime = $"{offLineDuration.TotalDays / 30:N0}mo {offLineDuration.TotalDays % 30:N1}d";
                         }
                         else
                         {
                             if(offLineDuration.TotalDays > 1)
                             {
-                                _offLineTime = $"{offLineDuration.Days}d{offLineDuration.Hours + offLineDuration.Minutes / 60.0 :N1}h";
+                                _offLineTime = $"{offLineDuration.Days}d {offLineDuration.Hours + offLineDuration.Minutes / 60.0 :N1}h";
                             }
                             else
                             {
-                                _offLineTime = $"{offLineDuration.Hours}h{offLineDuration.Minutes:N0}min";
+                                _offLineTime = $"{offLineDuration.Hours}h {offLineDuration.Minutes:N0}min";
                             }
                         }
                     }
