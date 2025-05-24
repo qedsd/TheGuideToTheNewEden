@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Enums;
 
 namespace TheGuideToTheNewEden.Core.Models
@@ -29,5 +30,14 @@ namespace TheGuideToTheNewEden.Core.Models
         public Map.IntelSolarSystemMap IntelMap { get; set; }
 
         public int Jumps { get; set; }
+
+        public List<IntelShipContent> IntelShips { get; set; }
+    }
+
+    public class IntelShipContent
+    {
+        public InvTypeBase Ship { get; set; }
+        public int StartIndex { get; set; }
+        public int Length { get; set; }
     }
 }

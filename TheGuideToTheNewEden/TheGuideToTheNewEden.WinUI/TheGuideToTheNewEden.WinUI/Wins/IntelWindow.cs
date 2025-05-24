@@ -170,8 +170,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public void Intel(EarlyWarningContent content)
         {
             _intelPage.Intel(content);
-            string intelInfo = $"{content.SolarSystemName}({content.Jumps} {Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}):{content.Content}";
-            _intelBasePage.SetIntelInfo(intelInfo);
+            string intelInfo = $"{content.SolarSystemName}({content.Jumps} {Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}):";
+            _intelBasePage.SetIntelInfo(intelInfo, content.Content, content.IntelShips);
             if (_allSolarSystem.Contains(content.SolarSystemId))
             {
                 if(content.IntelType == Core.Enums.IntelChatType.Intel)

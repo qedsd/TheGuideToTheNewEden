@@ -25,6 +25,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
     public sealed partial class ChannelIntelPage : Page,IPage
     {
         private static int _runningPageCount = 0;
+        private SolidColorBrush _warningBrush = new SolidColorBrush(Colors.OrangeRed);
+        private SolidColorBrush _clearBrush = new SolidColorBrush(Colors.SeaGreen);
         public ChannelIntelPage()
         {
             _runningPageCount++;
@@ -40,6 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             VM.ZKBIntelContents.CollectionChanged += ZKBIntelContents_CollectionChanged;
             ChatContentsScroll.LayoutUpdated += ChatContentsScroll_LayoutUpdated;
             VM.PropertyChanged += ChannelIntelPage_PropertyChanged;
+            Core.Services.DB.ShipNameCacheService.Current.Init();
         }
 
         private void ZKBIntelContents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -72,15 +75,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         FontWeight = FontWeights.Medium,
                         Text = " ZKB > "
                     };
-                    Run contentRun = new Run()
-                    {
-                        FontWeight = FontWeights.Normal,
-                        Text = chatContent.Content
-                    };
-                    contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed);
                     paragraph.Inlines.Add(timeRun);
                     paragraph.Inlines.Add(nameRun);
-                    paragraph.Inlines.Add(contentRun);
+                    paragraph.Inlines.Add(new Run()
+                    {
+                        FontWeight = FontWeights.Normal,
+                        Text = chatContent.Content,
+                        Foreground = _warningBrush
+                    });
                     if (ChatContentsScroll.VerticalOffset == ChatContentsScroll.ScrollableHeight)
                     {
                         isAdded = true;
@@ -143,20 +145,83 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         FontWeight = FontWeights.Medium,
                         Text = $" {chatContent.SpeakerName} > "
                     };
-                    Run contentRun = new Run()
-                    {
-                        FontWeight = FontWeights.Normal,
-                        Text = chatContent.Content
-                    };
-                    switch (chatContent.IntelType)
-                    {
-                        case Core.Enums.IntelChatType.Intel: contentRun.Foreground = new SolidColorBrush(Colors.OrangeRed); break;
-                        case Core.Enums.IntelChatType.Clear: contentRun.Foreground = new SolidColorBrush(Colors.SeaGreen); break;
-                    }
                     paragraph.Inlines.Add(listener);
                     paragraph.Inlines.Add(timeRun);
                     paragraph.Inlines.Add(nameRun);
-                    paragraph.Inlines.Add(contentRun);
+
+                    switch (chatContent.IntelType)
+                    {
+                        case Core.Enums.IntelChatType.Intel:
+                            {
+                                if (chatContent.IntelShips.NotNullOrEmpty())
+                                {
+                                    List<Run> contentRuns = new List<Run>();
+                                    int startIndex = 0;
+                                    int normalContentRunLength = 0;
+                                    foreach (var ship in chatContent.IntelShips)
+                                    {
+                                        normalContentRunLength = ship.StartIndex - startIndex;
+                                        if (normalContentRunLength > 0)
+                                        {
+                                            contentRuns.Add(new Run()
+                                            {
+                                                FontWeight = FontWeights.Normal,
+                                                Text = chatContent.Content.Substring(startIndex, normalContentRunLength),
+                                                Foreground = _warningBrush
+                                            });
+                                        }
+                                        contentRuns.Add(new Run()
+                                        {
+                                            FontWeight = FontWeights.Black,
+                                            Text = chatContent.Content.Substring(ship.StartIndex, ship.Length),
+                                            Foreground = _warningBrush
+                                        });
+                                        startIndex = ship.StartIndex + ship.Length;
+                                    }
+                                    if(startIndex < chatContent.Content.Length)
+                                    {
+                                        contentRuns.Add(new Run()
+                                        {
+                                            FontWeight = FontWeights.Normal,
+                                            Text = chatContent.Content.Substring(startIndex),
+                                            Foreground = _warningBrush
+                                        });
+                                    }
+                                    foreach (var r in contentRuns)
+                                    {
+                                        paragraph.Inlines.Add(r);
+                                    }
+                                }
+                                else
+                                {
+                                    paragraph.Inlines.Add(new Run()
+                                    {
+                                        FontWeight = FontWeights.Normal,
+                                        Text = chatContent.Content,
+                                        Foreground = _warningBrush
+                                    });
+                                }
+                            }
+                            ; break;
+                        case Core.Enums.IntelChatType.Clear:
+                            {
+                                paragraph.Inlines.Add(new Run()
+                                {
+                                    FontWeight = FontWeights.Normal,
+                                    Text = chatContent.Content,
+                                    Foreground = _clearBrush
+                                });
+                            }
+                            ; break;
+                        default:
+                            {
+                                paragraph.Inlines.Add(new Run()
+                                {
+                                    FontWeight = FontWeights.Normal,
+                                    Text = chatContent.Content,
+                                });
+                            }break;
+                    }
                     if (ChatContentsScroll.VerticalOffset == ChatContentsScroll.ScrollableHeight)
                     {
                         isAdded = true;
@@ -252,6 +317,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 Core.Services.DB.MapSolarSystemNameService.ClearCache();
                 Services.WarningService.Current.Dispose();
+                Core.Services.DB.ShipNameCacheService.Current.Dispose();
             }
         }
 
