@@ -864,6 +864,10 @@
     <x:String x:Key="CharacterPage_LoginCount">Login Times</x:String>
     <x:String x:Key="CharacterPage_LastLogin">Last Login</x:String>
     <x:String x:Key="CharacterPage_Removed">Successfully Remove</x:String>
+    <x:String x:Key="CharacterPage_Skill_Running">Running</x:String>
+    <x:String x:Key="CharacterPage_Skill_Waiting">Waiting</x:String>
+    <x:String x:Key="CharacterPage_Skill_Finished">Finished</x:String>
+    <x:String x:Key="CharacterPage_Skill_Pause">Pause</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">Price difference</x:String>

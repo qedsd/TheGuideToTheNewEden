@@ -83,6 +83,7 @@
     <x:String x:Key="General_Save">保存</x:String>
     <x:String x:Key="General_SaveSuccess">保存成功</x:String>
     <x:String x:Key="General_Setting">设置</x:String>
+    <x:String x:Key="General_LocalTime">本地时间</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -864,6 +865,10 @@
     <x:String x:Key="CharacterPage_LoginCount">上线次数</x:String>
     <x:String x:Key="CharacterPage_LastLogin">最近上线</x:String>
     <x:String x:Key="CharacterPage_Removed">已删除</x:String>
+    <x:String x:Key="CharacterPage_Skill_Running">进行中</x:String>
+    <x:String x:Key="CharacterPage_Skill_Waiting">等待中</x:String>
+    <x:String x:Key="CharacterPage_Skill_Finished">已完成</x:String>
+    <x:String x:Key="CharacterPage_Skill_Pause">已暂停</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>

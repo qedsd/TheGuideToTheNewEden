@@ -130,6 +130,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{StaticResource CharacterPage_LastLogin}" />
                     <TextBlock
+                        ToolTipService.ToolTip=""
                         x:Name="TextBlock_lastLogin"
                         Grid.Column="1"
                         Margin="16,0,0,0" />
@@ -160,29 +161,33 @@
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Grid ToolTipService.ToolTip="{x:Bind Status}">
+                            <Grid>
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="14"
                                     Foreground="MediumSeaGreen"
                                     Glyph="&#xE001;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Finished}"
                                     Visibility="{x:Bind IsFinished, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="14"
                                     Foreground="MediumSeaGreen"
                                     Glyph="&#xE1F5;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Running}"
                                     Visibility="{x:Bind IsRunning, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="14"
                                     Glyph="&#xE07F;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Waiting}"
                                     Visibility="{x:Bind IsWaiting, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
                                     FontSize="14"
                                     Foreground="OrangeRed"
                                     Glyph="&#xE004;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Pause}"
                                     Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
                             </Grid>
                             <Grid Grid.Column="1">
@@ -194,18 +199,18 @@
                                     <TextBlock Text="{x:Bind SkillName}" />
                                     <TextBlock Margin="4,0,0,0" Text="{x:Bind FinishedLevel}" />
                                 </StackPanel>
-                                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind Status}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
-                                    <TextBlock Width="120" Text="{x:Bind RemainTime}" />
-                                    <StackPanel
-                                        Margin="16,0,0,0"
-                                        Orientation="Horizontal"
-                                        Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
-                                        <TextBlock Width="120" Text="{x:Bind StartDateTime.ToString()}" />
+                                <Grid Grid.Row="1">
+                                    <TextBlock Text="{StaticResource CharacterPage_Skill_Pause}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
+                                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
+                                        <TextBlock
+                                            Width="120"
+                                            Margin="0,0,16,0"
+                                            Text="{x:Bind RemainTime}" />
+                                        <TextBlock Text="{x:Bind StartDateTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:yyyy.MM.dd HH:mm}}" ToolTipService.ToolTip="{x:Bind StartDateTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                         <TextBlock Margin="8,0" Text="-" />
-                                        <TextBlock Width="120" Text="{x:Bind FinishDateTime.ToString()}" />
+                                        <TextBlock Text="{x:Bind FinishDateTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:yyyy.MM.dd HH:mm}}" ToolTipService.ToolTip="{x:Bind FinishDateTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </DataTemplate>

@@ -85,7 +85,10 @@
                                 </Grid.RowDefinitions>
                                 <!--  出生日期  -->
                                 <TextBlock Text="{StaticResource CharacterPage_Birthday}" />
-                                <TextBlock Grid.Column="2" Text="{x:Bind VM.Information.Birthday, Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Text="{x:Bind VM.Information.Birthday, Mode=OneWay,Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:yyyy.MM.dd HH:mm}}"
+                                    ToolTipService.ToolTip="{x:Bind VM.Information.Birthday, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                 <!--  SP  -->
                                 <TextBlock Grid.Row="1" Text="{StaticResource CharacterPage_Sp}" />
                                 <StackPanel

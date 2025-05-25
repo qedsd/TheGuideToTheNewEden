@@ -21,6 +21,8 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core;
 using ESI.NET.Models.Skills;
 using System.Text.RegularExpressions;
+using TheGuideToTheNewEden.WinUI.Converters;
+using static Vanara.PInvoke.ComCtl32;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -220,7 +222,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 Grid_Online.Visibility = onlineStatus.Online ? Visibility.Visible: Visibility.Collapsed;
                 Grid_Outline.Visibility = onlineStatus.Online ? Visibility.Collapsed : Visibility.Visible;
-                TextBlock_lastLogin.Text = onlineStatus.LastLogin.ToString("g");
+                TextBlock_lastLogin.Text = $"{onlineStatus.LastLogin.Year}.{onlineStatus.LastLogin.Month}.{onlineStatus.LastLogin.Day} {onlineStatus.LastLogin.Hour}:{onlineStatus.LastLogin.Minute}";
+                ToolTip toolTip = new ToolTip();
+                toolTip.Content = UTCToLocalTimeConverter.Convert(onlineStatus.LastLogin);
+                ToolTipService.SetToolTip(TextBlock_lastLogin, toolTip);
                 TextBlock_LoginCount.Text = onlineStatus.Logins.ToString();
             }
 

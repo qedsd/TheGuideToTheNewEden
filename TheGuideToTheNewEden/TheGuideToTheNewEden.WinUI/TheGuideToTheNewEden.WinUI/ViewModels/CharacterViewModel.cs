@@ -379,7 +379,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if (running && lastFinishDateTime > DateTime.MinValue)
                 {
                     var remainTime = lastFinishDateTime - DateTime.Now;
-                    _skillQueueRemainTime = $"{remainTime.Days}d{remainTime.Hours}h{remainTime.Minutes}min";
+                    _skillQueueRemainTime = $"{remainTime.Days}d {remainTime.Hours}h {remainTime.Minutes}min";
                     if (firstStartDateTime < DateTime.MaxValue)
                     {
                         var totalTime = lastFinishDateTime - firstStartDateTime;
