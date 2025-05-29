@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.ChannelMarketPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels" xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls" xmlns:channelintel="using:TheGuideToTheNewEden.Core.Models.ChannelIntel" xmlns:models="using:TheGuideToTheNewEden.WinUI.Models"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:ChannelMarketViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid x:Name="ContentGrid" Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <controls1:CardControl>
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Characters}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView
+                x:Name="ProcessList"
+                Background="Transparent"
+                CanDragItems="True"
+                CanReorderItems="True"
+                ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
+                Style="{StaticResource StretchListView}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="channelintel:ChannelIntelListener">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind Name}" />
+                                </Grid>
+                                <Rectangle
+                                Grid.Column="1"
+                                Width="10"
+                                Height="10"
+                                Margin="4,0,0,0"
+                                Fill="{ThemeResource SystemAccentColor}"
+                                RadiusX="10"
+                                RadiusY="10"
+                                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_Running}"
+                                Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                    Margin="0,0,16,0"
+                    Command="{x:Bind VM.StartAllCommand}"
+                    Icon="Play"
+                    Label="{StaticResource General_StartAll}" />
+                    <AppBarButton
+                    Command="{x:Bind VM.StopAllCommand}"
+                    Foreground="OrangeRed"
+                    Icon="Stop"
+                    Label="{StaticResource General_StopAll}"
+                    Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                    Margin="16,0,0,0"
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.RefreshCharactersCommand}"
+                    Icon="Refresh"
+                    Label="{StaticResource ChannelIntelPage_RefreshChannels}" />
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+        Grid.Column="1"
+        Width="300"
+        Margin="8,0,4,0"
+        Visibility="{x:Bind VM.ChannelMarket, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Channels}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChatChanelInfo">
+                            <Grid Margin="0,4">
+                                <Grid.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFile_Click" Text="{StaticResource General_OpenFile}" />
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFoder_Click" Text="{StaticResource General_OpenFolder}" />
+                                    </MenuFlyout>
+                                </Grid.ContextFlyout>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox VerticalAlignment="Center" IsChecked="{x:Bind IsChecked, Mode=TwoWay}" />
+                                <Grid Grid.Column="1" HorizontalAlignment="Left">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{x:Bind ChannelName}" ToolTipService.ToolTip="{StaticResource ChannelIntelPage_ChannelName}" />
+                                    <TextBlock
+                                    Grid.Row="1"
+                                    Text="{x:Bind SessionStarted}"
+                                    ToolTipService.ToolTip="{StaticResource ChannelIntelPage_LastUpdateTime}" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.RefreshChannelsCommand}"
+                    Icon="Refresh"
+                    IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                    Label="{StaticResource ChannelIntelPage_RefreshChannels}" />
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+        Grid.Column="2"
+        Margin="2,0,4,0"
+        Padding="4,4"
+        Visibility="{x:Bind VM.ChannelMarket, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls1:CardControl.Header>
+                <Grid>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelIntelPage_Setting}" />
+                    <Button
+                    Width="48"
+                    Height="32"
+                    HorizontalAlignment="Right"
+                    Command="{x:Bind VM.ApplySettingToAllCommand}"
+                    Style="{StaticResource TransparentButton}"
+                    ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}">
+                        <Button.Content>
+                            <TextBlock
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="18"
+                            Text="&#xE81E;" />
+                        </Button.Content>
+                    </Button>
+                </Grid>
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ScrollViewer>
+                    <Grid>
+                        <StackPanel x:Name="SettingArea">
+                            
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.RestorePosCommand}"
+                    Icon="Refresh"
+                    Label="{StaticResource ChannelIntelPage_RestorePos}"
+                    ToolTipService.ToolTip="{StaticResource ChannelIntelPage_RestorePos_Tip}"
+                    Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StartCommand}"
+                    Icon="Play"
+                    Label="{StaticResource ChannelIntelPage_Start}"
+                    Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                    <AppBarButton
+                    Margin="16,0"
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind VM.StopCommand}"
+                    Foreground="OrangeRed"
+                    Icon="Stop"
+                    Label="{StaticResource ChannelIntelPage_Stop}"
+                    Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+        Grid.Column="3"
+        Margin="4,0"
+        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource ChannelIntelPage_Contents}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ScrollViewer x:Name="ChatContentsScroll">
+                    <RichTextBlock
+                    x:Name="ChatContents"
+                    Margin="4,0"
+                    IsRightTapEnabled="True">
+                        <RichTextBlock.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                            </MenuFlyout>
+                        </RichTextBlock.ContextFlyout>
+                    </RichTextBlock>
+                </ScrollViewer>
+            </controls1:CardControl.Content>
+        </controls1:CardControl>
+    </Grid>
+</Page>

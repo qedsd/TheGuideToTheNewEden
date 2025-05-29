@@ -83,6 +83,8 @@
     <x:String x:Key="General_Save">Save</x:String>
     <x:String x:Key="General_SaveSuccess">Successfully saved</x:String>
     <x:String x:Key="General_Setting">Setting</x:String>
+    <x:String x:Key="General_LocalTime">Local Time</x:String>
+    <x:String x:Key="General_Detail">Detail</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -128,6 +130,8 @@
     <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
     <x:String x:Key="ShellPage_ChannelScan">Channel Character Statistics</x:String>
     <x:String x:Key="ShellPage_ChannelScan_Desc">View character faction, zkb...</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket">Channel Market</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket_Desc">Listen to the channel log, and pop-up a window to displays the price information of the items</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
@@ -249,6 +253,7 @@
     <x:String x:Key="MarketPage_CancelStar">Remove From Collection</x:String>
     <x:String x:Key="MarketPage_SelecteMarket">Selecte Market</x:String>
     <x:String x:Key="MarketPage_Mean">Mean</x:String>
+    <x:String x:Key="MarketPage_Top">Top</x:String>
     <x:String x:Key="MarketPage_Amount">Amount</x:String>
     <x:String x:Key="MarketPage_Sell">Sell</x:String>
     <x:String x:Key="MarketPage_Buy">Buy</x:String>
@@ -1136,4 +1141,17 @@
 
     <!--  ESIScopeSettingPage  -->
     <x:String x:Key="ESIScopeSettingPage_SelectAll">Select All</x:String>
+
+    <!--  ChannelMarket  -->
+    <x:String x:Key="ChannelMarket_Items">Items</x:String>
+    <x:String x:Key="ChannelMarket_NoChannel">No Channel</x:String>
+    <x:String x:Key="ChannelMarket_Started">Started</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll">Synchronize setting to all</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Succes">Synchronization completed</x:String>
+    <x:String x:Key="ChannelMarket_Last7Days">The past 7 days</x:String>
+    <x:String x:Key="ChannelMarket_Volume">Volume</x:String>
+    <x:String x:Key="ChannelMarket_Highest">Highest</x:String>
+    <x:String x:Key="ChannelMarket_Average">Average</x:String>
+    <x:String x:Key="ChannelMarket_Lowest">Lowest</x:String>
 </ResourceDictionary>

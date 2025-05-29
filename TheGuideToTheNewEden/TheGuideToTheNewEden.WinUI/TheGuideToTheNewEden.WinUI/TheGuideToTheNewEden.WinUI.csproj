@@ -264,6 +264,8 @@
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
     <None Remove="Views\ChannelIntelPage.xaml" />
+    <None Remove="Views\ChannelMarketPage.xaml" />
+    <None Remove="Views\ChannelMarketWinPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\ChannelScanPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
@@ -319,6 +321,7 @@
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
+    <None Remove="Wins\ChannelMarketWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_128.ico">
@@ -576,6 +579,15 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Wins\ChannelMarketWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelMarketPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelMarketWinPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\ESIScopeSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

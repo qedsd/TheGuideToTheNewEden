@@ -87,6 +87,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 invType.Description = type?.Description;
             }
         }
+        public static InvTypeBase QueryInvType(string name)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().First(p => name == p.TypeName);
+        }
         #endregion
 
         #region group

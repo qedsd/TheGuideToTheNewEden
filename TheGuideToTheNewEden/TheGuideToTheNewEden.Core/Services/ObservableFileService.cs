@@ -80,7 +80,7 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static void Remove(IObservableFile item)
         {
-            if(ItemsDic.Remove(item.FilePath))
+            if(item != null && ItemsDic.Remove(item.FilePath))
             {
                 string folder = Path.GetDirectoryName(item.FilePath);
                 if (FileWatcherDic.TryGetValue(folder, out var watcher))

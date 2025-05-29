@@ -176,5 +176,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return searchInvTypes;
         }
+
+        public static InvTypeBase QueryInvType(string name)
+        {
+            var target = DBService.MainDb.Queryable<InvType>().First(p => name == p.TypeName);
+            if(target == null)
+            {
+                return LocalDbService.QueryInvType(name);
+            }
+            else
+            {
+                return target;
+            }
+        }
     }
 }

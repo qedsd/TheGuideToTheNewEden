@@ -48,8 +48,12 @@
                 x:Name="AppTitleContentArea"
                 Grid.Column="1"
                 Orientation="Horizontal">
-                <Button BorderBrush="Transparent" Background="Transparent" Padding="4" Margin="-6 0 0 0"
-                        Click="Button_Top_Click">
+                <Button
+                    Margin="-6,0,0,0"
+                    Padding="4"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Click="Button_Top_Click">
                     <Grid
                         Height="16"
                         VerticalAlignment="Center"
