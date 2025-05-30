@@ -89,7 +89,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public static InvTypeBase QueryInvType(string name)
         {
-            return DBService.LocalDb.Queryable<InvTypeBase>().First(p => name == p.TypeName);
+            return DBService.LocalDb.Queryable<InvTypeBase>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
         }
         #endregion
 

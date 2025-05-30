@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -21,12 +22,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        private Wins.ChannelMarketWindow1 _window;
+        private Wins.ChannelMarketWindow _window;
         private int _count;
 
         public void Start()
         {
             _count++;
+            _window ??= new Wins.ChannelMarketWindow();
         }
         public void Stop()
         {
@@ -41,9 +43,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if (items == null || !items.Any())
                 return;
-            _window ??= new Wins.ChannelMarketWindow1();
-            _window.Activate();
-            _window.UpdateContent(items, regionID);
+            _window.DispatcherQueue.TryEnqueue(() =>
+            {
+                _window.Activate();
+                _window.SetForegroundWindow();
+                _window.UpdateContent(items, regionID);
+            });
         }
 
         public void RestorePos()
@@ -56,7 +61,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void Test()
         {
-            _window ??= new Wins.ChannelMarketWindow1();
+            _window ??= new Wins.ChannelMarketWindow();
             _window.Activate();
             List<MarketChatContent> contents = new List<MarketChatContent>()
             {

@@ -1154,4 +1154,13 @@
     <x:String x:Key="ChannelMarket_Highest">Highest</x:String>
     <x:String x:Key="ChannelMarket_Average">Average</x:String>
     <x:String x:Key="ChannelMarket_Lowest">Lowest</x:String>
+    <x:String x:Key="ChannelMarket_Start">Start</x:String>
+    <x:String x:Key="ChannelMarket_Stop">Stop</x:String>
+    <x:String x:Key="ChannelMarket_Setting_Market">Market</x:String>
+    <x:String x:Key="ChannelMarket_Setting_General">General</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord">Active KeyWord</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord_Tip">Leave blank to query all content</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">Items Separator</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">Leave blank to query individual items</x:String>
+    <x:String x:Key="ChannelMarket_Last3MonthPrice">Prices for the past 3 months</x:String>
 </ResourceDictionary>

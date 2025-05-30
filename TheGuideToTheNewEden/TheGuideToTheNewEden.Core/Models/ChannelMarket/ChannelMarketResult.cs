@@ -26,6 +26,19 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
         public decimal Highest { get; set; }
         public decimal Average { get; set; }
         public decimal Lowest { get; set; }
+
+        private IEnumerable<ESI.NET.Models.Market.Statistic> statisticsForShow;
+        public IEnumerable<ESI.NET.Models.Market.Statistic> StatisticsForShow
+        {
+            get
+            {
+                if(statisticsForShow == null)
+                {
+                    statisticsForShow = Statistics.Where(p => (DateTime.UtcNow - p.Date).TotalDays <= 90);
+                }
+                return statisticsForShow;
+            }
+        }
         public ChannelMarketResult(InvTypeBase item, IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders, IEnumerable<ESI.NET.Models.Market.Statistic> statistics)
         {
             Item = item;

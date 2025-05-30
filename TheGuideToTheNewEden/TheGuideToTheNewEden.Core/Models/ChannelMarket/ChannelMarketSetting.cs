@@ -8,7 +8,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
     public class ChannelMarketSetting : ObservableObject
     {
         public string CharacterName { get; set; }
-        public List<string> Channels { get; set; }
+        public List<string> Channels { get; set; } = new List<string>();
 
         private int marketRegionID = 10000002;
         public int MarketRegionID

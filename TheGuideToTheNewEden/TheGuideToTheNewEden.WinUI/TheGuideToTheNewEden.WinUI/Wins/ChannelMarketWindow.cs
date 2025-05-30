@@ -10,10 +10,10 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class ChannelMarketWindow1 : BaseWindow
+    internal class ChannelMarketWindow : BaseWindow
     {
         private Views.ChannelMarketWinPage _page;
-        public ChannelMarketWindow1()
+        public ChannelMarketWindow()
         {
             HideAppDisplayName();
             this.Title = Helpers.ResourcesHelper.GetString("ShellPage_ChannelMarket");
@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _page = new Views.ChannelMarketWinPage();
             _page.SetWindow(this);
             MainContent = _page;
-            this.SetWindowSize(500, 600);
+            this.SetWindowSize(600, 600);
         }
         public void UpdateContent(IEnumerable<MarketChatContent> items, int regionID)
         {

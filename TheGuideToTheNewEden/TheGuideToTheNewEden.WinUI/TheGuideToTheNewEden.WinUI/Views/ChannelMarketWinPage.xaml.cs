@@ -37,10 +37,5 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.GetBaseWindow().Hide();
         }
-
-        private void HistoryGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            (sender as Grid).Translation += new System.Numerics.Vector3(0, 0, 32);
-        }
     }
 }

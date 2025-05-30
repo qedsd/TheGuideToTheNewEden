@@ -179,7 +179,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static InvTypeBase QueryInvType(string name)
         {
-            var target = DBService.MainDb.Queryable<InvType>().First(p => name == p.TypeName);
+            var target = DBService.MainDb.Queryable<InvType>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
             if(target == null)
             {
                 return LocalDbService.QueryInvType(name);

@@ -226,6 +226,7 @@
     <None Remove="Assets\Icon\WindowIcons\wars.png" />
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\CardControl.xaml" />
+    <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
@@ -321,7 +322,6 @@
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
-    <None Remove="Wins\ChannelMarketWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo_128.ico">
@@ -442,6 +442,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\ProgressBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ChannelMarketItemDetailControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
@@ -579,9 +582,6 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Update="Wins\ChannelMarketWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\ChannelMarketPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

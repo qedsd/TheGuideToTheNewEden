@@ -38,6 +38,8 @@ namespace TheGuideToTheNewEden.WinUI.Models
         }
         public void Start()
         {
+            _observers ??= new List<ChannelMarketObserver>();
+            _observers.Clear();
             foreach (var path in Setting.Channels)
             {
                 ChannelMarketObserver observer = new ChannelMarketObserver(path, Setting.CharacterName, Setting.KeyWord, Setting.ItemsSeparator);
@@ -61,6 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
         public void Stop()
         {
             Core.Services.ObservableFileService.Remove(_observers);
+            _observers.Clear();
         }
         public void Save()
         {

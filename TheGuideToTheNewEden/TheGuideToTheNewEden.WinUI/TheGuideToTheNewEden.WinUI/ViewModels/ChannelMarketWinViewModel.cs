@@ -18,6 +18,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ObservableCollection<ChannelMarketResult> Results { get ; set; } = new ObservableCollection<ChannelMarketResult>();
 
+        private ChannelMarketResult _result;
+        public ChannelMarketResult Result { get => _result; set => SetProperty(ref _result, value); }
+
         private int _itemCount;
         public int ItemCount { get => _itemCount; set => SetProperty(ref _itemCount, value); }
 
@@ -61,29 +64,39 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public async void UpdateContent(IEnumerable<MarketChatContent> marketChatContents, int regionID)
         {
             Contents = marketChatContents;
-            ItemCount = Contents.Count();
+            ItemCount = Contents.Sum(p=>p.Items.Count);
             MutilItem = ItemCount > 1;
             Results.Clear();
+            Result = null;
             Window?.ShowWindowWaiting();
-            foreach (var marketChatContent in Contents)
+            if (MutilItem)
             {
-                foreach(var item in marketChatContent.Items)
+                foreach (var marketChatContent in Contents)
                 {
-                    List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
-                    var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
-                    var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
-                    var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
-                    Results.Add(new ChannelMarketResult(item, buyOrders, sellOrders, statistics));
+                    foreach (var item in marketChatContent.Items)
+                    {
+                        List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
+                        var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
+                        var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
+                        var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
+                        Results.Add(new ChannelMarketResult(item, sellOrders, buyOrders, statistics));
+                    }
                 }
-            }
-            Window?.HideWindowWaiting();
-            if (Results.Count > 1) 
-            {
                 Sell5P = Results.Sum(p => p.Sell5P);
                 Buy5P = Results.Sum(p => p.Buy5P);
                 SellTop = Results.Sum(p => p.SellTop);
                 BuyTop = Results.Sum(p => p.BuyTop);
             }
+            else
+            {
+                var item = marketChatContents.First().Items[0];
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
+                var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
+                var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
+                var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
+                Result = new ChannelMarketResult(item, sellOrders, buyOrders, statistics);
+            }
+            Window?.HideWindowWaiting();
         }
 
         public ICommand RefreshCommand => new RelayCommand(() =>

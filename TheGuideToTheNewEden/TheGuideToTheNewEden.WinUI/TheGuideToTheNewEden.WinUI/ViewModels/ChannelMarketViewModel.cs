@@ -77,6 +77,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref _running, value);
         }
 
+        private MapRegion selectedRegion;
+        public MapRegion SelectedRegion
+        {
+            get => selectedRegion;
+            set
+            {
+                if (SetProperty(ref selectedRegion, value))
+                {
+                    if(value != null)
+                    {
+                        SelectedRegionName = value.RegionName;
+                        ChannelMarket.Setting.MarketRegionID = value.RegionID;
+                    }
+                }
+            }
+        }
+
+        private string selectedRegionName;
+        public string SelectedRegionName
+        {
+            get => selectedRegionName;
+            set
+            {
+                SetProperty(ref selectedRegionName, value);
+            }
+        }
+
         public ChannelMarketViewModel()
         {
             _logPath = System.IO.Path.Combine(GameLogsSettingService.EVELogsPathValue, "Chatlogs");
@@ -137,6 +164,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     channel.IsChecked = ChannelMarket.Setting.Channels.Contains(channel.FilePath);
                 }
+                SelectedRegionName = Core.Services.DB.MapRegionService.Query(ChannelMarket.Setting.MarketRegionID)?.RegionName;
             }
         }
         private ChannelMarket GetChannelMarket(string name)
@@ -217,7 +245,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
-            ChannelMarketService.Current.Test();
             foreach (var character in Characters)
             {
                 if (character.Running)
