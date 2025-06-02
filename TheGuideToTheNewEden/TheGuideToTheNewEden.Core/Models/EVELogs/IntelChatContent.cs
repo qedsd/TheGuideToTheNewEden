@@ -14,5 +14,6 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
         }
         public IntelChatType IntelType { get; set; }
         public string Listener {  get; set; }
+        public List<IntelShipContent> IntelShips { get; set; }
     }
 }

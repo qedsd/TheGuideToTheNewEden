@@ -1,6 +1,7 @@
 ﻿using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -66,6 +67,26 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 LocalDbService.TranInvTypes(types);
             }
             return types;
+        }
+        public static List<InvTypeBase> QueryTypesOfGroupMainAndLocal(List<int> groupIds)
+        {
+            var groupIdsH = groupIds.ToHashSet2();
+            var mainTypes = DBService.MainDb.Queryable<InvType>().Where(p => p.MarketGroupID != null && groupIdsH.Contains(p.GroupID)).ToList();
+            if (mainTypes.NotNullOrEmpty())
+            {
+                var typeIds = mainTypes.Select(p => p.TypeID).ToHashSet2();
+                List<InvTypeBase> allTypes = mainTypes.Select(p => p as InvTypeBase).ToList();
+                var localTypes = DBService.LocalDb?.Queryable<InvTypeBase>().Where(p=> typeIds.Contains(p.TypeID)).ToList();
+                if (localTypes.NotNullOrEmpty())
+                {
+                    allTypes.AddRange(localTypes);
+                }
+                return allTypes;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static async Task<List<InvType>> QueryMarketTypesAsync()
@@ -154,6 +175,19 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                 localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
             }
             return searchInvTypes;
+        }
+
+        public static InvTypeBase QueryInvType(string name)
+        {
+            var target = DBService.MainDb.Queryable<InvType>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
+            if(target == null)
+            {
+                return LocalDbService.QueryInvType(name);
+            }
+            else
+            {
+                return target;
+            }
         }
     }
 }

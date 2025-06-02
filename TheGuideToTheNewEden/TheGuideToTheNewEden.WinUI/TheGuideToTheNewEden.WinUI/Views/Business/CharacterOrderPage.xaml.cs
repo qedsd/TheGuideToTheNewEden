@@ -128,18 +128,25 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             List<StatusOrder> statusOrders = new List<StatusOrder>();
             foreach(var order in orders)
             {
-                var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId);
                 List<Core.Models.Market.Order> refs = null;
-                if(results.NotNullOrEmpty())
+                try
                 {
-                    if(order.IsBuyOrder)
+                    var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId);
+                    if (results.NotNullOrEmpty())
                     {
-                        refs = results.Where(p=>p.IsBuyOrder)?.OrderByDescending(p=>p.Price).ToList();
+                        if (order.IsBuyOrder)
+                        {
+                            refs = results.Where(p => p.IsBuyOrder)?.OrderByDescending(p => p.Price).ToList();
+                        }
+                        else
+                        {
+                            refs = results.Where(p => !p.IsBuyOrder)?.OrderBy(p => p.Price).ToList();
+                        }
                     }
-                    else
-                    {
-                        refs = results.Where(p => !p.IsBuyOrder)?.OrderBy(p => p.Price).ToList();
-                    }
+                }
+                catch(Exception ex)
+                {
+                    Core.Log.Error(ex);
                 }
                 statusOrders.Add(new StatusOrder(order, refs));
             }

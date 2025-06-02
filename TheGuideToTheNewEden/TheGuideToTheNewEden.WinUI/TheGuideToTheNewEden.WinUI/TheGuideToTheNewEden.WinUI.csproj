@@ -13,7 +13,7 @@
     <PackageIcon>logo_128.png</PackageIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.10.1.0</AssemblyVersion>
+	<AssemblyVersion>2.11.0.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
@@ -226,6 +226,7 @@
     <None Remove="Assets\Icon\WindowIcons\wars.png" />
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\CardControl.xaml" />
+    <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
@@ -242,6 +243,7 @@
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
+    <None Remove="Controls\ProgressBar.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
     <None Remove="Controls\StructureSelectorControl.xaml" />
@@ -252,6 +254,7 @@
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
     <None Remove="logo_128.ico" />
+    <None Remove="logo_64.ico" />
     <None Remove="Resources\Languages\en-US\English.xaml" />
     <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -263,6 +266,8 @@
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
     <None Remove="Views\Business\ShoppingRecordPage.xaml" />
     <None Remove="Views\ChannelIntelPage.xaml" />
+    <None Remove="Views\ChannelMarketPage.xaml" />
+    <None Remove="Views\ChannelMarketWinPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\ChannelScanPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
@@ -323,7 +328,12 @@
     <Content Include="logo_128.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="logo_32.ico" />
+    <Content Include="logo_32.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="logo_64.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -437,10 +447,19 @@
     <Page Update="Controls\JumpBridgeSetting.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\ProgressBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ChannelMarketItemDetailControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="logo_64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\CapitalJumpShipInfo.json">
@@ -572,6 +591,12 @@
     <None Update="Resources\Images\logo_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\ChannelMarketPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelMarketWinPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\ESIScopeSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

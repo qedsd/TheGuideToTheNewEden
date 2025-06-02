@@ -63,7 +63,7 @@ namespace TheGuideToTheNewEden.WinUI
             Helpers.WindowHelper.TrackWindow(this);
             
             Helpers.WindowHelper.CenterToScreen(this);
-            WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_32.ico"));
+            WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_64.ico"));
             if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
             {
                 if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue))
@@ -170,11 +170,41 @@ namespace TheGuideToTheNewEden.WinUI
         /// <summary>
         /// 隐藏标题，不隐藏logo
         /// </summary>
-        public void HideAppTitleContentArea()
+        public void HideAppTitle()
         {
             AppDisplayNameTextBlock.Visibility = Visibility.Collapsed;
             HeadPanel.Visibility = Visibility.Collapsed;
             InfoBar.Margin = new Thickness(0, 32, 0, 0);
+        }
+        public void HideNavButton()
+        {
+            var presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
+            presenter.SetBorderAndTitleBar(true, false);
+            TitleBarExtendsToNavButton();
+        }
+        /// <summary>
+        /// 完全隐藏标题栏
+        /// 包括logo、标题、最小最大关闭按钮
+        /// </summary>
+        public void HideHideAppHeader()
+        {
+            AppTitleContentArea.Visibility = Visibility.Collapsed;
+            HideNavButton();
+            MainContentExtendsToTitleBar();
+        }
+        /// <summary>
+        /// 将TitleBar拖动区域扩展到原生导航键（最小最大关闭）位置
+        /// </summary>
+        public void TitleBarExtendsToNavButton()
+        {
+            AppTitleBarGrid.Margin = new Thickness(0);
+        }
+        /// <summary>
+        /// 把MainContent扩展到标题栏上
+        /// </summary>
+        public void MainContentExtendsToTitleBar()
+        {
+            ContentArea.Margin = new Thickness(0, -32, 0, 0); ;
         }
         /// <summary>
         /// 主页模式
@@ -184,7 +214,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             ContentArea.SetValue(Grid.RowSpanProperty, 2);
             ContentArea.SetValue(Grid.RowProperty, 0);
-            HideAppTitleContentArea();
+            HideAppTitle();
         }
 
         private System.Timers.Timer Timer;
@@ -252,6 +282,10 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 return;
             }
+            ShowWindowWaiting(tip);
+        }
+        public void ShowWindowWaiting(string tip = null)
+        {
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 if (string.IsNullOrEmpty(tip))
@@ -277,15 +311,19 @@ namespace TheGuideToTheNewEden.WinUI
             {
                 return;
             }
+            HideWindowWaiting();
+        }
+        public void HideWaiting(TabViewBasePage page)
+        {
+            NavigationService.HideWaiting(page);
+        }
+        public void HideWindowWaiting()
+        {
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 WaitingProgressRing.IsActive = false;
             });
-        }
-        public void HideWaiting(TabViewBasePage page)
-        {
-            NavigationService.HideWaiting(page);
         }
         public void Hide()
         {

@@ -20,7 +20,10 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Button Height="32" Click="Button_Clear_Click" ToolTipService.ToolTip="{StaticResource ChannelIntelPage_ClearAllIntel}">
+            <Button
+                Height="32"
+                Click="Button_Clear_Click"
+                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_ClearAllIntel}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xEA99;" />
             </Button>
             <Button
@@ -28,13 +31,15 @@
                 Grid.Column="1"
                 Height="32"
                 HorizontalAlignment="Stretch"
-                Click="Button_IntelInfo_Click" 
-                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_LatestIntelInfo}"/>
+                Click="Button_IntelInfo_Click"
+                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_LatestIntelInfo}">
+                <RichTextBlock x:Name="IntelInfoRichTextBlock" IsHitTestVisible="False"/>
+            </Button>
             <Button
                 Grid.Column="2"
                 Height="32"
-                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_StopSound}"
-                Click="Button_StopSound_Click">
+                Click="Button_StopSound_Click"
+                ToolTipService.ToolTip="{StaticResource ChannelIntelPage_StopSound}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE198;" />
             </Button>
         </Grid>

@@ -23,7 +23,8 @@
                 x:Key="ItemContentBg"
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
-            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" />
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" IsNullOrEmptyToCollapsed="True" />
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToVisibleConverter" IsNullOrEmptyToCollapsed="False" />
             <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
             <converters:NullToBooleanConverter x:Key="NullToFalseConverter" IsInverted="True" />
             <converters:NullToBooleanConverter
@@ -76,6 +77,7 @@
             <converters:DecimaFormatConverter x:Key="N2DecimaFormatConverter" Decimals="2" />
             <converters:OrderTypeConverter x:Key="OrderTypeConverter" />
             <converters:IdNameCategoryConverter x:Key="IdNameCategoryConverter" />
+            <converters:UTCToLocalTimeConverter x:Key="UTCToLocalTimeConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

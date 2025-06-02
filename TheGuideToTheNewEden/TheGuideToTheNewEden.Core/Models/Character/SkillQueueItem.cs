@@ -8,36 +8,15 @@ namespace TheGuideToTheNewEden.Core.Models.Character
     public class SkillQueueItem: ESI.NET.Models.Skills.SkillQueueItem
     {
         /// <summary>
-        /// 本地时间
+        /// UTC时间
         /// </summary>
-        public DateTime FinishDateTime { get; set; }
+        public DateTimeOffset FinishDateTime { get; set; }
         /// <summary>
-        /// 本地时间
+        /// UTC时间
         /// </summary>
-        public DateTime StartDateTime { get; set; }
+        public DateTimeOffset StartDateTime { get; set; }
         public string SkillName { get; set; }
-        public string Status
-        {
-            get
-            {
-                if(IsRunning)
-                {
-                    return "进行中";
-                }
-                else if(IsWaiting)
-                {
-                    return "等待中";
-                }
-                else if(IsFinished)
-                {
-                    return "已完成";
-                }
-                else
-                {
-                    return "已暂停";
-                }
-            }
-        }
+        
         public string RemainTime
         {
             get
@@ -48,14 +27,14 @@ namespace TheGuideToTheNewEden.Core.Models.Character
                 }
                 else
                 {
-                    TimeSpan timeSpan = IsRunning ? FinishDateTime - DateTime.Now : FinishDateTime - StartDateTime;
+                    TimeSpan timeSpan = IsRunning ? FinishDateTime - DateTime.UtcNow : FinishDateTime - StartDateTime;
                     if(timeSpan.Days >= 1)
                     {
-                        return $"{timeSpan.Days}天 {timeSpan.Hours}小时 {timeSpan.Minutes}分钟";
+                        return $"{timeSpan.Days}d {timeSpan.Hours}h {timeSpan.Minutes}min";
                     }
                     else
                     {
-                        return $"{timeSpan.Hours}小时 {timeSpan.Minutes}分钟";
+                        return $"{timeSpan.Hours}h {timeSpan.Minutes}min";
                     }
                 }
             }
@@ -64,12 +43,12 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         {
             get => !(IsFinished || IsWaiting || IsPause);
         }
-        public bool IsFinished { get => FinishDateTime != DateTime.MinValue && FinishDateTime < DateTime.Now; }
+        public bool IsFinished { get => FinishDateTime != DateTimeOffset.MinValue && FinishDateTime < DateTime.UtcNow; }
         public bool IsWaiting 
         {
             get
             {
-                return StartDateTime != DateTime.MinValue && FinishDateTime != DateTime.MinValue && StartDateTime > DateTime.Now;
+                return StartDateTime != DateTimeOffset.MinValue && FinishDateTime != DateTimeOffset.MinValue && StartDateTime > DateTime.UtcNow;
             }
         }
         public bool IsPause { get => string.IsNullOrEmpty(FinishDate) || string.IsNullOrEmpty(StartDate); }
@@ -77,8 +56,8 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public SkillQueueItem(ESI.NET.Models.Skills.SkillQueueItem skillQueueItem)
         {
             this.CopyFrom(skillQueueItem);
-            FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTime.MinValue : DateTime.Parse(FinishDate);
-            StartDateTime = string.IsNullOrEmpty(StartDate) ? DateTime.MinValue : DateTime.Parse(StartDate);
+            FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTime.MinValue : DateTimeOffset.Parse(FinishDate);
+            StartDateTime = string.IsNullOrEmpty(StartDate) ? DateTime.MinValue : DateTimeOffset.Parse(StartDate);
         }
     }
 }

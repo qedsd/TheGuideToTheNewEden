@@ -22,28 +22,20 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class CharacterPage : Page
+    public sealed partial class CharacterPage : Page, IPage
     {
-        public CharacterPage()
+        internal CharacterViewModel VM { get; private set; }
+        internal CharacterPage(CharacterViewModel vm)
         {
+            VM = vm;
+            DataContext = VM;
             this.InitializeComponent();
-            Loaded += CharacterPage_Loaded2;
             Loaded += CharacterPage_Loaded;
-        }
-        private void CharacterPage_Loaded2(object sender, RoutedEventArgs e)
-        {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
-            VM.OnSelectedCharacter += VM_OnSelectedCharacter;
-            VM.Init();
-            Loaded -= CharacterPage_Loaded;
-        }
-
-        private void VM_OnSelectedCharacter()
-        {
-            ResetPage();
+            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            _=VM.GetZKBInfoAsync();
         }
 
         private readonly Dictionary<string, Page> _contentPages = new Dictionary<string, Page>();
@@ -82,11 +74,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            Log.Error(e.ErrorMessage);
-        }
-
         private void ImageEx_CharacterAvatar_ImageExFailed(object sender, CommunityToolkit.WinUI.UI.Controls.ImageExFailedEventArgs e)
         {
             Log.Error(e.ErrorMessage);
@@ -119,14 +106,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
             (ContentFrame.Content as ICharacterPage)?.Refresh();
         }
 
-        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        public void Close()
         {
-            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
-        }
-
-        private void RemoveButton_Click(object sender, RoutedEventArgs e)
-        {
-            VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+            
         }
     }
 }

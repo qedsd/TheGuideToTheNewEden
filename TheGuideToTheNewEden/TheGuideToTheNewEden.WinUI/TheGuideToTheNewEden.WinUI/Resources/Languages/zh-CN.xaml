@@ -73,6 +73,7 @@
     <x:String x:Key="General_Cancel">取消</x:String>
     <x:String x:Key="General_TryNotAdmin">请尝试【不】使用管理员模式运行软件</x:String>
     <x:String x:Key="General_OpenFile">打开文件</x:String>
+    <x:String x:Key="General_OpenFolder">打开文件夹</x:String>
     <x:String x:Key="General_Clear">清除</x:String>
     <x:String x:Key="General_No">否</x:String>
     <x:String x:Key="General_Yes">是</x:String>
@@ -82,6 +83,8 @@
     <x:String x:Key="General_Save">保存</x:String>
     <x:String x:Key="General_SaveSuccess">保存成功</x:String>
     <x:String x:Key="General_Setting">设置</x:String>
+    <x:String x:Key="General_LocalTime">本地时间</x:String>
+    <x:String x:Key="General_Detail">详细</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -127,6 +130,8 @@
     <x:String x:Key="ShellPage_Map_Desc">地图、导航、资源</x:String>
     <x:String x:Key="ShellPage_ChannelScan">频道玩家统计</x:String>
     <x:String x:Key="ShellPage_ChannelScan_Desc">统计频道内玩家势力、威胁等信息</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket">频道查价</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket_Desc">监听频道日志，弹窗显示物品价格信息</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">组内技能个数</x:String>
@@ -248,6 +253,7 @@
     <x:String x:Key="MarketPage_CancelStar">取消收藏</x:String>
     <x:String x:Key="MarketPage_SelecteMarket">选择市场</x:String>
     <x:String x:Key="MarketPage_Mean">平均</x:String>
+    <x:String x:Key="MarketPage_Top">Top</x:String>
     <x:String x:Key="MarketPage_Amount">数量</x:String>
     <x:String x:Key="MarketPage_Sell">卖单</x:String>
     <x:String x:Key="MarketPage_Buy">买单</x:String>
@@ -840,14 +846,33 @@
     <x:String x:Key="CharacterPage_Mail">邮件</x:String>
     <x:String x:Key="CharacterPage_Contract">合同</x:String>
     <x:String x:Key="CharacterPage_Industry">工业</x:String>
-    <x:String x:Key="CharacterPage_CorpWallet">公司钱包：</x:String>
-    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包：</x:String>
-    <x:String x:Key="CharacterPage_SecurityStatus">安全等级：</x:String>
-    <x:String x:Key="CharacterPage_LP">忠诚点：</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">公司钱包</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">个人钱包</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">安全等级</x:String>
+    <x:String x:Key="CharacterPage_LP">忠诚点</x:String>
     <x:String x:Key="CharacterPage_UnallocatedSp">未使用技能点</x:String>
-    <x:String x:Key="CharacterPage_Sp">技能点：</x:String>
-    <x:String x:Key="CharacterPage_Birthday">出生：</x:String>
+    <x:String x:Key="CharacterPage_Sp">技能点</x:String>
+    <x:String x:Key="CharacterPage_Birthday">出生</x:String>
     <x:String x:Key="CharacterPage_Characters">角色列表</x:String>
+    <x:String x:Key="CharacterPage_Remove">删除角色</x:String>
+    <x:String x:Key="CharacterPage_TryUpdateTokenFailed">Token已过期，尝试刷新失败</x:String>
+    <x:String x:Key="CharacterPage_Online">在线</x:String>
+    <x:String x:Key="CharacterPage_Offline">离线</x:String>
+    <x:String x:Key="CharacterPage_SkillQueue">技能队列</x:String>
+    <x:String x:Key="CharacterPage_RemainTime">剩余时间</x:String>
+    <x:String x:Key="CharacterPage_RemainSkill">剩余技能</x:String>
+    <x:String x:Key="CharacterPage_NotRunning">已暂停</x:String>
+    <x:String x:Key="CharacterPage_CharacterCount">角色数量</x:String>
+    <x:String x:Key="CharacterPage_Statistic">统计</x:String>
+    <x:String x:Key="CharacterPage_CharacterSum">角色总和</x:String>
+    <x:String x:Key="CharacterPage_Faction">势力</x:String>
+    <x:String x:Key="CharacterPage_LoginCount">上线次数</x:String>
+    <x:String x:Key="CharacterPage_LastLogin">最近上线</x:String>
+    <x:String x:Key="CharacterPage_Removed">已删除</x:String>
+    <x:String x:Key="CharacterPage_Skill_Running">进行中</x:String>
+    <x:String x:Key="CharacterPage_Skill_Waiting">等待中</x:String>
+    <x:String x:Key="CharacterPage_Skill_Finished">已完成</x:String>
+    <x:String x:Key="CharacterPage_Skill_Pause">已暂停</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>
@@ -1116,4 +1141,26 @@
 
     <!--  ESIScopeSettingPage  -->
     <x:String x:Key="ESIScopeSettingPage_SelectAll">选择所有</x:String>
+
+    <!--  ChannelMarket  -->
+    <x:String x:Key="ChannelMarket_Items">个物品</x:String>
+    <x:String x:Key="ChannelMarket_NoChannel">未选择需要监控的频道</x:String>
+    <x:String x:Key="ChannelMarket_Started">已开始监控频道</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Tip">同步当前设置到其他角色需先停止所有，是否继续？</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Succes">同步完成</x:String>
+    <x:String x:Key="ChannelMarket_Last7Days">过去7天</x:String>
+    <x:String x:Key="ChannelMarket_Volume">总销量</x:String>
+    <x:String x:Key="ChannelMarket_Highest">最高</x:String>
+    <x:String x:Key="ChannelMarket_Average">平均</x:String>
+    <x:String x:Key="ChannelMarket_Lowest">最低</x:String>
+    <x:String x:Key="ChannelMarket_Start">开始</x:String>
+    <x:String x:Key="ChannelMarket_Stop">停止</x:String>
+    <x:String x:Key="ChannelMarket_Setting_Market">市场</x:String>
+    <x:String x:Key="ChannelMarket_Setting_General">基本</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord">触发关键词</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord_Tip">留空则查询所有内容</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">多物品分隔符</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">留空则查询单个物品</x:String>
+    <x:String x:Key="ChannelMarket_Last3MonthPrice">过去三个月价格</x:String>
 </ResourceDictionary>

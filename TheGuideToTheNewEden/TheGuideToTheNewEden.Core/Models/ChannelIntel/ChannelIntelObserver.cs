@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +13,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Interfaces;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.Core.Services.DB;
 
 namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
 {
@@ -77,6 +79,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                     newWarning.Add(result);
                                     newContent.Important = true;
                                     newContent.IntelType = result.IntelType;
+                                    newContent.IntelShips = result.IntelShips;
                                 }
                             }
                             Contents.AddRange(newContents);
@@ -121,6 +124,35 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                 int jumps = IntelMap.JumpsOf(name.Value);
                                 if (jumps != -1)
                                 {
+                                    List<IntelShipContent> shipContents = null;
+                                    if(chatContent.IntelType != Enums.IntelChatType.Clear)
+                                    {
+                                        var contents = chatContent.Content.Split(' ');
+                                        int startIndex = 0;
+                                        for(int i = 0;i<contents.Length;i++)
+                                        {
+                                            string content = contents[i];
+                                            if (!string.IsNullOrEmpty(content))
+                                            {
+                                                var targetShip = ShipNameCacheService.Current.Search(content);
+                                                if(targetShip != null)
+                                                {
+                                                    IntelShipContent intelShipContent = new IntelShipContent()
+                                                    {
+                                                        Ship = targetShip,
+                                                        StartIndex = startIndex,
+                                                        Length = content.Length
+                                                    };
+                                                    if(shipContents == null)
+                                                    {
+                                                        shipContents = new List<IntelShipContent>();
+                                                    }
+                                                    shipContents.Add(intelShipContent);
+                                                }
+                                            }
+                                            startIndex += content.Length + 1;
+                                        }
+                                    }
                                     return new EarlyWarningContent()
                                     {
                                         Content = chatContent.Content,
@@ -131,7 +163,8 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                         Level = 3,//TODO:预警等级划分
                                         IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
                                         IntelMap = IntelMap,
-                                        Jumps = jumps
+                                        Jumps = jumps,
+                                        IntelShips = shipContents
                                     };
                                 }
                                 else

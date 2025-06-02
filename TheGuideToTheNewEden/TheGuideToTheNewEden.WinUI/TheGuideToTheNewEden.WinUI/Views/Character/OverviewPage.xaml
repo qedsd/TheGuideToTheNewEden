@@ -75,17 +75,19 @@
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Orientation="Horizontal">
                         <TextBlock x:Name="TextBlock_LocationSataionName" VerticalAlignment="Center" />
-                        <TextBlock
+                        <StackPanel
+                            x:Name="LocationSystemInfoPanel"
                             Margin="8,0,0,0"
-                            VerticalAlignment="Center"
-                            Text="(" />
-                        <TextBlock x:Name="TextBlock_LocationSystemLevel" VerticalAlignment="Center" />
-                        <Button
-                            x:Name="TextBlock_LocationSystemName"
-                            Margin="4,0,0,0"
-                            Padding="0"
-                            BorderThickness="0" />
-                        <TextBlock VerticalAlignment="Center" Text=")" />
+                            Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center" Text="(" />
+                            <TextBlock x:Name="TextBlock_LocationSystemLevel" VerticalAlignment="Center" />
+                            <Button
+                                x:Name="TextBlock_LocationSystemName"
+                                Margin="4,0,0,0"
+                                Padding="0"
+                                BorderThickness="0" />
+                            <TextBlock VerticalAlignment="Center" Text=")" />
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
                         <TextBlock x:Name="TextBlock_ShipName" VerticalAlignment="Center" />
@@ -102,34 +104,42 @@
                 <Grid Width="48">
                     <Grid
                         x:Name="Grid_Online"
-                        Width="12"
-                        Height="12"
+                        Width="8"
+                        Height="8"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Background="MediumSeaGreen"
-                        CornerRadius="6" />
+                        CornerRadius="4" />
                     <Grid
                         x:Name="Grid_Outline"
-                        Width="12"
-                        Height="12"
+                        Width="8"
+                        Height="8"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Background="OrangeRed"
-                        CornerRadius="6" />
+                        CornerRadius="4" />
                 </Grid>
                 <Grid Margin="10,0,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Orientation="Horizontal">
-                        <TextBlock x:Name="TextBlock_lastLoginText" />
-                        <TextBlock x:Name="TextBlock_lastLogin" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock x:Name="TextBlock_LoginCountText" />
-                        <TextBlock x:Name="TextBlock_LoginCount" />
-                    </StackPanel>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{StaticResource CharacterPage_LastLogin}" />
+                    <TextBlock
+                        ToolTipService.ToolTip=""
+                        x:Name="TextBlock_lastLogin"
+                        Grid.Column="1"
+                        Margin="16,0,0,0" />
+                    <TextBlock Grid.Row="1" Text="{StaticResource CharacterPage_LoginCount}" />
+                    <TextBlock
+                        x:Name="TextBlock_LoginCount"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="16,0,0,0" />
                 </Grid>
             </StackPanel>
             <ListView
@@ -151,25 +161,33 @@
                                 <ColumnDefinition Width="48" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Grid ToolTipService.ToolTip="{x:Bind Status}">
+                            <Grid>
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
                                     Foreground="MediumSeaGreen"
                                     Glyph="&#xE001;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Finished}"
                                     Visibility="{x:Bind IsFinished, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
                                     Foreground="MediumSeaGreen"
                                     Glyph="&#xE1F5;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Running}"
                                     Visibility="{x:Bind IsRunning, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
                                     Glyph="&#xE07F;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Waiting}"
                                     Visibility="{x:Bind IsWaiting, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <FontIcon
                                     FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
                                     Foreground="OrangeRed"
                                     Glyph="&#xE004;"
+                                    ToolTipService.ToolTip="{StaticResource CharacterPage_Skill_Pause}"
                                     Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
                             </Grid>
                             <Grid Grid.Column="1">
@@ -181,18 +199,18 @@
                                     <TextBlock Text="{x:Bind SkillName}" />
                                     <TextBlock Margin="4,0,0,0" Text="{x:Bind FinishedLevel}" />
                                 </StackPanel>
-                                <StackPanel Grid.Row="1" Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind Status}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
-                                    <TextBlock Width="120" Text="{x:Bind RemainTime}" />
-                                    <StackPanel
-                                        Margin="16,0,0,0"
-                                        Orientation="Horizontal"
-                                        Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
-                                        <TextBlock Width="120" Text="{x:Bind StartDateTime.ToString()}" />
+                                <Grid Grid.Row="1">
+                                    <TextBlock Text="{StaticResource CharacterPage_Skill_Pause}" Visibility="{x:Bind IsPause, Converter={StaticResource TrueToVisibleConverter}}" />
+                                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind IsPause, Converter={StaticResource FalseToVisibleConverter}}">
+                                        <TextBlock
+                                            Width="120"
+                                            Margin="0,0,16,0"
+                                            Text="{x:Bind RemainTime}" />
+                                        <TextBlock Text="{x:Bind StartDateTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:yyyy.MM.dd HH:mm}}" ToolTipService.ToolTip="{x:Bind StartDateTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                         <TextBlock Margin="8,0" Text="-" />
-                                        <TextBlock Width="120" Text="{x:Bind FinishDateTime.ToString()}" />
+                                        <TextBlock Text="{x:Bind FinishDateTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:yyyy.MM.dd HH:mm}}" ToolTipService.ToolTip="{x:Bind FinishDateTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </DataTemplate>

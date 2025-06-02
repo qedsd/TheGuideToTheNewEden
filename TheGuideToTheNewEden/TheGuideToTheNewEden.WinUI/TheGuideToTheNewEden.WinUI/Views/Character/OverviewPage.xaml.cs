@@ -21,6 +21,8 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core;
 using ESI.NET.Models.Skills;
 using System.Text.RegularExpressions;
+using TheGuideToTheNewEden.WinUI.Converters;
+using static Vanara.PInvoke.ComCtl32;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -32,8 +34,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             this.InitializeComponent();
             Loaded += OverviewPage_Loaded;
-            TextBlock_lastLoginText.Text = "最近上线：";
-            TextBlock_LoginCountText.Text = "上线次数：";
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -61,6 +61,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             ESI.NET.Models.Corporation.Corporation corporation = null;
             ESI.NET.Models.Alliance.Alliance alliance = null;
             List<ESI.NET.Models.Skills.SkillQueueItem> skillQueueItems = null;
+            string locationError = string.Empty;
             var tasks = new List<Task>
             {
                 _esiClient.Location.Online().ContinueWith((p)=>
@@ -82,6 +83,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
+                        locationError = p?.Result.Message;
                         Log.Error(p?.Result.Message);
                     }
                 }),
@@ -179,41 +181,51 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             if(location != null)
             {
+                LocationSystemInfoPanel.Visibility = Visibility.Visible;
                 var solarSystem = await Core.Services.DB.MapSolarSystemService.QueryAsync(location.SolarSystemId);
                 TextBlock_LocationSystemLevel.Text = solarSystem?.Security.ToString("N2");
                 TextBlock_LocationSystemName.Content = solarSystem?.SolarSystemName;
-            }
-
-            if (location?.StationId > 0)
-            {
-                var station = await Core.Services.DB.StaStationService.QueryAsync(location.StationId);
-                if (station != null)
+                if (location.StationId > 0)
                 {
-                    TextBlock_LocationSataionName.Text = station.StationName;
+                    var station = await Core.Services.DB.StaStationService.QueryAsync(location.StationId);
+                    if (station != null)
+                    {
+                        TextBlock_LocationSataionName.Text = station.StationName;
+                    }
                 }
-            }
-            else if (location?.StructureId > 0)
-            {
-                var structureRsp = await _esiClient.Universe.Structure(location.StructureId);
-                if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
+                else if (location.StructureId > 0)
                 {
-                    TextBlock_LocationSataionName.Text = structureRsp.Data.Name;
+                    var structureRsp = await _esiClient.Universe.Structure(location.StructureId);
+                    if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        TextBlock_LocationSataionName.Text = structureRsp.Data.Name;
+                    }
+                    else
+                    {
+                        TextBlock_LocationSataionName.Text = location.StructureId.ToString();
+                        Log.Error(structureRsp?.Message);
+                    }
                 }
                 else
                 {
-                    Log.Error(structureRsp?.Message);
+                    TextBlock_LocationSataionName.Text = string.Empty;
                 }
             }
             else
             {
-                TextBlock_LocationSataionName.Text = string.Empty;
+                TextBlock_LocationSataionName.Text = locationError;
+                LocationSystemInfoPanel.Visibility = Visibility.Collapsed;
             }
+            
 
             if (onlineStatus != null)
             {
                 Grid_Online.Visibility = onlineStatus.Online ? Visibility.Visible: Visibility.Collapsed;
                 Grid_Outline.Visibility = onlineStatus.Online ? Visibility.Collapsed : Visibility.Visible;
-                TextBlock_lastLogin.Text = onlineStatus.LastLogin.ToString("g");
+                TextBlock_lastLogin.Text = $"{onlineStatus.LastLogin.Year}.{onlineStatus.LastLogin.Month}.{onlineStatus.LastLogin.Day} {onlineStatus.LastLogin.Hour}:{onlineStatus.LastLogin.Minute}";
+                ToolTip toolTip = new ToolTip();
+                toolTip.Content = UTCToLocalTimeConverter.Convert(onlineStatus.LastLogin);
+                ToolTipService.SetToolTip(TextBlock_lastLogin, toolTip);
                 TextBlock_LoginCount.Text = onlineStatus.Logins.ToString();
             }
 

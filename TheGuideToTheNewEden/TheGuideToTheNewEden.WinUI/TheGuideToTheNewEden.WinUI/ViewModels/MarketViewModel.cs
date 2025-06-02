@@ -619,5 +619,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             CalSellResult = totalSellPrice;
         }
         #endregion
+
+        #region 外部调用
+        public void SelectType(int typeID)
+        {
+            var type = Core.Services.DB.InvTypeService.QueryType(typeID);
+            SelectedInvType = type;
+        }
+        #endregion
     }
 }

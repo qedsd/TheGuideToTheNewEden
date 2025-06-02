@@ -30,7 +30,7 @@
     <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
     <x:String x:Key="Setting_Config_Check">Check</x:String>
     <x:String x:Key="Setting_About_Title">About</x:String>
-    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app. </x:String>
+    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app.</x:String>
     <x:String x:Key="Setting_About_P2">All free and open-source. If possible, please give the repositories a star.</x:String>
     <x:String x:Key="Setting_About_P3">Automatic updates rely on Github and may encounter network issues that prevent access to updates or download failures. You can manually download from Github：</x:String>
     <x:String x:Key="Setting_About_P4">If you have any questions, please contact me in-game：</x:String>
@@ -73,6 +73,7 @@
     <x:String x:Key="General_Cancel">Cancel</x:String>
     <x:String x:Key="General_TryNotAdmin">Please try running the software without using administrator mode</x:String>
     <x:String x:Key="General_OpenFile">Open File</x:String>
+    <x:String x:Key="General_OpenFolder">Open Folder</x:String>
     <x:String x:Key="General_Clear">Clear"</x:String>
     <x:String x:Key="General_No">No</x:String>
     <x:String x:Key="General_Yes">Yes</x:String>
@@ -82,6 +83,8 @@
     <x:String x:Key="General_Save">Save</x:String>
     <x:String x:Key="General_SaveSuccess">Successfully saved</x:String>
     <x:String x:Key="General_Setting">Setting</x:String>
+    <x:String x:Key="General_LocalTime">Local Time</x:String>
+    <x:String x:Key="General_Detail">Detail</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -127,6 +130,8 @@
     <x:String x:Key="ShellPage_Map_Desc">Maps, navigation, resources</x:String>
     <x:String x:Key="ShellPage_ChannelScan">Channel Character Statistics</x:String>
     <x:String x:Key="ShellPage_ChannelScan_Desc">View character faction, zkb...</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket">Channel Market</x:String>
+    <x:String x:Key="ShellPage_ChannelMarket_Desc">Listen to the channel log, and pop-up a window to displays the price information of the items</x:String>
 
     <!--  Skill  -->
     <x:String x:Key="SkillPage_SkillIdsCount">The number of skills included in the group</x:String>
@@ -248,6 +253,7 @@
     <x:String x:Key="MarketPage_CancelStar">Remove From Collection</x:String>
     <x:String x:Key="MarketPage_SelecteMarket">Selecte Market</x:String>
     <x:String x:Key="MarketPage_Mean">Mean</x:String>
+    <x:String x:Key="MarketPage_Top">Top</x:String>
     <x:String x:Key="MarketPage_Amount">Amount</x:String>
     <x:String x:Key="MarketPage_Sell">Sell</x:String>
     <x:String x:Key="MarketPage_Buy">Buy</x:String>
@@ -830,7 +836,7 @@
     <x:String x:Key="EarlyWarningPage_Jumps">Jump</x:String>
 
     <!--  CharacterPage  -->
-    <x:String x:Key="CharacterPage_Add">Add</x:String>
+    <x:String x:Key="CharacterPage_Add">Add Character</x:String>
     <x:String x:Key="CharacterPage_AddSuccess">Added successfully</x:String>
     <x:String x:Key="CharacterPage_RegistyProtocol">Registration authorization service failed, please run in administrator mode</x:String>
     <x:String x:Key="CharacterPage_Overview">Overview</x:String>
@@ -840,14 +846,33 @@
     <x:String x:Key="CharacterPage_Mail">Mail</x:String>
     <x:String x:Key="CharacterPage_Contract">Contract</x:String>
     <x:String x:Key="CharacterPage_Industry">Industry</x:String>
-    <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet：</x:String>
-    <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet：</x:String>
-    <x:String x:Key="CharacterPage_SecurityStatus">Security：</x:String>
-    <x:String x:Key="CharacterPage_LP">LP：</x:String>
+    <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet</x:String>
+    <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet</x:String>
+    <x:String x:Key="CharacterPage_SecurityStatus">Security</x:String>
+    <x:String x:Key="CharacterPage_LP">LP</x:String>
     <x:String x:Key="CharacterPage_UnallocatedSp">Unallocated Sp</x:String>
-    <x:String x:Key="CharacterPage_Sp">SP：</x:String>
-    <x:String x:Key="CharacterPage_Birthday">Birthday：</x:String>
+    <x:String x:Key="CharacterPage_Sp">SP</x:String>
+    <x:String x:Key="CharacterPage_Birthday">Birthday</x:String>
     <x:String x:Key="CharacterPage_Characters">Characters</x:String>
+    <x:String x:Key="CharacterPage_Remove">Remove Character</x:String>
+    <x:String x:Key="CharacterPage_TryUpdateTokenFailed">The token has expired and the refresh attempt fails</x:String>
+    <x:String x:Key="CharacterPage_Online">Online</x:String>
+    <x:String x:Key="CharacterPage_Offline">Offline</x:String>
+    <x:String x:Key="CharacterPage_SkillQueue">Skill Queue</x:String>
+    <x:String x:Key="CharacterPage_RemainTime">Remain Time</x:String>
+    <x:String x:Key="CharacterPage_RemainSkill">Running Skill</x:String>
+    <x:String x:Key="CharacterPage_NotRunning">Pause</x:String>
+    <x:String x:Key="CharacterPage_CharacterCount">Count Of Characters</x:String>
+    <x:String x:Key="CharacterPage_Statistic">Statistic</x:String>
+    <x:String x:Key="CharacterPage_CharacterSum">Sum Of Characters</x:String>
+    <x:String x:Key="CharacterPage_Faction">Faction</x:String>
+    <x:String x:Key="CharacterPage_LoginCount">Login Times</x:String>
+    <x:String x:Key="CharacterPage_LastLogin">Last Login</x:String>
+    <x:String x:Key="CharacterPage_Removed">Successfully Remove</x:String>
+    <x:String x:Key="CharacterPage_Skill_Running">Running</x:String>
+    <x:String x:Key="CharacterPage_Skill_Waiting">Waiting</x:String>
+    <x:String x:Key="CharacterPage_Skill_Finished">Finished</x:String>
+    <x:String x:Key="CharacterPage_Skill_Pause">Pause</x:String>
 
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">Price difference</x:String>
@@ -1116,4 +1141,26 @@
 
     <!--  ESIScopeSettingPage  -->
     <x:String x:Key="ESIScopeSettingPage_SelectAll">Select All</x:String>
+
+    <!--  ChannelMarket  -->
+    <x:String x:Key="ChannelMarket_Items">Items</x:String>
+    <x:String x:Key="ChannelMarket_NoChannel">No Channel</x:String>
+    <x:String x:Key="ChannelMarket_Started">Started</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll">Synchronize setting to all</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
+    <x:String x:Key="ChannelMarket_ApplySettingToAll_Succes">Synchronization completed</x:String>
+    <x:String x:Key="ChannelMarket_Last7Days">The past 7 days</x:String>
+    <x:String x:Key="ChannelMarket_Volume">Volume</x:String>
+    <x:String x:Key="ChannelMarket_Highest">Highest</x:String>
+    <x:String x:Key="ChannelMarket_Average">Average</x:String>
+    <x:String x:Key="ChannelMarket_Lowest">Lowest</x:String>
+    <x:String x:Key="ChannelMarket_Start">Start</x:String>
+    <x:String x:Key="ChannelMarket_Stop">Stop</x:String>
+    <x:String x:Key="ChannelMarket_Setting_Market">Market</x:String>
+    <x:String x:Key="ChannelMarket_Setting_General">General</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord">Active KeyWord</x:String>
+    <x:String x:Key="ChannelMarket_Setting_KeyWord_Tip">Leave blank to query all content</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">Items Separator</x:String>
+    <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">Leave blank to query individual items</x:String>
+    <x:String x:Key="ChannelMarket_Last3MonthPrice">Prices for the past 3 months</x:String>
 </ResourceDictionary>

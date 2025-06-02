@@ -100,7 +100,8 @@
                             <Grid Margin="0,4">
                                 <Grid.ContextFlyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="{StaticResource General_OpenFile}" />
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFile_Click" Text="{StaticResource General_OpenFile}" />
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_OpenFoder_Click" Text="{StaticResource General_OpenFolder}" />
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
                                 <Grid.ColumnDefinitions>
@@ -143,14 +144,18 @@
             <controls1:CardControl.Header>
                 <Grid>
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelIntelPage_Setting}" />
-                    <Button ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource TransparentButton}"
-                            Width="48"
-                            Height="32"
-                            Command="{x:Bind VM.ApplySettingToAllCommand}">
+                    <Button
+                        Width="48"
+                        Height="32"
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind VM.ApplySettingToAllCommand}"
+                        Style="{StaticResource TransparentButton}"
+                        ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}">
                         <Button.Content>
-                            <TextBlock Text="&#xE81E;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="18"
+                                Text="&#xE81E;" />
                         </Button.Content>
                     </Button>
                 </Grid>
@@ -189,7 +194,7 @@
                                         <Button.Flyout>
                                             <Flyout>
                                                 <Grid Width="300" Height="400">
-                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem, Mode=TwoWay}" ShowSpecial="True"/>
+                                                    <controls1:MapSystemSelectorControl SelectedItem="{x:Bind VM.ChannelIntel.SearchSolarSystem, Mode=TwoWay}" ShowSpecial="True" />
                                                 </Grid>
                                             </Flyout>
                                         </Button.Flyout>

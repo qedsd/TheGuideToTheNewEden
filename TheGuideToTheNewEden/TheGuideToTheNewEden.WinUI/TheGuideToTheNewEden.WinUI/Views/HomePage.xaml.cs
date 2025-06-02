@@ -162,7 +162,18 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             (TabView.SelectedItem as TabViewItem).Header = title;
         }
-
+        public void SwitchTo(object tabContent, string title = null)
+        {
+            var target = TabView.TabItems.FirstOrDefault(p => ((p as TabViewItem).Content as TabViewBasePage)?.MainContent == tabContent);
+            if(target != null)
+            {
+                TabView.SelectedItem = target;
+            }
+            else
+            {
+                AddTabViewItem(tabContent, title);
+            }
+        }
         public void Dispose()
         {
             if(TabView.TabItems.Any())
