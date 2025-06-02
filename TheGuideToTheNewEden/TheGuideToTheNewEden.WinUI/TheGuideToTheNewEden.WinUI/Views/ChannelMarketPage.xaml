@@ -20,7 +20,6 @@
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <controls1:CardControl>
             <controls1:CardControl.Header>
@@ -135,7 +134,7 @@
         </controls1:CardControl>
         <controls1:CardControl
             Grid.Column="2"
-            Width="300"
+            Width="400"
             Margin="2,0,4,0"
             Padding="4,4"
             Visibility="{x:Bind VM.ChannelMarket, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
@@ -255,28 +254,6 @@
                         Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                 </StackPanel>
             </controls1:CardControl.Fonter>
-        </controls1:CardControl>
-        <controls1:CardControl
-            Grid.Column="3"
-            Margin="4,0"
-            Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-            <controls1:CardControl.Header>
-                <TextBlock Text="{StaticResource ChannelIntelPage_Contents}" />
-            </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
-                <ScrollViewer x:Name="ChatContentsScroll">
-                    <RichTextBlock
-                        x:Name="ChatContents"
-                        Margin="4,0"
-                        IsRightTapEnabled="True">
-                        <RichTextBlock.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
-                            </MenuFlyout>
-                        </RichTextBlock.ContextFlyout>
-                    </RichTextBlock>
-                </ScrollViewer>
-            </controls1:CardControl.Content>
         </controls1:CardControl>
     </Grid>
 </Page>

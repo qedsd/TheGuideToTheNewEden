@@ -233,6 +233,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if (Start(ChannelMarket))
                     {
                         SelectedCharacter.Running = true;
+                        Running = true;
                         Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelMarket_Started"));
                     }
                 }
@@ -252,18 +253,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     continue;
                 }
                 var channelMarket = GetChannelMarket(character.Name);
-                Start(channelMarket);
-                character.Running = true;
+                if (Start(channelMarket))
+                {
+                    character.Running = true;
+                    Running = true;
+                }
             }
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
             Stop(ChannelMarket);
             SelectedCharacter.Running = false;
+            Running = Characters.FirstOrDefault(p => p.Running) != null;
         });
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
             StopAll();
+            Running = false;
         });
         public ICommand RestorePosCommand => new RelayCommand(() =>
         {

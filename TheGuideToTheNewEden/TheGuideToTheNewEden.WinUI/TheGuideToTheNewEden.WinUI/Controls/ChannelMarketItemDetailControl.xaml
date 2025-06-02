@@ -22,9 +22,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock FontWeight="ExtraBold" Text="{Binding Item.TypeName}" />
+        <TextBlock FontWeight="ExtraBold" Text="{x:Bind Result.Item.TypeName,Mode=OneWay}" />
         <Button
             HorizontalAlignment="Right"
+            Click="Button_Click"
             Content="{StaticResource General_Detail}"
             FontSize="13"
             Style="{StaticResource LinkButton}" />

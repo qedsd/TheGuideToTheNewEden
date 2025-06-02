@@ -132,7 +132,8 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="channelmarket:ChannelMarketResult">
-                            <controls:ChannelMarketItemDetailControl Result="{Binding}" />
+                            <controls:ChannelMarketItemDetailControl Result="{Binding}" 
+                                                                     OnItemDetailClicked="ChannelMarketItemDetailControl_OnItemDetailClicked"/>
                             <!--<Grid
                                 Padding="16"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -317,7 +318,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <controls:ChannelMarketItemDetailControl Result="{x:Bind VM.Result, Mode=OneWay}" />
+                <controls:ChannelMarketItemDetailControl ItemDetailCommand="{x:Bind VM.DetailCommand}" Result="{x:Bind VM.Result, Mode=OneWay}" />
                 <TextBlock
                     Grid.Row="1"
                     Margin="0,12,0,8"

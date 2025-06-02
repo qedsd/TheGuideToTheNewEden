@@ -73,5 +73,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             return BasePage;
         }
+
+        public static void SwitchTo(object tabContent, string title = null)
+        {
+            HomePage.SwitchTo(tabContent, title);
+        }
     }
 }

@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
-using static Vanara.PInvoke.User32.RAWINPUT;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {

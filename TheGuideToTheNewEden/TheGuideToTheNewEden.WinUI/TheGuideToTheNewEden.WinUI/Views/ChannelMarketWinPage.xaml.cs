@@ -37,5 +37,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.GetBaseWindow().Hide();
         }
+
+        private void ChannelMarketItemDetailControl_OnItemDetailClicked(object sender, Core.DBModels.InvTypeBase e)
+        {
+            VM.DetailCommand.Execute(e);
+        }
     }
 }

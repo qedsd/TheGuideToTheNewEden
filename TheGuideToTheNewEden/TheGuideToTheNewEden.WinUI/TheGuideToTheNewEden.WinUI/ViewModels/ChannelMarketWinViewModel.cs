@@ -8,6 +8,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using TheGuideToTheNewEden.WinUI.Services;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -69,32 +70,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Results.Clear();
             Result = null;
             Window?.ShowWindowWaiting();
-            if (MutilItem)
+            try
             {
-                foreach (var marketChatContent in Contents)
+                if (MutilItem)
                 {
-                    foreach (var item in marketChatContent.Items)
+                    foreach (var marketChatContent in Contents)
                     {
-                        List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
-                        var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
-                        var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
-                        var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
-                        Results.Add(new ChannelMarketResult(item, sellOrders, buyOrders, statistics));
+                        foreach (var item in marketChatContent.Items)
+                        {
+                            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
+                            var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
+                            var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
+                            var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
+                            Results.Add(new ChannelMarketResult(item, sellOrders, buyOrders, statistics));
+                        }
                     }
+                    Sell5P = Results.Sum(p => p.Sell5P);
+                    Buy5P = Results.Sum(p => p.Buy5P);
+                    SellTop = Results.Sum(p => p.SellTop);
+                    BuyTop = Results.Sum(p => p.BuyTop);
                 }
-                Sell5P = Results.Sum(p => p.Sell5P);
-                Buy5P = Results.Sum(p => p.Buy5P);
-                SellTop = Results.Sum(p => p.SellTop);
-                BuyTop = Results.Sum(p => p.BuyTop);
+                else
+                {
+                    var item = marketChatContents.First().Items[0];
+                    List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
+                    var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
+                    var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
+                    var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
+                    Result = new ChannelMarketResult(item, sellOrders, buyOrders, statistics);
+                }
             }
-            else
+            catch(Exception ex)
             {
-                var item = marketChatContents.First().Items[0];
-                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID);
-                var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
-                var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
-                var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
-                Result = new ChannelMarketResult(item, sellOrders, buyOrders, statistics);
+                Core.Log.Error(ex);
+                Window?.ShowError(ex.Message);
             }
             Window?.HideWindowWaiting();
         }
@@ -106,7 +115,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand DetailCommand => new RelayCommand<InvTypeBase>((type) =>
         {
-            
+            MarketNavigationService.Current.NavigationTo(type.TypeID);
         });
     }
 }

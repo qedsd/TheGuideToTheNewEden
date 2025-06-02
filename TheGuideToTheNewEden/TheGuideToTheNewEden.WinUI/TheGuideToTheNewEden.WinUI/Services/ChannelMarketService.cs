@@ -58,39 +58,5 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Helpers.WindowHelper.CenterToScreen(_window);
             }
         }
-
-        public void Test()
-        {
-            _window ??= new Wins.ChannelMarketWindow();
-            _window.Activate();
-            List<MarketChatContent> contents = new List<MarketChatContent>()
-            {
-                new MarketChatContent()
-                {
-                    Listener = "QEDSD",
-                    Items = new List<InvTypeBase>()
-                    {
-                        new InvTypeBase()
-                        {
-                            TypeID = 34,
-                            TypeName ="三钛合金"
-                        }
-                    }
-                },
-                new MarketChatContent()
-                {
-                    Listener = "QEDSD",
-                    Items = new List<InvTypeBase>()
-                    {
-                        new InvTypeBase()
-                        {
-                            TypeID = 34,
-                            TypeName ="三钛合金"
-                        }
-                    }
-                },
-            };
-            Query(contents, 10000002);
-        }
     }
 }
