@@ -46,10 +46,5 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
             }
         }
-
-        private void MenuFlyoutItem_ClearNews_Click(object sender, RoutedEventArgs e)
-        {
-            ChatContents.Blocks.Clear();
-        }
     }
 }

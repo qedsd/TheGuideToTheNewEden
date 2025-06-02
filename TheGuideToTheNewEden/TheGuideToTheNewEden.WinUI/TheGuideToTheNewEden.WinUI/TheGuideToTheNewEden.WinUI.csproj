@@ -9,8 +9,8 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <ApplicationIcon>logo_128.ico</ApplicationIcon>
-    <PackageIcon>logo_128.png</PackageIcon>
+    <!--<ApplicationIcon>logo_128.ico</ApplicationIcon>
+    <PackageIcon>logo_128.png</PackageIcon>-->
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<AssemblyVersion>2.10.1.0</AssemblyVersion>
@@ -254,6 +254,7 @@
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
     <None Remove="logo_128.ico" />
+    <None Remove="logo_64.ico" />
     <None Remove="Resources\Languages\en-US\English.xaml" />
     <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -327,7 +328,12 @@
     <Content Include="logo_128.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="logo_32.ico" />
+    <Content Include="logo_32.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="logo_64.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -451,6 +457,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="logo_32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="logo_64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Configs\CapitalJumpShipInfo.json">
