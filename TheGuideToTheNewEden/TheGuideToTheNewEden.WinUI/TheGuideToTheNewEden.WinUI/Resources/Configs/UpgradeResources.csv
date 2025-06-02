@@ -3,30 +3,43 @@
 81621,Advanced Logistics Network,500,18100,25,0
 81619,Cynosural Suppression,250,4500,0,205
 81615,Cynosural Navigation,250,1500,0,205
-82499,Minor Threat Detection Array 1,200,1800,0,0
-82500,Minor Threat Detection Array 2,500,3800,0,0
-82492,Minor Threat Detection Array 3,700,5400,0,0
-82496,Major Threat Detection Array 1,400,2700,0,0
-82497,Major Threat Detection Array 2,900,5400,0,0
-82498,Major Threat Detection Array 3,1300,7300,0,0
-82579,Tritanium Prospecting Array 1,450,6400,0,0
-82592,Tritanium Prospecting Array 2,1220,12700,0,0
-87702,Tritanium Prospecting Array 3,1800,18100,0,0
-82589,Pyerite Prospecting Array 1,450,6400,0,0
-82588,Pyerite Prospecting Array 2,1220,12700,0,0
-87704,Pyerite Prospecting Array 3,1800,18100,0,0
-82591,Mexallon Prospecting Array 1,450,6400,0,0
-82590,Mexallon Prospecting Array 2,1220,12700,0,0
-87705,Mexallon Prospecting Array 3,1800,18100,0,0
-82581,Isogen Prospecting Array 1,450,6400,0,0
-82580,Isogen Prospecting Array 2,1220,12700,0,0
-87706,Isogen Prospecting Array 3,1800,18100,0,0
+82587,Megacyte Prospecting Array 1,450,6400,0,0
+82586,Megacyte Prospecting Array 2,1220,12700,0,0
+87709,Megacyte Prospecting Array 3,1800,18100,0,0
 82583,Nocxium Prospecting Array 1,450,6400,0,0
 82582,Nocxium Prospecting Array 2,1220,12700,0,0
 87707,Nocxium Prospecting Array 3,1800,18100,0,0
 82585,Zydrine Prospecting Array 1,450,6400,0,0
 82584,Zydrine Prospecting Array 2,1220,12700,0,0
 87708,Zydrine Prospecting Array 3,1800,18100,0,0
-82587,Megacyte Prospecting Array 1,450,6400,0,0
-82586,Megacyte Prospecting Array 2,1220,12700,0,0
-87709,Megacyte Prospecting Array 3,1800,18100,0,0
+82589,Pyerite Prospecting Array 1,450,6400,0,0
+82588,Pyerite Prospecting Array 2,1220,12700,0,0
+87704,Pyerite Prospecting Array 3,1800,18100,0,0
+82591,Mexallon Prospecting Array 1,450,6400,0,0
+82590,Mexallon Prospecting Array 2,1220,12700,0,0
+87705,Mexallon Prospecting Array 3,1800,18100,0,0
+82579,Tritanium Prospecting Array 1,450,6400,0,0
+82592,Tritanium Prospecting Array 2,1220,12700,0,0
+87702,Tritanium Prospecting Array 3,1800,18100,0,0
+82581,Isogen Prospecting Array 1,450,6400,0,0
+82580,Isogen Prospecting Array 2,1220,12700,0,0
+87706,Isogen Prospecting Array 3,1800,18100,0,0
+82496,Major Threat Detection Array 1,400,2700,0,0
+82497,Major Threat Detection Array 2,900,5400,0,0
+82498,Major Threat Detection Array 3,1300,7300,0,0
+82499,Minor Threat Detection Array 1,200,1800,0,0
+82500,Minor Threat Detection Array 2,500,3800,0,0
+82492,Minor Threat Detection Array 3,700,5400,0,0
+87948,Exploration Detector 1,400,4000,0,0
+87953,Exploration Detector 2,850,8000,0,0
+87954,Exploration Detector 3,1300,12000,0,0
+87949,Plasma Stability Generator,200,2700,0,7
+87950,Electric Stability Generator,200,2700,0,7
+87815,Gamma Stability Generator,200,2700,0,7
+87951,Exotic Stability Generator,200,2700,0,7
+87703,Power Monitoring Division 1,0,2500,8,0
+88221,Power Monitoring Division 2,0,10000,25,0
+88227,Power Monitoring Division 3,0,25000,42,0
+87710,Workforce Mecha-Tooling 1,200,0,8,0
+88228,Workforce Mecha-Tooling 2,500,0,25,0
+88229,Workforce Mecha-Tooling 3,800,0,42,0
