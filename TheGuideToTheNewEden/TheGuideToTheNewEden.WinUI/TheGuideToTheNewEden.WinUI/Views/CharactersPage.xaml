@@ -174,7 +174,7 @@
                                                 <controls1:ProgressBar
                                                     Grid.Row="1"
                                                     Margin="0,8,0,0"
-                                                    BarHeight="1"
+                                                    BarHeight="1.5"
                                                     Minimum="0"
                                                     ValueColor="{ThemeResource DefaultGreen}"
                                                     Value="{Binding SkillQueueRemainRatio}" />
