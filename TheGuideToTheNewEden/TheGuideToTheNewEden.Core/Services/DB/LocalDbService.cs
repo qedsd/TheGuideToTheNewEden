@@ -74,9 +74,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranInvTypeAsync(InvType invType)
         {
-            var type = await TranInvTypeAsync(invType.TypeID);
-            invType.TypeName = type?.TypeName;
-            invType.Description = type?.Description;
+            if(invType != null)
+            {
+                var type = await TranInvTypeAsync(invType.TypeID);
+                invType.TypeName = type?.TypeName;
+                invType.Description = type?.Description;
+            }
         }
         public static void TranInvType(InvType invType)
         {

@@ -971,8 +971,10 @@
     <x:String x:Key="MapSystemDetailDialog_Statistics">Statistics</x:String>
     <x:String x:Key="MapSystemDetailDialog_UpgradeList">Upgrade</x:String>
     <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">Planet Resource</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Celestial">Celestial</x:String>
     <x:String x:Key="MapSystemDetailDialog_JumpTos">Next To</x:String>
     <x:String x:Key="MapSystemDetailDialog_PlanetID">Planet ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetName">Planet Name</x:String>
     <x:String x:Key="MapSystemDetailDialog_Reagent">Reagent</x:String>
     <x:String x:Key="MapSystemDetailDialog_HarvestAmount">Harvest Amount/Hour</x:String>
 

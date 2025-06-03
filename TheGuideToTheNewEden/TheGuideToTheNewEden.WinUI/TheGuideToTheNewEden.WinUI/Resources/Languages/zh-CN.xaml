@@ -971,8 +971,10 @@
     <x:String x:Key="MapSystemDetailDialog_Statistics">统计信息</x:String>
     <x:String x:Key="MapSystemDetailDialog_UpgradeList">插件需求</x:String>
     <x:String x:Key="MapSystemDetailDialog_PlanetResourceList">行星资源</x:String>
+    <x:String x:Key="MapSystemDetailDialog_Celestial">天体</x:String>
     <x:String x:Key="MapSystemDetailDialog_JumpTos">相邻星系</x:String>
     <x:String x:Key="MapSystemDetailDialog_PlanetID">行星ID</x:String>
+    <x:String x:Key="MapSystemDetailDialog_PlanetName">行星名称</x:String>
     <x:String x:Key="MapSystemDetailDialog_Reagent">试剂</x:String>
     <x:String x:Key="MapSystemDetailDialog_HarvestAmount">产量/小时</x:String>
 

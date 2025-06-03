@@ -112,6 +112,11 @@
                 </PivotItem>
                 <PivotItem>
                     <PivotItem.Header>
+                        <TextBlock FontSize="14" Text="{StaticResource MapSystemDetailDialog_Celestial}" />
+                    </PivotItem.Header>
+                </PivotItem>
+                <PivotItem>
+                    <PivotItem.Header>
                         <TextBlock FontSize="14" Text="{StaticResource MapSystemDetailDialog_JumpTos}" />
                     </PivotItem.Header>
                 </PivotItem>
@@ -213,7 +218,7 @@
                     SelectionMode="Extended"
                     ShowGroupDropArea="False">
                     <dataGrid:SfDataGrid.Columns>
-                        <dataGrid:GridTextColumn HeaderText="{StaticResource MapSystemDetailDialog_PlanetID}" MappingName="MapDenormalize.ItemID" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MapSystemDetailDialog_PlanetName}" MappingName="MapDenormalize.ItemName" />
                         <dataGrid:GridNumericColumn
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MapPage_PlanetResource_Power}"
@@ -227,6 +232,31 @@
                             DisplayNumberFormat="N0"
                             HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
                             MappingName="SuperionicIce" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MapSystemDetailDialog_PlanetID}" MappingName="MapDenormalize.ItemID" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+            </Grid>
+            <Grid x:Name="CelestialListGrid" Visibility="Collapsed">
+                <dataGrid:SfDataGrid
+                    x:Name="CelestialList"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="True"
+                    AllowFiltering="True"
+                    AllowGrouping="False"
+                    AllowResizingColumns="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="Both"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="False">
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource General_Name}" MappingName="ItemName" />
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource MapSystemDetailDialog_PlanetID}" MappingName="ItemID" />
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
             </Grid>

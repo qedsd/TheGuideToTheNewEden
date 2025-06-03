@@ -66,7 +66,7 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             UpgradeList.ItemsSource = upgradeStatuses;
 
             ResourceDetailList.ItemsSource = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(mapSystemDetailInfo.System.SolarSystemID).Where(p=>p.ContainResource);
-
+            CelestialList.ItemsSource = MapDenormalizeService.QueryBySolarSystemID(mapSystemDetailInfo.System.SolarSystemID);
             ShipKillsTextBlock.Text = mapSystemDetailInfo.ShipKills.ToString();
             PodKillsTextBlock.Text = mapSystemDetailInfo.PodKills.ToString();
             NpcKillsTextBlock.Text = mapSystemDetailInfo.NpcKills.ToString();
@@ -98,12 +98,14 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             UpgradeListGrid.Visibility = Visibility.Collapsed;
             ResourceDetailListGrid.Visibility = Visibility.Collapsed;
             JumpTosListGrid.Visibility = Visibility.Collapsed;
+            CelestialListGrid.Visibility = Visibility.Collapsed;
             switch ((sender as Pivot).SelectedIndex)
             {
                 case 0: StatisticsGrid.Visibility = Visibility.Visible;break;
                 case 1: UpgradeListGrid.Visibility = Visibility.Visible; break;
                 case 2: ResourceDetailListGrid.Visibility = Visibility.Visible; break;
-                case 3: JumpTosListGrid.Visibility = Visibility.Visible; break;
+                case 3: CelestialListGrid.Visibility = Visibility.Visible; break;
+                case 4: JumpTosListGrid.Visibility = Visibility.Visible; break;
             }
         }
     }
