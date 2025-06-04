@@ -9,8 +9,7 @@
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <ApplicationIcon>logo_128.ico</ApplicationIcon>
-    <PackageIcon>logo_128.png</PackageIcon>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<AssemblyVersion>2.11.1.0</AssemblyVersion>
@@ -253,8 +252,7 @@
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
-    <None Remove="logo_128.ico" />
-    <None Remove="logo_64.ico" />
+    <None Remove="logo.ico" />
     <None Remove="Resources\Languages\en-US\English.xaml" />
     <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
@@ -325,13 +323,10 @@
     <None Remove="Views\ZKBHomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="logo_128.ico">
+    <Content Include="logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="logo_32.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="logo_64.ico">
+    <Content Include="Resources\Images\logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
