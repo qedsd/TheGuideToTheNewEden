@@ -177,12 +177,29 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return searchInvTypes;
         }
 
-        public static InvTypeBase QueryInvType(string name)
+        public static InvTypeBase QueryMarkeType(string name)
         {
-            var target = DBService.MainDb.Queryable<InvType>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
+            var target = DBService.MainDb.Queryable<InvType>().First(p =>p.MarketGroupID != null && name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
             if(target == null)
             {
-                return LocalDbService.QueryInvType(name);
+                var localTypes =  LocalDbService.QueryInvTypes(name);
+                if (localTypes.NotNullOrEmpty())
+                {
+                    var localTypeIds = localTypes.Select(p=>p.TypeID).ToList();
+                    var targetLocalType = DBService.MainDb.Queryable<InvType>().First(p => localTypeIds.Contains(p.TypeID) && p.MarketGroupID != null);
+                    if (targetLocalType != null)
+                    {
+                        return localTypes.First(p => p.TypeID == targetLocalType.TypeID);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {

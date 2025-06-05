@@ -94,6 +94,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.LocalDb.Queryable<InvTypeBase>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
         }
+        public static List<InvTypeBase> QueryInvTypes(string name)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().Where(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
         #endregion
 
         #region group

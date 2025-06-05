@@ -100,7 +100,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
             foreach (var item in array)
             {
                 if(string.IsNullOrEmpty(item)) continue;
-                var type = InvTypeService.QueryInvType(item.Trim());
+                var type = InvTypeService.QueryMarkeType(item.Trim());
                 if(type != null)
                 {
                     chatContent.Items.Add(type);
