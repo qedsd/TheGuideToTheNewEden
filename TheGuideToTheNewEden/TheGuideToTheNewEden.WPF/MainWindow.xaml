@@ -10,5 +10,5 @@
     Width="1000"
     Height="600"
     mc:Ignorable="d">
-    <views:GamePreviewMgrPage />
+    <views:GamePreviewMgrPage x:Name="GamePreviewMgrPage"/>
 </Window>

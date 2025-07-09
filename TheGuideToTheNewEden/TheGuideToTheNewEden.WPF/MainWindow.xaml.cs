@@ -20,6 +20,12 @@ namespace TheGuideToTheNewEden.WPF
             ActivationService.Init();
             Log.Init();
             InitializeComponent();
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            GamePreviewMgrPage.VM.Dispose();
         }
     }
 }
