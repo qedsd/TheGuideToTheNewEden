@@ -1,0 +1,99 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:clr="clr-namespace:System;assembly=mscorlib">
+    <clr:String x:Key="AppDisplayName">HMDb</clr:String>
+    <clr:String x:Key="Max">最大化</clr:String>
+    <clr:String x:Key="Min">最小化</clr:String>
+    <clr:String x:Key="Close">关闭</clr:String>
+    <clr:String x:Key="Test">测试</clr:String>
+    <clr:String x:Key="Entry">词条</clr:String>
+    <clr:String x:Key="Collection">集锦</clr:String>
+    <clr:String x:Key="Repository">仓库</clr:String>
+    <clr:String x:Key="Label">标签</clr:String>
+    <clr:String x:Key="LabelType">类型</clr:String>
+    <clr:String x:Key="MainMenuControl_Home">主页</clr:String>
+    <clr:String x:Key="MainMenuControl_Entry">词条</clr:String>
+    <clr:String x:Key="MainMenuControl_Collection">集锦</clr:String>
+    <clr:String x:Key="MainMenuControl_Setting">设置</clr:String>
+    <clr:String x:Key="Edit">编辑</clr:String>
+    <clr:String x:Key="Remove">移除</clr:String>
+    <clr:String x:Key="Delete">删除</clr:String>
+    <clr:String x:Key="Open">打开</clr:String>
+    <clr:String x:Key="Server">服务器</clr:String>
+    <clr:String x:Key="Add">添加</clr:String>
+    <clr:String x:Key="Confirm">确定</clr:String>
+    <clr:String x:Key="Cancel">取消</clr:String>
+    <clr:String x:Key="Name">名称</clr:String>
+    <clr:String x:Key="Folder">文件夹</clr:String>
+    <clr:String x:Key="Description">描述</clr:String>
+    <clr:String x:Key="CoverImg">封面</clr:String>
+    <clr:String x:Key="Rating">评分</clr:String>
+    <clr:String x:Key="ReleaseDate">上映</clr:String>
+    <clr:String x:Key="AddRepository">添加仓库</clr:String>
+    <clr:String x:Key="EditRepository">编辑仓库</clr:String>
+    <clr:String x:Key="EditRepository_InfoEmpty">仓库信息不能为空</clr:String>
+    <clr:String x:Key="AddRepository_Failed">添加仓库失败</clr:String>
+    <clr:String x:Key="EditRepository_DeleteFailed">移除仓库失败</clr:String>
+
+    <clr:String x:Key="AddLabel">添加标签</clr:String>
+    <clr:String x:Key="AddLabelType">添加标签类型</clr:String>
+    <clr:String x:Key="EditLabel">编辑标签</clr:String>
+    <clr:String x:Key="EditLabel_InfoEmpty">标签信息不能为空</clr:String>
+    <clr:String x:Key="AddLabel_Failed">添加标签失败</clr:String>
+    <clr:String x:Key="EditLabel_DeleteFailed">移除标签失败</clr:String>
+    <clr:String x:Key="EditLabel_InitLabelFalied">初始化标签失败</clr:String>
+    <clr:String x:Key="EditLabelType_NameEmpty">类型名称不能为空</clr:String>
+    <clr:String x:Key="AddLabelType_Failed">添加标签类型失败</clr:String>
+    <clr:String x:Key="EditLabelType_Failed">编辑标签类型失败</clr:String>
+
+    <clr:String x:Key="CreateTime">创建时间</clr:String>
+    <clr:String x:Key="UpdateTime">更新时间</clr:String>
+    <clr:String x:Key="Positive">正序</clr:String>
+    <clr:String x:Key="Reverse">反序</clr:String>
+
+    <clr:String x:Key="AddEntry_Falied">添加词条失败</clr:String>
+    <clr:String x:Key="AddEntry_InfoEmpty">信息不能为空</clr:String>
+
+    <clr:String x:Key="EntryDetail_Overview">概览</clr:String>
+    <clr:String x:Key="EntryDetail_Video">视频</clr:String>
+    <clr:String x:Key="EntryDetail_Image">图片</clr:String>
+    <clr:String x:Key="EntryDetail_Sub">字幕</clr:String>
+    <clr:String x:Key="EntryDetail_Other">其他</clr:String>
+    <clr:String x:Key="EntryDetail_EditName">编辑名称</clr:String>
+    <clr:String x:Key="EntryDetail_EditCover">编辑封面</clr:String>
+    <clr:String x:Key="EntryDetail_EditRating">编辑评分</clr:String>
+    <clr:String x:Key="EntryDetail_EditDesc">编辑简介</clr:String>
+    <clr:String x:Key="EntryDetail_EditLabel">编辑标签</clr:String>
+    <clr:String x:Key="EntryDetail_Open">打开</clr:String>
+    <clr:String x:Key="EntryDetail_OpenFolder">打开所在文件夹</clr:String>
+
+    <clr:String x:Key="EditEntryPage_AddEntry">添加词条</clr:String>
+    <clr:String x:Key="EditEntryPage_EditEntry">编辑词条</clr:String>
+    <clr:String x:Key="EditEntryPage_BaseInfo">基本</clr:String>
+    <clr:String x:Key="EditEntryPage_Label">标签</clr:String>
+    <clr:String x:Key="EditEntryPage_Other">其他</clr:String>
+    <clr:String x:Key="EditEntryPage_Delete">删除</clr:String>
+    <clr:String x:Key="EditEntryPage_DeleteFailed">删除失败</clr:String>
+
+    <clr:String x:Key="Error">错误</clr:String>
+
+    <clr:String x:Key="EditCollectionPage_Add">添加集锦</clr:String>
+    <clr:String x:Key="EditCollectionPage_Edit">编辑集锦</clr:String>
+    <clr:String x:Key="EditCollectionPage_NameEmpty">名称不能为空</clr:String>
+    <clr:String x:Key="EditCollectionPage_AddFalied">添加失败</clr:String>
+    <clr:String x:Key="EditCollectionPage_UpdateFalied">更新失败</clr:String>
+    <clr:String x:Key="EditCollectionPage_DeleteFalied">删除失败</clr:String>
+
+    <clr:String x:Key="CollectionDetailPage_CreateIn">创建于</clr:String>
+    <clr:String x:Key="CollectionDetailPage_UpdateIn">更新于</clr:String>
+    <clr:String x:Key="CollectionDetailPage_RemoveFailed">移除词条失败</clr:String>
+    <clr:String x:Key="CollectionDetailPage_AddEntry">添加词条</clr:String>
+
+    <clr:String x:Key="CollectionPage_OrderWay">排序方向</clr:String>
+    <clr:String x:Key="CollectionPage_CreateCollection">新建集锦</clr:String>
+
+    <clr:String x:Key="EntryPage_OrderWay">排序方向</clr:String>
+    <clr:String x:Key="EntryPage_CreateEntry">新建词条</clr:String>
+    <clr:String x:Key="EntryPage_Order">排序</clr:String>
+</ResourceDictionary>

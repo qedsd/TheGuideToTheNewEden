@@ -18,6 +18,11 @@ namespace EVESimulation
         public void Init(string rootPath)
         {
             _filePath = Path.Combine(rootPath, "gamelogs", $"{SessionStarted.ToString("yyyyMMdd")}_{SessionStarted.ToString("HHmmss")}_{ListenerID}.txt");
+            var folder = Path.GetDirectoryName(_filePath);
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
             File.Create(_filePath).Close();
             using (var streamWriter = new StreamWriter(_filePath, true, Encoding.Default))
             {

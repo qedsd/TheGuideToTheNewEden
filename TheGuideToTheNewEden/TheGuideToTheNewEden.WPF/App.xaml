@@ -1,0 +1,42 @@
+﻿<Application
+    x:Class="TheGuideToTheNewEden.WPF.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.WPF"
+    StartupUri="MainWindow.xaml"
+    ThemeMode="Dark">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--  使用Application.ThemeMode后无需声明以下  -->
+                <!--<ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />-->
+                <ResourceDictionary Source="/Resources/Styles/Custom.xaml" />
+                <ResourceDictionary Source="/Resources/Languages/zh-CN.xaml" />
+                <ResourceDictionary Source="/Resources/Styles/Colors_Dark.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToCollapsedConverter" IsNullOrEmptyToCollapsed="True" />
+            <converters:StringToVisibilityConverter x:Key="NullOrEmptyStringToVisibleConverter" IsNullOrEmptyToCollapsed="False" />
+            <converters:NullToBooleanConverter x:Key="NullToTrueConverter" />
+            <converters:NullToBooleanConverter x:Key="NullToFalseConverter" IsInverted="True" />
+            <converters:NullToBooleanConverter
+                x:Key="StringNullOrWhiteSpaceToFalseConverter"
+                EnforceNonWhiteSpaceString="True"
+                IsInverted="True" />
+            <converters:FileToNameConverter x:Key="FileToNameWithoutExtConverter" WithExtension="False" />
+            <converters:FileToNameConverter x:Key="FileToNameConverter" WithExtension="True" />
+            <converters:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" />
+            <converters:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" IsReverse="True" />
+            <converters:BoolReverseConverte x:Key="BoolReverseConverte" />
+            <converters:ZeroToNullConverter x:Key="ZeroToNullConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibleConverter" NullToVisible="True" />
+            <converters:NullToVisibilityConverter x:Key="NullToCollapsedConverter" NullToVisible="False" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToCollapsedConverter" ZeroToVisible="False" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibleConverter" ZeroToVisible="True" />
+            <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
+            <converters:DrawingColorToMediaColorConverter x:Key="DrawingColorToMediaColorConverter" />
+            <converters:StringMatchToVisibilityConverter x:Key="StringMatchToVisibleConverter" />
+        </ResourceDictionary>
+
+    </Application.Resources>
+</Application>

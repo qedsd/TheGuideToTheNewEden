@@ -19,6 +19,11 @@ namespace EVESimulation
         public void Init(string rootPath)
         {
             _filePath = Path.Combine(rootPath, "Chatlogs", $"{ChannelName}_{SessionStarted.ToString("yyyyMMdd")}_{SessionStarted.ToString("HHmmss")}_{ListenerID}.txt");
+            var folder = Path.GetDirectoryName(_filePath);
+            if(!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
             using (var streamWriter = new StreamWriter(_filePath, false, Encoding.Unicode))
             {
                 streamWriter.WriteLine();
