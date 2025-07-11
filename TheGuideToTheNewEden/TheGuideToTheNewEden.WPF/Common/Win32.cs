@@ -38,6 +38,11 @@ namespace TheGuideToTheNewEden.WPF.Common
         public const int SW_RESTORE = 9;
         public const int WS_EX_LAYERED = 0x00080000;
         public const uint LWA_ALPHA = 0x00000002;
+        public const int WS_EX_DLGMODALFRAME = 0x0001;
+        public const uint SWP_NOSIZE = 0x0001;
+        public const uint SWP_NOMOVE = 0x0002;
+        public const uint SWP_NOZORDER = 0x0004;
+        public const uint SWP_FRAMECHANGED = 0x0020;
 
         [DllImport("User32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);

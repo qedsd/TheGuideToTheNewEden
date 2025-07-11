@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF
@@ -21,6 +22,12 @@ namespace TheGuideToTheNewEden.WPF
             Log.Init();
             InitializeComponent();
             Closing += MainWindow_Closing;
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            IconHelper.RemoveIcon(this);
+            base.OnSourceInitialized(e);
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
