@@ -26,13 +26,13 @@ namespace TheGuideToTheNewEden.WPF
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            IconHelper.RemoveIcon(this);
+            //IconHelper.RemoveIcon(this);
             base.OnSourceInitialized(e);
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            GamePreviewMgrPage.VM.Dispose();
+            ShellPage.Dispose();
         }
     }
 }

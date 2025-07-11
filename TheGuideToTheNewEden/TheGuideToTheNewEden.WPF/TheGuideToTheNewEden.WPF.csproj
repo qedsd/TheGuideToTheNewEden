@@ -11,9 +11,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Images\logo_128.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\logo_128.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
