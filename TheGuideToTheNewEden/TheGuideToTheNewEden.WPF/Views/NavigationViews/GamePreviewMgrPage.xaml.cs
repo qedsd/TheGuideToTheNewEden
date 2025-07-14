@@ -10,9 +10,9 @@ using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WPF.Helpers;
 
-namespace TheGuideToTheNewEden.WPF.Views
+namespace TheGuideToTheNewEden.WPF.Views.NavigationViews
 {
-    public sealed partial class GamePreviewMgrPage : Page
+    public sealed partial class GamePreviewMgrPage : Page, IPage
     {
         public GamePreviewMgrPage()
         {
@@ -172,6 +172,11 @@ namespace TheGuideToTheNewEden.WPF.Views
             {
                 GlobalSetting.Visibility = Visibility.Visible;
             }
+        }
+
+        public void Init()
+        {
+            
         }
     }
 }

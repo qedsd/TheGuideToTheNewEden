@@ -4,7 +4,7 @@
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource DefaultForegroundBrush}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource ButtonSelectedForegroundBrush}" />
@@ -23,7 +23,7 @@
                 <Setter Property="Foreground" Value="Red" />
             </Trigger>
             <Trigger Property="IsMouseOver" Value="False">
-                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource DefaultForegroundBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -37,6 +37,12 @@
         x:Key="CancelButton"
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button" />
+    <Style
+        x:Key="LinkButton"
+        BasedOn="{StaticResource TransparentButton}"
+        TargetType="Button">
+        <Setter Property="Padding" Value="0" />
+    </Style>
     <Style
         x:Key="ReadOnlyTextBox"
         BasedOn="{StaticResource {x:Type TextBox}}"

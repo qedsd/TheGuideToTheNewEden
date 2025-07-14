@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.WPF.Common;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 
@@ -20,17 +21,80 @@ namespace TheGuideToTheNewEden.WPF
         {
             ActivationService.Init();
             Log.Init();
+            ClientServiceHelper.Init(Core.Log.GetLog());
             InitializeComponent();
-            Closing += MainWindow_Closing;
+            Closing += MainWindow_Closing2;
+            Initialized += MainWindow_Initialized;
         }
 
+        private void MainWindow_Initialized(object sender, EventArgs e)
+        {
+            
+        }
+        #region UI定制
         protected override void OnSourceInitialized(EventArgs e)
         {
-            //IconHelper.RemoveIcon(this);
+            SetCurrentValue(WindowStyleProperty, WindowStyle.SingleBorderWindow);
+
+            System.Windows.Shell.WindowChrome.SetWindowChrome(
+                this,
+                new System.Windows.Shell.WindowChrome
+                {
+                    CornerRadius = default,
+                    GlassFrameThickness = new Thickness(-1),
+                    ResizeBorderThickness = ResizeMode == ResizeMode.NoResize ? default : new Thickness(4),
+                    UseAeroCaptionButtons = false,
+                }
+            );
+            var handle = WindowHelper.GetWindowHandle(this);
+            var windowStyleLong = Win32.GetWindowLong(handle, Win32.GWL_STYLE);
+            windowStyleLong &= ~(int)Win32.SYSMENU;
+
+            IntPtr result = Win32.SetWindowLong(handle, Win32.GWL_STYLE, windowStyleLong);
+
             base.OnSourceInitialized(e);
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MinimizeWindow(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void MaximizeWindow(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.WindowState = WindowState.Normal;
+                MaximizeIcon.Text = "\uE922";
+            }
+            else
+            {
+                this.WindowState = WindowState.Maximized;
+                MaximizeIcon.Text = "\uE923";
+            }
+        }
+
+        private void CloseWindow(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void TopWindow(object sender, RoutedEventArgs e)
+        {
+            if (Topmost)
+            {
+                Topmost = false;
+                TopWindowIcon.Text = "\uE141";
+            }
+            else
+            {
+                Topmost = true;
+                TopWindowIcon.Text = "\uE196";
+            }
+        }
+        #endregion
+
+        private void MainWindow_Closing2(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ShellPage.Dispose();
         }

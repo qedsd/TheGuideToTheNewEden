@@ -1,13 +1,11 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Color x:Key="ForegroundColor">White</Color>
+    <Color x:Key="DefaultForegroundColor">White</Color>
+    <Color x:Key="SecondaryForegroundColor">#9fa1a2</Color>
     <Color x:Key="ThemeMainColor">Black</Color>
     <Color x:Key="PrimaryColor">#229fd6</Color>
     <Color x:Key="CancelColor">Red</Color>
-    <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource ForegroundColor}" />
-    <SolidColorBrush
-        x:Key="ForegroundBrush2"
-        Opacity="0.8"
-        Color="{DynamicResource ForegroundColor}" />
+    <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{DynamicResource DefaultForegroundColor}" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{DynamicResource SecondaryForegroundColor}" />
     <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
     <SolidColorBrush x:Key="MainBackgroudBrush2" Color="#202020" />
     <SolidColorBrush x:Key="MainBackgroudBrush" Color="#141922" />

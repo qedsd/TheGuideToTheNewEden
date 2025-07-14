@@ -8,11 +8,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Resources\Images\logo_128.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="logo.ico">
@@ -21,13 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\Images\logo_128.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="FluentIcons.Wpf" Version="1.1.303" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageReference Include="SharpVectors.Wpf" Version="1.8.4.2" />
     <PackageReference Include="Syncfusion.SfSkinManager.WPF" Version="30.1.38" />
     <PackageReference Include="Syncfusion.Shared.WPF" Version="30.1.38" />
     <PackageReference Include="Syncfusion.Themes.Windows11Dark.WPF" Version="30.1.38" />
@@ -46,6 +40,9 @@
 
   <ItemGroup>
     <None Update="Resources\Configs\Keyboardlist.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\logo.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -75,5 +75,10 @@ namespace TheGuideToTheNewEden.Core
         public static event LogMsgEvent OnError;
         public static event LogMsgEvent OnInfo;
         public static event LogMsgEvent OnWarn;
+
+        public static ILog GetLog()
+        {
+            return log;
+        }
     }
 }

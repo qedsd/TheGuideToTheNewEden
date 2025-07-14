@@ -4,4 +4,6 @@
     xmlns:clr="clr-namespace:System;assembly=mscorlib">
     <clr:String x:Key="AppDisplayName">新伊甸漫游指南</clr:String>
 
+    <clr:String x:Key="Navigation.HomePage">主页</clr:String>
+    <clr:String x:Key="Navigation.GamePreviewMgrPage">多开预览</clr:String>
 </ResourceDictionary>
