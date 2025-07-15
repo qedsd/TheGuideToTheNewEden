@@ -29,12 +29,13 @@ namespace TheGuideToTheNewEden.WPF
         #region UI定制
         protected override void OnSourceInitialized(EventArgs e)
         {
-            SetCurrentValue(WindowStyleProperty, WindowStyle.SingleBorderWindow);
+            SetCurrentValue(WindowStyleProperty, WindowStyle.SingleBorderWindow); 
 
             System.Windows.Shell.WindowChrome.SetWindowChrome(
                 this,
                 new System.Windows.Shell.WindowChrome
                 {
+                    CaptionHeight = 40,
                     CornerRadius = default,
                     GlassFrameThickness = new Thickness(-1),
                     ResizeBorderThickness = ResizeMode == ResizeMode.NoResize ? default : new Thickness(4),

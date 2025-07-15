@@ -140,7 +140,7 @@
             Grid.Column="1"
             Padding="0,34,0,0"
             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            CornerRadius="24,0,0,24">
+            CornerRadius="0,0,0,0">
             <Grid>
                 <Frame x:Name="ContentFrame" />
                 <controls:LoadingControl
