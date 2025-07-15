@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -253,28 +254,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private void GetSourceOrdersPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取源市场订单中（{page}页）");
             });
         }
         private void GetDestinationOrdersPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取目的市场订单中（{page}页）");
             });
         }
         private void GetSourceHistoryPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取源市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private void GetDestinationHistoryPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取目的市场订单历史中（{page}/{_typeCount}）");
             });

@@ -15,6 +15,7 @@ using TheGuideToTheNewEden.Core.Intel;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -345,7 +346,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 ZKBIntelContents.Add(e);
             });
@@ -353,7 +354,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void ChannelIntel_ChatContentEvent(object sender, IEnumerable<IntelChatContent> e)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (IntelChatContent content in e)
                 {

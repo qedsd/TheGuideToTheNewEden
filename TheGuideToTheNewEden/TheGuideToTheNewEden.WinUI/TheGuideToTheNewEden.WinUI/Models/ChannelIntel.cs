@@ -12,6 +12,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
@@ -398,7 +399,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
 
         private void Observer_OnWarningUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            _dispatcherQueue.TryEnqueue(() =>
+            _dispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var ch in news)
                 {
@@ -431,7 +432,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i), _nameDbs);
                 if (id > 0)
                 {
-                    _dispatcherQueue.TryEnqueue(async () =>
+                    _dispatcherQueue.SafelyTryEnqueue(async () =>
                     {
                         Setting.LocationID = id;
                         //LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
@@ -451,7 +452,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
             ZKBIntelEvent?.Invoke(this, e);
-            _dispatcherQueue.TryEnqueue(() =>
+            _dispatcherQueue.SafelyTryEnqueue(() =>
             {
                 var span = DateTime.UtcNow - e.Time;
                 string desc;

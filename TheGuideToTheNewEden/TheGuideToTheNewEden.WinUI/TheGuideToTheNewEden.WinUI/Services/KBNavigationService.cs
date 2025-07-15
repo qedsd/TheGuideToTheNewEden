@@ -78,7 +78,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (statistic != null)
             {
                 EntityStatistPage page = new EntityStatistPage(statistic,this);
-                _window.DispatcherQueue.TryEnqueue(() =>
+                _window.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
                     _addTabAction($"ZKB - {header}", page);
                 });
@@ -108,7 +108,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void NavigateToKM(Core.Models.KB.KBItemInfo info)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 KBDetailPage detailPage = new KBDetailPage(info, this);
                 string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;

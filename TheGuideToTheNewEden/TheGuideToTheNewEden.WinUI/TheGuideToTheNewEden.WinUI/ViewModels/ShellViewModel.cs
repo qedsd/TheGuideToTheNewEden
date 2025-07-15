@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Services;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Views;
@@ -78,14 +79,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         var resp = await esi.Status.Retrieve();
                         if(resp.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            Window?.DispatcherQueue.TryEnqueue(() =>
+                            Window?.DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 Players = resp.Data.Players.ToString("N0");
                             });
                         }
                         else
                         {
-                            Window?.DispatcherQueue.TryEnqueue(() =>
+                            Window?.DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 Players = "-";
                             });

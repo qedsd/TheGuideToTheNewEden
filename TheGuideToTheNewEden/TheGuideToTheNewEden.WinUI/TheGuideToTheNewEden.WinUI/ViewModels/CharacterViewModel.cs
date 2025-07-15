@@ -26,6 +26,7 @@ using TheGuideToTheNewEden.WinUI.Converters;
 using Vanara.PInvoke;
 using ESI.NET.Models.Location;
 using ESI.NET.Models.Universe;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -293,7 +294,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Core.Log.Error(ex);
                 Window?.ShowError(ex.Message);
             }
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _characterAvatar = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 512)));
                 _characterAvatar_Card = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 128)));

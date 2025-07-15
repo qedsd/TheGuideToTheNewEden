@@ -13,6 +13,7 @@ using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -199,7 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public event ContentUpdate OnContentUpdate;
         private void GameLogDelayMonitorService_OnGameLogDelayExpire(int id)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 GameLogMonitorNotifyService.Current.Notify(_gameLogItems[id], Helpers.ResourcesHelper.GetString("GameLogMonitorPage_DelayExpireTip"));
             });

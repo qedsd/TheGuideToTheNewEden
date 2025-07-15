@@ -14,6 +14,7 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -183,7 +184,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         #endregion
         public override void PrivateHideWindow()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 //RestoreTitlebarOp();
                 _thumbnailWindow?.Hide();
@@ -194,7 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateShowWindow(bool hHighlight = false)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 //RestoreTitlebarOp();
                 _thumbnailWindow?.Show();
@@ -319,7 +320,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _titleTextBlock.Foreground = TitleHighlightBrush;
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
@@ -331,7 +332,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateCancelHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _titleTextBlock.Foreground = TitleNormalBrush;
                 UpdateThumbnail();

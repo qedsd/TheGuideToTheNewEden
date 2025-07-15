@@ -6,6 +6,7 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Services;
+using Windows.UI.Popups;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI
@@ -36,6 +37,14 @@ namespace TheGuideToTheNewEden.WinUI
         {
             e.Handled = true;
             Log.Error(e.Exception);
+            try
+            {
+                (WindowHelper.MainWindow as BaseWindow)?.ShowError(e.Exception.Message);
+            }
+            catch
+            {
+
+            }
         }
         private void OnProcessExit(object sender, EventArgs e)
         {

@@ -19,6 +19,8 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using System.Threading;
+using System.Xml.Linq;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -63,7 +65,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void VM_OnContentUpdate(Core.Models.GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
         {
-            _window?.DispatcherQueue.TryEnqueue(() =>
+            _window?.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 AddContentsToUI(news);
             });

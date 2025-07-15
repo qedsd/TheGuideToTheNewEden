@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Services;
 using Microsoft.UI.Input;
 using WinUIEx;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -188,7 +189,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateHideWindow()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 RestoreTitlebarOp();
                 this.Hide();
@@ -198,7 +199,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateShowWindow(bool hHighlight = false)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 RestoreTitlebarOp();
                 this.Activate();
@@ -286,7 +287,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public override void PrivateHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
