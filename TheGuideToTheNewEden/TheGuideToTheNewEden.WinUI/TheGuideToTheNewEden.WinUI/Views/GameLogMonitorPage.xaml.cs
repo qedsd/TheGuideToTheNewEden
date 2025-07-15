@@ -18,6 +18,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -67,7 +68,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 AddContentsToUI(news);
             });
         }
-
         private void AddContentsToUI(IEnumerable<Core.Models.EVELogs.GameLogContent> news)
         {
             var lastParagraph = GameLogContents.Blocks.LastOrDefault() as Paragraph;
@@ -81,6 +81,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
             //删除超出显示数量的
             if (Services.Settings.GameLogsSettingService.MaxShowItems > 0)
             {
+                //可能存在news数量大于最大显示数量的情况，需要先把news处理
+                if (news.Count() > Services.Settings.GameLogsSettingService.MaxShowItems)
+                {
+                    news = news.Skip(news.Count() - Services.Settings.GameLogsSettingService.MaxShowItems);
+                }
                 int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + news.Count();
                 for (int i = 0; i < removeCount; i++)
                 {
@@ -106,7 +111,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 GameLogContents.Blocks.Add(paragraph);
                 lastRun = contentRun;
             }
-            if(lastRun != null)
+            if (lastRun != null)
             {
                 lastRun.FontWeight = FontWeights.Bold;
             }

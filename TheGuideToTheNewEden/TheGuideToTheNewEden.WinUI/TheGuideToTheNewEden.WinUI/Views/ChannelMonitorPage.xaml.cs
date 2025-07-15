@@ -64,6 +64,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 //删除超出显示数量的
                 if(Services.Settings.GameLogsSettingService.MaxShowItems > 0 )
                 {
+                    if (importants.Count() > Services.Settings.GameLogsSettingService.MaxShowItems)
+                    {
+                        importants = importants.Skip(importants.Count() - Services.Settings.GameLogsSettingService.MaxShowItems).ToList();
+                    }
                     int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + importants.Count;
                     for(int i = 0;i < removeCount; i++)
                     {
