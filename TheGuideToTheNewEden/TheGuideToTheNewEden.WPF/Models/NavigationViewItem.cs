@@ -20,7 +20,7 @@ namespace TheGuideToTheNewEden.WPF.Models
         public NavigationViewItem(Type type, string title)
         {
             Type = type;
-            Title = title;
+            Title = Helpers.ResourcesHelper.GetString(title);
         }
     }
 }

@@ -6,4 +6,24 @@
 
     <clr:String x:Key="Navigation.HomePage">主页</clr:String>
     <clr:String x:Key="Navigation.GamePreviewMgrPage">多开预览</clr:String>
+    <clr:String x:Key="Navigation.CharacterPage">角色</clr:String>
+    <clr:String x:Key="Navigation.MarketPage">市场</clr:String>
+    <clr:String x:Key="Navigation.BusinessPage">商业</clr:String>
+    <clr:String x:Key="Navigation.ChannelIntelPage">频道预警</clr:String>
+    <clr:String x:Key="Navigation.ContractPage">公开合同</clr:String>
+    <clr:String x:Key="Navigation.ServerPingPage">延迟测试</clr:String>
+    <clr:String x:Key="Navigation.TranslationPage">名词翻译</clr:String>
+    <clr:String x:Key="Navigation.DEDPage">死亡远征</clr:String>
+    <clr:String x:Key="Navigation.WormholePage">虫洞查询</clr:String>
+    <clr:String x:Key="Navigation.BackstoryPage">背景故事</clr:String>
+    <clr:String x:Key="Navigation.MissionPage">任务攻略</clr:String>
+    <clr:String x:Key="Navigation.GameLogMonitorPage">日志监控</clr:String>
+    <clr:String x:Key="Navigation.LinksPage">快速链接</clr:String>
+    <clr:String x:Key="Navigation.ChannelMonitorPage">频道监控</clr:String>
+    <clr:String x:Key="Navigation.SettingPage">设置</clr:String>
+    <clr:String x:Key="Navigation.ZKBPage">Zkillboard</clr:String>
+    <clr:String x:Key="Navigation.DatabasePage">数据库</clr:String>
+    <clr:String x:Key="Navigation.MapPage">星图</clr:String>
+    <clr:String x:Key="Navigation.ChannelScanPage">频道统计</clr:String>
+    <clr:String x:Key="Navigation.ChannelMarketPage">频道查价</clr:String>
 </ResourceDictionary>

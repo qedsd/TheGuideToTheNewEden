@@ -1,0 +1,146 @@
+﻿<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Controls.LoadingControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <StackPanel>
+        <Viewbox
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            Width="60"
+            Height="60"
+            HorizontalAlignment="Center"
+            Stretch="Uniform">
+            <Canvas
+                Name="svg27"
+                Width="32"
+                Height="32">
+                <Canvas.RenderTransform>
+                    <TranslateTransform X="0" Y="0" />
+                </Canvas.RenderTransform>
+                <Canvas.Resources />
+                <!--  Unknown tag: sodipodi:namedview  -->
+                <Canvas Name="g25">
+                    <Canvas.Resources>
+                        <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="IconifyId19806c0a80c345f138619" MappingMode="Absolute" StartPoint="18,24" EndPoint="14,3">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStopCollection>
+                                    <GradientStop Color="#6D37CD" />
+                                    <GradientStop Offset="1" Color="#EA71EF" />
+                                </GradientStopCollection>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                        <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="IconifyId19806c0a80c345f138620" MappingMode="Absolute" StartPoint="28,25" EndPoint="26,9">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStopCollection>
+                                    <GradientStop Color="#E23CB4" />
+                                    <GradientStop Offset="1" Color="#EA71EF" />
+                                </GradientStopCollection>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                        <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="IconifyId19806c0a80c345f138621" MappingMode="Absolute" StartPoint="3,16" EndPoint="16,23">
+                            <LinearGradientBrush.GradientStops>
+                                <GradientStopCollection>
+                                    <GradientStop Color="#36DFF1" />
+                                    <GradientStop Offset="1" Color="#0078D4" />
+                                </GradientStopCollection>
+                            </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                    </Canvas.Resources>
+                    <Path
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        Name="path2"
+                        Fill="{StaticResource IconifyId19806c0a80c345f138619}">
+                        <Path.RenderTransform>
+                            <TranslateTransform x:Name="transform3" X="0" Y="-2" />
+                        </Path.RenderTransform>
+                        <Path.Triggers>
+                            <EventTrigger RoutedEvent="Path.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard x:Name="storyboard3">
+                                        <DoubleAnimationUsingKeyFrames
+                                            RepeatBehavior="Forever"
+                                            Storyboard.TargetName="transform3"
+                                            Storyboard.TargetProperty="Y">
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0" Value="-2" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.25" Value="-4" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="-2" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.75" Value="0" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:1" Value="-2" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Path.Triggers>
+                        <Path.Data>
+                            <PathGeometry Figures="M12 6.5a3.5 3.5 0 1 1 7 0v19a3.5 3.5 0 1 1-7 0z" FillRule="NonZero" />
+                        </Path.Data>
+                    </Path>
+                    <Path
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        Name="path4"
+                        Fill="{StaticResource IconifyId19806c0a80c345f138620}">
+                        <Path.RenderTransform>
+                            <TranslateTransform x:Name="transform2" X="0" Y="-10" />
+                        </Path.RenderTransform>
+                        <Path.Triggers>
+                            <EventTrigger RoutedEvent="Path.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard x:Name="storyboard2">
+                                        <DoubleAnimationUsingKeyFrames
+                                            RepeatBehavior="Forever"
+                                            Storyboard.TargetName="transform2"
+                                            Storyboard.TargetProperty="Y">
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0" Value="-10" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="0" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:1" Value="-10" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Path.Triggers>
+                        <Path.Data>
+                            <PathGeometry Figures="M22 12.5a3.5 3.5 0 1 1 7 0v13a3.5 3.5 0 1 1-7 0z" FillRule="NonZero" />
+                        </Path.Data>
+                    </Path>
+                    <Path
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        Name="path6"
+                        Fill="{StaticResource IconifyId19806c0a80c345f138621}">
+                        <Path.RenderTransform>
+                            <TranslateTransform x:Name="transform1" X="0" Y="0" />
+                        </Path.RenderTransform>
+                        <Path.Triggers>
+                            <EventTrigger RoutedEvent="Path.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard x:Name="storyboard1">
+                                        <DoubleAnimationUsingKeyFrames
+                                            RepeatBehavior="Forever"
+                                            Storyboard.TargetName="transform1"
+                                            Storyboard.TargetProperty="Y">
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:0.5" Value="-16" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:1" Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Path.Triggers>
+                        <Path.Data>
+                            <PathGeometry Figures="M5.5 15A3.5 3.5 0 0 0 2 18.5v7a3.5 3.5 0 1 0 7 0v-7A3.5 3.5 0 0 0 5.5 15" FillRule="NonZero" />
+                        </Path.Data>
+                    </Path>
+                </Canvas>
+            </Canvas>
+        </Viewbox>
+        <TextBlock
+            x:Name="LoadingTip"
+            Margin="0,8,0,0"
+            HorizontalAlignment="Center"
+            Foreground="{DynamicResource DefaultForegroundBrush}"
+            Text="Loding..."
+            Visibility="Collapsed" />
+    </StackPanel>
+</UserControl>

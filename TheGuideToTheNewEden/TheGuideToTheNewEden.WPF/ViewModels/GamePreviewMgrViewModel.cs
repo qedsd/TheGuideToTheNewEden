@@ -127,7 +127,7 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
                 Settings = new ObservableCollection<PreviewItem>();
             }
             Processes = new ObservableCollection<ProcessInfo>();
-            Init();
+            //Init();
             ForegroundWindowService.Current.OnForegroundWindowChanged += Current_OnForegroundWindowChanged;
             ForegroundWindowService.Current.Start();
         }
@@ -386,11 +386,12 @@ namespace TheGuideToTheNewEden.WPF.ViewModels
             }
         }
         #endregion
-        private async void Init()
+        public async void Init()
         {
             ShowWaiting();
             StopGameMonitor();
             await RefreshProcesses();
+            ShowSuccess("刷新成功");
             SelectedProcess = null;
             StartGameMonitor();
             HideWaiting();

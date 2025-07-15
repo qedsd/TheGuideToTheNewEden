@@ -176,7 +176,7 @@ namespace TheGuideToTheNewEden.WPF.Views.NavigationViews
 
         public void Init()
         {
-            
+            VM.Init();
         }
     }
 }

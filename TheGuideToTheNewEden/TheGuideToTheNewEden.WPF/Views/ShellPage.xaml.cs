@@ -49,13 +49,32 @@ namespace TheGuideToTheNewEden.WPF.Views
             #endregion
 
             _navigationViewItems.Add(new NavigationViewItem(typeof(HomePage)));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.CharacterPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MarketPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.BusinessPage"));
             _navigationViewItems.Add(new NavigationViewItem(typeof(GamePreviewMgrPage)));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelIntelPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelMonitorPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelScanPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelMarketPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.GameLogMonitorPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.TranslationPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.DEDPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MissionPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.WormholePage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.LinksPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MapPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ZKBPage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.DatabasePage"));
+            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.SettingPage"));
         }
 
         private void ShellPage_Initialized(object sender, EventArgs e)
         {
-            ClientServiceHelper.GetRequiredService<Services.NavigationService>().Init(ContentFrame);
+            ClientServiceHelper.GetRequiredService<Services.NavigationService>().Init(ContentFrame, Loading, InfoBar);
             MenuList.ItemsSource = _navigationViewItems;
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            VersionTextBlock.Text = version.ToString();
         }
 
         public void Dispose()

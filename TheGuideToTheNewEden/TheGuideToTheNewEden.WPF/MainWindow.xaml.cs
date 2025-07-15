@@ -24,12 +24,7 @@ namespace TheGuideToTheNewEden.WPF
             ClientServiceHelper.Init(Core.Log.GetLog());
             InitializeComponent();
             Closing += MainWindow_Closing2;
-            Initialized += MainWindow_Initialized;
-        }
-
-        private void MainWindow_Initialized(object sender, EventArgs e)
-        {
-            
+            Helpers.WindowHelper.SetMainWindow(this);
         }
         #region UI定制
         protected override void OnSourceInitialized(EventArgs e)
