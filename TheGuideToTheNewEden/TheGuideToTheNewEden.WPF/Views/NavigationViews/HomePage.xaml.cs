@@ -30,5 +30,11 @@ namespace TheGuideToTheNewEden.WPF.Views.NavigationViews
         {
             
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ToolWindow toolWindow = new ToolWindow("ToolWindow", new Grid() { Background = new SolidColorBrush(Colors.Transparent) });
+            toolWindow.Show();
+        }
     }
 }

@@ -15,16 +15,12 @@ using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF
 {
-    public partial class MainWindow : Window
+    public partial class ToolWindow : Window
     {
-        public MainWindow()
+        public ToolWindow(string title, FrameworkElement content)
         {
-            ActivationService.Init();
-            Log.Init();
-            ClientServiceHelper.Init(Core.Log.GetLog());
             InitializeComponent();
-            Closing += MainWindow_Closing2;
-            WindowHelper.SetMainWindow(this);
+            ContentPresenter.Content = content;
             WindowHelper.TrackWindow(this);
         }
         #region UI定制
@@ -36,7 +32,7 @@ namespace TheGuideToTheNewEden.WPF
                 this,
                 new System.Windows.Shell.WindowChrome
                 {
-                    CaptionHeight = 40,
+                    CaptionHeight = 36,
                     CornerRadius = default,
                     GlassFrameThickness = new Thickness(-1),
                     ResizeBorderThickness = ResizeMode == ResizeMode.NoResize ? default : new Thickness(4),
@@ -73,7 +69,7 @@ namespace TheGuideToTheNewEden.WPF
 
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            this.Close();
         }
 
         private void TopWindow(object sender, RoutedEventArgs e)
@@ -91,9 +87,17 @@ namespace TheGuideToTheNewEden.WPF
         }
         #endregion
 
-        private void MainWindow_Closing2(object sender, System.ComponentModel.CancelEventArgs e)
+        public static new readonly DependencyProperty ContentProperty
+            = DependencyProperty.Register(
+                nameof(Content),
+                typeof(FrameworkElement),
+                typeof(ToolWindow),
+                new PropertyMetadata(null));
+
+        public new FrameworkElement Content
         {
-            ShellPage.Dispose();
+            get => (FrameworkElement)GetValue(ContentProperty);
+            set => SetValue(ContentProperty, value);
         }
     }
 }

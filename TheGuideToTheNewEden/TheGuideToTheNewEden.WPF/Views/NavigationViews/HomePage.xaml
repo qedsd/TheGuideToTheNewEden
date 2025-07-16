@@ -11,5 +11,8 @@
     d:DesignWidth="800"
     mc:Ignorable="d">
 
-    <Grid />
+    <Grid>
+        <Button Content="Test" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Click="Button_Click"/>
+    </Grid>
 </Page>
