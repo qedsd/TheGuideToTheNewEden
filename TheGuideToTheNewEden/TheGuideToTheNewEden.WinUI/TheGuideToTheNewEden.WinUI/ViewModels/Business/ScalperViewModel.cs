@@ -20,6 +20,7 @@ using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -287,12 +288,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
@@ -310,12 +311,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:

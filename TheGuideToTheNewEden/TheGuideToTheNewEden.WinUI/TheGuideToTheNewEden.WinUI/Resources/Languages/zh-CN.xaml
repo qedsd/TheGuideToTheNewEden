@@ -373,6 +373,10 @@
     <x:String x:Key="MarketSettingPage_MaxThread">ESI查询线程数</x:String>
     <x:String x:Key="MarketSettingPage_MaxThread_Desc">理论上越大越快，但过快会触发ESI请求限制</x:String>
     <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure">倒货跳过公开建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure_Desc">倒货获取星域/星系市场订单时，不获取公开的建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure">市场跳过公开建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">市场（包括频道市场）获取星域/星系市场订单时，不获取公开的建筑订单</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>
     <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>
