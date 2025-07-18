@@ -187,6 +187,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         {
             var newChanelInfo = GameLogHelper.GetChatChanelInfo(file);
             if (newChanelInfo != null
+                && newChanelInfo.Listener == ChatChanelInfo.Listener
                 && newChanelInfo.ChannelName == ChatChanelInfo.ChannelName
                 && newChanelInfo.SessionStarted > ChatChanelInfo.SessionStarted)
             {
