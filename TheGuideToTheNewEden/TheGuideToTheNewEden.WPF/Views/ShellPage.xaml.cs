@@ -66,7 +66,7 @@ namespace TheGuideToTheNewEden.WPF.Views
             _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MapPage"));
             _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ZKBPage"));
             _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.DatabasePage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.SettingPage"));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(SettingPage), "Navigation.SettingPage"));
         }
 
         private void ShellPage_Initialized(object sender, EventArgs e)

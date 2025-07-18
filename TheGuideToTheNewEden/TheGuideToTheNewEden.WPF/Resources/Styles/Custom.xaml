@@ -79,6 +79,33 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
+    <Style
+        x:Key="StretchListBoxItem"
+        BasedOn="{StaticResource {x:Type ListBoxItem}}"
+        TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style
+        x:Key="StretchListBox"
+        BasedOn="{StaticResource {x:Type ListBox}}"
+        TargetType="ListBox">
+        <Setter Property="ItemContainerStyle" Value="{StaticResource StretchListBoxItem}" />
+    </Style>
+    <Style
+        x:Key="SettingListBoxItem"
+        BasedOn="{StaticResource {x:Type ListBoxItem}}"
+        TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style
+        x:Key="SettingListBox"
+        BasedOn="{StaticResource {x:Type ListBox}}"
+        TargetType="ListBox">
+        <Setter Property="ItemContainerStyle" Value="{StaticResource SettingListBoxItem}" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
     <Color x:Key="RedColor">Red</Color>
     <Color x:Key="GreenColor">Green</Color>
     <Color x:Key="YellowColor">Yellow</Color>

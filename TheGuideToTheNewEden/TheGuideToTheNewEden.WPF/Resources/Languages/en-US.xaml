@@ -1,0 +1,55 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:clr="clr-namespace:System;assembly=mscorlib">
+    <clr:String x:Key="AppDisplayName">GNE</clr:String>
+
+    <clr:String x:Key="Navigation.HomePage">Home</clr:String>
+    <clr:String x:Key="Navigation.GamePreviewMgrPage">Game Preview</clr:String>
+    <clr:String x:Key="Navigation.CharacterPage">Characters</clr:String>
+    <clr:String x:Key="Navigation.MarketPage">Market</clr:String>
+    <clr:String x:Key="Navigation.BusinessPage">Business</clr:String>
+    <clr:String x:Key="Navigation.ChannelIntelPage">Channel Intel</clr:String>
+    <clr:String x:Key="Navigation.ContractPage">Public Contract</clr:String>
+    <clr:String x:Key="Navigation.ServerPingPage">Delay Test</clr:String>
+    <clr:String x:Key="Navigation.TranslationPage">Translation</clr:String>
+    <clr:String x:Key="Navigation.DEDPage">DED</clr:String>
+    <clr:String x:Key="Navigation.WormholePage">Wormhole</clr:String>
+    <clr:String x:Key="Navigation.BackstoryPage">Backstory</clr:String>
+    <clr:String x:Key="Navigation.MissionPage">Mission</clr:String>
+    <clr:String x:Key="Navigation.GameLogMonitorPage">Game Log Monitor</clr:String>
+    <clr:String x:Key="Navigation.LinksPage">Links</clr:String>
+    <clr:String x:Key="Navigation.ChannelMonitorPage">Channel Monitor</clr:String>
+    <clr:String x:Key="Navigation.SettingPage">Setting</clr:String>
+    <clr:String x:Key="Navigation.ZKBPage">Zkillboard</clr:String>
+    <clr:String x:Key="Navigation.DatabasePage">Database</clr:String>
+    <clr:String x:Key="Navigation.MapPage">Map</clr:String>
+    <clr:String x:Key="Navigation.ChannelScanPage">Channel Scan</clr:String>
+    <clr:String x:Key="Navigation.ChannelMarketPage">Channel Market</clr:String>
+
+    <clr:String x:Key="Navigation.SettingPage_General">General</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_Desc">设置软件主题、语言等通用设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_GameLog">Game Log</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_GameLog_Desc">设置游戏日志路径、显示数量、有效期等</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Structures">Structures</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Structures_Desc">管理玩家建筑</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Market">Market</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Market_Desc">市场查询相关设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Zkillboard">Zkillboard</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Zkillboard_Desc">国际服击杀板设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_ESIScope">ESI Scope</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_ESIScope_Desc">自定义添加角色时允许软件访问哪些权限</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Test">Test</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Test_Desc">测试软件基本功能，如播放声音、通知</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_KeyboardList">HotKey List</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_KeyboardList_Desc">查看多开预览使用到的快捷键</clr:String>
+
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme">App Theme</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Desc">设置软件UI显示主题颜色</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Light">Light</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Dark">Dark</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage">AppLanguage</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_Desc">设置软件UI显示语言</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_Zh">中文</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_En">English</clr:String>
+</ResourceDictionary>

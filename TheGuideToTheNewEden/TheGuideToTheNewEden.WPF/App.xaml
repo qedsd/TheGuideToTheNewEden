@@ -36,6 +36,7 @@
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
             <converters:DrawingColorToMediaColorConverter x:Key="DrawingColorToMediaColorConverter" />
             <converters:StringMatchToVisibilityConverter x:Key="StringMatchToVisibleConverter" />
+            <converters:DynamicResourceFromBindingConverter x:Key="DynamicResourceFromBindingConverter" />
         </ResourceDictionary>
 
     </Application.Resources>

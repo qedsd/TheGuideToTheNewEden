@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WPF.Helpers;
+using static Vanara.PInvoke.LANGID;
 
 namespace TheGuideToTheNewEden.WPF.Services
 {
@@ -11,6 +13,8 @@ namespace TheGuideToTheNewEden.WPF.Services
         public static void Init()
         {
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
+            AppThemeHelper.SetTheme(Core.Services.Settings.ThemeSelectorService.Theme);
+            AppLanguageHelper.SetLanguage(Core.Services.LanguageSelectorService.Value);
         }
         private static string GetSyncfusionLicense()
         {

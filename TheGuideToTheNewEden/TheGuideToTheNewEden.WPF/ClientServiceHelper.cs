@@ -46,6 +46,7 @@ namespace TheGuideToTheNewEden.WPF
         /// </summary>
         private void AddComponentsService()
         {
+            _serviceCollection.AddSingleton<SettingService>();
             _serviceCollection.AddSingleton<NavigationService>();
         }
         private void UseILog(ILog log)

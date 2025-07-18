@@ -10,7 +10,7 @@
     MinHeight="60"
     d:DesignHeight="200"
     d:DesignWidth="800"
-    Background="{DynamicResource SecondBackgroudBrush}"
+    Background="{DynamicResource FlyoutBackgroundBrush}"
     Opacity="0"
     mc:Ignorable="d">
     <Border

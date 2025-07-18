@@ -26,4 +26,30 @@
     <clr:String x:Key="Navigation.MapPage">星图</clr:String>
     <clr:String x:Key="Navigation.ChannelScanPage">频道统计</clr:String>
     <clr:String x:Key="Navigation.ChannelMarketPage">频道查价</clr:String>
+
+    <clr:String x:Key="Navigation.SettingPage_General">通用</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_Desc">设置软件主题、语言等通用设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_GameLog">游戏日志</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_GameLog_Desc">设置游戏日志路径、显示数量、有效期等</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Structures">玩家建筑</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Structures_Desc">管理玩家建筑</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Market">市场</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Market_Desc">市场查询相关设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Zkillboard">Zkillboard</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Zkillboard_Desc">国际服击杀板设置</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_ESIScope">ESI权限</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_ESIScope_Desc">自定义添加角色时允许软件访问哪些权限</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Test">测试</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_Test_Desc">测试软件基本功能，如播放声音、通知</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_KeyboardList">快捷键列表</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_KeyboardList_Desc">查看多开预览使用到的快捷键</clr:String>
+
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme">软件主题</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Desc">设置软件UI显示主题颜色</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Light">浅色</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppTheme_Dark">黑色</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage">软件语言</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_Desc">设置软件UI显示语言</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_Zh">中文</clr:String>
+    <clr:String x:Key="Navigation.SettingPage_General_AppLanguage_En">English</clr:String>
 </ResourceDictionary>

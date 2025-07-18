@@ -7,17 +7,12 @@
     <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{DynamicResource DefaultForegroundColor}" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{DynamicResource SecondaryForegroundColor}" />
     <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
-    <SolidColorBrush x:Key="MainBackgroudBrush2" Color="#202020" />
-    <SolidColorBrush x:Key="MainBackgroudBrush" Color="#141922" />
-    <SolidColorBrush x:Key="MainBackgroudBrush3" Color="#181b23" />
-    <SolidColorBrush x:Key="MainBackgroudBrush4" Color="#262d3a" />
-    <SolidColorBrush
-        x:Key="MainBackgroudBrushOpacity6"
-        Opacity="0.6"
-        Color="#141922" />
-    <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+    <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+    <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+    <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{DynamicResource FlyoutBackgroundColor}" />
     <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
     <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
+    <Color x:Key="FlyoutBackgroundColor">#1a212a</Color>
     <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
     <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
     <Color x:Key="ButtonSelectedForegroundColor">#229fd6</Color>

@@ -19,9 +19,9 @@ namespace TheGuideToTheNewEden.WPF
     {
         public MainWindow()
         {
-            ActivationService.Init();
             Log.Init();
             ClientServiceHelper.Init(Core.Log.GetLog());
+            ActivationService.Init();
             InitializeComponent();
             Closing += MainWindow_Closing2;
             WindowHelper.SetMainWindow(this);

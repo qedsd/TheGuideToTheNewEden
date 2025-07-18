@@ -9,6 +9,7 @@
     xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    Foreground="{DynamicResource DefaultForegroundBrush}"
     mc:Ignorable="d">
 
     <Grid Margin="0">
@@ -36,7 +37,7 @@
                     FontFamily="Calibri "
                     FontSize="16"
                     FontWeight="Heavy"
-                    Text="{StaticResource AppDisplayName}" />
+                    Text="{DynamicResource AppDisplayName}" />
             </StackPanel>
             <!--  菜单  -->
             <ListBox
@@ -44,37 +45,15 @@
                 Grid.Row="1"
                 Margin="0,0"
                 Background="Transparent"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
                 SelectedIndex="0"
                 SelectionChanged="MenuList_SelectionChanged"
                 SelectionMode="Single">
-                <!--<ListBox.ItemsSource>
-                    <x:Array xmlns:sys="clr-namespace:System;assembly=mscorlib" Type="sys:String">
-                        <sys:String>主页</sys:String>
-                        <sys:String>角色</sys:String>
-                        <sys:String>多开预览</sys:String>
-                        <sys:String>市场</sys:String>
-                        <sys:String>商业</sys:String>
-                        <sys:String>频道预警</sys:String>
-                        <sys:String>频道统计</sys:String>
-                        <sys:String>频道查价</sys:String>
-                        <sys:String>频道监控</sys:String>
-                        <sys:String>日志监控</sys:String>
-                        <sys:String>虫洞</sys:String>
-                        <sys:String>死亡远征</sys:String>
-                        <sys:String>任务</sys:String>
-                        <sys:String>快速链接</sys:String>
-                        <sys:String>Zkillboard</sys:String>
-                        <sys:String>翻译</sys:String>
-                        <sys:String>数据库</sys:String>
-                        <sys:String>星图</sys:String>
-                        <sys:String>设置</sys:String>
-                    </x:Array>
-                </ListBox.ItemsSource>-->
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border x:Name="border">
-                            <TextBlock Margin="8,0" Text="{Binding Title}" />
+                            <TextBlock Margin="8,0" Text="{Binding Title, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DynamicResourceFromBindingConverter}}" />
                         </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -138,9 +117,9 @@
         <!--  内容  -->
         <Border
             Grid.Column="1"
-            Padding="0,34,0,0"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            CornerRadius="0,0,0,0">
+            Padding="4,34,4,4"
+            Background="{DynamicResource DefaultBackgroudBrush}"
+            CornerRadius="0">
             <Grid>
                 <Frame x:Name="ContentFrame" />
                 <controls:LoadingControl
@@ -152,7 +131,8 @@
                     x:Name="InfoBar"
                     Margin="0,0,0,16"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom" />
+                    VerticalAlignment="Bottom"
+                    Visibility="Collapsed" />
             </Grid>
         </Border>
     </Grid>

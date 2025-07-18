@@ -7,9 +7,10 @@
     xmlns:local="clr-namespace:TheGuideToTheNewEden.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="clr-namespace:TheGuideToTheNewEden.WPF.Views"
-    Title="{StaticResource AppDisplayName}"
+    Title="{DynamicResource AppDisplayName}"
     Width="1000"
     Height="600"
+    Foreground="{DynamicResource DefaultForegroundBrush}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.Resources>

@@ -30,11 +30,18 @@ namespace TheGuideToTheNewEden.WPF.Controls
             InitializeComponent();
             _showStoryboard = CreateStoryboard(0,1,0.2);
             _hideStoryboard = CreateStoryboard(1, 0, 0.2);
+            _hideStoryboard.Completed += HideStoryboard_Completed;
             _infoBrush = Helpers.ResourcesHelper.Get("GrayBrush") as SolidColorBrush;
             _warningBrush = Helpers.ResourcesHelper.Get("YellowBrush") as SolidColorBrush;
             _errorBrush = Helpers.ResourcesHelper.Get("RedBrush") as SolidColorBrush;
             _successBrush = Helpers.ResourcesHelper.Get("GreenBrush") as SolidColorBrush;
         }
+
+        private void HideStoryboard_Completed(object sender, EventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
+        }
+
         private Storyboard CreateStoryboard(double from , double to, double seconds)
         {
             Storyboard storyboard = new Storyboard();
@@ -76,6 +83,7 @@ namespace TheGuideToTheNewEden.WPF.Controls
                     case InfoType.Error: MainBorder.BorderBrush = _errorBrush; break;
                     case InfoType.Success: MainBorder.BorderBrush = _successBrush; break;
                 }
+                this.Visibility = Visibility.Visible;
                 _showStoryboard.Begin();
                 if (autoClose)
                 {

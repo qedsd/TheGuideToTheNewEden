@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Settings.GeneralSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ic="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.WPF.Views.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="clr-namespace:TheGuideToTheNewEden.WPF.ViewModels"
+    Title="GeneralSettingPage"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:GeneralSettingViewModel x:Name="VM" />
+    </Page.DataContext>
+    <ListBox Style="{StaticResource SettingListBox}">
+        <ListBoxItem>
+            <controls:SettingControl SettingDescription="{DynamicResource Navigation.SettingPage_General_AppTheme_Desc}" SettingTitle="{DynamicResource Navigation.SettingPage_General_AppTheme}">
+                <controls:SettingControl.Icon>
+                    <ic:FluentIcon
+                        Icon="DarkTheme"
+                        IconSize="Resizable"
+                        IconVariant="Regular" />
+                </controls:SettingControl.Icon>
+                <controls:SettingControl.SettingContent>
+                    <ComboBox Width="160" SelectedIndex="{Binding AppTheme, Mode=TwoWay}">
+                        <ComboBoxItem Content="{DynamicResource Navigation.SettingPage_General_AppTheme_Light}" />
+                        <ComboBoxItem Content="{DynamicResource Navigation.SettingPage_General_AppTheme_Dark}" />
+                    </ComboBox>
+                </controls:SettingControl.SettingContent>
+            </controls:SettingControl>
+        </ListBoxItem>
+        <ListBoxItem>
+            <controls:SettingControl SettingDescription="{DynamicResource Navigation.SettingPage_General_AppLanguage_Desc}" SettingTitle="{DynamicResource Navigation.SettingPage_General_AppLanguage}">
+                <controls:SettingControl.Icon>
+                    <ic:FluentIcon
+                        Icon="LocalLanguage"
+                        IconSize="Resizable"
+                        IconVariant="Regular" />
+                </controls:SettingControl.Icon>
+                <controls:SettingControl.SettingContent>
+                    <ComboBox Width="160" SelectedIndex="{Binding AppLanguage, Mode=TwoWay}">
+                        <ComboBoxItem Content="{DynamicResource Navigation.SettingPage_General_AppLanguage_Zh}" />
+                        <ComboBoxItem Content="{DynamicResource Navigation.SettingPage_General_AppLanguage_En}" />
+                    </ComboBox>
+                </controls:SettingControl.SettingContent>
+            </controls:SettingControl>
+        </ListBoxItem>
+    </ListBox>
+</Page>
