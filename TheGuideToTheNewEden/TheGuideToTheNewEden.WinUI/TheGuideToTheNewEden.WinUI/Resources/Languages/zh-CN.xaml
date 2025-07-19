@@ -354,6 +354,9 @@
     <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
     <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_ClickToCopy">点击列表即可复制到剪贴板</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_CopyAll">复制全部</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_Success">已复制列表，在游戏批量购买界面粘贴即可</x:String>
     <x:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</x:String>
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>

@@ -354,6 +354,9 @@
     <x:String x:Key="BusinessPage_TargetSales">Target Sales</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">Add To Shopping Cart</x:String>
     <x:String x:Key="BusinessPage_CopyToGameOrder">Copy as game bulk purchase order</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_ClickToCopy">Click on the list to copy it to the clipboard</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_CopyAll">Copy All</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_Success">The list has been copied and pasted in the game's bulk buy screen</x:String>
     <x:String x:Key="BusinessPage_PasteFromGameOrder">Import and update the quantity of related items from individual orders in the game</x:String>
     <x:String x:Key="BusinessPage_SaveOrder">Save shopping cart list</x:String>
     <x:String x:Key="BusinessPage_Edit">Edit</x:String>
