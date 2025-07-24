@@ -194,7 +194,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void TaskbarIcon_Exit_Click(object sender, RoutedEventArgs e)
         {
             App.HandleClosedEvents = false;
-            TaskbarIcon.Dispose();
+            //TaskbarIcon.Dispose();
             Helpers.WindowHelper.MainWindow.Close();
         }
         private ICommand ShowCommand => new RelayCommand(() =>
@@ -204,7 +204,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private ICommand ExitCommand => new RelayCommand(() =>
         {
             App.HandleClosedEvents = false;
-            TaskbarIcon.Dispose();
+            //TaskbarIcon.Dispose();
             Helpers.WindowHelper.MainWindow.Close();
         });
         #endregion

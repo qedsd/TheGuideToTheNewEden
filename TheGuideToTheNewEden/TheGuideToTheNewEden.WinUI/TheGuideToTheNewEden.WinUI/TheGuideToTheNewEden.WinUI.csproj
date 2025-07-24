@@ -10,7 +10,7 @@
     <ApplicationIcon>logo.ico</ApplicationIcon>
 	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.11.1.0</AssemblyVersion>
+	<AssemblyVersion>3.0.0.0</AssemblyVersion>
 	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<!--package需注释掉-->
@@ -324,9 +324,6 @@
     <Content Include="logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\Images\logo.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -337,14 +334,14 @@
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.2.0" />
     <PackageReference Include="log4net" Version="3.1.0" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="29.2.9" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="29.2.9" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="29.2.9" />
-    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="29.2.9" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="30.1.41" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="30.1.41" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="30.1.41" />
+    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="30.1.41" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.1.4" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.1.4" />
@@ -587,17 +584,8 @@
     <None Update="Resources\Images\LinkIcons\zkb.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Images\logo_128.ico">
+    <None Update="Resources\Images\logo.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\logo_128.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\logo_32.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\logo_32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Page Update="Views\ChannelMarketPage.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -46,7 +46,7 @@ namespace TheGuideToTheNewEden.WinUI
         public void Init(bool useThemeService, bool useBackground, bool hideCaptionButton)
         {
             this.InitializeComponent();
-            if(useThemeService)
+            if (useThemeService)
             {
                 ThemeService = new WinUICommunity.ThemeService();
                 ThemeService.Initialize(this, false);
@@ -61,12 +61,12 @@ namespace TheGuideToTheNewEden.WinUI
             TitleBarHeight = (int)(WindowHelper.GetTitleBarHeight(WindowHelper.GetWindowHandle(this)) / Helpers.WindowHelper.GetDpiScale(this));//只能在ExtendsContentIntoTitleBar前获取，之后会变为0
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
             Helpers.WindowHelper.TrackWindow(this);
-            
+
             Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.ico"));
             if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
             {
-                if(!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue))
+                if (!string.IsNullOrEmpty(BackdropSelectorService.CustomPictureFileValue))
                 {
                     LoadCustomPicture();
                 }
@@ -78,20 +78,6 @@ namespace TheGuideToTheNewEden.WinUI
                 var presenter = Helpers.WindowHelper.GetOverlappedPresenter(this);
                 presenter.SetBorderAndTitleBar(true, false);
             }
-            
-            //var titleBar = WindowHelper.GetAppWindow(this).TitleBar;
-            //titleBar.ForegroundColor = Colors.Green;
-            //titleBar.BackgroundColor = Colors.Green;
-            //titleBar.ButtonForegroundColor = Colors.Yellow;
-            //titleBar.ButtonBackgroundColor = Colors.Transparent;
-            //titleBar.ButtonHoverForegroundColor = Colors.Gainsboro;
-            //titleBar.ButtonHoverBackgroundColor = Colors.DarkSeaGreen;
-            //titleBar.ButtonPressedForegroundColor = Colors.Gray;
-            //titleBar.ButtonPressedBackgroundColor = Colors.LightGreen;
-            //titleBar.InactiveForegroundColor = Colors.Yellow;
-            //titleBar.InactiveBackgroundColor = Colors.Yellow;
-            //titleBar.ButtonInactiveForegroundColor = Colors.Yellow;
-            //titleBar.ButtonInactiveBackgroundColor = Colors.Yellow;
         }
         public object MainContent
         {

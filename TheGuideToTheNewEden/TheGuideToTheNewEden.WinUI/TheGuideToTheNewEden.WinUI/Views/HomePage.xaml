@@ -15,7 +15,7 @@
         </MenuFlyout>
     </Page.Resources>
     <Grid>
-        <tb:TaskbarIcon
+        <!--<tb:TaskbarIcon
             x:Name="TaskbarIcon"
             IconSource="/Resources/Images/logo_32.ico"
             LeftClickCommand="{x:Bind ShowCommand}"
@@ -29,7 +29,7 @@
                     <MenuFlyoutItem Command="{x:Bind ExitCommand}" Text="{StaticResource TaskbarIcon_Exit}" />
                 </MenuFlyout>
             </tb:TaskbarIcon.ContextFlyout>
-        </tb:TaskbarIcon>
+        </tb:TaskbarIcon>-->
         <TabView
             x:Name="TabView"
             Padding="0,0,0,0"
