@@ -20,9 +20,7 @@
                     <EntranceThemeTransition FromVerticalOffset="50" IsStaggeringEnabled="True" />
                 </TransitionCollection>
             </StackPanel.ChildrenTransitions>
-            <controls:ExpandableSettingControl
-                Title="{StaticResource Setting_UILanguage_Title}"
-                Description="{StaticResource Setting_UILanguage_Description}">
+            <controls:ExpandableSettingControl Title="{StaticResource Setting_UILanguage_Title}" Description="{StaticResource Setting_UILanguage_Description}">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Width="128" SelectedIndex="{x:Bind VM.SelectedUILanguageIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="中文" />
@@ -163,25 +161,25 @@
                 <controls:ExpandableSettingControl.ExpandableContent>
                     <RichTextBlock Margin="60,10">
                         <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P1}"/>
-                            <Run Text="{StaticResource Setting_About_P2}"/>
+                            <Run Text="{StaticResource Setting_About_P1}" />
+                            <Run Text="{StaticResource Setting_About_P2}" />
                             <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
                         </Paragraph>
                         <Paragraph />
                         <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P3}"/>
+                            <Run Text="{StaticResource Setting_About_P3}" />
                             <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
                             <Run>。</Run>
                         </Paragraph>
                         <Paragraph />
                         <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P4}"/>
+                            <Run Text="{StaticResource Setting_About_P4}" />
                             <Run FontWeight="Medium">QEDSD</Run>
                             <Run>，</Run>
-                            <Run Text="{StaticResource Setting_About_P5}"/>
+                            <Run Text="{StaticResource Setting_About_P5}" />
                             <Run FontWeight="Medium">784194289</Run>
                             <Run>，</Run>
-                            <Run Text="{StaticResource Setting_About_P6}"/>
+                            <Run Text="{StaticResource Setting_About_P6}" />
                         </Paragraph>
                     </RichTextBlock>
                 </controls:ExpandableSettingControl.ExpandableContent>

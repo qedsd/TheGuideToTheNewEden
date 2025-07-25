@@ -49,12 +49,12 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_AddWaypoint}" />
                                     <controls:MapSystemSelectorControl
-                                        ShowSpecial="False"
                                         x:Name="MapSystemSelector"
                                         Grid.Column="1"
                                         Height="34"
                                         Margin="0,4"
-                                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+                                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged"
+                                        ShowSpecial="False" />
                                 </Grid>
                                 <ListView x:Name="WaypointsListView" Grid.Row="1">
                                     <ListView.ItemTemplate>
@@ -133,13 +133,13 @@
                                                                 <RowDefinition />
                                                             </Grid.RowDefinitions>
                                                             <controls:MapSystemSelectorControl
-                                                                ShowSpecial="False"
                                                                 x:Name="AvoidSystemSelector"
                                                                 Grid.Column="1"
                                                                 Width="200"
                                                                 Height="32"
                                                                 Margin="0,4"
-                                                                OnSelectedItemChanged="AvoidSystemSelector_OnSelectedItemChanged" />
+                                                                OnSelectedItemChanged="AvoidSystemSelector_OnSelectedItemChanged"
+                                                                ShowSpecial="False" />
                                                             <ListView x:Name="AvoidSystemListView" Grid.Row="1">
                                                                 <ListView.ItemTemplate>
                                                                     <DataTemplate>

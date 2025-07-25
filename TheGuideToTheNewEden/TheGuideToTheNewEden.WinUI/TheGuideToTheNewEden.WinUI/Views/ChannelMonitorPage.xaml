@@ -104,7 +104,7 @@
             Grid.Column="1"
             Width="400"
             Margin="4,0"
-            Visibility="{x:Bind VM.SelectedCharacter,Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
             </controls1:CardControl.Header>

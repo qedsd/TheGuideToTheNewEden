@@ -84,8 +84,10 @@
                 </ComboBox>
             </controls1:CardControl.Fonter>
         </controls1:CardControl>
-        <controls1:CardControl Grid.Column="1" Visibility="{x:Bind VM.BackstoryContent, Converter={StaticResource NullToCollapsedConverter}, Mode=OneWay}"
-                               Margin="4,0">
+        <controls1:CardControl
+            Grid.Column="1"
+            Margin="4,0"
+            Visibility="{x:Bind VM.BackstoryContent, Converter={StaticResource NullToCollapsedConverter}, Mode=OneWay}">
             <controls1:CardControl.Header>
                 <StackPanel Margin="0,8">
                     <TextBlock

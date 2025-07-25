@@ -24,6 +24,24 @@
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
             <SolidColorBrush x:Key="ThemeBorderBrush">Gray</SolidColorBrush>
+            <Color x:Key="DefaultForegroundColor">White</Color>
+            <Color x:Key="SecondaryForegroundColor">#9fa1a2</Color>
+            <Color x:Key="PrimaryColor">#229fd6</Color>
+            <Color x:Key="CancelColor">Red</Color>
+            <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />
+            <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
+            <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+            <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
+            <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
+            <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
+            <Color x:Key="FlyoutBackgroundColor">#1a212a</Color>
+            <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+            <Color x:Key="ButtonSelectedForegroundColor">#229fd6</Color>
+            <SolidColorBrush x:Key="ButtonSelectedForegroundBrush" Color="{StaticResource ButtonSelectedForegroundColor}" />
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+            <SolidColorBrush x:Key="CancelBrush" Color="{StaticResource CancelColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Color x:Key="DefaultGray">#30000000</Color>
@@ -55,6 +73,24 @@
                 Opacity="0.3"
                 Color="{ThemeResource ThemeMainColor}" />
             <SolidColorBrush x:Key="ThemeBorderBrush">LightGray</SolidColorBrush>
+            <Color x:Key="DefaultForegroundColor">Black</Color>
+            <Color x:Key="SecondaryForegroundColor">#C8000000</Color>
+            <Color x:Key="PrimaryColor">#229fd6</Color>
+            <Color x:Key="CancelColor">Red</Color>
+            <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />
+            <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
+            <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+            <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
+            <Color x:Key="CardBackgroundFillColorDefault">#96fbfdff</Color>
+            <Color x:Key="CardBackgroundFillColorSecondary">#fefefe</Color>
+            <Color x:Key="FlyoutBackgroundColor">#f0f4f9</Color>
+            <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+            <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+            <Color x:Key="ButtonSelectedForegroundColor">#229fd6</Color>
+            <SolidColorBrush x:Key="ButtonSelectedForegroundBrush" Color="{StaticResource ButtonSelectedForegroundColor}" />
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+            <SolidColorBrush x:Key="CancelBrush" Color="{StaticResource CancelColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <SolidColorBrush x:Key="SystemSecurityForeground1" Color="#24d7f9" />

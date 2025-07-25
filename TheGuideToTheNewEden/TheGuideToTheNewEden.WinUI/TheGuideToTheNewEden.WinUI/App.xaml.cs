@@ -51,12 +51,9 @@ namespace TheGuideToTheNewEden.WinUI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             Services.ActivationService.Init();
-            m_window = new BaseWindow()
-            {
-                MainContent = new Views.HomePage()
-            };
+            ClientServiceHelper.Init(Log.GetInstance());
+            m_window = new MainWindow();
             m_window.Closed += M_window_Closed;
-            (m_window as BaseWindow).SetTavViewHomeMode();
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();

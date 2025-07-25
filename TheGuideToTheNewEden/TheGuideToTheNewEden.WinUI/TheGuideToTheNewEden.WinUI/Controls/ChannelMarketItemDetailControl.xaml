@@ -22,7 +22,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock FontWeight="ExtraBold" Text="{x:Bind Result.Item.TypeName,Mode=OneWay}" />
+        <TextBlock FontWeight="ExtraBold" Text="{x:Bind Result.Item.TypeName, Mode=OneWay}" />
         <Button
             HorizontalAlignment="Right"
             Click="Button_Click"

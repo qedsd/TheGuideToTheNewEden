@@ -35,8 +35,8 @@
             <dataGrid:SfDataGrid.Columns>
                 <dataGrid:GridTemplateColumn
                     Width="80"
-                    HeaderText="{StaticResource KBListControl_Time}"
                     AllowSorting="True"
+                    HeaderText="{StaticResource KBListControl_Time}"
                     MappingName="SKBDetail.KillmailTime">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="kb:KBItemInfo">
@@ -100,9 +100,9 @@
                                         </Button.Content>
                                     </Button>
                                     <Button
-                                        Click="Button_Group_Clicked"
                                         Grid.Row="1"
                                         VerticalAlignment="Center"
+                                        Click="Button_Group_Clicked"
                                         Content="{x:Bind Group.GroupName}"
                                         FontSize="12"
                                         FontWeight="Light"

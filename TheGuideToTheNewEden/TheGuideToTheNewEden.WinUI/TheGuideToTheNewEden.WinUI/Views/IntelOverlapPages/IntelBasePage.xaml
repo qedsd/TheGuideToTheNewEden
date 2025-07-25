@@ -33,7 +33,7 @@
                 HorizontalAlignment="Stretch"
                 Click="Button_IntelInfo_Click"
                 ToolTipService.ToolTip="{StaticResource ChannelIntelPage_LatestIntelInfo}">
-                <RichTextBlock x:Name="IntelInfoRichTextBlock" IsHitTestVisible="False"/>
+                <RichTextBlock x:Name="IntelInfoRichTextBlock" IsHitTestVisible="False" />
             </Button>
             <Button
                 Grid.Column="2"

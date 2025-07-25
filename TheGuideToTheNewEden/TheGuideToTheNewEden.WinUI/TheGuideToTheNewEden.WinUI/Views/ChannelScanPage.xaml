@@ -80,9 +80,7 @@
                                     IsOn="{x:Bind VM.Config.GetZKB, Mode=TwoWay}"
                                     OffContent="{StaticResource General_No}"
                                     OnContent="{StaticResource General_Yes}" />
-                                <NumberBox Header="{StaticResource ChannelScanPage_Setting_MaxZKB}"
-                                           Value="{x:Bind VM.Config.MaxZKB,Mode=TwoWay}"
-                                           />
+                                <NumberBox Header="{StaticResource ChannelScanPage_Setting_MaxZKB}" Value="{x:Bind VM.Config.MaxZKB, Mode=TwoWay}" />
                             </StackPanel>
                         </Expander>
                         <Expander
@@ -234,7 +232,7 @@
             <Pivot>
                 <PivotItem>
                     <PivotItem.Header>
-                        <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics}"  FontSize="16"/>
+                        <TextBlock FontSize="16" Text="{StaticResource ChannelScanPage_Result_Statistics}" />
                     </PivotItem.Header>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -339,7 +337,7 @@
                 </PivotItem>
                 <PivotItem>
                     <PivotItem.Header>
-                        <TextBlock Text="{StaticResource ChannelScanPage_Result_Detail}" FontSize="16"/>
+                        <TextBlock FontSize="16" Text="{StaticResource ChannelScanPage_Result_Detail}" />
                     </PivotItem.Header>
                     <dataGrid:SfDataGrid
                         x:Name="ResultDataGrid"
@@ -437,9 +435,12 @@
                     </dataGrid:SfDataGrid>
                 </PivotItem>
             </Pivot>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,16,0" >
-                <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}"/>
-                <TextBlock Text="{x:Bind VM.ResultCount,Mode=OneWay}" Margin="8,0,0,0"/>
+            <StackPanel
+                Margin="0,16,16,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />
+                <TextBlock Margin="8,0,0,0" Text="{x:Bind VM.ResultCount, Mode=OneWay}" />
             </StackPanel>
         </Grid>
     </Grid>

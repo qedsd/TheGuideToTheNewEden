@@ -489,17 +489,21 @@
                                             IsExpanded="True"
                                             Style="{StaticResource StretchExpander}">
                                             <StackPanel>
-                                                <TextBox TextWrapping="Wrap"
-                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_OrderSetting_CurrentOrder}"
-                                                         AcceptsReturn="True"
-                                                         Text="{x:Bind VM.OrderStr,Mode=TwoWay}"/>
-                                                <Button Content="{StaticResource GamePreviewMgrPage_OrderSetting_UseCurrentProcessList}"
-                                                        Margin="0,8"
-                                                        HorizontalAlignment="Stretch"
-                                                        Command="{x:Bind VM.UpdateOrderByProcessListCommand}"/>
-                                                <Button Content="{StaticResource General_Save}" HorizontalAlignment="Stretch"
-                                                        Foreground="{ThemeResource SystemAccentColor}"
-                                                        Command="{x:Bind VM.SaveOrderByListCommand}"/>
+                                                <TextBox
+                                                    AcceptsReturn="True"
+                                                    PlaceholderText="{StaticResource GamePreviewMgrPage_OrderSetting_CurrentOrder}"
+                                                    Text="{x:Bind VM.OrderStr, Mode=TwoWay}"
+                                                    TextWrapping="Wrap" />
+                                                <Button
+                                                    Margin="0,8"
+                                                    HorizontalAlignment="Stretch"
+                                                    Command="{x:Bind VM.UpdateOrderByProcessListCommand}"
+                                                    Content="{StaticResource GamePreviewMgrPage_OrderSetting_UseCurrentProcessList}" />
+                                                <Button
+                                                    HorizontalAlignment="Stretch"
+                                                    Command="{x:Bind VM.SaveOrderByListCommand}"
+                                                    Content="{StaticResource General_Save}"
+                                                    Foreground="{ThemeResource SystemAccentColor}" />
                                             </StackPanel>
                                         </Expander>
                                     </StackPanel>
@@ -519,14 +523,18 @@
             <controls:CardControl.Header>
                 <Grid>
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_PreviewItemSetting}" />
-                    <Button ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource TransparentButton}"
-                            Width="48"
-                            Height="32"
-                            Command="{x:Bind VM.ApplySettingToAllCommand}">
+                    <Button
+                        Width="48"
+                        Height="32"
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind VM.ApplySettingToAllCommand}"
+                        Style="{StaticResource TransparentButton}"
+                        ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_ApplySettingToAll}">
                         <Button.Content>
-                            <TextBlock Text="&#xE81E;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
+                            <TextBlock
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="18"
+                                Text="&#xE81E;" />
                         </Button.Content>
                     </Button>
                 </Grid>

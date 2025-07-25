@@ -40,9 +40,7 @@
                     HeaderText="{StaticResource IndustryPage_Probability}"
                     MappingName="Probability" />
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_StartDate}" MappingName="StartDate" />
-                <dataGrid:GridTextColumn
-                    HeaderText="{StaticResource IndustryPage_Duration}"
-                    MappingName="Span" />
+                <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_Duration}" MappingName="Span" />
                 <dataGrid:GridTextColumn HeaderText="{StaticResource IndustryPage_EndDate}" MappingName="EndDate" />
                 <dataGrid:GridNumericColumn
                     DisplayNumberFormat="N2"

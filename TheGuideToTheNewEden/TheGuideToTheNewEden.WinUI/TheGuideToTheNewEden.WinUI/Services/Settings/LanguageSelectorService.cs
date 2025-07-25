@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             Value = language;
             await SaveAsync(Value);
             SetLanguage(Value);
+            AppLanguageChanged?.Invoke(null, language);
         }
 
         private static string LoadLanguageFromSettings()
@@ -56,5 +57,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             };
             Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(resource);
         }
+        public static event EventHandler<string> AppLanguageChanged;
     }
 }

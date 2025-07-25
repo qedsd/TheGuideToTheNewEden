@@ -78,6 +78,7 @@
             <converters:OrderTypeConverter x:Key="OrderTypeConverter" />
             <converters:IdNameCategoryConverter x:Key="IdNameCategoryConverter" />
             <converters:UTCToLocalTimeConverter x:Key="UTCToLocalTimeConverter" />
+            <converters:DynamicResourceFromBindingConverter x:Key="DynamicResourceFromBindingConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

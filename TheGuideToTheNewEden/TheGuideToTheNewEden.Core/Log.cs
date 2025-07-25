@@ -71,6 +71,11 @@ namespace TheGuideToTheNewEden.Core
             return _lastError;
         }
 
+        public static ILog GetInstance()
+        {
+            return log;
+        }
+
         public delegate void LogMsgEvent(object msg);
         public static event LogMsgEvent OnError;
         public static event LogMsgEvent OnInfo;

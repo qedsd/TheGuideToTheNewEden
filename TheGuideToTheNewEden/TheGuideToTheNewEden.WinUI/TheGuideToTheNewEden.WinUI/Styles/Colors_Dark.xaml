@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="DefaultForegroundColor">White</Color>
+    <Color x:Key="SecondaryForegroundColor">#9fa1a2</Color>
+    <Color x:Key="ThemeMainColor">Black</Color>
+    <Color x:Key="PrimaryColor">#229fd6</Color>
+    <Color x:Key="CancelColor">Red</Color>
+    <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
+    <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
+    <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+    <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+    <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
+    <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
+    <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
+    <Color x:Key="FlyoutBackgroundColor">#1a212a</Color>
+    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="{StaticResource CardBackgroundFillColorDefault}" />
+    <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="{StaticResource CardBackgroundFillColorSecondary}" />
+    <Color x:Key="ButtonSelectedForegroundColor">#229fd6</Color>
+    <SolidColorBrush x:Key="ButtonSelectedForegroundBrush" Color="{StaticResource ButtonSelectedForegroundColor}" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="CancelBrush" Color="{StaticResource CancelColor}" />
+</ResourceDictionary>
