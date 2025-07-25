@@ -17,6 +17,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -46,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private bool isAdded = false;
         private void VM_OnContentUpdate(string name, IEnumerable<Core.Models.EVELogs.ChatContent> chatContents)
         {
-            _window?.DispatcherQueue.TryEnqueue(() =>
+            _window?.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 AddContentsToUI(name, chatContents);
             });
@@ -64,6 +65,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 //删除超出显示数量的
                 if(Services.Settings.GameLogsSettingService.MaxShowItems > 0 )
                 {
+                    if (importants.Count() > Services.Settings.GameLogsSettingService.MaxShowItems)
+                    {
+                        importants = importants.Skip(importants.Count() - Services.Settings.GameLogsSettingService.MaxShowItems).ToList();
+                    }
                     int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + importants.Count;
                     for(int i = 0;i < removeCount; i++)
                     {

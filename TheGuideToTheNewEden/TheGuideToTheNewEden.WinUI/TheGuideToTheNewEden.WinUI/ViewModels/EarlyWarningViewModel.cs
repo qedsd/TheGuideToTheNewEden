@@ -18,6 +18,7 @@ using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Intel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -391,7 +392,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="news"></param>
         private void EarlyWarningItem_OnWarningUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var ch in news)
                 {
@@ -419,7 +420,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="newlines"></param>
         private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var line in news)
                 {
@@ -440,7 +441,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i),NameDbs);
                 if(id > 0)
                 {
-                    Window.DispatcherQueue.TryEnqueue(async() =>
+                    Window.DispatcherQueue.SafelyTryEnqueue(async() =>
                     {
                         Setting.LocationID = id;
                         SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
@@ -458,7 +459,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 var span = DateTime.UtcNow - e.Time;
                 string desc;

@@ -15,6 +15,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -243,7 +244,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Window?.ShowWaiting("获取订单中...");
             try
             {
-                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID, MarketOrderSettingService.MarketSikpStructureValue);
                 BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
                 SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
                 SetOrderStatisticalInfo(SellOrders, BuyOrders);

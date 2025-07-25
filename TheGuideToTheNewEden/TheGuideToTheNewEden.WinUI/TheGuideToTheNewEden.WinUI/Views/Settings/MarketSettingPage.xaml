@@ -42,6 +42,16 @@
                 <NumberBox Width="128" Value="{x:Bind VM.MaxThread, Mode=TwoWay}" />
             </StackPanel>
         </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_ScalperSikpStructure}" Description="{StaticResource MarketSettingPage_ScalperSikpStructure_Desc}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{x:Bind VM.ScalperSikpStructure, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_MarketSikpStructure}" Description="{StaticResource MarketSettingPage_MarketSikpStructure_Desc}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{x:Bind VM.MarketSikpStructure, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
         <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_ClearCache}">
             <Button Width="100" Command="{x:Bind VM.ClearCacheCommand}">
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE107;" />

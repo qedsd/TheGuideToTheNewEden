@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.Core.Models.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media.Imaging;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -61,7 +62,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (stringBuilder.Length > 1)
                         {
                             stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                            _window.DispatcherQueue.TryEnqueue(() =>
+                            _window.DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 TextBlock_Recipients.Text = stringBuilder.ToString();
                             });

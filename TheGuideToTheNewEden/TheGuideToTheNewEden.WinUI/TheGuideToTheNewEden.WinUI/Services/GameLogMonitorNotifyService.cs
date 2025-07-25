@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Media.Core;
@@ -102,7 +103,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void Notify(GameLogItem gameLog, string content)
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 if (NotifyWindows.TryGetValue(gameLog.Info.ListenerID, out var messageWindow))
                 {

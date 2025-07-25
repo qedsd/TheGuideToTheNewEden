@@ -444,9 +444,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 foreach(var process in exitedList)//停止已退出进程预览
                 {
-                    Stop(process.Setting);
-                    process.Setting.ProcessInfo = null;
-                    process.Setting = null;
+                    if(process.Setting != null)
+                    {
+                        Stop(process.Setting);
+                        process.Setting.ProcessInfo = null;
+                        process.Setting = null;
+                    }
                     Processes.Remove(process);
                 }
                 if(allProcessDict.Any())//此时还剩下的allProcessDict进程均为新加

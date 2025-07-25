@@ -22,6 +22,7 @@ using TheGuideToTheNewEden.Core.Services;
 using ESI.NET.Models.Character;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
@@ -131,7 +132,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 List<Core.Models.Market.Order> refs = null;
                 try
                 {
-                    var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId);
+                    var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId, MarketOrderSettingService.ScalperSikpStructureValue);
                     if (results.NotNullOrEmpty())
                     {
                         if (order.IsBuyOrder)

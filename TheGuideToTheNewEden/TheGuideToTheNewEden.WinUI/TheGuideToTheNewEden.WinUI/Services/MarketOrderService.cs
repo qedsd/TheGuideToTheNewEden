@@ -301,7 +301,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     pageCallBack?.Invoke(page, "Region");
-                    if (resp.Data.Any())
+                    if (resp.Data.NotNullOrEmpty())
                     {
                         orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
                         if (resp.Data.Count < 1000)
@@ -432,10 +432,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId, bool skipStructure = false)
         {
             var regions = await GetOnlyRegionOrdersAsync(typeId, regionId);
-            var structures = await GetOnlyStructureOrdersAsync(typeId, regionId);
+            List<Core.Models.Market.Order> structures = null;
+            if (!skipStructure)
+            {
+                structures = await GetOnlyStructureOrdersAsync(typeId, regionId);
+            }
             if(regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -464,10 +468,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, PageCallBackDelegate pageCallBack = null)
         {
             var regions = await GetOnlyRegionOrdersAsync(regionId, pageCallBack);
-            var structures = await GetOnlyStructureOrdersAsync(regionId, pageCallBack);
+            List<Core.Models.Market.Order> structures = null;
+            if (!skipStructure)
+            {
+                structures = await GetOnlyStructureOrdersAsync(regionId, pageCallBack);
+            }
             if (regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -491,12 +499,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return null;
         }
-        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, bool skipStructure, PageCallBackDelegate pageCallBack = null)
         {
             var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(mapSolarSystemId);
             if(system != null)
             {
-                var regionOrders = await GetRegionOrdersAsync(system.RegionID, pageCallBack);
+                var regionOrders = await GetRegionOrdersAsync(system.RegionID, skipStructure, pageCallBack);
                 if(regionOrders.NotNullOrEmpty())
                 {
                     return regionOrders.Where(p => p.SystemId == mapSolarSystemId).ToList();

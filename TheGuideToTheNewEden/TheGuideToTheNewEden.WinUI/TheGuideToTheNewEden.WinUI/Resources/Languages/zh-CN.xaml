@@ -378,6 +378,9 @@
     <x:String x:Key="BusinessPage_TargetSales">目标销量</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">添加到购物车</x:String>
     <x:String x:Key="BusinessPage_CopyToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_ClickToCopy">点击列表即可复制到剪贴板</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_CopyAll">复制全部</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_Success">已复制列表，在游戏批量购买界面粘贴即可</x:String>
     <x:String x:Key="BusinessPage_PasteFromGameOrder">从游戏个人订单导入并更新相关物品数量</x:String>
     <x:String x:Key="BusinessPage_SaveOrder">保存购物车列表</x:String>
     <x:String x:Key="BusinessPage_Edit">编辑</x:String>
@@ -397,6 +400,10 @@
     <x:String x:Key="MarketSettingPage_MaxThread">ESI查询线程数</x:String>
     <x:String x:Key="MarketSettingPage_MaxThread_Desc">理论上越大越快，但过快会触发ESI请求限制</x:String>
     <x:String x:Key="MarketSettingPage_ClearCache">清除缓存</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure">倒货跳过公开建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure_Desc">倒货获取星域/星系市场订单时，不获取公开的建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure">市场跳过公开建筑订单</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">市场（包括频道市场）获取星域/星系市场订单时，不获取公开的建筑订单</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>
     <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>

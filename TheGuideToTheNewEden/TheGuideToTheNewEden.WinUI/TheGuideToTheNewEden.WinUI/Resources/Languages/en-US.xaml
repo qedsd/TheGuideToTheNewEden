@@ -354,6 +354,9 @@
     <x:String x:Key="BusinessPage_TargetSales">Target Sales</x:String>
     <x:String x:Key="BusinessPage_AddToShoppingCart">Add To Shopping Cart</x:String>
     <x:String x:Key="BusinessPage_CopyToGameOrder">Copy as game bulk purchase order</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_ClickToCopy">Click on the list to copy it to the clipboard</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_CopyAll">Copy All</x:String>
+    <x:String x:Key="BusinessPage_CopyToGameOrder_Success">The list has been copied and pasted in the game's bulk buy screen</x:String>
     <x:String x:Key="BusinessPage_PasteFromGameOrder">Import and update the quantity of related items from individual orders in the game</x:String>
     <x:String x:Key="BusinessPage_SaveOrder">Save shopping cart list</x:String>
     <x:String x:Key="BusinessPage_Edit">Edit</x:String>
@@ -373,6 +376,10 @@
     <x:String x:Key="MarketSettingPage_MaxThread">ESI Thread count</x:String>
     <x:String x:Key="MarketSettingPage_MaxThread_Desc">In theory, the larger the size, the faster, but if it is too fast, it will trigger ESI request restriction</x:String>
     <x:String x:Key="MarketSettingPage_ClearCache">Clear cache</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure">Skip public structure orders when pouring goods</x:String>
+    <x:String x:Key="MarketSettingPage_ScalperSikpStructure_Desc">When receiving orders from the region/system market, do not obtain publicly available structure orders</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure">Market skips public structure orders</x:String>
+    <x:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">When the market (including the channel market) obtains orders from the star region/system market, it does not obtain publicly available structure orders</x:String>
 
     <x:String x:Key="SettingPage_General">General</x:String>
     <x:String x:Key="SettingPage_GameLog">Game Log</x:String>

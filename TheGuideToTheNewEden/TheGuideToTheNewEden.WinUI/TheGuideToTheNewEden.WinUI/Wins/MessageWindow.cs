@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -58,14 +59,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void SetTitle(string text)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.SetHeadText(text);
             });
         }
         public void Show(string content)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Paragraph paragraph = new Paragraph()
                 {
@@ -92,7 +93,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Show(string title, string content)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 SetTitle(title);
                 Show(content);
@@ -100,14 +101,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Clear()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _mainContent.Blocks.Clear();
             });
         }
         public void Hide()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.Hide();
                 OnHided?.Invoke(this);
@@ -115,7 +116,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Close()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.AppWindow.Closing -= AppWindow_Closing;
                 _window.Close();

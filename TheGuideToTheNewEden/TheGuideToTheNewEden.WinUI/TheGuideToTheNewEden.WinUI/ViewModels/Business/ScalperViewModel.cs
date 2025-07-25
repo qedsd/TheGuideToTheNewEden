@@ -19,6 +19,8 @@ using TheGuideToTheNewEden.Core.DBModels;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -253,28 +255,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private void GetSourceOrdersPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取源市场订单中（{page}页）");
             });
         }
         private void GetDestinationOrdersPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取目的市场订单中（{page}页）");
             });
         }
         private void GetSourceHistoryPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取源市场订单历史中（{page}/{_typeCount}）");
             });
         }
         private void GetDestinationHistoryPageCallBack(int page, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Window?.ShowWaiting(_page, $"获取目的市场订单历史中（{page}/{_typeCount}）");
             });
@@ -286,12 +288,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
@@ -309,12 +311,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:

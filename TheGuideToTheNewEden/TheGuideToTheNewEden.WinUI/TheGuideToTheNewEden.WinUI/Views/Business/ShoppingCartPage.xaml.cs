@@ -42,22 +42,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
-        private void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
+        private async void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
         {
             if(ShoppingItems.Any())
             {
-                StringBuilder stringBuilder = new StringBuilder();
-                foreach(var item in ShoppingItems)
+                if(ShoppingItems.Count > 100)
                 {
-                    stringBuilder.Append(item.InvType.TypeName);
-                    stringBuilder.Append(" ");
-                    stringBuilder.Append(item.Quantity);
-                    stringBuilder.AppendLine();
+                    await CopyToGameOrderDialog.ShowAsync(ShoppingItems, this.XamlRoot);
                 }
-                DataPackage dataPackage = new DataPackage();
-                dataPackage.SetText(stringBuilder.ToString());
-                Clipboard.SetContent(dataPackage);
-                Window?.ShowSuccess("已复制列表，在游戏批量购买界面粘贴即可");
+                else
+                {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    foreach (var item in ShoppingItems)
+                    {
+                        stringBuilder.Append(item.InvType.TypeName);
+                        stringBuilder.Append(" ");
+                        stringBuilder.Append(item.Quantity);
+                        stringBuilder.AppendLine();
+                    }
+                    DataPackage dataPackage = new DataPackage();
+                    dataPackage.SetText(stringBuilder.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_CopyToGameOrder_Success"));
+                }
             }
         }
 

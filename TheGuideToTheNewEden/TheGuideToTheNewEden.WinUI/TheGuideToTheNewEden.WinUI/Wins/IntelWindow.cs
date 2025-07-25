@@ -28,6 +28,7 @@ using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using Newtonsoft.Json.Linq;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -275,14 +276,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void UpdateUI()
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateUI();
             });
         }
         public void UpdateHome(IntelSolarSystemMap intelMap)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateHome(intelMap);
             });

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -216,7 +217,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 InfoBar.Message = string.Empty;
                 InfoBar.IsOpen = false;
@@ -225,7 +226,7 @@ namespace TheGuideToTheNewEden.WinUI
 
         public void ShowMsg(string msg, bool autoClose = true)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 InfoBar.Severity = InfoBarSeverity.Informational;
                 InfoBar.Message = msg;
@@ -238,7 +239,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void ShowError(string msg, bool autoClose = false)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 InfoBar.Severity = InfoBarSeverity.Error;
                 InfoBar.Message = msg;
@@ -251,7 +252,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void ShowSuccess(string msg, bool autoClose = true)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 InfoBar.Severity = InfoBarSeverity.Success;
                 InfoBar.Message = msg;
@@ -272,7 +273,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void ShowWindowWaiting(string tip = null)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 if (string.IsNullOrEmpty(tip))
                 {
@@ -305,7 +306,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void HideWindowWaiting()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 WaitingProgressRing.IsActive = false;
@@ -313,7 +314,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         public void Hide()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 WindowHelper.GetAppWindow(this)?.Hide();
             });

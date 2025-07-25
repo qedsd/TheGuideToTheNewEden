@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Services
@@ -43,7 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if (items == null || !items.Any())
                 return;
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.Activate();
                 _window.SetForegroundWindow();
