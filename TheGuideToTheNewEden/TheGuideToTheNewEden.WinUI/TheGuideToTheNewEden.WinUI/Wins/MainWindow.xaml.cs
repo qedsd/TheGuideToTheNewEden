@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -102,7 +103,7 @@ namespace TheGuideToTheNewEden.WinUI
        
         public void Hide()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 WindowHelper.GetAppWindow(this)?.Hide();
             });

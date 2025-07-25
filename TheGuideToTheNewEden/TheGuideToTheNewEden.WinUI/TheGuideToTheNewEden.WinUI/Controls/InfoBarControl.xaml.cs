@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -69,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         public void Show(string sender, string msg, InfoType infoType, bool autoClose, string title = null)
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 SenderTextBlock.Text = sender;
                 SenderTextBlock.Visibility = string.IsNullOrEmpty(sender) ? Visibility.Collapsed : Visibility.Visible;
@@ -93,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
         public void Hide()
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _hideStoryboard.Begin();
                 Timer?.Stop();

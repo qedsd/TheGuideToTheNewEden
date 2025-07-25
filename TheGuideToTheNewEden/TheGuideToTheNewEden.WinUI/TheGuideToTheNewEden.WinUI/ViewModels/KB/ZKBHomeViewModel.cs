@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services;
 using ZKB.NET.Models.KillStream;
 
@@ -40,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                             if (info != null)
                             {
                                 ZKBNotifyService.TryNotify(info);
-                                Window?.DispatcherQueue?.TryEnqueue(() =>
+                                Window?.DispatcherQueue?.SafelyTryEnqueue(() =>
                                 {
                                     KBItemInfos.Insert(0, info);
                                     if(KBItemInfos.Count > Services.Settings.ZKBSettingService.Setting.MaxKBItems)
