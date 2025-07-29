@@ -87,7 +87,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
 
             if (System.IO.Directory.Exists(MarketOrderSettingService.HistoryOrderFolder))
                 System.IO.Directory.Delete(MarketOrderSettingService.HistoryOrderFolder, true);
-            Window?.ShowSuccess("已清除缓存订单信息");
+            ShowSuccess("已清除缓存订单信息");
         });
     }
 }

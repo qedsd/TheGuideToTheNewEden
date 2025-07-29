@@ -118,26 +118,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand AddIDCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             if (AddStructureId > 0)
             {
                 var s = await GetStructure((long)AddStructureId);
                 if(s != null)
                 {
-                    Window.ShowSuccess($"添加成功：{s.Name}");
+                    ShowSuccess($"添加成功：{s.Name}");
                     Structures.Add(s);
                     Services.StructureService.SaveMarketStrutures();
                 }
                 else
                 {
-                    Window.ShowError("请输入有效ID");
+                    ShowError("请输入有效ID");
                 }
             }
             else
             {
-                Window.ShowError("请输入有效ID");
+                ShowError("请输入有效ID");
             }
-            Window?.HideWaiting();
+            HideWaiting();
         });
         public ICommand RemoveCommand => new RelayCommand(() =>
         {
@@ -156,7 +156,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private async void GetStructures()
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             if (SearchPublic || SearchAsset || SearchClone)
             {
                 if (SelectedCharacter != null)
@@ -165,25 +165,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         if (!await SelectedCharacter.RefreshTokenAsync())
                         {
-                            Window?.HideWaiting();
-                            Window?.ShowError("Token已过期，尝试刷新失败");
+                            HideWaiting();
+                            ShowError("Token已过期，尝试刷新失败");
                             return;
                         }
                     }
                 }
                 else
                 {
-                    Window?.ShowError("请选择角色");
-                    Window?.HideWaiting();
+                    ShowError("请选择角色");
+                    HideWaiting();
                     return;
                 }
                 SearchStructures = await GetAllStructures();
             }
             else
             {
-                Window?.ShowError("请选择至少一种获取建筑ID方式");
+                ShowError("请选择至少一种获取建筑ID方式");
             }
-            Window?.HideWaiting();
+            HideWaiting();
         }
         private async Task<List<Core.Models.Universe.Structure>> GetAllStructures()
         {
@@ -236,7 +236,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Window?.ShowError(resp.Message);
+                        ShowError(resp.Message);
                         Core.Log.Error(resp.Message);
                         break;
                     }
@@ -263,7 +263,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else
                 {
-                    Window?.ShowError(resp.Message);
+                    ShowError(resp.Message);
                     Core.Log.Error(resp.Message);
                     return null;
                 }
@@ -297,7 +297,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else
                 {
-                    Window?.ShowError(resp.Message);
+                    ShowError(resp.Message);
                     Core.Log.Error(resp.Message);
                     return null;
                 }

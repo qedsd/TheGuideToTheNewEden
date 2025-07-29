@@ -161,9 +161,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private async void ClickInfo(object sender)
         {
             var idName = (sender as Button).Tag as IdName;
-            this.GetBaseWindow()?.ShowWaiting();
+            this.ShowWaiting();
             await _kbNavigationService.NavigationTo(idName);
-            this.GetBaseWindow()?.HideWaiting();
+            this.HideWaiting();
         }
 
         private void Menu_OpenInZKB_Click(object sender, RoutedEventArgs e)

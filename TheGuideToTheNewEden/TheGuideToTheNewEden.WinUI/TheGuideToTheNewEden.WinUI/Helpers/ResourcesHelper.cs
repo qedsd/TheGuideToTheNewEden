@@ -11,6 +11,10 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
     {
         public static string GetString(string key,bool returnKey = true)
         {
+            if(string.IsNullOrEmpty(key))
+            {
+                return string.Empty;
+            }
             if (Application.Current.Resources.TryGetValue(key, out var str))
             {
                 return str.ToString();

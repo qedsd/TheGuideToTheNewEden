@@ -149,15 +149,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else if(!result1 && !result2)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterHotkeyFailed"));
             }
             else if(result1)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed"));
             }
             else if(result2)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
             }
         }
         private bool RegisterForwardHotkey()
@@ -256,11 +256,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SaveSetting();
             if(RegisterForwardHotkey())
             {
-                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Forward}");
+                ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Forward}");
             }
             else
             {
-                Window.ShowError($"{ Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{ PreviewSetting.SwitchHotkey_Forward}");
+                ShowError($"{ Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{ PreviewSetting.SwitchHotkey_Forward}");
             }
         });
         public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
@@ -268,11 +268,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SaveSetting();
             if (RegisterBackwardHotkey())
             {
-                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Backward}");
+                ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
             else
             {
-                Window.ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{PreviewSetting.SwitchHotkey_Backward}");
+                ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
         });
 
@@ -393,12 +393,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         #endregion
         private async void Init()
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             StopGameMonitor();
             await RefreshProcesses();
             SelectedProcess = null;
             StartGameMonitor();
-            Window?.HideWaiting();
+            HideWaiting();
         }
         private async Task<List<ProcessInfo>> RefreshProcesses()
         {
@@ -654,7 +654,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                         else
                         {
-                            Window.ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
+                            ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
                         }
                     }
                     return true;
@@ -662,7 +662,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex);
-                    Window.ShowError(ex.Message, false);
+                    ShowError(ex.Message, false);
                     return false;
                 }
             }
@@ -763,7 +763,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
             }
         }
 
@@ -783,7 +783,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(!_runningDic.NotNullOrEmpty())
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NoRunning"), true);
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NoRunning"), true);
             }
             else
             {
@@ -791,7 +791,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     window.SetSize(PreviewSetting.UniformWidth, PreviewSetting.UniformHeight);
                 }
-                Window.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_SetUniformSizeSuccessful"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_SetUniformSizeSuccessful"));
                 SaveSetting();
             }
         });
@@ -896,17 +896,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(PreviewSetting.AutoLayout < 0)
             {
-                Window.ShowError("请选择对齐方式", true);
+                ShowError("请选择对齐方式", true);
                 return;
             }
             if (PreviewSetting.AutoLayoutAnchor < 0)
             {
-                Window.ShowError("请选择对齐位置", true);
+                ShowError("请选择对齐位置", true);
                 return;
             }
             if(_runningDic.Count < 2)
             {
-                Window.ShowError("请激活至少两个预览窗口", true);
+                ShowError("请激活至少两个预览窗口", true);
                 return;
             }
 
@@ -919,11 +919,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     case 2: SetAutoLayout3(window); break;
                     case 3: SetAutoLayout4(window); break;
                 }
-                Window.ShowSuccess("已应用对齐布局");
+                ShowSuccess("已应用对齐布局");
             }
             else
             {
-                Window.ShowError("未找到第一个运行窗口");
+                ShowError("未找到第一个运行窗口");
             }
             
         }
@@ -1119,7 +1119,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
         });
         public ICommand StopAllCommand => new RelayCommand(() =>
@@ -1192,7 +1192,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
             SaveSetting();
-            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_OrderSetting_SaveSuccess"));
+            ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_OrderSetting_SaveSuccess"));
         });
         #endregion
 
@@ -1237,7 +1237,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 }
                 SaveSetting();
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
             }
             ShowThumbRequsted.Invoke(null, EventArgs.Empty);
         });

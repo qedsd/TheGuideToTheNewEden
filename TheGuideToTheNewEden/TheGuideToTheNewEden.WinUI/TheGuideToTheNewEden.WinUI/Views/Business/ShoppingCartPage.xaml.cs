@@ -22,24 +22,18 @@ using Windows.ApplicationModel.DataTransfer;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
 
     public sealed partial class ShoppingCartPage : Page
     {
-        private BaseWindow Window;
         private ObservableCollection<ScalperShoppingItem> ShoppingItems = new ObservableCollection<ScalperShoppingItem>();
         public ShoppingCartPage()
         {
             this.InitializeComponent();
             ItemsDataGrid.ItemsSource = ShoppingItems;
-            Loaded += ShoppingCartPage_Loaded;
-        }
-
-        private void ShoppingCartPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private async void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
@@ -63,7 +57,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     DataPackage dataPackage = new DataPackage();
                     dataPackage.SetText(stringBuilder.ToString());
                     Clipboard.SetContent(dataPackage);
-                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_CopyToGameOrder_Success"));
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_CopyToGameOrder_Success"));
                 }
             }
         }
@@ -73,7 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             if(ShoppingItems.Any())
             {
                 ShoppingRecordService.Current.Add(ShoppingItems);
-                Window?.ShowSuccess("已保存");
+                this.ShowSuccess("已保存");
             }
         }
 
@@ -162,11 +156,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 if (updatedCount > 0)
                 {
-                    Window?.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
+                    this.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
                 }
                 else
                 {
-                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
                 }
             }
         }
@@ -214,18 +208,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     }
                     else
                     {
-                        Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+                        this.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
                     }
                 }
                 catch(Exception ex)
                 {
                     Core.Log.Error(ex);
-                    Window.ShowError(ex.Message);
+                    this.ShowError(ex.Message);
                 }
             }
             else
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+                this.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
             }
         }
 

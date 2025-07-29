@@ -34,7 +34,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            Loaded -= CharacterPage_Loaded;
             _=VM.GetZKBInfoAsync();
         }
 

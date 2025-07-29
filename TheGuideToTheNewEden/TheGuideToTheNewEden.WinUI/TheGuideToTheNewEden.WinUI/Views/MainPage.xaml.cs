@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using TheGuideToTheNewEden.WinUI.Views.Map;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using NavigationViewItem = TheGuideToTheNewEden.WinUI.Models.NavigationViewItem;
@@ -29,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainPage_Loaded;
-            ClientServiceHelper.GetRequiredService<Services.NavigationService2>().Init(ContentFrame, Loading, InfoBar);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(ContentFrame, Loading, InfoBar);
             MenuList.ItemsSource = _navigationViewItems;
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             VersionTextBlock.Text = version.ToString();
@@ -40,29 +41,29 @@ namespace TheGuideToTheNewEden.WinUI.Views
             _navigationViewItems = new List<NavigationViewItem>();
 
             _navigationViewItems.Add(new Models.NavigationViewItem(typeof(HomePage2)));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.CharacterPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MarketPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.BusinessPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.GamePreviewMgrPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelIntelPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelMonitorPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelScanPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ChannelMarketPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.GameLogMonitorPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.TranslationPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.DEDPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MissionPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.WormholePage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.LinksPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.MapPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.ZKBPage"));
-            _navigationViewItems.Add(new NavigationViewItem(null, "Navigation.DatabasePage"));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(SettingPage), "Navigation.SettingPage"));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(CharactersPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(MarketPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(BusinessPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(GamePreviewMgrPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelIntelPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMonitorPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelScanPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMarketPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(GameLogMonitorPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(TranslationPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(DEDPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(MissionPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(WormholePage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(LinksPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(MapPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ZKBHomePage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(DatabasePage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(SettingPage)));
         }
 
         public void Dispose()
         {
-            ClientServiceHelper.GetRequiredService<Services.NavigationService2>()?.Dispose();
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>()?.Dispose();
         }
 
         private void MenuList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -70,7 +71,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var item = MenuList.SelectedItem as NavigationViewItem;
             if (item != null)
             {
-                ClientServiceHelper.GetRequiredService<Services.NavigationService2>().NavigateTo(item.Type);
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().NavigateTo(item.Type);
             }
         }
     }

@@ -21,12 +21,12 @@ using System.Net.NetworkInformation;
 using Syncfusion.UI.Xaml.Data;
 using ESI.NET.Models.Universe;
 using Newtonsoft.Json;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ServerPingPage : Page,IPage
     {
-        private BaseWindow _window;
         private ObservableCollection<PingStatus> _pings = new ObservableCollection<PingStatus>();
         private PingConfig _pingConfig;
         public ServerPingPage()
@@ -38,12 +38,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             NumberBox_Times.Value = _pingConfig.Times;
             NumberBox_Span.Value = _pingConfig.Span;
             LineSeries1.ItemsSource = _pings;
-            Loaded += ServerPingPage_Loaded;
-        }
-
-        private void ServerPingPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
@@ -62,7 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             if (string.IsNullOrEmpty(ComboBox_Host.Text))
             {
-                _window?.ShowError("请输入主机");
+                this.ShowError("请输入主机");
                 return;
             }
             _pingConfig.Host = ComboBox_Host.Text;
@@ -122,7 +116,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 }
             }
             Stop();
-            _window?.ShowSuccess("已完成延迟测试");
+            this.ShowSuccess("已完成延迟测试");
         }
 
         public void Close()

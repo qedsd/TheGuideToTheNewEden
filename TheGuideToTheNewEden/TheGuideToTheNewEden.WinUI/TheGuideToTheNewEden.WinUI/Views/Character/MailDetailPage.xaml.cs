@@ -25,7 +25,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class MailDetailPage : Page
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         private Core.Models.Mail.MailDetail _mailDetail;
         public MailDetailPage(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail)
@@ -45,7 +44,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             await WebView2_Content.EnsureCoreWebView2Async();
             WebView2_Content.NavigateToString(RegexMailBody(_mailDetail.Message.Body));
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if(_mailDetail.Message.Recipients.NotNullOrEmpty())
             {
                 _=Task.Run(() =>
@@ -62,7 +60,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (stringBuilder.Length > 1)
                         {
                             stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+                            this.GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 TextBlock_Recipients.Text = stringBuilder.ToString();
                             });

@@ -39,7 +39,7 @@ namespace TheGuideToTheNewEden.WinUI
             Log.Error(e.Exception);
             try
             {
-                (WindowHelper.MainWindow as BaseWindow)?.ShowError(e.Exception.Message);
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, e.Exception.Message, Controls.InfoBarControl.InfoType.Error, false);
             }
             catch
             {
@@ -97,7 +97,7 @@ namespace TheGuideToTheNewEden.WinUI
             }
             else
             {
-                ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
                 Services.MemoryIPCService.Dispose();
             }
         }

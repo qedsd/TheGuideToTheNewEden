@@ -70,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             MutilItem = ItemCount > 1;
             Results.Clear();
             Result = null;
-            Window?.ShowWindowWaiting();
+            ShowWaiting();
             try
             {
                 if (MutilItem)
@@ -104,9 +104,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
-            Window?.HideWindowWaiting();
+            HideWaiting();
         }
 
         public ICommand RefreshCommand => new RelayCommand(() =>

@@ -25,17 +25,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Settings
         public StructuresSettingPage()
         {
             this.InitializeComponent();
-            Loaded += StructuresSettingPage_Loaded;
         }
 
         private void SerachDataGrid_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
         {
             VM.SelectedSearchStructures = (sender as SfDataGrid).SelectedItems?.Select(p => p as Structure).ToList();
-        }
-
-        private void StructuresSettingPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private void StructuresListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -4,7 +4,7 @@
     <x:String x:Key="Navigation.HomePage">主页</x:String>
     <x:String x:Key="Navigation.HomePage2">主页</x:String>
     <x:String x:Key="Navigation.GamePreviewMgrPage">多开预览</x:String>
-    <x:String x:Key="Navigation.CharacterPage">角色</x:String>
+    <x:String x:Key="Navigation.CharactersPage">角色</x:String>
     <x:String x:Key="Navigation.MarketPage">市场</x:String>
     <x:String x:Key="Navigation.BusinessPage">商业</x:String>
     <x:String x:Key="Navigation.ChannelIntelPage">频道预警</x:String>
@@ -19,7 +19,7 @@
     <x:String x:Key="Navigation.LinksPage">快速链接</x:String>
     <x:String x:Key="Navigation.ChannelMonitorPage">频道监控</x:String>
     <x:String x:Key="Navigation.SettingPage">设置</x:String>
-    <x:String x:Key="Navigation.ZKBPage">Zkillboard</x:String>
+    <x:String x:Key="Navigation.ZKBHomePage">Zkillboard</x:String>
     <x:String x:Key="Navigation.DatabasePage">数据库</x:String>
     <x:String x:Key="Navigation.MapPage">星图</x:String>
     <x:String x:Key="Navigation.ChannelScanPage">频道统计</x:String>

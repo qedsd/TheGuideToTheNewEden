@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -22,19 +23,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ShellPage : Page, IPage
     {
-        private BaseWindow _window;
         public ShellPage()
         {
             this.InitializeComponent();
-            Loaded += ShellPage_Loaded;
             BannerImage.ImageSource = new BitmapImage(new Uri(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "home.jpg")));
-        }
-
-        private void ShellPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= ShellPage_Loaded;
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            VM.SetWindow(_window);
         }
         private void ImageBrush_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
@@ -53,7 +45,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 }
                 else
                 {
-                    _window?.ShowError("导航页面失败");
+                    this.ShowError("导航页面失败");
                 }
             }
         }

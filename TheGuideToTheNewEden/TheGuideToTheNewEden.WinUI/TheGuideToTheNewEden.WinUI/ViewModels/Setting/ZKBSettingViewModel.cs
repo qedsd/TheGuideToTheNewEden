@@ -275,7 +275,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             }
             catch(Exception ex)
             {
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
                 Core.Log.Error(ex);
             }
         }

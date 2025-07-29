@@ -20,12 +20,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Settings
         public MarketSettingPage()
         {
             this.InitializeComponent();
-            Loaded += MarketSettingPage_Loaded;
-        }
-
-        private void MarketSettingPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
     }
 }

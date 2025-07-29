@@ -145,10 +145,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand RefreshCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             await GetBaseInfoAsync();
             await GetZKBInfoAsync();
-            Window?.HideWaiting();
+            HideWaiting();
         });
         public ICommand ZKBCommand => new RelayCommand(async () =>
         {
@@ -161,8 +161,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(!await characterData.RefreshTokenAsync())
                 {
-                    Window?.HideWaiting();
-                    Window?.ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}（{Core.Log.GetLastError()}）");
+                    HideWaiting();
+                    ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}（{Core.Log.GetLastError()}）");
                     return;
                 }
             }
@@ -292,7 +292,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
             Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
@@ -414,7 +414,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
         }
     }

@@ -58,12 +58,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                     }
                 });
                 _killStreamMessageThread.Start();
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ZKBHomePage_Connected"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("ZKBHomePage_Connected"));
             }
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
         }
 

@@ -193,13 +193,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 catch (Exception ex)
                 {
                     Core.Log.Error(ex);
-                    Window?.ShowError(ex.Message);
+                    ShowError(ex.Message);
                     return false;
                 }
             }
             else
             {
-                Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelMarket_NoChannel"));
+                ShowError(Helpers.ResourcesHelper.GetString("ChannelMarket_NoChannel"));
             }
             return false;
         }
@@ -234,12 +234,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         SelectedCharacter.Running = true;
                         Running = true;
-                        Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelMarket_Started"));
+                        ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelMarket_Started"));
                     }
                 }
                 else
                 {
-                    Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelMarket_NoChannel"));
+                    ShowError(Helpers.ResourcesHelper.GetString("ChannelMarket_NoChannel"));
                 }
             }
         });
@@ -349,7 +349,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         market.Save();
                     }
                 }
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelMarket_ApplySettingToAll_Succes"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelMarket_ApplySettingToAll_Succes"));
             }
         });
         public void Dispose()

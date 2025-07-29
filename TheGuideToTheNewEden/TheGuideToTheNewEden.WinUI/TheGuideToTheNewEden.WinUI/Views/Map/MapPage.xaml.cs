@@ -41,7 +41,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const int SuperionicIceID = 81144;
         private const int MagmaticGasID = 81143;
 
-        private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
         private Dictionary<int, MapSolarSystem> _mapSolarSystems;
         private Dictionary<int, MapRegion> _mapRegions;
@@ -64,7 +63,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void MapPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MapPage_Loaded;
-            _window = this.GetBaseWindow();
             SearchTypeComboBox.SelectionChanged += SearchTypeComboBox_SelectionChanged;
             MapSystemSelector.OnSelectedItemChanged += MapSystemSelector_OnSelectedItemChanged;
             RegionSelector.OnSelectedItemChanged += RegionSelector_OnSelectedItemChanged;
@@ -72,26 +70,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async void Init()
         {
-            _window?.ShowWaiting("Loading System Data");
+            this.ShowWaiting("Loading System Data");
             await InitData();
             MapCanvas.SetData(_systemDatas);
 
-            _window?.ShowWaiting("Loading SOV Data");
+            this.ShowWaiting("Loading SOV Data");
             var sovDatas = await InitSOV();
             MapDataTypeControl?.SetSOVData(sovDatas);
             SystemFilterControl?.SetData(_mapSolarSystems, _mapRegions, sovDatas);
 
-            _window?.ShowWaiting("Loading PlanetResources data");
+            this.ShowWaiting("Loading PlanetResources data");
             await InitPlanetResourcesData();
             RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
             UpdataSystemPlanetResourcList(0);
             UpgradeList.ItemsSource = _upgrades;
 
-            _window?.ShowWaiting("Loading Statistics data");
+            this.ShowWaiting("Loading Statistics data");
             await InitStatistics();
             MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
             OneJumpCover.SetData(MapCanvas, _systemKills, _systemJumps, _sovDatas);
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
         private async Task InitData()
         {
@@ -169,13 +167,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 else
                 {
-                    _window?.ShowError(resp.StatusCode.ToString());
+                    this.ShowMsg(resp.StatusCode.ToString(), InfoBarControl.InfoType.Error, false);
                 }
             }
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                _window?.ShowError(ex.Message);
+                this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
             }
             _sovDatas = new Dictionary<int, SovData>();
             foreach (var data in sovDatas)
@@ -255,7 +253,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                _window?.ShowError(ex.Message);
+                this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
                 _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
                 _systemJumps = new Dictionary<int, int>();
             }
@@ -389,7 +387,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async void SetDataToPlanetResourc(int type)
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             CalResources calResources = null;
             switch (type)
             { 
@@ -426,7 +424,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 long resc = (long)data.Tag;
                 data.BgColor = PlanetRecourceColorConverter.Convert(Math.Round(resc / max,1));
             }
-            _window?.HideWaiting();
+            this.HideWaiting();
             MapCanvas.Draw();
         }
         private void SetDataToSOV(List<SovData> sovDatas)

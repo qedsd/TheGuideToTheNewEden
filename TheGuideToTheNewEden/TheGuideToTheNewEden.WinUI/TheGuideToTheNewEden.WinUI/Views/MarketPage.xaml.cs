@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void MarketPage_Loaded(object sender, RoutedEventArgs e)
         {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            Loaded -= MarketPage_Loaded;
             MarketNavigationService.Current.SetPage(this);
         }
 

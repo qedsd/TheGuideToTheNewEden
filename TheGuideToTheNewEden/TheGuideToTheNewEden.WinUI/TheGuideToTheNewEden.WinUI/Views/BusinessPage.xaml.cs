@@ -19,29 +19,21 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class BusinessPage : Page
     {
-        private BaseWindow Window;
         public BusinessPage()
         {
             this.InitializeComponent();
-            Loaded += BusinessPage_Loaded;
-        }
-
-        private void BusinessPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            VM.Window = Window;
         }
 
         private void ScalperPage_OnAddShoppingItem(List<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items);
-            Window?.ShowSuccess($"已添加{items.Count}个物品到购物车");
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage",$"已添加{items.Count}个物品到购物车", Controls.InfoBarControl.InfoType.Success, true);
         }
 
         private void ShoppingRecordPage_OnAddShoppingItems(IEnumerable<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items.ToList());
-            Window?.ShowSuccess($"已添加 {items.Count()}个物品到购物车");
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage",$"已添加 {items.Count()}个物品到购物车", Controls.InfoBarControl.InfoType.Success, true);
         }
 
         private void CharacterOrderPage_OnAddToFilterListItemsChanged(List<Core.Models.Market.Order> orders)
@@ -51,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 var groups = orders.GroupBy(p => p.TypeId).ToList();
                 var types = groups.Select(p => p.First().InvType).ToList();
                 ScalperPage.AddToFilter(types);
-                Window?.ShowSuccess($"已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表");
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage","已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表", Controls.InfoBarControl.InfoType.Success,true);
             }
         }
 

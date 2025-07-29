@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using TheGuideToTheNewEden.WinUI.Controls;
+using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
-    public class NavigationService2 : IService
+    public class PageNavigationService : IService
     {
         private Dictionary<string, Views.IPage> _pages;
         private Frame _frame;
@@ -77,9 +78,33 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 _frame.IsEnabled = true;
             }
         }
+        public void ShowWaiting(Page page, string tip = null)
+        {
+            ShowWaiting(page.GetType().Name, tip);
+        }
+        public void HideWaiting(Page page)
+        {
+            HideWaiting(page.GetType().Name);
+        }
+        public void ShowWaiting(BaseViewModel vm, string tip = null)
+        {
+            ShowWaiting($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}", tip);
+        }
+        public void HideWaiting(BaseViewModel vm)
+        {
+            HideWaiting($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}");
+        }
         public void ShowMsg(string sender, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
             _infoBarControl.Show(sender, msg, infoType, autoClose, title);
+        }
+        public void ShowMsg(Page page, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
+        {
+            ShowMsg($"Navigation.{page.GetType().Name}", msg, infoType, autoClose, title);
+        }
+        public void ShowMsg(BaseViewModel vm, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
+        {
+            ShowMsg($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}", msg, infoType, autoClose, title);
         }
         public void HideMsg()
         {

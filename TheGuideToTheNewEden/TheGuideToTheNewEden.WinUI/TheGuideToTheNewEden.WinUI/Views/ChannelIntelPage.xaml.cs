@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using Microsoft.UI;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -306,7 +307,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowError(ex.Message);
+                this.ShowError(ex.Message);
             }
         }
         public void Close()

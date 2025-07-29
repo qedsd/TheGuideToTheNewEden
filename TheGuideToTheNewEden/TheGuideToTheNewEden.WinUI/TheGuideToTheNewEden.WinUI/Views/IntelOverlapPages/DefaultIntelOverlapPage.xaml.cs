@@ -44,13 +44,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private readonly System.Numerics.Vector3 _defaultScale = new System.Numerics.Vector3(1, 1, 1);
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic = new Dictionary<int, Ellipse>();
-        private BaseWindow _window;
+        private Window _window;
         private List<Core.Models.Map.IntelSolarSystemMap> _allSolarSystem;
         public DefaultIntelOverlapPage()
         {
             this.InitializeComponent();
         }
-        void IIntelOverlapPage.Init(BaseWindow window, ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
+        void IIntelOverlapPage.Init(Window window, ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
         {
             _window = window;
             _intelMap = intelMap;

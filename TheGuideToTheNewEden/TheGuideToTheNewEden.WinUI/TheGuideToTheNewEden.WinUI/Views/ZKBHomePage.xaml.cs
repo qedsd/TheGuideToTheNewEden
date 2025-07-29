@@ -53,9 +53,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             KBListControl.Visibility = Visibility.Visible;
             Button_Connect.Visibility = Visibility.Collapsed;
-            this.GetBaseWindow()?.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
             await VM.InitAsync();
-            this.GetBaseWindow()?.HideWaiting();
+            this.HideWaiting();
         }
         private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
         {
@@ -210,13 +210,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             try
             {
-                this.GetBaseWindow()?.ShowWaiting();
+                this.ShowWaiting();
                 await _kbNavigationService.NavigationTo(idName);
-                this.GetBaseWindow()?.HideWaiting();
+                this.HideWaiting();
             }
             catch (Exception e)
             {
-                this.GetBaseWindow()?.ShowError(e.Message);
+                this.ShowMsg(e.Message, Controls.InfoBarControl.InfoType.Error, false);
                 Core.Log.Error(e);
             }
         }

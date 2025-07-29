@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class GamePreviewMgrPage : Page,IPage
     {
-        private BaseWindow Window;
+        private Window Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
@@ -75,7 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded -= GamePreviewMgrPage_Loaded;
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
+            Window = Helpers.WindowHelper.GetWindowForElement(this);
             VM.Window = Window;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);

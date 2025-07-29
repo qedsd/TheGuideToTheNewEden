@@ -60,12 +60,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             if (characterDatas.NotNullOrEmpty())
             {
                 var vms = characterDatas.Select(p => new CharacterViewModel(p)).ToList();
-                Window?.ShowWaiting();
+                ShowWaiting();
                 await Core.Helpers.ThreadHelper.RunAsync(vms, (c) =>
                 {
                     c.Init();
                 });
-                Window.HideWaiting();
+                HideWaiting();
                 Characters = vms.ToObservableCollection();
             }
             else
@@ -81,19 +81,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (!AuthHelper.RegistyProtocol())
                 {
-                    Window.ShowError(Helpers.ResourcesHelper.GetString("CharacterPage_RegistyProtocol"));
+                    ShowError(Helpers.ResourcesHelper.GetString("CharacterPage_RegistyProtocol"));
                     return;
                 }
                 var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if(result != null)
                 {
-                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
                     var vm = new CharacterViewModel(result);
-                    Window.ShowWaiting();
+                    ShowWaiting();
                     await Task.Run(()=>vm.Init());
                     Characters.Insert(Characters.Count - 1, vm);
                     Calstatistic();
-                    Window.HideWaiting();
+                    HideWaiting();
                 }
             }
             else
@@ -101,7 +101,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if (result != null)
                 {
-                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
                     
                 }
             }
@@ -113,7 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Services.CharacterService.Remove(character.SelectedCharacter);
             Characters.Remove(character);
             Calstatistic();
-            Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
+            ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
         });
 
         public ICommand ShowCommand => new RelayCommand<CharacterViewModel>((character) =>

@@ -14,6 +14,7 @@ using TheGuideToTheNewEden.Core.Models.ChannelMarket;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -24,9 +25,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
             this.InitializeComponent();
             SumGrid.Translation += new System.Numerics.Vector3(0, 0, 32);
         }
-        public void SetWindow(BaseWindow baseWindow)
+        public void SetWindow(Window window)
         {
-            VM.Window = baseWindow;
+            VM.Window = window;
         }
         public void UpdateContent(IEnumerable<MarketChatContent> marketChatContents, int regionId)
         {
@@ -35,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Button_Close_Click(object sender, RoutedEventArgs e)
         {
-            this.GetBaseWindow().Hide();
+            this.GetWindow().Hide();
         }
 
         private void ChannelMarketItemDetailControl_OnItemDetailClicked(object sender, Core.DBModels.InvTypeBase e)

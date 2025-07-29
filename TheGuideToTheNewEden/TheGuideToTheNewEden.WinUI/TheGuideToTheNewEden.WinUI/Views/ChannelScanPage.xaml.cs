@@ -31,9 +31,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var data = (sender as FrameworkElement).DataContext as IdName;
             if (data != null && data.Id > 0)
             {
-                this.GetBaseWindow().ShowWaiting();
+                this.ShowWaiting();
                 await KBNavigationService.Default.NavigationTo(data);
-                this.GetBaseWindow().HideWaiting();
+                this.HideWaiting();
             }
         }
 

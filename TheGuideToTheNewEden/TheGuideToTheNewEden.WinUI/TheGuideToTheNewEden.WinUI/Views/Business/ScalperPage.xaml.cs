@@ -30,7 +30,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         private async void ScalperPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ScalperPage_Loaded;
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             await VM.Init();
             if (VM.SelectedInvMarketGroups != null)
             {

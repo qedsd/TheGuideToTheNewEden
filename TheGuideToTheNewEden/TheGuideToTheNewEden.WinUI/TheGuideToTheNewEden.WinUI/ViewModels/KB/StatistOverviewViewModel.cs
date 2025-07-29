@@ -154,7 +154,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
                 return null;
             }
         }

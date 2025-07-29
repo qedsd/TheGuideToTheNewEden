@@ -23,23 +23,17 @@ using ESI.NET.Models.Character;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
     public sealed partial class CharacterOrderPage : Page
     {
         private EsiClient _esiClient;
-        private BaseWindow Window;
         public CharacterOrderPage()
         {
             this.InitializeComponent();
-            Loaded += CharacterOrderPage_Loaded;
             _esiClient = ESIService.GetDefaultEsi();
-        }
-
-        private void CharacterOrderPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private void SelecteCharacterControl_OnSelectedItemChanged(ESI.NET.Models.SSO.AuthorizedCharacterData selectedItem)
@@ -54,7 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         }
         private async void GetOrders()
         {
-            Window?.ShowWaiting();
+            this.ShowWaiting();
             try
             {
                 var errorCount1 = Core.Log.GetErrorCount();
@@ -63,15 +57,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 var errorCount2 = Core.Log.GetErrorCount();
                 if (errorCount1 != errorCount2)
                 {
-                    Window?.ShowError(Core.Log.GetLastError().ToString());
+                    this.ShowError(Core.Log.GetLastError().ToString());
                 }
             }
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                this.ShowError(ex.Message);
             }
-            Window?.HideWaiting();
+            this.HideWaiting();
         }
         private async Task GetCharacterOrders()
         {
@@ -91,7 +85,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
             else
             {
-                Window?.ShowError("未选择角色");
+                this.ShowError("未选择角色");
             }
         }
         private async Task GetCorpOrders()
@@ -120,7 +114,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
             else
             {
-                Window?.ShowError("未选择角色");
+                this.ShowError("未选择角色");
             }
         }
 
@@ -221,7 +215,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             var order = DataGrid_Character.SelectedItem as Core.Models.Market.StatusOrder;
             if(order != null)
             {
-                Window?.ShowWaiting();
+                this.ShowWaiting();
                 try
                 {
                     if(!SelecteCharacterControl.SelectedItem.IsTokenValid())
@@ -235,19 +229,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     var resp = await _esiClient.UserInterface.MarketDetails(order.Target.TypeId);
                     if(resp.StatusCode == System.Net.HttpStatusCode.OK || resp.StatusCode == System.Net.HttpStatusCode.NoContent)
                     {
-                        Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_ShowInGame_Succcess"));
+                        this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_ShowInGame_Succcess"));
                     }
                     else
                     {
-                        Window?.ShowError(resp.Message);
+                        this.ShowError(resp.Message);
                     }
                 }
                 catch(Exception ex)
                 {
                     Core.Log.Error(ex);
-                    Window?.ShowError(ex.Message);
+                    this.ShowError(ex.Message);
                 }
-                Window?.HideWaiting();
+                this.HideWaiting();
             }
         }
 
@@ -270,16 +264,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     DataPackage dataPackage = new DataPackage();
                     dataPackage.SetText(stringBuilder.ToString());
                     Clipboard.SetContent(dataPackage);
-                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
                 }
                 else
                 {
-                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
                 }
             }
             else
             {
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+                this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
             }
         }
     }

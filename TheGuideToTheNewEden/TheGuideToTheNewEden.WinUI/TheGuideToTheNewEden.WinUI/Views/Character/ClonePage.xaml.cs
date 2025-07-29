@@ -21,12 +21,12 @@ using TheGuideToTheNewEden.Core.Extensions;
 using ESI.NET.Models.Location;
 using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class ClonePage : Page, ICharacterPage
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         public ClonePage()
         {
@@ -36,7 +36,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private void ClonePage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if (!_isLoaded)
             {
                 Refresh();
@@ -55,12 +54,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         public async void Refresh()
         {
-            _window.ShowWaiting();
+            this.ShowWaiting();
             var result = await _esiClient.Clones.List();
             if (result.StatusCode != System.Net.HttpStatusCode.OK)
             {
-                _window.HideWaiting();
-                _window.ShowError(result.Message);
+                this.HideWaiting();
+                this.ShowError(result.Message);
                 Log.Error(result.Message);
             }
             else
@@ -68,8 +67,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 var result2 = await _esiClient.Clones.Implants();
                 if (result2.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    _window.HideWaiting();
-                    _window.ShowError(result2.Message);
+                    this.HideWaiting();
+                    this.ShowError(result2.Message);
                     Log.Error(result2.Message);
                 }
                 else
@@ -97,7 +96,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         else
                         {
                             Log.Error(structureRsp?.Message);
-                            _window.ShowError(structureRsp?.Message, true);
+                            this.ShowError(structureRsp?.Message);
                         }
                     }
                     TextBlock_LastStationChangeDate.Text = result.Data.LastStationChangeDate == DateTime.MinValue ? "None" : result.Data.LastStationChangeDate.ToLocalTime().ToString();
@@ -208,7 +207,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                                 {
                                     structure.LocationName = structure.Clone.LocationId.ToString();
                                     Log.Error(structureRsp?.Message);
-                                    _window.ShowError(structureRsp?.Message, true);
+                                    this.ShowError(structureRsp?.Message);
                                 }
                             }
                         }
@@ -216,7 +215,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     #endregion
 
                     ListView_Clones.ItemsSource = allJumpClones;
-                    _window.HideWaiting();
+                    this.HideWaiting();
                 }
             }
         }

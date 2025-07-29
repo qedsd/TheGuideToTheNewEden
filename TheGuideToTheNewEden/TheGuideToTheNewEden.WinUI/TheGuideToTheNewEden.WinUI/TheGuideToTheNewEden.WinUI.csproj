@@ -281,7 +281,6 @@
     <None Remove="Views\ContractPage.xaml" />
     <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
-    <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\GameLogMonitorPage.xaml" />
     <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\HomePage2.xaml" />
@@ -825,12 +824,6 @@
 
   <ItemGroup>
     <Page Update="Views\SettingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\EarlyWarningPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

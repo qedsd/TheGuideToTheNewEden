@@ -30,14 +30,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            ClientServiceHelper.GetRequiredService<Services.NavigationService2>().ShowWaiting(this.GetType().Name);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowWaiting(this.GetType().Name);
             await Task.Delay(3000);
-            ClientServiceHelper.GetRequiredService<Services.NavigationService2>().HideWaiting(this.GetType().Name);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().HideWaiting(this.GetType().Name);
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            ClientServiceHelper.GetRequiredService<Services.NavigationService2>().ShowMsg(this.GetType().Name, "Test", Controls.InfoBarControl.InfoType.Error, false);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this.GetType().Name, "Test", Controls.InfoBarControl.InfoType.Error, false);
         }
     }
 }

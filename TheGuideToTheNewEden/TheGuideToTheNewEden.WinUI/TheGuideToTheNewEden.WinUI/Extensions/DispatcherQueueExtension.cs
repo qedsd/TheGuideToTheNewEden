@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.Extensions
                 }
                 catch(Exception ex)
                 {
-                    (Helpers.WindowHelper.MainWindow as BaseWindow)?.ShowError(ex.Message);
+                    ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, ex.Message, Controls.InfoBarControl.InfoType.Error, false);
                 }
             });
         }

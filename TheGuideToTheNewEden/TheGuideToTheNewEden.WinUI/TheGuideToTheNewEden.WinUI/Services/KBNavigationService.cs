@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Octokit;
 using System;
 using System.Collections.Generic;
@@ -27,14 +28,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private readonly Action<string, Microsoft.UI.Xaml.Controls.Page> _addTabAction;
-        private readonly BaseWindow _window;
+        private readonly Window _window;
         public KBNavigationService(ZKBHomePage page)
         {
             _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h,p) =>
             {
                 page.AddTab(h, p);
             });
-            _window = page.GetBaseWindow();
+            _window = page.GetWindow();
         }
         public KBNavigationService()
         {
@@ -42,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 Services.NavigationService.NavigateTo(p,h);
             });
-            _window = Helpers.WindowHelper.MainWindow as BaseWindow;
+            _window = Helpers.WindowHelper.MainWindow;
         }
 
         public static async Task<EntityStatistic> GetEntityStatisticAsync(int id, ZKB.NET.EntityType entityType)

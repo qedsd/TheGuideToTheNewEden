@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,42 +10,44 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
-        private BaseWindow window;
-        public BaseWindow Window
+        private Services.PageNavigationService _navigationService;
+        private Window window;
+        public Window Window
         {
             get
             {
-                return window ?? Helpers.WindowHelper.MainWindow as BaseWindow;
+                return window ?? Helpers.WindowHelper.MainWindow;
             }
             set => window = value;
         }
         public BaseViewModel()
         {
+            _navigationService = ClientServiceHelper.GetRequiredService<Services.PageNavigationService>();
         }
         public void ShowMsg(string msg, bool autoClose = true)
         {
-            Window?.ShowMsg(msg, autoClose);
+            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
         }
         public void ShowError(string msg, bool autoClose = true)
         {
-            Window?.ShowError(msg, autoClose);
+            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Error, autoClose);
         }
         public void ShowSuccess(string msg, bool autoClose = true)
         {
-            Window?.ShowSuccess(msg, autoClose);
+            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
         }
-        public void ShowWaiting()
+        public void ShowWaiting(string tip = null)
         {
-            Window?.ShowWaiting();
+            _navigationService.ShowWaiting(this, tip);
         }
         public void HideWaiting()
         {
-            Window?.HideWaiting();
+            _navigationService.HideWaiting(this);
         }
 
-        public void SetWindow(BaseWindow baseWindow)
+        public void SetWindow(Window wWindow)
         {
-            Window = baseWindow;
+            Window = window;
         }
     }
 }

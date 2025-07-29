@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
 {
     public interface IIntelOverlapPage
     {
-        void Init(BaseWindow window, ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap);
+        void Init(Window window, ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap);
         void Intel(EarlyWarningContent content);
         void Clear(List<int> systemIds);
         void Clear();

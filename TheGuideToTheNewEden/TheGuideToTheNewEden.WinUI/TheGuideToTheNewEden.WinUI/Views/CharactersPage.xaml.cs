@@ -28,11 +28,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public CharactersPage()
         {
             this.InitializeComponent();
-            Loaded += CharacterPage_Loaded;
-        }
-        private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
         
 

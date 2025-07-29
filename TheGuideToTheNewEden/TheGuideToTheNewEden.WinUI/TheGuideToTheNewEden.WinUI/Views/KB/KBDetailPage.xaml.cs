@@ -129,9 +129,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         }
         private async void Navigation(IdName idName)
         {
-            this.GetBaseWindow()?.ShowWaiting();
+            this.ShowWaiting();
             await _navigationService.NavigationTo(idName);
-            this.GetBaseWindow()?.HideWaiting();
+            this.HideWaiting();
         }
     }
     public class CargoItemTemplateSelector : DataTemplateSelector

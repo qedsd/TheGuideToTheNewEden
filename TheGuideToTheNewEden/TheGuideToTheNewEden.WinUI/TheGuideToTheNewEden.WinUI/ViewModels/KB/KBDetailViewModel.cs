@@ -198,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             dataPackage.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
             dataPackage.SetText($"https://zkillboard.com/kill/{KBItemInfo.SKBDetail.KillmailId}/");
             Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-            Window?.ShowSuccess("已复制");
+            ShowSuccess("已复制");
         });
         public ICommand OpenInBrowerCommand => new RelayCommand(() =>
         {

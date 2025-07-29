@@ -86,7 +86,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand StartCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             try
             {
                 ResultCount = 0;
@@ -301,22 +301,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     else
                     {
-                        Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_NoValidName"));
+                        ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_NoValidName"));
                     }
                 }
                 else
                 {
-                    Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_NoValidName"));
+                    ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_NoValidName"));
                 }
             }
             catch(Exception ex)
             {
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
                 Core.Log.Error(ex);
             }
             finally
             {
-                Window?.HideWaiting();
+                HideWaiting();
             }
         });
 
@@ -396,18 +396,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(!int.TryParse(AddingIgnoreID, out id))
                 {
-                    Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredIdInvalid"));
+                    ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredIdInvalid"));
                     return;
                 }
             }
             if (string.IsNullOrEmpty(AddingIgnoreName))
             {
-                Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredNameInvalid"));
+                ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredNameInvalid"));
                 return;
             }
             if (Config.Ignoreds.FirstOrDefault(p=>p.Id != -1 && p.Id == id || p.Name == AddingIgnoreName) != null)
             {
-                Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSame"));
+                ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSame"));
                 return;
             }
             Core.DBModels.IdName.CategoryEnum category = Core.DBModels.IdName.CategoryEnum.Character;
@@ -419,7 +419,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Config.Ignoreds.Add(new Core.DBModels.IdName(id, AddingIgnoreName, category));
             SaveConfig();
-            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
+            ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
             IsAddingIgnore = false;
         });
 
@@ -435,12 +435,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (Config.Ignoreds.FirstOrDefault(p => p.Id != -1 && p.Id == idName.Id || p.Name == idName.Name) != null)
                 {
-                    Window?.ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSame"));
+                    ShowError(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSame"));
                     return;
                 }
                 Config.Ignoreds.Add(idName);
                 SaveConfig();
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelScanPage_Setting_AddIgnoredSuccessful"));
             }
         }
 
@@ -448,7 +448,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             int index = ScanInfos.IndexOf(characterScanInfo);
             ScanInfos.RemoveAt(index);
-            Window?.ShowWaiting();
+            ShowWaiting();
             var clone = new CharacterScanInfo()
             {
                 Character = characterScanInfo.Character,
@@ -458,7 +458,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             };
             await Task.Run(()=> clone.GetZKBInfo());
             ScanInfos.Insert(index, clone);
-            Window?.HideWaiting();
+            HideWaiting();
         }
 
         private void SaveConfig()

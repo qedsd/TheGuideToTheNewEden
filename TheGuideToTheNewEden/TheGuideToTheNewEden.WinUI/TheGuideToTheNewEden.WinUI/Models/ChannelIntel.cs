@@ -82,14 +82,12 @@ namespace TheGuideToTheNewEden.WinUI.Models
             set => SetProperty(ref _running, value);
         }
 
-        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs,
-            Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue)
+        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs)
         {
             Listener = listener;
             _chatChanelInfos = chatChanelInfos;
             _mapSolarSystems = mapSolarSystems;
             _nameDbs = nameDbs;
-            _dispatcherQueue = dispatcherQueue;
             var setting = Services.Settings.IntelSettingService.GetValue(listener);
             if(setting == null)
             {
@@ -399,7 +397,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
 
         private void Observer_OnWarningUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            _dispatcherQueue.SafelyTryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var ch in news)
                 {
@@ -432,7 +430,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i), _nameDbs);
                 if (id > 0)
                 {
-                    _dispatcherQueue.SafelyTryEnqueue(async () =>
+                    Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(async () =>
                     {
                         Setting.LocationID = id;
                         //LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
@@ -452,7 +450,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
             ZKBIntelEvent?.Invoke(this, e);
-            _dispatcherQueue.SafelyTryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 var span = DateTime.UtcNow - e.Time;
                 string desc;

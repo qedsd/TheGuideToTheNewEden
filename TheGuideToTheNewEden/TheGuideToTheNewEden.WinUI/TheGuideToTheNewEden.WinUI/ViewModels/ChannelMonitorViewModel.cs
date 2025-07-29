@@ -94,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             string path = Services.Settings.GameLogsSettingService.GetChatlogsPath();
             if (System.IO.Directory.Exists(path))
             {
-                Window?.ShowWaiting();
+                ShowWaiting();
                 try
                 {
                     await Task.Run(() =>
@@ -118,7 +118,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     Core.Log.Error(ex);
                 }
-                Window?.HideWaiting();
+                HideWaiting();
             }
             if (_listenerChannelDic.Any())
             {
@@ -148,7 +148,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
         });
         public ICommand AddKeysCommand => new RelayCommand(() =>
@@ -210,7 +210,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ChannelMonitorNotifyService.Current.Remove(SelectedCharacter.Name);
                 _runningChatlogObservableItems.Remove(SelectedCharacter.Name);
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
 
         });

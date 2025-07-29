@@ -66,14 +66,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             var info = (sender as FrameworkElement).DataContext as KillDataInfo;
             if (info != null)
             {
-                this.GetBaseWindow()?.ShowWaiting();
+                this.ShowWaiting();
                 await _kbNavigationService.NavigationTo(new IdName()
                 {
                     Id = info.Id,
                     Name = info.Name,
                     Category = (int)IdName.CategoryEnum.Character
                 });
-                this.GetBaseWindow()?.HideWaiting();
+                this.HideWaiting();
             }
         }
     }

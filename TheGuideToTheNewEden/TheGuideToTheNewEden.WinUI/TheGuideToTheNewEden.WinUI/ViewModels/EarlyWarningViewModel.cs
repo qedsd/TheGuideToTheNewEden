@@ -256,18 +256,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(SelectedCharacter == null)
             {
-                Window.ShowError("请选择角色");
+                ShowError("请选择角色");
                 return;
             }
             if(string.IsNullOrEmpty(LocationSolarSystem))
             {
-                Window.ShowError("请设置角色当前所处星系");
+                ShowError("请设置角色当前所处星系");
                 return;
             }
             var location = MapSolarSystems.FirstOrDefault(p => p.SolarSystemName == LocationSolarSystem);
             if (location == null)
             {
-                Window.ShowError("无效的星系名称");
+                ShowError("无效的星系名称");
                 HideWaiting();
                 return;
             }
@@ -368,11 +368,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(WarningService.Current.RestoreWindowPos(Setting.Listener))
                 {
-                    Window?.ShowSuccess("重置成功");
+                    ShowSuccess("重置成功");
                 }
                 else
                 {
-                    Window?.ShowError("重置失败");
+                    ShowError("重置失败");
                 }
             }
         });

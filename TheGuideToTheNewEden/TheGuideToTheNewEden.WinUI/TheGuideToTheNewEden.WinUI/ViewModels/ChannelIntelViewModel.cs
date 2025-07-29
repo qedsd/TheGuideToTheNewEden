@@ -169,7 +169,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                ChannelIntel c =  new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs, Window.DispatcherQueue);
+                ChannelIntel c =  new ChannelIntel(name, _listenerChannelDic[name], _mapSolarSystems, _nameDbs);
                 _channelIntels.Add(name, c);
                 return c;
             }
@@ -178,7 +178,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (channelIntel == null)
             {
-                Window.ShowError("请选择角色");
+                ShowError("请选择角色");
                 return false;
             }
             try
@@ -195,7 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Services.WarningService.Current.Remove(channelIntel.Listener);
                 Core.Log.Error(ex);
-                Window.ShowError(ex.Message);
+                ShowError(ex.Message);
                 return false;
             }
         }
@@ -242,11 +242,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (ChannelIntel.RestorePos())
             {
-                Window?.ShowSuccess("重置成功");
+                ShowSuccess("重置成功");
             }
             else
             {
-                Window?.ShowError("重置失败");
+                ShowError("重置失败");
             }
         });
 
@@ -341,7 +341,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         Services.Settings.IntelSettingService.SetValue(intelItem.Setting);
                     }
                 }
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelIntelPage_ApplySettingToAll_Succes"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("ChannelIntelPage_ApplySettingToAll_Succes"));
             }
         });
         private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)

@@ -19,17 +19,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class DatabasePage : Page
     {
-        private BaseWindow _window;
         public DatabasePage()
         {
             this.InitializeComponent();
-            Loaded += DatabasePage_Loaded;
-        }
-
-        private void DatabasePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= DatabasePage_Loaded;
-            _window = this.GetBaseWindow();
         }
 
         private async void SuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -44,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 long searchId = -1;
                 long.TryParse(sender.Text, out searchId);
                 object result = null;
-                _window?.ShowWaiting();
+                this.ShowWaiting();
                 try
                 {
                     switch (ComboBox_SerachType.SelectedIndex)
@@ -196,9 +188,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 catch(Exception ex)
                 {
                     Core.Log.Error(ex);
-                    _window?.ShowError(ex.Message);
+                    this.ShowMsg(ex.Message, Controls.InfoBarControl.InfoType.Error, false);
                 }
-                _window?.HideWaiting();
+                this.HideWaiting();
                 ResultDataGrid.ItemsSource = result;
                 TextBlock_SearchCount.Text = result == null ? string.Empty : (result as IEnumerable<object>).Count().ToString();
             }

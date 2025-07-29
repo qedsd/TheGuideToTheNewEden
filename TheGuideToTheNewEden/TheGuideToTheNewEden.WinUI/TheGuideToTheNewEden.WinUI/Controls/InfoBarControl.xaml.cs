@@ -72,7 +72,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                SenderTextBlock.Text = sender;
+                SenderTextBlock.Text = Helpers.ResourcesHelper.GetString(sender);
                 SenderTextBlock.Visibility = string.IsNullOrEmpty(sender) ? Visibility.Collapsed : Visibility.Visible;
                 TitleTextBlock.Text = title;
                 TitleTextBlock.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;

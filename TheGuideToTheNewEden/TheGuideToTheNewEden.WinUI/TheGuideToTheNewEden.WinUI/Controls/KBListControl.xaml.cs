@@ -161,10 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             IdNameClickedCommand?.Execute(idName);
             if (_kbNavigationService != null)
             {
-                BaseWindow window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-                window?.ShowWaiting();
                 await _kbNavigationService.NavigationTo(idName);
-                window?.HideWaiting();
             }
         }
 
