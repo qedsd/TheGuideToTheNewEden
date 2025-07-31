@@ -275,4 +275,12 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Color x:Key="RedColor">Red</Color>
+    <Color x:Key="GreenColor">Green</Color>
+    <Color x:Key="YellowColor">Yellow</Color>
+    <Color x:Key="GrayColor">#9fa1a2</Color>
+    <SolidColorBrush x:Key="RedBrush" Color="{StaticResource RedColor}" />
+    <SolidColorBrush x:Key="GreenBrush" Color="{StaticResource GreenColor}" />
+    <SolidColorBrush x:Key="YellowBrush" Color="{StaticResource YellowColor}" />
+    <SolidColorBrush x:Key="GrayBrush" Color="{StaticResource GrayColor}" />
 </ResourceDictionary>

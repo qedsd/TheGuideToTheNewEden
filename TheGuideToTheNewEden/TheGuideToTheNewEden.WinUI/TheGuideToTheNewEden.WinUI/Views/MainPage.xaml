@@ -85,7 +85,7 @@
         <!--  内容  -->
         <Border
             Grid.Column="1"
-            Padding="4,34,4,4"
+            Padding="0"
             Background="{ThemeResource DefaultBackgroudBrush}"
             CornerRadius="0">
             <Grid>

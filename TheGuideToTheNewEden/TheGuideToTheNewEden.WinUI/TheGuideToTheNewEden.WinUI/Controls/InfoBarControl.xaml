@@ -7,7 +7,8 @@
     xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource FlyoutBackgroundBrush}"
+    MinWidth="300"
+    MinHeight="60"
     Opacity="0"
     mc:Ignorable="d">
 
@@ -15,6 +16,7 @@
         x:Name="MainBorder"
         Padding="8,4"
         HorizontalAlignment="Stretch"
+        Background="{ThemeResource FlyoutBackgroundBrush}"
         BorderThickness="3,0,0,0"
         CornerRadius="0">
         <Grid VerticalAlignment="Center">

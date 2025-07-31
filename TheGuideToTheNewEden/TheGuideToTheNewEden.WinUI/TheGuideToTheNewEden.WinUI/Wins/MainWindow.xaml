@@ -23,6 +23,12 @@
                 </Grid.Background>
             </Grid>
         </Grid>
+        <Grid
+            Width="176"
+            Height="32"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{ThemeResource DefaultBackgroudBrush}" />
         <views:MainPage />
         <Grid
             x:Name="AppTitleBarGrid"
