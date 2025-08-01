@@ -6,60 +6,49 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
 
-    <Grid Margin="12">
-        <Grid>
+    <Grid Margin="8,16,8,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <AutoSuggestBox
+            Name="Search_AutoSuggestBox"
+            Width="300"
+            Margin="8,0"
+            HorizontalAlignment="Left"
+            BorderThickness="1"
+            DisplayMemberPath="Name"
+            QueryIcon="Find"
+            SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+            TextChanged="AutoSuggestBox_TextChanged" />
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Grid>
-                <StackPanel VerticalAlignment="Center">
-                    <Image x:Name="Image_Type" Width="48" />
-                    <RichTextBlock
-                        Margin="0,8"
-                        HorizontalAlignment="Center"
-                        HorizontalTextAlignment="Center">
-                        <Paragraph>
-                            <Run x:Name="Name_EN" FontSize="26" />
-                        </Paragraph>
-                        <Paragraph>
-                            <Run
-                                x:Name="Name_Local"
-                                FontSize="20"
-                                FontWeight="Light" />
-                        </Paragraph>
-                    </RichTextBlock>
-                </StackPanel>
-            </Grid>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.4*" />
-                        <ColumnDefinition Width="0.6*" />
-                    </Grid.ColumnDefinitions>
-                    <AutoSuggestBox
-                        Name="Search_AutoSuggestBox"
-                        Grid.Column="1"
-                        Margin="8,0"
-                        HorizontalAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0,0,0,1"
-                        DisplayMemberPath="Name"
-                        QueryIcon="Find"
-                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                        TextChanged="AutoSuggestBox_TextChanged" />
-                </Grid>
-                <ScrollViewer Grid.Row="1" Margin="0,8,0,40">
-                    <RichTextBlock x:Name="RichTextBlock_Desc" VerticalAlignment="Center" />
-                </ScrollViewer>
-
-            </Grid>
+            <StackPanel VerticalAlignment="Center">
+                <Image x:Name="Image_Type" Width="48" />
+                <RichTextBlock
+                    Margin="0,8"
+                    HorizontalAlignment="Center"
+                    HorizontalTextAlignment="Center">
+                    <Paragraph>
+                        <Run x:Name="Name_EN" FontSize="26" />
+                    </Paragraph>
+                    <Paragraph>
+                        <Run
+                            x:Name="Name_Local"
+                            FontSize="20"
+                            FontWeight="Light" />
+                    </Paragraph>
+                </RichTextBlock>
+            </StackPanel>
+            <ScrollViewer Grid.Column="1" Margin="0,8,0,40">
+                <RichTextBlock x:Name="RichTextBlock_Desc" VerticalAlignment="Center" />
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Page>

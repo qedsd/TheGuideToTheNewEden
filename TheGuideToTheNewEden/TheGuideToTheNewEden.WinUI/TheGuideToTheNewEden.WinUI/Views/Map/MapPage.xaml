@@ -6,10 +6,12 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tools="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid>
@@ -22,25 +24,7 @@
             Width="240"
             Margin="0,4,2,0"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top">
-            <Grid Height="34">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
-                    <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
-                    <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
-                </ComboBox>
-                <Grid Grid.Column="1" Margin="-4,0,-8,0">
-                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True" />
-                    <controls:SelecteRegionControl
-                        x:Name="RegionSelector"
-                        ShowList="False"
-                        Visibility="Collapsed" />
-                </Grid>
-            </Grid>
-        </Grid>
+            VerticalAlignment="Top" />
         <!--  设置  -->
         <StackPanel
             Margin="2,4,0,0"
@@ -126,6 +110,35 @@
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
+            <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_Tools}">
+                <Button.Content>
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11A;" />
+                </Button.Content>
+                <Button.Flyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft">
+                        <Grid Height="34">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
+                                <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
+                                <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
+                            </ComboBox>
+                            <Grid
+                                Grid.Column="1"
+                                Width="200"
+                                Margin="-4,0,-8,0">
+                                <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True" />
+                                <controls:SelecteRegionControl
+                                    x:Name="RegionSelector"
+                                    ShowList="False"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                        </Grid>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </StackPanel>
         <!--  左侧详细面板  -->
         <Grid
@@ -138,7 +151,7 @@
                 VerticalAlignment="Bottom"
                 ExpandDirection="Up"
                 IsExpanded="True">
-                <Grid x:Name="ToolGrid" Margin="-8">
+                <Grid x:Name="ToolGrid" Margin="-16">
                     <dataGrid:SfDataGrid
                         x:Name="RegionPlanetResourcList"
                         HorizontalAlignment="Stretch"
@@ -301,7 +314,7 @@
             x:Name="SelectedSystemInfoPanel"
             Width="260"
             Margin="16"
-            Padding="16"
+            Padding="8"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
