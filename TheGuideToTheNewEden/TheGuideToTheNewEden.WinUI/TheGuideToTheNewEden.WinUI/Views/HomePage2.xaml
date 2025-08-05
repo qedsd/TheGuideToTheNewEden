@@ -12,5 +12,6 @@
     <StackPanel>
         <Button Content="1" Click="Button_Click"/>
         <Button Content="2" Click="Button_Click_1"/>
+        <Button Content="ToolWindow" Click="ToolWindow_Click"/>
     </StackPanel>
 </Page>

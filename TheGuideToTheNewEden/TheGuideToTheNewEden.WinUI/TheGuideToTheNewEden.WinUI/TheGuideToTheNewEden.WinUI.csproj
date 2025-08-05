@@ -844,5 +844,8 @@
     <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Wins\ToolWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 </Project>

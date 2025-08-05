@@ -9,7 +9,7 @@ using TheGuideToTheNewEden.Core.Models.Mail;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class ContractDetailWindow : BaseWindow
+    internal class ContractDetailWindow : ToolWindow
     {
         /// <summary>
         /// 
@@ -19,13 +19,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <param name="type">0 公开 1 个人 2 军团</param>
         public ContractDetailWindow(ESI.NET.EsiClient esiClient,Core.Models.Contract.ContractInfo contractInfo, int type)
         {
-            HideAppDisplayName();
-            SetSmallTitleBar();
             Title = $"{Helpers.ResourcesHelper.GetString("ContractPage_Detail")}-{contractInfo.ContractId}";
-            SetHeadText(Title);
+            SetDisplayTitle(Title);
             var appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));
-            MainContent = new Views.ContractDetailPage(esiClient, contractInfo, type);
+            var content = new Views.ContractDetailPage(esiClient, contractInfo, type);
+            InitWindow(content, WindowTitleStyle.Default, true, true, true, true);
         }
     }
 }

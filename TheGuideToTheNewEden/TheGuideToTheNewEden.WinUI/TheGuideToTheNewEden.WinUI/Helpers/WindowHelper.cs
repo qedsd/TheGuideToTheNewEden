@@ -29,6 +29,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             _activeWindows.Add(window);
         }
 
+        static public void UnTrackWindow(Window window)
+        {
+            _activeWindows.Remove(window);
+        }
+
         static public Window GetWindowForElement(UIElement element)
         {
             if (element.XamlRoot != null)

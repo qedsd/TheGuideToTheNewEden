@@ -28,22 +28,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Window _thumbnailWindow;
         private readonly AppWindow _appWindow;
         private IntPtr _thumbHWnd = IntPtr.Zero;
-        private WinUICommunity.ThemeService _themeService;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
-            _appWindow.IsShownInSwitchers = false;
-            HideAppDisplayName();
             Title = _setting.Name;
-            SetHeadText(_setting.Name);
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
-            this.SetIsAlwaysOnTop(true);
-            _themeService = new WinUICommunity.ThemeService();
-            _themeService.Initialize(this);
-            _themeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
             InitUI(_setting.Name);
             MonitorWindow();
         }
@@ -77,7 +69,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Text = title
             };
             content.Children.Add(_titleTextBlock);
-            this.Content = content;
+            InitWindow(content, WindowTitleStyle.Empty, false, true, false, false);
+            Helpers.WindowHelper.UnTrackWindow(this);
+            ThemeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
+            SetDisplayTitle(_setting.Name);
+            SetAlwaysOnTop();
         }
 
         private void Content_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -278,6 +274,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             UpdateThumbnail();
             this.Activate();
         }
+
         private void CreateThumbnailWindow()
         {
             var content = new Microsoft.UI.Xaml.Controls.Grid()
@@ -304,6 +301,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
             _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
             TransparentWindowHelper.TransparentWindow(_thumbnailWindow, _setting.OverlapOpacity);
+            _thumbnailWindow.Activated += ThumbnailWindow_Activated;
+        }
+        private void ThumbnailWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+
         }
 
         public override void Stop()

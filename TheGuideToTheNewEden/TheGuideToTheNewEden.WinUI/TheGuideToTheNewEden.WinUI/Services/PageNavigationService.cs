@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.ViewModels;
@@ -13,6 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
     public class PageNavigationService : IService
     {
         private Dictionary<string, Views.IPage> _pages;
+        private FrameworkElement _navPanel;
         private Frame _frame;
         private LoadingControl _LoadingControl;
         private Dictionary<string, string> _loadingPages;
@@ -23,8 +25,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _pages = new Dictionary<string, Views.IPage>();
             _loadingPages = new Dictionary<string, string>();
         }
-        public void Init(Frame frame, LoadingControl loadingControl, InfoBarControl infoBarControl)
+        public void Init(FrameworkElement navPanel, Frame frame, LoadingControl loadingControl, InfoBarControl infoBarControl)
         {
+            _navPanel = navPanel;
             _frame = frame;
             _LoadingControl = loadingControl;
             _infoBarControl = infoBarControl;
@@ -110,7 +113,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             _infoBarControl.Hide();
         }
-
+        public double GetNavPanelWidth()
+        {
+            return _navPanel.ActualWidth;
+        }
 
         public void Dispose()
         {

@@ -76,7 +76,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
             Window = Helpers.WindowHelper.GetWindowForElement(this);
-            VM.Window = Window;
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
         }
@@ -108,7 +107,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var thumbSize = WindowCaptureHelper.GetThumbSourceSize(lastThumb);
             if(thumbSize.x > thumbSize.y)//横向
             {
-                var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
+                var showWPresent = PreviewGrid.ActualWidth / (ContentGrid.ActualWidth + ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().GetNavPanelWidth());
                 var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
                 var showH = showW / thumbSize.x * thumbSize.y;
                 int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent));

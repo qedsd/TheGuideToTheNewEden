@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -18,7 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal class GaemLogMsgWindow
     {
         public object Tag { get; set; }
-        private readonly BaseWindow _window = new BaseWindow();
+        private readonly ToolWindow _window = new ToolWindow();
         private RichTextBlock _mainContent;
         private ScrollViewer _scrollViewer;
         public delegate void HideDelegate(GaemLogMsgWindow messageWindow);
@@ -63,12 +64,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             button.Click += Button_Click;
             grid.Children.Add(button);
 
-            _window.HideAppDisplayName();
-            _window.SetSmallTitleBar();
-            _window.AppWindow.Closing += AppWindow_Closing;
-            _window.MainContent = grid;
-            _window.SetWindowSize(400, 300);
-            _window.SetIsAlwaysOnTop(true);
+            _window.InitWindow(grid, WindowTitleStyle.OnlyClose, true, true, true, false);
+            _window.SetSize(400, 300);
+            _window.SetAlwaysOnTop();
             Helpers.WindowHelper.CenterToScreen(_window);
         }
 
@@ -87,18 +85,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-
-        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
-        {
-            args.Cancel = true;
-            Hide();
-        }
-
         public void SetTitle(string text)
         {
             _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _window.SetHeadText(text);
+                _window.SetDisplayTitle(text);
             });
         }
         public void Show(string content)
@@ -155,7 +146,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _window.AppWindow.Closing -= AppWindow_Closing;
                 _window.Close();
             });
         }

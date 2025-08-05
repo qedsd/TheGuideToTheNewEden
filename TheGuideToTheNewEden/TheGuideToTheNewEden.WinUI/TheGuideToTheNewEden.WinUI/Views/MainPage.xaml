@@ -16,7 +16,7 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <!--  导航  -->
-        <Grid Margin="8,16,8,8">
+        <Grid x:Name="NavPanel" Margin="8,16,8,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50" />
                 <RowDefinition />

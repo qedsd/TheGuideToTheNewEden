@@ -18,24 +18,7 @@
     </Page.DataContext>
     <Grid>
         <Grid Margin="12,8,12,12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button
-                    Width="40"
-                    Height="32"
-                    Click="Button_Close_Click"
-                    Foreground="{ThemeResource DefaultRed}"
-                    Style="{StaticResource TransparentButton}">
-                    <TextBlock
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="12"
-                        Text="&#xE10A;" />
-                </Button>
-            </StackPanel>
-            <Grid Grid.Row="1" Visibility="{x:Bind VM.MutilItem, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+            <Grid Visibility="{x:Bind VM.MutilItem, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />

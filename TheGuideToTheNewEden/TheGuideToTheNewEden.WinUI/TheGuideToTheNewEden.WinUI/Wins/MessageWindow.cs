@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal class MessageWindow
     {
         public object Tag { get; set; }
-        private readonly BaseWindow _window = new BaseWindow();
+        private readonly ToolWindow _window = new ToolWindow();
         private RichTextBlock _mainContent;
         private ScrollViewer _scrollViewer;
         public delegate void HideDelegate(MessageWindow messageWindow);
@@ -31,10 +31,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             _scrollViewer.Content = _mainContent;
             _scrollViewer.LayoutUpdated += ScrollViewer_LayoutUpdated;
-            _window.HideAppDisplayName();
-            _window.SetSmallTitleBar();
             _window.AppWindow.Closing += AppWindow_Closing;
-            _window.MainContent = _scrollViewer;
+            _window.InitWindow(_scrollViewer, WindowTitleStyle.Empty, false, true, true, true);
             _window.SetWindowSize(400,300);
             _window.SetIsAlwaysOnTop(true);
             Helpers.WindowHelper.CenterToScreen(_window);
@@ -61,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _window.SetHeadText(text);
+                _window.SetDisplayTitle(text);
             });
         }
         public void Show(string content)

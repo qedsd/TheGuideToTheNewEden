@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainPage_Loaded;
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(ContentFrame, Loading, InfoBar);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(NavPanel,ContentFrame, Loading, InfoBar);
             MenuList.ItemsSource = _navigationViewItems;
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             VersionTextBlock.Text = version.ToString();

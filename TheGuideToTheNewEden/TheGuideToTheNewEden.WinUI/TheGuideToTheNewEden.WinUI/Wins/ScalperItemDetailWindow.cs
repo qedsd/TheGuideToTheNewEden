@@ -9,16 +9,15 @@ using TheGuideToTheNewEden.Core.Models.Market;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class ScalperItemDetailWindow : BaseWindow
+    internal class ScalperItemDetailWindow : ToolWindow
     {
         private Views.Business.ScalperItemDetailPage _mainContent;
         public ScalperItemDetailWindow()
         {
-            HideAppDisplayName();
-            Title = Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail");
-            SetHeadText(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
             _mainContent = new Views.Business.ScalperItemDetailPage();
-            MainContent = _mainContent;
+            InitWindow(_mainContent, WindowTitleStyle.Empty, false, true, true, true);
+            SetDisplayTitle(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
+            SetWindowTitle(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
         }
         public void SetItem(ScalperItem item)
         {

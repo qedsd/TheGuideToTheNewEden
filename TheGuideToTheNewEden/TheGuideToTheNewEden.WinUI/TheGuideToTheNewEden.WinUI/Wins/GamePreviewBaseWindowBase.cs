@@ -16,12 +16,12 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal abstract class GamePreviewBaseWindowBase : BaseWindow, IGamePreviewWindow
+    internal abstract class GamePreviewBaseWindowBase : ToolWindow, IGamePreviewWindow
     {
         internal IntPtr _sourceHWnd;
         internal readonly PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
-        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton) : base(useThemeService,false, hideCaptionButton)
+        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton)
         {
             _previewSetting = previewSetting;
             _setting = setting;

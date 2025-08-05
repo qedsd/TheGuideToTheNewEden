@@ -5,20 +5,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     public class BaseViewModel : ObservableObject
     {
         private Services.PageNavigationService _navigationService;
-        private Window window;
+        private IWindow _window;
         public Window Window
         {
             get
             {
-                return window ?? Helpers.WindowHelper.MainWindow;
+                return _window != null ? _window.GetWindow() :  Helpers.WindowHelper.MainWindow;
             }
-            set => window = value;
         }
         public BaseViewModel()
         {
@@ -26,28 +26,63 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public void ShowMsg(string msg, bool autoClose = true)
         {
-            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
+            if (_window != null)
+            {
+                _window.ShowMsg(msg, autoClose);
+            }
+            else
+            {
+                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
+            }
         }
         public void ShowError(string msg, bool autoClose = true)
         {
-            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Error, autoClose);
+            if (_window != null)
+            {
+                _window.ShowMsg(msg, autoClose);
+            }
+            else
+            {
+                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Error, autoClose);
+            }
         }
         public void ShowSuccess(string msg, bool autoClose = true)
         {
-            _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
+            if (_window != null)
+            {
+                _window.ShowSuccess(msg, autoClose);
+            }
+            else
+            {
+                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
+            }
         }
         public void ShowWaiting(string tip = null)
         {
-            _navigationService.ShowWaiting(this, tip);
+            if (_window != null)
+            {
+                _window.ShowWaiting(tip);
+            }
+            else
+            {
+                _navigationService.ShowWaiting(this, tip);
+            }
         }
         public void HideWaiting()
         {
-            _navigationService.HideWaiting(this);
+            if (_window != null)
+            {
+                _window.HideWaiting();
+            }
+            else
+            {
+                _navigationService.HideWaiting(this);
+            }
         }
 
-        public void SetWindow(Window wWindow)
+        public void SetWindow(IWindow window)
         {
-            Window = window;
+            _window = window;
         }
     }
 }

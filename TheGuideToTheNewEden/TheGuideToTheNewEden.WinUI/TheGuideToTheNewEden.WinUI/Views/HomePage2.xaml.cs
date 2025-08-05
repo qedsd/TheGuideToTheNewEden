@@ -39,5 +39,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this.GetType().Name, "Test", Controls.InfoBarControl.InfoType.Error, false);
         }
+
+        private void ToolWindow_Click(object sender, RoutedEventArgs e)
+        {
+            ToolWindow toolWindow = new ToolWindow(null, WindowTitleStyle.OnlyClose, true, false);
+            toolWindow.Activate();
+        }
     }
 }
