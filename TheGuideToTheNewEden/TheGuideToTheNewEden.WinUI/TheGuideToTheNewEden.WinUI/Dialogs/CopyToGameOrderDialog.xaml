@@ -10,16 +10,17 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <TextBlock Text="{StaticResource BusinessPage_CopyToGameOrder_ClickToCopy}"/>
-        <ListBox x:Name="ListBox"
-                 DisplayMemberPath="Content"
-                 Background="Transparent"
-                 Grid.Row="1"
-                 SelectionChanged="ListBox_SelectionChanged"
-                 Margin="0,8,0,0"
-                 BorderThickness="1"/>
+        <TextBlock Text="{StaticResource BusinessPage_CopyToGameOrder_ClickToCopy}" />
+        <ListBox
+            x:Name="ListBox"
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            Background="Transparent"
+            BorderThickness="1"
+            DisplayMemberPath="Content"
+            SelectionChanged="ListBox_SelectionChanged" />
     </Grid>
 </Page>

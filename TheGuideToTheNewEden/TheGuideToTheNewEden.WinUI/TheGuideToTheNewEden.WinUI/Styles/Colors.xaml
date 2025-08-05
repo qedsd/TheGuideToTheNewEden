@@ -32,6 +32,7 @@
             <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
             <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{ThemeResource SecondBackgroudColor}" />
             <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{ThemeResource DefaultBackgroudColor}" />
+            <SolidColorBrush x:Key="TransparentBackgroudBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
             <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
             <Color x:Key="DefaultBackgroudColor">#262c37</Color>
             <Color x:Key="SecondBackgroudColor">#313741</Color>
@@ -83,6 +84,7 @@
             <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
             <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{ThemeResource SecondBackgroudColor}" />
             <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{ThemeResource DefaultBackgroudColor}" />
+            <SolidColorBrush x:Key="TransparentBackgroudBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
             <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
             <Color x:Key="DefaultBackgroudColor">#f7f9fd</Color>
             <Color x:Key="SecondBackgroudColor">#fefefe</Color>
