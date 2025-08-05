@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
 {
     public interface IWindow
     {
-        WinUICommunity.IThemeService ThemeService {  get; set;}
+        DevWinUI.IThemeService ThemeService {  get; set;}
         Window GetWindow();
         void ShowMsg(string msg, bool autoClose = true);
         void ShowError(string msg, bool autoClose = true);

@@ -56,10 +56,10 @@ namespace TheGuideToTheNewEden.WinUI
         {
             if (useThemeService)
             {
-                ThemeService = new WinUICommunity.ThemeService();
+                ThemeService = new DevWinUI.ThemeService();
                 ThemeService.Initialize(this, false);
-                ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
-                ThemeService.ConfigBackdrop();
+                ThemeService.ConfigureElementTheme(ThemeSelectorService.Theme);
+                ThemeService.ConfigureBackdrop();
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
@@ -80,7 +80,8 @@ namespace TheGuideToTheNewEden.WinUI
                 }
             }
             ExtendsContentIntoTitleBar = true;
-            SetTitleBar(AppTitleBar);
+            if (style != WindowTitleStyle.Empty)
+                SetTitleBar(AppTitleBar);
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1000,600));
             AppWindow.IsShownInSwitchers = showInSwitcher;
 
@@ -93,7 +94,7 @@ namespace TheGuideToTheNewEden.WinUI
                     case WindowTitleStyle.OnlyMini: CloseButton.Visibility = Visibility.Collapsed; MaximizeButton.Visibility = Visibility.Collapsed; break;
                     case WindowTitleStyle.OnlyMax: CloseButton.Visibility = Visibility.Collapsed; MinimizeButton.Visibility = Visibility.Collapsed; break;
                     case WindowTitleStyle.NoButton: ButtonPanel.Visibility = Visibility.Collapsed; break;
-                    case WindowTitleStyle.Empty: ButtonPanel.Visibility = Visibility.Collapsed; AppTitleBar.Visibility = Visibility.Collapsed; break;
+                    case WindowTitleStyle.Empty: FullTitleArea.Visibility = Visibility.Collapsed; break;
                 }
             }
             if (!showTopButton || style == WindowTitleStyle.Empty)
@@ -150,7 +151,7 @@ namespace TheGuideToTheNewEden.WinUI
             _canClose = false;
         }
         #region 主题
-        public WinUICommunity.IThemeService ThemeService { get; set; }
+        public DevWinUI.IThemeService ThemeService { get; set; }
         private void ThemeSelectorService_OnChangedTheme(ElementTheme theme)
         {
             Microsoft.UI.Windowing.AppWindowTitleBar titleBar = AppWindow.TitleBar;

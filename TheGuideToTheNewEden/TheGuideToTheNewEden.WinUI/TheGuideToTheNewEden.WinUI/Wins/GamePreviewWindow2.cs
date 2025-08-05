@@ -17,8 +17,6 @@ using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using TheGuideToTheNewEden.WinUI.Services;
-using Vanara.PInvoke;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -69,9 +67,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Text = title
             };
             content.Children.Add(_titleTextBlock);
-            InitWindow(content, WindowTitleStyle.Empty, false, true, false, false);
+            InitWindow(content, WindowTitleStyle.Empty, false, false, false, false);
             Helpers.WindowHelper.UnTrackWindow(this);
-            ThemeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
+            SystemBackdrop = new DevWinUI.TransparentBackdrop();
             SetDisplayTitle(_setting.Name);
             SetAlwaysOnTop();
         }
@@ -300,12 +298,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
             _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
-            TransparentWindowHelper.TransparentWindow(_thumbnailWindow, _setting.OverlapOpacity);
-            _thumbnailWindow.Activated += ThumbnailWindow_Activated;
-        }
-        private void ThumbnailWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-
         }
 
         public override void Stop()

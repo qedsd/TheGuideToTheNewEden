@@ -12,10 +12,6 @@ using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
-using Octokit;
-using ESI.NET.Models.Character;
-using WinUICommunity;
-using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {

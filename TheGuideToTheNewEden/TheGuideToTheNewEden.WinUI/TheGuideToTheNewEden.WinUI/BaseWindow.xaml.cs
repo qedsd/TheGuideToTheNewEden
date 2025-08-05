@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.WinUI
 {
     public partial class BaseWindow : Window
     {
-        public WinUICommunity.IThemeService ThemeService { get; set; }
+        public DevWinUI.IThemeService ThemeService { get; set; }
         public BaseWindow()
         {
             Init(true, true, false);
@@ -49,10 +49,10 @@ namespace TheGuideToTheNewEden.WinUI
             this.InitializeComponent();
             if (useThemeService)
             {
-                ThemeService = new WinUICommunity.ThemeService();
+                ThemeService = new DevWinUI.ThemeService();
                 ThemeService.Initialize(this, false);
-                ThemeService.ConfigElementTheme(ThemeSelectorService.Theme);
-                ThemeService.ConfigBackdrop();
+                ThemeService.ConfigureElementTheme(ThemeSelectorService.Theme);
+                ThemeService.ConfigureBackdrop();
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;

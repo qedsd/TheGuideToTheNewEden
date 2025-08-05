@@ -45,5 +45,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
             ToolWindow toolWindow = new ToolWindow(null, WindowTitleStyle.OnlyClose, true, false);
             toolWindow.Activate();
         }
+
+        private void TransparentWindow_Click(object sender, RoutedEventArgs e)
+        {
+            Window window = new Window();
+            window.SystemBackdrop = new DevWinUI.TransparentBackdrop();
+            window.Activate();
+        }
     }
 }

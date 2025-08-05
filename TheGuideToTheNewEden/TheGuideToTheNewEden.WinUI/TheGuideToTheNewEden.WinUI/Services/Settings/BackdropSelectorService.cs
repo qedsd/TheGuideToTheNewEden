@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using WinUICommunity;
+using DevWinUI;
 
 namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
@@ -62,9 +62,9 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             SaveCustomPictureOverlapColor(CustomPictureOverlapColorValue);
             OnCustomPictureOverlapColorChanged?.Invoke(null, CustomPictureOverlapColorValue);
         }
-        public static WinUICommunity.BackdropType GetWinUICommunityBackdropTypeValue()
+        public static DevWinUI.BackdropType GetDevWinUIBackdropTypeValue()
         {
-            return (WinUICommunity.BackdropType)(((int)BackdropTypeValue) % 7);
+            return (DevWinUI.BackdropType)(((int)BackdropTypeValue) % 7);
         }
         public static Windows.UI.Color GetCustomPictureOverlapColor()
         {
@@ -128,7 +128,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             foreach (Window window in Helpers.WindowHelper.ActiveWindows)
             {
-                (window as IWindow).ThemeService?.SetBackdropType(GetWinUICommunityBackdropTypeValue());
+                (window as IWindow).ThemeService?.SetBackdropType(GetDevWinUIBackdropTypeValue());
             }
         }
         public static event EventHandler<BackdropType> OnBackdropTypeChanged;

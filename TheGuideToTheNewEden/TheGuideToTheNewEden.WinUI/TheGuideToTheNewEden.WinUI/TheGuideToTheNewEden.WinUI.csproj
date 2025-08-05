@@ -336,6 +336,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    <PackageReference Include="DevWinUI" Version="8.9.0" />
     <PackageReference Include="FluentIcons.WinUI" Version="1.1.303" />
     <PackageReference Include="H.NotifyIcon" Version="2.3.0" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.2.0" />
@@ -354,8 +355,6 @@
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.1.4" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.1.4" />
     <PackageReference Include="Vanara.PInvoke.User32" Version="4.1.4" />
-    <PackageReference Include="WinUICommunity.Components" Version="7.1.0" />
-    <PackageReference Include="WinUICommunity.Core" Version="7.1.0" />
     <PackageReference Include="WinUIEx" Version="2.5.1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
