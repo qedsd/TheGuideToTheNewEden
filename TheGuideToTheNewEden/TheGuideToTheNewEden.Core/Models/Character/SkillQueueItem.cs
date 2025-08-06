@@ -48,7 +48,7 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         {
             get
             {
-                return StartDateTime != DateTimeOffset.MinValue && FinishDateTime != DateTimeOffset.MinValue && StartDateTime > DateTime.UtcNow;
+                return StartDateTime != DateTimeOffset.MinValue && FinishDateTime != DateTimeOffset.MinValue && StartDateTime > DateTimeOffset.UtcNow;
             }
         }
         public bool IsPause { get => string.IsNullOrEmpty(FinishDate) || string.IsNullOrEmpty(StartDate); }
@@ -56,8 +56,8 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public SkillQueueItem(ESI.NET.Models.Skills.SkillQueueItem skillQueueItem)
         {
             this.CopyFrom(skillQueueItem);
-            FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTime.MinValue : DateTimeOffset.Parse(FinishDate);
-            StartDateTime = string.IsNullOrEmpty(StartDate) ? DateTime.MinValue : DateTimeOffset.Parse(StartDate);
+            FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTimeOffset.MinValue : DateTimeOffset.Parse(FinishDate);
+            StartDateTime = string.IsNullOrEmpty(StartDate) ? DateTimeOffset.MinValue : DateTimeOffset.Parse(StartDate);
         }
     }
 }

@@ -10,7 +10,7 @@
     xmlns:sso="using:ESI.NET.Models.SSO"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
-    NavigationCacheMode="Enabled"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:CharactersViewModel x:Name="VM" />

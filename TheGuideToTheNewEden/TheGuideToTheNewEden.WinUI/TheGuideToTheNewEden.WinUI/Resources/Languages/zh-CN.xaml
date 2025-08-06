@@ -4,7 +4,7 @@
     <x:String x:Key="Navigation.HomePage">主页</x:String>
     <x:String x:Key="Navigation.HomePage2">主页</x:String>
     <x:String x:Key="Navigation.GamePreviewMgrPage">多开预览</x:String>
-    <x:String x:Key="Navigation.CharactersPage">角色</x:String>
+    <x:String x:Key="Navigation.CharactersShellPage">角色</x:String>
     <x:String x:Key="Navigation.MarketPage">市场</x:String>
     <x:String x:Key="Navigation.BusinessPage">商业</x:String>
     <x:String x:Key="Navigation.ChannelIntelPage">频道预警</x:String>
@@ -109,6 +109,7 @@
     <x:String x:Key="General_Setting">设置</x:String>
     <x:String x:Key="General_LocalTime">本地时间</x:String>
     <x:String x:Key="General_Detail">详细</x:String>
+    <x:String x:Key="General_All">所有</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

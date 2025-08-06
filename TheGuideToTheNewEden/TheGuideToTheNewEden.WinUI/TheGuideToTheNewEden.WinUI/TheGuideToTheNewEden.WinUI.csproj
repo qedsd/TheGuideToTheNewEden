@@ -269,6 +269,7 @@
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\ChannelScanPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
+    <None Remove="Views\Character\CharactersShellPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\IndustryPage.xaml" />
@@ -333,6 +334,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.250731-build.2197" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
@@ -603,6 +605,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Character\CharactersShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\HomePage2.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

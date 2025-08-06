@@ -30,7 +30,7 @@ using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class CharacterViewModel: BaseViewModel
+    public class CharacterViewModel: BaseViewModel, IDisposable
     {
         private AuthorizedCharacterData _selectedCharacter;
         public AuthorizedCharacterData SelectedCharacter
@@ -416,6 +416,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Core.Log.Error(ex);
                 ShowError(ex.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

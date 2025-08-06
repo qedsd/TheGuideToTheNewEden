@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media.Imaging;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -27,6 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
     {
         private EsiClient _esiClient;
         private Core.Models.Mail.MailDetail _mailDetail;
+        private Window _window;
         public MailDetailPage(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail)
         {
             _esiClient = esiClient;
@@ -42,6 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private async void MailDetailPage_Loaded(object sender, RoutedEventArgs e)
         {
+            _window = this.GetWindow();
             await WebView2_Content.EnsureCoreWebView2Async();
             WebView2_Content.NavigateToString(RegexMailBody(_mailDetail.Message.Body));
             if(_mailDetail.Message.Recipients.NotNullOrEmpty())
@@ -60,7 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (stringBuilder.Length > 1)
                         {
                             stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                            this.GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
+                            _window?.DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 TextBlock_Recipients.Text = stringBuilder.ToString();
                             });

@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using TheGuideToTheNewEden.WinUI.Views.Character;
 using TheGuideToTheNewEden.WinUI.Views.Map;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -41,7 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             _navigationViewItems = new List<NavigationViewItem>();
 
             _navigationViewItems.Add(new Models.NavigationViewItem(typeof(HomePage2)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(CharactersPage)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(CharactersShellPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(MarketPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(BusinessPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(GamePreviewMgrPage)));

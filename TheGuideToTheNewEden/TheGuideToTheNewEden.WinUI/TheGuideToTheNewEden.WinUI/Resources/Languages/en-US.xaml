@@ -3,7 +3,7 @@
 
     <x:String x:Key="Navigation.HomePage">Home</x:String>
     <x:String x:Key="Navigation.GamePreviewMgrPage">Game Preview</x:String>
-    <x:String x:Key="Navigation.CharacterPage">Characters</x:String>
+    <x:String x:Key="Navigation.CharactersShellPage">Characters</x:String>
     <x:String x:Key="Navigation.MarketPage">Market</x:String>
     <x:String x:Key="Navigation.BusinessPage">Business</x:String>
     <x:String x:Key="Navigation.ChannelIntelPage">Channel Intel</x:String>
@@ -108,6 +108,7 @@
     <x:String x:Key="General_Setting">Setting</x:String>
     <x:String x:Key="General_LocalTime">Local Time</x:String>
     <x:String x:Key="General_Detail">Detail</x:String>
+    <x:String x:Key="General_All">All</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

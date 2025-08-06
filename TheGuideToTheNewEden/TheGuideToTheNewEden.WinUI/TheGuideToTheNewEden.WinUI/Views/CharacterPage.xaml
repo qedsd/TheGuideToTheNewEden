@@ -18,7 +18,7 @@
             <Setter Property="Orientation" Value="Horizontal" />
         </Style>
         <Style x:Key="InfoCardGrid" TargetType="Grid">
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="Background" Value="{ThemeResource TransparentBackgroudBrush}" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="32,24" />
             <Setter Property="Margin" Value="0,0,0,12" />
@@ -66,7 +66,7 @@
                                     x:Name="CharacterNameTextBlock"
                                     FontSize="18"
                                     FontWeight="Bold"
-                                    Text="{x:Bind VM.SelectedCharacter.CharacterName}" />
+                                    Text="{x:Bind VM.SelectedCharacter.CharacterName, Mode=OneWay}" />
                             </StackPanel>
                             <Grid Grid.Row="2" Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
@@ -361,7 +361,7 @@
 
             <NavigationView
                 Grid.Column="1"
-                Margin="12,0,0,0"
+                Margin="12,-4,0,0"
                 IsBackButtonVisible="Collapsed"
                 IsSettingsVisible="False"
                 PaneDisplayMode="Top"
@@ -379,12 +379,12 @@
                     <NavigationViewItem Content="{StaticResource CharacterPage_Contract}" Tag="Contract" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Industry}" Tag="Industry" />
                 </NavigationView.MenuItems>
-                <Frame x:Name="ContentFrame" Background="Transparent" />
+                <Frame x:Name="ContentFrame" Background="{ThemeResource DefaultBackgroudBrush}" />
             </NavigationView>
             <Button
                 x:Name="RefreshPageButton"
                 Grid.Column="1"
-                Margin="4,12"
+                Margin="4,8,4,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Background="Transparent"

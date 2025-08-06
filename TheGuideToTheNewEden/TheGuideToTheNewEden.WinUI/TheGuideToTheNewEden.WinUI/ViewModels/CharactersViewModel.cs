@@ -111,6 +111,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand RemoveCommand => new RelayCommand<CharacterViewModel>((character) =>
         {
             Services.CharacterService.Remove(character.SelectedCharacter);
+            ClientServiceHelper.GetRequiredService<CharacterNavigationService>().RemoveInstance(character);
             Characters.Remove(character);
             Calstatistic();
             ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
@@ -118,7 +119,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand ShowCommand => new RelayCommand<CharacterViewModel>((character) =>
         {
-            Services.NavigationService.NavigateTo(new CharacterPage(character), character.SelectedCharacter.CharacterName);
+            ClientServiceHelper.GetRequiredService<CharacterNavigationService>().NavigateTo(character);
         });
 
         private void Calstatistic()

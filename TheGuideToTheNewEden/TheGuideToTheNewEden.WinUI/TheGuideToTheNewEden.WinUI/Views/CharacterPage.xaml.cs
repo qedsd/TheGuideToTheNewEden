@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,10 +23,30 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class CharacterPage : Page, IPage
+    public sealed partial class CharacterPage : Page, IPage, INotifyPropertyChanged
     {
-        internal CharacterViewModel VM { get; private set; }
-        internal CharacterPage(CharacterViewModel vm)
+        private CharacterViewModel _vm;
+        internal CharacterViewModel VM 
+        {
+            get => _vm;
+            set
+            {
+                _vm = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VM)));
+            }
+        }
+        public CharacterPage()
+        {
+            this.InitializeComponent();
+        }
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            VM = e.Parameter as CharacterViewModel;
+            DataContext = VM;
+            _ = VM.GetZKBInfoAsync();
+        }
+        public CharacterPage(CharacterViewModel vm)
         {
             VM = vm;
             DataContext = VM;
@@ -35,13 +56,16 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void CharacterPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= CharacterPage_Loaded;
-            _=VM.GetZKBInfoAsync();
+            _ = VM.GetZKBInfoAsync();
         }
 
         private readonly Dictionary<string, Page> _contentPages = new Dictionary<string, Page>();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if(args.SelectedItem != null)
+            if (args.SelectedItem != null)
             {
                 string tag = (args.SelectedItem as NavigationViewItem).Tag as string;
                 switch (tag)
@@ -64,9 +88,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     case "Wallet": ContentFrame.Navigate(typeof(WalletPage), VM.EsiClient); break;
                     case "Mail": ContentFrame.Navigate(typeof(MailPage), VM.EsiClient); break;
                     case "Contract": ContentFrame.Navigate(typeof(Character.ContractPage), VM.EsiClient); break;
-                    case "Industry": ContentFrame.Navigate(typeof(Character.IndustryPage), new dynamic[] { VM.EsiClient, VM.SelectedCharacter.CharacterID}); break;
+                    case "Industry": ContentFrame.Navigate(typeof(Character.IndustryPage), new dynamic[] { VM.EsiClient, VM.SelectedCharacter.CharacterID }); break;
                 }
-                if(_contentPages.ContainsKey(tag))
+                if (_contentPages.ContainsKey(tag))
                 {
                     _contentPages.Remove(tag);
                 }
@@ -91,7 +115,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 (item as ICharacterPage)?.Clear();
             }
             _contentPages.Clear();
-            if(OverviewNavigationViewItem.IsSelected)
+            if (OverviewNavigationViewItem.IsSelected)
             {
                 (ContentFrame.Content as ICharacterPage).Refresh();
             }

@@ -317,14 +317,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         private async void LoadCorpTransactionsAsync()
         {
-            this.ShowWaiting();
-            DataGrid_CorpTransaction.ItemsSource = await GetCorpTransactionsAsync((int)NumberBox_CorpTransaction.Value, 0);
-            this.HideWaiting();
+            if(_esiClient != null)
+            {
+                this.ShowWaiting();
+                DataGrid_CorpTransaction.ItemsSource = await GetCorpTransactionsAsync((int)NumberBox_CorpTransaction.Value, 0);
+                this.HideWaiting();
+            }
         }
         private void NumberBox_CorpJournal_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            NavigatePageControl_CorpJournal.Page = 0;
-            NavigatePageControl_CorpJournal.Page = 1;
+            if(NavigatePageControl_CorpJournal != null)
+            {
+                NavigatePageControl_CorpJournal.Page = 0;
+                NavigatePageControl_CorpJournal.Page = 1;
+            }
         }
 
         private void NumberBox_CorpTransaction_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)

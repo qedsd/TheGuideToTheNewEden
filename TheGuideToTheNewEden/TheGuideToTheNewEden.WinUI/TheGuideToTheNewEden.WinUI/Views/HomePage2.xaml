@@ -10,9 +10,9 @@
     mc:Ignorable="d">
 
     <StackPanel>
-        <Button Content="1" Click="Button_Click"/>
-        <Button Content="2" Click="Button_Click_1"/>
-        <Button Content="ToolWindow" Click="ToolWindow_Click"/>
-        <Button Content="TransparentWindow" Click="TransparentWindow_Click"/>
+        <Button Click="Button_Click" Content="1" />
+        <Button Click="Button_Click_1" Content="2" />
+        <Button Click="ToolWindow_Click" Content="ToolWindow" />
+        <Button Click="TransparentWindow_Click" Content="TransparentWindow" />
     </StackPanel>
 </Page>
