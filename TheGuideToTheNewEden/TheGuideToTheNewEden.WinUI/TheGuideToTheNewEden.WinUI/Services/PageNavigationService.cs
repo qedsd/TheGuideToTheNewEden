@@ -83,19 +83,39 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void ShowWaiting(Page page, string tip = null)
         {
-            ShowWaiting(page.GetType().Name, tip);
+            string name = page.GetType().Name;
+            if(_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            ShowWaiting(name, tip);
         }
         public void HideWaiting(Page page)
         {
-            HideWaiting(page.GetType().Name);
+            string name = page.GetType().Name;
+            if (_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            HideWaiting(name);
         }
         public void ShowWaiting(BaseViewModel vm, string tip = null)
         {
-            ShowWaiting($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}", tip);
+            string name = vm.GetType().Name.Replace("ViewModel", "Page");
+            if (_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            ShowWaiting(name, tip);
         }
         public void HideWaiting(BaseViewModel vm)
         {
-            HideWaiting($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}");
+            string name = vm.GetType().Name.Replace("ViewModel", "Page");
+            if (_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            HideWaiting(name);
         }
         public void ShowMsg(string sender, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
@@ -103,11 +123,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void ShowMsg(Page page, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
-            ShowMsg($"Navigation.{page.GetType().Name}", msg, infoType, autoClose, title);
+            string name = page.GetType().Name;
+            if (_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            ShowMsg(name, msg, infoType, autoClose, title);
         }
         public void ShowMsg(BaseViewModel vm, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
-            ShowMsg($"Navigation.{vm.GetType().Name.Replace("ViewModel", "Page")}", msg, infoType, autoClose, title);
+            string name = vm.GetType().Name.Replace("ViewModel", "Page");
+            if (_pageNameRef.TryGetValue(name, out var refName))
+            {
+                name = refName;
+            }
+            ShowMsg(name, msg, infoType, autoClose, title);
         }
         public void HideMsg()
         {
@@ -125,5 +155,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 page.Close();
             }
         }
+
+        /// <summary>
+        /// 将功能内的细分page名称映射到功能page名称
+        /// </summary>
+        private static Dictionary<string, string> _pageNameRef = new Dictionary<string, string>
+        {
+            {"CharactersPage","CharactersShellPage" },
+            {"OverviewPage","CharactersShellPage"},
+            {"SkillPage","CharactersShellPage"},
+            {"ClonePage","CharactersShellPage"},
+            {"WalletPage","CharactersShellPage"},
+            {"MailPage","CharactersShellPage"},
+            {"ContractPage","CharactersShellPage"},
+            {"IndustryPage","CharactersShellPage"},
+        };
     }
 }

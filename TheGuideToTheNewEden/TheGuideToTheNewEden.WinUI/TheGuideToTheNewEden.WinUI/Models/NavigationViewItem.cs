@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
         public NavigationViewItem(Type type)
         {
             Type = type;
-            Title = $"Navigation.{type.Name}";
+            Title = type.Name;
             Services.LanguageSelectorService.AppLanguageChanged += LanguageSelectorService_AppLanguageChanged;
         }
         public NavigationViewItem(Type type, string title)

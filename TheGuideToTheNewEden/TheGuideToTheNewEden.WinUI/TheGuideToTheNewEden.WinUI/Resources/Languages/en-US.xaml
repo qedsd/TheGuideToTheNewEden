@@ -1,28 +1,28 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <x:String x:Key="AppDisplayName">The Guide To The New Eden</x:String>
 
-    <x:String x:Key="Navigation.HomePage">Home</x:String>
-    <x:String x:Key="Navigation.GamePreviewMgrPage">Game Preview</x:String>
-    <x:String x:Key="Navigation.CharactersShellPage">Characters</x:String>
-    <x:String x:Key="Navigation.MarketPage">Market</x:String>
-    <x:String x:Key="Navigation.BusinessPage">Business</x:String>
-    <x:String x:Key="Navigation.ChannelIntelPage">Channel Intel</x:String>
-    <x:String x:Key="Navigation.ContractPage">Public Contract</x:String>
-    <x:String x:Key="Navigation.ServerPingPage">Delay Test</x:String>
-    <x:String x:Key="Navigation.TranslationPage">Translation</x:String>
-    <x:String x:Key="Navigation.DEDPage">DED</x:String>
-    <x:String x:Key="Navigation.WormholePage">Wormhole</x:String>
-    <x:String x:Key="Navigation.BackstoryPage">Backstory</x:String>
-    <x:String x:Key="Navigation.MissionPage">Mission</x:String>
-    <x:String x:Key="Navigation.GameLogMonitorPage">Game Log Monitor</x:String>
-    <x:String x:Key="Navigation.LinksPage">Links</x:String>
-    <x:String x:Key="Navigation.ChannelMonitorPage">Channel Monitor</x:String>
-    <x:String x:Key="Navigation.SettingPage">Setting</x:String>
-    <x:String x:Key="Navigation.ZKBPage">Zkillboard</x:String>
-    <x:String x:Key="Navigation.DatabasePage">Database</x:String>
-    <x:String x:Key="Navigation.MapPage">Map</x:String>
-    <x:String x:Key="Navigation.ChannelScanPage">Channel Scan</x:String>
-    <x:String x:Key="Navigation.ChannelMarketPage">Channel Market</x:String>
+    <x:String x:Key="HomePage">Home</x:String>
+    <x:String x:Key="GamePreviewMgrPage">Game Preview</x:String>
+    <x:String x:Key="CharactersShellPage">Characters</x:String>
+    <x:String x:Key="MarketPage">Market</x:String>
+    <x:String x:Key="BusinessPage">Business</x:String>
+    <x:String x:Key="ChannelIntelPage">Channel Intel</x:String>
+    <x:String x:Key="ContractPage">Public Contract</x:String>
+    <x:String x:Key="ServerPingPage">Delay Test</x:String>
+    <x:String x:Key="TranslationPage">Translation</x:String>
+    <x:String x:Key="DEDPage">DED</x:String>
+    <x:String x:Key="WormholePage">Wormhole</x:String>
+    <x:String x:Key="BackstoryPage">Backstory</x:String>
+    <x:String x:Key="MissionPage">Mission</x:String>
+    <x:String x:Key="GameLogMonitorPage">Game Log Monitor</x:String>
+    <x:String x:Key="LinksPage">Links</x:String>
+    <x:String x:Key="ChannelMonitorPage">Channel Monitor</x:String>
+    <x:String x:Key="SettingPage">Setting</x:String>
+    <x:String x:Key="ZKBPage">Zkillboard</x:String>
+    <x:String x:Key="DatabasePage">Database</x:String>
+    <x:String x:Key="MapPage">Map</x:String>
+    <x:String x:Key="ChannelScanPage">Channel Scan</x:String>
+    <x:String x:Key="ChannelMarketPage">Channel Market</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>

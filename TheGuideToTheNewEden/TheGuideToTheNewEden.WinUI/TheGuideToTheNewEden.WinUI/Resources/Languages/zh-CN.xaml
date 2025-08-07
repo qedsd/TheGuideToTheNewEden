@@ -1,29 +1,29 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <x:String x:Key="AppDisplayName">新伊甸漫游指南</x:String>
 
-    <x:String x:Key="Navigation.HomePage">主页</x:String>
-    <x:String x:Key="Navigation.HomePage2">主页</x:String>
-    <x:String x:Key="Navigation.GamePreviewMgrPage">多开预览</x:String>
-    <x:String x:Key="Navigation.CharactersShellPage">角色</x:String>
-    <x:String x:Key="Navigation.MarketPage">市场</x:String>
-    <x:String x:Key="Navigation.BusinessPage">商业</x:String>
-    <x:String x:Key="Navigation.ChannelIntelPage">频道预警</x:String>
-    <x:String x:Key="Navigation.ContractPage">公开合同</x:String>
-    <x:String x:Key="Navigation.ServerPingPage">延迟测试</x:String>
-    <x:String x:Key="Navigation.TranslationPage">名词翻译</x:String>
-    <x:String x:Key="Navigation.DEDPage">死亡远征</x:String>
-    <x:String x:Key="Navigation.WormholePage">虫洞查询</x:String>
-    <x:String x:Key="Navigation.BackstoryPage">背景故事</x:String>
-    <x:String x:Key="Navigation.MissionPage">任务攻略</x:String>
-    <x:String x:Key="Navigation.GameLogMonitorPage">日志监控</x:String>
-    <x:String x:Key="Navigation.LinksPage">快速链接</x:String>
-    <x:String x:Key="Navigation.ChannelMonitorPage">频道监控</x:String>
-    <x:String x:Key="Navigation.SettingPage">设置</x:String>
-    <x:String x:Key="Navigation.ZKBHomePage">Zkillboard</x:String>
-    <x:String x:Key="Navigation.DatabasePage">数据库</x:String>
-    <x:String x:Key="Navigation.MapPage">星图</x:String>
-    <x:String x:Key="Navigation.ChannelScanPage">频道统计</x:String>
-    <x:String x:Key="Navigation.ChannelMarketPage">频道查价</x:String>
+    <x:String x:Key="HomePage">主页</x:String>
+    <x:String x:Key="HomePage2">主页</x:String>
+    <x:String x:Key="GamePreviewMgrPage">多开预览</x:String>
+    <x:String x:Key="CharactersShellPage">角色</x:String>
+    <x:String x:Key="MarketPage">市场</x:String>
+    <x:String x:Key="BusinessPage">商业</x:String>
+    <x:String x:Key="ChannelIntelPage">频道预警</x:String>
+    <x:String x:Key="ContractPage">公开合同</x:String>
+    <x:String x:Key="ServerPingPage">延迟测试</x:String>
+    <x:String x:Key="TranslationPage">名词翻译</x:String>
+    <x:String x:Key="DEDPage">死亡远征</x:String>
+    <x:String x:Key="WormholePage">虫洞查询</x:String>
+    <x:String x:Key="BackstoryPage">背景故事</x:String>
+    <x:String x:Key="MissionPage">任务攻略</x:String>
+    <x:String x:Key="GameLogMonitorPage">日志监控</x:String>
+    <x:String x:Key="LinksPage">快速链接</x:String>
+    <x:String x:Key="ChannelMonitorPage">频道监控</x:String>
+    <x:String x:Key="SettingPage">设置</x:String>
+    <x:String x:Key="ZKBHomePage">Zkillboard</x:String>
+    <x:String x:Key="DatabasePage">数据库</x:String>
+    <x:String x:Key="MapPage">星图</x:String>
+    <x:String x:Key="ChannelScanPage">频道统计</x:String>
+    <x:String x:Key="ChannelMarketPage">频道查价</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>

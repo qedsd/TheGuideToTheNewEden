@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.WinUI.Extensions
         }
         public static void ShowMsg(this Page page, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg($"Navigation.{page.GetType().Name}", msg, infoType, autoClose, title);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(page.GetType().Name, msg, infoType, autoClose, title);
         }
         public static void ShowWaiting(this Page page, string tip = null)
         {

@@ -56,24 +56,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async void Init()
         {
-            var characterDatas = Services.CharacterService.CharacterOauths;
-            if (characterDatas.NotNullOrEmpty())
+            try
             {
-                var vms = characterDatas.Select(p => new CharacterViewModel(p)).ToList();
-                ShowWaiting();
-                await Core.Helpers.ThreadHelper.RunAsync(vms, (c) =>
+                var characterDatas = Services.CharacterService.CharacterOauths;
+                if (characterDatas.NotNullOrEmpty())
                 {
-                    c.Init();
-                });
-                HideWaiting();
-                Characters = vms.ToObservableCollection();
+                    var vms = characterDatas.Select(p => new CharacterViewModel(p)).ToList();
+                    ShowWaiting();
+                    await Core.Helpers.ThreadHelper.RunAsync(vms, (c) =>
+                    {
+                        c.Init();
+                    });
+                    HideWaiting();
+                    Characters = vms.ToObservableCollection();
+                }
+                else
+                {
+                    Characters = new ObservableCollection<CharacterViewModel>();
+                }
+                Characters.Add(new CharacterViewModel());
+                Calstatistic();
             }
-            else
+            catch (Exception ex)
             {
-                Characters = new ObservableCollection<CharacterViewModel>();
+                Core.Log.Error(ex);
+                HideWaiting();
+                ShowError(ex.Message);
             }
-            Characters.Add(new CharacterViewModel());
-            Calstatistic();
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
