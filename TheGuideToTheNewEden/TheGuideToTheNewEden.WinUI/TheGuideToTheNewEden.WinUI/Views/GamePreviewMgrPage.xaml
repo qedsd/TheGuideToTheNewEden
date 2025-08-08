@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:GamePreviewMgrViewModel x:Name="VM" />
@@ -18,7 +19,7 @@
     <Page.Resources>
         <converters:TargetStringToVisibilityConverter x:Key="ShowMode2ToVisibleConverter" TargetValue="1" />
     </Page.Resources>
-    <Grid x:Name="ContentGrid" Margin="8">
+    <Grid x:Name="ContentGrid" Margin="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" />
             <ColumnDefinition Width="360" />
@@ -33,6 +34,8 @@
             <controls:CardControl.Content>
                 <ListView
                     x:Name="ProcessList"
+                    Margin="0"
+                    Padding="0"
                     AllowDrop="True"
                     Background="Transparent"
                     CanDragItems="True"
@@ -54,25 +57,23 @@
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20" />
                                     <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Grid>
-                                    <TextBlock
-                                        HorizontalAlignment="Stretch"
-                                        Text="{x:Bind WindowTitle, Mode=OneWay}"
-                                        ToolTipService.ToolTip="{x:Bind WindowTitle}" />
-                                </Grid>
                                 <Rectangle
-                                    Grid.Column="1"
-                                    Width="10"
-                                    Height="10"
-                                    Margin="4,0,0,0"
-                                    Fill="{ThemeResource SystemAccentColor}"
-                                    RadiusX="10"
-                                    RadiusY="10"
+                                    Width="3"
+                                    Height="16"
+                                    HorizontalAlignment="Left"
+                                    Fill="{ThemeResource SystemAccentColorLight2}"
+                                    RadiusX="2"
+                                    RadiusY="2"
                                     ToolTipService.ToolTip="{StaticResource GamePreviewMgrPage_Running_Tip}"
                                     Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{x:Bind WindowTitle, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{x:Bind WindowTitle}" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -124,7 +125,7 @@
                                                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Forward}" />
                                                     <TextBox
                                                         Grid.Column="1"
-                                                        Margin="8,0,0,0"
+                                                        Margin="8,0,8,0"
                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
                                                         Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Forward, Mode=TwoWay}" />
                                                     <Button
@@ -141,7 +142,7 @@
                                                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_Backward}" />
                                                     <TextBox
                                                         Grid.Column="1"
-                                                        Margin="8,0,0,0"
+                                                        Margin="8,0,8,0"
                                                         PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}"
                                                         Text="{x:Bind VM.PreviewSetting.SwitchHotkey_Backward, Mode=TwoWay}" />
                                                     <Button

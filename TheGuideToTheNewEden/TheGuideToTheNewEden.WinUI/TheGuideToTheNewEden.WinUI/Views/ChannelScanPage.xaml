@@ -29,8 +29,9 @@
             </controls:CardControl.Header>
             <controls:CardControl.Content>
                 <TextBox
-                    Margin="-8"
+                    Margin="4,0"
                     AcceptsReturn="True"
+                    Background="Transparent"
                     BorderThickness="0"
                     IsSpellCheckEnabled="False"
                     PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
@@ -38,10 +39,7 @@
                     TextWrapping="Wrap" />
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
-                <StackPanel
-                    Grid.Row="2"
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         Margin="4,0"
                         Command="{x:Bind VM.StartCommand}"
@@ -58,8 +56,6 @@
         <controls:CardControl
             Grid.Column="1"
             Width="320"
-            Margin="4"
-            Padding="4"
             Visibility="{x:Bind VM.IsSetting, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
             <controls:CardControl.Header>
                 <Grid>
@@ -70,7 +66,7 @@
                 <ScrollViewer>
                     <StackPanel>
                         <Expander
-                            Margin="0,4"
+                            Padding="0"
                             Header="{StaticResource ChannelScanPage_Setting_ZKB}"
                             IsExpanded="True"
                             Style="{StaticResource StretchExpander}">

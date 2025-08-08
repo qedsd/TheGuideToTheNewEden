@@ -240,6 +240,7 @@
     <None Remove="Controls\MapSystemControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
+    <None Remove="Controls\MarketSearchControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
     <None Remove="Controls\ProgressBar.xaml" />
@@ -471,6 +472,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\InfoBarControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\MarketSearchControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">

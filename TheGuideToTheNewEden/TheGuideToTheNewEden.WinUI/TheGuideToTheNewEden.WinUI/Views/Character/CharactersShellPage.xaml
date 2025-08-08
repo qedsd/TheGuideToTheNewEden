@@ -10,7 +10,7 @@
     Background="Transparent"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
-    <Grid>
+    <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -19,38 +19,7 @@
             x:Name="NavigationToken"
             Margin="8,0,0,0"
             IsWrapped="True"
-            SelectionMode="Single">
-            <!--<labs:TokenView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Foreground="{ThemeResource ForegroundBrush}" Text="{Binding Title}" />
-                        <Button
-                            x:Name="CloseButton"
-                            Content="X"
-                            Foreground="{ThemeResource ForegroundBrush}"
-                            Visibility="Collapsed" />
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup>
-                                <VisualState x:Name="PointerOver">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames
-                                            Storyboard.TargetName="CloseButton"
-                                            Storyboard.TargetProperty="Visibility"
-                                            Duration="0">
-                                            <DiscreteObjectKeyFrame KeyTime="0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <Visibility>Visible</Visibility>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                    </StackPanel>
-                </DataTemplate>
-            </labs:TokenView.ItemTemplate>-->
-        </labs:TokenView>
+            SelectionMode="Single" />
         <Frame x:Name="ContentFrame" Grid.Row="1" />
     </Grid>
 </Page>

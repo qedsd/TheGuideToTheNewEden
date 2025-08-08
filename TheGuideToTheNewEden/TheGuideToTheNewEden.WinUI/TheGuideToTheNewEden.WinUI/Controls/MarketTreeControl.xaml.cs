@@ -73,8 +73,25 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             await InitStar();
             ListView_Stared.ItemsSource = StaredInvTypes;
         }
-        
 
+        #region search
+        public static readonly DependencyProperty ShowSearchBoxProperty
+            = DependencyProperty.Register(
+                nameof(ShowSearchBox),
+                typeof(bool),
+                typeof(MarketTreeControl),
+                new PropertyMetadata(true, new PropertyChangedCallback(ShowSearchBoxPropertyChanged)));
+
+        public bool ShowSearchBox
+        {
+            get => (bool)GetValue(ShowSearchBoxProperty);
+            set => SetValue(ShowSearchBoxProperty, value);
+        }
+        private static void ShowSearchBoxPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as MarketTreeControl).Search_AutoSuggestBox.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
+        }
+        #endregion
 
         private void TreeView_Types_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {

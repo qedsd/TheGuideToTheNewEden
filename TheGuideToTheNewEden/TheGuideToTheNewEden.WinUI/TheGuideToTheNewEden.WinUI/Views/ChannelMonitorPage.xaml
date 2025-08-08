@@ -15,7 +15,7 @@
     <Page.DataContext>
         <viewmodels:ChannelMonitorViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="8">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="Auto" />

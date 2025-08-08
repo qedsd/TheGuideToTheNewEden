@@ -9,7 +9,7 @@
     x:Name="ParentControl"
     MinWidth="{ThemeResource FlyoutThemeMinWidth}"
     MinHeight="{StaticResource ExpanderMinHeight}"
-    Padding="{StaticResource ExpanderContentPadding}"
+    Padding="0"
     Background="{ThemeResource ExpanderContentBackground}"
     BorderBrush="{ThemeResource ExpanderContentBorderBrush}"
     BorderThickness="{ThemeResource ExpanderContentDownBorderThickness}"

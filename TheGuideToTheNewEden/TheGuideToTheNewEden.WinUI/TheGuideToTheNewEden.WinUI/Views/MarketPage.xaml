@@ -10,6 +10,7 @@
     xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
@@ -18,7 +19,7 @@
     <Page.DataContext>
         <viewmodels:MarketViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="8">
+    <Grid Margin="4,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
@@ -88,12 +89,12 @@
 
             </controls:CardControl.Header>
             <controls:CardControl.Content>
-                <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" />
+                <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" ShowSearchBox="True" />
             </controls:CardControl.Content>
         </controls:CardControl>
         <controls:CardControl
             Grid.Column="1"
-            Margin="8,0,0,0"
+            Margin="4,0,0,0"
             Visibility="{x:Bind VM.SelectedInvType, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls:CardControl.Header>
                 <Grid Margin="0,4">
@@ -414,13 +415,12 @@
                 </Grid>
             </controls:CardControl.Header>
             <controls:CardControl.Content>
-                <Pivot Margin="-10,0">
+                <Pivot>
                     <PivotItem>
                         <PivotItem.Header>
                             <TextBlock FontSize="14" Text="{StaticResource MarketPage_Sell}" />
                         </PivotItem.Header>
                         <dataGrid:SfDataGrid
-                            Margin="0,4,0,0"
                             HorizontalAlignment="Stretch"
                             AllowDraggingColumns="True"
                             AllowEditing="False"
@@ -462,7 +462,7 @@
                             <TextBlock FontSize="14" Text="{StaticResource MarketPage_Buy}" />
                         </PivotItem.Header>
                         <dataGrid:SfDataGrid
-                            Margin="0,4,0,0"
+                            Margin="0,0,0,0"
                             HorizontalAlignment="Stretch"
                             AllowDraggingColumns="True"
                             AllowEditing="False"

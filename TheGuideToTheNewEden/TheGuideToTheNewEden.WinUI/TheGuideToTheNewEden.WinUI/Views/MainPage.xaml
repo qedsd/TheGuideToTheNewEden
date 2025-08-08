@@ -16,18 +16,14 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <!--  导航  -->
-        <Grid x:Name="NavPanel" Margin="8">
+        <Grid x:Name="NavPanel" Margin="8,0,8,8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="50" />
+                <RowDefinition Height="60" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!--  标题  -->
-            <StackPanel
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <Image Width="16" Source="/Resources/Images/logo.svg" />
                 <TextBlock
                     Margin="10,0,0,0"
@@ -40,7 +36,6 @@
             <ListView
                 x:Name="MenuList"
                 Grid.Row="1"
-                Margin="0,0"
                 Background="Transparent"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
@@ -85,7 +80,7 @@
         <!--  内容  -->
         <Border
             Grid.Column="1"
-            Padding="0,20,0,0"
+            Padding="0,32,0,0"
             Background="{ThemeResource TransparentBackgroudBrush}"
             CornerRadius="0">
             <Grid>

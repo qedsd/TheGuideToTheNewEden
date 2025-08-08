@@ -379,7 +379,7 @@
                     <NavigationViewItem Content="{StaticResource CharacterPage_Contract}" Tag="Contract" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Industry}" Tag="Industry" />
                 </NavigationView.MenuItems>
-                <Frame x:Name="ContentFrame" Background="{ThemeResource DefaultBackgroudBrush}" />
+                <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>
             <Button
                 x:Name="RefreshPageButton"

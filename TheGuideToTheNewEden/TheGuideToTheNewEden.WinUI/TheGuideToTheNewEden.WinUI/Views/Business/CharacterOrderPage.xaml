@@ -31,6 +31,7 @@
                     x:Name="SelecteCharacterControl"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
                     OnSelectedItemChanged="SelecteCharacterControl_OnSelectedItemChanged" />
             </StackPanel>
             <StackPanel
@@ -54,8 +55,8 @@
         <Pivot
             x:Name="MainPivot"
             Grid.Row="1"
-            Margin="0,-4,0,0"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+            Margin="0,0,0,0"
+            Background="{ThemeResource TransparentBackgroudBrush}">
             <PivotItem>
                 <PivotItem.Header>
                     <TextBlock FontSize="14" Text="{StaticResource BusinessPage_Character}" />

@@ -76,7 +76,7 @@ namespace TheGuideToTheNewEden.WinUI
             }
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(1400,800));
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(1500,800));
         }
         public UIElement MainUIElement
         {

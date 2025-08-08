@@ -158,13 +158,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     _allSolarSystem.Add(item.SolarSystemID);
                 }
             }
-            Window.SetDisplayTitle($"{Setting.Listener} - {Setting.IntelJumps}");
+            Window.SetDisplayTitle($"{Setting.Listener} - {Setting.IntelJumps}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}");
             _intelPage.Init(Window,setting,intelMap);
             InitTimer();
         }
 
-
-        
         private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
@@ -186,7 +184,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             }
         }
-
         private void InitTimer()
         {
             if(autoIntelTimer != null)
