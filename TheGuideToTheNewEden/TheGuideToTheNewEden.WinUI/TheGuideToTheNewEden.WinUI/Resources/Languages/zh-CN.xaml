@@ -456,7 +456,7 @@
     <x:String x:Key="AddTranquilityAuthDialog_Title">新增国际服玩家角色授权</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step0">步骤0：点击下方按钮跳转浏览器下载并安装.Net6桌面运行时（已安装请跳过）</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step0Button">下载 .NET 6.0</x:String>
-    <x:String x:Key="AddTranquilityAuthDialog_Step1">步骤1：点击下方按钮跳转浏览器登陆EVE账号并授权，然后按浏览器提示打开AuthListener.exe</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1">步骤1：点击下方按钮跳转浏览器登陆EVE账号并授权，然后按浏览器提示打开 TheGuideToTheNewEden</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step1Button">login.eveonline.com</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step2">步骤2：等待写入授权信息</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step2_Success">已获取到授权信息</x:String>

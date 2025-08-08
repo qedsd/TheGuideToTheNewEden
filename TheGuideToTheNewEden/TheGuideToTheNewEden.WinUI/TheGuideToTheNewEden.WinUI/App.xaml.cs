@@ -6,14 +6,14 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Services;
-using Windows.UI.Popups;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI
 {
     public partial class App : Application
     {
-        public static bool HandleClosedEvents { get; set; } = true;
+        public static Core.Helpers.SingleInstanceHelper SingleInstanceHelper;
+        public static bool HandleClosedEvents { get; set; } = false;
         private NotificationManager notificationManager;
         public App()
         {
@@ -59,6 +59,16 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            SingleInstanceHelper = new Core.Helpers.SingleInstanceHelper();
+            if (SingleInstanceHelper.RegisterSingleInstance())
+            {
+                SingleInstanceHelper.Activated += SingleInstanceHelper_Activated;
+            }
+            else
+            {
+                Application.Current.Exit();
+                return;
+            }
             Services.ActivationService.Init();
             ClientServiceHelper.Init(Log.GetInstance());
             m_window = new MainWindow();
@@ -68,23 +78,12 @@ namespace TheGuideToTheNewEden.WinUI
             m_window.Activate();
         }
 
-        private IntPtr GetSameProcess()
+        private void SingleInstanceHelper_Activated(object sender, string[] e)
         {
-            var allProcesses = System.Diagnostics.Process.GetProcesses();
-            if (allProcesses.Any())
+            if (m_window != null)
             {
-                var targets = allProcesses.Where(p => p.ProcessName == "TheGuideToTheNewEden").ToList();
-                if(targets.Any())
-                {
-                    string dir = System.AppDomain.CurrentDomain.BaseDirectory;
-                    var p = targets.FirstOrDefault(p => Path.GetDirectoryName(p.MainModule.FileName) == dir);
-                    if (p != null)
-                    {
-                        return p.MainWindowHandle;
-                    }
-                }
+                Helpers.WindowHelper.SetForegroundWindow_Click(m_window.GetWindowHandle());
             }
-            return IntPtr.Zero;
         }
 
         private void M_window_Closed(object sender, WindowEventArgs args)

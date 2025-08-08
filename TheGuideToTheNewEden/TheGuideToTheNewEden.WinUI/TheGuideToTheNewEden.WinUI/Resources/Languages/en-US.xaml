@@ -455,7 +455,7 @@
     <x:String x:Key="AddTranquilityAuthDialog_Title">Add tranquility character authorization</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step0">Step 0: Click the button below to jump to the browser to download and install Net6 desktop runtime (please skip if installed)</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step0Button">Download .NET 6.0</x:String>
-    <x:String x:Key="AddTranquilityAuthDialog_Step1">Step 1: Click the button below to jump to the browser, log in to EVE account and authorize, then follow the browser prompts to open AuthListener.exe</x:String>
+    <x:String x:Key="AddTranquilityAuthDialog_Step1">Step 1: Click the button below to jump to the browser, log in to EVE account and authorize, then follow the browser prompts to open TheGuideToTheNewEden</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step1Button">login.eveonline.com</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step2">Step 2: Wait for authorization information to be written</x:String>
     <x:String x:Key="AddTranquilityAuthDialog_Step2_Success">Authorization information has been obtained</x:String>
