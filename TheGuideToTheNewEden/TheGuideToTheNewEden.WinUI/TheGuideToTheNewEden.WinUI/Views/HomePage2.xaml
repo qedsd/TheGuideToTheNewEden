@@ -10,9 +10,12 @@
     mc:Ignorable="d">
 
     <StackPanel>
+        <TextBox Width="600" HorizontalAlignment="Left" />
         <Button Click="Button_Click" Content="1" />
         <Button Click="Button_Click_1" Content="2" />
         <Button Click="ToolWindow_Click" Content="ToolWindow" />
         <Button Click="TransparentWindow_Click" Content="TransparentWindow" />
+        <Button Click="IME_Click" Content="Get IME Pos" />
+        <Button Click="SetIME_Click" Content="Set IME Pos" />
     </StackPanel>
 </Page>

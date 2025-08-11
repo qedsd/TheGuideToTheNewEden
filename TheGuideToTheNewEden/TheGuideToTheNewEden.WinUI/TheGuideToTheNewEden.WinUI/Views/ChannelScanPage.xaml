@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:ChannelScanViewModel x:Name="VM" />
@@ -21,7 +22,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <controls:CardControl Margin="4">
+        <controls:CardControl>
             <controls:CardControl.Header>
                 <Grid>
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelScanPage_NameList}" />
@@ -29,20 +30,20 @@
             </controls:CardControl.Header>
             <controls:CardControl.Content>
                 <TextBox
+                    x:Name="InputContent"
                     Margin="4,0"
                     AcceptsReturn="True"
                     Background="Transparent"
                     BorderThickness="0"
                     IsSpellCheckEnabled="False"
                     PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
-                    Text="{x:Bind VM.NamesStr, Mode=TwoWay}"
                     TextWrapping="Wrap" />
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         Margin="4,0"
-                        Command="{x:Bind VM.StartCommand}"
+                        Click="Start_Click"
                         Icon="Play"
                         Label="{StaticResource ChannelScanPage_Start}" />
                     <AppBarButton
@@ -55,7 +56,8 @@
         </controls:CardControl>
         <controls:CardControl
             Grid.Column="1"
-            Width="320"
+            Width="300"
+            Margin="4,0"
             Visibility="{x:Bind VM.IsSetting, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
             <controls:CardControl.Header>
                 <Grid>
@@ -66,7 +68,6 @@
                 <ScrollViewer>
                     <StackPanel>
                         <Expander
-                            Padding="0"
                             Header="{StaticResource ChannelScanPage_Setting_ZKB}"
                             IsExpanded="True"
                             Style="{StaticResource StretchExpander}">
@@ -225,10 +226,10 @@
             </controls:CardControl.Fonter>
         </controls:CardControl>
         <Grid Grid.Column="2">
-            <Pivot>
+            <Pivot Margin="-4,-12">
                 <PivotItem>
                     <PivotItem.Header>
-                        <TextBlock FontSize="16" Text="{StaticResource ChannelScanPage_Result_Statistics}" />
+                        <TextBlock FontSize="14" Text="{StaticResource ChannelScanPage_Result_Statistics}" />
                     </PivotItem.Header>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -333,7 +334,7 @@
                 </PivotItem>
                 <PivotItem>
                     <PivotItem.Header>
-                        <TextBlock FontSize="16" Text="{StaticResource ChannelScanPage_Result_Detail}" />
+                        <TextBlock FontSize="14" Text="{StaticResource ChannelScanPage_Result_Detail}" />
                     </PivotItem.Header>
                     <dataGrid:SfDataGrid
                         x:Name="ResultDataGrid"
@@ -432,7 +433,7 @@
                 </PivotItem>
             </Pivot>
             <StackPanel
-                Margin="0,16,16,0"
+                Margin="0,2,16,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <TextBlock Text="{StaticResource ChannelScanPage_Result_Statistics_CharacterCount}" />

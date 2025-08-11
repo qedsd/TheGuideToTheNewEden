@@ -47,6 +47,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             _serviceCollection.AddSingleton<PageNavigationService>();
             _serviceCollection.AddSingleton<CharacterNavigationService>();
+            _serviceCollection.AddSingleton<KBNavigationService>();
         }
         private void UseILog(ILog log)
         {

@@ -19,15 +19,10 @@
             x:Name="MapCanvas"
             OnPointedSystemChanged="MapCanvas_OnPointedSystemChanged"
             OnSelectedSystemChanged="MapCanvas_OnSelectedSystemChanged" />
-        <!--  搜索  -->
-        <Grid
-            Width="240"
-            Margin="0,4,2,0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top" />
-        <!--  设置  -->
+
+        <!--  工具栏  -->
         <StackPanel
-            Margin="2,4,0,0"
+            Margin="2,-30,0,0"
             Padding="4"
             VerticalAlignment="Top"
             Orientation="Horizontal">
@@ -36,7 +31,7 @@
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16E;" />
                 </Button.Content>
                 <Button.Flyout>
-                    <Flyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft">
                         <controls:SystemFilterControl
                             x:Name="SystemFilterControl"
                             Grid.Row="1"
@@ -50,7 +45,7 @@
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
                 </Button.Content>
                 <Button.Flyout>
-                    <Flyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft">
                         <ScrollView>
                             <StackPanel MinWidth="400">
                                 <Expander
@@ -80,7 +75,7 @@
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74C;" />
                 </Button.Content>
                 <Button.Flyout>
-                    <MenuFlyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
                         <MenuFlyoutItem
                             Click="Tools_Click"
                             Tag="None"

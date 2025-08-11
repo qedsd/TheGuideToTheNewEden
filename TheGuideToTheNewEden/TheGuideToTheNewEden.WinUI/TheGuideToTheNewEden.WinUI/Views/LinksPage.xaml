@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:TheGuideToTheNewEden.Core.Models"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid>
@@ -35,7 +36,7 @@
                             Width="320"
                             Height="80"
                             Padding="10,4"
-                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                            Background="{ThemeResource TransparentBackgroudBrush}"
                             CornerRadius="8">
                             <Grid.ContextFlyout>
                                 <MenuFlyout>

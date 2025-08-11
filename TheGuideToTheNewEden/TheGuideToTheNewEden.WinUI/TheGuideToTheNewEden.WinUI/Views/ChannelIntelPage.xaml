@@ -13,6 +13,7 @@
     xmlns:models="using:TheGuideToTheNewEden.WinUI.Models"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.DataContext>
@@ -20,7 +21,7 @@
     </Page.DataContext>
     <Grid x:Name="ContentGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="300" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
@@ -85,7 +86,7 @@
         </controls1:CardControl>
         <controls1:CardControl
             Grid.Column="1"
-            Width="260"
+            Width="300"
             Margin="4,0"
             Visibility="{x:Bind VM.ChannelIntel, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>

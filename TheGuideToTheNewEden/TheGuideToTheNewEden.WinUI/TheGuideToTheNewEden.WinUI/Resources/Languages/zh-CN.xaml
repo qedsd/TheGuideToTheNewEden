@@ -622,6 +622,7 @@
     <x:String x:Key="GameLogMonitorPage_CharacterList">角色列表</x:String>
     <x:String x:Key="GameLogMonitorPage_SoundNotify">声音通知</x:String>
     <x:String x:Key="GameLogMonitorPage_Default">默认</x:String>
+    <x:String x:Key="GameLogMonitorPage_CharacterGameLog">游戏进程日志</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey">监控关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
     <x:String x:Key="GameLogMonitorPage_Setting">监控设置</x:String>
@@ -637,6 +638,7 @@
     <x:String x:Key="GameLogMonitorPage_DelayExpireTip">已停止触发关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_RepeatSound">循环播放</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyMode">通知方式</x:String>
+    <x:String x:Key="GameLogMonitorPage_ThreadError">进程异常日志</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorThreadError">监控进程异常日志</x:String>
     <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">添加关键词</x:String>
     <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
@@ -1197,4 +1199,5 @@
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">多物品分隔符</x:String>
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">留空则查询单个物品</x:String>
     <x:String x:Key="ChannelMarket_Last3MonthPrice">过去三个月价格</x:String>
+    <x:String x:Key="ChannelMarket_Running">监控中</x:String>
 </ResourceDictionary>

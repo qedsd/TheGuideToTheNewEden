@@ -293,6 +293,7 @@
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
     <None Remove="Views\KB\EntityStatistPage.xaml" />
     <None Remove="Views\KB\KBDetailPage.xaml" />
+    <None Remove="Views\KB\KillStreamPage.xaml" />
     <None Remove="Views\KB\StatistGroupPage.xaml" />
     <None Remove="Views\KB\StatistKBListPage.xaml" />
     <None Remove="Views\KB\StatistMonthPage.xaml" />
@@ -609,6 +610,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\KB\KillStreamPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Character\CharactersShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

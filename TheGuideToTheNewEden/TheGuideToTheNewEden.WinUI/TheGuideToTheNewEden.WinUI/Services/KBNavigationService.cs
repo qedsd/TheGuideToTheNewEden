@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Azure;
+using ESI.NET.Models.PlanetaryInteraction;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Octokit;
 using System;
@@ -18,34 +20,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class KBNavigationService
     {
-        private static KBNavigationService _default;
-        public static KBNavigationService Default
+        private Frame _contentFrame;
+        private Dictionary<long, object> _instances = new Dictionary<long, object>();
+        public void Init(Frame contentFrame)
         {
-            get
-            {
-                _default ??= new KBNavigationService();
-                return _default;
-            }
+            _contentFrame = contentFrame;
         }
-        private readonly Action<string, Microsoft.UI.Xaml.Controls.Page> _addTabAction;
-        private readonly Window _window;
-        public KBNavigationService(ZKBHomePage page)
-        {
-            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h,p) =>
-            {
-                page.AddTab(h, p);
-            });
-            _window = page.GetWindow();
-        }
-        public KBNavigationService()
-        {
-            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h, p) =>
-            {
-                Services.NavigationService.NavigateTo(p,h);
-            });
-            _window = Helpers.WindowHelper.MainWindow;
-        }
-
         public static async Task<EntityStatistic> GetEntityStatisticAsync(int id, ZKB.NET.EntityType entityType)
         {
             return await ZKB.NET.ZKB.GetStatisticAsync(entityType, id);
@@ -78,10 +58,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var statistic = await GetEntityStatisticAsync(id, entityType);
             if (statistic != null)
             {
-                EntityStatistPage page = new EntityStatistPage(statistic,this);
-                _window.DispatcherQueue.SafelyTryEnqueue(() =>
+                Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    _addTabAction($"ZKB - {header}", page);
+                    object content = null;
+                    if (!_instances.TryGetValue(id, out content))
+                    {
+                        content = new EntityStatistPage(statistic, this);
+                    }
+                    _contentFrame.Content = content;
+                    PageChanged?.Invoke(id, header);
                 });
             }
         }
@@ -109,13 +94,29 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void NavigateToKM(Core.Models.KB.KBItemInfo info)
         {
-            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                KBDetailPage detailPage = new KBDetailPage(info, this);
+                object content = null;
+                if (!_instances.TryGetValue(info.SKBDetail.KillmailId, out content))
+                {
+                    content = new KBDetailPage(info, this);
+                }
                 string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
-                _addTabAction($"KB - {name}", detailPage);
+                _contentFrame.Content = content;
+                PageChanged?.Invoke(info.SKBDetail.KillmailId, name);
             });
         }
-
+        public void NavigateToInstance(long id)
+        {
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                if (_instances.TryGetValue(id, out var content))
+                {
+                    _contentFrame.Content = content;
+                }
+            });
+        }
+        public delegate void KBPageDelegate(long id, string name);
+        public event KBPageDelegate PageChanged;
     }
 }

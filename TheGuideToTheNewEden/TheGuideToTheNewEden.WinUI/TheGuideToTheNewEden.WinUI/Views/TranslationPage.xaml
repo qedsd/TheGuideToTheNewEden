@@ -9,7 +9,7 @@
     NavigationCacheMode="Enabled"
     mc:Ignorable="d">
 
-    <Grid Margin="8,16,8,0">
+    <Grid Margin="8,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -17,7 +17,6 @@
         <AutoSuggestBox
             Name="Search_AutoSuggestBox"
             Width="300"
-            Margin="8,0"
             HorizontalAlignment="Left"
             BorderThickness="1"
             DisplayMemberPath="Name"

@@ -152,7 +152,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand ZKBCommand => new RelayCommand(async () =>
         {
-            await KBNavigationService.Default.NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
+            await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
         });
         private async Task GetBaseInfoAsync()
         {

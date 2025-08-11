@@ -12,7 +12,7 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <Pivot Margin="0">
+    <Pivot Margin="0,-16,0,0">
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource SettingPage_General}" />

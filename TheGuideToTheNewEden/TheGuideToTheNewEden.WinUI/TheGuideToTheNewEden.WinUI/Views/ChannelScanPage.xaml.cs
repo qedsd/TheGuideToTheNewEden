@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             if (data != null && data.Id > 0)
             {
                 this.ShowWaiting();
-                await KBNavigationService.Default.NavigationTo(data);
+                await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(data);
                 this.HideWaiting();
             }
         }
@@ -62,6 +62,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 VM.ReloadZKBInfo(item);
             }
+        }
+
+        private void Start_Click(object sender, RoutedEventArgs e)
+        {
+            VM.NamesStr = InputContent.Text;
+            VM.StartCommand.Execute(null);
         }
     }
 }

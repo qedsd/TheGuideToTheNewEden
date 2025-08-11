@@ -23,53 +23,41 @@ using System.Xml.Linq;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Threading;
 using TheGuideToTheNewEden.Core.Models.Universe;
+using CommunityToolkit.Labs.WinUI;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ZKBHomePage : Page, IPage
     {
-        private Services.KBNavigationService _kbNavigationService;
         public ZKBHomePage()
         {
             this.InitializeComponent();
-            Loaded += ZKBHomePage_Loaded;
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().Init(ContentFrame);
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().PageChanged += ZKBHomePage_PageChanged;
         }
 
-        private void ZKBHomePage_Loaded(object sender, RoutedEventArgs e)
+        private void ZKBHomePage_PageChanged(long e, string name)
         {
-            _kbNavigationService = new KBNavigationService();
-            Loaded -= ZKBHomePage_Loaded;
-            if(Services.Settings.ZKBSettingService.Setting.AutoConnect)
+            var target = NavigationToken.Items.FirstOrDefault(p => (long)((p as FrameworkElement).Tag) == e);
+            if (target != null)
             {
-                Connect();
+                NavigationToken.SelectedItem = target;
             }
             else
             {
-                KBListControl.Visibility = Visibility.Collapsed;
-                Button_Connect.Visibility = Visibility.Visible;
+                NavigationToken.Items.Add(new TokenItem()
+                {
+                    Content = name,
+                    IsSelected = true,
+                    Tag = e,
+                });
             }
-        }
-        private async void Connect()
-        {
-            KBListControl.Visibility = Visibility.Visible;
-            Button_Connect.Visibility = Visibility.Collapsed;
-            this.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
-            await VM.InitAsync();
-            this.HideWaiting();
-        }
-        private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
-        {
-            _kbNavigationService.NavigateToKM(itemInfo);
-        }
-
-        private void ContentTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
-        {
-            sender.TabItems.Remove(args.Item);
+            //NavigationToken.SelectedItem = NavigationToken.Items.FirstOrDefault(p=>(p as FrameworkElement).Tag);
         }
 
         public void Close()
         {
-            VM?.Dispose();
+            
         }
 
         private CancellationTokenSource _cancellationTokenSource;
@@ -211,7 +199,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             try
             {
                 this.ShowWaiting();
-                await _kbNavigationService.NavigationTo(idName);
+                await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(idName);
                 this.HideWaiting();
             }
             catch (Exception e)
@@ -221,26 +209,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-
-        public void AddTab(string header, Page content)
+        private void NavigationToken_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            TabViewItem item = new TabViewItem()
+            var tag = ((sender as TokenView).SelectedItem as FrameworkElement)?.Tag;
+            if (tag != null)
             {
-                Header = header,
-                IsSelected = true,
-                Content = content
-            };
-            //ContentTabView.TabItems.Add(item);
-        }
-
-        private void KBListControl_IdNameClicked(IdName idName)
-        {
-            ShowDetail(idName);
-        }
-
-        private void Button_Connect_Click(object sender, RoutedEventArgs e)
-        {
-            Connect();
+                ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToInstance((long)tag);
+            }
         }
     }
 }

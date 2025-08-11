@@ -11,15 +11,16 @@
     xmlns:models="using:TheGuideToTheNewEden.WinUI.Models"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <viewmodels:ChannelMarketViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid x:Name="ContentGrid" Margin="8">
+    <Grid x:Name="ContentGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <controls1:CardControl>
             <controls1:CardControl.Header>
@@ -38,22 +39,22 @@
                         <DataTemplate x:DataType="channelintel:ChannelIntelListener">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20" />
                                     <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Grid>
-                                    <TextBlock HorizontalAlignment="Stretch" Text="{x:Bind Name}" />
-                                </Grid>
                                 <Rectangle
-                                    Grid.Column="1"
-                                    Width="10"
-                                    Height="10"
-                                    Margin="4,0,0,0"
-                                    Fill="{ThemeResource SystemAccentColor}"
-                                    RadiusX="10"
-                                    RadiusY="10"
-                                    ToolTipService.ToolTip="{StaticResource ChannelIntelPage_Running}"
+                                    Width="3"
+                                    Height="16"
+                                    HorizontalAlignment="Left"
+                                    Fill="{ThemeResource SystemAccentColorLight2}"
+                                    RadiusX="2"
+                                    RadiusY="2"
+                                    ToolTipService.ToolTip="{StaticResource ChannelMarket_Running}"
                                     Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{x:Bind Name}" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -84,7 +85,7 @@
         <controls1:CardControl
             Grid.Column="1"
             Width="300"
-            Margin="8,0,4,0"
+            Margin="4,0"
             Visibility="{x:Bind VM.ChannelMarket, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource ChannelIntelPage_Channels}" />
@@ -134,8 +135,6 @@
         </controls1:CardControl>
         <controls1:CardControl
             Grid.Column="2"
-            Width="400"
-            Margin="2,0,4,0"
             Padding="4,4"
             Visibility="{x:Bind VM.ChannelMarket, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>
