@@ -2,7 +2,6 @@
 using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class KBNavigationService
     {
+        private Page _homePage;
         private Frame _contentFrame;
         private Dictionary<long, object> _instances = new Dictionary<long, object>();
         public void Init(Frame contentFrame)
@@ -63,7 +63,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     object content = null;
                     if (!_instances.TryGetValue(id, out content))
                     {
-                        content = new EntityStatistPage(statistic, this);
+                        content = new EntityStatistPage(statistic, this);//KBNavigationService懒得改成IOC了，就这样传吧
+                        _instances.Add(id, content);
                     }
                     _contentFrame.Content = content;
                     PageChanged?.Invoke(id, header);
@@ -96,14 +97,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
+                long id = info.SKBDetail.KillmailId;
                 object content = null;
-                if (!_instances.TryGetValue(info.SKBDetail.KillmailId, out content))
+                if (!_instances.TryGetValue(id, out content))
                 {
-                    content = new KBDetailPage(info, this);
+                    content = new KBDetailPage(info);
+                    _instances.Add(id, content);
                 }
-                string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
+                string name = info.Victim == null ? id.ToString() : info.Victim.Name;
                 _contentFrame.Content = content;
-                PageChanged?.Invoke(info.SKBDetail.KillmailId, name);
+                PageChanged?.Invoke(id, $"KB-{name}");
             });
         }
         public void NavigateToInstance(long id)
@@ -116,6 +119,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             });
         }
+
+        public void NavigateToHome()
+        {
+            if(_homePage == null)
+            {
+                _homePage = new KillStreamPage();
+            }
+            _contentFrame.Content = _homePage;
+        }
+
+        public void RemoveInstance(long id)
+        {
+            _instances.Remove(id);
+        }
+
         public delegate void KBPageDelegate(long id, string name);
         public event KBPageDelegate PageChanged;
     }

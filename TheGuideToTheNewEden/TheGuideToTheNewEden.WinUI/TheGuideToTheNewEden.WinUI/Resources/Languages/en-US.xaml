@@ -2,6 +2,7 @@
     <x:String x:Key="AppDisplayName">The Guide To The New Eden</x:String>
 
     <x:String x:Key="HomePage">Home</x:String>
+    <x:String x:Key="HomePage2">Home</x:String>
     <x:String x:Key="GamePreviewMgrPage">Game Preview</x:String>
     <x:String x:Key="CharactersShellPage">Characters</x:String>
     <x:String x:Key="MarketPage">Market</x:String>
@@ -592,7 +593,7 @@
     <x:String x:Key="GamePreviewMgrPage_OrderSetting_SaveSuccess">Saved successfully! Effective after restarting the function</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartPrivew">Start</x:String>
     <x:String x:Key="GamePreviewMgrPage_StopPrivew">Stop</x:String>
-    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">Synchronize setting to all</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll">Synchronize Setting</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">To synchronize the current settings to other processes, all running previews need to be stopped. Do you want to continue?</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
 
@@ -621,6 +622,7 @@
     <x:String x:Key="GameLogMonitorPage_CharacterList">Characters</x:String>
     <x:String x:Key="GameLogMonitorPage_SoundNotify">Sound notification</x:String>
     <x:String x:Key="GameLogMonitorPage_Default">Default</x:String>
+    <x:String x:Key="GameLogMonitorPage_CharacterGameLog">Game Log</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey">Monitoring keywords</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">When keywords appear in the game log, a notification will be issued, supporting regular expressions</x:String>
     <x:String x:Key="GameLogMonitorPage_Setting">Setting</x:String>
@@ -636,6 +638,7 @@
     <x:String x:Key="GameLogMonitorPage_DelayExpireTip">Keyword triggering has been stopped</x:String>
     <x:String x:Key="GameLogMonitorPage_RepeatSound">Loop playback</x:String>
     <x:String x:Key="GameLogMonitorPage_NotifyMode">Notify mode</x:String>
+    <x:String x:Key="GameLogMonitorPage_ThreadError">Thread Error Log</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorThreadError">Monitor process exception logs</x:String>
     <x:String x:Key="GameLogMonitorPage_AddThreadErrorKey">Add keyword</x:String>
     <x:String x:Key="GameLogMonitorPage_Span">Span（s）</x:String>
@@ -791,9 +794,11 @@
     <x:String x:Key="StatistMonthPage_ItemDestroyed">Items Destroyed</x:String>
     <x:String x:Key="StatistMonthPage_PointsDestroyed">Points Destroyed</x:String>
     <x:String x:Key="StatistMonthPage_IskDestroyed">ISK Destroyed</x:String>
+    <x:String x:Key="StatistMonthPage_SoloDestroyed">Solo Destroyed</x:String>
     <x:String x:Key="StatistMonthPage_ItemLost">Items Lost</x:String>
     <x:String x:Key="StatistMonthPage_PointsLost">Points Lost</x:String>
     <x:String x:Key="StatistMonthPage_IskLost">ISK Lost</x:String>
+    <x:String x:Key="StatistMonthPage_SoloLost">Solo Lost</x:String>
 
     <x:String x:Key="StatistSuperPage_Titan">Titan</x:String>
     <x:String x:Key="StatistSuperPage_Supercarrier">Supercarrier</x:String>
@@ -1196,4 +1201,8 @@
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">Items Separator</x:String>
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">Leave blank to query individual items</x:String>
     <x:String x:Key="ChannelMarket_Last3MonthPrice">Prices for the past 3 months</x:String>
+    <x:String x:Key="ChannelMarket_Running">监控中</x:String>
+
+    <!--  ZKB  -->
+    <x:String x:Key="ZKB_KillStream">KB Stream</x:String>
 </ResourceDictionary>

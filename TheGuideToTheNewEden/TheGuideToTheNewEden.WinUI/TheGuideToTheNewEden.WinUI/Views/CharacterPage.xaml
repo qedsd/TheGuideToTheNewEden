@@ -17,12 +17,6 @@
             <Setter Property="Margin" Value="32,4" />
             <Setter Property="Orientation" Value="Horizontal" />
         </Style>
-        <Style x:Key="InfoCardGrid" TargetType="Grid">
-            <Setter Property="Background" Value="{ThemeResource TransparentBackgroudBrush}" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="32,24" />
-            <Setter Property="Margin" Value="0,0,0,12" />
-        </Style>
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="VerticalAlignment" Value="Center" />

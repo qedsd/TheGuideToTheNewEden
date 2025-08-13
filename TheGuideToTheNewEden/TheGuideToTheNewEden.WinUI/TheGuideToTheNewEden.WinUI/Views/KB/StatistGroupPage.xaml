@@ -8,12 +8,12 @@
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+    Background="Transparent"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistGruopViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="4,0">
+    <Grid Margin="0,4,0,0">
         <GridView HorizontalAlignment="Stretch" ItemsSource="{x:Bind VM.GroupDataInfos, Mode=OneWay}">
             <GridView.ItemContainerStyle>
                 <Style TargetType="GridViewItem">
@@ -27,7 +27,7 @@
                         Width="240"
                         Margin="4"
                         Padding="8"
-                        Background="{ThemeResource MainBackgroudBrush}">
+                        Background="{ThemeResource SecondaryBackgroudBrush}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="24" />
                             <ColumnDefinition />

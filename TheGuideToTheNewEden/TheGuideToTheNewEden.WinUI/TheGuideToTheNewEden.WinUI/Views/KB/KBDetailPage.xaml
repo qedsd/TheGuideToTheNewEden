@@ -53,9 +53,9 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
-    <controls1:CardControl Margin="8">
+    <controls1:CardControl Margin="0,8" Background="Transparent">
         <controls1:CardControl.Header>
-            <Grid Margin="0,8">
+            <Grid Margin="-8,4,-8,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -149,80 +149,67 @@
                         </StackPanel>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Column="3">
+                <Grid Grid.Column="3" VerticalAlignment="Bottom">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Bottom">
-                        <StackPanel
-                            Margin="0,4"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                FontWeight="Light"
-                                Foreground="MediumSeaGreen"
-                                Text="{StaticResource KB_DroppedValue}" />
-                            <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
-                                <TextBlock Foreground="MediumSeaGreen" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DroppedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    Foreground="MediumSeaGreen"
-                                    Text="ISK" />
-                            </StackPanel>
-                        </StackPanel>
-                        <StackPanel
-                            Margin="0,4"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                FontWeight="Light"
-                                Foreground="OrangeRed"
-                                Text="{StaticResource KB_DestroyedValue}" />
-                            <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
-                                <TextBlock Foreground="OrangeRed" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DestroyedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    Foreground="OrangeRed"
-                                    Text="ISK" />
-                            </StackPanel>
-                        </StackPanel>
-                        <StackPanel
-                            Margin="0,4"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource KB_ShipFitValue}" />
-                            <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
-                                <TextBlock Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.FittedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                                <TextBlock Margin="4,0,0,0" Text="ISK" />
-                            </StackPanel>
-                        </StackPanel>
-                        <StackPanel
-                            Margin="0,4"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal">
-                            <TextBlock FontSize="15" Text="{StaticResource KB_TotalValue}" />
-                            <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
-                                <TextBlock FontSize="15" Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.TotalValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
-                                <TextBlock
-                                    Margin="4,0,0,0"
-                                    FontSize="15"
-                                    Text="ISK" />
-                            </StackPanel>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="4" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="4" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="4" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontWeight="Light"
+                        Foreground="MediumSeaGreen"
+                        Text="{StaticResource KB_DroppedValue}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Foreground="MediumSeaGreen"
+                        Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DroppedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
 
+                    <TextBlock
+                        Grid.Row="2"
+                        FontWeight="Light"
+                        Foreground="OrangeRed"
+                        Text="{StaticResource KB_DestroyedValue}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Foreground="OrangeRed"
+                        Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.DestroyedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="4" Text="{StaticResource KB_ShipFitValue}" />
+                    <TextBlock
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.FittedValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="6" Text="{StaticResource KB_TotalValue}" />
+                    <TextBlock
+                        Grid.Row="6"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Text="{x:Bind VM.KBItemInfo.SKBDetail.Zkb.TotalValue, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N2}}" />
+                </Grid>
             </Grid>
         </controls1:CardControl.Header>
         <controls1:CardControl.Content>
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="2" Background="Transparent">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="300" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Grid>
+                <Grid Margin="8,4">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition />
@@ -258,8 +245,15 @@
                             <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.KBItemInfo.TotalDamage, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}}" />
                         </StackPanel>
                     </Grid>
-                    <ScrollViewer Grid.Row="1">
-                        <StackPanel Margin="0,0,8,0">
+                    <ScrollViewer
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        HorizontalScrollBarVisibility="Auto">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <StackPanel Visibility="{x:Bind VM.Solo, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
                                 <StackPanel>
                                     <TextBlock FontSize="12" Text="{StaticResource KB_FinalBlow}" />
@@ -280,20 +274,20 @@
                                     Margin="0,8"
                                     Fill="LightGray" />
                             </StackPanel>
-                            <ListView
-                                Grid.Row="1"
-                                Margin="-16,0,0,0"
-                                ItemsSource="{x:Bind VM.AttackerInfos, Mode=OneWay}">
-                                <ListView.ItemTemplate>
+                            <ItemsRepeater Grid.Row="1" ItemsSource="{x:Bind VM.AttackerInfos, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation="Vertical" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="kb1:AttackerInfo">
                                         <controls1:KBDamageControl
                                             Margin="0,4"
                                             Attacker="{Binding}"
                                             IdNameClicked="KBDamageControl_IdNameClicked" />
                                     </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </Grid>
                     </ScrollViewer>
                 </Grid>
                 <Rectangle

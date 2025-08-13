@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -73,6 +74,11 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         private void DataGrid_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
         {
+            if (_fromLinkClick)
+            {
+                _fromLinkClick = false;
+                return;
+            }
             if(DataGrid.SelectedItem != null)
             {
                 var item = DataGrid.SelectedItem as KBItemInfo;
@@ -164,29 +170,35 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 await _kbNavigationService.NavigationTo(idName);
             }
         }
+        private bool _fromLinkClick = false;
 
         private void KBSystemInfoControl_OnSystemClicked(IdName idName)
         {
+            _fromLinkClick = true;
             Invoke(idName);
         }
 
         private void KBSystemInfoControl_OnRegionClicked(IdName idName)
         {
+            _fromLinkClick = true;
             Invoke(idName);
         }
        
         private void KBListCharacterControl_CharacterClicked(IdName idName)
         {
+            _fromLinkClick = true;
             Invoke(idName);
         }
 
         private void KBListCharacterControl_FactionClicked(IdName idName)
         {
+            _fromLinkClick = true;
             Invoke(idName);
         }
 
         private void Button_ShipType_Clicked(object sender, RoutedEventArgs e)
         {
+            _fromLinkClick = true;
             var info = (sender as FrameworkElement).DataContext as KBItemInfo;
             if (info != null)
             {
@@ -201,6 +213,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         private void Button_Group_Clicked(object sender, RoutedEventArgs e)
         {
+            _fromLinkClick = true;
             var info = (sender as FrameworkElement).DataContext as KBItemInfo;
             if (info != null)
             {

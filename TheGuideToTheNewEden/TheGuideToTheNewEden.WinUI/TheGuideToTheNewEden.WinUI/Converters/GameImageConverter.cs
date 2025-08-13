@@ -23,7 +23,8 @@ namespace TheGuideToTheNewEden.WinUI.Converters
 
         public static string GetImageUri(int id, ImgType type, int size = 128)
         {
-
+            if (id <= 0)
+                return null;
             switch (Services.GameServerSelectorService.Value)
             {
                 case Core.Enums.GameServerType.Tranquility: return $"https://imageserver.eveonline.com/{type}/{id}_{size}.{GetImageFormat(type)}";

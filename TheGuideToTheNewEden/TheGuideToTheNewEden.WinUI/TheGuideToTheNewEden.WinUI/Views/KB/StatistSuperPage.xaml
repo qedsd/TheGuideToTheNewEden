@@ -8,19 +8,22 @@
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+    Background="Transparent"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistSuperViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="4,0">
+    <Grid>
         <ScrollViewer>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Expander HorizontalAlignment="Stretch" Header="{StaticResource StatistSuperPage_Titan}">
+                <Expander
+                    HorizontalAlignment="Stretch"
+                    Background="Transparent"
+                    Header="{StaticResource StatistSuperPage_Titan}">
                     <GridView HorizontalAlignment="Stretch" ItemsSource="{x:Bind VM.Titans, Mode=OneWay}">
                         <GridView.ItemContainerStyle>
                             <Style TargetType="GridViewItem">
@@ -34,7 +37,7 @@
                                     Width="240"
                                     Margin="4"
                                     Padding="8"
-                                    Background="{ThemeResource MainBackgroudBrush}">
+                                    Background="{ThemeResource SecondaryBackgroudBrush}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="24" />
                                         <ColumnDefinition Width="Auto" />
@@ -74,6 +77,7 @@
                     Grid.Row="1"
                     Margin="0,4,0,0"
                     HorizontalAlignment="Stretch"
+                    Background="Transparent"
                     Header="{StaticResource StatistSuperPage_Supercarrier}">
                     <GridView HorizontalAlignment="Stretch" ItemsSource="{x:Bind VM.Supercarriers, Mode=OneWay}">
                         <GridView.ItemContainerStyle>
@@ -88,7 +92,7 @@
                                     Width="240"
                                     Margin="4"
                                     Padding="8"
-                                    Background="{ThemeResource MainBackgroudBrush}">
+                                    Background="{ThemeResource SecondaryBackgroudBrush}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="24" />
                                         <ColumnDefinition Width="Auto" />

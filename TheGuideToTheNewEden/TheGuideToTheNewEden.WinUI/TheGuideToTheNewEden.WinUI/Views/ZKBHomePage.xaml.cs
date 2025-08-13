@@ -32,8 +32,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public ZKBHomePage()
         {
             this.InitializeComponent();
+            
             ClientServiceHelper.GetRequiredService<KBNavigationService>().Init(ContentFrame);
             ClientServiceHelper.GetRequiredService<KBNavigationService>().PageChanged += ZKBHomePage_PageChanged;
+            NavigationToken.Items.Add(new TokenItem()
+            {
+                Content = Helpers.ResourcesHelper.GetString("ZKB_KillStream"),
+                IsSelected = true,
+                Tag = -1L,
+            });
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
+            NavigationToken.SelectionChanged += NavigationToken_SelectionChanged;
         }
 
         private void ZKBHomePage_PageChanged(long e, string name)
@@ -45,14 +54,27 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
             else
             {
-                NavigationToken.Items.Add(new TokenItem()
+                var item = new TokenItem()
                 {
                     Content = name,
                     IsSelected = true,
                     Tag = e,
-                });
+                    IsRemoveable = true
+                };
+                item.Removing += Item_Removing;
+                NavigationToken.Items.Add(item);
             }
-            //NavigationToken.SelectedItem = NavigationToken.Items.FirstOrDefault(p=>(p as FrameworkElement).Tag);
+        }
+
+        private void Item_Removing(object sender, TokenItemRemovingEventArgs e)
+        {
+            if(NavigationToken.SelectedItem as TokenItem == e.TokenItem)
+            {
+                //ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
+                (NavigationToken.Items[0] as TokenItem).IsSelected = true;
+            }
+            var id = (long)e.TokenItem.Tag;
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance(id);
         }
 
         public void Close()
@@ -212,9 +234,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void NavigationToken_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var tag = ((sender as TokenView).SelectedItem as FrameworkElement)?.Tag;
-            if (tag != null)
+            if (tag != null && (long)tag != -1)
             {
                 ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToInstance((long)tag);
+            }
+            else
+            {
+                ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
             }
         }
     }

@@ -794,9 +794,11 @@
     <x:String x:Key="StatistMonthPage_ItemDestroyed">击杀舰船</x:String>
     <x:String x:Key="StatistMonthPage_PointsDestroyed">击杀点数</x:String>
     <x:String x:Key="StatistMonthPage_IskDestroyed">击杀ISK</x:String>
+    <x:String x:Key="StatistMonthPage_SoloDestroyed">单挑击杀</x:String>
     <x:String x:Key="StatistMonthPage_ItemLost">损失舰船</x:String>
     <x:String x:Key="StatistMonthPage_PointsLost">损失点数</x:String>
     <x:String x:Key="StatistMonthPage_IskLost">损失ISK</x:String>
+    <x:String x:Key="StatistMonthPage_SoloLost">单挑损失</x:String>
 
     <x:String x:Key="StatistSuperPage_Titan">泰坦</x:String>
     <x:String x:Key="StatistSuperPage_Supercarrier">大航</x:String>
@@ -1200,4 +1202,7 @@
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">留空则查询单个物品</x:String>
     <x:String x:Key="ChannelMarket_Last3MonthPrice">过去三个月价格</x:String>
     <x:String x:Key="ChannelMarket_Running">监控中</x:String>
+
+    <!--  ZKB  -->
+    <x:String x:Key="ZKB_KillStream">KB流</x:String>
 </ResourceDictionary>

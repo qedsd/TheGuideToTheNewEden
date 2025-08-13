@@ -8,6 +8,12 @@ namespace TheGuideToTheNewEden.Core.Models.KB
 {
     public class EntityBaseInfo:ObservableObject
     {
+        private IdName.CategoryEnum _type;
+        public IdName.CategoryEnum Type { get => _type; set => SetProperty(ref _type, value); }
+
+        private IdName _name;
+        public IdName Name { get => _name; set => SetProperty(ref _name, value); }
+
         private IdName characterName;
         public IdName CharacterName{ get => characterName; set => SetProperty(ref characterName, value); }
 

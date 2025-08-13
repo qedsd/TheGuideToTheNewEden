@@ -25,13 +25,13 @@
                 x:Name="NavigationToken"
                 Margin="8,0,0,0"
                 IsWrapped="True"
-                SelectionMode="Single" 
-                SelectionChanged="NavigationToken_SelectionChanged"/>
+                SelectionMode="Single" />
             <AutoSuggestBox
                 x:Name="SearchBox"
                 Grid.Column="1"
                 Width="300"
                 Height="32"
+                VerticalAlignment="Top"
                 QueryIcon="Find"
                 SuggestionChosen="SearchBox_SuggestionChosen"
                 TextChanged="SearchBox_TextChanged">

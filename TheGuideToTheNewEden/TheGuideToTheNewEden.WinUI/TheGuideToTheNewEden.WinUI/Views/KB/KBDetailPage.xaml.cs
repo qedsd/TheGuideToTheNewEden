@@ -25,11 +25,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
     public sealed partial class KBDetailPage : Page
     {
-        private KBNavigationService _navigationService;
         private KBItemInfo _kbInfo;
-        public KBDetailPage(KBItemInfo kbInfo, KBNavigationService navigationService)
+        public KBDetailPage(KBItemInfo kbInfo)
         {
-            _navigationService = navigationService;
             this.InitializeComponent();
             _kbInfo = kbInfo;
             VM.SetData(kbInfo);
@@ -130,7 +128,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private async void Navigation(IdName idName)
         {
             this.ShowWaiting();
-            await _navigationService.NavigationTo(idName);
+            await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(idName);
             this.HideWaiting();
         }
     }

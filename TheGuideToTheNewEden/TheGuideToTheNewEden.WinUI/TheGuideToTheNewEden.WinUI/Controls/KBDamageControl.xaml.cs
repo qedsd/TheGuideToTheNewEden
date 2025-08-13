@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.KB;
 using Windows.Foundation;
@@ -50,9 +52,10 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
             var control = d as KBDamageControl;
             var value = e.NewValue as AttackerInfo;
+            if (value == null) return;
             if (value.Attacker.CharacterId != 0)
             {
-                control.Image_Attacker.Source = Converters.GameImageConverter.GetImageUri(value.Attacker.CharacterId, Converters.GameImageConverter.ImgType.Character, 64);
+                control.Image_Attacker.Source =Converters.GameImageConverter.GetImageUri(value.Attacker.CharacterId, Converters.GameImageConverter.ImgType.Character, 64);
                 control.Button_Character.Content = value.CharacterName?.Name;
                 control._character = new IdName()
                 {
@@ -105,6 +108,28 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 Name = value.Ship?.TypeName,
                 Category = (int)IdName.CategoryEnum.InventoryType
             };
+        }
+        private static async Task<BitmapImage> LoadImageAsync(System.Net.Http.HttpClient httpClient, string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath))
+                return null;
+            try
+            {
+                var bitmapImage = new BitmapImage();
+                
+                var response = await httpClient.GetAsync(new Uri(imagePath, UriKind.Absolute));
+                response.EnsureSuccessStatusCode();
+
+                using var stream = await response.Content.ReadAsStreamAsync();
+                var randomAccessStream = stream.AsRandomAccessStream();
+                await bitmapImage.SetSourceAsync(randomAccessStream);
+                return bitmapImage;
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                return null;
+            }
         }
 
         private void Button_Character_Click(object sender, RoutedEventArgs e)

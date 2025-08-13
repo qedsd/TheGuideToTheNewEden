@@ -57,6 +57,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                 attackerInfos.Remove(FinalBlow); 
                 attackerInfos.Remove(TopDamage);
             }
+            //AttackerInfos = attackerInfos.Take(100).ToList();
             AttackerInfos = attackerInfos;
         }
 

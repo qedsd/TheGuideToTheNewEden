@@ -30,12 +30,12 @@
             <Color x:Key="CancelColor">Red</Color>
             <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />
             <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
-            <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{ThemeResource SecondBackgroudColor}" />
+            <SolidColorBrush x:Key="SecondaryBackgroudBrush" Color="{ThemeResource SecondaryBackgroudColor}" />
             <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{ThemeResource DefaultBackgroudColor}" />
             <SolidColorBrush x:Key="TransparentBackgroudBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
             <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
             <Color x:Key="DefaultBackgroudColor">#262c37</Color>
-            <Color x:Key="SecondBackgroudColor">#313741</Color>
+            <Color x:Key="SecondaryBackgroudColor">#0DFFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorDefault">#0DFFFFFF</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#08FFFFFF</Color>
             <Color x:Key="FlyoutBackgroundColor">#1a2228</Color>
@@ -82,12 +82,12 @@
             <Color x:Key="CancelColor">Red</Color>
             <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />
             <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="{ThemeResource SecondaryForegroundColor}" />
-            <SolidColorBrush x:Key="SecondBackgroudBrush" Color="{ThemeResource SecondBackgroudColor}" />
+            <SolidColorBrush x:Key="SecondaryBackgroudBrush" Color="{ThemeResource SecondaryBackgroudColor}" />
             <SolidColorBrush x:Key="DefaultBackgroudBrush" Color="{ThemeResource DefaultBackgroudColor}" />
             <SolidColorBrush x:Key="TransparentBackgroudBrush" Color="{ThemeResource CardBackgroundFillColorDefault}" />
             <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="{ThemeResource FlyoutBackgroundColor}" />
             <Color x:Key="DefaultBackgroudColor">#f7f9fd</Color>
-            <Color x:Key="SecondBackgroudColor">#fefefe</Color>
+            <Color x:Key="SecondaryBackgroudColor">#fefefe</Color>
             <Color x:Key="CardBackgroundFillColorDefault">#96fbfdff</Color>
             <Color x:Key="CardBackgroundFillColorSecondary">#fefefe</Color>
             <Color x:Key="FlyoutBackgroundColor">#fefefe</Color>
