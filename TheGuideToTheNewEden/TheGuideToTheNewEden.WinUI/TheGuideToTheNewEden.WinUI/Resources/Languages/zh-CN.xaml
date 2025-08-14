@@ -24,6 +24,7 @@
     <x:String x:Key="MapPage">星图</x:String>
     <x:String x:Key="ChannelScanPage">频道统计</x:String>
     <x:String x:Key="ChannelMarketPage">频道查价</x:String>
+    <x:String x:Key="ChannelTranslation">频道翻译</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>
