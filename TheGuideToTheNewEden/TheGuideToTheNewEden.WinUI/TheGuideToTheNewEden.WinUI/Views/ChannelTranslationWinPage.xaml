@@ -16,8 +16,10 @@
         </Grid.RowDefinitions>
         <ScrollViewer
             x:Name="ChatContentsScroll"
-            Margin="0,4,0,0"
-            Background="{ThemeResource TransparentBackgroudBrush}">
+            Margin="8,0,8,8"
+            Padding="8"
+            Background="{ThemeResource TransparentBackgroudBrush}"
+            CornerRadius="12">
             <RichTextBlock
                 x:Name="ChatContents"
                 Margin="4,0"

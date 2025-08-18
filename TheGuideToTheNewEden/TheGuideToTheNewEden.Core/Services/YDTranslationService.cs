@@ -30,9 +30,12 @@ namespace TheGuideToTheNewEden.Core.Services
         /// <param name="strings"></param>
         public static void Init(params string[] strings)
         {
-            AppKey = strings[0];
-            AppSerct = strings[1];
-            VocabId = strings.Length > 2 ? strings[2] : null;
+            if(strings.Length > 1)
+            {
+                AppKey = strings[0];
+                AppSerct = strings[1];
+                VocabId = strings.Length > 2 ? strings[2] : null;
+            }
         }
 
         public async Task<TranslationResult> Translate(string text, string from, string to)
