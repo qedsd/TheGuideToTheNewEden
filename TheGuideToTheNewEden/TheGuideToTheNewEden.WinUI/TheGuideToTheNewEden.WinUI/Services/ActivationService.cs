@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
-    internal class ActivationService
+    internal static class ActivationService
     {
         public static void Init()
         {
@@ -28,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             StructureService.Init();
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
             ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
+            YDTranslationService.Init(GetYDTranslationLicense());
         }
         private static string GetSyncfusionLicense()
         {
@@ -40,6 +42,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 //TODO:release
                 return "";
+            }
+        }
+        private static string[] GetYDTranslationLicense()
+        {
+            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "YoudaoLicense.txt");
+            if (System.IO.File.Exists(file))
+            {
+                return System.IO.File.ReadAllLines(file);
+            }
+            else
+            {
+                //TODO:release
+                return [""];
             }
         }
     }

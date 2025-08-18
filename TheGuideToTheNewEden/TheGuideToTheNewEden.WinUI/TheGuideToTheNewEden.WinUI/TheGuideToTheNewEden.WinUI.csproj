@@ -269,7 +269,7 @@
     <None Remove="Views\ChannelMarketWinPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\ChannelScanPage.xaml" />
-    <None Remove="Views\ChannelTranslation.xaml" />
+    <None Remove="Views\ChannelTranslationWinPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
     <None Remove="Views\Character\CharactersShellPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
@@ -611,7 +611,10 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <Page Update="Views\ChannelTranslation.xaml">
+    <Page Update="Views\ChannelTranslationWinPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelTranslationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\KB\KillStreamPage.xaml">

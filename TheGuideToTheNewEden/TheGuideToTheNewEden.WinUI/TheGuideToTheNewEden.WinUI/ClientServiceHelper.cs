@@ -7,6 +7,8 @@ using log4net;
 using Microsoft.Extensions.DependencyInjection;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.Core.Interfaces;
+using TheGuideToTheNewEden.Core.Services;
 
 namespace TheGuideToTheNewEden.WinUI
 {
@@ -48,6 +50,9 @@ namespace TheGuideToTheNewEden.WinUI
             _serviceCollection.AddSingleton<PageNavigationService>();
             _serviceCollection.AddSingleton<CharacterNavigationService>();
             _serviceCollection.AddSingleton<KBNavigationService>();
+            _serviceCollection.AddSingleton<ITranslationService>(new YDTranslationService());
+            _serviceCollection.AddSingleton<ChannelTranslationService>();
+
         }
         private void UseILog(ILog log)
         {

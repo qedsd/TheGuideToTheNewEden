@@ -24,7 +24,7 @@
     <x:String x:Key="MapPage">Map</x:String>
     <x:String x:Key="ChannelScanPage">Channel Scan</x:String>
     <x:String x:Key="ChannelMarketPage">Channel Market</x:String>
-    <x:String x:Key="ChannelTranslation">Channel Translation</x:String>
+    <x:String x:Key="ChannelTranslationPage">Channel Translation</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>
@@ -1206,4 +1206,21 @@
 
     <!--  ZKB  -->
     <x:String x:Key="ZKB_KillStream">KB Stream</x:String>
+
+    <!--  ChannelTranslation  -->
+
+    <x:String x:Key="Channel_Characters">Characters</x:String>
+    <x:String x:Key="Channel_ChannelName">Channel Name</x:String>
+    <x:String x:Key="Channel_LastUpdateTime">Last update time</x:String>
+    <x:String x:Key="Channel_Channels">Channels</x:String>
+    <x:String x:Key="Channel_RefreshChannels">Refresh Channels</x:String>
+    <x:String x:Key="ChannelTranslation_NoChannel">No Channel</x:String>
+    <x:String x:Key="ChannelTranslation_Started">Started</x:String>
+    <x:String x:Key="ChannelTranslation_ApplySettingToAll">Synchronize setting to all</x:String>
+    <x:String x:Key="ChannelTranslation_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
+    <x:String x:Key="ChannelTranslation_ApplySettingToAll_Succes">Synchronization completed</x:String>
+    <x:String x:Key="Channel_RestorePos">Restore Position</x:String>
+    <x:String x:Key="Channel_RestorePos_Tip">Reset overlap window position to the center of the screen</x:String>
+    <x:String x:Key="Channel_Start">Start</x:String>
+    <x:String x:Key="Channel_Stop">Stop</x:String>
 </ResourceDictionary>

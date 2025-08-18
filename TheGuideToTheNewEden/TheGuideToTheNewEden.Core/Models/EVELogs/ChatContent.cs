@@ -60,5 +60,6 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
         /// 重要消息
         /// </summary>
         public bool Important { get; set; }
+        public string Listener { get; set; }
     }
 }

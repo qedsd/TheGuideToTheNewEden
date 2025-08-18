@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMonitorPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelScanPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMarketPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelTranslation)));
+            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelTranslationPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(GameLogMonitorPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(TranslationPage)));
             _navigationViewItems.Add(new NavigationViewItem(typeof(DEDPage)));

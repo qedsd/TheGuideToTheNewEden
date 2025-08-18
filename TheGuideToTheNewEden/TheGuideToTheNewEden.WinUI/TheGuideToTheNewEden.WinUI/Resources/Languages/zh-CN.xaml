@@ -24,7 +24,7 @@
     <x:String x:Key="MapPage">星图</x:String>
     <x:String x:Key="ChannelScanPage">频道统计</x:String>
     <x:String x:Key="ChannelMarketPage">频道查价</x:String>
-    <x:String x:Key="ChannelTranslation">频道翻译</x:String>
+    <x:String x:Key="ChannelTranslationPage">频道翻译</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>
@@ -1206,4 +1206,28 @@
 
     <!--  ZKB  -->
     <x:String x:Key="ZKB_KillStream">KB流</x:String>
+
+    <!--  ChannelTranslation  -->
+    <x:String x:Key="ChannelTranslation_Setting_General">基本</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_From">源文语言</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_To">目标语言</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_KeyWord">触发关键词</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_KeyWord_Tip">留空则翻译所有内容</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_SkipMySelf">跳过自己的发言</x:String>
+
+    <!--  Channel  -->
+    <x:String x:Key="Channel_Characters">角色列表</x:String>
+    <x:String x:Key="Channel_ChannelName">频道名称</x:String>
+    <x:String x:Key="Channel_LastUpdateTime">最后更新时间</x:String>
+    <x:String x:Key="Channel_Channels">频道列表</x:String>
+    <x:String x:Key="Channel_RefreshChannels">刷新列表</x:String>
+    <x:String x:Key="Channel_NoChannel">未选择需要监控的频道</x:String>
+    <x:String x:Key="Channel_Started">已开始监控频道</x:String>
+    <x:String x:Key="Channel_ApplySettingToAll">同步全部设置</x:String>
+    <x:String x:Key="Channel_ApplySettingToAll_Tip">同步当前设置到其他角色需先停止所有，是否继续？</x:String>
+    <x:String x:Key="Channel_ApplySettingToAll_Succes">同步完成</x:String>
+    <x:String x:Key="Channel_RestorePos">重置位置</x:String>
+    <x:String x:Key="Channel_RestorePos_Tip">重置预警小窗位置到屏幕中心</x:String>
+    <x:String x:Key="Channel_Start">开始</x:String>
+    <x:String x:Key="Channel_Stop">停止</x:String>
 </ResourceDictionary>
