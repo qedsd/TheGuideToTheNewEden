@@ -212,7 +212,7 @@ namespace TheGuideToTheNewEden.WinUI
             throw new NotImplementedException();
         }
 
-        public void ShowError(string msg, bool autoClose = true)
+        public void ShowError(string msg, bool autoClose = false)
         {
             throw new NotImplementedException();
         }

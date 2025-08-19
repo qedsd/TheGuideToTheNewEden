@@ -7,8 +7,9 @@
     xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    MinWidth="300"
+    MinWidth="340"
     MinHeight="60"
+    MaxHeight="120"
     Opacity="0"
     mc:Ignorable="d">
 
@@ -27,15 +28,13 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock x:Name="TitleTextBlock" FontSize="15" />
-                <TextBlock
-                    x:Name="MsgTextBlock"
-                    Grid.Row="1"
-                    Margin="0,4"
-                    TextWrapping="Wrap" />
+                <ScrollViewer Grid.Row="1" Padding="0,4">
+                    <RichTextBlock x:Name="MsgTextBlock" />
+                </ScrollViewer>
                 <TextBlock
                     x:Name="SenderTextBlock"
                     Grid.Row="2"

@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -76,7 +77,14 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 SenderTextBlock.Visibility = string.IsNullOrEmpty(sender) ? Visibility.Collapsed : Visibility.Visible;
                 TitleTextBlock.Text = title;
                 TitleTextBlock.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;
-                MsgTextBlock.Text = msg;
+                MsgTextBlock.Blocks.Clear();
+                Paragraph paragraph = new Paragraph();
+                Run run = new Run()
+                {
+                    Text = msg,
+                };
+                paragraph.Inlines.Add(run);
+                MsgTextBlock.Blocks.Add(paragraph);
                 switch (infoType)
                 {
                     case InfoType.Info: MainBorder.BorderBrush = _infoBrush; break;

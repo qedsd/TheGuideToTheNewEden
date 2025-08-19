@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this.GetType().Name, "Test", Controls.InfoBarControl.InfoType.Error, false);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this.GetType().Name, "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest", Controls.InfoBarControl.InfoType.Error, false);
         }
 
         private void ToolWindow_Click(object sender, RoutedEventArgs e)
