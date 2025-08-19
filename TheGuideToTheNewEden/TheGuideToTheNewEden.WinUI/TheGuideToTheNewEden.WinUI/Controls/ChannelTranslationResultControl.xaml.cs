@@ -76,8 +76,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 control.Speaker.Text = value.ChatContent.SpeakerName;
                 control.SpeakTime.Text = value.ChatContent.EVETime.ToShortTimeString();
                 control.SpeakLang.Text = $"{value.TranslationResult.From} -> {value.TranslationResult.To}";
-                control.OriginalTextBox.Text = value.TranslationResult.Result;
-                control.TranslatedTextBox.Text = value.TranslationResult.Query;
+                control.OriginalTextBlock.Text = value.TranslationResult.Query;
+                control.TranslatedTextBlock.Text = value.TranslationResult.Result;
             }
             else
             {
