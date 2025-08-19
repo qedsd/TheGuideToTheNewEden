@@ -1202,13 +1202,21 @@
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator">Items Separator</x:String>
     <x:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">Leave blank to query individual items</x:String>
     <x:String x:Key="ChannelMarket_Last3MonthPrice">Prices for the past 3 months</x:String>
-    <x:String x:Key="ChannelMarket_Running">监控中</x:String>
+    <x:String x:Key="ChannelMarket_Running">Running</x:String>
 
     <!--  ZKB  -->
     <x:String x:Key="ZKB_KillStream">KB Stream</x:String>
 
     <!--  ChannelTranslation  -->
+    <x:String x:Key="ChannelTranslation_Setting_General">General</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_From">Source Language</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_To">Target language</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_KeyWord">Keyword</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_KeyWord_Tip">Leave it blank and translate all the content</x:String>
+    <x:String x:Key="ChannelTranslation_Setting_General_SkipMySelf">Skip your own speech</x:String>
+    <x:String x:Key="ChannelTranslation_Win_ShowFrom">View original</x:String>
 
+    <!--  Channel  -->
     <x:String x:Key="Channel_Characters">Characters</x:String>
     <x:String x:Key="Channel_ChannelName">Channel Name</x:String>
     <x:String x:Key="Channel_LastUpdateTime">Last update time</x:String>

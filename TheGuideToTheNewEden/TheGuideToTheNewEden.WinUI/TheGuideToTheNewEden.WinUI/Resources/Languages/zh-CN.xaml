@@ -1214,6 +1214,7 @@
     <x:String x:Key="ChannelTranslation_Setting_General_KeyWord">触发关键词</x:String>
     <x:String x:Key="ChannelTranslation_Setting_KeyWord_Tip">留空则翻译所有内容</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_SkipMySelf">跳过自己的发言</x:String>
+    <x:String x:Key="ChannelTranslation_Win_ShowFrom">显示原文</x:String>
 
     <!--  Channel  -->
     <x:String x:Key="Channel_Characters">角色列表</x:String>

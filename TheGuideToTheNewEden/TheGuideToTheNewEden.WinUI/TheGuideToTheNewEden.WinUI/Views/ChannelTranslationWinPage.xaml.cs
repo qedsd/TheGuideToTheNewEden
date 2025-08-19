@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.Core.Interfaces;
+using TheGuideToTheNewEden.Core.Models.Channel.Translation;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -56,6 +57,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
             foreach (var chatContent in marketChatContents)
             {
                 var result = await _translationService.Translate(chatContent.Content, from, to);
+                ChannelTranslationResult translationResult = new ChannelTranslationResult()
+                {
+                    ChatContent = chatContent,
+                    TranslationResult = result
+                };
                 Paragraph paragraph1 = new Paragraph()
                 {
                     Margin = new Thickness(0, 8, 0, 0),

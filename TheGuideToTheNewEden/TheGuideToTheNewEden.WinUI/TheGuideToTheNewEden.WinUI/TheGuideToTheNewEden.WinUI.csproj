@@ -224,6 +224,7 @@
     <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
+    <None Remove="Controls\ChannelTranslationResultControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
@@ -477,6 +478,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\MarketSearchControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ChannelTranslationResultControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
