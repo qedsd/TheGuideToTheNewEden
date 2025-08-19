@@ -37,6 +37,22 @@
 - **星图:** 游戏星图，可按安全等级、主权归属、行星资源查看，带有导航、主权插件需求表等小工具
 - **频道玩家统计:** 统计频道内玩家势力，且可通过ZKillboard查询每一个玩家的威胁值、常用船等信息
 
+## 项目说明
+- **TheGuideToTheNewEden.Core** 基于.NET Standard 2.1的核心库，放与平台无关的代码，如Model、Helper、数据库管理等
+- **TheGuideToTheNewEden.WinUI** 软件最主要项目，负责UI交互及数据处理，基于WindowAppSDK+WinUI3+.NET6，解决方案的**启动项目**，若想调试、修改软件代码请从此入手
+- TheGuideToTheNewEden.WPF WPF版软件，仅供测试用
+- TheGuideToTheNewEden.UWP UWP版软件，仅供测试用
+- TheGuideToTheNewEden.ServerLogger V1版本遗留，目前未启用，用于在服务器记录每个小时游戏在线人数、每天贴吧活跃度
+- TheGuideToTheNewEden.Updater 软件更新器，软件检查到更新后，启动该项目生成的exe去执行下载、解压
+- ZKB.NET 将Zkillboard的API二次封装成.NET库，一键调用
+- TheGuideToTheNewEden.PreviewWindow 使用WPF实现的多开预览窗口，通过内存映射将WPF与WINUI建立通讯，具体通讯实现在项目TheGuideToTheNewEden.PreviewIPC
+- TheGuideToTheNewEden.ExefileSimulation 测试工具，游戏模拟器，模拟游戏进程供多开预览测试用、模拟聊天频道自动发言、模拟游戏日志
+- TheGuideToTheNewEden.DevTools 配置生成工具，用来生成各种数据给到软件当作配置文件使用，如生成星系间位置关系的json文件
+- TheGuideToTheNewEden.ExefileSimulation 测试工具，一个简单的控制台程序，模拟游戏进程供多开预览测试用，无实际功能
+- TheGuideToTheNewEden.SystemCheck 测试工具，检查数据库星系名字与官方API的名字是不是一致
+- TheGuideToTheNewEden.WhomholeCrawler配置生成工具，到网站上抓虫洞的信息
+- ZKB.Net.Test 测试工具，测试ZKB.NET库的功能
+
 ## 软件截图
 - 黑暗模式
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Dark.png?raw=true?raw=true)
