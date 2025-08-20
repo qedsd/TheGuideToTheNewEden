@@ -5,8 +5,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Page"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -15,29 +17,136 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListView x:Name="ContentList" SelectionMode="None">
+        <ListView
+            x:Name="ContentList"
+            SelectionMode="None"
+            Tag="True">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="True" />
+                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="{Binding ShowFrom, ElementName=Page, Mode=OneWay}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <!--<ScrollViewer
-            x:Name="ChatContentsScroll"
-            Margin="8,0,8,8"
-            Padding="8"
-            Background="{ThemeResource TransparentBackgroudBrush}"
-            CornerRadius="12">
-            <RichTextBlock
-                x:Name="ChatContents"
-                Margin="4,0"
-                IsRightTapEnabled="True">
-                <RichTextBlock.ContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
-                    </MenuFlyout>
-                </RichTextBlock.ContextFlyout>
-            </RichTextBlock>
-        </ScrollViewer>-->
+        <Grid Grid.Row="1" Margin="8,8,8,4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid
+                x:Name="ManualTranslateArea"
+                Height="160"
+                Margin="0,4,0,0"
+                Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="4" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <ComboBox
+                        x:Name="FromComboBox"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        CornerRadius="4,4,0,0"
+                        SelectedIndex="0">
+                        <ComboBoxItem>auto</ComboBoxItem>
+                        <ComboBoxItem>de</ComboBoxItem>
+                        <ComboBoxItem>en</ComboBoxItem>
+                        <ComboBoxItem>es</ComboBoxItem>
+                        <ComboBoxItem>fr</ComboBoxItem>
+                        <ComboBoxItem>it</ComboBoxItem>
+                        <ComboBoxItem>ja</ComboBoxItem>
+                        <ComboBoxItem>ko</ComboBoxItem>
+                        <ComboBoxItem>ru</ComboBoxItem>
+                        <ComboBoxItem>zh-CHS</ComboBoxItem>
+                        <ComboBoxItem>zh-CHT</ComboBoxItem>
+                    </ComboBox>
+                    <TextBox
+                        x:Name="ManualTranslateTextBox"
+                        Grid.Row="1"
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        KeyUp="ManualTranslateTextBox_KeyUp"
+                        PlaceholderText="{StaticResource ChannelTranslation_Win_InputText}"
+                        TextWrapping="Wrap" />
+                </Grid>
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <ComboBox
+                        x:Name="ToComboBox"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        CornerRadius="4,4,0,0"
+                        SelectedIndex="0">
+                        <ComboBoxItem>en</ComboBoxItem>
+                        <ComboBoxItem>de</ComboBoxItem>
+                        <ComboBoxItem>es</ComboBoxItem>
+                        <ComboBoxItem>fr</ComboBoxItem>
+                        <ComboBoxItem>it</ComboBoxItem>
+                        <ComboBoxItem>ja</ComboBoxItem>
+                        <ComboBoxItem>ko</ComboBoxItem>
+                        <ComboBoxItem>ru</ComboBoxItem>
+                        <ComboBoxItem>zh-CHS</ComboBoxItem>
+                        <ComboBoxItem>zh-CHT</ComboBoxItem>
+                    </ComboBox>
+                    <TextBox
+                        x:Name="ManualTranslateResultTextBlock"
+                        Grid.Row="1"
+                        Background="{ThemeResource TextControlBackground}"
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        IsReadOnly="True"
+                        PlaceholderText="{StaticResource ChannelTranslation_Win_TranslationText}"
+                        TextWrapping="Wrap" />
+                </Grid>
+            </Grid>
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,4,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button>
+                    <ic:FluentIcon
+                        Icon="Settings"
+                        IconSize="Resizable"
+                        IconVariant="Regular" />
+                    <Button.Flyout>
+                        <Flyout>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelTranslation_Win_ShowFrom}" />
+                                    <ToggleSwitch
+                                        x:Name="ShowFromToggleSwitch"
+                                        Margin="8,0,-60,0"
+                                        IsOn="True"
+                                        Toggled="ToggleSwitch_Toggled" />
+                                </StackPanel>
+                                <Button
+                                    Margin="0,8"
+                                    HorizontalAlignment="Stretch"
+                                    Click="ClearResultButton_Click"
+                                    Content="{StaticResource ChannelTranslation_Win_ClearResult}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <ToggleButton
+                    Margin="4,0,0,0"
+                    HorizontalAlignment="Right"
+                    Click="ShowManualTranslateButton_Click">
+                    <ic:FluentIcon
+                        Icon="List"
+                        IconSize="Resizable"
+                        IconVariant="Regular" />
+                </ToggleButton>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

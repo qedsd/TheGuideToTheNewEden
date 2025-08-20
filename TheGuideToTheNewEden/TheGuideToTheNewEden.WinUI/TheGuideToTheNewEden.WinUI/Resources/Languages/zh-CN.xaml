@@ -1215,6 +1215,9 @@
     <x:String x:Key="ChannelTranslation_Setting_KeyWord_Tip">留空则翻译所有内容</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_SkipMySelf">跳过自己的发言</x:String>
     <x:String x:Key="ChannelTranslation_Win_ShowFrom">显示原文</x:String>
+    <x:String x:Key="ChannelTranslation_Win_InputText">输入文本</x:String>
+    <x:String x:Key="ChannelTranslation_Win_TranslationText">翻译</x:String>
+    <x:String x:Key="ChannelTranslation_Win_ClearResult">清空结果</x:String>
 
     <!--  Channel  -->
     <x:String x:Key="Channel_Characters">角色列表</x:String>

@@ -46,8 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             var control = d as ChannelTranslationResultControl;
             if (e.NewValue != null)
             {
-                control.ShowFromButton.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
-                control.OriginalArea.Visibility = (bool)e.NewValue ? Visibility.Collapsed : Visibility.Visible;
+                control.OriginalArea.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -74,7 +73,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 var value = e.NewValue as ChannelTranslationResult;
                 control.Speaker.Text = value.ChatContent.SpeakerName;
-                control.SpeakTime.Text = value.ChatContent.EVETime.ToShortTimeString();
+                control.SpeakTime.Text = value.ChatContent.EVETime.ToString("HH:mm:ss");
                 control.SpeakLang.Text = $"{value.TranslationResult.From} -> {value.TranslationResult.To}";
                 control.OriginalTextBlock.Text = value.TranslationResult.Query;
                 control.TranslatedTextBlock.Text = value.TranslationResult.Result;

@@ -1215,6 +1215,9 @@
     <x:String x:Key="ChannelTranslation_Setting_KeyWord_Tip">Leave it blank and translate all the content</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_SkipMySelf">Skip your own speech</x:String>
     <x:String x:Key="ChannelTranslation_Win_ShowFrom">View original</x:String>
+    <x:String x:Key="ChannelTranslation_Win_InputText">Input Text</x:String>
+    <x:String x:Key="ChannelTranslation_Win_TranslationText">Translation</x:String>
+    <x:String x:Key="ChannelTranslation_Win_ClearResult">Clear Result</x:String>
 
     <!--  Channel  -->
     <x:String x:Key="Channel_Characters">Characters</x:String>

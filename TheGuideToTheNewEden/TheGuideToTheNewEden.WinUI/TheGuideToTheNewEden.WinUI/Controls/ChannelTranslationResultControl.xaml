@@ -13,7 +13,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
     </UserControl.Resources>
-    <Grid Padding="8,4">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -27,17 +27,13 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock
                     x:Name="Speaker"
-                    FontSize="16"
+                    FontSize="14"
                     FontWeight="Bold" />
-                <TextBlock
-                    x:Name="SpeakTime"
-                    Margin="8,0,0,0"
-                    FontSize="13"
-                    Foreground="{ThemeResource SecondaryForegroundBrush}" />
+                <TextBlock x:Name="SpeakTime" Margin="8,0,0,0" />
                 <TextBlock
                     x:Name="SpeakLang"
                     Margin="8,0,0,0"
-                    FontSize="13"
+                    FontSize="12"
                     Foreground="{ThemeResource SecondaryForegroundBrush}" />
             </StackPanel>
             <Button
@@ -75,7 +71,7 @@
         <Rectangle
             Grid.Row="2"
             Height="1"
-            Margin="0,4,0,4"
+            Margin="0,8,0,8"
             Fill="{ThemeResource GrayBrush}" />
     </Grid>
 </UserControl>
