@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -27,6 +28,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class ChannelTranslationWinPage : Page, INotifyPropertyChanged
     {
+        internal class ChannelResultDisplayModel: ObservableObject
+        {
+            public string Header { get; set; }
+            public ObservableCollection<ChannelTranslationResult> Results { get; set; } = new ObservableCollection<ChannelTranslationResult>();
+            private bool _unread = false;
+            public bool Unread { get => _unread; set => SetProperty(ref _unread, value); }
+
+            private int unreadCount;
+            public int UnreadCount { get => unreadCount; set => SetProperty(ref unreadCount, value); }
+        }
+
         private bool _showFrom;
         public bool ShowFrom
         {
@@ -40,19 +52,20 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private IWindow _window;
         private ITranslationService _translationService;
-        private ObservableCollection<ChannelTranslationResult> _results = new ObservableCollection<ChannelTranslationResult>();
+        private ObservableCollection<ChannelResultDisplayModel> _results = new ObservableCollection<ChannelResultDisplayModel>();
+        private Dictionary<string, ChannelResultDisplayModel> _resultsDict = new Dictionary<string, ChannelResultDisplayModel>();
         public ChannelTranslationWinPage()
         {
             Loaded += ChannelTranslationWinPage_Loaded;
             this.InitializeComponent();
             _translationService = ClientServiceHelper.GetRequiredService<ITranslationService>();
-            ContentList.ItemsSource = _results;
+            ContentTabView.TabItemsSource = _results;
         }
 
         private void ChannelTranslationWinPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ChannelTranslationWinPage_Loaded;
-            ContentList.LayoutUpdated += ContentList_LayoutUpdated;
+            //ContentList.LayoutUpdated += ContentList_LayoutUpdated;
         }
 
         private void ContentList_LayoutUpdated(object sender, object e)
@@ -60,7 +73,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             if (isAdded)
             {
                 isAdded = false;
-                ContentList.ScrollIntoView(ContentList.Items.LastOrDefault());
+                //ContentList.ScrollIntoView(ContentList.Items.LastOrDefault());
             }
         }
 
@@ -78,11 +91,23 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 isAdded = true;
                 var result = await _translationService.Translate(chatContent.Content, from, to);
-                _results.Add(new ChannelTranslationResult()
+                ChannelResultDisplayModel resultDisplayModel = null;
+                if (!_resultsDict.TryGetValue(chatContent.ChannelID, out resultDisplayModel))
+                {
+                    resultDisplayModel = new ChannelResultDisplayModel()
+                    {
+                        Header = chatContent.ChannelName,
+                    };
+                    _resultsDict.Add(chatContent.ChannelID, resultDisplayModel);
+                    _results.Add(resultDisplayModel);
+                }
+                resultDisplayModel.Results.Add(new ChannelTranslationResult()
                 {
                     ChatContent = chatContent,
                     TranslationResult = result
                 });
+                resultDisplayModel.Unread = true;
+                resultDisplayModel.UnreadCount++;
             }
         }
 
@@ -123,6 +148,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)
         {
             _results.Clear();
+        }
+        private void ResultsListView_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

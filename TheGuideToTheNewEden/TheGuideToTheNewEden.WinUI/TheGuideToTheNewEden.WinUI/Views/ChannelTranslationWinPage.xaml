@@ -17,16 +17,38 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListView
-            x:Name="ContentList"
-            SelectionMode="None"
-            Tag="True">
-            <ListView.ItemTemplate>
+        <TabView x:Name="ContentTabView" IsAddTabButtonVisible="False">
+            <TabView.TabItemTemplate>
                 <DataTemplate>
-                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="{Binding ShowFrom, ElementName=Page, Mode=OneWay}" />
+                    <TabViewItem IsClosable="False">
+                        <TabViewItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Header}" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource DefaultGreen}"
+                                    Text="{Binding UnreadCount}"
+                                    Visibility="{Binding Unread, Converter={StaticResource TrueToVisibleConverter}}" />
+                            </StackPanel>
+                        </TabViewItem.Header>
+                        <ListView
+                            ItemsSource="{Binding Results}"
+                            Loaded="ResultsListView_Loaded"
+                            SelectionMode="None"
+                            Tag="True">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="{Binding ShowFrom, ElementName=Page, Mode=OneWay}" />
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </TabViewItem>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </TabView.TabItemTemplate>
+        </TabView>
+
         <Grid Grid.Row="1" Margin="8,8,8,4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

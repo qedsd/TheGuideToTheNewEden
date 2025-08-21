@@ -62,5 +62,6 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
         public bool Important { get; set; }
         public string Listener { get; set; }
         public string ChannelName {  get; set; }
+        public string ChannelID { get; set; }
     }
 }
