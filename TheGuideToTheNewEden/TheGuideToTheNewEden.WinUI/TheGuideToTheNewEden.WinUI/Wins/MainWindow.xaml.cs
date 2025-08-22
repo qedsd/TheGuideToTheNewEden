@@ -49,6 +49,7 @@ namespace TheGuideToTheNewEden.WinUI
         public void Init(bool useThemeService, bool useBackground, bool hideCaptionButton)
         {
             this.InitializeComponent();
+            this.LogPositionAndSize();
             if (useThemeService)
             {
                 ThemeService = new DevWinUI.ThemeService();
@@ -65,7 +66,6 @@ namespace TheGuideToTheNewEden.WinUI
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
             Helpers.WindowHelper.TrackWindow(this);
 
-            Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.ico"));
             if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
             {
@@ -76,7 +76,6 @@ namespace TheGuideToTheNewEden.WinUI
             }
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(1500,800));
         }
         public UIElement MainUIElement
         {

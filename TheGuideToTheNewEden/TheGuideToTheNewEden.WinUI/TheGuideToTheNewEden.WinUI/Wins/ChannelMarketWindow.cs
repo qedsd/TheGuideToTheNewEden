@@ -7,12 +7,14 @@ using System.Xml.Linq;
 using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class ChannelMarketWindow : ToolWindow
     {
+        private const string WindowSettingKey = "ChannelMarketWindowPosAndSize";
         private Dictionary<int, string> _regionNames = new Dictionary<int, string>();
         private Views.ChannelMarketWinPage _page;
         private string _title;
@@ -27,8 +29,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             SetCloseToHide();
 
             _page.SetWindow(this);
-            this.SetSize(600, 600);
             this.SetAlwaysOnTop();
+            this.LogPositionAndSize();
         }
         public void UpdateContent(IEnumerable<MarketChatContent> items, int regionID)
         {

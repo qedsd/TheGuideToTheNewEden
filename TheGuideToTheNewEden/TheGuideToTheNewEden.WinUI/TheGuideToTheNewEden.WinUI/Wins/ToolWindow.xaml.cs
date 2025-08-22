@@ -82,7 +82,7 @@ namespace TheGuideToTheNewEden.WinUI
             ExtendsContentIntoTitleBar = true;
             if (style != WindowTitleStyle.Empty)
                 SetTitleBar(AppTitleBar);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(1000,600));
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(800,600));
             AppWindow.IsShownInSwitchers = showInSwitcher;
 
             HideNavButton();
