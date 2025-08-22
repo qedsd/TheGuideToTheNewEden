@@ -131,7 +131,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private Views.TabViewBasePage _page;
         public ScalperViewModel()
         {
             
@@ -140,7 +139,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         private static readonly string SettingFolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
         public async Task Init()
         {
-            _page = NavigationService.GetCurrentPage();
             if (System.IO.File.Exists(SettingFilePath))
             {
                 string json = System.IO.File.ReadAllText(SettingFilePath);

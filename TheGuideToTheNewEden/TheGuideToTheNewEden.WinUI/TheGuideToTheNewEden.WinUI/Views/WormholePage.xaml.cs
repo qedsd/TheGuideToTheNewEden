@@ -262,7 +262,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Link_Click(Hyperlink sender, HyperlinkClickEventArgs args)
         {
-            WormholePage wormholePage = new WormholePage();
             var text = (sender.Inlines.First() as Run).Text;
             string portalName = string.Empty;
             int index = text.IndexOf('(');
@@ -274,8 +273,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 portalName = text.Substring(0, index).Trim();
             }
-            wormholePage.LoadWormholePortalDetail(WormholeService.QueryPortalByName(portalName));
-            NavigationService.NavigateTo(wormholePage, Helpers.ResourcesHelper.GetString("ShellPage_Wormhole"));
+            LoadWormholePortalDetail(WormholeService.QueryPortalByName(portalName));
         }
 
         public void LoadWormholePortalDetail(WormholePortal wormholePortal)

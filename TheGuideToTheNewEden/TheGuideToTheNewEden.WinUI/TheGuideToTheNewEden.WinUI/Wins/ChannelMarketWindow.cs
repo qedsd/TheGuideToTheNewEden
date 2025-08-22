@@ -14,7 +14,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class ChannelMarketWindow : ToolWindow
     {
-        private const string WindowSettingKey = "ChannelMarketWindowPosAndSize";
         private Dictionary<int, string> _regionNames = new Dictionary<int, string>();
         private Views.ChannelMarketWinPage _page;
         private string _title;
@@ -25,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             InitWindow(_page, WindowTitleStyle.OnlyClose, true, true, true, true);
 
             SetDisplayTitle(_title);
-            SetWindowTitle(Title);
+            SetWindowTitle(_title);
             SetCloseToHide();
 
             _page.SetWindow(this);

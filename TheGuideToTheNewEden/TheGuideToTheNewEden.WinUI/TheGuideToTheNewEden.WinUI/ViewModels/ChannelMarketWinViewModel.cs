@@ -116,7 +116,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand DetailCommand => new RelayCommand<InvTypeBase>((type) =>
         {
-            MarketNavigationService.Current.NavigationTo(type.TypeID);
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToMarket(type.TypeID);
         });
     }
 }

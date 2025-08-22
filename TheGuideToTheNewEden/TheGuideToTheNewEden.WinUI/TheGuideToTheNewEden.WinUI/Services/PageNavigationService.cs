@@ -36,12 +36,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public void NavigateTo(Type content, params object[] values)
         {
             if (content == null) return;
-            //if (!_pages.TryGetValue(content.Name, out IPage contentPage))
-            //{
-            //    //contentPage = Activator.CreateInstance(content) as IPage;
-            //    //contentPage.Init();
-            //    //_pages.Add(content.Name, contentPage);
-            //}
             _frame.Navigate(content, values);
             _currentPage = content.Name;
 
@@ -146,6 +140,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public double GetNavPanelWidth()
         {
             return _navPanel.ActualWidth;
+        }
+
+        public void NavigateToMarket(params object[] values)
+        {
+            Helpers.WindowHelper.MainWindow.Activate();
+            NavigateTo(typeof(MarketPage), values);
         }
 
         public void Dispose()
