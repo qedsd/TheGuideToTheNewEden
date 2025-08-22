@@ -21,14 +21,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _count++;
             _window ??= new Wins.ChannelTranslationWindow();
         }
-        public void Stop()
+        public void Stop(string listener)
         {
             _count--;
-            if (_count == 0)
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _window?.Close();
-                _window = null;
-            }
+                _window?.Remove(listener);
+                if (_count == 0)
+                {
+                    _window?.Close();
+                    _window = null;
+                }
+            });
         }
         public void Query(IEnumerable<Core.Models.EVELogs.ChatContent> items, string from , string to)
         {

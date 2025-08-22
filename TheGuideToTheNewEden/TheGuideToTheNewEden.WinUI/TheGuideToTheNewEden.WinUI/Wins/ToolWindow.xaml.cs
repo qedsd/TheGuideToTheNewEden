@@ -137,9 +137,13 @@ namespace TheGuideToTheNewEden.WinUI
             Title = title;
         }
 
-        public void SetSize(double w, double h)
+        public void SetSize(int w, int h)
         {
-            this.SetWindowSize(w, h);
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(w, h));
+        }
+        public void SetPosition(int x, int y)
+        {
+            Helpers.WindowHelper.MoveToScreen(this, x, y);
         }
         public void SetAlwaysOnTop()
         {

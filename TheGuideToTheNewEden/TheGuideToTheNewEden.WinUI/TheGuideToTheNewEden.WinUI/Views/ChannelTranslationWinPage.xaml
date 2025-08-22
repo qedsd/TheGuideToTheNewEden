@@ -17,10 +17,16 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TabView x:Name="ContentTabView" IsAddTabButtonVisible="False">
+        <TabView
+            x:Name="ContentTabView"
+            IsAddTabButtonVisible="False"
+            SelectedIndex="0">
             <TabView.TabItemTemplate>
                 <DataTemplate>
-                    <TabViewItem IsClosable="False">
+                    <TabViewItem
+                        x:Name="ChannelsTabView"
+                        IsClosable="False"
+                        Tag="{Binding ShowFrom, ElementName=Page, Mode=OneWay}">
                         <TabViewItem.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Header}" />
@@ -40,7 +46,7 @@
                             Tag="True">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="{Binding ShowFrom, ElementName=Page, Mode=OneWay}" />
+                                    <controls:ChannelTranslationResultControl Result="{Binding}" ViewOriginal="{Binding Tag, ElementName=ChannelsTabView, Mode=OneWay}" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
@@ -129,46 +135,57 @@
                         TextWrapping="Wrap" />
                 </Grid>
             </Grid>
-            <StackPanel
+            <Grid
                 Grid.Row="1"
-                Margin="0,4,0,0"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
-                <Button>
-                    <ic:FluentIcon
-                        Icon="Settings"
-                        IconSize="Resizable"
-                        IconVariant="Regular" />
-                    <Button.Flyout>
-                        <Flyout>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelTranslation_Win_ShowFrom}" />
-                                    <ToggleSwitch
-                                        x:Name="ShowFromToggleSwitch"
-                                        Margin="8,0,-60,0"
-                                        IsOn="True"
-                                        Toggled="ToggleSwitch_Toggled" />
-                                </StackPanel>
-                                <Button
-                                    Margin="0,8"
-                                    HorizontalAlignment="Stretch"
-                                    Click="ClearResultButton_Click"
-                                    Content="{StaticResource ChannelTranslation_Win_ClearResult}" />
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
-                <ToggleButton
-                    Margin="4,0,0,0"
+                Grid.Column="1"
+                Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="ListenerButton_Click" Content="{Binding ElementName=ContentTabView, Path=SelectedItem.Listener}" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="1"
                     HorizontalAlignment="Right"
-                    Click="ShowManualTranslateButton_Click">
-                    <ic:FluentIcon
-                        Icon="List"
-                        IconSize="Resizable"
-                        IconVariant="Regular" />
-                </ToggleButton>
-            </StackPanel>
+                    Orientation="Horizontal">
+                    <Button>
+                        <ic:FluentIcon
+                            Icon="Settings"
+                            IconSize="Resizable"
+                            IconVariant="Regular" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelTranslation_Win_ShowFrom}" />
+                                        <ToggleSwitch
+                                            x:Name="ShowFromToggleSwitch"
+                                            Margin="8,0,-60,0"
+                                            IsOn="True"
+                                            Toggled="ToggleSwitch_Toggled" />
+                                    </StackPanel>
+                                    <Button
+                                        Margin="0,8"
+                                        HorizontalAlignment="Stretch"
+                                        Click="ClearResultButton_Click"
+                                        Content="{StaticResource ChannelTranslation_Win_ClearResult}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <ToggleButton
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Right"
+                        Click="ShowManualTranslateButton_Click">
+                        <ic:FluentIcon
+                            Icon="List"
+                            IconSize="Resizable"
+                            IconVariant="Regular" />
+                    </ToggleButton>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Page>

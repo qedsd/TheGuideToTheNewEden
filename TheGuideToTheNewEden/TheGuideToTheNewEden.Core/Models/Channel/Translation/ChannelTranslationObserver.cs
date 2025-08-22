@@ -56,7 +56,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
                             {
                                 chatContent.Listener = CharacterName;
                                 chatContent.ChannelName = _chatChanelInfo.ChannelName;
-                                chatContent.ChannelID = _chatChanelInfo.ChannelID;
+                                chatContent.ChannelID = _chatChanelInfo.UID;
                                 newContents.Add(chatContent);
                             }
                         }

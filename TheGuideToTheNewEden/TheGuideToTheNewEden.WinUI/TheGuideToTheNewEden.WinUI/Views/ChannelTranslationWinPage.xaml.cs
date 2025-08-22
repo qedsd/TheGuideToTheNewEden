@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,6 +9,7 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Syncfusion.UI.Xaml.Grids.ScrollAxis;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,10 +21,9 @@ using TheGuideToTheNewEden.Core.Interfaces;
 using TheGuideToTheNewEden.Core.Models.Channel.Translation;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.WinUI.Controls;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using static TheGuideToTheNewEden.Core.Services.ObservableFileService;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -30,6 +31,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
     {
         internal class ChannelResultDisplayModel: ObservableObject
         {
+            public string ChannelID {  get; set; }
+            public string Listener { get; set; }
             public string Header { get; set; }
             public ObservableCollection<ChannelTranslationResult> Results { get; set; } = new ObservableCollection<ChannelTranslationResult>();
             private bool _unread = false;
@@ -56,25 +59,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private Dictionary<string, ChannelResultDisplayModel> _resultsDict = new Dictionary<string, ChannelResultDisplayModel>();
         public ChannelTranslationWinPage()
         {
-            Loaded += ChannelTranslationWinPage_Loaded;
             this.InitializeComponent();
             _translationService = ClientServiceHelper.GetRequiredService<ITranslationService>();
             ContentTabView.TabItemsSource = _results;
-        }
-
-        private void ChannelTranslationWinPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= ChannelTranslationWinPage_Loaded;
-            //ContentList.LayoutUpdated += ContentList_LayoutUpdated;
-        }
-
-        private void ContentList_LayoutUpdated(object sender, object e)
-        {
-            if (isAdded)
-            {
-                isAdded = false;
-                //ContentList.ScrollIntoView(ContentList.Items.LastOrDefault());
-            }
         }
 
         public void SetWindow(IWindow window)
@@ -97,20 +84,52 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     resultDisplayModel = new ChannelResultDisplayModel()
                     {
                         Header = chatContent.ChannelName,
+                        Listener = chatContent.Listener,
+                        ChannelID = chatContent.ChannelID
                     };
                     _resultsDict.Add(chatContent.ChannelID, resultDisplayModel);
                     _results.Add(resultDisplayModel);
+                    if(_results.Count == 1)
+                    {
+                        ContentTabView.SelectedIndex = 0;
+                    }
                 }
                 resultDisplayModel.Results.Add(new ChannelTranslationResult()
                 {
                     ChatContent = chatContent,
                     TranslationResult = result
                 });
-                resultDisplayModel.Unread = true;
-                resultDisplayModel.UnreadCount++;
+                if(_listView?.DataContext == resultDisplayModel)
+                {
+                    if (_autoScroll)
+                    {
+                        ScrollToBottom();
+                    }
+                    else
+                    {
+                        resultDisplayModel.Unread = true;
+                        resultDisplayModel.UnreadCount++;
+                    }
+                }
+                else
+                {
+                    resultDisplayModel.Unread = true;
+                    resultDisplayModel.UnreadCount++;
+                }
             }
         }
-
+        public void Remove(string listener)
+        {
+            var removed = _results.Where(p=>p.Listener == listener).ToList();
+            if (removed.NotNullOrEmpty())
+            {
+                foreach(var item in removed)
+                {
+                    _results.Remove(item);
+                    _resultsDict.Remove(item.ChannelID);
+                }
+            }
+        }
         private async void ManualTranslateTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if(e.Key == Windows.System.VirtualKey.Enter)
@@ -147,11 +166,88 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void ClearResultButton_Click(object sender, RoutedEventArgs e)
         {
-            _results.Clear();
+            foreach(var result in _results)
+            {
+                result.Results.Clear();
+                result.Unread = false;
+                result.UnreadCount = 0;
+            }
         }
+
+        private bool _autoScroll = true;
+        private bool _userScrolled = false;
+        private ListView _listView;
         private void ResultsListView_Loaded(object sender, RoutedEventArgs e)
         {
+            ListView listView = sender as ListView;
+            _listView = listView;
+            listView.Unloaded += ListView_Unloaded;
+            if (listView.FindDescendant<ScrollViewer>() is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
+            }
+            var item = (sender as ListView).DataContext as ChannelResultDisplayModel;
+            item.Unread = false;
+            item.UnreadCount = 0;
+            ScrollToBottom();
+        }
+        private void ScrollToBottom()
+        {
+            if (_listView?.Items.Count > 0)
+            {
+                // 使用Dispatcher确保在UI线程上执行
+                DispatcherQueue.SafelyTryEnqueue(() =>
+                {
+                    var lastItem = _listView.Items.Last();
+                    _listView.ScrollIntoView(lastItem);
+                });
+            }
+        }
 
+        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            var scrollViewer = sender as ScrollViewer;
+
+            var verticalOffset = scrollViewer.VerticalOffset;
+            var scrollableHeight = scrollViewer.ScrollableHeight;
+            var viewportHeight = scrollViewer.ViewportHeight;
+
+            // 用户滚动到最底部时恢复自动滚动
+            if (verticalOffset >= scrollableHeight - 1) // 使用容差
+            {
+                _userScrolled = false;
+                _autoScroll = true;
+                if(_listView?.DataContext is ChannelResultDisplayModel model)
+                {
+                    model.Unread = false;
+                    model.UnreadCount = 0;
+                }
+                
+            }
+            // 用户向上滚动时暂停自动滚动
+            else if (!e.IsIntermediate) // 只有当滚动结束时才判断
+            {
+                _userScrolled = true;
+                _autoScroll = false;
+            }
+        }
+
+        private void ListView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ListView listView = sender as ListView;
+            if (listView.FindDescendant<ScrollViewer>() is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ViewChanged -= ScrollViewer_ViewChanged;
+            }
+        }
+
+        private void ListenerButton_Click(object sender, RoutedEventArgs e)
+        {
+            var hwnd = Helpers.WindowHelper.GetGameHwndByCharacterName((sender as Button).Content.ToString());
+            if (hwnd > 0)
+            {
+                Helpers.WindowHelper.SetForegroundWindow1(hwnd);
+            }
         }
     }
 }

@@ -43,6 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 }
             }
             Save();
+            _translationService.Start();
         }
 
         private void Observer_OnContentUpdate(object sender, IEnumerable<Core.Models.EVELogs.ChatContent> news)
@@ -53,10 +54,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
             }
         }
 
-        public void Stop()
+        public void Stop(string listener)
         {
             Core.Services.ObservableFileService.Remove(_observers);
             _observers.Clear();
+            _translationService.Stop(listener);
         }
         public void Save()
         {

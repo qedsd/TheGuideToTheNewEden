@@ -87,7 +87,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ChannelTranslationViewModel()
         {
             _logPath = System.IO.Path.Combine(GameLogsSettingService.EVELogsPathValue, "Chatlogs");
-            ClientServiceHelper.GetRequiredService<ChannelTranslationService>().Start();
             Init();
         }
         private void Init()
@@ -181,7 +180,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void Stop(ChannelTranslation channel)
         {
-            channel?.Stop();
+            channel?.Stop(channel.Setting.CharacterName);
         }
         private void StopAll()
         {
@@ -191,7 +190,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if (_channelTranslations.TryGetValue(character.Name, out var channel))
                     {
-                        channel.Stop();
+                        Stop(channel);
                     }
                     character.Running = false;
                 }
@@ -331,7 +330,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public void Dispose()
         {
             StopAll();
-            ClientServiceHelper.GetRequiredService<ChannelTranslationService>().Stop();
         }
     }
 }
