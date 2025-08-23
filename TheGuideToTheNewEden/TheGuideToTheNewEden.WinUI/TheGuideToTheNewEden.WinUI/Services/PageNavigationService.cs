@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using TheGuideToTheNewEden.WinUI.Controls;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views;
 
@@ -55,25 +56,31 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void ShowWaiting(string page, string tip = null)
         {
-            _loadingPages.Remove(page);
-            _loadingPages.Add(page, tip);
-            if (_currentPage == page)
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                _LoadingControl.IsLoading = true;
-                _LoadingControl.LoadingContent = tip;
-                _frame.IsEnabled = false;
-            }
+                _loadingPages.Remove(page);
+                _loadingPages.Add(page, tip);
+                if (_currentPage == page)
+                {
+                    _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    _LoadingControl.IsLoading = true;
+                    _LoadingControl.LoadingContent = tip;
+                    _frame.IsEnabled = false;
+                }
+            });
         }
         public void HideWaiting(string page)
         {
-            _loadingPages.Remove(page);
-            if (_currentPage == page)
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                _LoadingControl.IsLoading = false;
-                _frame.IsEnabled = true;
-            }
+                _loadingPages.Remove(page);
+                if (_currentPage == page)
+                {
+                    _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    _LoadingControl.IsLoading = false;
+                    _frame.IsEnabled = true;
+                }
+            });
         }
         public void ShowWaiting(Page page, string tip = null)
         {
@@ -113,7 +120,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void ShowMsg(string sender, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
-            _infoBarControl.Show(sender, msg, infoType, autoClose, title);
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                _infoBarControl.Show(sender, msg, infoType, autoClose, title);
+            });
         }
         public void ShowMsg(Page page, string msg, InfoBarControl.InfoType infoType, bool autoClose, string title = null)
         {
@@ -135,7 +145,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void HideMsg()
         {
-            _infoBarControl.Hide();
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                _infoBarControl.Hide();
+            });
         }
         public double GetNavPanelWidth()
         {
@@ -150,10 +163,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void Dispose()
         {
-            foreach (var page in _pages.Values)
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                page.Close();
-            }
+                foreach (var page in _pages.Values)
+                {
+                    page.Close();
+                }
+            });
+        }
+
+        private Window GetWindow()
+        {
+            return Helpers.WindowHelper.MainWindow;
         }
 
         /// <summary>
