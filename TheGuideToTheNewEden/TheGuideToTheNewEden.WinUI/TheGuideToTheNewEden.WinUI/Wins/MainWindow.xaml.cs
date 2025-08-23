@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI
         public MainWindow(bool useThemeService, bool useBackgroun)
         {
             Init(useThemeService, useBackgroun, false);
-        }
+        } 
         public MainWindow(bool useThemeService, bool useBackgroun, bool hideCaptionButton)
         {
             Init(useThemeService, useBackgroun, hideCaptionButton);

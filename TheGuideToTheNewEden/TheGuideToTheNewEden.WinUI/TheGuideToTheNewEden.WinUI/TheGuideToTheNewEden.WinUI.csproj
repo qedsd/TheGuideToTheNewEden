@@ -221,7 +221,6 @@
     <None Remove="Assets\Icon\WindowIcons\warning.png" />
     <None Remove="Assets\Icon\WindowIcons\warreport.png" />
     <None Remove="Assets\Icon\WindowIcons\wars.png" />
-    <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
     <None Remove="Controls\ChannelTranslationResultControl.xaml" />
@@ -286,7 +285,6 @@
     <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
     <None Remove="Views\GameLogMonitorPage.xaml" />
-    <None Remove="Views\HomePage.xaml" />
     <None Remove="Views\HomePage2.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
@@ -322,7 +320,6 @@
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\Settings\TestSettingPage.xaml" />
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
-    <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
@@ -345,7 +342,7 @@
     <PackageReference Include="DevWinUI" Version="8.9.0" />
     <PackageReference Include="FluentIcons.WinUI" Version="1.1.303" />
     <PackageReference Include="H.NotifyIcon" Version="2.3.0" />
-    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.2.0" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
     <PackageReference Include="log4net" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
@@ -747,9 +744,6 @@
     <Page Update="Views\DEDPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\TranslationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -847,18 +841,6 @@
 
   <ItemGroup>
     <Page Update="Views\SettingPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="BaseWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

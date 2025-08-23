@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="using:H.NotifyIcon"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -98,5 +99,20 @@
                     Visibility="Collapsed" />
             </Grid>
         </Border>
+        <tb:TaskbarIcon
+            x:Name="TaskbarIcon"
+            IconSource="/logo.ico"
+            LeftClickCommand="{x:Bind ShowCommand}"
+            MenuActivation="LeftOrRightClick"
+            NoLeftClickDelay="True"
+            PopupActivation="RightClick"
+            ToolTipText="{StaticResource AppDisplayName}">
+            <tb:TaskbarIcon.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Command="{x:Bind ShowCommand}" Text="{StaticResource TaskbarIcon_Show}" />
+                    <MenuFlyoutItem Command="{x:Bind ExitCommand}" Text="{StaticResource TaskbarIcon_Exit}" />
+                </MenuFlyout>
+            </tb:TaskbarIcon.ContextFlyout>
+        </tb:TaskbarIcon>
     </Grid>
 </UserControl>

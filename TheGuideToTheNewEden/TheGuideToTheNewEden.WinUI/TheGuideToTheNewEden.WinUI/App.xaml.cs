@@ -13,7 +13,7 @@ namespace TheGuideToTheNewEden.WinUI
     public partial class App : Application
     {
         public static Core.Helpers.SingleInstanceHelper SingleInstanceHelper;
-        public static bool HandleClosedEvents { get; set; } = false;
+        public static bool HandleClosedEvents { get; set; } = true;
         private NotificationManager notificationManager;
         public App()
         {
@@ -113,17 +113,5 @@ namespace TheGuideToTheNewEden.WinUI
         }
 
         private Window m_window;
-
-        public static string GetFullPathToExe()
-        {
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-            var pos = path.LastIndexOf("\\");
-            return path.Substring(0, pos);
-        }
-
-        public static string GetFullPathToAsset(string assetName)
-        {
-            return GetFullPathToExe() + "\\Assets\\" + assetName;
-        }
     }
 }

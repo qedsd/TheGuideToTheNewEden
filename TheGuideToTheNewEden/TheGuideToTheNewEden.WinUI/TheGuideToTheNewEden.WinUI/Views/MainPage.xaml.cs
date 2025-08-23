@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,6 +6,14 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Views.Character;
@@ -158,6 +160,19 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 Core.Log.Error(ex.Message);
             }
         }
+        #endregion
+
+        #region ÏµÍ³ÍÐÅÌ
+        private ICommand ShowCommand => new RelayCommand(() =>
+        {
+            Helpers.WindowHelper.MainWindow.Activate();
+        });
+        private ICommand ExitCommand => new RelayCommand(() =>
+        {
+            App.HandleClosedEvents = false;
+            TaskbarIcon.Dispose();
+            Helpers.WindowHelper.MainWindow.Close();
+        });
         #endregion
     }
 }
