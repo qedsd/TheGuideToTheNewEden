@@ -85,7 +85,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
             else
             {
-                this.ShowError("未选择角色");
+                this.ShowError(Helpers.ResourcesHelper.GetString("General_CharacterUnselected"));
             }
         }
         private async Task GetCorpOrders()
@@ -114,7 +114,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
             else
             {
-                this.ShowError("未选择角色");
+                this.ShowError(Helpers.ResourcesHelper.GetString("General_CharacterUnselected"));
             }
         }
 
@@ -126,16 +126,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 List<Core.Models.Market.Order> refs = null;
                 try
                 {
-                    var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId, MarketOrderSettingService.ScalperSikpStructureValue);
-                    if (results.NotNullOrEmpty())
+                    if (order.IsStation)
                     {
-                        if (order.IsBuyOrder)
+                        var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId, MarketOrderSettingService.ScalperSikpStructureValue);
+                        if (results.NotNullOrEmpty())
                         {
-                            refs = results.Where(p => p.IsBuyOrder)?.OrderByDescending(p => p.Price).ToList();
-                        }
-                        else
-                        {
-                            refs = results.Where(p => !p.IsBuyOrder)?.OrderBy(p => p.Price).ToList();
+                            if (order.IsBuyOrder)
+                            {
+                                refs = results.Where(p => p.IsBuyOrder)?.OrderByDescending(p => p.Price).ToList();
+                            }
+                            else
+                            {
+                                refs = results.Where(p => !p.IsBuyOrder)?.OrderBy(p => p.Price).ToList();
+                            }
                         }
                     }
                 }
@@ -222,7 +225,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     {
                         if (!await SelecteCharacterControl.SelectedItem.RefreshTokenAsync())
                         {
-                            Core.Log.Error("Token已过期，尝试刷新失败");
+                            Core.Log.Error(Helpers.ResourcesHelper.GetString("General_TokenExpiredAndRefrshFailed"));
                             return;
                         }
                     }
@@ -250,7 +253,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             var orders = MainPivot.SelectedIndex == 0 ?  DataGrid_Character.ItemsSource as List<StatusOrder> : DataGrid_Corp.ItemsSource as List<StatusOrder>;
             if(orders.NotNullOrEmpty())
             {
-                var targetOrders = orders.Where(p => !p.Normal).ToList();
+                var targetOrders = orders.Where(p => p.Normal != true).ToList();
                 if(targetOrders.NotNullOrEmpty())
                 {
                     StringBuilder stringBuilder = new StringBuilder();

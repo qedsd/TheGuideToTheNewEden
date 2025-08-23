@@ -18,7 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.StyleSelectors
 
             if (mappingName == "Normal")
             {
-                if(data.Normal)
+                if(data.Normal == true)
                 {
                     return Helpers.ResourcesHelper.Get("NormalStatusOrderCellStyle") as Style;
                 }

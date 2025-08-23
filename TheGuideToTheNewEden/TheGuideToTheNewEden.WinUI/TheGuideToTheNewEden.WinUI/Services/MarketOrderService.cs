@@ -732,14 +732,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var character = CharacterService.GetCharacter(characterId);
             if (character == null)
             {
-                Core.Log.Error($"未找到角色{characterId}");
+                Core.Log.Error($"{Helpers.ResourcesHelper.GetString("General_CharacterNotFound")}: {characterId}");
                 return null;
             }
             if (!character.IsTokenValid())
             {
                 if (!await character.RefreshTokenAsync())
                 {
-                    Core.Log.Error("Token已过期，尝试刷新失败");
+                    Core.Log.Error(Helpers.ResourcesHelper.GetString("General_TokenExpiredAndRefrshFailed"));
                     return null;
                 }
             }

@@ -12,7 +12,11 @@ namespace TheGuideToTheNewEden.WinUI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if(!(bool)value)//被压单
+            if(value == null)
+            {
+                return Helpers.ResourcesHelper.GetString("CharacterOrderPage_Difference_Status_Unknown");
+            }
+            else if(!(bool)value)//被压单
             {
                 return Helpers.ResourcesHelper.GetString("CharacterOrderPage_Difference_Status_Backward");
             }

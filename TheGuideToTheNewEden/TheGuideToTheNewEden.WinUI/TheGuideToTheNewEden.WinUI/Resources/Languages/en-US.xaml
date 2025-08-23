@@ -111,6 +111,9 @@
     <x:String x:Key="General_LocalTime">Local Time</x:String>
     <x:String x:Key="General_Detail">Detail</x:String>
     <x:String x:Key="General_All">All</x:String>
+    <x:String x:Key="General_CharacterUnselected">Character Unselected</x:String>
+    <x:String x:Key="General_CharacterNotFound">Not Found Character</x:String>
+    <x:String x:Key="General_TokenExpiredAndRefrshFailed">The token has expired and the refresh attempt failed</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -914,6 +917,7 @@
     <!--  CharacterOrderPage  -->
     <x:String x:Key="CharacterOrderPage_Difference_Detail">Price difference</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status">Status</x:String>
+    <x:String x:Key="CharacterOrderPage_Difference_Status_Unknown">Unknown</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">Backward</x:String>
     <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">Normal</x:String>
     <x:String x:Key="CharacterOrderPage_OrderType">Order Type</x:String>
