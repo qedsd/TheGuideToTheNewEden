@@ -88,11 +88,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
-                if (!AuthHelper.RegistyProtocol())
-                {
-                    ShowError(Helpers.ResourcesHelper.GetString("CharacterPage_RegistyProtocol"));
-                    return;
-                }
                 var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if(result != null)
                 {
