@@ -24,8 +24,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
     /// </summary>
     internal static class CharacterService
     {
-        private static string ClientId = "8d0da2b105324ead932f60f32b1a55fb";//TODO:仅供测试
-        private static string RedirectUri = "eveauth-qedsd-neweden2:///";
+        private static string ClientId = string.Empty;
+        private static string RedirectUri = "eveauth-qedsd-neweden3:///";
         private static readonly string AuthFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Auth.json");
         private static List<string> EsiScopes { get => Services.Settings.ESIScopeService.Current.GetSelectedScopes(); }
         private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -33,6 +33,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public static ObservableCollection<AuthorizedCharacterData> CharacterOauths { get; private set; }
         public static AuthorizedCharacterData CurrentCharacter { get; private set; }
 
+        public static void RegisterLicense(string[] param)
+        {
+            if(param?.Length == 2)
+            {
+                ClientId = param[0];
+                RedirectUri = param[1];
+            }
+        }
         public static void Init()
         {
             CoreConfig.ClientId = GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? ClientId : SerenityAuthHelper.ClientId;

@@ -30,6 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
             ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
             YDTranslationService.Init(GetYDTranslationLicense());
+            Services.CharacterService.RegisterLicense(GetESILicense());
         }
         private static string GetSyncfusionLicense()
         {
@@ -55,6 +56,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 //TODO:release
                 return [""];
+            }
+        }
+        private static string[] GetESILicense()
+        {
+            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ESILicense.txt");
+            if (System.IO.File.Exists(file))
+            {
+                return System.IO.File.ReadAllLines(file);
+            }
+            else
+            {
+                //TODO:release
+                return null;
             }
         }
     }
