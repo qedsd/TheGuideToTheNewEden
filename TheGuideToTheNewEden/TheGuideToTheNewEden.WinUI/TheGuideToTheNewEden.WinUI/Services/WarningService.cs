@@ -111,7 +111,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         value.Show();
                         value.Intel(content);
                     }
-                    if (SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem))
+                    // 2025-08-24 如果是自己发出的预警，则不播放预警声音
+                    if (SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem) && listener != content.WarnerName)
                     {
                         soundNotifyItem.PlaySound(soundSetting);
                     }
