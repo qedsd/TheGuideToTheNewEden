@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
+using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Views.Character;
 using TheGuideToTheNewEden.WinUI.Views.Map;
@@ -94,37 +95,29 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             try
             {
-                //会因为Github的访问次数限制导致失败
-                var release = await System.Threading.Tasks.Task.Run(() => Core.Helpers.GithubHelper.GetLastReleaseInfo());
-                if (release != null)
+                var failedMsg = await ClientServiceHelper.GetRequiredService<AppUpdateService>().UpdateReleasesStatusAsync();
+                if (!string.IsNullOrEmpty(failedMsg))
                 {
-                    var tagName = release.TagName;
-                    if (!string.IsNullOrEmpty(tagName))
+                    ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this.Name, failedMsg, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
+                }
+                else
+                {
+                    ClientServiceHelper.GetRequiredService<AppUpdateService>().GetReleasesStatus(out var releases, out var lastRelease, out var isLatest);
+                    if (!isLatest)
                     {
-                        var lastVersion = tagName.Replace("v", "", StringComparison.OrdinalIgnoreCase);
-                        var curVersion = _version.Replace("v", "", StringComparison.OrdinalIgnoreCase);
-                        if (lastVersion != curVersion)
+                        ContentDialog contentDialog = new ContentDialog();
+                        contentDialog.Title = $"{Helpers.ResourcesHelper.GetString("Update_FoundLastVersion")} {lastRelease.Version}";
+                        contentDialog.Content = new TextBlock()
                         {
-                            ContentDialog contentDialog = new ContentDialog();
-                            contentDialog.Title = "有可用更新";
-                            contentDialog.Content = new TextBlock()
-                            {
-                                Text = release.Body,
-                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
-                            };
-                            contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
-                            contentDialog.PrimaryButtonText = "更新";
-                            contentDialog.SecondaryButtonText = "取消";
-                            if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
-                            {
-                                List<string> args = new List<string>()
-                                {
-                                    release.TagName,
-                                    release.Body,
-                                    release.Assets.FirstOrDefault()?.BrowserDownloadUrl
-                                };
-                                Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater", "TheGuideToTheNewEden.Updater.exe"), args);
-                            }
+                            Text = lastRelease.Description,
+                            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                        };
+                        contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
+                        contentDialog.PrimaryButtonText = Helpers.ResourcesHelper.GetString("Update_ConfirmUpdate");
+                        contentDialog.SecondaryButtonText = Helpers.ResourcesHelper.GetString("Update_NotUpdate");
+                        if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
+                        {
+                            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
                         }
                     }
                 }
@@ -132,7 +125,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             catch (Exception ex)
             {
                 Core.Log.Error(ex.Message);
-                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(Name, ex.Message, Controls.InfoBarControl.InfoType.Error, false, "检查更新失败");
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(Name, ex.Message, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
             }
         }
         private static void TryMoveUpdater()
@@ -169,10 +162,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
         });
         private ICommand ExitCommand => new RelayCommand(() =>
         {
-            App.HandleClosedEvents = false;
             TaskbarIcon.Dispose();
-            Helpers.WindowHelper.MainWindow.Close();
+            App.Close();
         });
         #endregion
+
+        private void VersionButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
+        }
     }
 }

@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.WinUI
             _serviceCollection.AddSingleton<KBNavigationService>();
             _serviceCollection.AddSingleton<ITranslationService>(new YDTranslationService());
             _serviceCollection.AddSingleton<ChannelTranslationService>();
-
+            _serviceCollection.AddSingleton<AppUpdateService>(); 
         }
         private void UseILog(ILog log)
         {

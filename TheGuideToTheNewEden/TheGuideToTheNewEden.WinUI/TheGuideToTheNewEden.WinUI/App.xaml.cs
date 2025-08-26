@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using H.NotifyIcon;
+using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Linq;
@@ -99,6 +100,12 @@ namespace TheGuideToTheNewEden.WinUI
                 ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
                 Services.MemoryIPCService.Dispose();
             }
+        }
+
+        public static void Close()
+        {
+            App.HandleClosedEvents = false;
+            Helpers.WindowHelper.MainWindow.Close();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)

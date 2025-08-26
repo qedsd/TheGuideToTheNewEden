@@ -10,14 +10,22 @@ namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class GithubHelper
     {
-        public static Release GetLastReleaseInfo(string owner = "qedsd", string repo = "TheGuideToTheNewEden")
+        public static string Token {  get; set; }
+        public static async Task<Release> GetLastReleaseInfoAsync(string owner = "qedsd", string repo = "TheGuideToTheNewEden")
         {
-            // 在 Octokit 库中创建一个 GitHubClient 实例。
+            var releases = await GetReleaseInfoAsync(owner, repo);
+            return releases?.FirstOrDefault();
+        }
+        public static async Task<IReadOnlyList<Release>> GetReleaseInfoAsync(string owner = "qedsd", string repo = "TheGuideToTheNewEden")
+        {
             var github = new GitHubClient(new ProductHeaderValue("GithubReleaseChecker"));
-            // 获取仓库的所有 Release 版本。
-            var releases = github.Repository.Release.GetAll(owner, repo).Result;
-            // 获取最新版本的 Release。
-            return releases.FirstOrDefault();
+            if (!string.IsNullOrEmpty(Token))
+            {
+                var tokenAuth = new Credentials(Token);
+                github.Credentials = tokenAuth;
+            }
+            var releases = await github.Repository.Release.GetAll(owner, repo);
+            return releases;
         }
         public static async Task<bool> DownloadRelease(Release release, string saveFile)
         {
@@ -35,5 +43,6 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 }
             }
         }
+
     }
 }

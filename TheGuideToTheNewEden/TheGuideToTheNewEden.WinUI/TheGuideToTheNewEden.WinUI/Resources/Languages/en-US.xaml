@@ -1238,4 +1238,19 @@
     <x:String x:Key="Channel_RestorePos_Tip">Reset overlap window position to the center of the screen</x:String>
     <x:String x:Key="Channel_Start">Start</x:String>
     <x:String x:Key="Channel_Stop">Stop</x:String>
+
+    <!--  Update  -->
+    <x:String x:Key="Update_CheckUpdate">Check Update</x:String>
+    <x:String x:Key="Update_CheckUpdateFailed">Check Update Failed</x:String>
+    <x:String x:Key="Update_ConfirmUpdate">Update</x:String>
+    <x:String x:Key="Update_NotUpdate">Don`t Update</x:String>
+    <x:String x:Key="Update_LastVersion">Latest Version</x:String>
+    <x:String x:Key="Update_FoundLastVersion">New Version</x:String>
+    <x:String x:Key="Update_AlreadyLastVersion">Already Latest</x:String>
+    <x:String x:Key="Update_UpdateToLastVersion">Update</x:String>
+    <x:String x:Key="Update_StopDownload">Stop Download</x:String>
+    <x:String x:Key="Update_StartDownload">Start Download</x:String>
+    <x:String x:Key="Update_InstallUpdate">Install</x:String>
+    <x:String x:Key="Update_InstallUpdateTip">Installing updates requires shutting down app. Continue?</x:String>
+    <x:String x:Key="Update_AllRelease">All Version</x:String>
 </ResourceDictionary>

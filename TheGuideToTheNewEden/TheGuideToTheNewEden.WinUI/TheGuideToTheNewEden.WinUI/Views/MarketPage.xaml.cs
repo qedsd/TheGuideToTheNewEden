@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if(e.Parameter is object[] ps)
+            if(e.Parameter is object[] ps && ps.Length > 0)
             {
                 ViewType((int)ps[0]);
             }

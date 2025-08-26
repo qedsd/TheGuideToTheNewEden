@@ -64,7 +64,8 @@
                         <Setter Property="Foreground" Value="{ThemeResource SecondaryForegroundBrush}" />
                     </Style>
                 </StackPanel.Resources>
-                <Button Padding="6,6" Style="{ThemeResource TransparentButton}">
+                <Button Padding="6,6" Style="{ThemeResource TransparentButton}"
+                        Click="VersionButton_Click">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="v" />
                         <TextBlock x:Name="VersionTextBlock" Text="3.0.0.0" />

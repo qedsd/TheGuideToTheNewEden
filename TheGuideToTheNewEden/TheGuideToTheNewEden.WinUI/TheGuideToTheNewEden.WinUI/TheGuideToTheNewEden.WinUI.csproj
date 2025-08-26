@@ -323,6 +323,7 @@
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
+    <None Remove="Views\UpdatePage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
   </ItemGroup>
@@ -340,7 +341,8 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageReference Include="DevWinUI" Version="8.9.0" />
+    <PackageReference Include="DevWinUI" Version="8.9.2" />
+    <PackageReference Include="DevWinUI.Controls" Version="8.9.2" />
     <PackageReference Include="FluentIcons.WinUI" Version="1.1.303" />
     <PackageReference Include="H.NotifyIcon" Version="2.3.0" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
@@ -613,6 +615,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\UpdatePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ChannelTranslationWinPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

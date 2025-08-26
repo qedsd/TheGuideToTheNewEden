@@ -161,6 +161,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             NavigateTo(typeof(MarketPage), values);
         }
 
+        public void NavigateToUpdate()
+        {
+            NavigateTo(typeof(UpdatePage));
+        }
+
         public void Dispose()
         {
             GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
