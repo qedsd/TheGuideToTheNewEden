@@ -32,6 +32,10 @@ namespace TheGuideToTheNewEden.Core.Models
         public int Jumps { get; set; }
 
         public List<IntelShipContent> IntelShips { get; set; }
+        /// <summary>
+        /// 2025-08-24 预警者名称
+        /// </summary>
+        public string WarnerName { get; set; }
     }
 
     public class IntelShipContent
