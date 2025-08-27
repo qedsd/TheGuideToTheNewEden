@@ -164,7 +164,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                         IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
                                         IntelMap = IntelMap,
                                         Jumps = jumps,
-                                        IntelShips = shipContents
+                                        IntelShips = shipContents,
+                                        // 2025-08-24 增加预警者名称的赋值
+                                        WarnerName = chatContent.SpeakerName,
                                     };
                                 }
                                 else
