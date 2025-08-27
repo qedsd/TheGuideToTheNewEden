@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
 {
     public static class GithubHelper
     {
-        public static string Token {  get; set; }
+        private static string _token;
         public static async Task<Release> GetLastReleaseInfoAsync(string owner = "qedsd", string repo = "TheGuideToTheNewEden")
         {
             var releases = await GetReleaseInfoAsync(owner, repo);
@@ -19,9 +19,9 @@ namespace TheGuideToTheNewEden.Core.Helpers
         public static async Task<IReadOnlyList<Release>> GetReleaseInfoAsync(string owner = "qedsd", string repo = "TheGuideToTheNewEden")
         {
             var github = new GitHubClient(new ProductHeaderValue("GithubReleaseChecker"));
-            if (!string.IsNullOrEmpty(Token))
+            if (!string.IsNullOrEmpty(_token))
             {
-                var tokenAuth = new Credentials(Token);
+                var tokenAuth = new Credentials(_token);
                 github.Credentials = tokenAuth;
             }
             var releases = await github.Repository.Release.GetAll(owner, repo);
@@ -43,6 +43,9 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 }
             }
         }
-
+        public static void RegisterLicense(string token)
+        {
+            _token = token;
+        }
     }
 }

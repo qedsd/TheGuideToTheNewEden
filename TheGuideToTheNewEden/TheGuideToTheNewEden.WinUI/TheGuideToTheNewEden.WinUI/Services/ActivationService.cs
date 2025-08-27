@@ -31,6 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
             YDTranslationService.Init(GetYDTranslationLicense());
             Services.CharacterService.RegisterLicense(GetESILicense());
+            Core.Helpers.GithubHelper.RegisterLicense(GetGithubLicense());
         }
         private static string GetSyncfusionLicense()
         {
@@ -64,6 +65,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (System.IO.File.Exists(file))
             {
                 return System.IO.File.ReadAllLines(file);
+            }
+            else
+            {
+                //TODO:release
+                return null;
+            }
+        }
+        private static string GetGithubLicense()
+        {
+            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GithubLicense.txt");
+            if (System.IO.File.Exists(file))
+            {
+                return System.IO.File.ReadAllText(file);
             }
             else
             {
