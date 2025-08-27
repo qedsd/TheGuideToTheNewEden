@@ -43,7 +43,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             MenuList.ItemsSource = _navigationViewItems;
             _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             VersionTextBlock.Text = _version.ToString();
-            TryMoveUpdater();
             if (AutoUpdateService.Value)
             {
                 CheckUpdate();
@@ -128,30 +127,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(Name, ex.Message, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
             }
         }
-        private static void TryMoveUpdater()
+        private void VersionButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                //更新器默认放置于同目录下，需要移动到Updater文件夹下
-                var updaterFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory).Where(p => p.Contains(".Updater")).ToList();
-                if (updaterFiles.Any())
-                {
-                    string updaterFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater");
-                    if (!Directory.Exists(updaterFolder))
-                    {
-                        Directory.CreateDirectory(updaterFolder);
-                    }
-                    foreach (var file in updaterFiles)
-                    {
-                        System.IO.File.Copy(file, System.IO.Path.Combine(updaterFolder, System.IO.Path.GetFileName(file)), true);
-                        System.IO.File.Delete(file);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex.Message);
-            }
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
         }
         #endregion
 
@@ -166,10 +144,5 @@ namespace TheGuideToTheNewEden.WinUI.Views
             App.Close();
         });
         #endregion
-
-        private void VersionButton_Click(object sender, RoutedEventArgs e)
-        {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
-        }
     }
 }
