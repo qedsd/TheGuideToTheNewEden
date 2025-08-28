@@ -666,6 +666,14 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">Play</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">Pause</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">Pick file</x:String>
+    <x:String x:Key="TestSettingPage_HKCRProtocol">HKCR Protocol</x:String>
+    <x:String x:Key="TestSettingPage_HKCRProtocol_Desc">Registry used for browser authorization callback APP</x:String>
+    <x:String x:Key="TestSettingPage_RegistyProtocol">Write</x:String>
+    <x:String x:Key="TestSettingPage_RegistyProtocol_Success">Write successfully</x:String>
+    <x:String x:Key="TestSettingPage_ReadProtocol">Read</x:String>
+    <x:String x:Key="TestSettingPage_ReadProtocol_Success">Read successfull</x:String>
+    <x:String x:Key="TestSettingPage_DeleteProtocol">Delete</x:String>
+    <x:String x:Key="TestSettingPage_DeleteProtocol_Success">Delete successfull</x:String>
 
     <!--  LinksPage  -->
     <x:String x:Key="LinksPage_Name">Name</x:String>

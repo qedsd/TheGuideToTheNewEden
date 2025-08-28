@@ -162,7 +162,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if(!await characterData.RefreshTokenAsync())
                 {
                     HideWaiting();
-                    ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}（{Core.Log.GetLastError()}）");
+                    Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
+                    {
+                        ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}({Core.Log.GetLastError()})");
+                    });
                     return;
                 }
             }

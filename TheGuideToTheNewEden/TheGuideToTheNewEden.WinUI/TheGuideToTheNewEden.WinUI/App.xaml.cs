@@ -49,7 +49,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
-            notificationManager.Unregister();
+            notificationManager?.Unregister();
             ForegroundWindowService.Current.Stop();
         }
 

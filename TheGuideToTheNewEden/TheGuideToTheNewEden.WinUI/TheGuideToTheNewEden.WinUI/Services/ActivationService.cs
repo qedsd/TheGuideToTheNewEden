@@ -25,12 +25,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.RegionMapPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "RegionMap.json");
             CoreConfig.CapitalJumpShipInfoPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "CapitalJumpShipInfo.json");
             CoreConfig.InitDb();
+            Services.CharacterService.RegisterLicense(GetESILicense());
             CharacterService.Init();
             StructureService.Init();
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(GetSyncfusionLicense());
             ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
             YDTranslationService.Init(GetYDTranslationLicense());
-            Services.CharacterService.RegisterLicense(GetESILicense());
             Core.Helpers.GithubHelper.RegisterLicense(GetGithubLicense());
         }
         private static string GetSyncfusionLicense()

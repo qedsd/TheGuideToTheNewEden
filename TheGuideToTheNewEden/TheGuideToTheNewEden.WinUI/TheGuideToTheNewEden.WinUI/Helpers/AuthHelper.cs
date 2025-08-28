@@ -41,6 +41,20 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 return false;
             }
         }
+        public static string ReadProtocol()
+        {
+            return Registry.GetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3\\shell\\open\\command", null, null) as string;
+        }
+        public static void WriteProtocol()
+        {
+            string newValue = $"\"{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TheGuideToTheNewEden.exe")}\"%1\"";
+            Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3", "URL Protocol", "");
+            Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3\\shell\\open\\command", null, newValue);
+        }
+        public static void DeleteProtocol()
+        {
+            Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3\\shell\\open\\command", null, null);
+        }
         public static async Task<string> WaitingAuthAsync(CancellationToken token)
         {
             _eventWaitHandle ??= new EventWaitHandle(false, EventResetMode.AutoReset, AuthEventName);
@@ -66,7 +80,6 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
             }
             _eventWaitHandle?.Reset();
-            task.Dispose();
             App.SingleInstanceHelper.Activated -= SingleInstanceHelper_Activated;
             return null;
         }

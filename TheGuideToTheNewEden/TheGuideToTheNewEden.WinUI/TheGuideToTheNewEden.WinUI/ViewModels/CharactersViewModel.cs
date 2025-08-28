@@ -130,9 +130,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             var cs = Characters.Take(Characters.Count - 1).ToList();
             CharactersCount = Characters.Count - 1;
-            TotalSP = cs.Sum(p => p.Skill.TotalSp).ToString("N0");
+            TotalSP = cs.Where(p=>p.Skill != null).Sum(p => p.Skill.TotalSp).ToString("N0");
             TotalISK = cs.Sum(p => p.CharacterWallet).ToString("N2");
-            TotalLP = cs.Sum(p => p.LoyaltyPoints.Sum(p2=>p2.LoyaltyPoints)).ToString("N0");
+            TotalLP = cs.Where(p => p.LoyaltyPoints != null).Sum(p => p.LoyaltyPoints.Sum(p2=>p2.LoyaltyPoints)).ToString("N0");
         }
     }
 }

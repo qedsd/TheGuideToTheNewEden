@@ -667,6 +667,14 @@
     <x:String x:Key="TestSettingPage_MediaPlayer_Play">播放</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</x:String>
     <x:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</x:String>
+    <x:String x:Key="TestSettingPage_HKCRProtocol">HKCR注册表</x:String>
+    <x:String x:Key="TestSettingPage_HKCRProtocol_Desc">用于浏览器授权回调APP用的注册表</x:String>
+    <x:String x:Key="TestSettingPage_RegistyProtocol">写入注册表</x:String>
+    <x:String x:Key="TestSettingPage_RegistyProtocol_Success">写入成功</x:String>
+    <x:String x:Key="TestSettingPage_ReadProtocol">读取注册表</x:String>
+    <x:String x:Key="TestSettingPage_ReadProtocol_Success">读取成功</x:String>
+    <x:String x:Key="TestSettingPage_DeleteProtocol">删除注册表</x:String>
+    <x:String x:Key="TestSettingPage_DeleteProtocol_Success">删除成功</x:String>
 
     <!--  LinksPage  -->
     <x:String x:Key="LinksPage_Name">名字</x:String>

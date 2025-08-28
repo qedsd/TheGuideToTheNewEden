@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.WinUI.Notifications;
 using Microsoft.Windows.AppNotifications;
 using TheGuideToTheNewEden.WinUI.Dialogs;
 using System.Text;
+using TheGuideToTheNewEden.WinUI.Services;
 
 
 namespace TheGuideToTheNewEden.WinUI.Views.Settings
@@ -114,6 +115,45 @@ namespace TheGuideToTheNewEden.WinUI.Views.Settings
             catch(Exception ex)
             {
                 ShowDialog("Error", ex.Message + "\n\r" + Helpers.ResourcesHelper.GetString("General_TryNotAdmin"));
+            }
+        }
+
+        private void Button_ReadProtocol_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProtocolValueTextBlock.Text = Helpers.AuthHelper.ReadProtocol();
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("TestSettingPage_ReadProtocol_Success"), Controls.InfoBarControl.InfoType.Success, false);
+            }
+            catch(Exception ex)
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, ex.Message, Controls.InfoBarControl.InfoType.Error, false);
+            }
+        }
+
+        private void Button_RegistyProtocol_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.AuthHelper.WriteProtocol();
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("TestSettingPage_RegistyProtocol_Success"), Controls.InfoBarControl.InfoType.Success, false);
+            }
+            catch (Exception ex)
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, ex.Message, Controls.InfoBarControl.InfoType.Error, false);
+            }
+        }
+
+        private void Button_DeleteProtocol_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.AuthHelper.DeleteProtocol();
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("TestSettingPage_DeleteProtocol_Success"), Controls.InfoBarControl.InfoType.Success, false);
+            }
+            catch (Exception ex)
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, ex.Message, Controls.InfoBarControl.InfoType.Error, false);
             }
         }
     }
