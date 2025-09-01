@@ -208,8 +208,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         {
             if (Setting != null)
             {
-                IgnoreWords = Setting.IgnoreWords?.Split(',');
-                ClearWords = Setting.ClearWords?.Split(',');
+                // 2025-08-28 为免繁琐的大小写关键词设置，希望对于忽视预警关键词与解除预警关键词的判断不区分大小写，将忽视预警关键词与解除预警关键词全部转换为小写
+                IgnoreWords = Setting.IgnoreWords?.Split(',').Select(word => word.ToLower()).ToArray();
+                ClearWords = Setting.ClearWords?.Split(',').Select(word => word.ToLower()).ToArray();
             }
         }
         private string[] IgnoreWords;
@@ -222,7 +223,8 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in IgnoreWords)
                     {
-                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w))
+                        // 2025-08-28 忽视预警关键词的判断不区分大小写，将聊天消息内容转换为小写后判断
+                        if (!string.IsNullOrWhiteSpace(w) && content.Content.ToLower().Contains(w))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Ignore; break;
                         }
@@ -232,7 +234,8 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in ClearWords)
                     {
-                        if (content.Content.Contains(w))
+                        // 2025-08-28 解除预警关键词的判断不区分大小写，将聊天消息内容转换为小写后判断
+                        if (content.Content.ToLower().Contains(w))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Clear; break;
                         }
