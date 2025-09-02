@@ -39,7 +39,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainPage_Loaded;
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(NavPanel,ContentFrame, Loading, InfoBar);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(NavPanel,ContentFrame, Loading, InfoBar, SelecteFromNavigateTo);
             MenuList.ItemsSource = _navigationViewItems;
             _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             VersionTextBlock.Text = _version.ToString();
@@ -144,5 +144,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
             App.Close();
         });
         #endregion
+
+        public void SelecteFromNavigateTo(Type type)
+        {
+            MenuList.SelectionChanged -= MenuList_SelectionChanged;
+            MenuList.SelectedItem = _navigationViewItems.FirstOrDefault(p=>p.Type == type);
+            MenuList.SelectionChanged += MenuList_SelectionChanged;
+        }
     }
 }

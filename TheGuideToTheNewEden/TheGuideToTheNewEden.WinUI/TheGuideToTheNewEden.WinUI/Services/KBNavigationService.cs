@@ -55,6 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header)
         {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToZKB();
             var statistic = await GetEntityStatisticAsync(id, entityType);
             if (statistic != null)
             {

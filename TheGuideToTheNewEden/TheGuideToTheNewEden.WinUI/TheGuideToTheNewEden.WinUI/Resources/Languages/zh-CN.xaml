@@ -20,6 +20,7 @@
     <x:String x:Key="ChannelMonitorPage">频道监控</x:String>
     <x:String x:Key="SettingPage">设置</x:String>
     <x:String x:Key="ZKBHomePage">Zkillboard</x:String>
+    <x:String x:Key="KillStreamPage">ZKB主页</x:String>
     <x:String x:Key="DatabasePage">数据库</x:String>
     <x:String x:Key="MapPage">星图</x:String>
     <x:String x:Key="ChannelScanPage">频道统计</x:String>

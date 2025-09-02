@@ -21,17 +21,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private Dictionary<string, string> _loadingPages;
         private string _currentPage;
         private InfoBarControl _infoBarControl;
+        private Action<Type> _navigateToCallback;
         public void Init()
         {
             _pages = new Dictionary<string, Views.IPage>();
             _loadingPages = new Dictionary<string, string>();
         }
-        public void Init(FrameworkElement navPanel, Frame frame, LoadingControl loadingControl, InfoBarControl infoBarControl)
+        public void Init(FrameworkElement navPanel, Frame frame, LoadingControl loadingControl, InfoBarControl infoBarControl, Action<Type> navigateToCallback)
         {
             _navPanel = navPanel;
             _frame = frame;
             _LoadingControl = loadingControl;
             _infoBarControl = infoBarControl;
+            _navigateToCallback = navigateToCallback;
         }
 
         public void NavigateTo(Type content, params object[] values)
@@ -39,7 +41,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (content == null) return;
             _frame.Navigate(content, values);
             _currentPage = content.Name;
-
+            if(_frame.Content is IPage page)
+            {
+                _pages.Add(content.Name, page);
+            }
             if (_loadingPages.TryGetValue(content.Name, out string loadingContent))//要切换显示的页面还处于加载中，需要还原状态
             {
                 _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
@@ -159,11 +164,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             Helpers.WindowHelper.MainWindow.Activate();
             NavigateTo(typeof(MarketPage), values);
+            _navigateToCallback?.Invoke(typeof(MarketPage));
         }
 
         public void NavigateToUpdate()
         {
             NavigateTo(typeof(UpdatePage));
+            _navigateToCallback?.Invoke(typeof(UpdatePage));
+        }
+
+        public void NavigateToZKB()
+        {
+            NavigateTo(typeof(ZKBHomePage));
+            _navigateToCallback?.Invoke(typeof(ZKBHomePage));
         }
 
         public void Dispose()
