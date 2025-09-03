@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _currentPage = content.Name;
             if(_frame.Content is IPage page)
             {
-                _pages.Add(content.Name, page);
+                _pages.TryAdd(content.Name, page);
             }
             if (_loadingPages.TryGetValue(content.Name, out string loadingContent))//要切换显示的页面还处于加载中，需要还原状态
             {
@@ -212,6 +212,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {"ScalperPage","BusinessPage" },
             {"ShoppingCartPage","BusinessPage" },
             {"ShoppingRecordPage","BusinessPage" },
+            {"KillStreamPage","ZKBHomePage" },
         };
     }
 }

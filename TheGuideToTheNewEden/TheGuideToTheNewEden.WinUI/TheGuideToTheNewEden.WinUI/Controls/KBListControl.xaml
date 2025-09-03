@@ -23,6 +23,7 @@
             AllowSorting="False"
             AutoExpandGroups="True"
             AutoGenerateColumns="False"
+            BorderThickness="0"
             ColumnWidthMode="Star"
             GridLinesVisibility="Horizontal"
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"

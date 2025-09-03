@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private Services.KBNavigationService _kbNavigationService;
         public KillStreamPage()
         {
+            _kbNavigationService = ClientServiceHelper.GetRequiredService<KBNavigationService>();
             this.InitializeComponent();
             Loaded += KillStreamPage_Loaded;
         }

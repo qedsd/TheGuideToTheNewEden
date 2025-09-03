@@ -178,7 +178,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (channelIntel == null)
             {
-                ShowError("请选择角色");
+                ShowError(Helpers.ResourcesHelper.GetString("General_CharacterUnselected"));
                 return false;
             }
             try

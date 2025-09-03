@@ -21,6 +21,7 @@
     <x:String x:Key="SettingPage">Setting</x:String>
     <x:String x:Key="ZKBHomePage">Zkillboard</x:String>
     <x:String x:Key="KillStreamPage">ZKB Home</x:String>
+    <x:String x:Key="ZKBKillStreamPage">ZKB Home</x:String>
     <x:String x:Key="DatabasePage">Database</x:String>
     <x:String x:Key="MapPage">Map</x:String>
     <x:String x:Key="ChannelScanPage">Channel Scan</x:String>
