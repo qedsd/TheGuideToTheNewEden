@@ -80,6 +80,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                     newContent.Important = true;
                                     newContent.IntelType = result.IntelType;
                                     newContent.IntelShips = result.IntelShips;
+                                    newContent.SpeakerName = result.SpeakerName;
                                 }
                             }
                             Contents.AddRange(newContents);

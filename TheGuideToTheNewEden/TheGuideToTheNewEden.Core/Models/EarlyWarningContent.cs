@@ -32,6 +32,8 @@ namespace TheGuideToTheNewEden.Core.Models
         public int Jumps { get; set; }
 
         public List<IntelShipContent> IntelShips { get; set; }
+        public string SpeakerName { get; set; }
+
     }
 
     public class IntelShipContent
