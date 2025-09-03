@@ -221,7 +221,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in IgnoreWords)
                     {
-                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w))
+                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w, StringComparison.OrdinalIgnoreCase))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Ignore; break;
                         }
@@ -231,7 +231,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in ClearWords)
                     {
-                        if (content.Content.Contains(w))
+                        if (content.Content.Contains(w, StringComparison.OrdinalIgnoreCase))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Clear; break;
                         }
