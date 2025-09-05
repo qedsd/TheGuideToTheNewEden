@@ -327,7 +327,7 @@
     <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
     <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
     <x:String x:Key="BusinessPage_HistoryShopping">记录</x:String>
-    <x:String x:Key="BusinessPage_Setting">设置</x:String>
+    <x:String x:Key="BusinessPage_AdvancedSetting">进阶设置</x:String>
     <x:String x:Key="BusinessPage_FilterList">排除列表</x:String>
     <x:String x:Key="BusinessPage_SourceMarket">源市场</x:String>
     <x:String x:Key="BusinessPage_DestinationMarket">目的市场</x:String>
@@ -373,6 +373,7 @@
     <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">过滤源市场无卖单的物品</x:String>
     <x:String x:Key="BusinessPage_GetOrders">获取订单</x:String>
     <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
+    <x:String x:Key="BusinessPage_TargetItems">目标物品</x:String>
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>

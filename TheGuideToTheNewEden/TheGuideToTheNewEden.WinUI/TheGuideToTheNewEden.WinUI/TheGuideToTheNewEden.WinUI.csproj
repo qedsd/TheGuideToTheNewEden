@@ -225,6 +225,7 @@
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
     <None Remove="Controls\ChannelTranslationResultControl.xaml" />
+    <None Remove="Controls\CheckBoxControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
@@ -357,6 +358,7 @@
     <PackageReference Include="Syncfusion.Editors.WinUI" Version="30.1.41" />
     <PackageReference Include="Syncfusion.Grid.WinUI" Version="30.1.41" />
     <PackageReference Include="Syncfusion.Sliders.WinUI" Version="30.1.41" />
+    <PackageReference Include="Syncfusion.TreeView.WinUI" Version="30.2.7" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.1.4" />
     <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.1.4" />
@@ -481,6 +483,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\ChannelTranslationResultControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\CheckBoxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">
