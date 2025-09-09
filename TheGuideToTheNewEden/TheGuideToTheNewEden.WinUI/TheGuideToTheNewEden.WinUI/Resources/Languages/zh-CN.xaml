@@ -336,6 +336,23 @@
     <x:String x:Key="BusinessPage_PriceType">价格类型</x:String>
     <x:String x:Key="BusinessPage_HistoryDay">历史价格统计天数</x:String>
     <x:String x:Key="BusinessPage_PriceScale">价格缩放系数</x:String>
+    <x:String x:Key="BusinessPage_Analyzing">分析中</x:String>
+    <x:String x:Key="BusinessPage_Analysed">分析完成</x:String>
+    <x:String x:Key="BusinessPage_NoOrder">请先获取订单</x:String>
+    <x:String x:Key="BusinessPage_GettingOrder">获取订单中</x:String>
+    <x:String x:Key="BusinessPage_UnselectedSourceMarket">请选择源市场</x:String>
+    <x:String x:Key="BusinessPage_UnselectedDestinationMarket">请选择目的市场</x:String>
+    <x:String x:Key="BusinessPage_UnselectedTargetType">请选择物品类型</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketOrder">获取源市场订单中</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketOrder">获取目的市场订单中</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketHistyory">获取源市场订单历史中</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketHistyory">获取目的市场订单历史中</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketOrderFalied">获取源市场订单失败</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketOrderFalied">获取目的市场订单失败</x:String>
+    <x:String x:Key="BusinessPage_MatchinOorderHistory">匹配订单历史中</x:String>
+    <x:String x:Key="BusinessPage_GotOrder">已获取到{0}个有效物品订单(耗时：{1}分钟  错误：{2}  异常：{3}) 无历史记录：{4}(源市场) + {5}(目的市场)</x:String>
+    <x:String x:Key="BusinessPage_GetOrderFailed">获取订单失败</x:String>
+    <x:String x:Key="BusinessPage_RemovedItem">已移除{0}个物品</x:String>
 
     <x:String x:Key="BusinessPage_SellTop5">卖单前5%最低价格订单平均价格</x:String>
     <x:String x:Key="BusinessPage_SellAvailable">卖单实际数量的相应价格</x:String>

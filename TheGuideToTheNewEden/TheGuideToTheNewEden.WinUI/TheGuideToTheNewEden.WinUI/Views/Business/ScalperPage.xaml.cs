@@ -31,14 +31,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             Loaded -= ScalperPage_Loaded;
             await VM.Init();
-            if (VM.SelectedInvMarketGroups != null)
-            {
-                foreach (var group in VM.SelectedInvMarketGroups)
-                {
-                    ComboBox_SelectedGroup.SelectedItems.Add(group);
-                }
-            }
-            ComboBox_SelectedGroup.SelectionChanged += SfComboBox_SelectionChanged;
         }
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
@@ -99,24 +91,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             {
                 var types = ListView_FilterTypes.SelectedItems.Select(p=> p as Core.DBModels.InvType).ToList();
                 VM.RemoveFilterTypes(types);
-            }
-        }
-
-        private void SfComboBox_SelectionChanged(object sender, Syncfusion.UI.Xaml.Editors.ComboBoxSelectionChangedEventArgs e)
-        {
-            if(e.AddedItems.NotNullOrEmpty())
-            {
-                foreach(var item in e.AddedItems)
-                {
-                    VM.SelectedInvMarketGroups.Add(item as Core.DBModels.InvMarketGroup);
-                }
-            }
-            if (e.RemovedItems.NotNullOrEmpty())
-            {
-                foreach (var item in e.RemovedItems)
-                {
-                    VM.SelectedInvMarketGroups.Remove(item as Core.DBModels.InvMarketGroup);
-                }
             }
         }
     }

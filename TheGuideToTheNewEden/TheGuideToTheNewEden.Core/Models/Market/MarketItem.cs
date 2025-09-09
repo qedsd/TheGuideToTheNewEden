@@ -62,6 +62,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             {
                 if(SetProperty(ref _selected, value))
                 {
+                    SelectedChanged?.Invoke(this, value);
                     ParentGroup?.UpdateStatusFromChild();
                     UpdateChildStatus();
                 }
@@ -107,5 +108,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
                 _lock = false;
             }
         }
+
+        public event EventHandler<bool?> SelectedChanged;
     }
 }

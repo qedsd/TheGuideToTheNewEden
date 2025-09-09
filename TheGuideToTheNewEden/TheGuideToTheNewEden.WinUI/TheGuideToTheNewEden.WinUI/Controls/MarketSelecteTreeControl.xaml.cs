@@ -22,13 +22,20 @@ using TheGuideToTheNewEden.Core.Extensions;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Models;
+using Dm.util;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class MarketSelecteTreeControl : UserControl
     {
+        /// <summary>
+        /// 所有物品的id字典，不包含分类
+        /// </summary>
         private Dictionary<int, SelectableMarketItem> _marketItemsDict;
         private List<SelectableMarketItem> _marketItems;
+        /// <summary>
+        /// 所有物品，不包含分类
+        /// </summary>
         private List<SelectableMarketItem> _marketTypes;
         private List<InvType> _types;
         public MarketSelecteTreeControl()
@@ -83,6 +90,27 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             TreeView_Types.ItemsSource = rootGroup;
             _marketItems = rootGroup;
+            foreach(var marketType in _marketTypes)
+            {
+                marketType.SelectedChanged += MarketType_SelectedChanged;
+            }
+        }
+
+        private void MarketType_SelectedChanged(object sender, bool? e)
+        {
+            if(_stopSelectedChanged) return;
+            var item = sender as SelectableMarketItem;
+            if(item?.IsType == true)
+            {
+                if (e == true)
+                {
+                    SelectedItems.Add(item.Id);
+                }
+                else
+                {
+                    SelectedItems.Remove(item.Id);
+                }
+            }
             
         }
 
@@ -122,5 +150,45 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             var item = e.ClickedItem as SelectableMarketItem;
             item.Selected = !item.Selected;
         }
+
+        private bool _stopSelectedChanged = false;
+        private void SetSelectedItems(List<int> types)
+        {
+            if(types != null)
+            {
+                _stopSelectedChanged = true;
+                foreach (var type in types)
+                {
+                    if(_marketItemsDict.TryGetValue(type, out var item))
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        Core.Log.Error($"MarketSelecteTreeControl: Unknow type of {type}");
+                    }
+                }
+                _stopSelectedChanged = false;
+            }
+        }
+
+        #region dep
+        public static readonly DependencyProperty SelectedItemsProperty
+           = DependencyProperty.Register(
+               nameof(SelectedItems),
+               typeof(List<int>),
+               typeof(MarketSelecteTreeControl),
+               new PropertyMetadata(new List<int>(), new PropertyChangedCallback(SelectedItemsPropertyChanged)));
+
+        public List<int> SelectedItems
+        {
+            get => (List<int>)GetValue(SelectedItemsProperty);
+            set => SetValue(SelectedItemsProperty, value);
+        }
+        private static void SelectedItemsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as MarketSelecteTreeControl).SetSelectedItems(e.NewValue as List<int>);
+        }
+        #endregion
     }
 }

@@ -39,6 +39,8 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             get => marketGroups; set => SetProperty(ref marketGroups, value);
         }
+
+        public int[] MarketTypes { get; set; }
         #endregion
 
         #region 买入卖出价格

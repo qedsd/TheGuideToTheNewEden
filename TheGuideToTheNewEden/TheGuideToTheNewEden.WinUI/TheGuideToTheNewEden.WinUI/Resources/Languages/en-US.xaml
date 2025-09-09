@@ -335,6 +335,23 @@
     <x:String x:Key="BusinessPage_PriceType">Price Type</x:String>
     <x:String x:Key="BusinessPage_HistoryDay">Days Of History</x:String>
     <x:String x:Key="BusinessPage_PriceScale">Price Scaling Factor</x:String>
+    <x:String x:Key="BusinessPage_Analyzing">Analyzing</x:String>
+    <x:String x:Key="BusinessPage_Analysed">Analysis completed</x:String>
+    <x:String x:Key="BusinessPage_NoOrder">Please get the order first</x:String>
+    <x:String x:Key="BusinessPage_GettingOrder">Getting order...</x:String>
+    <x:String x:Key="BusinessPage_UnselectedSourceMarket">Please select the source market</x:String>
+    <x:String x:Key="BusinessPage_UnselectedDestinationMarket">Please select the target market</x:String>
+    <x:String x:Key="BusinessPage_UnselectedTargetType">Please select type</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketOrder">Getting the source market order</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketOrder">Getting the target market order</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketHistyory">Getting the order history of the source market</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketHistyory">Obtain the order history of the target market</x:String>
+    <x:String x:Key="BusinessPage_GettingSourceMarketOrderFalied">Failed to get the source market order</x:String>
+    <x:String x:Key="BusinessPage_GettingTargetMarketOrderFalied">Failed to get the target market order</x:String>
+    <x:String x:Key="BusinessPage_MatchinOorderHistory">Matchin oorder history</x:String>
+    <x:String x:Key="BusinessPage_GotOrder">{0} valid item order has been obtained(Duration：{1}minute  Error：{2}  Warning：{3}) No history：{4}(Source market) + {5}(Target market)</x:String>
+    <x:String x:Key="BusinessPage_GetOrderFailed">Failed to get the order</x:String>
+    <x:String x:Key="BusinessPage_RemovedItem">{0} item has been removed</x:String>
 
     <x:String x:Key="BusinessPage_SellTop5">The average price of the lowest price order in the top 5% of sales orders</x:String>
     <x:String x:Key="BusinessPage_SellAvailable">The price of the actual quantity of the sales order</x:String>

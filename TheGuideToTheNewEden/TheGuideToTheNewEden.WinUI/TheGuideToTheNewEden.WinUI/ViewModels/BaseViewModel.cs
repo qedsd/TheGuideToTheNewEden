@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -83,6 +84,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public void SetWindow(IWindow window)
         {
             _window = window;
+        }
+
+        public void ExecuteUIAction(Action action)
+        {
+            Window.DispatcherQueue.SafelyTryEnqueue(action);
         }
     }
 }
