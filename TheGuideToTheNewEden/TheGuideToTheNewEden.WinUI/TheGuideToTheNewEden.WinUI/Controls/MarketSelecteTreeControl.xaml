@@ -41,6 +41,7 @@
                                                 Padding="28,8,0,8"
                                                 VerticalAlignment="Center"
                                                 Text="{Binding Name}" />
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding Id}" />
                                         </Grid>
                                     </DataTemplate>
                                 </TreeViewItem.ContentTemplate>
