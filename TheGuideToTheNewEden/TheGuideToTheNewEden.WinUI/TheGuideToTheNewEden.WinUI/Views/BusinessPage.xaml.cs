@@ -27,13 +27,13 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void ScalperPage_OnAddShoppingItem(List<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items);
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage",$"已添加{items.Count}个物品到购物车", Controls.InfoBarControl.InfoType.Success, true);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedShoppingItem"), 1), Controls.InfoBarControl.InfoType.Success, true);
         }
 
         private void ShoppingRecordPage_OnAddShoppingItems(IEnumerable<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items.ToList());
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage",$"已添加 {items.Count()}个物品到购物车", Controls.InfoBarControl.InfoType.Success, true);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedShoppingItem"), items.Count()), Controls.InfoBarControl.InfoType.Success, true);
         }
 
         private void CharacterOrderPage_OnAddToFilterListItemsChanged(List<Core.Models.Market.Order> orders)
@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 var groups = orders.GroupBy(p => p.TypeId).ToList();
                 var types = groups.Select(p => p.First().InvType).ToList();
                 ScalperPage.AddToFilter(types);
-                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("Navigation.BusinessPage","已添加{orders.GroupBy(p => p.TypeId).Count()}个物品到过滤列表", Controls.InfoBarControl.InfoType.Success,true);
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedToFilterLis"), orders.Count), Controls.InfoBarControl.InfoType.Success,true);
             }
         }
 

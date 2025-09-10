@@ -352,6 +352,8 @@
     <x:String x:Key="BusinessPage_GotOrder">{0} valid item order has been obtained(Duration：{1}minute  Error：{2}  Warning：{3}) No history：{4}(Source market) + {5}(Target market)</x:String>
     <x:String x:Key="BusinessPage_GetOrderFailed">Failed to get the order</x:String>
     <x:String x:Key="BusinessPage_RemovedItem">{0} item has been removed</x:String>
+    <x:String x:Key="BusinessPage_AddedShoppingItem">{0} items have been added to the cart</x:String>
+    <x:String x:Key="BusinessPage_AddedToFilterLis">{0} items added to scalper exclusion list</x:String>
 
     <x:String x:Key="BusinessPage_SellTop5">The average price of the lowest price order in the top 5% of sales orders</x:String>
     <x:String x:Key="BusinessPage_SellAvailable">The price of the actual quantity of the sales order</x:String>

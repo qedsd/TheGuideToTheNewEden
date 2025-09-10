@@ -353,6 +353,8 @@
     <x:String x:Key="BusinessPage_GotOrder">已获取到{0}个有效物品订单(耗时：{1}分钟  错误：{2}  异常：{3}) 无历史记录：{4}(源市场) + {5}(目的市场)</x:String>
     <x:String x:Key="BusinessPage_GetOrderFailed">获取订单失败</x:String>
     <x:String x:Key="BusinessPage_RemovedItem">已移除{0}个物品</x:String>
+    <x:String x:Key="BusinessPage_AddedShoppingItem">已添加{0}个物品到购物车</x:String>
+    <x:String x:Key="BusinessPage_AddedToFilterLis">已添加{0}个物品到倒货排除列表</x:String>
 
     <x:String x:Key="BusinessPage_SellTop5">卖单前5%最低价格订单平均价格</x:String>
     <x:String x:Key="BusinessPage_SellAvailable">卖单实际数量的相应价格</x:String>
