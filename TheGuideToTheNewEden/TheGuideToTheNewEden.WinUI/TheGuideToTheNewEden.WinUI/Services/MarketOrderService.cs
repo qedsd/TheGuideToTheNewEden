@@ -18,6 +18,9 @@ using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
+    /// <summary>
+    /// 市场相关ESI改为EVEStandard，EVEStandard自带限速及错误处理，更好提高速度及稳定性
+    /// </summary>
     public class MarketOrderService
     {
         private readonly static string NOTPAGE = "Requested page does not exist!";
