@@ -1,5 +1,9 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using ESI.NET.Models.Character;
+using EVEStandard;
+using EVEStandard.API;
+using EVEStandard.Models.API;
+using EVEStandard.Models.SSO;
 using Microsoft.UI.Xaml;
 using Newtonsoft.Json;
 using System;
@@ -33,9 +37,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private ESI.NET.EsiClient EsiClient;
+        private EVEStandard.EVEStandardAPI _esiClient;
         public MarketOrderService()
         {
             EsiClient = Core.Services.ESIService.GetDefaultEsi();
+            EVEStandard.Enumerations.DataSource dataSource = Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
+            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
         }
 
         /// <summary>
@@ -138,40 +145,24 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetLatestStructureOrdersAsync(long structureId, PageCallBackDelegate pageCallBack = null)
         {
-            var structure = Services.StructureService.GetStructure(structureId);
-            if(structure == null)
-            {
-                Core.Log.Error($"获取建筑订单时，未找到建筑{structureId}");
-                return null;
-            }
-            var character = CharacterService.GetCharacter(structure.CharacterId);
-            if (character == null)
-            {
-                Core.Log.Error($"获取建筑订单时，未能找到建筑{structureId}对应的角色{structure.CharacterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
-                {
-                    Core.Log.Error("获取建筑订单时，角色{structure.CharacterId}的Token已过期，尝试刷新失败");
-                    return null;
-                }
-            }
+            var authData = await GetAuthByStructureId(structureId);
+            var character = authData.Character;
+            var structure = authData.Structure;
             EsiClient.SetCharacterData(character);
+            var auth = CreateEVEStandardSSO(character);
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
             while (true)
             {
                 page++;
-                var resp = await EsiClient.Market.StructureOrders(structureId, page);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
+                if (resp != null && resp.Model != null)
                 {
                     pageCallBack?.Invoke(page, "Structure");
-                    if (resp.Data.Any())
+                    if (resp.Model.Any())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -183,14 +174,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    break;
                 }
             }
             if (orders.Any())
@@ -297,14 +281,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
             while (true)
             {
                 page++;
-                var resp = await EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
+                if (resp != null && resp.Model != null)
                 {
                     pageCallBack?.Invoke(page, "Region");
-                    if (resp.Data.NotNullOrEmpty())
+                    if (resp.Model.NotNullOrEmpty())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -316,14 +300,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    break;
                 }
             }
             if (orders.Any())
@@ -523,14 +500,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    var resp = await EsiClient.Universe.Structure(id);
-                    if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var authData = await GetAuthByStructureId(id);
+                    var character = authData.Character;
+                    var structure = authData.Structure;
+                    var auth = CreateEVEStandardSSO(character);
+                    var resp = await _esiClient.Universe.GetStructureInfoV2Async(auth, id);
+                    if (resp != null && resp.Model != null)
                     {
                         return new Core.Models.Universe.Structure()
                         {
                             Id = id,
-                            Name = resp.Data.Name,
-                            SolarSystemId = resp.Data.SolarSystemId
+                            Name = resp.Model.Name,
+                            SolarSystemId = resp.Model.SolarSystemId
                         };
                     }
                     else
@@ -584,21 +565,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return local;
                 }
             }
-            var resp = await EsiClient.Market.TypeHistoryInRegion(regionId, typeId);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            if (resp != null && resp.Model != null)
             {
                 if(!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
                 }
-                string json = JsonConvert.SerializeObject(resp.Data);
+                List<ESI.NET.Models.Market.Statistic> datas = resp.Model.DepthClone<List<ESI.NET.Models.Market.Statistic>>();
+                string json = JsonConvert.SerializeObject(datas);
                 File.WriteAllText(localFile, json);
-                return resp.Data;
+                return datas;
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                throw new Exception(resp?.Message);
+                throw new Exception();
             }
         }
         
@@ -729,27 +710,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId)
         {
-            var character = CharacterService.GetCharacter(characterId);
-            if (character == null)
+            var character = await GetCharacter(characterId);
+            var sso = CreateEVEStandardSSO(character);
+            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterV2Async(sso);
+            if (resp != null)
             {
-                Core.Log.Error($"{Helpers.ResourcesHelper.GetString("General_CharacterNotFound")}: {characterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
+                if (resp.Model.NotNullOrEmpty())
                 {
-                    Core.Log.Error(Helpers.ResourcesHelper.GetString("General_TokenExpiredAndRefrshFailed"));
-                    return null;
-                }
-            }
-            EsiClient.SetCharacterData(character);
-            var resp = await EsiClient.Market.CharacterOrders();
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                if (resp.Data.Any())
-                {
-                    var orders = resp.Data.Select(p => new Core.Models.Market.Order(p)).ToList();
+                    var orders = resp.Model.Select(p => new Core.Models.Market.Order(p)).ToList();
                     await SetOrderInfo(orders);
                     return orders;
                 }
@@ -760,8 +728,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                return null;
+                throw new Exception();
             }
         }
         /// <summary>
@@ -772,32 +739,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId)
         {
-            var character = CharacterService.GetCharacter(characterId);
-            if (character == null)
-            {
-                Core.Log.Error($"未找到角色{characterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
-                {
-                    Core.Log.Error("Token已过期，尝试刷新失败");
-                    return null;
-                }
-            }
-            EsiClient.SetCharacterData(character);
+            var autoData = await GetCharacter(characterId);
+            var sso = CreateEVEStandardSSO(autoData);
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 1;
             while (true)
             {
-                var resp = await EsiClient.Market.CorporationOrders(page++);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationV3Async(sso, autoData.CorporationID, page++);
+                if (resp != null)
                 {
-                    if (resp.Data.Any())
+                    if (resp.Model.NotNullOrEmpty())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -809,14 +763,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    throw new Exception();
                 }
             }
             if (orders.Any())
@@ -916,7 +863,65 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-
+        private async Task<(Core.Models.Universe.Structure Structure ,ESI.NET.Models.SSO.AuthorizedCharacterData Character)> GetAuthByStructureId(long structureId)
+        {
+            var structure = GetStructureSetting(structureId);
+            var character = await GetCharacter(structure.CharacterId);
+            return (structure,character);
+        }
+        private Core.Models.Universe.Structure GetStructureSetting(long structureId)
+        {
+            var structure = Services.StructureService.GetStructure(structureId);
+            if (structure == null)
+            {
+                throw new Exception($"获取建筑订单时，未找到建筑{structureId}");
+            }
+            else
+            {
+                return structure;
+            }
+        }
+        private async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> GetCharacter(int characterId)
+        {
+            var character = CharacterService.GetCharacter(characterId);
+            if (character == null)
+            {
+                throw new Exception($"{Helpers.ResourcesHelper.GetString("General_CharacterNotFound")}: {characterId}");
+            }
+            else
+            {
+                if (!character.IsTokenValid())
+                {
+                    if (!await character.RefreshTokenAsync())
+                    {
+                        Core.Log.Error(Helpers.ResourcesHelper.GetString("General_TokenExpiredAndRefrshFailed"));
+                        return null;
+                    }
+                }
+                return character;
+            }
+        }
+        private EVEStandard.Models.API.AuthDTO CreateEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
+        {
+            if(character != null)
+            {
+                return new AuthDTO
+                {
+                    AccessToken = new AccessTokenDetails
+                    {
+                        AccessToken = character.Token,
+                        ExpiresUtc = character.ExpiresOn,
+                        RefreshToken = character.RefreshToken
+                    },
+                    CharacterId = character.CharacterID,
+                    Scopes = character.Scopes,
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
         public delegate void PageCallBackDelegate(int page, string tag);
     }
 }

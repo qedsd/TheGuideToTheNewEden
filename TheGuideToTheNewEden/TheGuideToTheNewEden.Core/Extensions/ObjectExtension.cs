@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
@@ -43,22 +45,68 @@ namespace TheGuideToTheNewEden.Core.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <param name="target"></param>
-        public static void CopyFrom<T>(this object obj,T target)
+        public static void CopyFrom<T>(this object obj, T target, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance)
         {
-            var type = typeof(T);
-            foreach (var sourceProperty in type.GetProperties())
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (target == null) throw new ArgumentNullException(nameof(target));
+
+            var targetType = obj.GetType();
+            var sourceType = typeof(T);
+
+            // 复制属性
+            foreach (var sourceProperty in sourceType.GetProperties(bindingFlags))
             {
-                if(sourceProperty.CanWrite)
+                // 跳过索引器属性
+                if (sourceProperty.GetIndexParameters().Length > 0)
+                    continue;
+
+                var targetProperty = targetType.GetProperty(sourceProperty.Name, bindingFlags);
+
+                if (targetProperty != null &&
+                    targetProperty.CanWrite &&
+                    IsCompatibleType(targetProperty.PropertyType, sourceProperty.PropertyType))
                 {
-                    var targetProperty = type.GetProperty(sourceProperty.Name);
-                    targetProperty.SetValue(obj, sourceProperty.GetValue(target, null), null);
+                    try
+                    {
+                        var value = sourceProperty.GetValue(target, null);
+                        targetProperty.SetValue(obj, value, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        // 可以选择记录日志或忽略特定错误
+                        Debug.WriteLine($"Error copying property {sourceProperty.Name}: {ex.Message}");
+                    }
                 }
             }
-            foreach (var sourceField in type.GetFields())
+
+            // 复制字段
+            foreach (var sourceField in sourceType.GetFields(bindingFlags))
             {
-                var targetField = type.GetField(sourceField.Name);
-                targetField.SetValue(obj, sourceField.GetValue(target));
+                var targetField = targetType.GetField(sourceField.Name, bindingFlags);
+
+                if (targetField != null &&
+                    IsCompatibleType(targetField.FieldType, sourceField.FieldType))
+                {
+                    try
+                    {
+                        var value = sourceField.GetValue(target);
+                        targetField.SetValue(obj, value);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error copying field {sourceField.Name}: {ex.Message}");
+                    }
+                }
             }
+        }
+
+        private static bool IsCompatibleType(Type targetType, Type sourceType)
+        {
+            return targetType == sourceType ||
+                   targetType.IsAssignableFrom(sourceType) ||
+                   (targetType.IsGenericType &&
+                    targetType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+                    targetType.GetGenericArguments()[0] == sourceType);
         }
     }
 }

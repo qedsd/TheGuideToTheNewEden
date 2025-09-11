@@ -15,6 +15,24 @@ namespace TheGuideToTheNewEden.Core.Models.Market
             this.CopyFrom(order);
             RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
         }
+        public Order(EVEStandard.Models.MarketOrder order)
+        {
+            this.CopyFrom(order);
+            Price = (decimal)order.Price;
+            RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
+        }
+        public Order(EVEStandard.Models.CharacterMarketOrder order)
+        {
+            this.CopyFrom(order);
+            Price = (decimal)order.Price;
+            RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
+        }
+        public Order(EVEStandard.Models.CorporationMarketOrder order)
+        {
+            this.CopyFrom(order);
+            Price = (decimal)order.Price;
+            RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
+        }
         [JsonIgnore]
         public InvType InvType { get; set; }
         [JsonIgnore]
