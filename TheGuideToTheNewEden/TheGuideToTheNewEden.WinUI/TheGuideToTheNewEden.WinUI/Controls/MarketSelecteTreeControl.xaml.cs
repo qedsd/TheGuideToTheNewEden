@@ -32,7 +32,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         /// 所有物品的id字典，不包含分类
         /// </summary>
         private Dictionary<int, SelectableMarketItem> _marketItemsDict;
-        private List<SelectableMarketItem> _marketItems;
         /// <summary>
         /// 所有物品，不包含分类
         /// </summary>
@@ -89,7 +88,6 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 }
             }
             TreeView_Types.ItemsSource = rootGroup;
-            _marketItems = rootGroup;
             foreach(var marketType in _marketTypes)
             {
                 marketType.SelectedChanged += MarketType_SelectedChanged;

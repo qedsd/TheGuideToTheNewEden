@@ -10,6 +10,14 @@ namespace TheGuideToTheNewEden.Core.Models.Market
 {
     public class MarketItem:ObservableObject
     {
+        /// <summary>
+        /// 界面显示的ID
+        /// </summary>
+        public int RealId { get => IsType ? InvType.TypeID : InvMarketGroup.MarketGroupID; }
+
+        /// <summary>
+        /// 内部记录用的ID
+        /// </summary>
         public int Id { get => IsType ? InvType.TypeID : -InvMarketGroup.MarketGroupID; }
         public string Name
         {
