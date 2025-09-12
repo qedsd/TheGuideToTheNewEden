@@ -161,7 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
                 if (resp != null && resp.Model != null)
                 {
-                    pageCallBack?.Invoke(page, "Structure");
+                    pageCallBack?.Invoke(page, resp.MaxPages, "Structure");
                     if (resp.Model.Any())
                     {
                         orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
@@ -287,7 +287,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
                 if (resp != null && resp.Model != null)
                 {
-                    pageCallBack?.Invoke(page, "Region");
+                    pageCallBack?.Invoke(page, resp.MaxPages, "Region");
                     if (resp.Model.NotNullOrEmpty())
                     {
                         orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
@@ -630,7 +630,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Core.Log.Error(ex);
                 }
                 doneCount++;
-                pageCallBack?.Invoke(doneCount, "History");
+                pageCallBack?.Invoke(doneCount,typeIds.Count, "History");
                 if (statistics.NotNullOrEmpty())
                 {
                     dic.Add(id, statistics);
@@ -647,6 +647,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
         {
+            int totalCount = typeId.Count;
             int doneCount = 0;
             object locker = new object();
             async Task<List<Core.Models.Market.Statistic>> getHistory(int typeId)
@@ -664,7 +665,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 lock (locker)
                 {
                     doneCount++;
-                    pageCallBack?.Invoke(doneCount, "History");
+                    pageCallBack?.Invoke(doneCount, totalCount,"History");
                 }
                 if (statistics.NotNullOrEmpty())
                     return statistics.Select(p => new Core.Models.Market.Statistic(p, typeId)).ToList();
@@ -925,6 +926,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
-        public delegate void PageCallBackDelegate(int page, string tag);
+        public delegate void PageCallBackDelegate(int page,int totalPage, string tag);
     }
 }

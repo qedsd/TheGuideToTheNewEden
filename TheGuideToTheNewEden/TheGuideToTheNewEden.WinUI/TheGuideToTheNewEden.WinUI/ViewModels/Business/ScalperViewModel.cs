@@ -240,28 +240,28 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             itemDetailWindow = null;
         }
-        private void GetSourceOrdersPageCallBack(int page, string tag)
+        private void GetSourceOrdersPageCallBack(int page, int totalPage, string tag)
         {
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder")}:{page}");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder")}:{page}/{totalPage}");
             });
         }
-        private void GetDestinationOrdersPageCallBack(int page, string tag)
+        private void GetDestinationOrdersPageCallBack(int page, int totalPage, string tag)
         {
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder")}:{page}");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder")}:{page}/{totalPage}");
             });
         }
-        private void GetSourceHistoryPageCallBack(int page, string tag)
+        private void GetSourceHistoryPageCallBack(int page, int totalPage, string tag)
         {
             ExecuteUIAction(() =>
             {
                 ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory")}（{page}/{_typeCount}）");
             });
         }
-        private void GetDestinationHistoryPageCallBack(int page, string tag)
+        private void GetDestinationHistoryPageCallBack(int page, int totalPage, string tag)
         {
             ExecuteUIAction(() =>
             {
