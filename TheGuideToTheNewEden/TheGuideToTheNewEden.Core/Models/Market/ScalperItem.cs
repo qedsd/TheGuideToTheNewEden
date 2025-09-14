@@ -64,5 +64,10 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// 热力值
         /// </summary>
         public int HeatValue { get; set; }
+
+        /// <summary>
+        /// 目标销量体积
+        /// </summary>
+        public double TargetVolume { get => InvType.PackagedVolume * TargetSales; }
     }
 }

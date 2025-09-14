@@ -67,7 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             if(ShoppingItems.Any())
             {
                 ShoppingRecordService.Current.Add(ShoppingItems);
-                this.ShowSuccess("ÒÑ±£´æ");
+                this.ShowSuccess(Helpers.ResourcesHelper.GetString("General_SaveSuccess"));
             }
         }
 

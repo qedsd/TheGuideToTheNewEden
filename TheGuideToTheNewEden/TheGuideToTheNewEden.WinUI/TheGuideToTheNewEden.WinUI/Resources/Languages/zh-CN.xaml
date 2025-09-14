@@ -393,6 +393,7 @@
     <x:String x:Key="BusinessPage_GetOrders">获取订单</x:String>
     <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
     <x:String x:Key="BusinessPage_TargetItems">目标物品</x:String>
+    <x:String x:Key="BusinessPage_TargetVolume">目标销量体积</x:String>
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>

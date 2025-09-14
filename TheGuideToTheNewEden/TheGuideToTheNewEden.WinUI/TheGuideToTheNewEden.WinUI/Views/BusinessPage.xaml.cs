@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private void ScalperPage_OnAddShoppingItem(List<Core.Models.Market.ScalperShoppingItem> items)
         {
             ShoppingCartPage.AddItems(items);
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedShoppingItem"), 1), Controls.InfoBarControl.InfoType.Success, true);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedShoppingItem"), items.Count()), Controls.InfoBarControl.InfoType.Success, true);
         }
 
         private void ShoppingRecordPage_OnAddShoppingItems(IEnumerable<Core.Models.Market.ScalperShoppingItem> items)

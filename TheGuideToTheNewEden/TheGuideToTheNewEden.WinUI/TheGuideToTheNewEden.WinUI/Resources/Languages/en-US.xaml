@@ -391,6 +391,7 @@
     <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">Filter out items with no sell orders in the source market</x:String>
     <x:String x:Key="BusinessPage_GetOrders">Get Orders</x:String>
     <x:String x:Key="BusinessPage_Analyse">Analyse Orders</x:String>
+    <x:String x:Key="BusinessPage_TargetVolume">Packaged volume from target sales volume</x:String>
 
     <x:String x:Key="BusinessPage_Type">Item</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">Source Market Buying Price</x:String>

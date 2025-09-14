@@ -21,7 +21,7 @@
             <ColumnDefinition Width="340" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <controls:CardControl Margin="0">
+        <controls:CardControl Padding="0">
             <controls:CardControl.Header />
             <controls:CardControl.Content>
                 <Pivot Margin="10,-50,0,0">
@@ -439,6 +439,10 @@
                         DisplayNumberFormat="N2"
                         HeaderText="{StaticResource BusinessPage_SellOrderSaturation}"
                         MappingName="Saturation" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource BusinessPage_TargetVolume}"
+                        MappingName="TargetVolume" />
                 </dataGrid:SfDataGrid.Columns>
                 <dataGrid:SfDataGrid.RecordContextFlyout>
                     <MenuFlyout>
