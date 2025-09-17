@@ -18,7 +18,8 @@
         </Grid.RowDefinitions>
         <TextBox
             x:Name="SearchTextBox"
-            Margin="8,0"
+            Margin="4,0"
+            PlaceholderText="{StaticResource MarketSelecteTreeControl_SearchType}"
             TextChanged="SearchTextBox_TextChanged" />
         <ScrollViewer
             x:Name="TreeList"
@@ -41,7 +42,11 @@
                                                 Padding="28,8,0,8"
                                                 VerticalAlignment="Center"
                                                 Text="{Binding Name}" />
-                                            <TextBlock HorizontalAlignment="Right" Text="{Binding RealId}" />
+                                            <TextBlock
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding RealId}"
+                                                ToolTipService.ToolTip="ID" />
                                         </Grid>
                                     </DataTemplate>
                                 </TreeViewItem.ContentTemplate>

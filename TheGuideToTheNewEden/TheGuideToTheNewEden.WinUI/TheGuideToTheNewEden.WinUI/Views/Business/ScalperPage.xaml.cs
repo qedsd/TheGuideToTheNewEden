@@ -27,10 +27,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Loaded += ScalperPage_Loaded;
         }
 
-        private async void ScalperPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScalperPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ScalperPage_Loaded;
-            await VM.Init();
+            VM.Init();
         }
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)

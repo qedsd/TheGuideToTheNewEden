@@ -108,8 +108,8 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 {
                     SelectedItems.Remove(item.Id);
                 }
+                SelectedItemsCount = SelectedItems.Count;
             }
-            
         }
 
         private void TreeView_Types_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
@@ -166,6 +166,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                         Core.Log.Error($"MarketSelecteTreeControl: Unknow type of {type}");
                     }
                 }
+                SelectedItemsCount = types.Count;
                 _stopSelectedChanged = false;
             }
         }
@@ -186,6 +187,19 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         private static void SelectedItemsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             (d as MarketSelecteTreeControl).SetSelectedItems(e.NewValue as List<int>);
+        }
+
+        public static readonly DependencyProperty SelectedItemsCountProperty
+           = DependencyProperty.Register(
+               nameof(SelectedItemsCount),
+               typeof(int),
+               typeof(MarketSelecteTreeControl),
+               new PropertyMetadata(0));
+
+        public int SelectedItemsCount
+        {
+            get => (int)GetValue(SelectedItemsCountProperty);
+            set => SetValue(SelectedItemsCountProperty, value);
         }
         #endregion
     }

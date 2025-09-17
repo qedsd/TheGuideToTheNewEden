@@ -394,6 +394,7 @@
     <x:String x:Key="BusinessPage_Analyse">分析推荐</x:String>
     <x:String x:Key="BusinessPage_TargetItems">目标物品</x:String>
     <x:String x:Key="BusinessPage_TargetVolume">目标销量体积</x:String>
+    <x:String x:Key="BusinessPage_TargetItemsCount">目标物品数量</x:String>
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
@@ -1286,4 +1287,6 @@
     <x:String x:Key="Update_InstallUpdateTip">安装更新需要关闭软件，是否继续</x:String>
     <x:String x:Key="Update_AllRelease">版本历史</x:String>
 
+    <!--  Update  -->
+    <x:String x:Key="MarketSelecteTreeControl_SearchType">搜索市场物品</x:String>
 </ResourceDictionary>

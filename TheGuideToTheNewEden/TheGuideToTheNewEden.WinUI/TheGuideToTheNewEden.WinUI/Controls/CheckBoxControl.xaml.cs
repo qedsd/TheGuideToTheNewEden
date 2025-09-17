@@ -15,6 +15,9 @@ using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {
+    /// <summary>
+    /// 封装CheckBox，CheckBox使用bool?绑定IsChecked会无法显示未知状态，但通过代码指定不会有这个问题
+    /// </summary>
     public sealed partial class CheckBoxControl : UserControl
     {
         public CheckBoxControl()

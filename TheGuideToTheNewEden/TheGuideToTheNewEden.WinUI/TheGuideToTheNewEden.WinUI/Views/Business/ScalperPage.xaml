@@ -24,13 +24,14 @@
         <controls:CardControl Padding="0">
             <controls:CardControl.Header />
             <controls:CardControl.Content>
-                <Pivot Margin="10,-50,0,0">
+                <Pivot Margin="0,-50,0,0" Padding="0">
                     <PivotItem>
                         <PivotItem.Header>
                             <TextBlock FontSize="14" Text="{StaticResource BusinessPage_BaseSetting}" />
                         </PivotItem.Header>
                         <Grid>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition />
                             </Grid.RowDefinitions>
@@ -75,10 +76,17 @@
                                     </Button.Flyout>
                                 </Button>
                             </Grid>
+                            <Grid Grid.Row="1" Margin="0,8">
+                                <TextBlock Text="{StaticResource BusinessPage_TargetItems}" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    Text="{x:Bind VM.TargetMarketTypesCount, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{StaticResource BusinessPage_TargetItemsCount}" />
+                            </Grid>
                             <controls:MarketSelecteTreeControl
-                                Grid.Row="1"
-                                Margin="0,8"
-                                SelectedItems="{x:Bind VM.TargetMarketTypes, Mode=TwoWay}" />
+                                Grid.Row="2"
+                                SelectedItems="{x:Bind VM.TargetMarketTypes, Mode=TwoWay}"
+                                SelectedItemsCount="{x:Bind VM.TargetMarketTypesCount, Mode=TwoWay}" />
                         </Grid>
                     </PivotItem>
                     <PivotItem>

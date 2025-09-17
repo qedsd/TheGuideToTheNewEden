@@ -392,6 +392,7 @@
     <x:String x:Key="BusinessPage_GetOrders">Get Orders</x:String>
     <x:String x:Key="BusinessPage_Analyse">Analyse Orders</x:String>
     <x:String x:Key="BusinessPage_TargetVolume">Packaged volume from target sales volume</x:String>
+    <x:String x:Key="BusinessPage_TargetItemsCount">Volume of target items</x:String>
 
     <x:String x:Key="BusinessPage_Type">Item</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">Source Market Buying Price</x:String>
@@ -1283,4 +1284,7 @@
     <x:String x:Key="Update_InstallUpdate">Install</x:String>
     <x:String x:Key="Update_InstallUpdateTip">Installing updates requires shutting down app. Continue?</x:String>
     <x:String x:Key="Update_AllRelease">All Version</x:String>
+
+    <!--  MarketSelecteTreeControl  -->
+    <x:String x:Key="MarketSelecteTreeControl_SearchType">Search for items in the market</x:String>
 </ResourceDictionary>
