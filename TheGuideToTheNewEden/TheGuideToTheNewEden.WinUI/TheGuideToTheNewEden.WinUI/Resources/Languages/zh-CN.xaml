@@ -28,6 +28,7 @@
     <x:String x:Key="ChannelMarketPage">频道查价</x:String>
     <x:String x:Key="ChannelTranslationPage">频道翻译</x:String>
     <x:String x:Key="UpdatePage">软件更新</x:String>
+    <x:String x:Key="Channel">频道</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>
@@ -1287,6 +1288,6 @@
     <x:String x:Key="Update_InstallUpdateTip">安装更新需要关闭软件，是否继续</x:String>
     <x:String x:Key="Update_AllRelease">版本历史</x:String>
 
-    <!--  Update  -->
+    <!--  MarketSelecteTreeControl  -->
     <x:String x:Key="MarketSelecteTreeControl_SearchType">搜索市场物品</x:String>
 </ResourceDictionary>

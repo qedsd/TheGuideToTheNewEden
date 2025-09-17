@@ -22,7 +22,7 @@
 
         <!--  工具栏  -->
         <StackPanel
-            Margin="2,-30,0,0"
+            Margin="2,0,0,0"
             Padding="4"
             VerticalAlignment="Top"
             Orientation="Horizontal">

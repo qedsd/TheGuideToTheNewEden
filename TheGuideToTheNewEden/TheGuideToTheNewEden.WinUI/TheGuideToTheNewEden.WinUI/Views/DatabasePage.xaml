@@ -64,7 +64,7 @@
             AllowResizingColumns="True"
             AllowSorting="True"
             AutoGenerateColumns="True"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            Background="{ThemeResource TransparentBackgroudBrush}"
             ColumnWidthMode="Auto"
             FrozenColumnsCount="2"
             GridLinesVisibility="Both"

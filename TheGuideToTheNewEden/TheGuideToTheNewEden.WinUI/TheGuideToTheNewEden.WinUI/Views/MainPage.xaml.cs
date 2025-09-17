@@ -17,21 +17,21 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views.Character;
 using TheGuideToTheNewEden.WinUI.Views.Map;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using NavigationViewItem = TheGuideToTheNewEden.WinUI.Models.NavigationViewItem;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class MainPage : UserControl
     {
         private string _version;
-        private List<NavigationViewItem> _navigationViewItems;
+        private readonly string _nameSpace;
         public MainPage()
         {
-            InitMenu();
+            _nameSpace = this.GetType().Namespace;
             Loaded += MainPage_Loaded;
             this.InitializeComponent();
         }
@@ -40,7 +40,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             Loaded -= MainPage_Loaded;
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(NavPanel,ContentFrame, Loading, InfoBar, SelecteFromNavigateTo);
-            MenuList.ItemsSource = _navigationViewItems;
+            HomeNavigationViewItem.IsSelected = true;
             _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             VersionTextBlock.Text = _version.ToString();
             if (AutoUpdateService.Value)
@@ -49,44 +49,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void InitMenu()
-        {
-            _navigationViewItems = new List<NavigationViewItem>();
-
-            _navigationViewItems.Add(new Models.NavigationViewItem(typeof(HomePage2)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(CharactersShellPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(MarketPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(BusinessPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(GamePreviewMgrPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelIntelPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMonitorPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelScanPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelMarketPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ChannelTranslationPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(GameLogMonitorPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(TranslationPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(DEDPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(MissionPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(WormholePage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(LinksPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(MapPage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(ZKBHomePage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(DatabasePage)));
-            _navigationViewItems.Add(new NavigationViewItem(typeof(SettingPage)));
-        }
-
         public void Dispose()
         {
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>()?.Dispose();
-        }
-
-        private void MenuList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var item = MenuList.SelectedItem as NavigationViewItem;
-            if (item != null)
-            {
-                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().NavigateTo(item.Type);
-            }
         }
 
         #region ¸üÐÂ
@@ -147,9 +112,73 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void SelecteFromNavigateTo(Type type)
         {
-            MenuList.SelectionChanged -= MenuList_SelectionChanged;
-            MenuList.SelectedItem = _navigationViewItems.FirstOrDefault(p=>p.Type == type);
-            MenuList.SelectionChanged += MenuList_SelectionChanged;
+            string targetFullName = type.FullName;
+            Microsoft.UI.Xaml.Controls.NavigationViewItem foundTargetItem(IList<object> items)
+            {
+                foreach (var menu in items)
+                {
+                    var item = menu as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+                    if (item.MenuItems.Count > 0)
+                    {
+                        var target = foundTargetItem(item.MenuItems);
+                        if (target != null)
+                        {
+                            return target;
+                        }
+                    }
+                    else if(item.Tag != null)
+                    {
+                        if(GetFullNameOfTag(item.Tag.ToString()) == targetFullName)
+                        {
+                            return item;
+                        }
+                    }
+                }
+                return null;
+            }
+            var targetItem = foundTargetItem(MenuList.MenuItems);
+            if (targetItem != null)
+            {
+                targetItem.IsSelected = true;
+            }
+        }
+        private string GetFullNameOfTag(string tag)
+        {
+            return $"{_nameSpace}.{tag}";
+        }
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.IsSettingsSelected)
+            {
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().NavigateTo(typeof(SettingPage));
+            }
+            else
+            {
+                var item = args.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+                if(item.Tag != null)
+                {
+                    string tag = item.Tag.ToString();
+                    if (!string.IsNullOrEmpty(tag))
+                    {
+                        string fullName = $"{this.GetType().Namespace}.{tag}";
+                        var type = Type.GetType(fullName);
+                        if (type != null)
+                        {
+                            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().NavigateTo(type);
+                        }
+                        else
+                        {
+                            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("MainPage", $"Unknown type: {fullName}", Controls.InfoBarControl.InfoType.Error, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void LogoButton_Click(object sender, RoutedEventArgs e)
+        {
+            MenuList.IsPaneOpen = !MenuList.IsPaneOpen;
+            NavPanel.Width = MenuList.IsPaneOpen ? MenuList.OpenPaneLength : MenuList.CompactPaneLength;
         }
     }
 }

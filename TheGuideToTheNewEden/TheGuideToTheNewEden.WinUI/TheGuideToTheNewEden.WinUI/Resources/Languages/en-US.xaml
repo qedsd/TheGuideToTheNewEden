@@ -27,6 +27,8 @@
     <x:String x:Key="ChannelScanPage">Channel Scan</x:String>
     <x:String x:Key="ChannelMarketPage">Channel Market</x:String>
     <x:String x:Key="ChannelTranslationPage">Channel Translation</x:String>
+    <x:String x:Key="UpdatePage">App Update</x:String>
+    <x:String x:Key="Channel">Channel</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>
