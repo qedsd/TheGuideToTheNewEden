@@ -59,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if(_lastRelease != null)
                 {
                     string curVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                    _isLatest = curVersion == _lastRelease.Version;
+                    _isLatest = new Version(curVersion) >= new Version(_lastRelease.Version);
                 }
                 return null;
             }
