@@ -16,12 +16,11 @@ using System.Text;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
-using TheGuideToTheNewEden.WinUI.Views.Character;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinUIEx;
 
-namespace TheGuideToTheNewEden.WinUI.Views
+namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class CharacterPage : Page, IPage, INotifyPropertyChanged
     {

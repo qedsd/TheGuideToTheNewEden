@@ -1,11 +1,11 @@
 ﻿<Page
-    x:Class="TheGuideToTheNewEden.WinUI.Views.CharactersPage"
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Character.CharactersPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:controls1="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sso="using:ESI.NET.Models.SSO"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"

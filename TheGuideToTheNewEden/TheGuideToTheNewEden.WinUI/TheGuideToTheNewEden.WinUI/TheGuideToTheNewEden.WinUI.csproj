@@ -863,4 +863,8 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Channel\" />
+  </ItemGroup>
 </Project>
