@@ -16,7 +16,7 @@
     <Grid
         Grid.Row="1"
         Margin="0,8,0,0"
-        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+        Background="{ThemeResource TransparentBackgroudBrush}"
         CornerRadius="4">
         <controls:KBListControl
             x:Name="KBListControl"

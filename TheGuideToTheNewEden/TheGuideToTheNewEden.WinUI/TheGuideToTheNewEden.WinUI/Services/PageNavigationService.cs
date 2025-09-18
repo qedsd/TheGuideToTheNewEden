@@ -9,6 +9,7 @@ using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views;
+using TheGuideToTheNewEden.WinUI.Views.KB;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {

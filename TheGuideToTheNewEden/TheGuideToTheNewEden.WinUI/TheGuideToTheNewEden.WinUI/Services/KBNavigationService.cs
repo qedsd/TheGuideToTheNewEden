@@ -19,12 +19,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class KBNavigationService
     {
-        private Page _homePage;
-        private Frame _contentFrame;
-        private Dictionary<long, object> _instances = new Dictionary<long, object>();
-        public void Init(Frame contentFrame)
+        private TabView _tabView;
+        private TabViewItem _homeTabViewItem;
+        private Dictionary<long, TabViewItem> _instances = new Dictionary<long, TabViewItem>();
+        public void Init(TabView tabView)
         {
-            _contentFrame = contentFrame;
+            _tabView = tabView;
         }
         public static async Task<EntityStatistic> GetEntityStatisticAsync(int id, ZKB.NET.EntityType entityType)
         {
@@ -61,13 +61,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    object content = null;
+                    TabViewItem content = null;
                     if (!_instances.TryGetValue(id, out content))
                     {
-                        content = new EntityStatistPage(statistic, this);//KBNavigationService懒得改成IOC了，就这样传吧
+                        content = new TabViewItem()
+                        {
+                            Content = new EntityStatistPage(statistic, this),//KBNavigationService懒得改成IOC了，就这样传吧
+                            Header = header,
+                            IsClosable = true,
+                            IsSelected = true,
+                            Tag = (long)id,
+                        };
                         _instances.Add(id, content);
+                        _tabView.TabItems.Add(content);
                     }
-                    _contentFrame.Content = content;
                     PageChanged?.Invoke(id, header);
                 });
             }
@@ -99,14 +106,22 @@ namespace TheGuideToTheNewEden.WinUI.Services
             Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 long id = info.SKBDetail.KillmailId;
-                object content = null;
+                string name = info.Victim == null ? id.ToString() : info.Victim.Name;
+                string header = $"KB-{name}";
+                TabViewItem content = null;
                 if (!_instances.TryGetValue(id, out content))
                 {
-                    content = new KBDetailPage(info);
+                    content = new TabViewItem()
+                    {
+                        Header = header,
+                        Content = new KBDetailPage(info),
+                        IsClosable = true,
+                        IsSelected = true,
+                        Tag = id,
+                    };
                     _instances.Add(id, content);
+                    _tabView.TabItems.Add(content);
                 }
-                string name = info.Victim == null ? id.ToString() : info.Victim.Name;
-                _contentFrame.Content = content;
                 PageChanged?.Invoke(id, $"KB-{name}");
             });
         }
@@ -116,23 +131,34 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 if (_instances.TryGetValue(id, out var content))
                 {
-                    _contentFrame.Content = content;
+                    content.IsSelected = true;
                 }
             });
         }
 
         public void NavigateToHome()
         {
-            if(_homePage == null)
+            if(_homeTabViewItem == null)
             {
-                _homePage = new KillStreamPage();
+                _homeTabViewItem = new TabViewItem()
+                {
+                    Header = Helpers.ResourcesHelper.GetString("ZKBHomePage_KillStream"),
+                    Content = new KillStreamPage(),
+                    IsSelected = true,
+                    IsClosable = false,
+                };
+                _tabView.TabItems.Add(_homeTabViewItem);
             }
-            _contentFrame.Content = _homePage;
+            _homeTabViewItem.IsSelected = true;
         }
 
         public void RemoveInstance(long id)
         {
-            _instances.Remove(id);
+            if (_instances.TryGetValue(id, out var content))
+            {
+                _tabView.TabItems.Remove(content);
+                _instances.Remove(id);
+            }
         }
 
         public delegate void KBPageDelegate(long id, string name);

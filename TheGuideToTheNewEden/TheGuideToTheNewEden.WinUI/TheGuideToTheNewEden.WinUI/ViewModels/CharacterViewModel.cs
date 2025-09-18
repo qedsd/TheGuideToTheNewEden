@@ -323,7 +323,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     _lp = 0;
                 }
                 _onlineStatus = onlineStatus;
-                if (!_onlineStatus.Online)
+                if (_onlineStatus != null && !_onlineStatus.Online)
                 {
                     var offLineDuration = DateTime.UtcNow - _onlineStatus.LastLogout;
                     if (offLineDuration.TotalDays > 365)

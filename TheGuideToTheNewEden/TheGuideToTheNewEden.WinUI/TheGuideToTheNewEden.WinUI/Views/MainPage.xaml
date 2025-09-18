@@ -160,7 +160,7 @@
                             <ic:FluentIcon Icon="Map" />
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
-                    <NavigationViewItem Content="{StaticResource ZKBHomePage}" Tag="ZKBHomePage">
+                    <NavigationViewItem Content="{StaticResource ZKBHomePage}" Tag="KB.ZKBHomePage">
                         <NavigationViewItem.Icon>
                             <ic:FluentIcon Icon="ScanObject" />
                         </NavigationViewItem.Icon>

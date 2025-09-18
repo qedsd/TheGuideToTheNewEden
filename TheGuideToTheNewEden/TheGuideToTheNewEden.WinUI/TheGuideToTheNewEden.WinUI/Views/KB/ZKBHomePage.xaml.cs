@@ -25,7 +25,7 @@ using System.Threading;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using CommunityToolkit.Labs.WinUI;
 
-namespace TheGuideToTheNewEden.WinUI.Views
+namespace TheGuideToTheNewEden.WinUI.Views.KB
 {
     public sealed partial class ZKBHomePage : Page, IPage
     {
@@ -33,48 +33,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.InitializeComponent();
             
-            ClientServiceHelper.GetRequiredService<KBNavigationService>().Init(ContentFrame);
-            ClientServiceHelper.GetRequiredService<KBNavigationService>().PageChanged += ZKBHomePage_PageChanged;
-            NavigationToken.Items.Add(new TokenItem()
-            {
-                Content = Helpers.ResourcesHelper.GetString("ZKB_KillStream"),
-                IsSelected = true,
-                Tag = -1L,
-            });
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().Init(KBTabView);
             ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
-            NavigationToken.SelectionChanged += NavigationToken_SelectionChanged;
-        }
-
-        private void ZKBHomePage_PageChanged(long e, string name)
-        {
-            var target = NavigationToken.Items.FirstOrDefault(p => (long)((p as FrameworkElement).Tag) == e);
-            if (target != null)
-            {
-                NavigationToken.SelectedItem = target;
-            }
-            else
-            {
-                var item = new TokenItem()
-                {
-                    Content = name,
-                    IsSelected = true,
-                    Tag = e,
-                    IsRemoveable = true
-                };
-                item.Removing += Item_Removing;
-                NavigationToken.Items.Add(item);
-            }
-        }
-
-        private void Item_Removing(object sender, TokenItemRemovingEventArgs e)
-        {
-            if(NavigationToken.SelectedItem as TokenItem == e.TokenItem)
-            {
-                //ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
-                (NavigationToken.Items[0] as TokenItem).IsSelected = true;
-            }
-            var id = (long)e.TokenItem.Tag;
-            ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance(id);
         }
 
         public void Close()
@@ -231,16 +191,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-        private void NavigationToken_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void KBTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
         {
-            var tag = ((sender as TokenView).SelectedItem as FrameworkElement)?.Tag;
-            if (tag != null && (long)tag != -1)
+            var item = args.Item as TabViewItem;
+            if (item != null)
             {
-                ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToInstance((long)tag);
-            }
-            else
-            {
-                ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToHome();
+                ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance((long)item.Tag);
             }
         }
     }

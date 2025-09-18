@@ -9,6 +9,7 @@
     xmlns:killstream="using:ZKB.NET.Models.KillStream"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
@@ -23,6 +24,7 @@
             AllowSorting="False"
             AutoExpandGroups="True"
             AutoGenerateColumns="False"
+            Background="Transparent"
             BorderThickness="0"
             ColumnWidthMode="Star"
             GridLinesVisibility="Horizontal"
