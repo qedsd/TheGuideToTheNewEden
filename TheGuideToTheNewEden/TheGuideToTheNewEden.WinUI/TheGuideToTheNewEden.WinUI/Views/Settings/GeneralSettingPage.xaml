@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.DataContext>
@@ -156,33 +157,6 @@
                         </Button.Content>
                     </Button>
                 </StackPanel>
-            </controls:ExpandableSettingControl>
-            <controls:ExpandableSettingControl Title="{StaticResource Setting_About_Title}">
-                <controls:ExpandableSettingControl.ExpandableContent>
-                    <RichTextBlock Margin="60,10">
-                        <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P1}" />
-                            <Run Text="{StaticResource Setting_About_P2}" />
-                            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
-                        </Paragraph>
-                        <Paragraph />
-                        <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P3}" />
-                            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
-                            <Run>。</Run>
-                        </Paragraph>
-                        <Paragraph />
-                        <Paragraph>
-                            <Run Text="{StaticResource Setting_About_P4}" />
-                            <Run FontWeight="Medium">QEDSD</Run>
-                            <Run>，</Run>
-                            <Run Text="{StaticResource Setting_About_P5}" />
-                            <Run FontWeight="Medium">784194289</Run>
-                            <Run>，</Run>
-                            <Run Text="{StaticResource Setting_About_P6}" />
-                        </Paragraph>
-                    </RichTextBlock>
-                </controls:ExpandableSettingControl.ExpandableContent>
             </controls:ExpandableSettingControl>
         </StackPanel>
     </ScrollViewer>

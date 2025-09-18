@@ -28,7 +28,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="60" />
                 <RowDefinition />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!--  标题  -->
             <StackPanel Margin="6,0,0,0" Orientation="Horizontal">
@@ -172,36 +171,6 @@
                     </NavigationViewItem>
                 </NavigationView.MenuItems>
             </NavigationView>
-            <!--  Footer  -->
-            <StackPanel
-                Grid.Row="2"
-                Margin="0,0,0,8"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                Visibility="{Binding ElementName=MenuList, Path=IsPaneOpen, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                <StackPanel.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="FontSize" Value="11" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="Foreground" Value="{ThemeResource SecondaryForegroundBrush}" />
-                    </Style>
-                </StackPanel.Resources>
-                <Button
-                    Padding="6,6"
-                    Click="VersionButton_Click"
-                    Style="{ThemeResource TransparentButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="v" />
-                        <TextBlock x:Name="VersionTextBlock" Text="3.0.0.0" />
-                    </StackPanel>
-                </Button>
-                <Button Padding="6,6" Style="{ThemeResource TransparentButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="by" />
-                        <TextBlock Text=" QEDSD" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
         </Grid>
         <!--  内容  -->
         <Border

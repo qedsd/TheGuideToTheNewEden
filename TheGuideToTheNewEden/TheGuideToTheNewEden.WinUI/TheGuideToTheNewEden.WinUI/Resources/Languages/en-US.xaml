@@ -30,7 +30,7 @@
     <x:String x:Key="UpdatePage">App Update</x:String>
     <x:String x:Key="Channel">Channel</x:String>
 
-    <!--  Setting  -->
+    <!--  Setting1  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>
     <x:String x:Key="Setting_NotAlwaysOnTop">The top display has been cancelled</x:String>
     <x:String x:Key="Setting_Theme_Description">Select which app theme to display</x:String>
@@ -440,13 +440,25 @@
     <x:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">When the market (including the channel market) obtains orders from the star region/system market, it does not obtain publicly available structure orders</x:String>
 
     <x:String x:Key="SettingPage_General">General</x:String>
+    <x:String x:Key="SettingPage_General_Desc">Language、App Theme、Game Server、Localized Database</x:String>
     <x:String x:Key="SettingPage_GameLog">Game Log</x:String>
+    <x:String x:Key="SettingPage_GameLog_Desc">Game Logs Path、Valid days、Number of kogs to display</x:String>
     <x:String x:Key="SettingPage_Structures">Structures</x:String>
+    <x:String x:Key="SettingPage_Structures_Desc">Manage Structures</x:String>
     <x:String x:Key="SettingPage_Market">Market</x:String>
+    <x:String x:Key="SettingPage_Market_Desc">Cache Time、ESI Thread Count、Clear Cache</x:String>
     <x:String x:Key="SettingPage_Test">Test</x:String>
+    <x:String x:Key="SettingPage_Test_Desc">Test System Notification、Sound Playback</x:String>
     <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
-    <x:String x:Key="SettingPage_KeyboardList">Hotkey Name List</x:String>
+    <x:String x:Key="SettingPage_ZKB_Desc">Zkb KillStream Filter</x:String>
+    <x:String x:Key="SettingPage_KeyboardList">Hotkey Names list</x:String>
+    <x:String x:Key="SettingPage_KeyboardList_Desc">View the keyboard Of game preview</x:String>
     <x:String x:Key="SettingPage_ESIScope">ESI Scope</x:String>
+    <x:String x:Key="SettingPage_ESIScope_Desc">ESI Scope filter</x:String>
+    <x:String x:Key="SettingPage_Update">App Update</x:String>
+    <x:String x:Key="SettingPage_Update_Desc">Check for Updates</x:String>
+    <x:String x:Key="SettingPage_About">About</x:String>
+    <x:String x:Key="SettingPage_About_Desc">About App</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">Tranquility</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">Serenity</x:String>

@@ -42,7 +42,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().Init(NavPanel,ContentFrame, Loading, InfoBar, SelecteFromNavigateTo);
             HomeNavigationViewItem.IsSelected = true;
             _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            VersionTextBlock.Text = _version.ToString();
             if (AutoUpdateService.Value)
             {
                 CheckUpdate();
@@ -97,10 +96,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(Name, ex.Message, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
             }
         }
-        private void VersionButton_Click(object sender, RoutedEventArgs e)
-        {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
-        }
         #endregion
 
         #region œµÕ≥Õ–≈Ã
@@ -117,6 +112,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void SelecteFromNavigateTo(Type type)
         {
+            if(type == typeof(SettingPage))
+            {
+                MenuList.SelectedItem = MenuList.SettingsItem;
+            }
             string targetFullName = type.FullName;
             Microsoft.UI.Xaml.Controls.NavigationViewItem foundTargetItem(IList<object> items)
             {

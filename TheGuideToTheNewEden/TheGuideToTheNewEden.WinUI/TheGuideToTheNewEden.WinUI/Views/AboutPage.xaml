@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RichTextBlock Margin="20,10">
+        <Paragraph>
+            <Run Text="{StaticResource Setting_About_P1}" />
+            <Run Text="{StaticResource Setting_About_P2}" />
+            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
+        </Paragraph>
+        <Paragraph />
+        <Paragraph>
+            <Run Text="{StaticResource Setting_About_P3}" />
+            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
+            <Run>。</Run>
+        </Paragraph>
+        <Paragraph />
+        <Paragraph>
+            <Run Text="{StaticResource Setting_About_P4}" />
+            <Run FontWeight="Medium">QEDSD</Run>
+            <Run>，</Run>
+            <Run Text="{StaticResource Setting_About_P5}" />
+            <Run FontWeight="Medium">784194289</Run>
+            <Run>，</Run>
+            <Run Text="{StaticResource Setting_About_P6}" />
+        </Paragraph>
+    </RichTextBlock>
+</Page>

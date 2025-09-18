@@ -170,8 +170,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void NavigateToUpdate()
         {
-            NavigateTo(typeof(UpdatePage));
-            _navigateToCallback?.Invoke(typeof(UpdatePage));
+            NavigateTo(typeof(SettingPage), "Update");
+            _navigateToCallback?.Invoke(typeof(SettingPage));
         }
 
         public void NavigateToZKB()

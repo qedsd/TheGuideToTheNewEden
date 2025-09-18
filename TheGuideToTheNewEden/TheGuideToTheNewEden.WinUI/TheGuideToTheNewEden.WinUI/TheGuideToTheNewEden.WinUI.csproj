@@ -259,6 +259,7 @@
     <None Remove="Resources\Languages\en-US\English.xaml" />
     <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
+    <None Remove="Views\AboutPage.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
     <None Remove="Views\Business\CharacterOrderPage.xaml" />
@@ -619,6 +620,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\AboutPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\UpdatePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

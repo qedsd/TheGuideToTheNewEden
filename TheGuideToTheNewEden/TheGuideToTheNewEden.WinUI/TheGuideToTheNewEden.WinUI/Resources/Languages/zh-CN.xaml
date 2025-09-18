@@ -441,13 +441,25 @@
     <x:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">市场（包括频道市场）获取星域/星系市场订单时，不获取公开的建筑订单</x:String>
 
     <x:String x:Key="SettingPage_General">一般</x:String>
+    <x:String x:Key="SettingPage_General_Desc">软件语言、主题颜色、服务器、数据库语言</x:String>
     <x:String x:Key="SettingPage_GameLog">游戏日志</x:String>
+    <x:String x:Key="SettingPage_GameLog_Desc">日志路径、有效天数、显示数量</x:String>
     <x:String x:Key="SettingPage_Structures">玩家建筑</x:String>
+    <x:String x:Key="SettingPage_Structures_Desc">管理玩家建筑</x:String>
     <x:String x:Key="SettingPage_Market">市场</x:String>
+    <x:String x:Key="SettingPage_Market_Desc">缓存时间、查询线程、清除缓存</x:String>
     <x:String x:Key="SettingPage_Test">测试</x:String>
+    <x:String x:Key="SettingPage_Test_Desc">测试系统通知、声音播放</x:String>
     <x:String x:Key="SettingPage_ZKB">Zkillboard</x:String>
+    <x:String x:Key="SettingPage_ZKB_Desc">ZKB流过滤</x:String>
     <x:String x:Key="SettingPage_KeyboardList">按键列表</x:String>
-    <x:String x:Key="SettingPage_ESIScope">ESI权限</x:String>
+    <x:String x:Key="SettingPage_KeyboardList_Desc">查看多开预览激活快捷键</x:String>
+    <x:String x:Key="SettingPage_ESIScope">权限选择</x:String>
+    <x:String x:Key="SettingPage_ESIScope_Desc">设置ESI权限</x:String>
+    <x:String x:Key="SettingPage_Update">软件更新</x:String>
+    <x:String x:Key="SettingPage_Update_Desc">检查软件更新</x:String>
+    <x:String x:Key="SettingPage_About">关于</x:String>
+    <x:String x:Key="SettingPage_About_Desc">软件说明</x:String>
 
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>

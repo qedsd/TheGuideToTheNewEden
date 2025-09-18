@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:setting="using:TheGuideToTheNewEden.WinUI.ViewModels.Setting"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <setting:ESIScopeSettingViewModel x:Name="VM" />
