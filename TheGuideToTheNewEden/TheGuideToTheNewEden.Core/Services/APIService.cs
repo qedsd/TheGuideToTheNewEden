@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheGuideToTheNewEden.Core.Services.Api
+namespace TheGuideToTheNewEden.Core.Services
 {
     public static partial class APIService
     {

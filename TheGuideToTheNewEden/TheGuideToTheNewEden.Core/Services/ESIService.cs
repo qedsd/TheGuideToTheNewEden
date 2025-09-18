@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using TheGuideToTheNewEden.Core.Services.Api;
 using Newtonsoft.Json;
 using ESI.NET.Models.SSO;
 using System.Linq;
