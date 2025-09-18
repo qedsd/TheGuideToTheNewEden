@@ -7,19 +7,29 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using TheGuideToTheNewEden.Core.Helpers;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class AppUpdateService
     {
-        public class AppRelease
+        public class AppRelease: ObservableObject
         {
-            public string Name {  get; set; }
-            public string Url {  get; set; }
-            public string Version { get; set; }
-            public string Description {  get; set; }
-            public string Date { get; set; }
+            private string _name;
+            public string Name { get => _name; set => SetProperty(ref _name, value); }
+
+            private string _url;
+            public string Url { get => _url; set => SetProperty(ref _url, value); }
+
+            private string _version;
+            public string Version { get => _version; set => SetProperty(ref _version, value); }
+
+            private string _description;
+            public string Description { get => _description; set => SetProperty(ref _description, value); }
+
+            private string _date;
+            public string Date { get => _date; set => SetProperty(ref _date, value); }
         }
         private List<AppRelease> _releases;
         private AppRelease _lastRelease;
@@ -32,6 +42,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 _releases = new List<AppRelease>();
                 foreach (var release in releases)
                 {
+                    if (release.Prerelease)
+                        continue;
                     var targetAsset = release.Assets.Where(p => p.Name.EndsWith(".exe")).FirstOrDefault();
                     targetAsset ??= release.Assets.FirstOrDefault();
                     _releases.Add(new AppRelease()

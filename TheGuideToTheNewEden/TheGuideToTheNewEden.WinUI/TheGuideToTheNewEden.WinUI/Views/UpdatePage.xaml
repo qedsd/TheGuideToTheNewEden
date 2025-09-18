@@ -53,7 +53,7 @@
                                 </StackPanel.Resources>
                                 <TextBlock Text="{StaticResource Update_LastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
                                 <TextBlock Text="{StaticResource Update_FoundLastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                                <TextBlock Margin="8,0,0,0" Text="{x:Bind VM.LastRelease.Version}" />
+                                <TextBlock Margin="8,0,0,0" Text="{x:Bind VM.LastRelease.Version, Mode=OneWay}" />
                             </StackPanel>
                             <Grid Grid.Column="1">
                                 <Button
@@ -97,7 +97,7 @@
                         <TextBlock
                             Grid.Row="1"
                             IsTextSelectionEnabled="True"
-                            Text="{x:Bind VM.LastRelease.Description}"
+                            Text="{x:Bind VM.LastRelease.Description, Mode=OneWay}"
                             TextWrapping="Wrap" />
                     </Grid>
                 </Border>
@@ -121,7 +121,7 @@
                 </StackPanel>
                 <ListView
                     Grid.Row="2"
-                    ItemsSource="{x:Bind VM.Releases}"
+                    ItemsSource="{x:Bind VM.Releases, Mode=OneWay}"
                     SelectionMode="None"
                     Style="{StaticResource StretchListView}">
                     <ListView.ItemTemplate>
