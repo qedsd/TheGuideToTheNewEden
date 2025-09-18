@@ -910,6 +910,7 @@
     <x:String x:Key="EarlyWarningPage_Jumps">跳</x:String>
 
     <!--  CharacterPage  -->
+    <x:String x:Key="CharacterPage_All">全部角色</x:String>
     <x:String x:Key="CharacterPage_Add">添加角色</x:String>
     <x:String x:Key="CharacterPage_AddSuccess">添加成功</x:String>
     <x:String x:Key="CharacterPage_RegistyProtocol">注册授权服务失败，请使用管理员模式运行</x:String>

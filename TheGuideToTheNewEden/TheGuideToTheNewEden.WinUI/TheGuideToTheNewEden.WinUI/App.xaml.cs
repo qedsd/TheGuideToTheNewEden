@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
@@ -22,7 +23,14 @@ namespace TheGuideToTheNewEden.WinUI
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
             UnhandledException += App_UnhandledException;//UI线程
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             Log.Init();
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            e.SetObserved();
+            Log.Error(e.Exception);
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)

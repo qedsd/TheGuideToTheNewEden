@@ -909,6 +909,7 @@
     <x:String x:Key="EarlyWarningPage_Jumps">Jump</x:String>
 
     <!--  CharacterPage  -->
+    <x:String x:Key="CharacterPage_All">All</x:String>
     <x:String x:Key="CharacterPage_Add">Add Character</x:String>
     <x:String x:Key="CharacterPage_AddSuccess">Added successfully</x:String>
     <x:String x:Key="CharacterPage_RegistyProtocol">Registration authorization service failed, please run in administrator mode</x:String>

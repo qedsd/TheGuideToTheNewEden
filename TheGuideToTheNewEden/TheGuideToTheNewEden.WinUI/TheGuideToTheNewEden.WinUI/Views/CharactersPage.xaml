@@ -15,7 +15,7 @@
     <Page.DataContext>
         <viewmodels:CharactersViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="8">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />

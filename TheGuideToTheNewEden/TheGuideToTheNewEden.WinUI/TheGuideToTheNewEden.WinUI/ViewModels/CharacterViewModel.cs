@@ -156,10 +156,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private async Task GetBaseInfoAsync()
         {
-            var characterData = SelectedCharacter;
+            var characterData = _selectedCharacter;
             if (!characterData.IsTokenValid())
             {
-                if(!await characterData.RefreshTokenAsync())
+                if (!await characterData.RefreshTokenAsync())
                 {
                     HideWaiting();
                     Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>

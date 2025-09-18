@@ -52,9 +52,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public CharactersViewModel()
         {
-            Init();
         }
-        private async void Init()
+        public async void Init()
         {
             try
             {

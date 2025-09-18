@@ -424,7 +424,7 @@
     <SolidColorBrush x:Key="YellowBrush" Color="{StaticResource YellowColor}" />
     <SolidColorBrush x:Key="GrayBrush" Color="{StaticResource GrayColor}" />
     <Style x:Key="InfoCardGrid" TargetType="Grid">
-        <Setter Property="Background" Value="{ThemeResource SecondaryBackgroudBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TransparentBackgroudBrush}" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Padding" Value="32,24" />
         <Setter Property="Margin" Value="0,0,0,12" />

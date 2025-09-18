@@ -10,16 +10,10 @@
     Background="Transparent"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
-    <Grid Margin="0,0,0,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <labs:TokenView
-            x:Name="NavigationToken"
-            Margin="8,0,0,0"
-            IsWrapped="True"
-            SelectionMode="Single" />
-        <Frame x:Name="ContentFrame" Grid.Row="1" />
-    </Grid>
+    <TabView
+        x:Name="CharactersTabView"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        IsAddTabButtonVisible="False"
+        TabCloseRequested="CharactersTabView_TabCloseRequested" />
 </Page>

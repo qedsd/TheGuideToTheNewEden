@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
+using TheGuideToTheNewEden.WinUI.ViewModels;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -11,40 +12,62 @@ namespace TheGuideToTheNewEden.WinUI.Services
     {
         private Type _homeType;
         private Type _contentType;
-        private Frame _frame;
-        private object _currentParameter;
-        private Dictionary<object, object> _instances = new Dictionary<object, object>();
-        public void Init(Type homeType,Type contentType, Frame frame)
+        private TabView _tabView;
+        private TabViewItem _homeTabViewItem;
+
+        /// <summary>
+        /// key = CharacterViewModel
+        /// value = TabViewItem
+        /// </summary>
+        private Dictionary<object, TabViewItem> _instances = new Dictionary<object, TabViewItem>();
+        public void Init(Type homeType,Type contentType, TabView tabView)
         {
             _homeType = homeType;
             _contentType = contentType;
-            _frame = frame;
+            _tabView = tabView;
         }
         public void NavigateTo(object parameter)
         {
-            if (_currentParameter != parameter)
+            TabViewItem instance = null;
+            if (!_instances.TryGetValue(parameter, out instance))
             {
-                _currentParameter = parameter;
-                object instance = null;
-                if(!_instances.TryGetValue(parameter, out instance))
+                var contentPage = Activator.CreateInstance(_contentType, parameter);
+                instance = new TabViewItem()
                 {
-                    instance = Activator.CreateInstance(_contentType, parameter);
-                    _instances.Add(parameter, instance);
-                }
-                _frame.Content = instance;
-                Navigated?.Invoke(this, parameter);
+                    Header = (parameter as CharacterViewModel)?.SelectedCharacter.CharacterName,
+                    Content = contentPage,
+                    IsSelected = true,
+                    IsClosable = true,
+                    Tag = parameter
+                };
+                _tabView.TabItems.Add(instance);
+                _instances.Add(parameter, instance);
             }
+            instance.IsSelected = true;
+            Navigated?.Invoke(this, parameter);
         }
         public void NavigateToHome()
         {
-            _currentParameter = null;
-            _frame.Navigate(_homeType);
+            if(_homeTabViewItem == null)
+            {
+                _homeTabViewItem = new TabViewItem()
+                {
+                    Header = Helpers.ResourcesHelper.GetString("CharacterPage_All"),
+                    Content = Activator.CreateInstance(_homeType),
+                    IsSelected = true,
+                    IsClosable = false,
+                };
+                _tabView.TabItems.Add(_homeTabViewItem);
+            }
+            _homeTabViewItem.IsSelected = true;
         }
 
         public void RemoveInstance(object parameter)
         {
-            if (_instances.Remove(parameter))
+            if(_instances.TryGetValue(parameter, out var instance))
             {
+                _tabView.TabItems?.Remove(instance);
+                _instances.Remove(parameter);
                 Removed?.Invoke(this, parameter);
             }
         }

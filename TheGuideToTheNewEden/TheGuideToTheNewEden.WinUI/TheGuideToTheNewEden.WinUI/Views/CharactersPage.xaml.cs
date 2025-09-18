@@ -28,8 +28,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public CharactersPage()
         {
             this.InitializeComponent();
+            Loaded += CharactersPage_Loaded;
         }
-        
+
+        private void CharactersPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= CharactersPage_Loaded;
+            VM.Init();
+        }
 
         private void GridView_ItemClick(object sender, ItemClickEventArgs e)
         {
