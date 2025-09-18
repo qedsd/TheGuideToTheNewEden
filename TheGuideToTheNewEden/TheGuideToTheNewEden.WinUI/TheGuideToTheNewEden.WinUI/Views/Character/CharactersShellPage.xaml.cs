@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using TheGuideToTheNewEden.WinUI.Services;
-using CommunityToolkit.Labs.WinUI;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Collections.ObjectModel;

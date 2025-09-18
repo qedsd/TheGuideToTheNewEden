@@ -23,7 +23,6 @@ using System.Xml.Linq;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Threading;
 using TheGuideToTheNewEden.Core.Models.Universe;
-using CommunityToolkit.Labs.WinUI;
 
 namespace TheGuideToTheNewEden.WinUI.Views.KB
 {

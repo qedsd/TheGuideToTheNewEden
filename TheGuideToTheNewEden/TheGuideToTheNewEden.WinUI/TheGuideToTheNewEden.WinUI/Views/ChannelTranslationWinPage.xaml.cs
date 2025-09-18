@@ -24,6 +24,7 @@ using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using TheGuideToTheNewEden.Core.Extensions;
+using CommunityToolkit.WinUI.UI;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
