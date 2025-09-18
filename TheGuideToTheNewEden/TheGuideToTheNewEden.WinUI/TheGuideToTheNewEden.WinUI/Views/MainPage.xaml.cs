@@ -47,6 +47,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
             {
                 CheckUpdate();
             }
+            var settingItem = MenuList.SettingsItem as NavigationViewItem;//使用本地化语言显示Setting项
+            if (settingItem != null)
+            {
+                settingItem.Content = Helpers.ResourcesHelper.GetString("General_Setting");
+            }
         }
 
         public void Dispose()

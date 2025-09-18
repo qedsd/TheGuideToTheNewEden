@@ -11,6 +11,8 @@ using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Linq;
 using TheGuideToTheNewEden.Core;
+using DevWinUI;
+using Microsoft.UI.Xaml.Controls;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -98,6 +100,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     case 0: _= LanguageSelectorService.SetLangAsync("zh-CN"); break;
                     case 1: _ = LanguageSelectorService.SetLangAsync("en-US"); break;
                 }
+                ApplyLang();
             }
         }
 
@@ -223,5 +226,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, ex.Message, Controls.InfoBarControl.InfoType.Error, false);
             }
         });
+
+        private async void ApplyLang()
+        {
+            WindowedContentDialog dialog = new()
+            {
+                Title = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Title"),
+                Content = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Description"),
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Yes"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_No"),
+                IsSecondaryButtonEnabled = false,
+                OwnerWindow = Helpers.WindowHelper.MainWindow,
+            };
+            if (await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            {
+                App.Close();
+            }
+        }
     }
 }

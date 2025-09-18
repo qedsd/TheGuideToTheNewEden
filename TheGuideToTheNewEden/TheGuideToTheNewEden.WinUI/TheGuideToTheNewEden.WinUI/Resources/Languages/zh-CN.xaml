@@ -46,6 +46,10 @@
     <x:String x:Key="Setting_Backdrop_CustomPicture_OverlapColor">覆盖图层颜色</x:String>
     <x:String x:Key="Setting_UILanguage_Description">修改语言后，需要重启应用程序</x:String>
     <x:String x:Key="Setting_UILanguage_Title">语言</x:String>
+    <x:String x:Key="Setting_UILanguage_Restart_Title">Restart the application</x:String>
+    <x:String x:Key="Setting_UILanguage_Restart_Description">After modifying the language, it is necessary to restart the application. Do you want to shut down the software immediately?</x:String>
+    <x:String x:Key="Setting_UILanguage_Restart_Yes">Yes</x:String>
+    <x:String x:Key="Setting_UILanguage_Restart_No">No</x:String>
     <x:String x:Key="Setting_LocalDb_Description">本地化物品数据库显示语言，修改后需要重启软件</x:String>
     <x:String x:Key="Setting_LocalDb_Title">本地化数据库语言</x:String>
     <x:String x:Key="Setting_GameServer_Description">修改使用的游戏服务器后，部分功能可能需要重启生效</x:String>

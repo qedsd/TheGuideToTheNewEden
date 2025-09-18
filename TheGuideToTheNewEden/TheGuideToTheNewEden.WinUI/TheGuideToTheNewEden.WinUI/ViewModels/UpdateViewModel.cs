@@ -109,6 +109,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
                 CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
                 IsSecondaryButtonEnabled = false,
+                OwnerWindow = Helpers.WindowHelper.MainWindow,
             };
             if(await dialog.ShowAsync(true) == ContentDialogResult.Primary)
             {
