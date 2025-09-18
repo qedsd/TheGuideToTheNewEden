@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:settings="using:TheGuideToTheNewEden.WinUI.Views.Settings"
@@ -12,54 +13,97 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <Pivot Margin="0,-16,0,0">
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_General}" />
-            </PivotItem.Header>
-            <settings:GeneralSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_GameLog}" />
-            </PivotItem.Header>
-            <settings:GameLogSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Structures}" />
-            </PivotItem.Header>
-            <settings:StructuresSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Market}" />
-            </PivotItem.Header>
-            <settings:MarketSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_ZKB}" />
-            </PivotItem.Header>
-            <settings:ZKBSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_ESIScope}" />
-            </PivotItem.Header>
-            <settings:ESIScopeSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_Test}" />
-            </PivotItem.Header>
-            <settings:TestSettingPage />
-        </PivotItem>
-        <PivotItem>
-            <PivotItem.Header>
-                <TextBlock FontSize="14" Text="{StaticResource SettingPage_KeyboardList}" />
-            </PivotItem.Header>
-            <settings:KeyboardListPage />
-        </PivotItem>
-    </Pivot>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Button
+                Click="FirstSetting_Clicked"
+                Content="{StaticResource SettingPage}"
+                FontSize="24"
+                Style="{StaticResource TransparentButton}" />
+            <StackPanel
+                x:Name="SecondSetting"
+                Orientation="Horizontal"
+                Visibility="Collapsed">
+                <ic:FluentIcon
+                    Icon="ChevronRight"
+                    IconSize="Resizable"
+                    IconVariant="Regular" />
+                <Button
+                    Content="{x:Bind SecondSettingTitle, Mode=OneWay}"
+                    FontSize="24"
+                    Style="{StaticResource TransparentButton}" />
+            </StackPanel>
+        </StackPanel>
+        <ListView
+            x:Name="SettingList"
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            ItemsSource="{x:Bind SettingItems}"
+            SelectionMode="None"
+            Style="{StaticResource StretchListView}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Button
+                        Margin="0,0,0,4"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Click="SettingButton_Click">
+                        <Border
+                            Padding="16,4"
+                            Background="{ThemeResource TransparentBackgroudBrush}"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter
+                                    Grid.Column="0"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10,5,10,5"
+                                    VerticalAlignment="Center"
+                                    Content="{Binding Icon, Mode=OneWay}" />
+
+                                <Grid
+                                    Grid.Column="1"
+                                    Margin="12"
+                                    VerticalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock FontSize="14" Text="{Binding Title}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        FontSize="12"
+                                        Text="{Binding Description}" />
+                                </Grid>
+                                <ic:FluentIcon
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Icon="ChevronRight"
+                                    IconSize="Resizable"
+                                    IconVariant="Regular" />
+                            </Grid>
+                        </Border>
+                    </Button>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Frame
+            x:Name="SettingFrame"
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            Background="Transparent"
+            Visibility="Collapsed" />
+    </Grid>
 </Page>
