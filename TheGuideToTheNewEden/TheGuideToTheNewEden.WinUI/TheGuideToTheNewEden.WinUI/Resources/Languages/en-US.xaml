@@ -399,6 +399,8 @@
     <x:String x:Key="BusinessPage_Analyse">Analyse Orders</x:String>
     <x:String x:Key="BusinessPage_TargetVolume">Packaged volume from target sales volume</x:String>
     <x:String x:Key="BusinessPage_TargetItemsCount">Volume of target items</x:String>
+    <x:String x:Key="BusinessPage_IskPerJump">ISK/Jump</x:String>
+    <x:String x:Key="BusinessPage_IskPerVolume">ISK/Volume</x:String>
 
     <x:String x:Key="BusinessPage_Type">Item</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">Source Market Buying Price</x:String>

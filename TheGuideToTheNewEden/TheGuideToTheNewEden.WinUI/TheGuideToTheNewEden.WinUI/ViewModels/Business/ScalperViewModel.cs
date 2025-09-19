@@ -20,6 +20,7 @@ using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using ESI.NET.Models.Universe;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -144,6 +145,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if(!string.IsNullOrEmpty(json))
                 {
                     Setting = JsonConvert.DeserializeObject<ScalperSetting>(json);
+                    //新版本添加了SolarSystemId字段，旧版本配置需补上
+                    if (Setting.SourceMarketLocation.SolarSystemId == 0)
+                    {
+                        int? systemId = GetSolarSystemId(Setting.SourceMarketLocation);
+                        Setting.SourceMarketLocation.SolarSystemId = systemId == null ? 0 : systemId.Value;
+                    }
+                    if (Setting.DestinationMarketLocation.SolarSystemId == 0)
+                    {
+                        int? systemId = GetSolarSystemId(Setting.DestinationMarketLocation);
+                        Setting.DestinationMarketLocation.SolarSystemId = systemId == null ? 0 : systemId.Value;
+                    }
                 }
             }
             Setting ??= new ScalperSetting();
@@ -161,7 +173,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 TargetMarketTypes = new List<int>();
             }
         }
-
+        private static int? GetSolarSystemId(MarketLocation marketLocation)
+        {
+            switch (marketLocation.Type)
+            {
+                case MarketLocationType.SolarSystem: return (int)marketLocation.Id;
+                case MarketLocationType.Region: return Core.Services.DB.MapSolarSystemService.QueryByRegionID((int)marketLocation.Id).First().SolarSystemID;
+                case MarketLocationType.Structure: return Services.StructureService.GetStructure(marketLocation.Id)?.SolarSystemId;
+                default: return null;
+            }
+        }
         public ICommand AnalyseCommand => new RelayCommand(async() =>
         {
             if(ScalperItems.NotNullOrEmpty())
@@ -526,6 +547,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     CalNowPriceFluctuation(items);
                     CalSaturation(items);
                     CalHeatValue(items);
+                    CalIskPerJump(items);
+                    CalIskPerVolume(items);
                     CalSuggestion(items);
                     items = items.OrderByDescending(p => p.Suggestion).ToList();
                 }
@@ -975,6 +998,29 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
+        private void CalIskPerJump(List<ScalperItem> items)
+        {
+            var path = Core.EVEHelpers.ShortestPathHelper.CalStargatePath(Setting.SourceMarketLocation.SolarSystemId, Setting.DestinationMarketLocation.SolarSystemId, null, null);
+            if(path.NotNullOrEmpty())
+            {
+                int jump = path.Count;
+                foreach (var item in items)
+                {
+                    item.IskPerJump = item.TargetNetProfit / jump;
+                }
+            }
+            else
+            {
+                Core.Log.Warn($"Can not found path between {Setting.SourceMarketLocation.Name} and {Setting.DestinationMarketLocation.Name}");
+            }
+        }
+        private void CalIskPerVolume(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                item.IskPerVolume = item.TargetNetProfit / item.TargetVolume;
+            }
+        }
 
         private void CalSuggestion(List<ScalperItem> items)
         {
@@ -1049,6 +1095,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 {
                     item.Suggestion += s;
                 }
+                i++;
+            }
+
+            //ISK/单位体积
+            i = 1;
+            foreach (var item in items.Where(p=>p.IskPerVolume > 0).OrderBy(p => p.IskPerVolume))
+            {
+                item.Suggestion += Setting.SuggestionIskPerVolume * i / c;
+                i++;
+            }
+            i = 1;
+            foreach (var item in items.Where(p => p.IskPerVolume <= 0).OrderByDescending(p => p.IskPerVolume))
+            {
+                item.Suggestion -= Setting.SuggestionIskPerVolume * i / c;
                 i++;
             }
 

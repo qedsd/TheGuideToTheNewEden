@@ -400,6 +400,8 @@
     <x:String x:Key="BusinessPage_TargetItems">目标物品</x:String>
     <x:String x:Key="BusinessPage_TargetVolume">目标销量体积</x:String>
     <x:String x:Key="BusinessPage_TargetItemsCount">目标物品数量</x:String>
+    <x:String x:Key="BusinessPage_IskPerJump">ISK/跳</x:String>
+    <x:String x:Key="BusinessPage_IskPerVolume">ISK/单位体积</x:String>
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>

@@ -14,24 +14,24 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         public static List<int> CalStargatePath(int start, int end, List<int> avoidIds, Dictionary<int, int> bridge)
         {
             Dijkstras dijkstras = new Dijkstras();
-            var avoidIdsHashSet =  avoidIds.ToHashSet2();
+            var avoidIdsHashSet =  avoidIds?.ToHashSet2();
             var ps = SolarSystemPosHelper.PositionDic;
             foreach (var p in ps.Values)
             {
-                if(!avoidIdsHashSet.Contains(p.SolarSystemID))
+                if(avoidIdsHashSet == null || !avoidIdsHashSet.Contains(p.SolarSystemID))
                 {
                     Dictionary<int, double> edges = new Dictionary<int, double>();
                     if (p.JumpTo.NotNullOrEmpty())//添加星门关联的星系
                     {
                         foreach (var jump in p.JumpTo)
                         {
-                            if (!avoidIdsHashSet.Contains(jump))
+                            if (avoidIdsHashSet == null || !avoidIdsHashSet.Contains(jump))
                             {
                                 edges.Add(jump, 1);
                             }
                         }
                     }
-                    if(bridge.TryGetValue(p.SolarSystemID, out var bridgeTo))//添加跳桥关联的星系
+                    if(bridge != null && bridge.TryGetValue(p.SolarSystemID, out var bridgeTo))//添加跳桥关联的星系
                     {
                         edges.Add(bridgeTo, 1);
                     }

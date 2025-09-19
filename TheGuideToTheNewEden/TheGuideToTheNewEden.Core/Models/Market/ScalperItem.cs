@@ -69,5 +69,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// 目标销量体积
         /// </summary>
         public double TargetVolume { get => InvType.PackagedVolume * TargetSales; }
+
+        /// <summary>
+        /// ISK/跳
+        /// </summary>
+        public double IskPerJump { get; set; }
+
+        /// <summary>
+        /// ISK/单位体积
+        /// </summary>
+        public double IskPerVolume { get; set; }
     }
 }

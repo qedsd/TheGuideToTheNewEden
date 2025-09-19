@@ -365,6 +365,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             get => suggestionHeatValue; set => SetProperty(ref suggestionHeatValue, value);
         }
+
+        private double suggestionIskPerVolume = 10;
+        /// <summary>
+        /// ISK/单位体积
+        /// </summary>
+        public double SuggestionIskPerVolume
+        {
+            get => suggestionIskPerVolume; set => SetProperty(ref suggestionIskPerVolume, value);
+        }
         #endregion
 
         public enum PriceType

@@ -313,6 +313,11 @@
                                             Maximum="100"
                                             Minimum="0"
                                             Value="{x:Bind VM.Setting.SuggestionHeatValue, Mode=TwoWay}" />
+                                        <Slider
+                                            Header="{StaticResource BusinessPage_IskPerVolume}"
+                                            Maximum="100"
+                                            Minimum="0"
+                                            Value="{x:Bind VM.Setting.SuggestionIskPerVolume, Mode=TwoWay}" />
                                     </StackPanel>
                                 </Expander>
                             </StackPanel>
@@ -451,6 +456,14 @@
                         DisplayNumberFormat="N0"
                         HeaderText="{StaticResource BusinessPage_TargetVolume}"
                         MappingName="TargetVolume" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_IskPerJump}"
+                        MappingName="IskPerJump" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource BusinessPage_IskPerVolume}"
+                        MappingName="IskPerVolume" />
                 </dataGrid:SfDataGrid.Columns>
                 <dataGrid:SfDataGrid.RecordContextFlyout>
                     <MenuFlyout>
