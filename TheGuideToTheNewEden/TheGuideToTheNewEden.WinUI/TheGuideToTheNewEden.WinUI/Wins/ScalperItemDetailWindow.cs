@@ -15,7 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public ScalperItemDetailWindow()
         {
             _mainContent = new Views.Business.ScalperItemDetailPage();
-            InitWindow(_mainContent, WindowTitleStyle.Empty, false, true, true, true);
+            InitWindow(_mainContent, WindowTitleStyle.Default, true, true, true, true);
             SetDisplayTitle(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
             SetWindowTitle(Helpers.ResourcesHelper.GetString("BusinessPage_ScalperItemDetail"));
         }
