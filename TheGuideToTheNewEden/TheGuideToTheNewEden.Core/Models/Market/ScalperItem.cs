@@ -79,5 +79,10 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         /// ISK/单位体积
         /// </summary>
         public double IskPerVolume { get; set; }
+
+        /// <summary>
+        /// 源市场与目的市场距离跳数
+        /// </summary>
+        public int Jumps { get; set; }
     }
 }

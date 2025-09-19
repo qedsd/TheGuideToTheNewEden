@@ -14,7 +14,7 @@
     <Page.DataContext>
         <viewmodels:BusinessViewModel x:Name="VM" />
     </Page.DataContext>
-    <Pivot Margin="0,-16,0,0">
+    <Pivot Margin="-8,-16,-8,0">
         <PivotItem>
             <PivotItem.Header>
                 <TextBlock FontSize="14" Text="{StaticResource BusinessPage_CharacterOrders}" />

@@ -111,6 +111,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 TextBlock_NetProfi.Text = netProfit.ToString("N2");
                 TextBlock_Principal.Text = principal.ToString("N2");
                 TextBlock_Volume.Text = ShoppingItems.Sum(p => p.Volume).ToString("N2");
+                TextBlock_IskPerJump.Text = ShoppingItems.Average(p => p.IskPerJump).ToString("N2");
+                TextBlock_IskPerVolume.Text = ShoppingItems.Average(p => p.IskPerVolume).ToString("N2");
             }
             else
             {
@@ -118,6 +120,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 TextBlock_NetProfi.Text = string.Empty;
                 TextBlock_Principal.Text = string.Empty;
                 TextBlock_Volume.Text = string.Empty;
+                TextBlock_IskPerJump.Text = string.Empty;
+                TextBlock_IskPerVolume.Text = string.Empty;
             }
         }
 

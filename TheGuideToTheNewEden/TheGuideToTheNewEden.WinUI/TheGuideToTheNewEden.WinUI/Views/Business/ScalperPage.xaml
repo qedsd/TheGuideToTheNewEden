@@ -10,6 +10,7 @@
     xmlns:editors="using:Syncfusion.UI.Xaml.Editors"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -351,131 +352,127 @@
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
-                        Grid.Row="2"
                         Margin="8,0"
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.GetOrdersCommand}"
-                        Icon="Download"
-                        Label="{StaticResource BusinessPage_GetOrders}" />
+                        Label="{StaticResource BusinessPage_GetOrders}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="CloudArrowDown" IconSize="Size32" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarButton
-                        Grid.Row="2"
                         Margin="8,0"
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.AnalyseCommand}"
-                        Icon="Play"
-                        Label="{StaticResource BusinessPage_Analyse}" />
+                        Label="{StaticResource BusinessPage_Analyse}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="DataPie" IconSize="Resizable" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                 </StackPanel>
             </controls:CardControl.Fonter>
         </controls:CardControl>
-        <Grid
+        <dataGrid:SfDataGrid
+            x:Name="DataGrid"
             Grid.Column="1"
-            Margin="8,0,0,0"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <dataGrid:SfDataGrid
-                x:Name="DataGrid"
-                HorizontalAlignment="Stretch"
-                AllowDraggingColumns="True"
-                AllowEditing="False"
-                AllowFiltering="True"
-                AllowGrouping="True"
-                AllowResizingColumns="True"
-                AllowSorting="True"
-                AutoGenerateColumns="False"
-                BorderThickness="0"
-                ColumnWidthMode="Auto"
-                DoubleTapped="SfDataGrid_DoubleTapped"
-                GridLinesVisibility="None"
-                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                HeaderLinesVisibility="Both"
-                ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
-                SelectionMode="Extended"
-                ShowGroupDropArea="True">
-                <dataGrid:SfDataGrid.Columns>
-                    <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_Suggestion}"
-                        MappingName="Suggestion" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_ROIPercent}"
-                        MappingName="ROI" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_TargetSalesNetProfit}"
-                        MappingName="TargetNetProfit" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
-                        MappingName="BuyPrice" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_DestinationSellPrice}"
-                        MappingName="SellPrice" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource BusinessPage_SourceSales}"
-                        MappingName="SourceSales" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource BusinessPage_DestinationSales}"
-                        MappingName="DestinationSales" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource BusinessPage_TargetSales}"
-                        MappingName="TargetSales" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_SingleNetProfit}"
-                        MappingName="NetProfit" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_HeatValue}"
-                        MappingName="HeatValue" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_Principal}"
-                        MappingName="Principal" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}"
-                        MappingName="HistoryPriceFluctuation" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}"
-                        MappingName="NowPriceFluctuation" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_SellOrderSaturation}"
-                        MappingName="Saturation" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N0"
-                        HeaderText="{StaticResource BusinessPage_TargetVolume}"
-                        MappingName="TargetVolume" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_IskPerJump}"
-                        MappingName="IskPerJump" />
-                    <dataGrid:GridNumericColumn
-                        DisplayNumberFormat="N2"
-                        HeaderText="{StaticResource BusinessPage_IskPerVolume}"
-                        MappingName="IskPerVolume" />
-                </dataGrid:SfDataGrid.Columns>
-                <dataGrid:SfDataGrid.RecordContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem
-                            Click="MenuFlyoutItem_Click"
-                            CommandParameter="{Binding}"
-                            Text="{StaticResource BusinessPage_AddToShoppingCart}" />
-                    </MenuFlyout>
-                </dataGrid:SfDataGrid.RecordContextFlyout>
+            HorizontalAlignment="Stretch"
+            AllowDraggingColumns="True"
+            AllowEditing="False"
+            AllowFiltering="True"
+            AllowGrouping="True"
+            AllowResizingColumns="True"
+            AllowSorting="True"
+            AutoGenerateColumns="False"
+            Background="{ThemeResource TransparentBackgroudBrush}"
+            BorderThickness="0"
+            ColumnWidthMode="Auto"
+            DoubleTapped="SfDataGrid_DoubleTapped"
+            GridLinesVisibility="None"
+            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+            HeaderLinesVisibility="Both"
+            ItemsSource="{x:Bind VM.ScalperItems, Mode=TwoWay}"
+            SelectionMode="Extended"
+            ShowGroupDropArea="True">
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_Suggestion}"
+                    MappingName="Suggestion" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_ROIPercent}"
+                    MappingName="ROI" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_TargetSalesNetProfit}"
+                    MappingName="TargetNetProfit" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
+                    MappingName="BuyPrice" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_DestinationSellPrice}"
+                    MappingName="SellPrice" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N0"
+                    HeaderText="{StaticResource BusinessPage_SourceSales}"
+                    MappingName="SourceSales" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N0"
+                    HeaderText="{StaticResource BusinessPage_DestinationSales}"
+                    MappingName="DestinationSales" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N0"
+                    HeaderText="{StaticResource BusinessPage_TargetSales}"
+                    MappingName="TargetSales" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_SingleNetProfit}"
+                    MappingName="NetProfit" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_HeatValue}"
+                    MappingName="HeatValue" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_Principal}"
+                    MappingName="Principal" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_DestinationHistoryPriceFluctuation}"
+                    MappingName="HistoryPriceFluctuation" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_DestinationNowPriceFluctuationDay}"
+                    MappingName="NowPriceFluctuation" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_SellOrderSaturation}"
+                    MappingName="Saturation" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N0"
+                    HeaderText="{StaticResource BusinessPage_TargetVolume}"
+                    MappingName="TargetVolume" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_IskPerJump}"
+                    MappingName="IskPerJump" />
+                <dataGrid:GridNumericColumn
+                    DisplayNumberFormat="N2"
+                    HeaderText="{StaticResource BusinessPage_IskPerVolume}"
+                    MappingName="IskPerVolume" />
+            </dataGrid:SfDataGrid.Columns>
+            <dataGrid:SfDataGrid.RecordContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem
+                        Click="MenuFlyoutItem_Click"
+                        CommandParameter="{Binding}"
+                        Text="{StaticResource BusinessPage_AddToShoppingCart}" />
+                </MenuFlyout>
+            </dataGrid:SfDataGrid.RecordContextFlyout>
 
-            </dataGrid:SfDataGrid>
-
-        </Grid>
+        </dataGrid:SfDataGrid>
     </Grid>
 </Page>
