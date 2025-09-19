@@ -87,6 +87,7 @@
     <x:String x:Key="General_Update">更新</x:String>
     <x:String x:Key="General_RemoveSelected">删除选中</x:String>
     <x:String x:Key="General_Remove">删除</x:String>
+    <x:String x:Key="General_RemoveSuccess">删除成功</x:String>
     <x:String x:Key="General_AddSelected">添加选中</x:String>
     <x:String x:Key="General_SolarSystemName">星系</x:String>
     <x:String x:Key="General_SolarSystem">星系</x:String>
@@ -431,6 +432,10 @@
     <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem2">个物品</x:String>
     <x:String x:Key="BusinessPage_NoUpdatedScalperShoppingItem">无物品需要更新</x:String>
     <x:String x:Key="BusinessPage_NotPasteItem">未识别到物品订单</x:String>
+    <x:String x:Key="BusinessPage_Statistics">统计</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_All">所有记录</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_Detail">记录详细</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">是否确认删除{0}个记录？</x:String>
 
     <x:String x:Key="MarketSettingPage_OrderDuration">订单有效时长</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">历史记录有效时长</x:String>

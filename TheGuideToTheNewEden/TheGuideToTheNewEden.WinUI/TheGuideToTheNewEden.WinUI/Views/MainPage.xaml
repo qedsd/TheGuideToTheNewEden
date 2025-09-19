@@ -80,33 +80,53 @@
                                     <ic:FluentIcon Icon="DataTrending" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+
                             <NavigationViewItem Content="{StaticResource BusinessPage}" Tag="BusinessPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="ArrowTrendingText" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                   
+                    <NavigationViewItem Content="{StaticResource ManufacturePage}" Tag="ManufacturePage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="ArrowTrendingLines" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="{StaticResource ReactionPage}" Tag="ReactionPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="ArrowTrendingText" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
+                    
                     <NavigationViewItem Content="{StaticResource GamePreviewMgrPage}" Tag="GamePreviewMgrPage">
                         <NavigationViewItem.Icon>
                             <ic:FluentIcon Icon="SquareMultiple" />
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
+                        
                     <NavigationViewItem Content="{StaticResource Channel}">
                         <NavigationViewItem.Icon>
                             <ic:FluentIcon Icon="Comment" />
                         </NavigationViewItem.Icon>
+                        
                         <NavigationViewItem.MenuItems>
                             <NavigationViewItem Content="{StaticResource ChannelIntelPage}" Tag="ChannelIntelPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="CommentError" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            
                             <NavigationViewItem Content="{StaticResource ChannelMonitorPage}" Tag="ChannelMonitorPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="CommentBadge" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            
                             <NavigationViewItem Content="{StaticResource ChannelScanPage}" Tag="ChannelScanPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="CommentMultiple" />

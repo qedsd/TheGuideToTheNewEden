@@ -1006,6 +1006,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 int jump = path.Count;
                 foreach (var item in items)
                 {
+                    item.Jumps = jump;
                     item.IskPerJump = item.TargetNetProfit / jump;
                 }
             }

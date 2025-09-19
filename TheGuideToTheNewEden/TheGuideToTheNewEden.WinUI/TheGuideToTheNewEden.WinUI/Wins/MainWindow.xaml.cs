@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using TheGuideToTheNewEden.WinUI.Extensions;
+using System.Windows.Input;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using TheGuideToTheNewEden.WinUI.Services;

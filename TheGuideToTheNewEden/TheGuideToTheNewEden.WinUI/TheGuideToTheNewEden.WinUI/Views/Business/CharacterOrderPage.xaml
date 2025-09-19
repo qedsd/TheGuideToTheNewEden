@@ -9,6 +9,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
+    xmlns:winui="using:FluentIcons.WinUI"
     Background="Transparent"
     mc:Ignorable="d">
     <Page.Resources>
@@ -20,7 +21,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid Margin="4,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
@@ -29,6 +30,7 @@
                 <TextBlock VerticalAlignment="Center" Text="{StaticResource StructuresSettingPage_Character}" />
                 <controls:SelecteCharacterControl
                     x:Name="SelecteCharacterControl"
+                    Width="160"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
@@ -41,21 +43,21 @@
                 <Button
                     x:Name="Button_Refresh"
                     Click="Button_Refresh_Click"
+                    Style="{StaticResource TransparentButton}"
                     ToolTipService.ToolTip="{StaticResource General_Refresh}">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE117;" />
+                    <winui:FluentIcon Icon="ArrowSync" IconSize="Resizable" />
                 </Button>
                 <Button
-                    Margin="8"
                     Click="Button_CopyToGameOrder_Click"
+                    Style="{StaticResource TransparentButton}"
                     ToolTipService.ToolTip="{StaticResource CharacterOrderPage_CopyBackwardOrderToGame}">
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16F;" />
+                    <winui:FluentIcon Icon="Copy" IconSize="Resizable" />
                 </Button>
             </StackPanel>
         </Grid>
         <Pivot
             x:Name="MainPivot"
             Grid.Row="1"
-            Margin="0,0,0,0"
             Background="{ThemeResource TransparentBackgroudBrush}">
             <PivotItem>
                 <PivotItem.Header>

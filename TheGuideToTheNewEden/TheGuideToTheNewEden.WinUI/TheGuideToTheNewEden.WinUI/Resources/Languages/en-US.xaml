@@ -87,6 +87,7 @@
     <x:String x:Key="General_Update">Update</x:String>
     <x:String x:Key="General_RemoveSelected">Remove Selected</x:String>
     <x:String x:Key="General_Remove">Remove</x:String>
+    <x:String x:Key="General_RemoveSuccess">Remove Success</x:String>
     <x:String x:Key="General_AddSelected">Add Selected</x:String>
     <x:String x:Key="General_SolarSystemName">Solar System</x:String>
     <x:String x:Key="General_SolarSystem">Solar System</x:String>
@@ -430,6 +431,10 @@
     <x:String x:Key="BusinessPage_UpdatedScalperShoppingItem2">items</x:String>
     <x:String x:Key="BusinessPage_NoUpdatedScalperShoppingItem">No items need to be updated</x:String>
     <x:String x:Key="BusinessPage_NotPasteItem">Unrecognized item order</x:String>
+    <x:String x:Key="BusinessPage_Statistics">Statistics</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_All">All Record</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_Detail">Record Detail</x:String>
+    <x:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">Are you sure you want to delete {0} records?</x:String>
 
     <x:String x:Key="MarketSettingPage_OrderDuration">Duration of order</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">Effective duration of historical records</x:String>
