@@ -1,0 +1,77 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Manufacture.ReactionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Manufacture"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <!-- 复用项目中常见的列表项样式 -->
+        <Style x:Key="MaterialListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="Padding" Value="4" />
+        </Style>
+        <!-- 选中状态样式（与项目中高亮风格一致） -->
+        <Style x:Key="SelectedItemStyle" TargetType="ListViewItem" BasedOn="{StaticResource MaterialListViewItemStyle}">
+            <Setter Property="Background" Value="{ThemeResource SystemAccentColorLight}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource SystemAccentColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <!-- 未选中状态样式 -->
+        <Style x:Key="UnselectedItemStyle" TargetType="ListViewItem" BasedOn="{StaticResource MaterialListViewItemStyle}">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="4,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <controls:CardControl Width="300" Padding="0">
+            <controls:CardControl.Header>
+                <TextBlock 
+                            VerticalAlignment="Center" 
+                            Text="{StaticResource Satellite Ore P0}" 
+                            FontSize="14" 
+                            FontWeight="SemiBold" 
+                            Margin="8,0,0,0"/>
+                </controls:CardControl.Header>
+            <ListView
+                        ItemsSource="{Binding SatelliteOres}"
+                        ItemContainerStyleSelector="StaticResource MaterialListViewItemStyleSelector">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="4"/>
+                            <Image Source="{Binding IconPath}" Width="24" Height="24" Margin="4" />
+                            <TextBlock 
+                                Text="{Binding Name}" 
+                                VerticalAlignment="Center" 
+                                Margin="4" 
+                                Grid.Column="2"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            </controls:CardControl>
+            <!-- Add your main content here -->
+        <!-- 底部状态栏 -->
+    </Grid>
+</Page>

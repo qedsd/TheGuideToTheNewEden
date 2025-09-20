@@ -29,6 +29,8 @@
     <x:String x:Key="ChannelTranslationPage">频道翻译</x:String>
     <x:String x:Key="UpdatePage">软件更新</x:String>
     <x:String x:Key="Channel">频道</x:String>
+    <x:String x:Key="ManufacturePage">工业</x:String>
+    <x:String x:Key="ReactionPage">反应</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>

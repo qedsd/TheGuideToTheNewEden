@@ -101,6 +101,7 @@
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
                         </NavigationViewItem.MenuItems>
+                        
                     </NavigationViewItem>
                     
                     <NavigationViewItem Content="{StaticResource GamePreviewMgrPage}" Tag="GamePreviewMgrPage">
