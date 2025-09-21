@@ -78,13 +78,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-
-
-        public void AddToFilter(List<Core.DBModels.InvType> types)
-        {
-            VM.AddFilterTypes(types);
-        }
-
         private void Button_RemoveSelectedFilterTypes_Click(object sender, RoutedEventArgs e)
         {
             if(ListView_FilterTypes.SelectedItems.Any())

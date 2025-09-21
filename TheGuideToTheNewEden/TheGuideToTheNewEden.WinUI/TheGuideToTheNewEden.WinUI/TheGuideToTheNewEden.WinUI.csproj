@@ -262,7 +262,6 @@
     <None Remove="Views\AboutPage.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
-    <None Remove="Views\Business\CharacterOrderPage.xaml" />
     <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
@@ -779,7 +778,7 @@
     <Page Update="Views\Business\ScalperPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\Business\CharacterOrderPage.xaml">
+    <Page Update="Views\Business\OrderPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Settings\StructuresSettingPage.xaml">

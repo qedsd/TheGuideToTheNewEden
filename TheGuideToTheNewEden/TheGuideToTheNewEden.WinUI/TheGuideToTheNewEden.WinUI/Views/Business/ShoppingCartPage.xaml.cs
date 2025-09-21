@@ -34,6 +34,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             this.InitializeComponent();
             ItemsDataGrid.ItemsSource = ShoppingItems;
+            ClientServiceHelper.GetRequiredService<BusinessService>().TypeCountChanged += ShoppingCartPage_TypeCountChanged;
         }
 
         private async void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
@@ -227,24 +228,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        public void UpdateItems(List<Core.Models.Market.Order> orders)
+        private void ShoppingCartPage_TypeCountChanged(List<(Core.DBModels.InvType type, int count)> types)
         {
-            if(orders.NotNullOrEmpty())
+            if (types.NotNullOrEmpty())
             {
-                Dictionary<int, int> items = new Dictionary<int, int>();
-                foreach (var item in orders)
-                {
-                    if(items.TryGetValue(item.TypeId, out int count))
-                    {
-                        items.Remove(item.TypeId);
-                        items.Add(item.TypeId, count + item.VolumeRemain);
-                    }
-                    else
-                    {
-                        items.Add(item.TypeId, item.VolumeRemain);
-                    }
-                }
-                UpdateItems(items);
+                UpdateItems(types.ToDictionary(p => p.type.TypeID, p => p.count));
             }
         }
     }

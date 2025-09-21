@@ -35,24 +35,5 @@ namespace TheGuideToTheNewEden.WinUI.Views
             ShoppingCartPage.AddItems(items.ToList());
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedShoppingItem"), items.Count()), Controls.InfoBarControl.InfoType.Success, true);
         }
-
-        private void CharacterOrderPage_OnAddToFilterListItemsChanged(List<Core.Models.Market.Order> orders)
-        {
-            if (orders.NotNullOrEmpty())
-            {
-                var groups = orders.GroupBy(p => p.TypeId).ToList();
-                var types = groups.Select(p => p.First().InvType).ToList();
-                ScalperPage.AddToFilter(types);
-                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(this, string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_AddedToFilterLis"), orders.Count), Controls.InfoBarControl.InfoType.Success,true);
-            }
-        }
-
-        private void CharacterOrderPage_OnAddToUpdatedScalperShoppingItemsChanged(List<Core.Models.Market.Order> orders)
-        {
-            if (orders.NotNullOrEmpty())
-            {
-                ShoppingCartPage.UpdateItems(orders);
-            }
-        }
     }
 }

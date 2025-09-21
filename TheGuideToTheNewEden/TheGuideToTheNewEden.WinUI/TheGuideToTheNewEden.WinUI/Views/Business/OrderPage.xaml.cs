@@ -1,4 +1,7 @@
 using ESI.NET;
+using ESI.NET.Models.Bookmarks;
+using ESI.NET.Models.Character;
+using ESI.NET.Models.Market;
 using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,33 +15,46 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Market;
-using ESI.NET.Models.Market;
 using TheGuideToTheNewEden.Core.Services;
-using ESI.NET.Models.Character;
-using System.Text;
-using Windows.ApplicationModel.DataTransfer;
-using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
-    public sealed partial class CharacterOrderPage : Page
+    public sealed partial class OrderPage : Page
     {
+        private List<StatusOrder> _characterOrder;
+        private List<StatusOrder> _corpOrder;
+        private List<StatusOrder> _order;
         private EsiClient _esiClient;
-        public CharacterOrderPage()
+        public OrderPage()
         {
             this.InitializeComponent();
             _esiClient = ESIService.GetDefaultEsi();
+            Loaded += OrderPage_Loaded;
+        }
+
+        private void OrderPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= OrderPage_Loaded;
+            OrderTypeComboBox.SelectionChanged += OrderTypeComboBox_SelectionChanged;
+            OrderFromComboBox.SelectionChanged += OrderFromComboBox_SelectionChanged;
         }
 
         private void SelecteCharacterControl_OnSelectedItemChanged(ESI.NET.Models.SSO.AuthorizedCharacterData selectedItem)
         {
             _esiClient.SetCharacterData(selectedItem);
+            _characterOrder = null;
+            _corpOrder = null;
+            _order = null;
             GetOrders();
         }
 
@@ -52,8 +68,22 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             try
             {
                 var errorCount1 = Core.Log.GetErrorCount();
-                await GetCharacterOrders();
-                await GetCorpOrders();
+                if (OrderFromComboBox.SelectedIndex == 0)
+                {
+                    await GetCharacterOrders();
+                }
+                else
+                {
+                    await GetCorpOrders();
+                }
+                if (_order.NotNullOrEmpty())
+                {
+                    OrderDataGrid.ItemsSource = OrderTypeComboBox.SelectedIndex == 0 ? _order.Where(p => !p.Target.IsBuyOrder) : _order.Where(p => p.Target.IsBuyOrder);
+                }
+                else
+                {
+                    OrderDataGrid.ItemsSource = null;
+                }
                 var errorCount2 = Core.Log.GetErrorCount();
                 if (errorCount1 != errorCount2)
                 {
@@ -71,16 +101,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                //var orders = await SimuOrders();
                 var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
-                    DataGrid_Character.ItemsSource = os;
+                    _characterOrder = os;
+                    _order = os;
                 }
                 else
                 {
-                    DataGrid_Character.ItemsSource = null;
+                    _characterOrder = null;
+                    _order = null;
                 }
             }
             else
@@ -105,11 +136,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 if (orders.NotNullOrEmpty())
                 {
                     var os = await CalOrderStatus(orders);
-                    DataGrid_Corp.ItemsSource = os;
+                    _corpOrder = os;
+                    _order = os;
                 }
                 else
                 {
-                    DataGrid_Corp.ItemsSource = null;
+                    _corpOrder = null;
+                    _order = null;
                 }
             }
             else
@@ -151,71 +184,52 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             return statusOrders;
         }
 
-        private async Task<List<Core.Models.Market.Order>> SimuOrders()
+        private void OrderDataGrid_AddToFilterList_Click(object sender, RoutedEventArgs e)
         {
-            var o1 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34, 10000002)).Where(p=>!p.IsBuyOrder).OrderBy(p=>p.Price).ToList()[0];
-            var o2 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(28710, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[1];
-            var o3 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34828, 10000002)).Where(p => !p.IsBuyOrder).OrderBy(p => p.Price).ToList()[2];
-
-            var o11 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[0];
-            var o22 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(28710, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[1];
-            var o33 = (await Services.MarketOrderService.Current.GetRegionOrdersAsync(34828, 10000002)).Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price).ToList()[2];
-
-            return new List<Core.Models.Market.Order>()
-            {
-                o1,o2,o3,o11,o22,o33
-            };
+            ClientServiceHelper.GetRequiredService<BusinessService>().AddToFilter(OrderDataGrid.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target.InvType)?.ToList());
         }
 
-        public delegate void SelectedItemsChangedEventHandel(List<Core.Models.Market.Order> orders);
-        private SelectedItemsChangedEventHandel AddToFilterListItemsChanged;
-        public event SelectedItemsChangedEventHandel OnAddToFilterListItemsChanged
+        private void OrderDataGrid_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
         {
-            add
+            ClientServiceHelper.GetRequiredService<BusinessService>().NotifyTypeCountChanged(OrderDataGrid.SelectedItems.Select(p => ((p as Core.Models.Market.StatusOrder).Target.InvType, (p as Core.Models.Market.StatusOrder).Target.VolumeRemain))?.ToList());
+        }
+        private void OrderDataGrid_AddToGameOrder(object sender, RoutedEventArgs e)
+        {
+            CopyToGameOrder(OrderDataGrid.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder)).ToList());
+        }
+        private void CopyToGameOrder(List<StatusOrder> orders)
+        {
+            if (orders.NotNullOrEmpty())
             {
-                AddToFilterListItemsChanged += value;
+                var targetOrders = orders.Where(p => p.Normal != true).ToList();
+                if (targetOrders.NotNullOrEmpty())
+                {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    foreach (var item in targetOrders)
+                    {
+                        stringBuilder.Append(item.Target.InvType.TypeName);
+                        stringBuilder.Append(' ');
+                        stringBuilder.Append(1);
+                        stringBuilder.AppendLine();
+                    }
+                    DataPackage dataPackage = new DataPackage();
+                    dataPackage.SetText(stringBuilder.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_AddToGameOrder_Success"));
+                }
+                else
+                {
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_AddToGameOrder_Failed"));
+                }
             }
-            remove
+            else
             {
-                AddToFilterListItemsChanged -= value;
+                this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_AddToGameOrder_Failed"));
             }
         }
-
-        private SelectedItemsChangedEventHandel AddToUpdatedScalperShoppingItemsChanged;
-        public event SelectedItemsChangedEventHandel OnAddToUpdatedScalperShoppingItemsChanged
+        private async void OrderDataGrid_ShowInGame_Click(object sender, RoutedEventArgs e)
         {
-            add
-            {
-                AddToUpdatedScalperShoppingItemsChanged += value;
-            }
-            remove
-            {
-                AddToUpdatedScalperShoppingItemsChanged -= value;
-            }
-        }
-
-        private void MenuFlyoutItem1_AddToFilterList_Click(object sender, RoutedEventArgs e)
-        {
-            AddToFilterListItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
-        }
-
-        private void MenuFlyoutItem1_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
-        {
-            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Character.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
-        }
-        private void MenuFlyoutItem2_AddToFilterList_Click(object sender, RoutedEventArgs e)
-        {
-            AddToFilterListItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
-        }
-
-        private void MenuFlyoutItem2_AddToUpdatedScalperShoppingItem_Click(object sender, RoutedEventArgs e)
-        {
-            AddToUpdatedScalperShoppingItemsChanged?.Invoke(DataGrid_Corp.SelectedItems.Select(p => (p as Core.Models.Market.StatusOrder).Target)?.ToList());
-        }
-
-        private async void MenuFlyoutItem1_ShowInGame_Click(object sender, RoutedEventArgs e)
-        {
-            var order = DataGrid_Character.SelectedItem as Core.Models.Market.StatusOrder;
+            var order = OrderDataGrid.SelectedItem as Core.Models.Market.StatusOrder;
             if(order != null)
             {
                 this.ShowWaiting();
@@ -232,7 +246,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     var resp = await _esiClient.UserInterface.MarketDetails(order.Target.TypeId);
                     if(resp.StatusCode == System.Net.HttpStatusCode.OK || resp.StatusCode == System.Net.HttpStatusCode.NoContent)
                     {
-                        this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_ShowInGame_Succcess"));
+                        this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_ShowInGame_Succcess"));
                     }
                     else
                     {
@@ -248,35 +262,54 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        private void Button_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
+
+        /// <summary>
+        /// 卖单/买单
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OrderTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var orders = MainPivot.SelectedIndex == 0 ?  DataGrid_Character.ItemsSource as List<StatusOrder> : DataGrid_Corp.ItemsSource as List<StatusOrder>;
-            if(orders.NotNullOrEmpty())
+            if (_order == null) return;
+            OrderDataGrid.ItemsSource = OrderTypeComboBox.SelectedIndex == 0 ? _order.Where(p => !p.Target.IsBuyOrder) : _order.Where(p => p.Target.IsBuyOrder);
+        }
+
+        /// <summary>
+        /// 个人/军团
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void OrderFromComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (OrderFromComboBox.SelectedIndex == 0)
             {
-                var targetOrders = orders.Where(p => p.Normal != true).ToList();
-                if(targetOrders.NotNullOrEmpty())
+                if (_characterOrder.NotNullOrEmpty())
                 {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    foreach (var item in targetOrders)
-                    {
-                        stringBuilder.Append(item.Target.InvType.TypeName);
-                        stringBuilder.Append(' ');
-                        stringBuilder.Append(1);
-                        stringBuilder.AppendLine();
-                    }
-                    DataPackage dataPackage = new DataPackage();
-                    dataPackage.SetText(stringBuilder.ToString());
-                    Clipboard.SetContent(dataPackage);
-                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Success"));
+                    _order = _characterOrder;   
                 }
                 else
                 {
-                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+                    await GetCharacterOrders();
                 }
             }
             else
             {
-                this.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterOrderPage_CopyBackwardOrderToGame_Failed"));
+                if (_corpOrder.NotNullOrEmpty())
+                {
+                    _order = _corpOrder;
+                }
+                else
+                {
+                    await GetCorpOrders();
+                }
+            }
+            if (_order.NotNullOrEmpty())
+            {
+                OrderDataGrid.ItemsSource = OrderTypeComboBox.SelectedIndex == 0 ? _order.Where(p => !p.Target.IsBuyOrder) : _order.Where(p => p.Target.IsBuyOrder);
+            }
+            else
+            {
+                OrderDataGrid.ItemsSource = null;
             }
         }
     }

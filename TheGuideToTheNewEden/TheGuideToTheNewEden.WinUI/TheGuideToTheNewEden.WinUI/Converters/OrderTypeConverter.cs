@@ -13,11 +13,11 @@ namespace TheGuideToTheNewEden.WinUI.Converters
         {
             if((bool)value)//IsBuyOrder
             {
-                return Helpers.ResourcesHelper.GetString("CharacterOrderPage_OrderType_Buy");
+                return Helpers.ResourcesHelper.GetString("OrderPage_OrderType_Buy");
             }
             else
             {
-                return Helpers.ResourcesHelper.GetString("CharacterOrderPage_OrderType_Sell");
+                return Helpers.ResourcesHelper.GetString("OrderPage_OrderType_Sell");
             }
         }
 

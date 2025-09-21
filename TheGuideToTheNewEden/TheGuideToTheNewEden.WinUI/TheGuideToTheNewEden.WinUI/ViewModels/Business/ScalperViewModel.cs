@@ -172,7 +172,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 TargetMarketTypes = new List<int>();
             }
+            var filterOrders = ClientServiceHelper.GetRequiredService<BusinessService>().GetFilterTypes();
+            if (filterOrders.NotNullOrEmpty())
+            {
+                AddFilterTypes(filterOrders);
+            }
+            ClientServiceHelper.GetRequiredService<BusinessService>().FilterChanged += ScalperViewModel_FilterChanged;
         }
+
+
         private static int? GetSolarSystemId(MarketLocation marketLocation)
         {
             switch (marketLocation.Type)
@@ -1142,6 +1150,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     FilterTypes.Remove(invType);
                 }
                 ShowSuccess(string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_RemovedItem"), invTypes.Count));
+                ClientServiceHelper.GetRequiredService<BusinessService>().RemoveFromFilter(invTypes);
+            }
+        }
+
+        private void ScalperViewModel_FilterChanged(List<InvType> types, bool isAdd)
+        {
+            if (isAdd)
+            {
+                foreach (var item in types)
+                {
+                    FilterTypes.Add(item);
+                }
             }
         }
     }

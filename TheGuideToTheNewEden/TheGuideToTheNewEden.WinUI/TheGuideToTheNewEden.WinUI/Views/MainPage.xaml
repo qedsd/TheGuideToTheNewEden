@@ -80,9 +80,14 @@
                                     <ic:FluentIcon Icon="DataTrending" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
-                            <NavigationViewItem Content="{StaticResource BusinessPage}" Tag="BusinessPage">
+                            <NavigationViewItem Content="{StaticResource OrderPage}" Tag="Business.OrderPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="ArrowTrendingText" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource BusinessPage}" Tag="BusinessPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="ArrowTrendingSparkle" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
                         </NavigationViewItem.MenuItems>

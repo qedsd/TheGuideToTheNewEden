@@ -7,6 +7,7 @@
     <x:String x:Key="CharactersShellPage">角色</x:String>
     <x:String x:Key="MarketPage">市场</x:String>
     <x:String x:Key="BusinessPage">商业</x:String>
+    <x:String x:Key="OrderPage">订单</x:String>
     <x:String x:Key="ChannelIntelPage">频道预警</x:String>
     <x:String x:Key="ContractPage">公开合同</x:String>
     <x:String x:Key="ServerPingPage">延迟测试</x:String>
@@ -325,11 +326,6 @@
     <x:String x:Key="MarketPage_Cal_Sell_Immediately">立即卖出</x:String>
 
     <!--  BusinessPage  -->
-    <x:String x:Key="BusinessPage_AddToFilterList">添加到倒货排除列表</x:String>
-    <x:String x:Key="BusinessPage_AddToUpdatedScalperShoppingItem">从购物车中减去相应物品数量</x:String>
-    <x:String x:Key="BusinessPage_Character">个人</x:String>
-    <x:String x:Key="BusinessPage_Corp">军团</x:String>
-    <x:String x:Key="BusinessPage_CharacterOrders">订单</x:String>
     <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
     <x:String x:Key="BusinessPage_ShoppingCart">购物车</x:String>
     <x:String x:Key="BusinessPage_HistoryShopping">记录</x:String>
@@ -972,21 +968,27 @@
     <x:String x:Key="CharacterPage_Skill_Finished">已完成</x:String>
     <x:String x:Key="CharacterPage_Skill_Pause">已暂停</x:String>
 
-    <!--  CharacterOrderPage  -->
-    <x:String x:Key="CharacterOrderPage_Difference_Detail">与市场价差</x:String>
-    <x:String x:Key="CharacterOrderPage_Difference_Status">订单状态</x:String>
-    <x:String x:Key="CharacterOrderPage_Difference_Status_Unknown">未知</x:String>
-    <x:String x:Key="CharacterOrderPage_Difference_Status_Backward">被压单</x:String>
-    <x:String x:Key="CharacterOrderPage_Difference_Status_Normal">正常</x:String>
-    <x:String x:Key="CharacterOrderPage_OrderType">订单类型</x:String>
-    <x:String x:Key="CharacterOrderPage_OrderType_Buy">买单</x:String>
-    <x:String x:Key="CharacterOrderPage_OrderType_Sell">卖单</x:String>
-    <x:String x:Key="CharacterOrderPage_ShowInGame">在游戏中查看</x:String>
-    <x:String x:Key="CharacterOrderPage_ShowInGame_Succcess">操作成功</x:String>
-    <x:String x:Key="CharacterOrderPage_ShowInGame_Falied">操作失败</x:String>
-    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame">复制被压订单为游戏批量购买订单</x:String>
-    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Success">复制成功！在游戏批量购买界面粘贴即可</x:String>
-    <x:String x:Key="CharacterOrderPage_CopyBackwardOrderToGame_Failed">无物品可复制</x:String>
+    <!--  OrderPage  -->
+    <x:String x:Key="OrderPage_AddToFilterList">添加到倒货排除列表</x:String>
+    <x:String x:Key="OrderPage_AddToUpdatedScalperShoppingItem">从购物车中减去相应物品数量</x:String>
+    <x:String x:Key="OrderPage_AddToGameOrder">复制为游戏批量购买订单</x:String>
+    <x:String x:Key="OrderPage_AddToGameOrder_Success">复制成功！在游戏批量购买界面粘贴即可</x:String>
+    <x:String x:Key="OrderPage_AddToGameOrder_Failed">无物品可复制</x:String>
+    <x:String x:Key="OrderPage_Character">个人</x:String>
+    <x:String x:Key="OrderPage_Corp">军团</x:String>
+    <x:String x:Key="OrderPage_SellOrder">卖单</x:String>
+    <x:String x:Key="OrderPage_BuyOrder">买单</x:String>
+    <x:String x:Key="OrderPage_Difference_Detail">与市场价差</x:String>
+    <x:String x:Key="OrderPage_Difference_Status">订单状态</x:String>
+    <x:String x:Key="OrderPage_Difference_Status_Unknown">未知</x:String>
+    <x:String x:Key="OrderPage_Difference_Status_Backward">被压单</x:String>
+    <x:String x:Key="OrderPage_Difference_Status_Normal">正常</x:String>
+    <x:String x:Key="OrderPage_OrderType">订单类型</x:String>
+    <x:String x:Key="OrderPage_OrderType_Buy">买单</x:String>
+    <x:String x:Key="OrderPage_OrderType_Sell">卖单</x:String>
+    <x:String x:Key="OrderPage_ShowInGame">在游戏中查看</x:String>
+    <x:String x:Key="OrderPage_ShowInGame_Succcess">操作成功</x:String>
+    <x:String x:Key="OrderPage_ShowInGame_Falied">操作失败</x:String>
 
     <!--  MapPage  -->
     <x:String x:Key="MapPage_SearchSystem">星系</x:String>
