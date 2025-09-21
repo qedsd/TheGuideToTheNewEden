@@ -29,6 +29,8 @@
     <x:String x:Key="ChannelTranslationPage">Channel Translation</x:String>
     <x:String x:Key="UpdatePage">App Update</x:String>
     <x:String x:Key="Channel">Channel</x:String>
+    <x:String x:Key="ManufacturePage">Manufacture</x:String>
+    <x:String x:Key="ReactionPage">Reaction</x:String>
 
     <!--  Setting1  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>

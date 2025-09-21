@@ -15,8 +15,8 @@
 	    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	    <!--package需注释掉-->
-	    <EnableMsixTooling>true</EnableMsixTooling>
-	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	    <EnableMsixTooling>flase</EnableMsixTooling>
+	    <WindowsAppSDKSelfContained>flase</WindowsAppSDKSelfContained>
 	    <SelfContained>true</SelfContained>
         <WindowsPackageType>None</WindowsPackageType>
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
@@ -307,6 +307,7 @@
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MainPage.xaml" />
+    <None Remove="Views\Manufacture\ManufacturePage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
     <None Remove="Views\Map\Tools\MapGIS.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
@@ -354,10 +355,10 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="30.1.41" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="30.1.41" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="30.1.41" />
-    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="30.1.41" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="30.2.7" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="30.2.7" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="30.2.7" />
+    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="30.2.7" />
     <PackageReference Include="Syncfusion.TreeView.WinUI" Version="30.2.7" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.1.4" />
@@ -620,6 +621,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Manufacture\ManufacturePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\AboutPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
