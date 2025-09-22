@@ -85,7 +85,7 @@
                                     <ic:FluentIcon Icon="ArrowTrendingText" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
-                            <NavigationViewItem Content="{StaticResource BusinessPage}" Tag="BusinessPage">
+                            <NavigationViewItem Content="{StaticResource ScalperShellPage}" Tag="ScalperShellPage">
                                 <NavigationViewItem.Icon>
                                     <ic:FluentIcon Icon="ArrowTrendingSparkle" />
                                 </NavigationViewItem.Icon>

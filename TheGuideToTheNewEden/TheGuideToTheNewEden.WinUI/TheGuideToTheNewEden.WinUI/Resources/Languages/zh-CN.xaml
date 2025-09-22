@@ -8,6 +8,7 @@
     <x:String x:Key="MarketPage">市场</x:String>
     <x:String x:Key="BusinessPage">商业</x:String>
     <x:String x:Key="OrderPage">订单</x:String>
+    <x:String x:Key="ScalperShellPage">倒货</x:String>
     <x:String x:Key="ChannelIntelPage">频道预警</x:String>
     <x:String x:Key="ContractPage">公开合同</x:String>
     <x:String x:Key="ServerPingPage">延迟测试</x:String>

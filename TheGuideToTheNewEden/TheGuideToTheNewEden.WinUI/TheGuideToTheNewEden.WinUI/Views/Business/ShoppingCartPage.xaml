@@ -104,7 +104,7 @@
         <dataGrid:SfDataGrid
             x:Name="ItemsDataGrid"
             Grid.Column="1"
-            Margin="8,0,0,4"
+            Margin="0,0,0,0"
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="False"

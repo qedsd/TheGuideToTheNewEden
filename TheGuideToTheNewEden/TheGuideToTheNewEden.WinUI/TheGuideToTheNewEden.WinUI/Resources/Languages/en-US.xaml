@@ -8,6 +8,7 @@
     <x:String x:Key="MarketPage">Market</x:String>
     <x:String x:Key="BusinessPage">Business</x:String>
     <x:String x:Key="OrderPage">Order</x:String>
+    <x:String x:Key="ScalperShellPage">Scalper</x:String>
     <x:String x:Key="ChannelIntelPage">Channel Intel</x:String>
     <x:String x:Key="ContractPage">Public Contract</x:String>
     <x:String x:Key="ServerPingPage">Delay Test</x:String>

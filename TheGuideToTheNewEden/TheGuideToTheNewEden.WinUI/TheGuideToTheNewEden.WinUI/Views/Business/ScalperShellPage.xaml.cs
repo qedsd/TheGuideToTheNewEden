@@ -17,9 +17,9 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class BusinessPage : Page
+    public sealed partial class ScalperShellPage : Page
     {
-        public BusinessPage()
+        public ScalperShellPage()
         {
             this.InitializeComponent();
         }

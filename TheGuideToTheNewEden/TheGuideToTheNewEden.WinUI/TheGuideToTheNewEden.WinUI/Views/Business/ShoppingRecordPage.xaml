@@ -25,7 +25,10 @@
                         Click="DeleteSelected_Click"
                         Style="{StaticResource TransparentButton}"
                         ToolTipService.ToolTip="{StaticResource General_RemoveSelected}">
-                        <winui:FluentIcon Icon="Delete" IconSize="Resizable" />
+                        <winui:FluentIcon
+                            Foreground="{ThemeResource DefaultRed}"
+                            Icon="Delete"
+                            IconSize="Resizable" />
                     </Button>
                 </Grid>
             </controls:CardControl.Header>

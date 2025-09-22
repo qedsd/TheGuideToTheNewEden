@@ -63,6 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
 
         private async void DeleteSelected_Click(object sender, RoutedEventArgs e)
         {
+            if (ItemsList.SelectedItems.Count == 0) return;
             DevWinUI.WindowedContentDialog dialog = new()
             {
                 Content = string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_ShoppingRecord_DeleteCount"), ItemsList.SelectedItems.Count),
