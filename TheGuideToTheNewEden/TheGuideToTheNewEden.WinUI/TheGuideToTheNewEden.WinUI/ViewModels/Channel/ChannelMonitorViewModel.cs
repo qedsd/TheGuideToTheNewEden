@@ -175,45 +175,69 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            if(!SelectedCharacter.Setting.Keys.Any())
+            Start(SelectedCharacter);
+        });
+        public ICommand StartAllCommand => new RelayCommand(() =>
+        {
+            foreach (var character in Characters)
+            {
+                Start(character);
+            }
+        });
+        private bool Start(Core.Models.ChannelMonitorItem channelMonitorItem)
+        {
+            if(channelMonitorItem.Setting == null)
+            {
+                return false;
+            }
+            if (!channelMonitorItem.Setting.Keys.Any())
             {
                 ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError"));
-                return;
+                return false;
             }
-            if (!(ChatChanelInfos?.FirstOrDefault(p=>p.IsChecked) != null))
+            _listenerChannelDic.TryGetValue(selectedCharacter.Name, out var chatChanelInfos);
+            if (!(chatChanelInfos?.FirstOrDefault(p => p.IsChecked) != null))
             {
                 ShowError(Helpers.ResourcesHelper.GetString("ChannelMonitorPage_NoneSelectedChannel"));
-                return;
+                return false;
             }
             try
             {
-                if (ChannelMonitorNotifyService.Current.Add(SelectedCharacter))
+                if (ChannelMonitorNotifyService.Current.Add(channelMonitorItem))
                 {
-                    _runningChatlogObservableItems.Remove(SelectedCharacter.Name);
+                    _runningChatlogObservableItems.Remove(channelMonitorItem.Name);
                     List<Core.Models.ChatlogObservableItem> items = new List<Core.Models.ChatlogObservableItem>();
-                    var selectedC = ChatChanelInfos.Where(p => p.IsChecked).ToList();
+                    var selectedC = chatChanelInfos.Where(p => p.IsChecked).ToList();
                     foreach (var item in selectedC)
                     {
-                        Core.Models.ChatlogObservableItem chatlogObservableItem = new Core.Models.ChatlogObservableItem(item, SelectedCharacter);
+                        Core.Models.ChatlogObservableItem chatlogObservableItem = new Core.Models.ChatlogObservableItem(item, channelMonitorItem);
                         items.Add(chatlogObservableItem);
                         Core.Services.ObservableFileService.Add(chatlogObservableItem);
                         chatlogObservableItem.OnContentUpdate += ChatlogObservableItem_OnContentUpdate;
                     }
-                    _runningChatlogObservableItems.Add(SelectedCharacter.Name, items.ToArray());
-                    SelectedCharacter.Setting.SelectedChannels = selectedC.Select(p => p.ChannelName).ToList();
-                    Services.Settings.ChannelMonitorSettingService.SetValue(SelectedCharacter.Setting);
-                    SelectedCharacter.Running = true;
+                    _runningChatlogObservableItems.Add(channelMonitorItem.Name, items.ToArray());
+                    channelMonitorItem.Setting.SelectedChannels = selectedC.Select(p => p.ChannelName).ToList();
+                    Services.Settings.ChannelMonitorSettingService.SetValue(channelMonitorItem.Setting);
+                    channelMonitorItem.Running = true;
+                    return true;
+                }
+                else
+                {
+                    ShowError($"{channelMonitorItem.Name}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_AddNotifyServiceFalied")}");
+                    return false;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                ChannelMonitorNotifyService.Current.Remove(SelectedCharacter.Name);
-                _runningChatlogObservableItems.Remove(SelectedCharacter.Name);
+                ChannelMonitorNotifyService.Current.Remove(channelMonitorItem.Name);
+                _runningChatlogObservableItems.Remove(channelMonitorItem.Name);
                 Core.Log.Error(ex);
                 ShowError(ex.Message);
+                return false;
             }
+        }
 
-        });
+
         public delegate void ContentUpdate(string name, IEnumerable<Core.Models.EVELogs.ChatContent> chatContents);
         /// <summary>
         /// 消息更新
