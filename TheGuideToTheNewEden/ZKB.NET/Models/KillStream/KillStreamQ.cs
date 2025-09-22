@@ -56,7 +56,7 @@ namespace ZKB.NET.Models.KillStream
                     OnMessage?.Invoke(this, obj.Package.ToSKBDetail(), content);
                 }
             }
-            _timer.Start();
+            _timer?.Start();
         }
 
         public void Close()
