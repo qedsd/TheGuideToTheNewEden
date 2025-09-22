@@ -679,6 +679,7 @@
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddNotifyServiceFalied">添加通知服务失败</x:String>
     <x:String x:Key="GameLogMonitorPage_Regex">正则表达式</x:String>
     <x:String x:Key="GameLogMonitorPage_ShowGame">显示游戏窗口</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorMode">监控模式</x:String>

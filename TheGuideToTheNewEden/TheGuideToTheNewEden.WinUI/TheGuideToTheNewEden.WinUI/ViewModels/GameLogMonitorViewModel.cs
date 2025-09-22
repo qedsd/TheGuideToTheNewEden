@@ -67,6 +67,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref  gameLogSetting, value);
         }
 
+        private bool running;
+        public bool Running
+        {
+            get => running;
+            set => SetProperty(ref running, value);
+        }
+
         private Core.Services.GameLogDelayMonitorService _gameLogDelayMonitorService;
         private readonly Dictionary<int, Core.Models.GameLogItem> _gameLogItems = new Dictionary<int, GameLogItem>();
         internal GameLogMonitorViewModel()
@@ -106,44 +113,61 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            if(!GameLogSetting.Keys.Any())
+            Start(SelectedGameLogInfo, GameLogSetting);
+        });
+        public ICommand StartAllCommand => new RelayCommand(() =>
+        {
+            foreach (var info in GameLogInfos)
             {
-                ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError"));
-                return;
+                var setting = Services.Settings.GameLogInfoSettingService.GetValue(info.ListenerID);
+                if (setting != null)
+                {
+                    Start(info, setting);
+                }
             }
-            if (GameLogSetting.Keys.GroupBy(p => p.Pattern).FirstOrDefault(p => p.Count() > 1) != null)
+        });
+        private bool Start(GameLogInfo gameLogInfo,  GameLogSetting gameLogSetting)
+        {
+            if (!gameLogSetting.Keys.Any())
             {
-                ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_SameKeyError"));
-                return;
+                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError")}");
+                return false;
             }
-            if (GameLogMonitorNotifyService.Current.Add(SelectedGameLogInfo, GameLogSetting, SelectedGameLogInfo.ListenerName))
+            if (gameLogSetting.Keys.GroupBy(p => p.Pattern).FirstOrDefault(p => p.Count() > 1) != null)
             {
-                Core.Models.GameLogItem gameLogItem = new GameLogItem(SelectedGameLogInfo, GameLogSetting);
-                _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);
-                _gameLogItems.Add(SelectedGameLogInfo.ListenerID, gameLogItem);
+                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_SameKeyError")}");
+                return false;
+            }
+            if (GameLogMonitorNotifyService.Current.Add(gameLogInfo, gameLogSetting, gameLogInfo.ListenerName))
+            {
+                Core.Models.GameLogItem gameLogItem = new GameLogItem(gameLogInfo, gameLogSetting);
+                _gameLogItems.Remove(gameLogInfo.ListenerID);
+                _gameLogItems.Add(gameLogInfo.ListenerID, gameLogItem);
                 Core.Services.ObservableFileService.Add(gameLogItem);
                 gameLogItem.OnContentUpdate += GameLogItem_OnContentUpdate;
-                if(GameLogSetting.MonitorThreadError)
+                if (gameLogSetting.MonitorThreadError)
                 {
                     gameLogItem.InitThreadErrorLog();
                 }
-                SelectedGameLogInfo.Running = true;
-                Services.Settings.GameLogInfoSettingService.SetValue(GameLogSetting);
-                if(GameLogSetting.MonitorMode == 1)
+                gameLogInfo.Running = true;
+                Services.Settings.GameLogInfoSettingService.SetValue(gameLogSetting);
+                if (gameLogSetting.MonitorMode == 1)
                 {
-                    if(_gameLogDelayMonitorService == null)
+                    if (_gameLogDelayMonitorService == null)
                     {
                         _gameLogDelayMonitorService = new Core.Services.GameLogDelayMonitorService();
                         _gameLogDelayMonitorService.OnGameLogDelayExpire += GameLogDelayMonitorService_OnGameLogDelayExpire;
                     }
                 }
+                Running = true;
+                return true;
             }
             else
             {
-                ShowError("添加通知服务失败",false);
+                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_AddNotifyServiceFalied")}");
+                return false;
             }
-        });
-
+        }
         public ICommand AddKeysCommand => new RelayCommand(() =>
         {
             GameLogSetting.Keys.Add(new GameLogMonityKey("系统消息"));
@@ -154,16 +178,34 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            GameLogMonitorNotifyService.Current.Stop(GameLogSetting.ListenerID);
-            GameLogMonitorNotifyService.Current.Remove(GameLogSetting.ListenerID);
-            Core.Services.ObservableFileService.Remove(SelectedGameLogInfo.FilePath);
-            if(_gameLogItems.TryGetValue(SelectedGameLogInfo.ListenerID,out var item))
+            Stop(SelectedGameLogInfo, GameLogSetting);
+            Running = GameLogInfos.FirstOrDefault(p=>p.Running) != null;
+        });
+        public ICommand StopAllCommand => new RelayCommand(() =>
+        {
+            foreach (var info in GameLogInfos)
+            {
+                var setting = Services.Settings.GameLogInfoSettingService.GetValue(info.ListenerID);
+                if (setting != null)
+                {
+                    Stop(info, setting);
+                }
+            }
+            Running = false;
+        });
+        private void Stop(GameLogInfo gameLogInfo, GameLogSetting gameLogSetting)
+        {
+            GameLogMonitorNotifyService.Current.Stop(gameLogSetting.ListenerID);
+            GameLogMonitorNotifyService.Current.Remove(gameLogSetting.ListenerID);
+            Core.Services.ObservableFileService.Remove(gameLogInfo.FilePath);
+            if (_gameLogItems.TryGetValue(gameLogInfo.ListenerID, out var item))
             {
                 item.Dispose();
             }
-            SelectedGameLogInfo.Running = false;
-            _gameLogItems.Remove(SelectedGameLogInfo.ListenerID);
-        });
+            gameLogInfo.Running = false;
+            _gameLogItems.Remove(gameLogInfo.ListenerID);
+        }
+
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
         {
             var file = await Helpers.PickHelper.PickFileAsync(Window);

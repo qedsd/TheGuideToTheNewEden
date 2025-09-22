@@ -82,11 +82,35 @@
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
+                        Margin="8,0"
                         Background="Transparent"
                         BorderThickness="0"
                         Command="{x:Bind VM.RefreshCommand}"
-                        Icon="Refresh"
-                        Label="{StaticResource General_RefreshList}" />
+                        Label="{StaticResource General_RefreshList}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="ArrowSync" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        Margin="8,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StartAllCommand}"
+                        Label="{StaticResource General_StartAll}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="Play" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        Margin="8,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopAllCommand}"
+                        Foreground="{ThemeResource DefaultRed}"
+                        Label="{StaticResource General_StopAll}"
+                        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="Pause" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                 </StackPanel>
             </controls1:CardControl.Fonter>
         </controls1:CardControl>
@@ -349,13 +373,16 @@
                 </StackPanel>
             </controls1:CardControl.Fonter>
         </controls1:CardControl>
-        <controls1:CardControl Grid.Column="2">
+        <controls1:CardControl Grid.Column="2" Visibility="{x:Bind VM.SelectedGameLogInfo, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource GameLogMonitorPage_Logs}" />
             </controls1:CardControl.Header>
             <controls1:CardControl.Content>
                 <ScrollViewer x:Name="GameLogContentsScroll">
-                    <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="False" />
+                    <RichTextBlock
+                        x:Name="GameLogContents"
+                        Margin="4,0"
+                        IsRightTapEnabled="False" />
                 </ScrollViewer>
             </controls1:CardControl.Content>
         </controls1:CardControl>

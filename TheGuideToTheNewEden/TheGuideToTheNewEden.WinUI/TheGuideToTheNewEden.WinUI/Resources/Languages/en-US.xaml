@@ -679,6 +679,7 @@
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">Open log file</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">Keywords cannot be empty</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">Keywords cannot be repeated</x:String>
+    <x:String x:Key="GameLogMonitorPage_AddNotifyServiceFalied">Failed to add notification service</x:String>
     <x:String x:Key="GameLogMonitorPage_Regex">Regular expression</x:String>
     <x:String x:Key="GameLogMonitorPage_ShowGame">Show game window</x:String>
     <x:String x:Key="GameLogMonitorPage_MonitorMode">Monitor mode</x:String>
