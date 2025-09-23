@@ -52,6 +52,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref chatChanelInfos, value);
         }
 
+
+        private bool running;
+        public bool Running
+        {
+            get => running;
+            set => SetProperty(ref running, value);
+        }
+
         private Dictionary<string, Core.Models.ChatlogObservableItem[]> _runningChatlogObservableItems = new Dictionary<string, Core.Models.ChatlogObservableItem[]>();
         public ChannelMonitorViewModel()
         {
@@ -135,6 +143,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             InitDicAsync();
         });
+        public ICommand RefreshChannelListCommand => new RelayCommand(() =>
+        {
+            InitDicAsync();
+        });
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
         {
             try
@@ -161,21 +173,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            ChannelMonitorNotifyService.Current.Stop(SelectedCharacter.Name);
-            ChannelMonitorNotifyService.Current.Remove(SelectedCharacter.Name);
-            if(_runningChatlogObservableItems.TryGetValue(SelectedCharacter.Name, out var items))
+            Stop(SelectedCharacter);
+            Running = Characters.FirstOrDefault(p => p.Running) != null;
+        });
+        public ICommand StopAllCommand => new RelayCommand(() =>
+        {
+            foreach (var character in Characters)
             {
-                foreach(var item in items)
+                if (character.Running)
                 {
-                    Core.Services.ObservableFileService.Remove(item.FilePath);
+                    Stop(character);
                 }
             }
-            _runningChatlogObservableItems.Remove(SelectedCharacter.Name);
-            SelectedCharacter.Running = false;
+            Running = Characters.FirstOrDefault(p => p.Running) == null;
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            Start(SelectedCharacter);
+            if (Start(SelectedCharacter))
+            {
+                Running = true;
+            }
         });
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
@@ -183,6 +200,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 Start(character);
             }
+            Running = Characters.FirstOrDefault(p => p.Running) != null;
         });
         private bool Start(Core.Models.ChannelMonitorItem channelMonitorItem)
         {
@@ -236,7 +254,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return false;
             }
         }
-
+        private void Stop(Core.Models.ChannelMonitorItem channelMonitorItem)
+        {
+            ChannelMonitorNotifyService.Current.Stop(channelMonitorItem.Name);
+            ChannelMonitorNotifyService.Current.Remove(channelMonitorItem.Name);
+            if (_runningChatlogObservableItems.TryGetValue(channelMonitorItem.Name, out var items))
+            {
+                foreach (var item in items)
+                {
+                    Core.Services.ObservableFileService.Remove(item.FilePath);
+                }
+            }
+            _runningChatlogObservableItems.Remove(channelMonitorItem.Name);
+            channelMonitorItem.Running = false;
+        }
 
         public delegate void ContentUpdate(string name, IEnumerable<Core.Models.EVELogs.ChatContent> chatContents);
         /// <summary>

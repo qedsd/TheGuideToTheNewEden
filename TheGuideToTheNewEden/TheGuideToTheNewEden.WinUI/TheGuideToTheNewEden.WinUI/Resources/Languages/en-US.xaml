@@ -125,6 +125,7 @@
     <x:String x:Key="General_CharacterUnselected">Character Unselected</x:String>
     <x:String x:Key="General_CharacterNotFound">Not Found Character</x:String>
     <x:String x:Key="General_TokenExpiredAndRefrshFailed">The token has expired and the refresh attempt failed</x:String>
+    <x:String x:Key="General_CharacterList">Characters</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

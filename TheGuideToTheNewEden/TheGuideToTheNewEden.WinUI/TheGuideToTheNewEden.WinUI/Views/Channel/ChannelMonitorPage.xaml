@@ -25,41 +25,86 @@
         </Grid.ColumnDefinitions>
         <controls1:CardControl>
             <controls1:CardControl.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelMonitorPage_TargetCharacter}" />
-                    <ComboBox
-                        Grid.Column="1"
-                        Margin="4,0,0,0"
-                        HorizontalAlignment="Stretch"
-                        ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
-                        SelectedIndex="-1"
-                        SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="coreModels:ChannelMonitorItem">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Bind Name}" />
-                                    <Rectangle
-                                        Grid.Column="1"
-                                        Width="10"
-                                        Height="10"
-                                        Margin="4,0,0,0"
-                                        Fill="{ThemeResource SystemAccentColor}"
-                                        RadiusX="10"
-                                        RadiusY="10"
-                                        Visibility="{x:Bind Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                                </Grid>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </Grid>
+                <TextBlock VerticalAlignment="Center" Text="{StaticResource General_CharacterList}" />
+            </controls1:CardControl.Header>
+            <controls1:CardControl.Content>
+                <ListView
+                    AllowDrop="True"
+                    Background="Transparent"
+                    CanDragItems="True"
+                    CanReorderItems="True"
+                    ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
+                    SelectedItem="{x:Bind VM.SelectedCharacter, Mode=TwoWay}"
+                    Style="{StaticResource StretchListView}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="4,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Rectangle
+                                    Width="3"
+                                    Height="26"
+                                    HorizontalAlignment="Left"
+                                    Fill="{ThemeResource SystemAccentColorLight2}"
+                                    RadiusX="2"
+                                    RadiusY="2"
+                                    ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_Running}"
+                                    Visibility="{Binding Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{Binding Name}"
+                                    ToolTipService.ToolTip="{Binding Name}" />
+                            </Grid>
+
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                        Margin="8,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StartAllCommand}"
+                        Label="{StaticResource General_StartAll}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="Play" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        Margin="8,0"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind VM.StopAllCommand}"
+                        Foreground="{ThemeResource DefaultRed}"
+                        Label="{StaticResource General_StopAll}"
+                        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="Pause" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        Margin="8,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{x:Bind VM.RefreshListCommand}"
+                        Label="{StaticResource General_RefreshList}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="ArrowSync" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                </StackPanel>
+            </controls1:CardControl.Fonter>
+        </controls1:CardControl>
+        <controls1:CardControl
+            Grid.Column="1"
+            Width="400"
+            Margin="4,0"
+            Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <controls1:CardControl.Header>
+                <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
             </controls1:CardControl.Header>
             <controls1:CardControl.Content>
                 <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
@@ -96,188 +141,191 @@
                 <AppBarButton
                     HorizontalAlignment="Center"
                     VerticalAlignment="Stretch"
-                    Command="{x:Bind VM.RefreshListCommand}"
+                    Command="{x:Bind VM.RefreshChannelListCommand}"
                     Icon="Refresh"
                     IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
                     Label="{StaticResource General_RefreshList}" />
             </controls1:CardControl.Fonter>
         </controls1:CardControl>
-        <controls1:CardControl
-            Grid.Column="1"
-            Width="400"
-            Margin="4,0"
-            Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
-            <controls1:CardControl.Header>
-                <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
-            </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
-                <ScrollViewer IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
-                    <StackPanel Margin="10,0">
-                        <Grid Margin="0,10">
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyMode}" />
-                            <Grid Grid.Row="1" Margin="0,8,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <CheckBox Content="{StaticResource GameLogMonitorPage_SystemNotify}" IsChecked="{x:Bind VM.SelectedCharacter.Setting.SystemNotify, Mode=TwoWay}" />
-                                <CheckBox
-                                    Grid.Column="1"
-                                    Content="{StaticResource GameLogMonitorPage_WindowNotify}"
-                                    IsChecked="{x:Bind VM.SelectedCharacter.Setting.WindowNotify, Mode=TwoWay}" />
-                            </Grid>
-                            <Grid Grid.Row="2" Margin="0,4">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <CheckBox Content="{StaticResource GameLogMonitorPage_SoundNotify}" IsChecked="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=TwoWay}" />
-                                    <CheckBox
-                                        Grid.Column="1"
-                                        Content="{StaticResource GameLogMonitorPage_RepeatSound}"
-                                        IsChecked="{x:Bind VM.SelectedCharacter.Setting.RepeatSound, Mode=TwoWay}"
-                                        Visibility="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                                </Grid>
-
-                                <Grid
-                                    Grid.Row="1"
-                                    Margin="0,8,0,0"
-                                    Visibility="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Margin="0,0,4,0"
-                                        VerticalAlignment="Center"
-                                        Text="{StaticResource ChannelMonitorPage_SoundFile}" />
-                                    <TextBox
-                                        Grid.Column="1"
-                                        IsEnabled="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay}"
-                                        PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
-                                        Text="{x:Bind VM.SelectedCharacter.Setting.SoundFile, Mode=TwoWay}" />
-                                    <Button
-                                        Grid.Column="2"
-                                        Margin="4,0,0,0"
-                                        Command="{x:Bind VM.PickSoundFileCommand}"
-                                        Content="+"
-                                        IsEnabled="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay}" />
-                                </Grid>
-                            </Grid>
-                        </Grid>
-
-                        <Grid Margin="0,20,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GameLogMonitorPage_NotifyKey}" />
-                                <Button
-                                    Width="24"
-                                    Height="24"
-                                    Margin="4,0,0,0"
-                                    Padding="0"
-                                    BorderThickness="0"
-                                    Content="!">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyKey_Tip}" />
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </StackPanel>
-                            <Button
-                                Grid.Column="1"
-                                Command="{x:Bind VM.AddKeysCommand}"
-                                Style="{ThemeResource TransparentButton}"
-                                ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_AddKey}">
-                                <Button.Content>
-                                    <winui:FluentIcon Icon="Add" IconSize="Resizable" />
-                                </Button.Content>
-                            </Button>
-                        </Grid>
-
-                        <dataGrid:SfDataGrid ItemsSource="{x:Bind VM.SelectedCharacter.Setting.Keys, Mode=OneWay}" Style="{StaticResource SettingDataGrid}">
-                            <dataGrid:SfDataGrid.Columns>
-                                <dataGrid:GridTextColumn
-                                    Width="320"
-                                    HeaderText="{StaticResource GameLogMonitorPage_Regex}"
-                                    MappingName="Pattern" />
-                                <dataGrid:GridTemplateColumn HeaderText="{StaticResource General_Remove}">
-                                    <dataGrid:GridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                Click="Button_DeleteKey_Click"
-                                                Foreground="OrangeRed"
-                                                Style="{ThemeResource TransparentButton}">
-                                                <Button.Content>
-                                                    <winui:FluentIcon Icon="Delete" IconSize="Resizable" />
-                                                </Button.Content>
-                                            </Button>
-                                        </DataTemplate>
-                                    </dataGrid:GridTemplateColumn.CellTemplate>
-                                </dataGrid:GridTemplateColumn>
-                            </dataGrid:SfDataGrid.Columns>
-                        </dataGrid:SfDataGrid>
-                    </StackPanel>
-                </ScrollViewer>
-            </controls1:CardControl.Content>
-            <controls1:CardControl.Fonter>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <AppBarButton
-                        HorizontalAlignment="Center"
-                        Command="{x:Bind VM.StartCommand}"
-                        Icon="Play"
-                        Label="{StaticResource ChannelMonitorPage_Start}"
-                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                    <AppBarButton
-                        Margin="8,0"
-                        HorizontalAlignment="Center"
-                        Command="{x:Bind VM.StopCommand}"
-                        Foreground="OrangeRed"
-                        Icon="Stop"
-                        Label="{StaticResource ChannelMonitorPage_Stop}"
-                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                    <AppBarButton
-                        Margin="8,0"
-                        HorizontalAlignment="Center"
-                        Command="{x:Bind VM.StopNotifyCommand}"
-                        Icon="Mute"
-                        Label="{StaticResource GameLogMonitorPage_StopNotify}"
-                        ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_StopNotify_Tip}"
-                        Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                </StackPanel>
-            </controls1:CardControl.Fonter>
-        </controls1:CardControl>
         <controls1:CardControl Grid.Column="2">
             <controls1:CardControl.Header>
-                <TextBlock Text="{StaticResource ChannelMonitorPage_ChannelLogs}" />
+                <ContentPresenter />
             </controls1:CardControl.Header>
             <controls1:CardControl.Content>
-                <ScrollViewer x:Name="GameLogContentsScroll" Margin="8">
-                    <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="True">
-                        <RichTextBlock.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
-                            </MenuFlyout>
-                        </RichTextBlock.ContextFlyout>
-                    </RichTextBlock>
-                </ScrollViewer>
+                <Pivot>
+                    <PivotItem Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource General_Setting}" />
+                        </PivotItem.Header>
+                        <ScrollViewer IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}">
+                            <StackPanel Margin="10,0">
+                                <Grid Margin="0,10">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyMode}" />
+                                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Content="{StaticResource GameLogMonitorPage_SystemNotify}" IsChecked="{x:Bind VM.SelectedCharacter.Setting.SystemNotify, Mode=TwoWay}" />
+                                        <CheckBox
+                                            Grid.Column="1"
+                                            Content="{StaticResource GameLogMonitorPage_WindowNotify}"
+                                            IsChecked="{x:Bind VM.SelectedCharacter.Setting.WindowNotify, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid Grid.Row="2" Margin="0,4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Content="{StaticResource GameLogMonitorPage_SoundNotify}" IsChecked="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=TwoWay}" />
+                                            <CheckBox
+                                                Grid.Column="1"
+                                                Content="{StaticResource GameLogMonitorPage_RepeatSound}"
+                                                IsChecked="{x:Bind VM.SelectedCharacter.Setting.RepeatSound, Mode=TwoWay}"
+                                                Visibility="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                        </Grid>
+
+                                        <Grid
+                                            Grid.Row="1"
+                                            Margin="0,8,0,0"
+                                            Visibility="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Margin="0,0,4,0"
+                                                VerticalAlignment="Center"
+                                                Text="{StaticResource ChannelMonitorPage_SoundFile}" />
+                                            <TextBox
+                                                Grid.Column="1"
+                                                IsEnabled="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay}"
+                                                PlaceholderText="{StaticResource GameLogMonitorPage_Default}"
+                                                Text="{x:Bind VM.SelectedCharacter.Setting.SoundFile, Mode=TwoWay}" />
+                                            <Button
+                                                Grid.Column="2"
+                                                Margin="4,0,0,0"
+                                                Command="{x:Bind VM.PickSoundFileCommand}"
+                                                Content="+"
+                                                IsEnabled="{x:Bind VM.SelectedCharacter.Setting.SoundNotify, Mode=OneWay}" />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+
+                                <Grid Margin="0,20,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource GameLogMonitorPage_NotifyKey}" />
+                                        <Button
+                                            Width="24"
+                                            Height="24"
+                                            Margin="4,0,0,0"
+                                            Padding="0"
+                                            BorderThickness="0"
+                                            Content="!">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyKey_Tip}" />
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{x:Bind VM.AddKeysCommand}"
+                                        Style="{ThemeResource TransparentButton}"
+                                        ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_AddKey}">
+                                        <Button.Content>
+                                            <winui:FluentIcon Icon="Add" IconSize="Resizable" />
+                                        </Button.Content>
+                                    </Button>
+                                </Grid>
+
+                                <dataGrid:SfDataGrid ItemsSource="{x:Bind VM.SelectedCharacter.Setting.Keys, Mode=OneWay}" Style="{StaticResource SettingDataGrid}">
+                                    <dataGrid:SfDataGrid.Columns>
+                                        <dataGrid:GridTextColumn
+                                            Width="320"
+                                            HeaderText="{StaticResource GameLogMonitorPage_Regex}"
+                                            MappingName="Pattern" />
+                                        <dataGrid:GridTemplateColumn HeaderText="{StaticResource General_Remove}">
+                                            <dataGrid:GridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        Click="Button_DeleteKey_Click"
+                                                        Foreground="OrangeRed"
+                                                        Style="{ThemeResource TransparentButton}">
+                                                        <Button.Content>
+                                                            <winui:FluentIcon Icon="Delete" IconSize="Resizable" />
+                                                        </Button.Content>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </dataGrid:GridTemplateColumn.CellTemplate>
+                                        </dataGrid:GridTemplateColumn>
+                                    </dataGrid:SfDataGrid.Columns>
+                                </dataGrid:SfDataGrid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </PivotItem>
+                    <PivotItem>
+                        <PivotItem.Header>
+                            <TextBlock FontSize="14" Text="{StaticResource ChannelMonitorPage_ChannelLogs}" />
+                        </PivotItem.Header>
+                        <ScrollViewer x:Name="GameLogContentsScroll" Margin="8">
+                            <RichTextBlock x:Name="GameLogContents" IsRightTapEnabled="True">
+                                <RichTextBlock.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_ClearNews_Click" Text="{StaticResource General_Clear}" />
+                                    </MenuFlyout>
+                                </RichTextBlock.ContextFlyout>
+                            </RichTextBlock>
+                        </ScrollViewer>
+                    </PivotItem>
+                </Pivot>
             </controls1:CardControl.Content>
+            <controls1:CardControl.Fonter>
+                <Grid Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <AppBarButton
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind VM.StartCommand}"
+                            Icon="Play"
+                            Label="{StaticResource ChannelMonitorPage_Start}"
+                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                        <AppBarButton
+                            Margin="8,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind VM.StopCommand}"
+                            Foreground="OrangeRed"
+                            Icon="Stop"
+                            Label="{StaticResource ChannelMonitorPage_Stop}"
+                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                        <AppBarButton
+                            Margin="8,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind VM.StopNotifyCommand}"
+                            Icon="Mute"
+                            Label="{StaticResource GameLogMonitorPage_StopNotify}"
+                            ToolTipService.ToolTip="{StaticResource GameLogMonitorPage_StopNotify_Tip}"
+                            Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    </StackPanel>
+                </Grid>
+            </controls1:CardControl.Fonter>
         </controls1:CardControl>
     </Grid>
 </Page>

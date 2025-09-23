@@ -83,16 +83,6 @@
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
                         Margin="8,0"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Command="{x:Bind VM.RefreshCommand}"
-                        Label="{StaticResource General_RefreshList}">
-                        <AppBarButton.Icon>
-                            <winui:FluentIcon Icon="ArrowSync" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <AppBarButton
-                        Margin="8,0"
                         HorizontalAlignment="Center"
                         Command="{x:Bind VM.StartAllCommand}"
                         Label="{StaticResource General_StartAll}">
@@ -109,6 +99,16 @@
                         Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
                         <AppBarButton.Icon>
                             <winui:FluentIcon Icon="Pause" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        Margin="8,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{x:Bind VM.RefreshCommand}"
+                        Label="{StaticResource General_RefreshList}">
+                        <AppBarButton.Icon>
+                            <winui:FluentIcon Icon="ArrowSync" />
                         </AppBarButton.Icon>
                     </AppBarButton>
                 </StackPanel>
