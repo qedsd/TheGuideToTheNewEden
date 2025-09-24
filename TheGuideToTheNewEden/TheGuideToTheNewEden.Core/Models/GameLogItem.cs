@@ -177,7 +177,7 @@ namespace TheGuideToTheNewEden.Core.Models
         {
             if(_threadErrorGameLogItem != null)
             {
-                ObservableFileService.Remove(_threadErrorGameLogItem.FilePath);
+                ObservableFileService.Remove(_threadErrorGameLogItem);
             }
         }
     }

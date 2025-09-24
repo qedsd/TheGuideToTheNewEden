@@ -14,7 +14,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
     internal class ChannelMonitorViewModel : BaseViewModel
     {
-        private HashSet<string> _runningCharacters;
         /// <summary>
         /// key为角色名
         /// value为角色下所有的不重复频道
@@ -22,42 +21,42 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         private readonly Dictionary<string, List<ChatChanelInfo>> _listenerChannelDic = new Dictionary<string, List<ChatChanelInfo>>();
 
-        private Core.Models.ChannelMonitorItem selectedCharacter;
+        private Core.Models.ChannelMonitorItem _selectedCharacter;
         public Core.Models.ChannelMonitorItem SelectedCharacter
         {
-            get => selectedCharacter;
+            get => _selectedCharacter;
             set
             {
-                if (SetProperty(ref selectedCharacter, value))
+                if (SetProperty(ref _selectedCharacter, value))
                 {
                     UpdateSelectedCharacter();
                 }
             }
         }
 
-        private List<Core.Models.ChannelMonitorItem> characters;
+        private List<Core.Models.ChannelMonitorItem> _characters;
         public List<Core.Models.ChannelMonitorItem> Characters
         {
-            get => characters;
-            set => SetProperty(ref characters, value);
+            get => _characters;
+            set => SetProperty(ref _characters, value);
         }
 
-        private List<ChatChanelInfo> chatChanelInfos;
+        private List<ChatChanelInfo> _chatChanelInfos;
         /// <summary>
         /// 当前角色所有聊天频道
         /// </summary>
         public List<ChatChanelInfo> ChatChanelInfos
         {
-            get => chatChanelInfos;
-            set => SetProperty(ref chatChanelInfos, value);
+            get => _chatChanelInfos;
+            set => SetProperty(ref _chatChanelInfos, value);
         }
 
 
-        private bool running;
+        private bool _running;
         public bool Running
         {
-            get => running;
-            set => SetProperty(ref running, value);
+            get => _running;
+            set => SetProperty(ref _running, value);
         }
 
         private Dictionary<string, Core.Models.ChatlogObservableItem[]> _runningChatlogObservableItems = new Dictionary<string, Core.Models.ChatlogObservableItem[]>();
@@ -69,25 +68,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         internal event SelectedCharacterChanged OnSelectedCharacterChanged;
         private void UpdateSelectedCharacter()
         {
-            if(selectedCharacter != null)
+            if(_selectedCharacter != null)
             {
-                if (_listenerChannelDic.TryGetValue(selectedCharacter.Name, out var chatChanelInfos))
+                if (_listenerChannelDic.TryGetValue(_selectedCharacter.Name, out var chatChanelInfos))
                 {
                     ChatChanelInfos = chatChanelInfos;
                 }
-                OnSelectedCharacterChanged?.Invoke(selectedCharacter.Name);
-                if (selectedCharacter.Setting == null)
+                OnSelectedCharacterChanged?.Invoke(_selectedCharacter.Name);
+                if (_selectedCharacter.Setting == null)
                 {
-                    var setting = Services.Settings.ChannelMonitorSettingService.GetValue(selectedCharacter.Name);
+                    var setting = Services.Settings.ChannelMonitorSettingService.GetValue(_selectedCharacter.Name);
                     setting ??= new Core.Models.ChannelMonitorSetting();
-                    setting.Name = selectedCharacter.Name;
-                    selectedCharacter.Setting = setting;
+                    setting.Name = _selectedCharacter.Name;
+                    _selectedCharacter.Setting = setting;
                 }
-                if(!ChatChanelInfos.IsNullOrEmpty() && !selectedCharacter.Setting.SelectedChannels.IsNullOrEmpty())
+                if(!ChatChanelInfos.IsNullOrEmpty() && !_selectedCharacter.Setting.SelectedChannels.IsNullOrEmpty())
                 {
                     foreach (var channel in ChatChanelInfos)
                     {
-                        var target = selectedCharacter.Setting.SelectedChannels.FirstOrDefault(p => p == channel.ChannelName);
+                        var target = _selectedCharacter.Setting.SelectedChannels.FirstOrDefault(p => p == channel.ChannelName);
                         if(target != null)
                         {
                             channel.IsChecked = true;
@@ -185,7 +184,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     Stop(character);
                 }
             }
-            Running = Characters.FirstOrDefault(p => p.Running) == null;
+            Running = Characters.FirstOrDefault(p => p.Running) != null;
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
@@ -198,25 +197,59 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach (var character in Characters)
             {
-                Start(character);
+                if(character == _selectedCharacter)
+                {
+                    character.Setting.SelectedChannels = _chatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
+                }
+                if (!character.Running)
+                {
+                    Start(character);
+                }
             }
             Running = Characters.FirstOrDefault(p => p.Running) != null;
         });
         private bool Start(Core.Models.ChannelMonitorItem channelMonitorItem)
         {
-            if(channelMonitorItem.Setting == null)
+            if (channelMonitorItem.Setting == null)
             {
-                return false;
+                var setting = Services.Settings.ChannelMonitorSettingService.GetValue(channelMonitorItem.Name);
+                if (setting != null)
+                {
+                    channelMonitorItem.Setting = setting;
+                }
+                else
+                { 
+                    return false;
+                }
             }
             if (!channelMonitorItem.Setting.Keys.Any())
             {
-                ShowError(Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError"));
+                ShowError($"{channelMonitorItem.Name}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError")}");
                 return false;
             }
-            _listenerChannelDic.TryGetValue(selectedCharacter.Name, out var chatChanelInfos);
+            _listenerChannelDic.TryGetValue(channelMonitorItem.Name, out var chatChanelInfos);
+            if (!chatChanelInfos.IsNullOrEmpty())
+            {
+                if (!channelMonitorItem.Setting.SelectedChannels.IsNullOrEmpty())
+                {
+                    foreach (var channel in chatChanelInfos)
+                    {
+                        var target = channelMonitorItem.Setting.SelectedChannels.FirstOrDefault(p => p == channel.ChannelName);
+                        if (target != null)
+                        {
+                            channel.IsChecked = true;
+                        }
+                    }
+                }
+                else
+                {
+                    ShowError($"{channelMonitorItem.Name}: {Helpers.ResourcesHelper.GetString("ChannelMonitorPage_NoneSelectedChannel")}");
+                    return false;
+                }
+            }
             if (!(chatChanelInfos?.FirstOrDefault(p => p.IsChecked) != null))
             {
-                ShowError(Helpers.ResourcesHelper.GetString("ChannelMonitorPage_NoneSelectedChannel"));
+                ShowError($"{channelMonitorItem.Name}: {Helpers.ResourcesHelper.GetString("ChannelMonitorPage_NoneSelectedChannel")}");
                 return false;
             }
             try
@@ -234,7 +267,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         chatlogObservableItem.OnContentUpdate += ChatlogObservableItem_OnContentUpdate;
                     }
                     _runningChatlogObservableItems.Add(channelMonitorItem.Name, items.ToArray());
-                    channelMonitorItem.Setting.SelectedChannels = selectedC.Select(p => p.ChannelName).ToList();
                     Services.Settings.ChannelMonitorSettingService.SetValue(channelMonitorItem.Setting);
                     channelMonitorItem.Running = true;
                     return true;
@@ -262,7 +294,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 foreach (var item in items)
                 {
-                    Core.Services.ObservableFileService.Remove(item.FilePath);
+                    Core.Services.ObservableFileService.Remove(item);
                 }
             }
             _runningChatlogObservableItems.Remove(channelMonitorItem.Name);

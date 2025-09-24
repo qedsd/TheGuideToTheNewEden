@@ -197,7 +197,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             GameLogMonitorNotifyService.Current.Stop(gameLogSetting.ListenerID);
             GameLogMonitorNotifyService.Current.Remove(gameLogSetting.ListenerID);
-            Core.Services.ObservableFileService.Remove(gameLogInfo.FilePath);
+            Core.Services.ObservableFileService.Remove(_gameLogItems[gameLogInfo.ListenerID]);
             if (_gameLogItems.TryGetValue(gameLogInfo.ListenerID, out var item))
             {
                 item.Dispose();
@@ -225,7 +225,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 GameLogMonitorNotifyService.Current.Stop(p.ListenerID);
                 GameLogMonitorNotifyService.Current.Remove(p.ListenerID);
-                Core.Services.ObservableFileService.Remove(p.FilePath);
+                Core.Services.ObservableFileService.Remove(_gameLogItems[p.ListenerID]);
                 p.Running = false;
             });
             foreach(var item in _gameLogItems)

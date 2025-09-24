@@ -126,6 +126,7 @@ namespace TheGuideToTheNewEden.WinUI
         public void SetDisplayTitle(string title)
         {
             TitleTextBlock.Text = title;
+            Title = title;
         }
 
         /// <summary>

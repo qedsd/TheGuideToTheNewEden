@@ -153,7 +153,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     Run listener = new Run()
                     {
                         FontWeight = FontWeights.Bold,
-                        Text = $"{chatContent.Listener} : "
+                        Text = $"<{chatContent.Listener}> "
                     };
                     Run timeRun = new Run()
                     {

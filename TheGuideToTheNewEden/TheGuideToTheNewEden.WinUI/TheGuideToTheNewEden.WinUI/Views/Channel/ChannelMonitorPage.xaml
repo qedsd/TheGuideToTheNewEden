@@ -104,7 +104,7 @@
             Margin="4,0"
             Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls1:CardControl.Header>
-                <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
+                <TextBlock Text="{StaticResource Channel_Channels}" />
             </controls1:CardControl.Header>
             <controls1:CardControl.Content>
                 <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChatChanelInfos, Mode=OneWay}">
@@ -152,8 +152,8 @@
                 <ContentPresenter />
             </controls1:CardControl.Header>
             <controls1:CardControl.Content>
-                <Pivot>
-                    <PivotItem Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                <Pivot Margin="0,-50,0,0">
+                    <PivotItem Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
                         <PivotItem.Header>
                             <TextBlock FontSize="14" Text="{StaticResource General_Setting}" />
                         </PivotItem.Header>
@@ -299,7 +299,7 @@
                 </Pivot>
             </controls1:CardControl.Content>
             <controls1:CardControl.Fonter>
-                <Grid Visibility="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                <Grid Visibility="{x:Bind VM.SelectedCharacter, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                         <AppBarButton
                             HorizontalAlignment="Center"

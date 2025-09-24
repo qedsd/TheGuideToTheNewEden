@@ -65,6 +65,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             grid.Children.Add(button);
 
             _window.InitWindow(grid, WindowTitleStyle.OnlyClose, true, true, true, false);
+            _window.SetCloseToHide();
             _window.SetSize(400, 300);
             _window.SetAlwaysOnTop();
             Helpers.WindowHelper.CenterToScreen(_window);
