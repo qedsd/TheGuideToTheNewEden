@@ -209,10 +209,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {"MailPage","CharactersShellPage"},
             {"ContractPage","CharactersShellPage"},
             {"IndustryPage","CharactersShellPage"},
-            {"CharacterOrderPage","BusinessPage" },
-            {"ScalperPage","BusinessPage" },
-            {"ShoppingCartPage","BusinessPage" },
-            {"ShoppingRecordPage","BusinessPage" },
+            {"ScalperPage","ScalperShellPage" },
+            {"ShoppingCartPage","ScalperShellPage" },
+            {"ShoppingRecordPage","ScalperShellPage" },
             {"KillStreamPage","ZKBHomePage" },
         };
     }
