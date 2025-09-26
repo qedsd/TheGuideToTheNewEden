@@ -80,7 +80,7 @@ namespace TheGuideToTheNewEden.DevTools.Translation
                 }
             }
 
-            int[] filterGroup = new int[] { 1396 , 1954 ,3628};
+            int[] filterGroup = new int[] { 2,1396 , 1954 ,3628};
             foreach(var root in rootGroup)
             {
                 if(filterGroup.Contains(root.RealId))
