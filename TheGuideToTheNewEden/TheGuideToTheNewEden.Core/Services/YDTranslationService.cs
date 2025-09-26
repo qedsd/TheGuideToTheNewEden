@@ -44,7 +44,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 { "q", new string[]{text}},
                 {"from", new string[]{from}},
                 {"to", new string[]{to}},
-                {"vocabId", new string[]{VocabId}}
+                {"vocabId", new string[]{VocabId}}//仅能传一个id
             };
             AddAuthParams(AppKey, AppSerct, paramsMap);
             Dictionary<string, string[]> header = new Dictionary<string, string[]>() { { "Content-Type", new string[] { "application/x-www-form-urlencoded" } } };
