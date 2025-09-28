@@ -1275,6 +1275,8 @@
     <x:String x:Key="ZKB_KillStream">KB Stream</x:String>
 
     <!--  ChannelTranslation  -->
+    <x:String x:Key="ChannelTranslation_SelectedIntelChannel">Do not select the intel channel.</x:String>
+    <x:String x:Key="ChannelTranslation_NoSelectedChannel">No channel selected</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General">General</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_From">Source Language</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_To">Target language</x:String>

@@ -15,6 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
         public ChannelTranslationSetting Setting { get; private set; }
         private List<ChannelTranslationObserver> _observers;
         private ChannelTranslationService _translationService;
+        private List<string> _selectedChannelPaths;
 
         public ChannelTranslation(string characterName)
         {
@@ -25,15 +26,16 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 };
             _translationService = ClientServiceHelper.GetRequiredService<ChannelTranslationService>();
         }
-        public void SetSelectedChannels(List<string> paths)
+        public void SetSelectedChannels(List<ChatChanelInfo> channels)
         {
-            Setting.Channels = paths;
+            Setting.Channels = channels.Select(p=>p.ChannelName).ToList();
+            _selectedChannelPaths = channels.Select(p=>p.FilePath).ToList();
         }
         public void Start()
         {
             _observers ??= new List<ChannelTranslationObserver>();
             _observers.Clear();
-            foreach (var path in Setting.Channels)
+            foreach (var path in _selectedChannelPaths)
             {
                 ChannelTranslationObserver observer = new ChannelTranslationObserver(path, Setting.CharacterName, Setting.Keyword);
                 if (Core.Services.ObservableFileService.Add(observer))

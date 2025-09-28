@@ -141,7 +141,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 ChatChanelInfos = _listenerChannelDic[name];
                 foreach (var channel in ChatChanelInfos)
                 {
-                    channel.IsChecked = ChannelTranslation.Setting.Channels.Contains(channel.FilePath);
+                    channel.IsChecked = ChannelTranslation.Setting.Channels.Contains(channel.ChannelName);
                 }
             }
         }
@@ -161,6 +161,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 try
                 {
+                    if(channel.Setting.Channels.FirstOrDefault(p=>p.Contains("Intel", StringComparison.OrdinalIgnoreCase)) != null)
+                    {
+                        ShowError(Helpers.ResourcesHelper.GetString("ChannelTranslation_SelectedIntelChannel"));
+                        return false;
+                    }
                     channel.Start();
                     return true;
                 }
@@ -203,7 +208,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var selectedChannels = ChatChanelInfos.Where(p => p.IsChecked).ToList();
                 if (selectedChannels.NotNullOrEmpty())
                 {
-                    ChannelTranslation.SetSelectedChannels(selectedChannels.Select(p => p.FilePath).ToList());
+                    ChannelTranslation.SetSelectedChannels(selectedChannels);
                     if (Start(ChannelTranslation))
                     {
                         SelectedCharacter.Running = true;
@@ -226,11 +231,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     continue;
                 }
-                var channelMarket = GetChannelTranslation(character.Name);
-                if (Start(channelMarket))
+                var channelTranslation = GetChannelTranslation(character.Name);
+                if (channelTranslation.Setting.Channels.Any())
                 {
-                    character.Running = true;
-                    Running = true;
+                    if(_listenerChannelDic.TryGetValue(channelTranslation.Setting.CharacterName, out var channels))
+                    {
+                        channelTranslation.SetSelectedChannels(channels.Where(p => channelTranslation.Setting.Channels.Contains(p.ChannelName)).ToList());
+                        if (Start(channelTranslation))
+                        {
+                            character.Running = true;
+                            Running = true;
+                        }
+                    }
+                    else
+                    {
+                        ShowError($"{channelTranslation.Setting.CharacterName}:{Helpers.ResourcesHelper.GetString("ChannelTranslation_NoSelectedChannel")}");
+                    }
+                }
+                else
+                {
+                    ShowError($"{channelTranslation.Setting.CharacterName}:{Helpers.ResourcesHelper.GetString("ChannelTranslation_NoSelectedChannel")}");
                 }
             }
         });
