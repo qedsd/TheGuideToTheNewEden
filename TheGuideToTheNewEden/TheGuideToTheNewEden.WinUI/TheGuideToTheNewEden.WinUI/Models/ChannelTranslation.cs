@@ -7,11 +7,17 @@ using TheGuideToTheNewEden.Core.Models.ChannelMarket;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.Core.Models.Channel.Translation;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
     public class ChannelTranslation
     {
+        private const int MAXCHAR = 10000;
+        /// <summary>
+        /// 已查询字符数量
+        /// </summary>
+        private static long _queryChar;
         public ChannelTranslationSetting Setting { get; private set; }
         private List<ChannelTranslationObserver> _observers;
         private ChannelTranslationService _translationService;
@@ -52,7 +58,15 @@ namespace TheGuideToTheNewEden.WinUI.Models
         {
             if (news != null)
             {
-                _translationService.Query(news.Where(p => p.Important), Setting.AutoTranslateFrom, Setting.AutoTranslateTo);
+                Interlocked.Add(ref _queryChar, news.Sum(p => p.Content.Length));
+                if(Interlocked.Read(ref _queryChar) > MAXCHAR)
+                {
+                    _translationService.ShowQueryLimited(news.Where(p => p.Important));
+                }
+                else
+                {
+                    _translationService.Query(news.Where(p => p.Important), Setting.AutoTranslateFrom, Setting.AutoTranslateTo);
+                }
             }
         }
 

@@ -45,7 +45,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 _window.UpdateContent(items, from, to);
             });
         }
-
+        public void ShowQueryLimited(IEnumerable<Core.Models.EVELogs.ChatContent> items)
+        {
+            if (items == null || !items.Any())
+                return;
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                _window.Activate();
+                _window.SetForegroundWindow();
+                _window.UpdateLimtedContent(items);
+            });
+        }
         public void RestorePos()
         {
             if(_window!= null)

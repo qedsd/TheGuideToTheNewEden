@@ -24,6 +24,9 @@ using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 using TheGuideToTheNewEden.Core.Extensions;
 using CommunityToolkit.WinUI.UI;
+using TheGuideToTheNewEden.Core.Models.Translation;
+using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using Vanara.PInvoke;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -76,46 +79,64 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             foreach (var chatContent in marketChatContents)
             {
-                isAdded = true;
                 var result = await _translationService.Translate(chatContent.Content, from, to);
-                ChannelResultDisplayModel resultDisplayModel = null;
-                if (!_resultsDict.TryGetValue(chatContent.ChannelID, out resultDisplayModel))
+                UpdateContent(chatContent, result);
+            }
+        }
+        public void UpdateLimitedContent(IEnumerable<Core.Models.EVELogs.ChatContent> chatContents)
+        {
+            foreach (var chatContent in chatContents)
+            {
+                var result = new TranslationResult()
                 {
-                    resultDisplayModel = new ChannelResultDisplayModel()
-                    {
-                        Header = chatContent.ChannelName,
-                        Listener = chatContent.Listener,
-                        ChannelID = chatContent.ChannelID
-                    };
-                    _resultsDict.Add(chatContent.ChannelID, resultDisplayModel);
-                    _results.Add(resultDisplayModel);
-                    if(_results.Count == 1)
-                    {
-                        ContentTabView.SelectedIndex = 0;
-                    }
+                    Success = false,
+                    ErrorMsg = Helpers.ResourcesHelper.GetString("ChannelTranslation_Limited"),
+                    Result = Helpers.ResourcesHelper.GetString("ChannelTranslation_Limited"),
+                    Query = chatContent.Content,
+                };
+                UpdateContent(chatContent, result);
+            }
+        }
+        private void UpdateContent(Core.Models.EVELogs.ChatContent chatContent, TranslationResult result)
+        {
+            isAdded = true;
+            ChannelResultDisplayModel resultDisplayModel = null;
+            if (!_resultsDict.TryGetValue(chatContent.ChannelID, out resultDisplayModel))
+            {
+                resultDisplayModel = new ChannelResultDisplayModel()
+                {
+                    Header = chatContent.ChannelName,
+                    Listener = chatContent.Listener,
+                    ChannelID = chatContent.ChannelID
+                };
+                _resultsDict.Add(chatContent.ChannelID, resultDisplayModel);
+                _results.Add(resultDisplayModel);
+                if (_results.Count == 1)
+                {
+                    ContentTabView.SelectedIndex = 0;
                 }
-                resultDisplayModel.Results.Add(new ChannelTranslationResult()
+            }
+            resultDisplayModel.Results.Add(new ChannelTranslationResult()
+            {
+                ChatContent = chatContent,
+                TranslationResult = result
+            });
+            if (_listView?.DataContext == resultDisplayModel)
+            {
+                if (_autoScroll)
                 {
-                    ChatContent = chatContent,
-                    TranslationResult = result
-                });
-                if(_listView?.DataContext == resultDisplayModel)
-                {
-                    if (_autoScroll)
-                    {
-                        ScrollToBottom();
-                    }
-                    else
-                    {
-                        resultDisplayModel.Unread = true;
-                        resultDisplayModel.UnreadCount++;
-                    }
+                    ScrollToBottom();
                 }
                 else
                 {
                     resultDisplayModel.Unread = true;
                     resultDisplayModel.UnreadCount++;
                 }
+            }
+            else
+            {
+                resultDisplayModel.Unread = true;
+                resultDisplayModel.UnreadCount++;
             }
         }
         public void Remove(string listener)

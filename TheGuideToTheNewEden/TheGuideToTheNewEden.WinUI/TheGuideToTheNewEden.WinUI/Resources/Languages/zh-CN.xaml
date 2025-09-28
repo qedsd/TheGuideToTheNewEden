@@ -1277,6 +1277,7 @@
     <!--  ChannelTranslation  -->
     <x:String x:Key="ChannelTranslation_SelectedIntelChannel">请勿选择预警频道</x:String>
     <x:String x:Key="ChannelTranslation_NoSelectedChannel">未选择频道</x:String>
+    <x:String x:Key="ChannelTranslation_Limited">已触发翻译上限，请勿翻译大量信息的频道</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General">基本</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_From">源文语言</x:String>
     <x:String x:Key="ChannelTranslation_Setting_General_To">目标语言</x:String>

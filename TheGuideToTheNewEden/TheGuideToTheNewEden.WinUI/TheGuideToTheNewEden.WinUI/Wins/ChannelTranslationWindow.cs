@@ -36,6 +36,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             _page.UpdateContent(items, from, to);
         }
+        public void UpdateLimtedContent(IEnumerable<Core.Models.EVELogs.ChatContent> items)
+        {
+            _page.UpdateLimitedContent(items);
+        }
         public void Remove(string listener)
         {
             _page.Remove(listener);
