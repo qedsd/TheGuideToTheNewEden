@@ -14,15 +14,15 @@
 	    <AssemblyVersion>3.0.0.0</AssemblyVersion>
 	    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-	    <!--package需注释掉-->
 	    <EnableMsixTooling>true</EnableMsixTooling>
 	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 	    <SelfContained>true</SelfContained>
         <WindowsPackageType>None</WindowsPackageType>
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<ExcludedLanguages>en-US;zh-CN</ExcludedLanguages>
+		<AppxDefaultResourceQualifiers>Language=en-US;zh-CN</AppxDefaultResourceQualifiers>
 	</PropertyGroup>
-  <ItemGroup>
+	<ItemGroup>
     <Content Remove="Assets\Icon\KillRightsIcon.png" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Source = new Uri(newStr, UriKind.Absolute)
             };
             Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(resource);
+            CultureInfo.CurrentUICulture = new CultureInfo(Value);
         }
         public static event EventHandler<string> AppLanguageChanged;
     }

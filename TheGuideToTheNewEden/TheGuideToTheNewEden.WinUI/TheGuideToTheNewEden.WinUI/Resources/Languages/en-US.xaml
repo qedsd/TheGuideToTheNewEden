@@ -331,7 +331,7 @@
     <x:String x:Key="BusinessPage_Scalper">Scalper</x:String>
     <x:String x:Key="BusinessPage_ShoppingCart">Shopping Cart</x:String>
     <x:String x:Key="BusinessPage_HistoryShopping">History</x:String>
-    <x:String x:Key="BusinessPage_Setting">Setting</x:String>
+    <x:String x:Key="BusinessPage_AdvancedSetting">Advanced Setting</x:String>
     <x:String x:Key="BusinessPage_FilterList">Filter List</x:String>
     <x:String x:Key="BusinessPage_SourceMarket">Source Market</x:String>
     <x:String x:Key="BusinessPage_DestinationMarket">Destination Market</x:String>
