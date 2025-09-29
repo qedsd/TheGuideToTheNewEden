@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SqlSugar;
@@ -22,7 +23,8 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static string AppKey = null;
         public static string AppSerct = null;
-        public static string VocabId = null;
+        public static string EnToZhVocabId = null;
+        public static string ZhToEnVocabId = null;
 
         /// <summary>
         /// 传入应用ID、应用密钥、字典
@@ -34,18 +36,34 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 AppKey = strings[0];
                 AppSerct = strings[1];
-                VocabId = strings.Length > 2 ? strings[2] : null;
+                if(strings.Length > 2)
+                {
+                    var array = strings[2].Split(',');
+                    EnToZhVocabId = array[0];
+                    if (array.Length > 1)
+                    {
+                        ZhToEnVocabId = array[1];
+                    }
+                }
             }
         }
 
         public async Task<TranslationResult> Translate(string text, string from, string to)
         {
+            var vocabId = EnToZhVocabId;
+            if(from == "zh-CHS" || Regex.IsMatch(text, @"[\u4e00-\u9fff]"))
+            {
+                vocabId = ZhToEnVocabId;
+            }
             var paramsMap = new Dictionary<string, string[]>() {
                 { "q", new string[]{text}},
                 {"from", new string[]{from}},
                 {"to", new string[]{to}},
-                {"vocabId", new string[]{VocabId}}//仅能传一个id
             };
+            if (!string.IsNullOrEmpty(vocabId))
+            {
+                paramsMap.Add("vocabId", new string[] { vocabId });//仅能传一个id
+            }
             AddAuthParams(AppKey, AppSerct, paramsMap);
             Dictionary<string, string[]> header = new Dictionary<string, string[]>() { { "Content-Type", new string[] { "application/x-www-form-urlencoded" } } };
             try
