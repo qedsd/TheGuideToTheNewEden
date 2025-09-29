@@ -11,4 +11,4 @@ TheGuideToTheNewEden.Core.Config.InitDb();
 
 //SolarSystemMap.CreateSloarSystemMap("SolarSystemMap.json");
 //RegionMap.CreateMap("SolarSystemMap.json", "RegionMap.json");
-await OutputMarketName.Start("MarketNames.csv");
+await CreateTranslationVoca.Start("MarketNamese2z.csv", "MarketNamesz2e.csv");

@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.DevTools.Translation
 {
     internal static class OutputMarketName
     {
-        public static async Task Start(string outputPath)
+        public static async Task<List<TranslationItem>> Start()
         {
             TheGuideToTheNewEden.Core.Config.NeedLocalization = true;
             var zhTypes = (await Core.Services.DB.InvTypeService.QueryMarketTypesAsync()).ToDictionary(p=>p.TypeID);
@@ -60,6 +60,8 @@ namespace TheGuideToTheNewEden.DevTools.Translation
             }
             #endregion
 
+
+            int[] filterGroup = new int[] { 2436 };
             List<InvType> enTypes = new List<InvType>();
             void addType(MarketItem marketItem)
             {
@@ -67,12 +69,8 @@ namespace TheGuideToTheNewEden.DevTools.Translation
                 {
                     enTypes.Add(marketItem.InvType);
                 }
-                else if(marketItem.Children != null)
+                else if(marketItem.Children != null && !filterGroup.Contains(marketItem.RealId))
                 {
-                    if(marketItem.RealId == 4726)
-                    {
-
-                    }
                     foreach (var item in marketItem.Children)
                     {
                         addType(item);
@@ -80,26 +78,26 @@ namespace TheGuideToTheNewEden.DevTools.Translation
                 }
             }
 
-            int[] filterGroup = new int[] { 2,1396 , 1954 ,3628};
+            //int[] filterRootGroup = new int[] { 2,19,475,1396,1659,1954,2202,3628,2203 };//蓝图、贸易货物、制造与研究、服饰、特别版用品、涂装、建筑装备、建筑改装件、个性化
+            int[] targetGroup = new int[] { 4,9,11,24,157,1922};//舰船、舰船装备、军火和弹药、植入体和增效剂、无人机、飞行员服务
             foreach(var root in rootGroup)
             {
-                if(filterGroup.Contains(root.RealId))
+                if(targetGroup.Contains(root.RealId))
+                {
+                    addType(root);
+                }
+            }
+            List<TranslationItem> translationItems = new List<TranslationItem>();
+            foreach (var type in enTypes)
+            {
+                var target = zhTypes[type.TypeID];
+                if (type.TypeName == target.TypeName)
                 {
                     continue;
                 }
-                addType(root);
+                translationItems.Add(new TranslationItem(type.TypeName, target.TypeName));
             }
-
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (var type in enTypes)
-            {
-                stringBuilder.Append(type.TypeName);
-                stringBuilder.Append(',');
-                stringBuilder.Append(zhTypes[type.TypeID].TypeName);
-                stringBuilder.AppendLine();
-            }
-
-            File.WriteAllText(outputPath, stringBuilder.ToString());
+            return translationItems;
         }
     }
 }
