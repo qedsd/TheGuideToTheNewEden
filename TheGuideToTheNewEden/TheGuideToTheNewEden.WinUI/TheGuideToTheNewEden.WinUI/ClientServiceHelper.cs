@@ -54,6 +54,7 @@ namespace TheGuideToTheNewEden.WinUI
             _serviceCollection.AddSingleton<ChannelTranslationService>();
             _serviceCollection.AddSingleton<AppUpdateService>();
             _serviceCollection.AddSingleton<BusinessService>();
+            _serviceCollection.AddSingleton<TranslationSettingService>();
         }
         private void UseILog(ILog log)
         {

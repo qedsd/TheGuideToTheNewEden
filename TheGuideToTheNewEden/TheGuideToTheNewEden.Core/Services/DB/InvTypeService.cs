@@ -138,20 +138,20 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        public static async Task<List<DataBaseSearchItem>> SearchAsync(string partName)
         {
             return await Task.Run(() =>
             {
-                List<TranslationSearchItem> searchInvTypes = new List<TranslationSearchItem>();
+                List<DataBaseSearchItem> searchInvTypes = new List<DataBaseSearchItem>();
                 var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
                 if(types.NotNullOrEmpty())
                 {
-                    types.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+                    types.ForEach(p => searchInvTypes.Add(new DataBaseSearchItem(p)));
                 }
                 var localTypes = LocalDbService.SearchInvType(partName);
                 if (localTypes.NotNullOrEmpty())
                 {
-                    localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+                    localTypes.ForEach(p => searchInvTypes.Add(new DataBaseSearchItem(p)));
                 }
                 return searchInvTypes;
             });
@@ -161,18 +161,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static List<TranslationSearchItem> Search(string partName)
+        public static List<DataBaseSearchItem> Search(string partName)
         {
-            List<TranslationSearchItem> searchInvTypes = new List<TranslationSearchItem>();
+            List<DataBaseSearchItem> searchInvTypes = new List<DataBaseSearchItem>();
             var types = DBService.MainDb.Queryable<InvType>().Where(p => p.TypeName.Contains(partName)).ToList();
             if (types.NotNullOrEmpty())
             {
-                types.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+                types.ForEach(p => searchInvTypes.Add(new DataBaseSearchItem(p)));
             }
             var localTypes = LocalDbService.SearchInvType(partName);
             if (localTypes.NotNullOrEmpty())
             {
-                localTypes.ForEach(p => searchInvTypes.Add(new TranslationSearchItem(p)));
+                localTypes.ForEach(p => searchInvTypes.Add(new DataBaseSearchItem(p)));
             }
             return searchInvTypes;
         }

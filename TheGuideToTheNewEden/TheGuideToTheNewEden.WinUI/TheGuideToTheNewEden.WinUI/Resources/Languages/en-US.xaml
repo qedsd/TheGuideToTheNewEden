@@ -32,6 +32,12 @@
     <x:String x:Key="UpdatePage">App Update</x:String>
     <x:String x:Key="Channel">Channel</x:String>
 
+    <x:String x:Key="InvType">Type</x:String>
+    <x:String x:Key="MapSolarSystem">System</x:String>
+    <x:String x:Key="MapRegion">Region</x:String>
+    <x:String x:Key="StaStation">Station</x:String>
+    <x:String x:Key="InvGroup">Group</x:String>
+
     <!--  Setting1  -->
     <x:String x:Key="Setting_AlwaysOnTop">Displayed at the top</x:String>
     <x:String x:Key="Setting_NotAlwaysOnTop">The top display has been cancelled</x:String>
@@ -1322,4 +1328,19 @@
 
     <!--  MarketSelecteTreeControl  -->
     <x:String x:Key="MarketSelecteTreeControl_SearchType">Search for items in the market</x:String>
+
+    <!--  TranslationPage  -->
+    <x:String x:Key="TranslationPage_Input">Translation</x:String>
+    <x:String x:Key="TranslationPage_Result">Result</x:String>
+    <x:String x:Key="TranslationPage_Input_Tip">Support game type translation and translation of common text</x:String>
+    <x:String x:Key="TranslationPage_NoResultTip">No matching data was found from the database. You can enter the input box to translate the text online.</x:String>
+    <x:String x:Key="TranslationPage_Query">Query</x:String>
+    <x:String x:Key="TranslationPage_Translation">Translation</x:String>
+    <x:String x:Key="TranslationPage_QueryDescription">Query Description</x:String>
+    <x:String x:Key="TranslationPage_TranslationDescription">Translation Description</x:String>
+    <x:String x:Key="TranslationPage_FromLanguage">From Language</x:String>
+    <x:String x:Key="TranslationPage_ToLanguage">To Language</x:String>
+    <x:String x:Key="TranslationPage_PopWindow">Pop Window</x:String>
+    <x:String x:Key="TranslationPage_CopyTranslation">Copy Translation</x:String>
+    <x:String x:Key="TranslationPage_CopySuccess">Copied</x:String>
 </ResourceDictionary>

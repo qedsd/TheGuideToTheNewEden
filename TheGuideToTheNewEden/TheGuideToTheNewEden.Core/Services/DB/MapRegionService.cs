@@ -73,20 +73,20 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        public static async Task<List<DataBaseSearchItem>> SearchAsync(string partName)
         {
             return await Task.Run(() =>
             {
-                List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+                List<DataBaseSearchItem> searchs = new List<DataBaseSearchItem>();
                 var regions = DBService.MainDb.Queryable<MapRegion>().Where(p => p.RegionName.Contains(partName)).ToList();
                 if (regions.NotNullOrEmpty())
                 {
-                    regions.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    regions.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 var locals = LocalDbService.SearchMapRegion(partName);
                 if (locals.NotNullOrEmpty())
                 {
-                    locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    locals.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 return searchs;
             });
@@ -97,18 +97,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static List<TranslationSearchItem> Search(string partName)
+        public static List<DataBaseSearchItem> Search(string partName)
         {
-            List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+            List<DataBaseSearchItem> searchs = new List<DataBaseSearchItem>();
             var regions = DBService.MainDb.Queryable<MapRegion>().Where(p => p.RegionName.Contains(partName)).ToList();
             if (regions.NotNullOrEmpty())
             {
-                regions.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                regions.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
             }
             var locals = LocalDbService.SearchMapRegion(partName);
             if (locals.NotNullOrEmpty())
             {
-                locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                locals.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
             }
             return searchs;
         }

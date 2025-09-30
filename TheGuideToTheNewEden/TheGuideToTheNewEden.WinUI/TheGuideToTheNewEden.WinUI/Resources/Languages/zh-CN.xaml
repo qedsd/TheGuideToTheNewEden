@@ -3,7 +3,7 @@
 
     <x:String x:Key="HomePage">主页</x:String>
     <x:String x:Key="HomePage2">主页</x:String>
-    <x:String x:Key="GamePreviewMgrPage">多开预览</x:String>
+    <x:String x:Key="GamePreviewMgrPage">多开</x:String>
     <x:String x:Key="CharactersShellPage">角色</x:String>
     <x:String x:Key="MarketPage">市场</x:String>
     <x:String x:Key="BusinessPage">商业</x:String>
@@ -12,7 +12,7 @@
     <x:String x:Key="ChannelIntelPage">频道预警</x:String>
     <x:String x:Key="ContractPage">公开合同</x:String>
     <x:String x:Key="ServerPingPage">延迟测试</x:String>
-    <x:String x:Key="TranslationPage">名词翻译</x:String>
+    <x:String x:Key="TranslationPage">翻译</x:String>
     <x:String x:Key="DEDPage">死亡远征</x:String>
     <x:String x:Key="WormholePage">虫洞查询</x:String>
     <x:String x:Key="BackstoryPage">背景故事</x:String>
@@ -31,6 +31,12 @@
     <x:String x:Key="ChannelTranslationPage">频道翻译</x:String>
     <x:String x:Key="UpdatePage">软件更新</x:String>
     <x:String x:Key="Channel">频道</x:String>
+
+    <x:String x:Key="InvType">物品</x:String>
+    <x:String x:Key="MapSolarSystem">星系</x:String>
+    <x:String x:Key="MapRegion">星域</x:String>
+    <x:String x:Key="StaStation">空间站</x:String>
+    <x:String x:Key="InvGroup">分类</x:String>
 
     <!--  Setting  -->
     <x:String x:Key="Setting_AlwaysOnTop">已置顶显示</x:String>
@@ -1322,4 +1328,19 @@
 
     <!--  MarketSelecteTreeControl  -->
     <x:String x:Key="MarketSelecteTreeControl_SearchType">搜索市场物品</x:String>
+
+    <!--  TranslationPage  -->
+    <x:String x:Key="TranslationPage_Input">翻译</x:String>
+    <x:String x:Key="TranslationPage_Result">结果</x:String>
+    <x:String x:Key="TranslationPage_Input_Tip">支持游戏专有名词互译及翻译通用文本</x:String>
+    <x:String x:Key="TranslationPage_NoResultTip">未从数据库查询到符合的数据，你可以在输入框回车以联网翻译文本</x:String>
+    <x:String x:Key="TranslationPage_Query">原文</x:String>
+    <x:String x:Key="TranslationPage_Translation">译文</x:String>
+    <x:String x:Key="TranslationPage_QueryDescription">原文描述</x:String>
+    <x:String x:Key="TranslationPage_TranslationDescription">译文描述</x:String>
+    <x:String x:Key="TranslationPage_FromLanguage">原文语言</x:String>
+    <x:String x:Key="TranslationPage_ToLanguage">译文语言</x:String>
+    <x:String x:Key="TranslationPage_PopWindow">弹窗</x:String>
+    <x:String x:Key="TranslationPage_CopyTranslation">复制译文</x:String>
+    <x:String x:Key="TranslationPage_CopySuccess">已复制</x:String>
 </ResourceDictionary>

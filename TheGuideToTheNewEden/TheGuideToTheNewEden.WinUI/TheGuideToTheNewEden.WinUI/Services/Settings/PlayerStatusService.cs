@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private static string LoadFromSettings()
         {
-            return Settings.SettingService.GetValue(Key); ;
+            return Settings.SettingService.GetValue(Key);
         }
 
         private static async Task SaveToSettingsAsync(string api)
