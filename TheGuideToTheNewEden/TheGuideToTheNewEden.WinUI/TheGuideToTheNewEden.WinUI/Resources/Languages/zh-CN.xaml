@@ -2,7 +2,6 @@
     <x:String x:Key="AppDisplayName">新伊甸漫游指南</x:String>
 
     <x:String x:Key="HomePage">主页</x:String>
-    <x:String x:Key="HomePage2">主页</x:String>
     <x:String x:Key="GamePreviewMgrPage">多开</x:String>
     <x:String x:Key="CharactersShellPage">角色</x:String>
     <x:String x:Key="MarketPage">市场</x:String>
@@ -332,6 +331,13 @@
     <x:String x:Key="MarketPage_Cal_SalesTax">销售税（%）</x:String>
     <x:String x:Key="MarketPage_Cal_AgentTax">中介税（%）</x:String>
     <x:String x:Key="MarketPage_Cal_Sell_Immediately">立即卖出</x:String>
+    <x:String x:Key="MarketPage_UnSelectedMarket">未选择市场</x:String>
+    <x:String x:Key="MarketPage_GettingOrder">获取订单中...</x:String>
+    <x:String x:Key="MarketPage_GettingHistroy">获取历史记录中...</x:String>
+    <x:String x:Key="MarketPage_CancelStarSuccess">已取消收藏</x:String>
+    <x:String x:Key="MarketPage_CancelStarFailed">取消收藏失败</x:String>
+    <x:String x:Key="MarketPage_StarSuccess">已收藏</x:String>
+    <x:String x:Key="MarketPage_StarFailed">添加收藏失败</x:String>
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_Scalper">倒货</x:String>

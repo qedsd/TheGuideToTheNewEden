@@ -23,10 +23,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
     /// </summary>
     public class MarketOrderService
     {
-        private readonly static string NOTPAGE = "Requested page does not exist!";
+        private const string NOTPAGE = "Requested page does not exist!";
         private static string StructureOrderFolder => MarketOrderSettingService.StructureOrderFolder;
         private static string RegionOrderFolder => MarketOrderSettingService.RegionOrderFolder;
         private static string HistoryOrderFolder => MarketOrderSettingService.HistoryOrderFolder;
+        private const int GlobalMarketRegion = 19000001;
+        private const int PlexTypeId = 44992;
+
         private static MarketOrderService current;
         public static MarketOrderService Current
         {
@@ -235,6 +238,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            if(typeId == PlexTypeId)
+            {
+                regionId = GlobalMarketRegion;
+            }
             int page = 1;
             while (true)
             {
@@ -547,6 +554,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistoryAsync(int typeId, int regionId)
         {
+            if(typeId == PlexTypeId)
+            {
+                regionId = GlobalMarketRegion;
+            }
             string folder = System.IO.Path.Combine(HistoryOrderFolder, regionId.ToString());
             string localFile = System.IO.Path.Combine(folder, $"{typeId}.json");
             if(System.IO.File.Exists(localFile))

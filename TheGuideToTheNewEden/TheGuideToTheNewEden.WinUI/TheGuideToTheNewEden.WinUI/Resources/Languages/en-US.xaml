@@ -2,7 +2,6 @@
     <x:String x:Key="AppDisplayName">GNE</x:String>
 
     <x:String x:Key="HomePage">Home</x:String>
-    <x:String x:Key="HomePage2">Home</x:String>
     <x:String x:Key="GamePreviewMgrPage">Game Preview</x:String>
     <x:String x:Key="CharactersShellPage">Characters</x:String>
     <x:String x:Key="MarketPage">Market</x:String>
@@ -332,6 +331,13 @@
     <x:String x:Key="MarketPage_Cal_SalesTax">Sales Tax（%）</x:String>
     <x:String x:Key="MarketPage_Cal_AgentTax">Agent Tax（%）</x:String>
     <x:String x:Key="MarketPage_Cal_Sell_Immediately">Sell Immediately</x:String>
+    <x:String x:Key="MarketPage_UnSelectedMarket">No market selected</x:String>
+    <x:String x:Key="MarketPage_GettingOrder">Getting Order...</x:String>
+    <x:String x:Key="MarketPage_GettingHistroy">Getting Histroy...</x:String>
+    <x:String x:Key="MarketPage_CancelStarSuccess">Cancelled Star</x:String>
+    <x:String x:Key="MarketPage_CancelStarFailed">Cancel Star Failed</x:String>
+    <x:String x:Key="MarketPage_StarSuccess">Star Success</x:String>
+    <x:String x:Key="MarketPage_StarFailed">Star Failed</x:String>
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_Scalper">Scalper</x:String>
