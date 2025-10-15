@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using ESI.NET.Models.Bookmarks;
 using ESI.NET.Models.Character;
 using EVEStandard;
 using EVEStandard.API;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using static Vanara.PInvoke.Kernel32;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -27,8 +29,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private static string StructureOrderFolder => MarketOrderSettingService.StructureOrderFolder;
         private static string RegionOrderFolder => MarketOrderSettingService.RegionOrderFolder;
         private static string HistoryOrderFolder => MarketOrderSettingService.HistoryOrderFolder;
+
+        /// <summary>
+        /// 默认市场星域：伏尔戈
+        /// </summary>
+        private const int DefaultMarketRegion = 10000002;
+
+        /// <summary>
+        /// Plex专用的星域
+        /// </summary>
         private const int GlobalMarketRegion = 19000001;
-        private const int PlexTypeId = 44992;
+
+        public const int PlexTypeId = 44992;
+        public const int LargeSkillInjectorTypeId = 40520;
+        public const int TritaniumTypeId = 34;
+
 
         private static MarketOrderService current;
         public static MarketOrderService Current
@@ -938,5 +953,44 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         public delegate void PageCallBackDelegate(int page,int totalPage, string tag);
+
+        public async Task<List<EVEStandard.Models.MarketRegionHistory>> GetHistoryAsync(int typeId)
+        {
+            int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            return resp.Model;
+        }
+
+        public async Task<List<EVEStandard.Models.MarketOrder>> GetOrderAsync(int typeId)
+        {
+            int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
+            List<EVEStandard.Models.MarketOrder> orders = new List<EVEStandard.Models.MarketOrder>();
+            int page = 0;
+            while (true)
+            {
+                page++;
+                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, typeId, page);
+                if (resp != null && resp.Model != null)
+                {
+                    if (resp.Model.NotNullOrEmpty())
+                    {
+                        orders.AddRange(resp.Model);
+                        if (resp.MaxPages == page)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return orders;
+        }
     }
 }

@@ -174,6 +174,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _navigateToCallback?.Invoke(typeof(SettingPage));
         }
 
+        public void NavigateToAbout()
+        {
+            NavigateTo(typeof(SettingPage), "About");
+            _navigateToCallback?.Invoke(typeof(SettingPage));
+        }
+
         public void NavigateToZKB()
         {
             NavigateTo(typeof(ZKBHomePage));

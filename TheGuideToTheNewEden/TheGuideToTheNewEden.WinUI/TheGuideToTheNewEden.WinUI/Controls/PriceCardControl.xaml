@@ -1,0 +1,111 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WinUI.Controls.PriceCardControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
+    HorizontalAlignment="Stretch"
+    mc:Ignorable="d">
+
+    <Button
+        Padding="12"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Background="{ThemeResource DefaultBackgroudBrush}"
+        CornerRadius="12"
+        Style="{StaticResource TransparentButton}"
+        Click="DetailButton_Click">
+        <Grid>
+            <Grid>
+                <ProgressRing
+                    x:Name="LoadingUI"
+                    IsActive="False"
+                    Visibility="Collapsed" />
+                <Button
+                    x:Name="LoadDataButton"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Click="LoadDataButton_Click"
+                    Style="{StaticResource TransparentButton}"
+                    Visibility="Collapsed">
+                    <winui:FluentIcon Icon="ArrowSync" />
+                </Button>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TypeName" VerticalAlignment="Center" />
+                    <Image
+                        x:Name="TypeImage"
+                        Grid.Column="1"
+                        Width="24"
+                        VerticalAlignment="Center" />
+                </Grid>
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,16,0,12"
+                    VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{ThemeResource SecondaryForegroundBrush}"
+                            Text="{StaticResource HomePage_Price}" />
+                        <TextBlock
+                            x:Name="PriceTip"
+                            Margin="2,0,0,0"
+                            FontSize="11"
+                            Foreground="{ThemeResource SecondaryForegroundBrush}" />
+                    </StackPanel>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="PriceTextBlock" FontSize="16" />
+                        <TextBlock
+                            x:Name="PriceChangeTextBlock"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="12" />
+                    </Grid>
+                </Grid>
+                <Grid Grid.Row="2" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource HomePage_Volume}" />
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="VolumeTextBlock" FontSize="16" />
+                        <TextBlock
+                            x:Name="VolumeChangeTextBlock"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="12" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Button>
+</UserControl>

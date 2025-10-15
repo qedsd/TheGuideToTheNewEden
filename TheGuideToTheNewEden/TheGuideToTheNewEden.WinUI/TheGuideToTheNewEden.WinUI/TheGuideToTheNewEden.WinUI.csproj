@@ -245,6 +245,7 @@
     <None Remove="Controls\MarketSearchControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
+    <None Remove="Controls\PriceCardControl.xaml" />
     <None Remove="Controls\ProgressBar.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
@@ -287,7 +288,7 @@
     <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
     <None Remove="Views\GameLogMonitorPage.xaml" />
-    <None Remove="Views\HomePage2.xaml" />
+    <None Remove="Views\Home\WalletStatistic.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\IntelBasePage.xaml" />
@@ -487,6 +488,9 @@
     <Page Update="Controls\CheckBoxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\PriceCardControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -546,6 +550,18 @@
     </None>
     <None Update="Resources\Images\home.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\github-mark-white.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\github-mark.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\microsoft-store-2022.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\qq.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Images\LinkIcons\adam4eve.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -619,6 +635,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Home\WalletStatistic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\TranslationWindowPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -640,7 +659,7 @@
     <Page Update="Views\Character\CharactersShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\HomePage2.xaml">
+    <Page Update="Views\HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\MainPage.xaml">

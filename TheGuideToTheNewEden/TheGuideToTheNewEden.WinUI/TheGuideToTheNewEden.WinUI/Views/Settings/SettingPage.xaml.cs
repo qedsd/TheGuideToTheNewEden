@@ -64,9 +64,17 @@ namespace TheGuideToTheNewEden.WinUI.Views
             base.OnNavigatedTo(e);
             if (e.Parameter is object[] ps && ps.Length > 0)
             {
-                if (ps[0].ToString() == "Update")
+                switch (ps[0].ToString())
                 {
-                    SetSelecteItem(SettingItems.FirstOrDefault(p=>p.PageType == typeof(UpdatePage)));
+                    case "Update":
+                        {
+                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(UpdatePage)));
+                        }break;
+                    case "About":
+                        {
+                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(AboutPage)));
+                        }
+                        break;
                 }
             }
         }

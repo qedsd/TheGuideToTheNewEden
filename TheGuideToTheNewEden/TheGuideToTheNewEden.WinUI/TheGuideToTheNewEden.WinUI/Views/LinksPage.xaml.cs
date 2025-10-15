@@ -74,7 +74,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var info = e.ClickedItem as Core.Models.LinkInfo;
             if(info != null)
             {
-                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                //System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                Helpers.UrlHelper.OpenInBrower(info.Url);
             }
         }
 
@@ -133,7 +134,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var info = (sender as FrameworkElement).DataContext as Core.Models.LinkInfo;
             if (info != null)
             {
-                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                //System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                Helpers.UrlHelper.OpenInBrower(info.Url);
             }
         }
 

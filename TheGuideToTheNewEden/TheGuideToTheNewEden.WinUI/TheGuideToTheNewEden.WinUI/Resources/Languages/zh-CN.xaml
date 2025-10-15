@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <x:String x:Key="AppDisplayName">新伊甸漫游指南</x:String>
+    <x:String x:Key="AppFullName">新伊甸漫游指南</x:String>
 
     <x:String x:Key="HomePage">主页</x:String>
     <x:String x:Key="GamePreviewMgrPage">多开</x:String>
@@ -1349,4 +1350,20 @@
     <x:String x:Key="TranslationPage_PopWindow">弹窗</x:String>
     <x:String x:Key="TranslationPage_CopyTranslation">复制译文</x:String>
     <x:String x:Key="TranslationPage_CopySuccess">已复制</x:String>
+
+    <!--  HomePage  -->
+    <x:String x:Key="HomePage_Price">价格</x:String>
+    <x:String x:Key="HomePage_Volume">销量</x:String>
+    <x:String x:Key="HomePage_GameTime">游戏时间</x:String>
+    <x:String x:Key="HomePage_NoCharacterTip">未添加角色</x:String>
+    <x:String x:Key="HomePage_Wallet_Tip">我的钱包</x:String>
+    <x:String x:Key="HomePage_Wallet_In">月收入</x:String>
+    <x:String x:Key="HomePage_Wallet_Out">月支出</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Market">贸易</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Mission">任务</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Bounty">赏金</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Contract">合同</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Tax">税</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Donation">转账</x:String>
+    <x:String x:Key="HomePage_Wallet_Type_Other">其他</x:String>
 </ResourceDictionary>

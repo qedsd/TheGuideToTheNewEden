@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
     {
         public static void OpenInBrower(string url)
         {
-            System.Diagnostics.Process.Start("explorer.exe", url);
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
         }
     }
 }

@@ -38,7 +38,7 @@
                     x:Name="AppDisplayNameTextBlock"
                     Margin="4,0,0,0"
                     VerticalAlignment="Center"
-                    FontFamily="Calibri "
+                    FontFamily="Calibri"
                     FontSize="16"
                     Text="{StaticResource AppDisplayName}"
                     Visibility="{Binding ElementName=MenuList, Path=IsPaneOpen, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
@@ -59,8 +59,8 @@
                 <NavigationView.MenuItems>
                     <NavigationViewItem
                         x:Name="HomeNavigationViewItem"
-                        Content="{StaticResource HomePage2}"
-                        Tag="HomePage2">
+                        Content="{StaticResource HomePage}"
+                        Tag="HomePage">
                         <NavigationViewItem.Icon>
                             <ic:FluentIcon Icon="Home" />
                         </NavigationViewItem.Icon>

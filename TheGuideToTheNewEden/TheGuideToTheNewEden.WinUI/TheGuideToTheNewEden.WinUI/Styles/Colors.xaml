@@ -45,6 +45,7 @@
             <SolidColorBrush x:Key="ButtonSelectedForegroundBrush" Color="{StaticResource ButtonSelectedForegroundColor}" />
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
             <SolidColorBrush x:Key="CancelBrush" Color="{StaticResource CancelColor}" />
+            <SolidColorBrush x:Key="HighlightBackgroudBrush" Color="#363a49" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <Color x:Key="DefaultGray">#30000000</Color>
@@ -97,6 +98,7 @@
             <SolidColorBrush x:Key="ButtonSelectedForegroundBrush" Color="{StaticResource ButtonSelectedForegroundColor}" />
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
             <SolidColorBrush x:Key="CancelBrush" Color="{StaticResource CancelColor}" />
+            <SolidColorBrush x:Key="HighlightBackgroudBrush" Color="#ffffff" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <SolidColorBrush x:Key="SystemSecurityForeground1" Color="#24d7f9" />

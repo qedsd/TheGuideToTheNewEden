@@ -174,5 +174,32 @@ namespace TheGuideToTheNewEden.Core.Services
 
             return authorizedCharacter;
         }
+
+        public static EVEStandard.EVEStandardAPI GetDefaultESI2()
+        {
+            EVEStandard.Enumerations.DataSource dataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
+            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
+        }
+        public static EVEStandard.Models.API.AuthDTO ToEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
+        {
+            if (character != null)
+            {
+                return new EVEStandard.Models.API.AuthDTO
+                {
+                    AccessToken = new EVEStandard.Models.SSO.AccessTokenDetails
+                    {
+                        AccessToken = character.Token,
+                        ExpiresUtc = character.ExpiresOn,
+                        RefreshToken = character.RefreshToken
+                    },
+                    CharacterId = character.CharacterID,
+                    Scopes = character.Scopes,
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
