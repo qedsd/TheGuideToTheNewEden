@@ -14,9 +14,9 @@
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
         Background="{ThemeResource DefaultBackgroudBrush}"
+        Click="DetailButton_Click"
         CornerRadius="12"
-        Style="{StaticResource TransparentButton}"
-        Click="DetailButton_Click">
+        Style="{StaticResource TransparentButton}">
         <Grid>
             <Grid>
                 <ProgressRing

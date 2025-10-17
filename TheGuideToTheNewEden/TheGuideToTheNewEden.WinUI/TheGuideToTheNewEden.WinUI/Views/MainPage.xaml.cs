@@ -145,6 +145,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             if (targetItem != null)
             {
                 targetItem.IsSelected = true;
+                MenuList.SelectedItem = targetItem;
             }
         }
         private string GetFullNameOfTag(string tag)

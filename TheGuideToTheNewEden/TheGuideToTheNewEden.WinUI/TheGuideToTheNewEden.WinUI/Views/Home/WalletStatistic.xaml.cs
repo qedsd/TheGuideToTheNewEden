@@ -37,12 +37,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
     }
     public sealed partial class WalletStatistic : UserControl
     {
-        private Brush _greenBrush;
-        private Brush _redBrush;
+        private readonly Brush _greenBrush;
+        private readonly Brush _redBrush;
         public WalletStatistic()
         {
-            _greenBrush = Helpers.ResourcesHelper.Get("DefaultGreen") as SolidColorBrush;
-            _redBrush = Helpers.ResourcesHelper.Get("DefaultRed") as SolidColorBrush;
+            _greenBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 97, 197, 171));
+            _redBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 229, 101, 91));
             this.InitializeComponent();
             Loaded += WalletStatistic_Loaded;
         }
@@ -207,14 +207,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                 {
                     lock (locker)
                     {
-                        walletStatistic_in.Add(marketStatistic_in);
-                        walletStatistic_in.Add(missionStatistic_in);
-                        walletStatistic_in.Add(bountyStatistic_in);
-                        walletStatistic_in.Add(contractStatistic_in);
-                        walletStatistic_in.Add(donationStatistic_in);
-                        walletStatistic_in.Add(otherStatistic_in);
+                        if(marketStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(marketStatistic_in);
+                        if (missionStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(missionStatistic_in);
+                        if (bountyStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(bountyStatistic_in);
+                        if (contractStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(contractStatistic_in);
+                        if (donationStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(donationStatistic_in);
+                        if (otherStatistic_in.Wallet != 0)
+                            walletStatistic_in.Add(otherStatistic_in);
                         inWallet = walletStatistic_in.Sum(x => x.Wallet);
-                        if (inWallet > 0)
+                        if (inWallet != 0)
                         {
                             foreach (var p in walletStatistic_in)
                             {
@@ -222,14 +228,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                             }
                         }
 
-                        walletStatistic_out.Add(marketStatistic_out);
-                        walletStatistic_out.Add(contractStatistic_out);
-                        walletStatistic_out.Add(taxStatistic_out);
-                        walletStatistic_out.Add(donationStatistic_out);
-                        walletStatistic_out.Add(otherStatistic_out);
-                        if (inWallet > 0)
+                        if (marketStatistic_out.Wallet != 0)
+                            walletStatistic_out.Add(marketStatistic_out);
+                        if (contractStatistic_out.Wallet != 0)
+                            walletStatistic_out.Add(contractStatistic_out);
+                        if (taxStatistic_out.Wallet != 0)
+                            walletStatistic_out.Add(taxStatistic_out);
+                        if (donationStatistic_out.Wallet != 0)
+                            walletStatistic_out.Add(donationStatistic_out);
+                        if (otherStatistic_out.Wallet != 0)
+                            walletStatistic_out.Add(otherStatistic_out);
+                        outWallet = walletStatistic_out.Sum(x => x.Wallet);
+                        if (outWallet != 0)
                         {
-                            outWallet = walletStatistic_out.Sum(x => x.Wallet);
                             foreach (var p in walletStatistic_out)
                             {
                                 if (p.Wallet != 0)

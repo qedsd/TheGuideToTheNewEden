@@ -58,11 +58,28 @@
                 <Grid>
                     <Image Source="/Resources/Images/home.jpg" Stretch="UniformToFill" />
                     <StackPanel Margin="32,32,0,0">
-                        <TextBlock FontSize="32" Text="{StaticResource AppFullName}" />
-                    </StackPanel>
-                    <StackPanel Margin="32,0,0,8" VerticalAlignment="Bottom">
                         <TextBlock
-                            Foreground="{ThemeResource SecondaryForegroundBrush}"
+                            FontSize="32"
+                            RequestedTheme="Dark"
+                            Text="{StaticResource AppFullName}" />
+                    </StackPanel>
+                    <StackPanel
+                        Margin="32,0,0,8"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Orientation="Horizontal">
+                        <winui:FluentIcon
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource SystemAccentColor}"
+                            Icon="Clock">
+                            <winui:FluentIcon.RenderTransform>
+                                <ScaleTransform x:Name="ButtonScale" CenterY="12" ScaleX="0.8" ScaleY="0.8" />
+                            </winui:FluentIcon.RenderTransform>
+                        </winui:FluentIcon>
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            RequestedTheme="Dark"
                             Text="{x:Bind VM.GameTime, Mode=OneWay}"
                             ToolTipService.ToolTip="{StaticResource HomePage_GameTime}" />
                     </StackPanel>
@@ -78,6 +95,7 @@
                                 <Setter Property="Height" Value="32" />
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="Margin" Value="4,0" />
+                                <Setter Property="RequestedTheme" Value="Dark" />
                             </Style>
                         </StackPanel.Resources>
                         <Button Command="{x:Bind VM.ToQQCommand}">
@@ -110,7 +128,7 @@
                                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
                                 <Setter Property="Padding" Value="0" />
-                                <Setter Property="Height" Value="50" />
+                                <Setter Property="Height" Value="42" />
                                 <Setter Property="CornerRadius" Value="6" />
                             </Style>
                         </Grid.Resources>
@@ -176,12 +194,10 @@
                             </Grid>
                         </Button>
                     </Grid>
-                    <Grid
-                        Grid.Row="1"
-                        Margin="0,16,0,0"
-                        Background="{ThemeResource DefaultBackgroudBrush}"
-                        CornerRadius="8">
-                        <home:WalletStatistic />
+                    <Grid Grid.Row="1" Margin="0,16,0,0">
+                        <Border Background="{ThemeResource DefaultBackgroudBrush}" CornerRadius="8">
+                            <home:WalletStatistic />
+                        </Border>
                     </Grid>
                 </Grid>
 
