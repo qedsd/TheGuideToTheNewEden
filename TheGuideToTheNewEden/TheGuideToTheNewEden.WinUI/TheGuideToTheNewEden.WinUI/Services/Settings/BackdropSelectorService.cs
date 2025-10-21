@@ -128,7 +128,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             foreach (Window window in Helpers.WindowHelper.ActiveWindows)
             {
-                (window as IWindow).ThemeService?.SetBackdropType(GetDevWinUIBackdropTypeValue());
+                (window as IWindow).ThemeService?.ConfigureBackdrop(GetDevWinUIBackdropTypeValue());
             }
         }
         public static event EventHandler<BackdropType> OnBackdropTypeChanged;

@@ -4,7 +4,6 @@ using Octokit;
 using SqlSugar.DistributedSystem.Snowflake;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Linq;
 using System.Text;
 using System.Threading;

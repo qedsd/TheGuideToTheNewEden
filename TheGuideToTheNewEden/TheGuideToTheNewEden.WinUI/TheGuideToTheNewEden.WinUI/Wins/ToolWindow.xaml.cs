@@ -57,11 +57,12 @@ namespace TheGuideToTheNewEden.WinUI
             if (useThemeService)
             {
                 ThemeService = new DevWinUI.ThemeService();
-                ThemeService.Initialize(this, false);
+                ThemeService.Initialize(this);
                 ThemeService.ConfigureElementTheme(ThemeSelectorService.Theme);
-                ThemeService.ConfigureBackdrop();
+                ThemeService.ConfigureBackdrop(BackdropSelectorService.GetDevWinUIBackdropTypeValue());
                 ThemeSelectorService.OnChangedTheme += ThemeSelectorService_OnChangedTheme;
                 ThemeSelectorService_OnChangedTheme(ThemeSelectorService.Theme);
+                Closed += ToolWindow_Closed;
                 BackdropSelectorService.OnBackdropTypeChanged += BackdropSelectorService_OnBackdropTypeChanged;
                 BackdropSelectorService.OnCustomPictureFileChanged += BackdropSelectorService_OnCustomPictureFileChanged;
                 BackdropSelectorService.OnCustomPictureOverlapColorChanged += BackdropSelectorService_OnCustomPictureOverlapColorChanged;
@@ -102,6 +103,14 @@ namespace TheGuideToTheNewEden.WinUI
                 TopButton.Visibility = Visibility.Collapsed;
             }
             ContentFrame.Content = content;
+        }
+
+        private void ToolWindow_Closed(object sender, WindowEventArgs args)
+        {
+            ThemeSelectorService.OnChangedTheme -= ThemeSelectorService_OnChangedTheme;
+            BackdropSelectorService.OnBackdropTypeChanged -= BackdropSelectorService_OnBackdropTypeChanged;
+            BackdropSelectorService.OnCustomPictureFileChanged -= BackdropSelectorService_OnCustomPictureFileChanged;
+            BackdropSelectorService.OnCustomPictureOverlapColorChanged -= BackdropSelectorService_OnCustomPictureOverlapColorChanged;
         }
 
         public void HideNavButton()

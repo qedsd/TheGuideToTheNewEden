@@ -28,7 +28,6 @@ using System.Xml.Linq;
 using TheGuideToTheNewEden.Core;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -695,14 +694,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             SaveSetting();
         }
+
+        private object _locker = new object();
         private void SaveSetting()
         {
-            if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(Path)))
+            lock (_locker)
             {
-                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
+                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(Path)))
+                {
+                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
+                }
+                string json = JsonConvert.SerializeObject(PreviewSetting);
+                System.IO.File.WriteAllText(Path, json);
             }
-            string json = JsonConvert.SerializeObject(PreviewSetting);
-            System.IO.File.WriteAllText(Path,json);
         }
 
         public void SaveOrder()
