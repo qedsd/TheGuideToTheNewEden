@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             foreach (Window window in WindowHelper.ActiveWindows)
             {
-                (window as MainWindow)?.ThemeService?.ConfigureElementTheme(Theme);
+                (window as MainWindow)?.ThemeService?.SetElementThemeAsync(Theme);
             }
         }
         private static ElementTheme LoadThemeFromSettings()

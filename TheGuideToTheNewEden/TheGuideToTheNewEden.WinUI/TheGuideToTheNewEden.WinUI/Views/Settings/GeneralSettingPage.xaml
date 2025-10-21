@@ -49,9 +49,8 @@
                         <ComboBoxItem Content="{StaticResource Setting_Backdrop_None}" />
                         <ComboBoxItem Content="Mica" />
                         <ComboBoxItem Content="MicaAlt" />
-                        <ComboBoxItem Content="DesktopAcrylic" />
+                        <ComboBoxItem Content="Acrylic" />
                         <ComboBoxItem Content="AcrylicThin" />
-                        <ComboBoxItem Content="AcrylicBase" />
                         <ComboBoxItem Content="{StaticResource Setting_Backdrop_Transparent}" />
                         <ComboBoxItem Content="{StaticResource Setting_Backdrop_CustomPicture}" />
                     </ComboBox>

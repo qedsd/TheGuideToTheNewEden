@@ -9,7 +9,7 @@
     xmlns:views="using:TheGuideToTheNewEden.WinUI.Views"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainWindowGrid" Background="Transparent">
+    <Grid x:Name="MainWindowGrid">
         <Grid x:Name="BackgroundGrid" Visibility="Collapsed">
             <Grid.Background>
                 <ImageBrush

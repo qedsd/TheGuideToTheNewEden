@@ -16,9 +16,8 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             None,
             Mica,
             MicaAlt,
-            DesktopAcrylic,
+            Acrylic,
             AcrylicThin,
-            AcrylicBase,
             Transparent,
             CustomPicture
         }
@@ -64,7 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         }
         public static DevWinUI.BackdropType GetDevWinUIBackdropTypeValue()
         {
-            return (DevWinUI.BackdropType)(((int)BackdropTypeValue) % 7);
+            return (DevWinUI.BackdropType)(((int)BackdropTypeValue) % 6);
         }
         public static Windows.UI.Color GetCustomPictureOverlapColor()
         {
@@ -83,7 +82,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
             else
             {
-                return BackdropType.AcrylicBase;
+                return BackdropType.Mica;
             }
         }
         private static string LoadCustomPictureFileFromSettings()
@@ -128,7 +127,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             foreach (Window window in Helpers.WindowHelper.ActiveWindows)
             {
-                (window as IWindow).ThemeService?.ConfigureBackdrop(GetDevWinUIBackdropTypeValue());
+                (window as IWindow).ThemeService?.SetBackdropTypeAsync(GetDevWinUIBackdropTypeValue());
             }
         }
         public static event EventHandler<BackdropType> OnBackdropTypeChanged;
