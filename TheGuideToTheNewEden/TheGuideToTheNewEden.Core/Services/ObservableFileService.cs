@@ -43,8 +43,8 @@ namespace TheGuideToTheNewEden.Core.Services
                     {
                         items = new List<IObservableFile>();
                         ItemsDic.Add(item.FilePath, items);
-                        watcher.AddFile(item.FilePath);
                     }
+                    watcher.AddFile(item.FilePath);
                     items.Add(item);
                     return true;
                 }

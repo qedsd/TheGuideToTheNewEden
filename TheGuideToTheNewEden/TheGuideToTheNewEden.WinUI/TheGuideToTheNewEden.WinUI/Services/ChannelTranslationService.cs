@@ -16,6 +16,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private Wins.ChannelTranslationWindow _window;
         private int _count;
 
+        private Wins.ChannelTranslationWindow GetWindow()
+        {
+            return _window ?? new Wins.ChannelTranslationWindow();
+        }
+
         public void Start()
         {
             _count++;
@@ -24,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public void Stop(string listener)
         {
             _count--;
-            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window?.Remove(listener);
                 if (_count == 0)
@@ -38,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if (items == null || !items.Any())
                 return;
-            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.Activate();
                 _window.SetForegroundWindow();
@@ -49,7 +54,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if (items == null || !items.Any())
                 return;
-            _window.DispatcherQueue.SafelyTryEnqueue(() =>
+            GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.Activate();
                 _window.SetForegroundWindow();
