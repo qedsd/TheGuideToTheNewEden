@@ -38,15 +38,5 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             
         }
-
-        private void AppVersionButton_Click(object sender, RoutedEventArgs e)
-        {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
-        }
-
-        private void AboutButton_Click(object sender, RoutedEventArgs e)
-        {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToAbout();
-        }
     }
 }

@@ -357,28 +357,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 int unFinishCount = 0;
                 DateTime firstStartDateTime = DateTime.MaxValue;
                 DateTime lastFinishDateTime = DateTime.MinValue;
-                foreach (var skill in skillQueueItems)
+                if (skillQueueItems.NotNullOrEmpty())
                 {
-                    var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
-                    if(finishDateTime > lastFinishDateTime)
+                    foreach (var skill in skillQueueItems)
                     {
-                        lastFinishDateTime = finishDateTime;
-                    }
-                    var startDateTime = string.IsNullOrEmpty(skill.StartDate) ? DateTime.MinValue : DateTime.Parse(skill.StartDate);//已经是本地时间
-                    if (startDateTime < firstStartDateTime)
-                    {
-                        firstStartDateTime = startDateTime;
-                    }
-                    var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
-                    var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
-                    var isPause = string.IsNullOrEmpty(skill.FinishDate) || string.IsNullOrEmpty(skill.StartDate);
-                    var isRunning = !(isFinished || isWaiting || isPause);
-                    running = running || isRunning;
-                    if (!isFinished)
-                    {
-                        unFinishCount++;
+                        var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
+                        if (finishDateTime > lastFinishDateTime)
+                        {
+                            lastFinishDateTime = finishDateTime;
+                        }
+                        var startDateTime = string.IsNullOrEmpty(skill.StartDate) ? DateTime.MinValue : DateTime.Parse(skill.StartDate);//已经是本地时间
+                        if (startDateTime < firstStartDateTime)
+                        {
+                            firstStartDateTime = startDateTime;
+                        }
+                        var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
+                        var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
+                        var isPause = string.IsNullOrEmpty(skill.FinishDate) || string.IsNullOrEmpty(skill.StartDate);
+                        var isRunning = !(isFinished || isWaiting || isPause);
+                        running = running || isRunning;
+                        if (!isFinished)
+                        {
+                            unFinishCount++;
+                        }
                     }
                 }
+                
                 _skillQueueRunning = running;
                 if (running && lastFinishDateTime > DateTime.MinValue)
                 {

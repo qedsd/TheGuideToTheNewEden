@@ -7,10 +7,12 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using ESI.NET;
 using Microsoft.UI.Dispatching;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.System;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
@@ -93,6 +95,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand ToGithubCommand => new RelayCommand(() =>
         {
             Helpers.UrlHelper.OpenInBrower("https://github.com/qedsd/TheGuideToTheNewEden");
+        });
+
+        public ICommand AppUpdateCommand => new RelayCommand(() =>
+        {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
+        });
+        public ICommand AppAboutCommand => new RelayCommand(() =>
+        {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToAbout();
+        });
+        public ICommand AppLogCommand => new RelayCommand(() =>
+        {
+            ViewLogWindow viewLogWindow = new ViewLogWindow();
+            viewLogWindow.Activate();
+        });
+        public ICommand AppSettingCommand => new RelayCommand(() =>
+        {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToSetting();
         });
     }
 }

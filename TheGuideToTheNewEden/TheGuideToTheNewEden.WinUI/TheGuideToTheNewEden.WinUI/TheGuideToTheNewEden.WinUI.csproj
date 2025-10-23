@@ -327,6 +327,7 @@
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\TranslationWindowPage.xaml" />
     <None Remove="Views\UpdatePage.xaml" />
+    <None Remove="Views\ViewLogPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
   </ItemGroup>
@@ -635,6 +636,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\ViewLogPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Home\WalletStatistic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

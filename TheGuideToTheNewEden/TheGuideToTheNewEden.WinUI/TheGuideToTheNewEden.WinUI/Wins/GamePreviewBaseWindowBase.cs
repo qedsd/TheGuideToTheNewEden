@@ -137,7 +137,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public virtual void Stop()
         {
             IsClosed = true;
-            HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+            if(_hotkeyRegisterId > 0)
+            {
+                HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+            }
         }
         public abstract void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);
         public PreviewItem GetSetting()

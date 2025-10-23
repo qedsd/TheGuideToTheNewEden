@@ -36,6 +36,7 @@
                         <RowDefinition Height="40" />
                         <RowDefinition Height="40" />
                         <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="{StaticResource BusinessPage_ROIPercent}" />
                     <TextBlock x:Name="TextBlock_ROI" Grid.Column="2" />
@@ -68,6 +69,12 @@
                     <TextBlock
                         x:Name="TextBlock_IskPerVolume"
                         Grid.Row="5"
+                        Grid.Column="2" />
+
+                    <TextBlock Grid.Row="6" Text="{StaticResource BusinessPage_TypeVolume}" />
+                    <TextBlock
+                        x:Name="TextBlock_TypeCount"
+                        Grid.Row="6"
                         Grid.Column="2" />
                 </Grid>
             </controls:CardControl.Content>

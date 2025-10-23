@@ -414,6 +414,7 @@
     <x:String x:Key="BusinessPage_TargetItemsCount">目标物品数量</x:String>
     <x:String x:Key="BusinessPage_IskPerJump">ISK/跳</x:String>
     <x:String x:Key="BusinessPage_IskPerVolume">ISK/单位体积</x:String>
+    <x:String x:Key="BusinessPage_TypeVolume">数量</x:String>
 
     <x:String x:Key="BusinessPage_Type">物品</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">源市场买入价格</x:String>
@@ -1366,4 +1367,8 @@
     <x:String x:Key="HomePage_Wallet_Type_Tax">税</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Donation">转账</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">其他</x:String>
+    <x:String x:Key="HomePage_Log">日志</x:String>
+
+    <!--  LogViewPage  -->
+    <x:String x:Key="LogViewPage_ClearLog">清除显示</x:String>
 </ResourceDictionary>

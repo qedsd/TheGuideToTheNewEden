@@ -1,5 +1,7 @@
 ﻿using log4net;
+using log4net.Appender;
 using log4net.Config;
+using log4net.Repository.Hierarchy;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,6 +51,7 @@ namespace TheGuideToTheNewEden.Core
         public static void Debug(object debug)
         {
             log.Debug(debug);
+            OnDebug?.Invoke(debug);
         }
 
         public static string GetLogPath()
@@ -76,9 +79,16 @@ namespace TheGuideToTheNewEden.Core
             return log;
         }
 
+        public static string GetLogFile()
+        {
+            var appender = log.Logger.Repository.GetAppenders().FirstOrDefault(p => p is RollingFileAppender) as RollingFileAppender;
+            return appender?.File;
+        }
+
         public delegate void LogMsgEvent(object msg);
         public static event LogMsgEvent OnError;
         public static event LogMsgEvent OnInfo;
         public static event LogMsgEvent OnWarn;
+        public static event LogMsgEvent OnDebug;
     }
 }

@@ -13,7 +13,7 @@
         Padding="12"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
-        Background="{ThemeResource DefaultBackgroudBrush}"
+        Background="{ThemeResource TransparentBackgroudBrush}"
         Click="DetailButton_Click"
         CornerRadius="12"
         Style="{StaticResource TransparentButton}">

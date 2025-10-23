@@ -64,26 +64,6 @@
                             Text="{StaticResource AppFullName}" />
                     </StackPanel>
                     <StackPanel
-                        Margin="32,0,0,8"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Bottom"
-                        Orientation="Horizontal">
-                        <winui:FluentIcon
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource SystemAccentColor}"
-                            Icon="Clock">
-                            <winui:FluentIcon.RenderTransform>
-                                <ScaleTransform x:Name="ButtonScale" CenterY="12" ScaleX="0.8" ScaleY="0.8" />
-                            </winui:FluentIcon.RenderTransform>
-                        </winui:FluentIcon>
-                        <TextBlock
-                            Margin="4,0,0,0"
-                            VerticalAlignment="Center"
-                            RequestedTheme="Dark"
-                            Text="{x:Bind VM.GameTime, Mode=OneWay}"
-                            ToolTipService.ToolTip="{StaticResource HomePage_GameTime}" />
-                    </StackPanel>
-                    <StackPanel
                         Margin="0,0,8,8"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
@@ -121,86 +101,122 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <Grid>
-                        <Grid.Resources>
+                    <GridView SelectionMode="None">
+                        <GridView.Resources>
                             <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="Height" Value="42" />
+                                <Setter Property="Width" Value="140" />
                                 <Setter Property="CornerRadius" Value="6" />
+                                <Setter Property="Margin" Value="0,0,8,0" />
                             </Style>
-                        </Grid.Resources>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <Button>
-                            <Grid Style="{StaticResource SmallCardGrid}">
-                                <StackPanel Orientation="Horizontal">
-                                    <winui:FluentIcon x:Name="GameServerOnlineIcon" Icon="XboxController">
-                                        <interactivity:Interaction.Behaviors>
-                                            <interactivity:DataTriggerBehavior
-                                                Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
-                                                ComparisonCondition="Equal"
-                                                Value="True">
-                                                <interactivity:ChangePropertyAction
-                                                    PropertyName="Foreground"
-                                                    TargetObject="{Binding ElementName=GameServerOnlineIcon}"
-                                                    Value="{ThemeResource SystemAccentColor}" />
-                                            </interactivity:DataTriggerBehavior>
-                                            <interactivity:DataTriggerBehavior
-                                                Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
-                                                ComparisonCondition="Equal"
-                                                Value="False">
-                                                <interactivity:ChangePropertyAction
-                                                    PropertyName="Foreground"
-                                                    TargetObject="{Binding ElementName=GameServerOnlineIcon}"
-                                                    Value="{StaticResource DefaultRed}" />
-                                            </interactivity:DataTriggerBehavior>
-                                        </interactivity:Interaction.Behaviors>
-                                    </winui:FluentIcon>
-                                    <TextBlock
-                                        Margin="12,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Text="{x:Bind VM.Players, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="2" Click="AppVersionButton_Click">
-                            <Grid Style="{StaticResource SmallCardGrid}">
-                                <StackPanel Orientation="Horizontal">
-                                    <winui:FluentIcon Foreground="{ThemeResource SystemAccentColor}" Icon="Apps" />
-                                    <TextBlock
-                                        Margin="12,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Text="{x:Bind VM.AppVersion, Mode=OneWay}" />
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                        <Button Grid.Column="4" Click="AboutButton_Click">
-                            <Grid Style="{StaticResource SmallCardGrid}">
-                                <StackPanel Orientation="Horizontal">
-                                    <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="ErrorCircle" />
-                                    <TextBlock
-                                        Margin="12,0,0,0"
-                                        VerticalAlignment="Center"
-                                        Text="{StaticResource SettingPage_About}" />
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                    </Grid>
-                    <Grid Grid.Row="1" Margin="0,16,0,0">
-                        <Border Background="{ThemeResource DefaultBackgroudBrush}" CornerRadius="8">
-                            <home:WalletStatistic />
-                        </Border>
-                    </Grid>
+                        </GridView.Resources>
+                        <GridViewItem>
+                            <Button>
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon x:Name="GameServerOnlineIcon" Icon="XboxController">
+                                            <interactivity:Interaction.Behaviors>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="True">
+                                                    <interactivity:ChangePropertyAction
+                                                        PropertyName="Foreground"
+                                                        TargetObject="{Binding ElementName=GameServerOnlineIcon}"
+                                                        Value="{ThemeResource SystemAccentColor}" />
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="False">
+                                                    <interactivity:ChangePropertyAction
+                                                        PropertyName="Foreground"
+                                                        TargetObject="{Binding ElementName=GameServerOnlineIcon}"
+                                                        Value="{StaticResource DefaultRed}" />
+                                                </interactivity:DataTriggerBehavior>
+                                            </interactivity:Interaction.Behaviors>
+                                        </winui:FluentIcon>
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.Players, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button>
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{ThemeResource SystemAccentColor}" Icon="Clock" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.GameTime, Mode=OneWay}"
+                                            ToolTipService.ToolTip="{StaticResource HomePage_GameTime}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppUpdateCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{ThemeResource SystemAccentColor}" Icon="Apps" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.AppVersion, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppAboutCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="ErrorCircle" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource SettingPage_About}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppLogCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="Bug" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource HomePage_Log}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppSettingCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="Settings" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource General_Setting}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                    </GridView>
+                    <home:WalletStatistic Grid.Row="1" />
                 </Grid>
-
                 <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Hidden">
                     <GridView
                         IsItemClickEnabled="False"

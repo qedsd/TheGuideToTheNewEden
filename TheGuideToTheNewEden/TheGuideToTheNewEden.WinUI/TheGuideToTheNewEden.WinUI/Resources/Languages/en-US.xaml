@@ -409,11 +409,12 @@
     <x:String x:Key="BusinessPage_NoNoneSourceSellOrder">Filter out items with no sell orders in the source market</x:String>
     <x:String x:Key="BusinessPage_GetOrders">Get Orders</x:String>
     <x:String x:Key="BusinessPage_Analyse">Analyse Orders</x:String>
-    <x:String x:Key="BusinessPage_TargetItems">目标物品</x:String>
+    <x:String x:Key="BusinessPage_TargetItems">Target Items</x:String>
     <x:String x:Key="BusinessPage_TargetVolume">Packaged volume from target sales volume</x:String>
     <x:String x:Key="BusinessPage_TargetItemsCount">Volume of target items</x:String>
     <x:String x:Key="BusinessPage_IskPerJump">ISK/Jump</x:String>
     <x:String x:Key="BusinessPage_IskPerVolume">ISK/Volume</x:String>
+    <x:String x:Key="BusinessPage_TypeVolume">Count</x:String>
 
     <x:String x:Key="BusinessPage_Type">Item</x:String>
     <x:String x:Key="BusinessPage_SourceBuyPrice">Source Market Buying Price</x:String>
@@ -1366,4 +1367,8 @@
     <x:String x:Key="HomePage_Wallet_Type_Tax">Tax</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Donation">Donation</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">Other</x:String>
+    <x:String x:Key="HomePage_Log">Log</x:String>
+
+    <!--  LogViewPage  -->
+    <x:String x:Key="LogViewPage_ClearLog">Clear Log</x:String>
 </ResourceDictionary>

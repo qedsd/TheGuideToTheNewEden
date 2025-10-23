@@ -50,7 +50,10 @@
             <Setter Property="ItemTemplate" Value="{StaticResource WalletDataTemplate}" />
         </Style>
     </UserControl.Resources>
-    <Grid Padding="8,16">
+    <Grid
+        Padding="8,16"
+        Background="{ThemeResource TransparentBackgroudBrush}"
+        CornerRadius="8">
         <ProgressRing
             x:Name="LoadingUI"
             HorizontalAlignment="Center"
@@ -63,89 +66,81 @@
             VerticalAlignment="Center"
             Visibility="Collapsed" />
         <Grid x:Name="ContentGrid" Visibility="Collapsed">
-            <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <StackPanel Margin="8,0">
+                <TextBlock
+                    Margin="0,0,0,4"
+                    FontSize="13"
+                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                    Text="{StaticResource HomePage_Wallet_Tip}" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        x:Name="WalletSumTextBlock"
+                        FontSize="20"
+                        IsTextSelectionEnabled="True" />
+                </StackPanel>
+
+                <TextBlock
+                    x:Name="DiffWalletTextBlock"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Foreground="White"
+                    IsTextSelectionEnabled="True"
+                    Visibility="Collapsed" />
+            </StackPanel>
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="32" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <StackPanel Margin="8,0">
-                        <TextBlock
-                            Margin="0,0,0,4"
-                            FontSize="13"
-                            Foreground="{ThemeResource SecondaryForegroundBrush}"
-                            Text="{StaticResource HomePage_Wallet_Tip}" />
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock
-                                x:Name="WalletSumTextBlock"
-                                FontSize="20"
-                                IsTextSelectionEnabled="True" />
-                        </StackPanel>
-
-                        <TextBlock
-                            x:Name="DiffWalletTextBlock"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            FontSize="13"
-                            Foreground="White"
-                            IsTextSelectionEnabled="True"
-                            Visibility="Collapsed" />
-                    </StackPanel>
-                    <Grid Grid.Row="1" Margin="0,16,0,0">
-                        <Grid.Resources>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                            </Style>
-                        </Grid.Resources>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="32" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="8,0,8,4" Orientation="Horizontal">
-                            <TextBlock
-                                FontSize="13"
-                                Foreground="{ThemeResource SecondaryForegroundBrush}"
-                                Text="{StaticResource HomePage_Wallet_In}" />
-                            <TextBlock
-                                x:Name="InWalletTextBlock"
-                                Margin="6,0,0,0"
-                                FontSize="13"
-                                Foreground="{StaticResource DefaultGreen}" />
-                        </StackPanel>
-                        <ListView
-                            x:Name="WalletListView_In"
-                            Grid.Row="1"
-                            Style="{StaticResource WalletListView}" />
-                        <StackPanel
-                            Grid.Column="2"
-                            Margin="8,0,8,4"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                FontSize="13"
-                                Foreground="{ThemeResource SecondaryForegroundBrush}"
-                                Text="{StaticResource HomePage_Wallet_Out}" />
-                            <TextBlock
-                                x:Name="OutWalletTextBlock"
-                                Margin="6,0,0,0"
-                                FontSize="13"
-                                Foreground="{StaticResource DefaultRed}" />
-                        </StackPanel>
-                        <ListView
-                            x:Name="WalletListView_Out"
-                            Grid.Row="1"
-                            Grid.Column="2"
-                            Style="{StaticResource WalletListView}" />
-                    </Grid>
-                </Grid>
+                <StackPanel Margin="8,0,8,4" Orientation="Horizontal">
+                    <TextBlock
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource HomePage_Wallet_In}" />
+                    <TextBlock
+                        x:Name="InWalletTextBlock"
+                        Margin="6,0,0,0"
+                        FontSize="13"
+                        Foreground="{StaticResource DefaultGreen}" />
+                </StackPanel>
+                <ListView
+                    x:Name="WalletListView_In"
+                    Grid.Row="1"
+                    Style="{StaticResource WalletListView}" />
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="8,0,8,4"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource HomePage_Wallet_Out}" />
+                    <TextBlock
+                        x:Name="OutWalletTextBlock"
+                        Margin="6,0,0,0"
+                        FontSize="13"
+                        Foreground="{StaticResource DefaultRed}" />
+                </StackPanel>
+                <ListView
+                    x:Name="WalletListView_Out"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Style="{StaticResource WalletListView}" />
             </Grid>
         </Grid>
         <Button
