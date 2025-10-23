@@ -133,7 +133,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void OpenFolderButton_Click(object sender, RoutedEventArgs e)
         {
-
+            string arguments = $"/select, \"{Core.Log.GetLogFile()}\"";
+            System.Diagnostics.Process.Start("explorer.exe", arguments);
         }
     }
 }

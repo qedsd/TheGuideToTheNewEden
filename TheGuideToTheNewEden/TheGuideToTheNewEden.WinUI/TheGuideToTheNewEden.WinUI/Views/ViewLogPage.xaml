@@ -21,7 +21,7 @@
         </ScrollViewer>
         <StackPanel
             Grid.Row="1"
-            Margin="0,4,0,0"
+            Margin="4"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
             <StackPanel.Resources>
