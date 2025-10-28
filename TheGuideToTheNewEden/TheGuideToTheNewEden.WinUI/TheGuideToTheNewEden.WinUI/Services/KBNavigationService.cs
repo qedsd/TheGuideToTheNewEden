@@ -145,7 +145,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Header = Helpers.ResourcesHelper.GetString("ZKBHomePage_KillStream"),
                     Content = new KillStreamPage(),
                     IsSelected = true,
-                    IsClosable = false,
+                    IsClosable = true,
+                    Tag = -1L
                 };
                 _tabView.TabItems.Add(_homeTabViewItem);
             }
@@ -154,6 +155,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void RemoveInstance(long id)
         {
+            if(id == -1)//Home
+            {
+                (_homeTabViewItem.Content as KillStreamPage).Close();
+                _homeTabViewItem.Content = null;
+                _homeTabViewItem.Content = new KillStreamPage(false);
+            }
             if (_instances.TryGetValue(id, out var content))
             {
                 _tabView.TabItems.Remove(content);

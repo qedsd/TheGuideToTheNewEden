@@ -794,6 +794,7 @@
     <x:String x:Key="ZKBHomePage_KillStream">KB stream</x:String>
     <x:String x:Key="ZKBHomePage_AutoConnect">Auto start kb stream</x:String>
     <x:String x:Key="ZKBHomePage_Connect">Connect to ZKB server</x:String>
+    <x:String x:Key="ZKBHomePage_Disconnect">Disconnected to ZKB server</x:String>
     <x:String x:Key="KBListControl_Date">Date</x:String>
     <x:String x:Key="KBListControl_Time">Time</x:String>
     <x:String x:Key="KBListControl_TotalValue">TotalValue</x:String>

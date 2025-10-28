@@ -23,8 +23,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
     public sealed partial class KillStreamPage : Page
     {
         private Services.KBNavigationService _kbNavigationService;
-        public KillStreamPage()
+        private bool _autoConnect;
+        public KillStreamPage(bool autoConnect = true)
         {
+            _autoConnect = autoConnect;
             _kbNavigationService = ClientServiceHelper.GetRequiredService<KBNavigationService>();
             this.InitializeComponent();
             Loaded += KillStreamPage_Loaded;
@@ -33,7 +35,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private void KillStreamPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= KillStreamPage_Loaded;
-            if (Services.Settings.ZKBSettingService.Setting.AutoConnect)
+            if (_autoConnect && Services.Settings.ZKBSettingService.Setting.AutoConnect)
             {
                 Connect();
             }

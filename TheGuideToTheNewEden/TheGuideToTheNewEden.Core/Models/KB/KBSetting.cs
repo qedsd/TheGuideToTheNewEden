@@ -6,7 +6,7 @@ namespace TheGuideToTheNewEden.Core.Models.KB
 {
     public class KBSetting
     {
-        public bool AutoConnect { get; set; } = true;
+        public bool AutoConnect { get; set; } = false;
         public bool Notify { get; set; } = true;
         public long MinNotifyValue { get; set; } = 1000000000;
         public HashSet<int> Types { get; set; }
