@@ -24,7 +24,20 @@ namespace TheGuideToTheNewEden.WinUI
             UnhandledException += App_UnhandledException;//UI线程
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            Application.Current.UnhandledException += Current_UnhandledException;
+            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             Log.Init();
+        }
+
+        private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            
+        }
+
+        private void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            Log.Error(e.Exception);
         }
 
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

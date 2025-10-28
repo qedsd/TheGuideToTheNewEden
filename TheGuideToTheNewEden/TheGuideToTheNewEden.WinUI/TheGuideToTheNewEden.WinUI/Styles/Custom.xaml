@@ -176,7 +176,10 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="StretchListViewItem" TargetType="ListViewItem">
+    <Style
+        x:Key="StretchListViewItem"
+        BasedOn="{StaticResource DefaultListViewItemStyle}"
+        TargetType="ListViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
     <Style x:Key="StretchListView" TargetType="ListView">

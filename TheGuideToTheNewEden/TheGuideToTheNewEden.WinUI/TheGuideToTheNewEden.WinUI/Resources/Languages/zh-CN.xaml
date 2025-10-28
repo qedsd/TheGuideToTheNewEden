@@ -14,7 +14,7 @@
     <x:String x:Key="ServerPingPage">延迟测试</x:String>
     <x:String x:Key="TranslationPage">翻译</x:String>
     <x:String x:Key="DEDPage">死亡远征</x:String>
-    <x:String x:Key="WormholePage">虫洞查询</x:String>
+    <x:String x:Key="WormholePage">虫洞</x:String>
     <x:String x:Key="BackstoryPage">背景故事</x:String>
     <x:String x:Key="MissionPage">任务攻略</x:String>
     <x:String x:Key="GameLogMonitorPage">日志监控</x:String>
@@ -538,6 +538,10 @@
     <x:String x:Key="WormholePage_Static">永联</x:String>
     <x:String x:Key="WormholePage_Wandering">漫游</x:String>
     <x:String x:Key="WormholePage_Phenomena">天象</x:String>
+    <x:String x:Key="WormholePage_Planet">星球</x:String>
+    <x:String x:Key="WormholePage_Moon">月球</x:String>
+    <x:String x:Key="WormholePage_Other">其他</x:String>
+    <x:String x:Key="WormholePage_Links">友链</x:String>
 
     <x:String x:Key="WormholePage_Class_1">c1</x:String>
     <x:String x:Key="WormholePage_Class_2">c2</x:String>
@@ -556,6 +560,7 @@
     <x:String x:Key="WormholePage_Class_101">低安</x:String>
     <x:String x:Key="WormholePage_Class_102">00</x:String>
 
+    <x:String x:Key="WormholePage_Phenomena_-1">无</x:String>
     <x:String x:Key="WormholePage_Phenomena_0">红巨星</x:String>
     <x:String x:Key="WormholePage_Phenomena_1">激变变星</x:String>
     <x:String x:Key="WormholePage_Phenomena_2">磁星</x:String>
@@ -573,6 +578,22 @@
 
     <x:String x:Key="WormholePage_Portal_Respawn_Wandering">随机</x:String>
     <x:String x:Key="WormholePage_Portal_Respawn_Static">固定</x:String>
+    <x:String x:Key="WormholePage_Portal">洞口</x:String>
+
+    <x:String x:Key="WormholePage_ZKB">ZKB分析</x:String>
+    <x:String x:Key="WormholePage_ZKB_DataFrom">过去{0}天内{1}个击杀</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek1">周一</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek2">周二</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek3">周三</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek4">周四</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek5">周五</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek6">周六</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek7">周天</x:String>
+    <x:String x:Key="WormholePage_ZKB_Detail">查看详细</x:String>
+    <x:String x:Key="WormholePage_ZKB_MostActiveCorporations">最活跃军团</x:String>
+    <x:String x:Key="WormholePage_ZKB_MostActiveAlliances">最活跃联盟</x:String>
+    <x:String x:Key="WormholePage_ZKB_LastActive">活跃于</x:String>
+    <x:String x:Key="WormholePage_ZKB_DaysAgo">天前</x:String>
 
     <x:String x:Key="Backstory_Type_Race">种族</x:String>
     <x:String x:Key="Backstory_Type_History">历史</x:String>

@@ -20,6 +20,9 @@ using Microsoft.UI.Xaml.Documents;
 using Windows.UI;
 using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Services;
+using DevWinUI;
+using TheGuideToTheNewEden.WinUI.Models;
+using TheGuideToTheNewEden.WinUI.ViewModels;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
@@ -39,174 +42,197 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             this.InitializeComponent();
         }
-        private SerachItem _selectedItem;
-        private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if(string.IsNullOrEmpty(sender.Text))
-            {
-                sender.ItemsSource = null;
-                return;
-            }
-            if(_selectedItem != null && _selectedItem.Name == sender.Text)
-            {
-                return;
-            }
-            List<SerachItem> serachItems = new List<SerachItem>();
-            var holes = await Core.Services.DB.WormholeService.QueryWormholeAsync(sender.Text);
-            var portals = await Core.Services.DB.WormholeService.QueryPortalAsync(sender.Text);
-            if(holes.NotNullOrEmpty())
-            {
-                foreach( var hole in holes)
-                {
-                    serachItems.Add(new SerachItem()
-                    {
-                        Id = hole.Id,
-                        Name = hole.Name,
-                        Obj = hole
-                    });
-                }
-            }
-            if(portals.NotNullOrEmpty())
-            {
-                foreach (var portal in portals)
-                {
-                    serachItems.Add(new SerachItem()
-                    {
-                        Id = portal.Id,
-                        Name = portal.Name,
-                        Obj = portal
-                    });
-                }
-            }
-            sender.ItemsSource = serachItems;
-        }
-
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            _selectedItem = args.SelectedItem as SerachItem;
-            if(_selectedItem != null)
-            {
-                if(_selectedItem.IsPortal)
-                {
-                    LoadWormholePortalDetail(_selectedItem.Obj as WormholePortal);
-                }
-                else
-                {
-                    LoadWormholeDetail(_selectedItem.Obj as Wormhole);
-                }
-            }
-            sender.Text = _selectedItem.Name;
+            VM.SelectedWormhole = args.SelectedItem as Wormhole;
         }
+
+        private async void PortalButton_Click(object sender, RoutedEventArgs e)
+        {
+            RichTextBlock richTextBlock = new RichTextBlock();
+            WormholePortal wormholePortal = (sender as Button).DataContext as WormholePortal;
+            LoadWormholePortalDetail(richTextBlock, wormholePortal);
+            WindowedContentDialog dialog = new()
+            {
+                Title = wormholePortal.Name,
+                Content = richTextBlock,
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                IsSecondaryButtonEnabled = false,
+                IsPrimaryButtonEnabled = false,
+                OwnerWindow = Helpers.WindowHelper.MainWindow,
+            };
+            await dialog.ShowAsync(true);
+        }
+
+
+        //private SerachItem _selectedItem;
+        //private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        //{
+        //    if(string.IsNullOrEmpty(sender.Text))
+        //    {
+        //        sender.ItemsSource = null;
+        //        return;
+        //    }
+        //    if(_selectedItem != null && _selectedItem.Name == sender.Text)
+        //    {
+        //        return;
+        //    }
+        //    List<SerachItem> serachItems = new List<SerachItem>();
+        //    var holes = await Core.Services.DB.WormholeService.QueryWormholeAsync(sender.Text);
+        //    var portals = await Core.Services.DB.WormholeService.QueryPortalAsync(sender.Text);
+        //    if(holes.NotNullOrEmpty())
+        //    {
+        //        foreach( var hole in holes)
+        //        {
+        //            serachItems.Add(new SerachItem()
+        //            {
+        //                Id = hole.Id,
+        //                Name = hole.Name,
+        //                Obj = hole
+        //            });
+        //        }
+        //    }
+        //    if(portals.NotNullOrEmpty())
+        //    {
+        //        foreach (var portal in portals)
+        //        {
+        //            serachItems.Add(new SerachItem()
+        //            {
+        //                Id = portal.Id,
+        //                Name = portal.Name,
+        //                Obj = portal
+        //            });
+        //        }
+        //    }
+        //    sender.ItemsSource = serachItems;
+        //}
+
+        //private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        //{
+        //    _selectedItem = args.SelectedItem as SerachItem;
+        //    if(_selectedItem != null)
+        //    {
+        //        if(_selectedItem.IsPortal)
+        //        {
+        //            LoadWormholePortalDetail(_selectedItem.Obj as WormholePortal);
+        //        }
+        //        else
+        //        {
+        //            LoadWormholeDetail(_selectedItem.Obj as Wormhole);
+        //        }
+        //    }
+        //    sender.Text = _selectedItem.Name;
+        //}
 
         readonly int defaultFontSize = 16;
         readonly int defaultLineHeight = 30;
-        public void LoadWormholeDetail(Wormhole wormhole)
-        {
-            RichTextBlock_Main.Blocks.Clear();
-            RichTextBlock_Other.Blocks.Clear();
-            RichTextBlock_Main.HorizontalTextAlignment = TextAlignment.Center;
-            RichTextBlock_Other.HorizontalTextAlignment = TextAlignment.Left;
-            Paragraph nameParagraph = new Paragraph() { LineHeight = defaultLineHeight * 2 };
-            RichTextBlock_Main.Blocks.Add(nameParagraph);
-            nameParagraph.Inlines.Add(new Run()
-            {
-                FontSize = 32,
-                Text = wormhole.Name,
-                Foreground = new SolidColorBrush((Color)Helpers.ResourcesHelper.Get("SystemAccentColor")),
-            }) ;
+        //public void LoadWormholeDetail(Wormhole wormhole)
+        //{
+        //    RichTextBlock_Main.Blocks.Clear();
+        //    RichTextBlock_Other.Blocks.Clear();
+        //    RichTextBlock_Main.HorizontalTextAlignment = TextAlignment.Center;
+        //    RichTextBlock_Other.HorizontalTextAlignment = TextAlignment.Left;
+        //    Paragraph nameParagraph = new Paragraph() { LineHeight = defaultLineHeight * 2 };
+        //    RichTextBlock_Main.Blocks.Add(nameParagraph);
+        //    nameParagraph.Inlines.Add(new Run()
+        //    {
+        //        FontSize = 32,
+        //        Text = wormhole.Name,
+        //        Foreground = new SolidColorBrush((Color)Helpers.ResourcesHelper.Get("SystemAccentColor")),
+        //    }) ;
 
-            Paragraph classParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(classParagraph);
-            classParagraph.Inlines.Add(new Run()
-            {
-                FontSize = defaultFontSize,
-                Text = Helpers.ResourcesHelper.GetString($"WormholePage_Class_{wormhole.Class}"),
-            });
-            
-            if (wormhole.Phenomena >= 0)
-            {
-                classParagraph.Inlines.Add(new Run()
-                {
-                    FontSize = defaultFontSize,
-                    Text = " ",
-                });
-                classParagraph.Inlines.Add(new Run()
-                {
-                    FontSize = defaultFontSize,
-                    Text = Helpers.ResourcesHelper.GetString($"WormholePage_Phenomena_{wormhole.Phenomena}")
-                });
-            }
+        //    Paragraph classParagraph = new Paragraph() { LineHeight = defaultLineHeight };
+        //    RichTextBlock_Main.Blocks.Add(classParagraph);
+        //    classParagraph.Inlines.Add(new Run()
+        //    {
+        //        FontSize = defaultFontSize,
+        //        Text = Helpers.ResourcesHelper.GetString($"WormholePage_Class_{wormhole.Class}"),
+        //    });
 
-            if(!string.IsNullOrEmpty(wormhole.Statics))
-            {
-                Paragraph staticsParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-                RichTextBlock_Main.Blocks.Add(staticsParagraph);
-                staticsParagraph.Inlines.Add(new Run()
-                {
-                    FontSize = defaultFontSize,
-                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Static")}: ",
-                    FontWeight = new Windows.UI.Text.FontWeight(1)
-                });
-                foreach (var s in wormhole.Statics.Split(','))
-                {
-                    staticsParagraph.Inlines.Add(CreatePortalLink(int.Parse(s)));
-                }
-            }
-            if (!string.IsNullOrEmpty(wormhole.Wanderings))
-            {
-                Paragraph wanderingsParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-                RichTextBlock_Main.Blocks.Add(wanderingsParagraph);
-                wanderingsParagraph.Inlines.Add(new Run()
-                {
-                    FontSize = defaultFontSize,
-                    Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Wandering")}: ",
-                    FontWeight = new Windows.UI.Text.FontWeight(1)
-                });
-                foreach (var s in wormhole.Wanderings.Split(','))
-                {
-                    wanderingsParagraph.Inlines.Add(CreatePortalLink(int.Parse(s)));
-                }
-            }
+        //    if (wormhole.Phenomena >= 0)
+        //    {
+        //        classParagraph.Inlines.Add(new Run()
+        //        {
+        //            FontSize = defaultFontSize,
+        //            Text = " ",
+        //        });
+        //        classParagraph.Inlines.Add(new Run()
+        //        {
+        //            FontSize = defaultFontSize,
+        //            Text = Helpers.ResourcesHelper.GetString($"WormholePage_Phenomena_{wormhole.Phenomena}")
+        //        });
+        //    }
 
-            #region ÐÐÐÇ
-            var stellars = WormholeService.QueryWormholeStellar(wormhole.Id);
-            if(stellars.NotNullOrEmpty())
-            {
-                var types = InvTypeService.QueryTypes(stellars.Select(p => p.TypeId).ToList());
-                foreach(var stellar in stellars)
-                {
-                    Paragraph stellarParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-                    RichTextBlock_Other.Blocks.Add(stellarParagraph);
-                    stellarParagraph.Inlines.Add(new Run()
-                    {
-                        FontSize = defaultFontSize,
-                        Text = stellar.Name
-                    });
-                    var targetType = types.FirstOrDefault(p => p.TypeID == stellar.TypeId);
-                    if(targetType != null)
-                    {
-                        stellarParagraph.Inlines.Add(new Run()
-                        {
-                            FontSize = defaultFontSize,
-                            Text = $"   {targetType.TypeName}"
-                        });
-                    }
-                }
-            }
-            #endregion
+        //    if(!string.IsNullOrEmpty(wormhole.Statics))
+        //    {
+        //        Paragraph staticsParagraph = new Paragraph() { LineHeight = defaultLineHeight };
+        //        RichTextBlock_Main.Blocks.Add(staticsParagraph);
+        //        staticsParagraph.Inlines.Add(new Run()
+        //        {
+        //            FontSize = defaultFontSize,
+        //            Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Static")}: ",
+        //            FontWeight = new Windows.UI.Text.FontWeight(1)
+        //        });
+        //        foreach (var s in wormhole.Statics.Split(','))
+        //        {
+        //            staticsParagraph.Inlines.Add(CreatePortalLink(int.Parse(s)));
+        //        }
+        //    }
+        //    if (!string.IsNullOrEmpty(wormhole.Wanderings))
+        //    {
+        //        Paragraph wanderingsParagraph = new Paragraph() { LineHeight = defaultLineHeight };
+        //        RichTextBlock_Main.Blocks.Add(wanderingsParagraph);
+        //        wanderingsParagraph.Inlines.Add(new Run()
+        //        {
+        //            FontSize = defaultFontSize,
+        //            Text = $"{Helpers.ResourcesHelper.GetString("WormholePage_Wandering")}: ",
+        //            FontWeight = new Windows.UI.Text.FontWeight(1)
+        //        });
+        //        foreach (var s in wormhole.Wanderings.Split(','))
+        //        {
+        //            wanderingsParagraph.Inlines.Add(CreatePortalLink(int.Parse(s)));
+        //        }
+        //    }
 
-            #region link
-            RichTextBlock_Other.Blocks.Add(new Paragraph());
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://anoik.is/systems/{wormhole.Name}", "Anoik"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://evemaps.dotlan.net/system/{wormhole.Name}", "Dotlan"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://www.ellatha.com/eve/WormholeSystemview.asp?key={wormhole.Name.TrimStart('J')}", "Ellatha"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://zkillboard.com/system/{wormhole.Id}", "Zkillboard"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://games.chruker.dk/eve_online/solarsystem.php?show=all&name={wormhole.Name}", "Chruker"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://venus.wormholes.club/", "°®Éñ³æ¶´"));
-            #endregion
-        }
+        //    #region ÐÐÐÇ
+        //    var stellars = MapDenormalizeService.QueryBySolarSystemID(wormhole.Id).Where(p=>p.GroupID == 6 || p.GroupID == 7);
+        //    if(stellars.NotNullOrEmpty())
+        //    {
+        //        var types = InvTypeService.QueryTypes(stellars.Select(p => p.TypeID).ToList());
+        //        foreach(var stellar in stellars)
+        //        {
+        //            Paragraph stellarParagraph = new Paragraph() { LineHeight = defaultLineHeight };
+        //            RichTextBlock_Other.Blocks.Add(stellarParagraph);
+        //            stellarParagraph.Inlines.Add(new Run()
+        //            {
+        //                FontSize = defaultFontSize,
+        //                Text = stellar.ItemName
+        //            });
+        //            var targetType = types.FirstOrDefault(p => p.TypeID == stellar.TypeID);
+        //            if(targetType != null)
+        //            {
+        //                stellarParagraph.Inlines.Add(new Run()
+        //                {
+        //                    FontSize = defaultFontSize,
+        //                    Text = $"   {targetType.TypeName}"
+        //                });
+        //            }
+        //        }
+        //    }
+        //    #endregion
 
-        private Paragraph CreateLinkParagraph(string uri,string show)
+        //    #region link
+        //    RichTextBlock_Other.Blocks.Add(new Paragraph());
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://anoik.is/systems/{wormhole.Name}", "Anoik"));
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://evemaps.dotlan.net/system/{wormhole.Name}", "Dotlan"));
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://www.ellatha.com/eve/WormholeSystemview.asp?key={wormhole.Name.TrimStart('J')}", "Ellatha"));
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://zkillboard.com/system/{wormhole.Id}", "Zkillboard"));
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://games.chruker.dk/eve_online/solarsystem.php?show=all&name={wormhole.Name}", "Chruker"));
+        //    RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://venus.wormholes.club/", "°®Éñ³æ¶´"));
+        //    #endregion
+        //}
+
+        private Paragraph CreateLinkParagraph(string uri, string show)
         {
             Paragraph paragraph = new Paragraph() { LineHeight = defaultLineHeight };
             Hyperlink link = new Hyperlink()
@@ -221,80 +247,73 @@ namespace TheGuideToTheNewEden.WinUI.Views
             paragraph.Inlines.Add(link);
             return paragraph;
         }
-        private Hyperlink CreatePortalLink(int id)
-        {
-            var portal = WormholeService.QueryPortal(id);
-            if (portal != null)
-            {
-                Hyperlink link = new Hyperlink()
-                {
-                    UnderlineStyle = UnderlineStyle.None,
-                };
-                if (string.IsNullOrEmpty(portal.Destination))
-                {
-                    link.Inlines.Add(new Run()
-                    {
-                        FontSize = defaultFontSize,
-                        Text = $"{portal.Name}   ",
-                    });
-                }
-                else
-                {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.Append(portal.Name);
-                    stringBuilder.Append("(->");
-                    stringBuilder.Append(Helpers.ResourcesHelper.GetString($"WormholePage_Class_{portal.Destination}"));
-                    stringBuilder.Append(")   ");
-                    link.Inlines.Add(new Run()
-                    {
-                        FontSize = defaultFontSize,
-                        Text = stringBuilder.ToString(),
-                    });
-                }
-                link.Click += Link_Click;
-                return link;
-            }
-            else
-            {
-                return null;
-            }
-        }
 
-        private void Link_Click(Hyperlink sender, HyperlinkClickEventArgs args)
-        {
-            var text = (sender.Inlines.First() as Run).Text;
-            string portalName = string.Empty;
-            int index = text.IndexOf('(');
-            if(index == -1)
-            {
-                portalName = text.Trim();
-            }
-            else
-            {
-                portalName = text.Substring(0, index).Trim();
-            }
-            LoadWormholePortalDetail(WormholeService.QueryPortalByName(portalName));
-        }
+        //private Hyperlink CreatePortalLink(int id)
+        //{
+        //    var portal = WormholeService.QueryPortal(id);
+        //    if (portal != null)
+        //    {
+        //        Hyperlink link = new Hyperlink()
+        //        {
+        //            UnderlineStyle = UnderlineStyle.None,
+        //        };
+        //        if (string.IsNullOrEmpty(portal.Destination))
+        //        {
+        //            link.Inlines.Add(new Run()
+        //            {
+        //                FontSize = defaultFontSize,
+        //                Text = $"{portal.Name}   ",
+        //            });
+        //        }
+        //        else
+        //        {
+        //            StringBuilder stringBuilder = new StringBuilder();
+        //            stringBuilder.Append(portal.Name);
+        //            stringBuilder.Append("(->");
+        //            stringBuilder.Append(Helpers.ResourcesHelper.GetString($"WormholePage_Class_{portal.Destination}"));
+        //            stringBuilder.Append(")   ");
+        //            link.Inlines.Add(new Run()
+        //            {
+        //                FontSize = defaultFontSize,
+        //                Text = stringBuilder.ToString(),
+        //            });
+        //        }
+        //        link.Click += Link_Click;
+        //        return link;
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //}
 
-        public void LoadWormholePortalDetail(WormholePortal wormholePortal)
-        {
-            RichTextBlock_Main.Blocks.Clear();
-            RichTextBlock_Other.Blocks.Clear();
-            RichTextBlock_Main.HorizontalTextAlignment = TextAlignment.Left;
-            RichTextBlock_Other.HorizontalTextAlignment = TextAlignment.Center;
-            Paragraph nameParagraph = new Paragraph() { LineHeight = defaultLineHeight * 2 };
-            RichTextBlock_Main.Blocks.Add(nameParagraph);
-            nameParagraph.Inlines.Add(new Run()
-            {
-                FontSize = 32,
-                Text = wormholePortal.Name,
-                Foreground = new SolidColorBrush((Color)Helpers.ResourcesHelper.Get("SystemAccentColor")),
-            });
+        //private void Link_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+        //{
+        //    var text = (sender.Inlines.First() as Run).Text;
+        //    string portalName = string.Empty;
+        //    int index = text.IndexOf('(');
+        //    if(index == -1)
+        //    {
+        //        portalName = text.Trim();
+        //    }
+        //    else
+        //    {
+        //        portalName = text.Substring(0, index).Trim();
+        //    }
+        //    LoadWormholePortalDetail(WormholeService.QueryPortalByName(portalName));
+        //}
 
-            if(!string.IsNullOrEmpty(wormholePortal.Destination))
+        public void LoadWormholePortalDetail(RichTextBlock richTextBlock, WormholePortal wormholePortal)
+        {
+            int defaultLineHeight = 30;
+            int defaultFontSize = 16;
+            richTextBlock.Blocks.Clear();
+            richTextBlock.HorizontalTextAlignment = TextAlignment.Left;
+
+            if (!string.IsNullOrEmpty(wormholePortal.Destination))
             {
                 Paragraph destParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-                RichTextBlock_Main.Blocks.Add(destParagraph);
+                richTextBlock.Blocks.Add(destParagraph);
                 destParagraph.Inlines.Add(new Run()
                 {
                     FontSize = defaultFontSize,
@@ -315,11 +334,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     });
                 }
             }
-            
-            if(!string.IsNullOrEmpty(wormholePortal.AppearsIn))
+
+            if (!string.IsNullOrEmpty(wormholePortal.AppearsIn))
             {
                 Paragraph appearsInParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-                RichTextBlock_Main.Blocks.Add(appearsInParagraph);
+                richTextBlock.Blocks.Add(appearsInParagraph);
                 appearsInParagraph.Inlines.Add(new Run()
                 {
                     FontSize = defaultFontSize,
@@ -340,10 +359,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                     });
                 }
             }
-            
+
 
             Paragraph lifetimeParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(lifetimeParagraph);
+            richTextBlock.Blocks.Add(lifetimeParagraph);
             lifetimeParagraph.Inlines.Add(new Run()
             {
                 FontSize = defaultFontSize,
@@ -357,7 +376,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             });
 
             Paragraph maxMassperJumpParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(maxMassperJumpParagraph);
+            richTextBlock.Blocks.Add(maxMassperJumpParagraph);
             maxMassperJumpParagraph.Inlines.Add(new Run()
             {
                 FontSize = defaultFontSize,
@@ -371,7 +390,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             });
 
             Paragraph totalJumpMassParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(totalJumpMassParagraph);
+            richTextBlock.Blocks.Add(totalJumpMassParagraph);
             totalJumpMassParagraph.Inlines.Add(new Run()
             {
                 FontSize = defaultFontSize,
@@ -385,7 +404,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             });
 
             Paragraph respawnParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(respawnParagraph);
+            richTextBlock.Blocks.Add(respawnParagraph);
             var respawn = wormholePortal.Respawn == "Static" ? Helpers.ResourcesHelper.GetString("WormholePage_Portal_Respawn_Static") : Helpers.ResourcesHelper.GetString("WormholePage_Portal_Respawn_Wandering");
             respawnParagraph.Inlines.Add(new Run()
             {
@@ -400,7 +419,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             });
 
             Paragraph massRegenParagraph = new Paragraph() { LineHeight = defaultLineHeight };
-            RichTextBlock_Main.Blocks.Add(massRegenParagraph);
+            richTextBlock.Blocks.Add(massRegenParagraph);
             massRegenParagraph.Inlines.Add(new Run()
             {
                 FontSize = defaultFontSize,
@@ -412,10 +431,34 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 FontSize = defaultFontSize,
                 Text = $"    {wormholePortal.MassRegen:N2} kg",
             });
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"http://anoik.is/wormholes/{wormholePortal.Name}", "Anoik"));
-            RichTextBlock_Other.Blocks.Add(CreateLinkParagraph($"https://www.ellatha.com/eve/wormholelistview.asp?key=Wormhole+{wormholePortal.Name}", "Ellatha"));
+            richTextBlock.Blocks.Add(CreateLinkParagraph($"http://anoik.is/wormholes/{wormholePortal.Name}", "Anoik"));
+            richTextBlock.Blocks.Add(CreateLinkParagraph($"https://www.ellatha.com/eve/wormholelistview.asp?key=Wormhole+{wormholePortal.Name}", "Ellatha"));
         }
 
+        private void LinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            string url = null;
+            switch((sender as Button).Content)
+            {
+                case "Anoik": url = $"http://anoik.is/systems/{VM.SelectedWormhole.Name}"; break;
+                case "Dotlan": url = $"https://evemaps.dotlan.net/system/{VM.SelectedWormhole.Name}"; break;
+                case "Ellatha": url = $"https://www.ellatha.com/eve/WormholeSystemview.asp?key={VM.SelectedWormhole.Name.TrimStart('J')}"; break;
+                case "Zkillboard": url = $"https://zkillboard.com/system/{VM.SelectedWormhole.Id}"; break;
+                case "Chruker": url = $"http://games.chruker.dk/eve_online/solarsystem.php?show=all&name={VM.SelectedWormhole.Name}"; break;
+            }
+            if (!string.IsNullOrEmpty(url))
+            {
+                Helpers.UrlHelper.OpenInBrower(url);
+            }
+        }
 
+        private async void IdNameButton_Click(object sender, RoutedEventArgs e)
+        {
+            var statistic = (sender as Button).DataContext as WormholeFactionStatistic;
+            if (statistic?.Name != null)
+            {
+                await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(statistic.Name.Id, statistic.Name.GetCategory() == IdName.CategoryEnum.Alliance ? ZKB.NET.EntityType.AllianceID : ZKB.NET.EntityType.CorporationID, statistic.Name.Name);
+            }
+        }
     }
 }

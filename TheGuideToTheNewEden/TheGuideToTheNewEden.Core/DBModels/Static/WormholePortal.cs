@@ -17,6 +17,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
         /// </summary>
         [SugarColumn(IsNullable = true)]
         public string Destination { get; set; }
+
+        [SugarColumn(IsIgnore = true)]
+        public string DestinationName { get; set; }
+
         /// <summary>
         /// 高安、低安、00、虫洞等级
         /// 按,分割

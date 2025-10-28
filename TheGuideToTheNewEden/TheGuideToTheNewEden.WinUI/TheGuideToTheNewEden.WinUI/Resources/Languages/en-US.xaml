@@ -538,6 +538,10 @@
     <x:String x:Key="WormholePage_Static">Static</x:String>
     <x:String x:Key="WormholePage_Wandering">Wandering</x:String>
     <x:String x:Key="WormholePage_Phenomena">Phenomena</x:String>
+    <x:String x:Key="WormholePage_Planet">Planet</x:String>
+    <x:String x:Key="WormholePage_Moon">Moon</x:String>
+    <x:String x:Key="WormholePage_Other">Other</x:String>
+    <x:String x:Key="WormholePage_Links">Links</x:String>
 
     <x:String x:Key="WormholePage_Class_1">c1</x:String>
     <x:String x:Key="WormholePage_Class_2">c2</x:String>
@@ -556,6 +560,7 @@
     <x:String x:Key="WormholePage_Class_101">Lowsec</x:String>
     <x:String x:Key="WormholePage_Class_102">Nullsec</x:String>
 
+    <x:String x:Key="WormholePage_Phenomena_-1">无</x:String>
     <x:String x:Key="WormholePage_Phenomena_0">Red Giant</x:String>
     <x:String x:Key="WormholePage_Phenomena_1">Cataclysmic Variable</x:String>
     <x:String x:Key="WormholePage_Phenomena_2">Magnetar</x:String>
@@ -573,6 +578,22 @@
 
     <x:String x:Key="WormholePage_Portal_Respawn_Wandering">Wandering</x:String>
     <x:String x:Key="WormholePage_Portal_Respawn_Static">Static</x:String>
+    <x:String x:Key="WormholePage_Portal">洞口</x:String>
+
+    <x:String x:Key="WormholePage_ZKB">ZKB</x:String>
+    <x:String x:Key="WormholePage_ZKB_DataFrom">{1} kills in the last {0} days</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek1">Mon</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek2">Tue</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek3">Wed</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek4">Thu</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek5">Fri</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek6">Sat</x:String>
+    <x:String x:Key="WormholePage_ZKB_DayOfWeek7">Sun</x:String>
+    <x:String x:Key="WormholePage_ZKB_Detail">ZKB Detail</x:String>
+    <x:String x:Key="WormholePage_ZKB_MostActiveCorporations">Most active corporations</x:String>
+    <x:String x:Key="WormholePage_ZKB_MostActiveAlliances">Most active alliances</x:String>
+    <x:String x:Key="WormholePage_ZKB_LastActive">Actived</x:String>
+    <x:String x:Key="WormholePage_ZKB_DaysAgo">days ago</x:String>
 
     <x:String x:Key="Backstory_Type_Race">Race</x:String>
     <x:String x:Key="Backstory_Type_History">History</x:String>
