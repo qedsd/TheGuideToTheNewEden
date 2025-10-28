@@ -165,7 +165,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                         IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
                                         IntelMap = IntelMap,
                                         Jumps = jumps,
-                                        IntelShips = shipContents
+                                        IntelShips = shipContents,
+                                        // 2025-08-24 增加预警者名称的赋值
+                                        SpeakerName = chatContent.SpeakerName,
                                     };
                                 }
                                 else
@@ -207,8 +209,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         {
             if (Setting != null)
             {
-                IgnoreWords = Setting.IgnoreWords?.Split(',');
-                ClearWords = Setting.ClearWords?.Split(',');
+                // 2025-08-28 为免繁琐的大小写关键词设置，希望对于忽视预警关键词与解除预警关键词的判断不区分大小写，将忽视预警关键词与解除预警关键词全部转换为小写
+                IgnoreWords = Setting.IgnoreWords?.Split(',').Select(word => word.ToLower()).ToArray();
+                ClearWords = Setting.ClearWords?.Split(',').Select(word => word.ToLower()).ToArray();
             }
         }
         private string[] IgnoreWords;
