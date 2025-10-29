@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -42,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             _dispatcherQueueTimer.Interval = TimeSpan.FromSeconds(1);
             _dispatcherQueueTimer.Tick += OnTimerTick;
             _dispatcherQueueTimer.Start();
-            AppVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            AppVersion = ClientServiceHelper.GetRequiredService<AppUpdateService>().GetAppVersion();
             MarketTypes = MarketStarService.Current.GetIds();
             if (MarketTypes == null || MarketTypes.Count == 0)
             {

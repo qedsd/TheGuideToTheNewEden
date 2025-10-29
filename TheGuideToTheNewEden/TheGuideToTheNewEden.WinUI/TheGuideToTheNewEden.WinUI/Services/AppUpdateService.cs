@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -68,6 +69,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 Core.Log.Error(ex);
                 return ex.Message;//会因为Github的访问次数限制导致失败
             }
+        }
+        public string GetAppVersion()
+        {
+            var informationalVersionAttr = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            return informationalVersionAttr?.InformationalVersion ?? "Unknown";
         }
         public void GetReleasesStatus(out List<AppRelease> releases, out AppRelease lastRelease, out bool isLatest)
         {
