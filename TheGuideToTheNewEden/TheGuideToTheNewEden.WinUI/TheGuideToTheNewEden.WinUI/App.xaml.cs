@@ -72,6 +72,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             notificationManager?.Unregister();
             ForegroundWindowService.Current.Stop();
+            Helpers.WindowHelper.CloseAll();
         }
 
         /// <summary>
@@ -127,6 +128,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             App.HandleClosedEvents = false;
             Helpers.WindowHelper.MainWindow.Close();
+            Helpers.WindowHelper.CloseAll();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)

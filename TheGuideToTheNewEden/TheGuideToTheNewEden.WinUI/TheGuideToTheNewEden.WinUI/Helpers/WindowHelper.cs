@@ -53,6 +53,18 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         static private List<Window> _activeWindows = new List<Window>();
 
+        public static void CloseAll()
+        {
+            foreach(var win in _activeWindows)
+            {
+                try
+                {
+                    win.Close();
+                }
+                catch { }
+            }
+        }
+
         public static Window MainWindow { get; private set; }
         public static void SetMainWindow(Window window)
         {
