@@ -1393,4 +1393,10 @@
 
     <!--  LogViewPage  -->
     <x:String x:Key="LogViewPage_ClearLog">Clear Log</x:String>
+
+    <!--  TestInfo  -->
+    <x:String x:Key="TestVersionInfo_Title">Test version tips</x:String>
+    <x:String x:Key="TestVersionInfo_Desc">
+        This is a beta version and may be unstable. Do not upgrade to the release version, do not use it for a long time. The current version features may change in the release version.
+    </x:String>
 </ResourceDictionary>

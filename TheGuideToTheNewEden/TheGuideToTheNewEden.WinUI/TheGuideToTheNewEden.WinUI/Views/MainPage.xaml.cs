@@ -111,6 +111,21 @@ namespace TheGuideToTheNewEden.WinUI.Views
         });
         #endregion
 
+        private async void ShowTestInfo()
+        {
+            ContentDialog contentDialog = new ContentDialog();
+            contentDialog.Title = Helpers.ResourcesHelper.GetString("TestVersionInfo_Title");
+            contentDialog.Content = new TextBlock()
+            {
+                Text = Helpers.ResourcesHelper.GetString("TestVersionInfo_Desc"),
+                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+            };
+            contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
+            contentDialog.CloseButtonText = Helpers.ResourcesHelper.GetString("General_OK");
+            contentDialog.IsPrimaryButtonEnabled = false;
+            await contentDialog.ShowAsync();
+        }
+
         public void SelecteFromNavigateTo(Type type)
         {
             if(type == typeof(SettingPage))
