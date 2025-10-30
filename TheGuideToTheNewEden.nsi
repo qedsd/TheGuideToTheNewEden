@@ -114,13 +114,16 @@ Section Uninstall
   RMDir "$SMPROGRAMS\$ICONS_GROUP"
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
+  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  DeleteRegKey HKCR "eveauth-qedsd-neweden3"
   SetAutoClose true
 SectionEnd
 
 Section "Protocol"
+    WriteRegStr HKCR "eveauth-qedsd-neweden3" "URL Protocol" ''
     WriteRegStr HKCR "eveauth-qedsd-neweden3\shell\open\command" "" '"$INSTDIR\TheGuideToTheNewEden.exe" "%1"'
 
 SectionEnd
