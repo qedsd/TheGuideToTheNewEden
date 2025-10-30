@@ -56,7 +56,7 @@ namespace TheGuideToTheNewEden.Core
 
         public static string GetLogPath()
         {
-            return System.IO.Path.Combine(Config.AppDataPath, "Log");
+            return System.IO.Path.Combine(Config.AppDataPath, "Logs");
         }
 
         public static long GetErrorCount()
