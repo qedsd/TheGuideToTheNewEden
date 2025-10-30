@@ -47,6 +47,8 @@ namespace TheGuideToTheNewEden.Core
         public static string SolarSystemMapPath { get; set; }
         public static string RegionMapPath { get; set; }
         public static string CapitalJumpShipInfoPath { get; set; }
+        public static string AppDataPath { get; set; }
+
         #endregion
         /// <summary>
         /// 数据库使用语言

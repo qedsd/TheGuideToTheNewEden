@@ -135,8 +135,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             
         }
-        private static readonly string SettingFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ScalperSetting.json");
-        private static readonly string SettingFolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
+        private static readonly string SettingFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "ScalperSetting.json");
+        private static readonly string SettingFolderPath = System.IO.Path.Combine(App.DataPath, "Configs");
         public void Init()
         {
             if (System.IO.File.Exists(SettingFilePath))

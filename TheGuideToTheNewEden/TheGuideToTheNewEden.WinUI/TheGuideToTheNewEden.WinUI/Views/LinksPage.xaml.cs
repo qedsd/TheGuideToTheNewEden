@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private List<Core.Models.LinkInfo> _linkInfos;
         private void Init()
         {
-            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory,"Configs", "Links.json");
+            string filePath = System.IO.Path.Combine(App.DataPath, "Configs", "Links.json");
             if (!File.Exists(filePath))
             {
                 var defaultFile = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "Links.json");
@@ -101,7 +101,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Save()
         {
-            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "Links.json");
+            string filePath = System.IO.Path.Combine(App.DataPath, "Configs", "Links.json");
             string json = JsonConvert.SerializeObject(_linkInfos);
             File.WriteAllText(filePath, json);
             this.ShowSuccess("ÒÑ±£´æ");

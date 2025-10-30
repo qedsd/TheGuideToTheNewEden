@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return _current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "JumpBridgeSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "JumpBridgeSetting.json");
         private List<JumpBridge> Values { get => Config.JumpBridges; }
         private Dictionary<int, int> ValuesMap { get; set; } = new Dictionary<int, int>();
         private JumpBridgeConfig Config { get; set; }

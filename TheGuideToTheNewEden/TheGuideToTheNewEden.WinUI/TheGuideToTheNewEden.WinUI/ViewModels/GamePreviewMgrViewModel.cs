@@ -100,7 +100,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private string _orderStr;
 
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "GamePreviewSetting.json");
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
         /// </summary>

@@ -17,8 +17,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class StructureService
     {
-        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "MarketStructures.json");
-        private static readonly string AutoStructureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
+        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "MarketStructures.json");
+        private static readonly string AutoStructureFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Structures.json");
         private static ObservableCollection<Structure> MarketStructures { get; set; }
         private static Dictionary<long, Structure> AutoStructures { get; set; }
         public static void Init()

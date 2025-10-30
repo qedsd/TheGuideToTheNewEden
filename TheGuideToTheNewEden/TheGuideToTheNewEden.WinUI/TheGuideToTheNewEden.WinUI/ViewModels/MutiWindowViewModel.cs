@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             get => setting;
             set => SetProperty(ref setting, value);
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "GamePreviewSetting.json");
         public MutiWindowViewModel() 
         {
             string json = System.IO.File.ReadAllText(Path);

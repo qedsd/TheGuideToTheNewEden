@@ -24,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelTranslationSettings.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ChannelTranslationSettings.json");
         private Dictionary<string, ChannelTranslationSetting> Values { get; set; }
         private ChannelTranslationSettingService()
         {

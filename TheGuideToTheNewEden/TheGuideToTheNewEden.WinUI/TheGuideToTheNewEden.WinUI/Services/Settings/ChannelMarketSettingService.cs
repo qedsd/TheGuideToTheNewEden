@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelMarketSettings.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ChannelMarketSettings.json");
         private Dictionary<string, ChannelMarketSetting> Values { get; set; }
         private ChannelMarketSettingService()
         {

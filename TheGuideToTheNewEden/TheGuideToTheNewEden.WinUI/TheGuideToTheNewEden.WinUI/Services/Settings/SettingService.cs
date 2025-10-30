@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
     public static class SettingService
     {
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "settings.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "settings.json");
         public static Dictionary<string, string> Values { get; set; }
         public static void Save()
         {

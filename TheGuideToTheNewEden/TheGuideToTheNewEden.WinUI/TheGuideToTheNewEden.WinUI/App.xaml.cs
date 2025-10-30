@@ -143,5 +143,7 @@ namespace TheGuideToTheNewEden.WinUI
         }
 
         private Window m_window;
+
+        public static string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TheGuideToTheNewEden");
     }
 }

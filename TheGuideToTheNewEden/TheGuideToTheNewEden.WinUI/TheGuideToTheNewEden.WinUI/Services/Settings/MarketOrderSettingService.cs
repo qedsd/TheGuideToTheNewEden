@@ -91,8 +91,8 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             set => SettingService.SetValue(MarketSikpStructureKey, value.ToString());
         }
 
-        public static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
-        public static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
-        public static readonly string HistoryOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "HistoryOrders");
+        public static readonly string StructureOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "StructureOrders");
+        public static readonly string RegionOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "RegionOrders");
+        public static readonly string HistoryOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "HistoryOrders");
     }
 }

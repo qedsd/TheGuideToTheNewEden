@@ -141,7 +141,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             public int Port { get; set; } = 26000;
             public int Times { get; set; } = 8;
             public int Span { get; set; } = 1500;
-            private static readonly string FilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "PingConfig.json");
+            private static readonly string FilePath = System.IO.Path.Combine(App.DataPath, "Configs", "PingConfig.json");
             public static PingConfig Load()
             {
                 if(System.IO.File.Exists(FilePath))

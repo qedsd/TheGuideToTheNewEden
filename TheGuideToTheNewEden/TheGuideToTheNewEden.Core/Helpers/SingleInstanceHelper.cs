@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
             if (!isFirstInstance)
             {
                 var cmds = Environment.GetCommandLineArgs();
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, TempFile);
+                string path = Path.Combine(Config.AppDataPath, TempFile);
                 File.WriteAllLines(path, cmds);
                 using (var eventSignal = new EventWaitHandle(false,EventResetMode.AutoReset, AppName))
                 {
@@ -46,7 +46,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     while (true)
                     {
                         _eventWaitHandle.WaitOne();
-                        string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, TempFile);
+                        string path = Path.Combine(Config.AppDataPath, TempFile);
                         string[] cmds = null;
                         if(File.Exists(path))
                         {

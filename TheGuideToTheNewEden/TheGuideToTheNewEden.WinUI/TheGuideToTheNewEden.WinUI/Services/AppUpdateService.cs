@@ -90,7 +90,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private object _locker = new object();
         public async Task<string> StartDownload(DownloadDelegate callback, CancellationToken cancellationToken = default)
         {
-            string dir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Temp");
+            string dir = System.IO.Path.Combine(App.DataPath, "Temp");
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);

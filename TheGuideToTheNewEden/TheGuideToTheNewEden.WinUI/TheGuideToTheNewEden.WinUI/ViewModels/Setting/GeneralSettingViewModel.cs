@@ -207,7 +207,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand CheckConfigCommand => new RelayCommand(() =>
         {
-            System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs"));
+            System.Diagnostics.Process.Start("explorer.exe", System.IO.Path.Combine(App.DataPath, "Configs"));
         });
 
         public ICommand PickCustomBackdropPictureCommand => new RelayCommand(async () =>

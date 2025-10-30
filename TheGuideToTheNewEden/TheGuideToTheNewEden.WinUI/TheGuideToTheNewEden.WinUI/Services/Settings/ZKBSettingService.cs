@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return _setting;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ZKBSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ZKBSetting.json");
         public static void Save()
         {
             string json = JsonConvert.SerializeObject(Setting);

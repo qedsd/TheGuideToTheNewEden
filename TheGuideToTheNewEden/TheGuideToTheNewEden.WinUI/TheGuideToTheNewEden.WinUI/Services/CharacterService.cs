@@ -26,7 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
     {
         private static string ClientId = string.Empty;
         private static string RedirectUri = string.Empty;
-        private static readonly string AuthFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Auth.json");
+        private static readonly string AuthFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Auth.json");
         private static List<string> EsiScopes { get => Services.Settings.ESIScopeService.Current.GetSelectedScopes(); }
         private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 

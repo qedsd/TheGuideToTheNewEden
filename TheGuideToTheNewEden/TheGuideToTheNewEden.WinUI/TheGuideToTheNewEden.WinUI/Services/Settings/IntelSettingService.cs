@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "IntelSettings.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "IntelSettings.json");
         private Dictionary<string, Core.Models.ChannelIntel.ChannelIntelSetting> Values { get; set; }
         private IntelSettingService()
         {

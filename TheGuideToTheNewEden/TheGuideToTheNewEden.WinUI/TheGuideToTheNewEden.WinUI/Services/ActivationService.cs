@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             SettingService.Load();
             CoreConfig.MainDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "main.db");
             CoreConfig.StaticDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Database", "static.db");
-            CoreConfig.CacheDbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "cache.db");
+            CoreConfig.CacheDbPath = System.IO.Path.Combine(App.DataPath, "Configs", "cache.db");
             CoreConfig.NeedLocalization = DBLocalizationSettingService.Value;
             CoreConfig.LocalDbPath = LocalDbSelectorService.Value;
             CoreConfig.DefaultGameServer = GameServerSelectorService.Value;
@@ -24,6 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.SolarSystemMapPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "SolarSystemMap.json");
             CoreConfig.RegionMapPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "RegionMap.json");
             CoreConfig.CapitalJumpShipInfoPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "CapitalJumpShipInfo.json");
+            CoreConfig.AppDataPath = App.DataPath;
             CoreConfig.InitDb();
             Services.CharacterService.RegisterLicense(GetESILicense());
             CharacterService.Init();
@@ -35,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private static string GetSyncfusionLicense()
         {
-            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "SyncfusionLicense.txt");
+            string file = System.IO.Path.Combine(App.DataPath, "Configs", "SyncfusionLicense.txt");
             if(System.IO.File.Exists(file))
             {
                 return System.IO.File.ReadAllText(file);
@@ -48,7 +49,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private static string[] GetYDTranslationLicense()
         {
-            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "YoudaoLicense.txt");
+            string file = System.IO.Path.Combine(App.DataPath, "Configs", "YoudaoLicense.txt");
             if (System.IO.File.Exists(file))
             {
                 return System.IO.File.ReadAllLines(file);
@@ -61,7 +62,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private static string[] GetESILicense()
         {
-            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ESILicense.txt");
+            string file = System.IO.Path.Combine(App.DataPath, "Configs", "ESILicense.txt");
             if (System.IO.File.Exists(file))
             {
                 return System.IO.File.ReadAllLines(file);
@@ -74,7 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private static string GetGithubLicense()
         {
-            string file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GithubLicense.txt");
+            string file = System.IO.Path.Combine(App.DataPath, "Configs", "GithubLicense.txt");
             if (System.IO.File.Exists(file))
             {
                 return System.IO.File.ReadAllText(file);
