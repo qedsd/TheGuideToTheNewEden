@@ -53,7 +53,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         }
         public static void DeleteProtocol()
         {
-            Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3\\shell\\open\\command", null, null);
+            Registry.SetValue("HKEY_CLASSES_ROOT\\eveauth-qedsd-neweden3\\shell\\open\\command", null, string.Empty);
         }
         public static async Task<string> WaitingAuthAsync(CancellationToken token)
         {
