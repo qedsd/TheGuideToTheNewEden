@@ -83,7 +83,7 @@ namespace TheGuideToTheNewEden.WinUI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             SingleInstanceHelper = new Core.Helpers.SingleInstanceHelper();
-            if (SingleInstanceHelper.RegisterSingleInstance())
+            if (SingleInstanceHelper.RegisterSingleInstance(DataPath))
             {
                 SingleInstanceHelper.Activated += SingleInstanceHelper_Activated;
             }

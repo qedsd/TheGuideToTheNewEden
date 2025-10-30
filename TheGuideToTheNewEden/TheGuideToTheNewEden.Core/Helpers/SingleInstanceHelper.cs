@@ -24,14 +24,14 @@ namespace TheGuideToTheNewEden.Core.Helpers
         /// 尝试将当前实例注册为单例
         /// </summary>
         /// <returns>true：成功注册为第一个实例 false：已存在实例</returns>
-        public bool RegisterSingleInstance()
+        public bool RegisterSingleInstance(string appDataPath)
         {
             _eventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, AppName, out bool isFirstInstance);
 
             if (!isFirstInstance)
             {
                 var cmds = Environment.GetCommandLineArgs();
-                string path = Path.Combine(Config.AppDataPath, TempFile);
+                string path = Path.Combine(appDataPath, TempFile);
                 File.WriteAllLines(path, cmds);
                 using (var eventSignal = new EventWaitHandle(false,EventResetMode.AutoReset, AppName))
                 {
@@ -46,7 +46,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     while (true)
                     {
                         _eventWaitHandle.WaitOne();
-                        string path = Path.Combine(Config.AppDataPath, TempFile);
+                        string path = Path.Combine(appDataPath, TempFile);
                         string[] cmds = null;
                         if(File.Exists(path))
                         {
