@@ -942,8 +942,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach(var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if(!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -983,8 +987,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -1024,8 +1032,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -1065,8 +1077,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
