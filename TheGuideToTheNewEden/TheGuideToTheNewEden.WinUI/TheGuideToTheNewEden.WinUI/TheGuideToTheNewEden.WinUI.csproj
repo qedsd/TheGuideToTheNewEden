@@ -624,6 +624,9 @@
     <None Update="Resources\Images\LinkIcons\neocom2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\LinkIcons\overview_icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\LinkIcons\pyfa.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

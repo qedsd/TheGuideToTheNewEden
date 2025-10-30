@@ -390,5 +390,21 @@
 		"Langs": [
 			"en"
 		]
+	},
+	{
+		"Name": "Overview",
+		"Url": "https://williampierce.io/overview/",
+		"IconUrl": "overview_icon.png",
+		"Platforms": [
+			"Mac"
+		],
+		"Description": "将游戏画面以小窗口置顶显示，支持鼠标点击、键盘快捷键切换显示游戏窗口",
+		"ShortDescription": "Mac上的多开预览工具",
+		"Categories": [
+			"多开预览"
+		],
+		"Langs": [
+			"en"
+		]
 	}
 ]
