@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             else
             {
-                sender.ItemsSource = MapSolarSystems.Where(p => p.SolarSystemName.Contains(sender.Text.ToUpper())).ToList();
+                sender.ItemsSource = MapSolarSystems.Where(p => p.SolarSystemName.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)).ToList();
             }
         }
 

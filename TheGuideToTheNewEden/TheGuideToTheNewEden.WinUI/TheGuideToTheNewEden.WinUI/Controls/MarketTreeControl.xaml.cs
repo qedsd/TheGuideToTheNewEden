@@ -119,7 +119,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             else
             {
-                sender.ItemsSource = _types.Where(p => p.TypeName.Contains(sender.Text)).ToList();
+                sender.ItemsSource = _types.Where(p => p.TypeName.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)).ToList();
             }
         }
 
