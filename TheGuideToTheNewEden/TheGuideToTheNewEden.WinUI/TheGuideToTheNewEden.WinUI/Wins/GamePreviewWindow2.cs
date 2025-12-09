@@ -28,6 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _thumbHWnd = IntPtr.Zero;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
+            //TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Title = _setting.Name;
             if (_setting.WinX != -1 && _setting.WinY != -1)
@@ -294,10 +295,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _thumbnailWindow.ExtendsContentIntoTitleBar = true;
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(_thumbnailWindow);
             presenter.SetBorderAndTitleBar(true, false);
-            _thumbnailWindow.SetIsShownInSwitchers(false);
+            _thumbnailWindow.AppWindow.IsShownInSwitchers = false;
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
             _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
+            TransparentWindowHelper.TransparentWindow(_thumbnailWindow, _setting.OverlapOpacity);
         }
 
         public override void Stop()
