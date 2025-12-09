@@ -20,6 +20,6 @@
             VerticalAlignment="Center"
             FontSize="24"
             Foreground="Red"
-            Text="不支持最小化游戏窗口" />
+            Text="Minimizing the game window is not supported" />
     </Grid>
 </Window>

@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(new TextBlock()
             {
-                Text = "不支持最小化游戏窗口",
+                Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NotSupportedMinGameWindow"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             });

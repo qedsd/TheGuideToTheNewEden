@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             //TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
-            Title = _setting.Name;
+            Title = _setting.Name + "_Overlap";
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
@@ -284,13 +284,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(new TextBlock()
             {
-                Text = "不支持最小化游戏窗口",
+                Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NotSupportedMinGameWindow"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             });
             _thumbnailWindow = new Window()
             {
-                Content = content
+                Content = content,
+                Title = _setting.Name + "_Thumbnail"
             };
             _thumbnailWindow.ExtendsContentIntoTitleBar = true;
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(_thumbnailWindow);
