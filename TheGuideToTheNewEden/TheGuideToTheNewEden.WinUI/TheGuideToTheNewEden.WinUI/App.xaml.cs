@@ -25,13 +25,7 @@ namespace TheGuideToTheNewEden.WinUI
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             Application.Current.UnhandledException += Current_UnhandledException;
-            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             Log.Init();
-        }
-
-        private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
-        {
-            
         }
 
         private void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -53,6 +47,11 @@ namespace TheGuideToTheNewEden.WinUI
                 Log.Error("发生致命错误");
             }
             Log.Error(e.ExceptionObject);
+            var processPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CrashReporter", "CrashReporter.exe");
+            if(File.Exists(processPath))
+            {
+                System.Diagnostics.Process.Start(processPath, e.ExceptionObject.ToString());
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

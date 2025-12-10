@@ -1,0 +1,41 @@
+﻿<Window
+    x:Class="TheGuideToTheNewEden.CrashReporter.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:TheGuideToTheNewEden.CrashReporter"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="App Crash Reporter"
+    Width="800"
+    Height="450"
+    FontSize="14"
+    mc:Ignorable="d">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Border BorderBrush="Red" BorderThickness="1">
+            <StackPanel>
+                <TextBlock
+                    Margin="4,2"
+                    Text="软件发生致命错误导致崩溃，以下是相关错误信息，请联系开发者。"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="4,2"
+                    Text="The app crashes due to a fatal error, please contact the developer for the following error information."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <GroupBox
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            Header="Error Info">
+            <RichTextBox
+                x:Name="MsgTextBox"
+                BorderThickness="0"
+                FontSize="16" />
+        </GroupBox>
+    </Grid>
+</Window>
