@@ -95,10 +95,20 @@ namespace TheGuideToTheNewEden.WinUI
             Services.ActivationService.Init();
             ClientServiceHelper.Init(Log.GetInstance());
             m_window = new MainWindow();
-            m_window.Closed += M_window_Closed;
+            m_window.AppWindow.Closing += AppWindow_Closing;
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();
+        }
+
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
+        {
+            if (HandleClosedEvents)
+            {
+                args.Cancel = true;
+                m_window.Hide();
+                Helpers.WindowHelper.TrackWindow(m_window);
+            }
         }
 
         private void SingleInstanceHelper_Activated(object sender, string[] e)
@@ -109,26 +119,13 @@ namespace TheGuideToTheNewEden.WinUI
             }
         }
 
-        private void M_window_Closed(object sender, WindowEventArgs args)
-        {
-            if (HandleClosedEvents)
-            {
-                args.Handled = true;
-                (sender as Window).Hide();
-                Helpers.WindowHelper.TrackWindow(sender as Window);
-            }
-            else
-            {
-                ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
-                Services.MemoryIPCService.Dispose();
-            }
-        }
 
         public static void Close()
         {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
+            Services.MemoryIPCService.Dispose();
             App.HandleClosedEvents = false;
-            Helpers.WindowHelper.MainWindow.Close();
-            Helpers.WindowHelper.CloseAll();
+            Application.Current.Exit();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
