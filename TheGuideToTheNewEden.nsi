@@ -15,7 +15,7 @@
 
 ; MUI Settings
 !define MUI_ABORTWARNING
-!define MUI_ICON "D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\bin\x64\Debug\net9.0-windows10.0.19041.0\win-x64\logo.ico"
+!define MUI_ICON "D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\bin\x64\Release\net9.0-windows10.0.19041.0\win-x64\logo.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 ; Language Selection Dialog Settings
@@ -64,7 +64,7 @@ FunctionEnd
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File /r "D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\bin\x64\Debug\net9.0-windows10.0.19041.0\win-x64\*.*"
+  File /r "D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\bin\x64\Release\net9.0-windows10.0.19041.0\win-x64\*.*"
 
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
