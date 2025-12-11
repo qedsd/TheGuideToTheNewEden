@@ -57,7 +57,7 @@ namespace ZKB.Net.Test
         }
         private static void KillStream_OnMessage(object sender, NET.Models.KillStream.SKBDetail detail, string sourceData)
         {
-            Console.WriteLine($"[{detail.KillmailTime}]{detail.KillmailId} {detail.Zkb.TotalValue}ISK {detail.Zkb.Url}");
+            Console.WriteLine($"[{detail.KillmailTime}]{detail.KillmailId} {detail.Zkb.TotalValue}ISK {detail.Zkb.Href}");
         }
 
         private static void TestZKB()

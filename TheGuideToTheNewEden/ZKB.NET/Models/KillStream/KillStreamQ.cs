@@ -8,6 +8,7 @@ using System.Collections;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Linq;
+using ZKB.NET.Models.Killmails;
 
 namespace ZKB.NET.Models.KillStream
 {
@@ -49,7 +50,11 @@ namespace ZKB.NET.Models.KillStream
                 var obj = JsonConvert.DeserializeObject<KillStreamQRoot>(content);
                 if(obj?.Package != null)
                 {
-                    if(obj.Package.Killmail.Attackers == null || obj.Package.Killmail.Attackers.FirstOrDefault(p=>p.FinalBlow) == null)
+                    if (obj.Package.Killmail == null)
+                    {
+                        obj.Package.Killmail = await GetKillMali(obj.Package.Zkb.Href);
+                    }
+                    if (obj.Package.Killmail.Attackers == null || obj.Package.Killmail.Attackers.FirstOrDefault(p=>p.FinalBlow) == null)
                     {
 
                     }
@@ -58,7 +63,11 @@ namespace ZKB.NET.Models.KillStream
             }
             _timer?.Start();
         }
-
+        private async Task<KillmailDetail> GetKillMali(string url)
+        {
+            string json = await HttpHelper.GetAsync(url);
+            return JsonConvert.DeserializeObject<KillmailDetail>(json);
+        }
         public void Close()
         {
             _timer.Stop();
