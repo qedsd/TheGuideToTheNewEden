@@ -29,8 +29,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     EntityService = (c, p) =>
                     {
                         // int?  decimal?这种 isnullable=true
-                        if (c.PropertyType.IsGenericType &&
-                        c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        if (c.PropertyType.IsGenericType && c.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                         {
                             p.IsNullable = true;
                         }
@@ -44,7 +43,54 @@ namespace TheGuideToTheNewEden.SDEBuilder
             var fileDatas = await Task.Run(()=> ReadAllFiles(sdeFiles, language));
             if (fileDatas.Any())
             {
-
+                foreach (var fileData in fileDatas)
+                {
+                    switch (Path.GetFileNameWithoutExtension(fileData.Key))
+                    {
+                        case "categories":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.Categories));
+                                var models = fileData.Value.Select(p => new DBModels.Categories(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                        case "groups":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.Groups));
+                                var models = fileData.Value.Select(p => new DBModels.Groups(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                        case "mapRegions":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.MapRegions));
+                                var models = fileData.Value.Select(p => new DBModels.MapRegions(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                        case "mapSolarSystems":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.MapSolarSystems));
+                                var models = fileData.Value.Select(p => new DBModels.MapSolarSystems(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                        case "marketGroups":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.MarketGroups));
+                                var models = fileData.Value.Select(p => new DBModels.MarketGroups(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                        case "types":
+                            {
+                                db.CodeFirst.InitTables(typeof(DBModels.Types));
+                                var models = fileData.Value.Select(p => new DBModels.Types(p, language)).ToList();
+                                await db.Insertable(models).ExecuteCommandAsync();
+                            }
+                            break;
+                    }
+                }
             }
         }
 
@@ -64,14 +110,13 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     {
                         if (!string.IsNullOrWhiteSpace(line))
                         {
-                            //var formatStr = line.Replace("<b>", "").Replace("</b>", "").Replace("\\r", "").Replace("\\n", "");
                             try
                             {
                                 datas.Add(JsonConvert.DeserializeObject(line, targetModel) as BaseModel);
                             }
                             catch (Exception ex)
                             {
-
+                                throw new Exception(ex.ToString());
                             }
                         }
                     }

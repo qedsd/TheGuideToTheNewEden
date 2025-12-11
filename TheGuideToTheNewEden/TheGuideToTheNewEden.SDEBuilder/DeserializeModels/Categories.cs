@@ -8,6 +8,6 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
 {
     public class Categories : BaseModel
     {
-        public string Published { get; set; }
+        public bool Published { get; set; }
     }
 }

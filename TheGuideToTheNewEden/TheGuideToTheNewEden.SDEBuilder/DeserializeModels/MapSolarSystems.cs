@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
 {
-    internal class MapSolarSystems : BaseModel
+    public class MapSolarSystems : BaseModel
     {
         public int RegionID { get; set; }
         public int ConstellationID { get; set; }

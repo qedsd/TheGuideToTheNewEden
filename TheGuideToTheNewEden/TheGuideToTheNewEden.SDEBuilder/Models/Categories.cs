@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.Models
         [JsonIgnore]
         public string Name { get; set; }
 
-        public string Published { get; set; }
+        public bool Published { get; set; }
 
 
         public override Dictionary<string, object> GetDict(LanguageEnum language)
