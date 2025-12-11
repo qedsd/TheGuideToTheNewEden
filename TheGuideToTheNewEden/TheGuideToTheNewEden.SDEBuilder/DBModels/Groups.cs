@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SqlSugar;
 
 namespace TheGuideToTheNewEden.SDEBuilder.DBModels
 {
-    [SqlSugar.SugarTable("groups")]
+    [SugarTable("groups")]
+    [SugarIndex("index_groups_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_groups_categoryID", nameof(CategoryID), OrderByType.Asc)]
     public class Groups 
     {
+        [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
         public string Name { get; set; }
         public int CategoryID { get; set; }

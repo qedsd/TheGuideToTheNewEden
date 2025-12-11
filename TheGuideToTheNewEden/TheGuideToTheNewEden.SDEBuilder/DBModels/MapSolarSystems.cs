@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SqlSugar;
 
 namespace TheGuideToTheNewEden.SDEBuilder.DBModels
 {
     [SqlSugar.SugarTable("mapSolarSystems")]
+    [SugarIndex("index_mapSolarSystems_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_mapSolarSystems_regionID", nameof(RegionID), OrderByType.Asc)]
+    [SugarIndex("index_mapSolarSystems_constellationID", nameof(ConstellationID), OrderByType.Asc)]
     public class MapSolarSystems
     {
+        [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
         public string Name { get; set; }
         public int RegionID { get; set; }
