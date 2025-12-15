@@ -873,7 +873,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
             }
-            if (structureOrders.NotNullOrEmpty())
+            if (structureOrders.NotNullOrEmpty() && !skillStructure)
             {
                 var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
                 int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
