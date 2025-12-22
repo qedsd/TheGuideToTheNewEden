@@ -826,6 +826,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     {
                         order.InvType = type;
                     }
+                    else
+                    {
+                        order.InvType = new Core.DBModels.InvType()
+                        {
+                            TypeName = order.TypeId.ToString(),
+                            TypeID = order.TypeId
+                        };
+                    }
                 }
             }
         }
