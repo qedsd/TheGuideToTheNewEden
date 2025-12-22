@@ -608,11 +608,11 @@
 
     <!--  GamePreviewMgrPage  -->
     <x:String x:Key="GamePreviewMgrPage_SwitchMode">Activation mode</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">Mode 1（EVE-O-P）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">Mode 2（2.5.0.0）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">Mode 3（2.4.0.0）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">Mode 4（2.4.0.0修正）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">Mode 5（Trigger an empty keyboard event, use with caution）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">Mode 1 (EVE-O-P)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">Mode 2 (2.5.0.0)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">Mode 3 (2.4.0.0)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">Mode 4 (2.4.0.0 Fixed)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">Mode 5 (Recommended Mode)</x:String>
     <x:String x:Key="GamePreviewMgrPage_SetHotKey">Update</x:String>
     <x:String x:Key="GamePreviewMgrPage_Backward">Backward</x:String>
     <x:String x:Key="GamePreviewMgrPage_Forward">Forward</x:String>

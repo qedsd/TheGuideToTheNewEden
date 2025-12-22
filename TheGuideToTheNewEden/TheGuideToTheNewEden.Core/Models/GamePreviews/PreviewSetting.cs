@@ -146,7 +146,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
-        private int setForegroundWindowMode = 0;
+        private int setForegroundWindowMode = 4;
         public int SetForegroundWindowMode
         {
             get => setForegroundWindowMode;
