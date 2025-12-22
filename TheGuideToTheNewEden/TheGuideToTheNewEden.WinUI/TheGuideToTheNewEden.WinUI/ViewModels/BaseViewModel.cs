@@ -36,6 +36,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
             }
         }
+        public void ShowError(Exception ex, bool autoClose = false)
+        {
+            if (_window != null)
+            {
+                _window.ShowMsg(ex.ToString(), autoClose);
+            }
+            else
+            {
+                _navigationService.ShowMsg(this, ex.ToString(), Controls.InfoBarControl.InfoType.Error, autoClose);
+            }
+        }
         public void ShowError(string msg, bool autoClose = false)
         {
             if (_window != null)

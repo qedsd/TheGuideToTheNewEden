@@ -27,6 +27,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             {
                 await Core.Services.ZKBStreamService.Current.Sub();
                 Core.Services.ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
+                Core.Services.ZKBStreamService.Current.OnError += KillStream_OnError;
                 _killStreamMsgQueue = new ConcurrentQueue<SKBDetail>();
                 _cancellationTokenSource = new CancellationTokenSource();
                 var token = _cancellationTokenSource.Token;
@@ -67,6 +68,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
             }
         }
 
+        private void KillStream_OnError(object sender, Exception e)
+        {
+            Core.Log.Error(e);
+            ShowError(e);
+        }
+
         private ConcurrentQueue<SKBDetail> _killStreamMsgQueue;
         private void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
@@ -77,6 +84,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
         {
             Core.Services.ZKBStreamService.Current.UnSub();
             Core.Services.ZKBStreamService.Current.OnMessage -= KillStream_OnMessage;
+            Core.Services.ZKBStreamService.Current.OnError -= KillStream_OnError;
             _cancellationTokenSource?.Cancel();
         }
     }

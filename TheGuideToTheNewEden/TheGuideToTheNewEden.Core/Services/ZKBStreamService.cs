@@ -37,8 +37,15 @@ namespace TheGuideToTheNewEden.Core.Services
                     throw new Exception("Connect Zkillredisq Failed");
                 }
                 _killStream.OnMessage += KillStream_OnMessage;
+                _killStream.OnError += KillStream_OnError;
             }
         }
+
+        private void KillStream_OnError(object sender, Exception e)
+        {
+            OnError?.Invoke(this, e);
+        }
+
         public void UnSub()
         {
             System.Threading.Interlocked.Decrement(ref _subCount);
@@ -53,6 +60,7 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
         public event MessageEventHandler OnMessage;
+        public event EventHandler<Exception> OnError;
         private void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
             OnMessage?.Invoke(sender, detail, sourceData);

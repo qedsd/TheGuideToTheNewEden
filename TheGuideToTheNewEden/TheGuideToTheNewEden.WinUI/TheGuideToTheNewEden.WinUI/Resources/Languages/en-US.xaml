@@ -1224,6 +1224,7 @@
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll">Synchronize all settings</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
+    <x:String x:Key="ChannelIntelPage_StartZKBFaild">Start ZKB faild，For more details, please check the logs</x:String>
 
     <!--  ChannelScanPage  -->
     <x:String x:Key="ChannelScanPage_NameList">Characters</x:String>

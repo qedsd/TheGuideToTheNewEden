@@ -189,6 +189,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 channelIntel.ChatContentEvent += ChannelIntel_ChatContentEvent;
                 channelIntel.ZKBIntelEvent -= ChannelIntel_ZKBIntelEvent;
                 channelIntel.ZKBIntelEvent += ChannelIntel_ZKBIntelEvent;
+                channelIntel.OnZKBError -= ChannelIntel_OnZKBError;
+                channelIntel.OnZKBError += ChannelIntel_OnZKBError;
                 return true;
             }
             catch (Exception ex)
@@ -199,6 +201,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return false;
             }
         }
+
+        private void ChannelIntel_OnZKBError(object sender, Exception e)
+        {
+            Core.Log.Error(e);
+            ShowError(e);
+        }
+
         public ICommand StartCommand => new RelayCommand(async() =>
         {
             ShowWaiting();
