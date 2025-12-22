@@ -28,7 +28,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntPtr _thumbHWnd = IntPtr.Zero;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
-            //TransparentWindowHelper.TransparentWindow(this, _setting.OverlapOpacity);
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Title = _setting.Name + "_Overlap";
             if (_setting.WinX != -1 && _setting.WinY != -1)
@@ -36,6 +35,12 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
             InitUI(_setting.Name);
+            Activated += GamePreviewWindow2_Activated;
+        }
+
+        private void GamePreviewWindow2_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            Activated -= GamePreviewWindow2_Activated;
             MonitorWindow();
         }
         #region UI
