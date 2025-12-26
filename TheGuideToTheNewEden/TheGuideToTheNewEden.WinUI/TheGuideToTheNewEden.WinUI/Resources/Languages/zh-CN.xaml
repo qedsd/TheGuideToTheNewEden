@@ -132,6 +132,7 @@
     <x:String x:Key="General_CharacterNotFound">未找到角色</x:String>
     <x:String x:Key="General_TokenExpiredAndRefrshFailed">Token已过期，尝试刷新失败</x:String>
     <x:String x:Key="General_CharacterList">角色列表</x:String>
+    <x:String x:Key="General_Edit">编辑</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -647,9 +648,13 @@
     <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">开始全部时包含未开始过的进程</x:String>
     <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">自动开始预览新进程</x:String>
     <x:String x:Key="GamePreviewMgrPage_GlobalSetting">全局设置</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">切换快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">全局快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">按下快捷键时，按激活顺序依次切换显示相应的游戏窗口</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">组合键使用+拼接 eg： Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey">分组快捷键</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Tip">按下快捷键时，按激活顺序依次切换显示在该分组内的游戏窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Name">分组名</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_EditTip">输入以英文符号,分割的角色名称</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize">统一窗口大小</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">将所有的预览窗口设置为指定的大小</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformWidth">窗口宽度</x:String>
@@ -667,7 +672,7 @@
     <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">名称颜色</x:String>
     <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">专用快捷键</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">组合键使用+拼接 eg： Ctrl+1</x:String>
-    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">预览设置</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">选中项设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartAllSetting">开始全部设置</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindow">预览窗口</x:String>
     <x:String x:Key="GamePreviewMgrPage_HotKeySetting">激活快捷键</x:String>

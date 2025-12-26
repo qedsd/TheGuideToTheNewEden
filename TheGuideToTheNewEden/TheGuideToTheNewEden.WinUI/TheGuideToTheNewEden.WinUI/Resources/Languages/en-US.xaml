@@ -667,7 +667,7 @@
     <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">Name foreground</x:String>
     <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">HotKey</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">Combination key usage + splicing. eg: Ctrl+1</x:String>
-    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">Preview Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">Selected Item Settings</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartAllSetting">Setting of start all</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindow">Overlap window</x:String>
     <x:String x:Key="GamePreviewMgrPage_HotKeySetting">Hotkey To Activation</x:String>
