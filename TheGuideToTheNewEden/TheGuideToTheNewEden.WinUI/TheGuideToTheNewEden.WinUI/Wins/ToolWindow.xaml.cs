@@ -71,7 +71,7 @@ namespace TheGuideToTheNewEden.WinUI
             this.Title = Helpers.ResourcesHelper.GetString("AppDisplayName");
             Helpers.WindowHelper.TrackWindow(this);
 
-            Helpers.WindowHelper.CenterToScreen(this);
+            //Helpers.WindowHelper.CenterToScreen(this);
             WindowHelper.GetAppWindow(this).SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.ico"));
             if (useBackground && BackdropSelectorService.BackdropTypeValue == BackdropSelectorService.BackdropType.CustomPicture)
             {

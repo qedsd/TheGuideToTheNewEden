@@ -44,26 +44,36 @@ namespace ZKB.NET.Models.KillStream
 
         private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            string content = await GetContent();
-            if (!string.IsNullOrEmpty(content))
+            try
             {
-                var obj = JsonConvert.DeserializeObject<KillStreamQRoot>(content);
-                if(obj?.Package != null)
+                string content = await GetContent();
+                if (!string.IsNullOrEmpty(content))
                 {
-                    if (obj.Package.Killmail == null)
+                    var obj = JsonConvert.DeserializeObject<KillStreamQRoot>(content);
+                    if (obj?.Package != null)
                     {
-                        obj.Package.Killmail = await GetKillMali(obj.Package.Zkb.Href);
-                    }
-                    if (obj.Package.Killmail.Attackers == null || obj.Package.Killmail.Attackers.FirstOrDefault(p=>p.FinalBlow) == null)
-                    {
+                        if (obj.Package.Killmail == null)
+                        {
+                            obj.Package.Killmail = await GetKillMail(obj.Package.Zkb.Href);
+                        }
+                        if (obj.Package.Killmail.Attackers == null || obj.Package.Killmail.Attackers.FirstOrDefault(p => p.FinalBlow) == null)
+                        {
 
+                        }
+                        OnMessage?.Invoke(this, obj.Package.ToSKBDetail(), content);
                     }
-                    OnMessage?.Invoke(this, obj.Package.ToSKBDetail(), content);
                 }
             }
-            _timer?.Start();
+            catch (Exception ex)
+            {
+                OnError?.Invoke(this, ex);
+            }
+            finally
+            {
+                _timer?.Start();
+            }
         }
-        private async Task<KillmailDetail> GetKillMali(string url)
+        private async Task<KillmailDetail> GetKillMail(string url)
         {
             string json = await HttpHelper.GetAsync(url);
             return JsonConvert.DeserializeObject<KillmailDetail>(json);
@@ -95,5 +105,7 @@ namespace ZKB.NET.Models.KillStream
                 return null;
             }
         }
+
+        public event EventHandler<Exception> OnError;
     }
 }

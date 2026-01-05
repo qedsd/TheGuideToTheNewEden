@@ -83,6 +83,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     Setting = setting;
                 }
+                if(value != null)
+                {
+                    IsSetting = false;
+                }
             }
         }
 
@@ -99,6 +103,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref _orderStr, value);
         }
         private string _orderStr;
+
+        private bool _isSetting;
+        public bool IsSetting
+        {
+            get => _isSetting;
+            set 
+            {
+                if(SetProperty(ref _isSetting, value))
+                {
+                    if (value)
+                    {
+                        SelectedProcess = null;
+                    }
+                }
+            } 
+        }
+
+        private int _selectedHotkeyGroupIndex = 0;
+        public int SelectedHotkeyGroupIndex
+        {
+            get => _selectedHotkeyGroupIndex;
+            set
+            {
+                SetProperty(ref _selectedHotkeyGroupIndex, value);
+            }
+        }
 
         private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "GamePreviewSetting.json");
         /// <summary>
@@ -212,6 +242,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+        private bool UnregisterHotkey(int registerId)
+        {
+            if (registerId > 0)
+            {
+                if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(registerId))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
         private bool UnregisterForwardHotkey()
         {
             if (_forwardHotkeyRegisterId > 0)
@@ -286,6 +334,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 else if(hotkeyId == _backwardHotkeyRegisterId)
                 {
                     SwitchBackward();
+                }
+                else
+                {
+                    SwitchHotkeyGroup(hotkeyId);
                 }
             }
         }
@@ -389,6 +441,135 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+
+        private void SwitchHotkeyGroup(int hotkeyId)
+        {
+            PreviewHotKeyGroup targetGroup = null;
+            bool forward = true;
+            var target = PreviewSetting.HotKeyGroups.FirstOrDefault(p => p.ForwardHotkeyRegisterId == hotkeyId);
+            if (target != null)
+            {
+                targetGroup = target;
+                forward = true;
+            }
+            else
+            {
+                target = PreviewSetting.HotKeyGroups.FirstOrDefault(p => p.BackwardHotkeyRegisterId == hotkeyId);
+                if (target != null)
+                {
+                    targetGroup = target;
+                    forward = false;
+                }
+            }
+            if(targetGroup != null)
+            {
+                var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && targetGroup.GameNames.Contains(p.GetCharacterName())).ToList();
+                if (targetProcesses.NotNullOrEmpty())
+                {
+                    if (targetGroup.LastActiveProcessGUID == null)
+                    {
+                        var firstRunning = targetProcesses.FirstOrDefault();
+                        if (firstRunning != null)
+                        {
+                            if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                            {
+                                value.ActiveSourceWindow();
+                                targetGroup.LastActiveProcessGUID = firstRunning.GUID;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var runnings = targetProcesses;
+                        for (int i = 0; i < runnings.Count; i++)
+                        {
+                            var item = runnings[i];
+                            if (item.GUID == targetGroup.LastActiveProcessGUID)
+                            {
+                                string targetGUID = null;
+                                if (forward)//向前
+                                {
+                                    //上一次激活的窗口不是最后一个窗口，则依序激活下一个，是最后一个窗口则激活第一个
+                                    if (i != runnings.Count - 1)
+                                    {
+                                        targetGUID = runnings[i + 1].GUID;
+                                    }
+                                    else
+                                    {
+                                        targetGUID = runnings.First().GUID;
+                                    }
+                                }
+                                else//向后
+                                {
+                                    //上一次激活的窗口第一个窗口，则依序激活上一个，是第一个窗口则激活最后一个
+                                    if (i != 0)
+                                    {
+                                        targetGUID = runnings[i - 1].GUID;
+                                    }
+                                    else
+                                    {
+                                        targetGUID = runnings.Last().GUID;
+                                    }
+                                }
+                                if (targetGUID != null)
+                                {
+                                    if (_runningDic.TryGetValue(targetGUID, out var value))
+                                    {
+                                        value.ActiveSourceWindow();
+                                        targetGroup.LastActiveProcessGUID = targetGUID;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void RemoveHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
+        {
+            UnregisterHotkey(hotKeyGroup.ForwardHotkeyRegisterId);
+            UnregisterHotkey(hotKeyGroup.BackwardHotkeyRegisterId);
+            PreviewSetting.HotKeyGroups.Remove(hotKeyGroup);
+            SaveSetting();
+        }
+
+        public void SaveHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
+        {
+            if(hotKeyGroup != null)
+            {
+                if(UnregisterHotkey(hotKeyGroup.ForwardHotkeyRegisterId))
+                {
+                    if (!string.IsNullOrEmpty(hotKeyGroup.SwitchHotkey_Forward))
+                    {
+                        if(RegisterHotkey(hotKeyGroup.SwitchHotkey_Forward, out int id))
+                        {
+                            hotKeyGroup.ForwardHotkeyRegisterId = id;
+                        }
+                        else
+                        {
+                            ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{hotKeyGroup.SwitchHotkey_Forward}");
+                        }
+                    }
+                }
+                if (UnregisterHotkey(hotKeyGroup.BackwardHotkeyRegisterId))
+                {
+                    if (!string.IsNullOrEmpty(hotKeyGroup.SwitchHotkey_Backward))
+                    {
+                        if (RegisterHotkey(hotKeyGroup.SwitchHotkey_Backward, out int id))
+                        {
+                            hotKeyGroup.BackwardHotkeyRegisterId = id;
+                        }
+                        else
+                        {
+                            ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{hotKeyGroup.SwitchHotkey_Backward}");
+                        }
+                    }
+                }
+            }
+        }
+        
         #endregion
         private async void Init()
         {
@@ -1170,6 +1351,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 }
             }
+        });
+
+        public ICommand SettingCommand => new RelayCommand(() =>
+        {
+            if (!IsSetting)
+            {
+                UpdateOrderCommand.Execute(null);
+            }
+             IsSetting = !IsSetting;
+        });
+        public ICommand AddHotkeyGroupCommand => new RelayCommand(() =>
+        {
+            PreviewSetting.HotKeyGroups.Add(new PreviewHotKeyGroup()
+            {
+                GroupName = $"Group{PreviewSetting.HotKeyGroups.Count + 1}",
+            });
+            SelectedHotkeyGroupIndex = PreviewSetting.HotKeyGroups.Count - 1;
         });
 
         #region 排序设置

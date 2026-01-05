@@ -237,10 +237,18 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-
-        private void GlobalSetting_Flyout_Opened(object sender, object e)
+        private void GamePreviewGroupHotKeyControl_OnSaveClicked(object sender, PreviewHotKeyGroup e)
         {
-            VM.UpdateOrderCommand.Execute(null);
+            VM.SaveHotkeyGroup(e);
+        }
+
+        private void TabViewItem_CloseRequested(TabViewItem sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            var item = sender.DataContext as PreviewHotKeyGroup;
+            if(item != null)
+            {
+                VM.RemoveHotkeyGroup(item);
+            }
         }
     }
 }

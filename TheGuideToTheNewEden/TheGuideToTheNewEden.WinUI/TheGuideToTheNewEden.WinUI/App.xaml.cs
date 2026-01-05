@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
@@ -25,7 +26,13 @@ namespace TheGuideToTheNewEden.WinUI
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             Application.Current.UnhandledException += Current_UnhandledException;
+            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             Log.Init();
+        }
+
+        private void CurrentDomain_FirstChanceException(object sender, FirstChanceExceptionEventArgs e)
+        {
+            Log.Error(e.Exception);
         }
 
         private void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

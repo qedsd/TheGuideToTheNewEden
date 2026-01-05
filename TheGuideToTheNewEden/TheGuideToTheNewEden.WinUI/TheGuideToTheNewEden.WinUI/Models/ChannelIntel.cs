@@ -376,8 +376,15 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     if (Setting.SubZKB)
                     {
                         _zkbIntel = new Core.Intel.ZKBIntel(Setting, _intelMap);
-                        await _zkbIntel.Start();
-                        _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        if (await _zkbIntel.Start())
+                        {
+                            _zkbIntel.OnError += ZKBIntel_OnError;
+                            _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        }
+                        else
+                        {
+                            throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_StartZKBFaild"));
+                        }
                     }
                     var intelWindow = Services.WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
@@ -393,6 +400,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 }
             }
             SaveSetting();
+        }
+
+        private void ZKBIntel_OnError(object sender, Exception e)
+        {
+            OnZKBError?.Invoke(this, e);
         }
 
         private void Observer_OnWarningUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EarlyWarningContent> news)
@@ -447,6 +459,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
             }
         }
         public event EventHandler<Core.Models.EarlyWarningContent> ZKBIntelEvent;
+        public event EventHandler<Exception> OnZKBError;
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
             ZKBIntelEvent?.Invoke(this, e);

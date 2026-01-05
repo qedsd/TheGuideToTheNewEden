@@ -11,11 +11,11 @@
      <PackageReference Include="log4net" Version="3.2.0" />
      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
      <PackageReference Include="Octokit" Version="14.0.0" />
-     <PackageReference Include="PointyHatGames.EVEStandard" Version="3.1.8" />
+     <PackageReference Include="PointyHatGames.EVEStandard" Version="3.1.9" />
      <PackageReference Include="SharpZipLib" Version="1.4.2" />
      <PackageReference Include="SqlSugarCore" Version="5.1.4.205" />
      <PackageReference Include="System.Data.SQLite" Version="2.0.2" />
-     <PackageReference Include="System.Drawing.Common" Version="9.0.10" />
+     <PackageReference Include="System.Drawing.Common" Version="10.0.1" />
    </ItemGroup>
 
    <ItemGroup>

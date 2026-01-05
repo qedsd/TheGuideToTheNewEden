@@ -608,11 +608,11 @@
 
     <!--  GamePreviewMgrPage  -->
     <x:String x:Key="GamePreviewMgrPage_SwitchMode">Activation mode</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">Mode 1（EVE-O-P）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">Mode 2（2.5.0.0）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">Mode 3（2.4.0.0）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">Mode 4（2.4.0.0修正）</x:String>
-    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">Mode 5（Trigger an empty keyboard event, use with caution）</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_0">Mode 1 (EVE-O-P)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_1">Mode 2 (2.5.0.0)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_2">Mode 3 (2.4.0.0)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_3">Mode 4 (2.4.0.0 Fixed)</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchMode_4">Mode 5 (Recommended Mode)</x:String>
     <x:String x:Key="GamePreviewMgrPage_SetHotKey">Update</x:String>
     <x:String x:Key="GamePreviewMgrPage_Backward">Backward</x:String>
     <x:String x:Key="GamePreviewMgrPage_Forward">Forward</x:String>
@@ -667,7 +667,7 @@
     <x:String x:Key="GamePreviewMgrPage_OverlapNameForeground">Name foreground</x:String>
     <x:String x:Key="GamePreviewMgrPage_ItemActiveHotKey">HotKey</x:String>
     <x:String x:Key="GamePreviewMgrPage_ActiveHotKey_Tip">Combination key usage + splicing. eg: Ctrl+1</x:String>
-    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">Preview Setting</x:String>
+    <x:String x:Key="GamePreviewMgrPage_PreviewItemSetting">Selected Item Settings</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartAllSetting">Setting of start all</x:String>
     <x:String x:Key="GamePreviewMgrPage_PreviewWindow">Overlap window</x:String>
     <x:String x:Key="GamePreviewMgrPage_HotKeySetting">Hotkey To Activation</x:String>
@@ -1224,6 +1224,7 @@
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll">Synchronize all settings</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Tip">To synchronize the current settings to other characters, all running need to be stopped. Do you want to continue?</x:String>
     <x:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
+    <x:String x:Key="ChannelIntelPage_StartZKBFaild">Start ZKB faild，For more details, please check the logs</x:String>
 
     <!--  ChannelScanPage  -->
     <x:String x:Key="ChannelScanPage_NameList">Characters</x:String>

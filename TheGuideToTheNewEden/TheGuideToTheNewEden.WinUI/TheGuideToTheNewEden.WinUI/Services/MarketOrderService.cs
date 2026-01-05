@@ -339,7 +339,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skillStructure, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(regionId);
@@ -358,7 +358,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders);
+                            await SetOrderInfo(localOrder.Orders, skillStructure);
                             return localOrder.Orders;
                         }
                     }
@@ -472,7 +472,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, PageCallBackDelegate pageCallBack = null)
         {
-            var regions = await GetOnlyRegionOrdersAsync(regionId, pageCallBack);
+            var regions = await GetOnlyRegionOrdersAsync(regionId, skipStructure, pageCallBack);
             List<Core.Models.Market.Order> structures = null;
             if (!skipStructure)
             {
@@ -804,12 +804,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         #endregion
 
-        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders)
+        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, bool skillStructure = false)
         {
             if(orders.NotNullOrEmpty())
             {
                 await SetTypeInfo(orders);
-                await SetLocationInfo(orders);
+                await SetLocationInfo(orders, skillStructure);
                 await SetSystemInfo(orders);
             }
         }
@@ -825,6 +825,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if(typesDic.TryGetValue(order.TypeId,out var type))
                     {
                         order.InvType = type;
+                    }
+                    else
+                    {
+                        order.InvType = new Core.DBModels.InvType()
+                        {
+                            TypeName = order.TypeId.ToString(),
+                            TypeID = order.TypeId
+                        };
                     }
                 }
             }
@@ -856,7 +864,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             }
         }
-        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders)
+        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, bool skillStructure)
         {
             var stationOrders = orders.Where(p => p.IsStation).ToList();
             var structureOrders = orders.Where(p => !p.IsStation).ToList();
@@ -873,7 +881,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
             }
-            if (structureOrders.NotNullOrEmpty())
+            if (structureOrders.NotNullOrEmpty() && !skillStructure)
             {
                 var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
                 int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;

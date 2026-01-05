@@ -18,15 +18,32 @@ namespace TheGuideToTheNewEden.Core.Intel
             _setting = setting;
             _intelMap = map;
         }
-        public async Task Start()
+        public async Task<bool> Start()
         {
-            await Services.ZKBStreamService.Current.Sub();
-            Services.ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
+            try
+            {
+                await Services.ZKBStreamService.Current.Sub();
+                Services.ZKBStreamService.Current.OnError += KillStream_OnError;
+                Services.ZKBStreamService.Current.OnMessage += KillStream_OnMessage;
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex);
+                return false;
+            }
         }
+
+        private void KillStream_OnError(object sender, Exception e)
+        {
+            OnError?.Invoke(this, e);
+        }
+
         public void Stop()
         {
             Services.ZKBStreamService.Current.UnSub();
             Services.ZKBStreamService.Current.OnMessage -= KillStream_OnMessage;
+            Services.ZKBStreamService.Current.OnError -= KillStream_OnError;
         }
         public string GetListener()
         {
@@ -60,5 +77,6 @@ namespace TheGuideToTheNewEden.Core.Intel
         /// 预警更新
         /// </summary>
         public event EventHandler<EarlyWarningContent> OnWarningUpdate;
+        public event EventHandler<Exception> OnError;
     }
 }
