@@ -23,18 +23,24 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
 {
     public sealed partial class MainWindow : Window
     {
+        private DateTime _releaseDate;
         public MainWindow()
         {
             this.InitializeComponent();
             AppWindow.Resize(new Windows.Graphics.SizeInt32(840, 800));
-            SDEFolder.Text = "D:\\QEDSD\\SDE\\eve-online-static-data-3108536-jsonl";
-            SaveDB.Text = $"SDE_{DateTime.Now.ToString("yyyyMMdd")}.db";
-            Activated += MainWindow_Activated;
+            SettingService.Init();
+            string sdeFolder = SettingService.GetValue(SettingService.SDEFolderKey);
+            SDEFolder.Text = sdeFolder;
+            if (!string.IsNullOrEmpty(sdeFolder))
+            {
+                SaveDB.Text = $"SDE_{DateTime.Now.ToString("yyyyMMdd")}.db";
+                SettingGrid.Loaded += SettingGrid_Loaded;
+            }
         }
 
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private void SettingGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            Activated -= MainWindow_Activated;
+            SettingGrid.Loaded -= SettingGrid_Loaded;
             LoadSDEFiles(SDEFolder.Text);
         }
 
@@ -44,10 +50,29 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
             var items = FilesListView.ItemsSource as List<SDEFile>;
             if (items != null && items.Count > 0) 
             {
-                WaitingGrid.Visibility = Visibility.Visible;
-                WaitingRing.IsActive = true;
                 try
                 {
+                    if (File.Exists(SaveDB.Text))
+                    {
+                        ContentDialog contentDialog = new ContentDialog()
+                        {
+                            XamlRoot = this.Content.XamlRoot,
+                            Title = "Existed File",
+                            Content = $"File {SaveDB.Text} already exists. Do you want to replace it?",
+                            PrimaryButtonText = "Yes",
+                            SecondaryButtonText = "Cancel"
+                        };
+                        if (await contentDialog.ShowAsync() != ContentDialogResult.Primary)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            File.Delete(SaveDB.Text);
+                        }
+                    }
+                    WaitingGrid.Visibility = Visibility.Visible;
+                    WaitingRing.IsActive = true;
                     await SDEBuilder.Builder.StartBuilder(items.Where(p => p.Checked == true).Select(p => p.File).ToArray(), language, SaveDB.Text);
                 }
                 catch (Exception ex)
@@ -109,6 +134,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
                     files.Remove(sdeInfoFile);
                     var model = JsonConvert.DeserializeObject<SDEInfo>(System.IO.File.ReadAllText(sdeInfoFile.File));
                     string lang = LangComboBox.SelectionBoxItem == null ? "En" : LangComboBox.SelectionBoxItem.ToString();
+                    _releaseDate = model.ReleaseDate;
                     SaveDB.Text = $"SDE_{lang}_{model.ReleaseDate.ToString("yyyyMMdd")}.db";
                 }
                 FilesListView.ItemsSource = files;
@@ -121,6 +147,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
             if (folder != null)
             {
                 SDEFolder.Text = folder.Path;
+                SettingService.SetValue(SettingService.SDEFolderKey, folder.Path);
                 LoadSDEFiles(SDEFolder.Text);
             }
         }
@@ -173,6 +200,38 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
             if (file != null)
             {
                 SaveDB.Text = file.Path;
+            }
+        }
+
+        private async void StartNewEdenButton_Click(object sender, RoutedEventArgs e)
+        {
+            var items = FilesListView.ItemsSource as List<SDEFile>;
+            string folder = AppContext.BaseDirectory;
+            if (items != null && items.Count > 0)
+            {
+                try
+                {
+                    WaitingGrid.Visibility = Visibility.Visible;
+                    WaitingRing.IsActive = true;
+                    await SDEBuilder.NewEdenBuilder.StartBuilder(items.Select(p => p.File).ToArray(), folder, new LanguageEnum[] { LanguageEnum.Zh},_releaseDate);
+                }
+                catch (Exception ex)
+                {
+                    ContentDialog contentDialog = new ContentDialog()
+                    {
+                        XamlRoot = this.Content.XamlRoot,
+                        Title = "Error",
+                        Content = ex.ToString(),
+                        PrimaryButtonText = "OK",
+                        IsSecondaryButtonEnabled = false,
+                    };
+                    await contentDialog.ShowAsync();
+                }
+                finally
+                {
+                    WaitingGrid.Visibility = Visibility.Collapsed;
+                    WaitingRing.IsActive = false;
+                }
             }
         }
     }

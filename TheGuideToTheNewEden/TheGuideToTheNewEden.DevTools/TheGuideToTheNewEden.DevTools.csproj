@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="SqlSugarCore" Version="5.1.4.205" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.211" />
   </ItemGroup>
 
   <ItemGroup>

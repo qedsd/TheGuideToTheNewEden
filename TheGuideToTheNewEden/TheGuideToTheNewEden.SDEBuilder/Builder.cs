@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SqlSugar;
 using TheGuideToTheNewEden.SDEBuilder.DeserializeModels;
+using TheGuideToTheNewEden.SDEBuilder.Helpers;
 
 
 namespace TheGuideToTheNewEden.SDEBuilder
@@ -18,8 +19,99 @@ namespace TheGuideToTheNewEden.SDEBuilder
     {
         public static async Task StartBuilder(string[] sdeFiles, LanguageEnum language, string outputFile)
         {
+            var db = CreateDB(outputFile);
+            try
+            {
+                var fileDatas = await Task.Run(() => ReadAllFiles(sdeFiles, language));
+                if (fileDatas.Any())
+                {
+                    var categories = GetCategories(fileDatas, language);
+                    if (categories != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.Categories));
+                        await db.Insertable(categories).ExecuteCommandAsync();
+                    }
+
+                    var groups = GetGroups(fileDatas, language);
+                    if(groups != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.Groups));
+                        await db.Insertable(groups).ExecuteCommandAsync();
+                    }
+
+                    var mapRegions = GetMapRegions(fileDatas, language);
+                    if (mapRegions != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MapRegions));
+                        await db.Insertable(mapRegions).ExecuteCommandAsync();
+                    }
+
+                    var mapSolarSystems = GetMapSolarSystems(fileDatas, language);
+                    if (mapSolarSystems != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MapSolarSystems));
+                        await db.Insertable(mapSolarSystems).ExecuteCommandAsync();
+                    }
+
+                    var marketGroups = GetMarketGroups(fileDatas, language);
+                    if (marketGroups != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MarketGroups));
+                        await db.Insertable(marketGroups).ExecuteCommandAsync();
+                    }
+
+                    var types = GetTypes(fileDatas, language);
+                    if (types != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.Types));
+                        await db.Insertable(types).ExecuteCommandAsync();
+                    }
+
+                    var planetResources = GetPlanetResources(fileDatas, language);
+                    if (planetResources != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.PlanetResources));
+                        await db.Insertable(planetResources).ExecuteCommandAsync();
+                    }
+
+                    var mapSolarSystemJumps = GetMapSolarSystemJumps(fileDatas);
+                    if (mapSolarSystemJumps != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MapSolarSystemJumps));
+                        await db.Insertable(mapSolarSystemJumps).ExecuteCommandAsync();
+                    }
+
+                    var mapDenormalizes = GetMapDenormalizes(fileDatas, language);
+                    if (mapDenormalizes != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MapDenormalizes));
+                        await db.Insertable(mapDenormalizes).ExecuteCommandAsync();
+
+                        var mapDenormalizesDict = mapDenormalizes.ToDictionary(p => p.ID);
+                        var stations = GetStations(fileDatas, language, mapDenormalizesDict);
+                        if (stations != null)
+                        {
+                            db.CodeFirst.InitTables(typeof(DBModels.Stations));
+                            await db.Insertable(stations).ExecuteCommandAsync();
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                db.Close();
+                db.Dispose();
+            }
+        }
+
+        public static SqlSugarScope CreateDB(string outputFile)
+        {
             string dbPath = Path.GetFullPath(outputFile);
-            SqlSugarScope db = new SqlSugarScope(new ConnectionConfig()
+            var db = new SqlSugarScope(new ConnectionConfig()
             {
                 ConnectionString = @"DataSource=" + dbPath,
                 DbType = SqlSugar.DbType.Sqlite,
@@ -40,61 +132,9 @@ namespace TheGuideToTheNewEden.SDEBuilder
             {
                 db.DbMaintenance.CreateDatabase();
             }
-            var fileDatas = await Task.Run(()=> ReadAllFiles(sdeFiles, language));
-            if (fileDatas.Any())
-            {
-                foreach (var fileData in fileDatas)
-                {
-                    switch (Path.GetFileNameWithoutExtension(fileData.Key))
-                    {
-                        case "categories":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.Categories));
-                                var models = fileData.Value.Select(p => new DBModels.Categories(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                        case "groups":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.Groups));
-                                var models = fileData.Value.Select(p => new DBModels.Groups(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                        case "mapRegions":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.MapRegions));
-                                var models = fileData.Value.Select(p => new DBModels.MapRegions(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                        case "mapSolarSystems":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.MapSolarSystems));
-                                var models = fileData.Value.Select(p => new DBModels.MapSolarSystems(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                        case "marketGroups":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.MarketGroups));
-                                var models = fileData.Value.Select(p => new DBModels.MarketGroups(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                        case "types":
-                            {
-                                db.CodeFirst.InitTables(typeof(DBModels.Types));
-                                var models = fileData.Value.Select(p => new DBModels.Types(p, language)).ToList();
-                                await db.Insertable(models).ExecuteCommandAsync();
-                            }
-                            break;
-                    }
-                }
-            }
+            return db;
         }
-
-        private static Dictionary<string, List<BaseModel>> ReadAllFiles(string[] sdeFiles, LanguageEnum language)
+        public static Dictionary<string, List<BaseModel>> ReadAllFiles(string[] sdeFiles, LanguageEnum language)
         {
             Dictionary<string, List<BaseModel>> fileDatas = new Dictionary<string, List<BaseModel>>();
             var models = typeof(BaseModel).Assembly.GetTypes().Where(p => p.FullName.Contains(".DeserializeModels.")).ToList();
@@ -105,7 +145,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 if (targetModel != null)
                 {
                     List<BaseModel> datas = new List<BaseModel>();
-                    fileDatas.Add(file, datas);
+                    fileDatas.Add(Path.GetFileNameWithoutExtension(file), datas);
                     foreach (string line in File.ReadLines(file))
                     {
                         if (!string.IsNullOrWhiteSpace(line))
@@ -123,6 +163,194 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 }
             }
             return fileDatas;
+        }
+
+        public static List<DBModels.Groups> GetGroups(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("groups", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.Groups(p, language)).ToList();
+        }
+        public static List<DBModels.Categories> GetCategories(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("categories", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.Categories(p, language)).ToList();
+        }
+        public static List<DBModels.MapRegions> GetMapRegions(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("mapRegions", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.MapRegions(p, language)).ToList();
+        }
+        public static List<DBModels.MapSolarSystems> GetMapSolarSystems(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("mapSolarSystems", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.MapSolarSystems(p, language)).ToList();
+        }
+        public static List<DBModels.MarketGroups> GetMarketGroups(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("marketGroups", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.MarketGroups(p, language)).ToList();
+        }
+        public static List<DBModels.Types> GetTypes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("types", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.Types(p, language)).ToList();
+        }
+        public static List<DBModels.PlanetResources> GetPlanetResources(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("planetResources", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.PlanetResources(p)).ToList();
+        }
+        public static List<DBModels.MapSolarSystemJumps> GetMapSolarSystemJumps(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if(!fileDatas.TryGetValue("mapStargates",out var mapStargates) || !fileDatas.TryGetValue("mapSolarSystems", out var mapSolarSystems))
+            {
+                return null;
+            }
+            var mapStargatesDict = mapStargates.ToDictionary(p => p.Id);
+            var mapSolarSystemsDict = mapSolarSystems.ToDictionary(p => p.Id);
+            List<DBModels.MapSolarSystemJumps> jumps = new List<DBModels.MapSolarSystemJumps>();
+            foreach(var system in mapSolarSystems)
+            {
+                var from = system as MapSolarSystems;
+                if(from?.StargateIDs != null)
+                {
+                    foreach (var gateID in from.StargateIDs)
+                    {
+                        var gate = mapStargatesDict[gateID] as MapStargates;
+                        var to = mapSolarSystemsDict[gate.Destination.SolarSystemID] as MapSolarSystems;
+                        jumps.Add(new DBModels.MapSolarSystemJumps()
+                        {
+                            FromSolarSystemID = from.Id,
+                            FromConstellationID = from.ConstellationID,
+                            FromRegionID = from.RegionID,
+                            ToSolarSystemID = to.Id,
+                            ToConstellationID = to.ConstellationID,
+                            ToRegionID = to.RegionID,
+                        });
+                    }
+                }
+            }
+            return jumps;
+        }
+        public static List<DBModels.MapDenormalizes> GetMapDenormalizes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("mapStars", out var mapStars) 
+                || !fileDatas.TryGetValue("mapPlanets", out var mapPlanets)
+                || !fileDatas.TryGetValue("mapMoons", out var mapMoons)
+                || !fileDatas.TryGetValue("mapAsteroidBelts", out var mapAsteroidBelts)
+                || !fileDatas.TryGetValue("mapSolarSystems", out var mapSolarSystems)
+                || !fileDatas.TryGetValue("groups", out var groups))
+            {
+                return null;
+            }
+            var groupsDict = groups.Select(p=>p as Groups).ToDictionary(p=>p.Id);
+            var starGroupName = groupsDict[6].Names.GetValue(language);
+            var mapSolarSystemsDict = mapSolarSystems.Select(p=>p as MapSolarSystems).ToDictionary(p=>p.Id);
+            List<DBModels.MapDenormalizes> starDatas = new List<DBModels.MapDenormalizes>();
+            foreach(var item in mapStars)
+            {
+                var data = item as MapStars;
+                starDatas.Add(new DBModels.MapDenormalizes()
+                {
+                    ID = data.Id,
+                    GroupID = 6,
+                    SolarSystemID = data.SolarSystemID,
+                    TypeID = data.TypeID,
+                    ItemName = $"{mapSolarSystemsDict[data.SolarSystemID].Names.GetValue(language)} - {starGroupName}"
+                });
+            }
+            List<DBModels.MapDenormalizes> planetDatas = new List<DBModels.MapDenormalizes>();
+            foreach (var item in mapPlanets)
+            {
+                var data = item as MapPlanets;
+                planetDatas.Add(new DBModels.MapDenormalizes()
+                {
+                    ID = data.Id,
+                    GroupID = 7,
+                    SolarSystemID = data.SolarSystemID,
+                    TypeID = data.TypeID,
+                    ItemName = $"{mapSolarSystemsDict[data.SolarSystemID].Names.GetValue(language)} {RomanConverter.ToRoman(data.CelestialIndex)}"
+                });
+            }
+            var planetDatasDict = planetDatas.ToDictionary(p => p.ID);
+            var moonGroupName = groupsDict[8].Names.GetValue(language);
+            List<DBModels.MapDenormalizes> moonDatas = new List<DBModels.MapDenormalizes>();
+            foreach (var item in mapMoons)
+            {
+                var data = item as MapMoons;
+                moonDatas.Add(new DBModels.MapDenormalizes()
+                {
+                    ID = data.Id,
+                    GroupID = 8,
+                    SolarSystemID = data.SolarSystemID,
+                    TypeID = data.TypeID,
+                    ItemName = $"{planetDatasDict[data.OrbitID].ItemName} - {moonGroupName} {data.OrbitIndex}"
+                });
+            }
+            List<DBModels.MapDenormalizes> beltDatas = new List<DBModels.MapDenormalizes>();
+            var beltGroupName = groupsDict[9].Names.GetValue(language);
+            foreach (var item in mapAsteroidBelts)
+            {
+                var data = item as MapAsteroidBelts;
+                beltDatas.Add(new DBModels.MapDenormalizes()
+                {
+                    ID = data.Id,
+                    GroupID = 9,
+                    SolarSystemID = data.SolarSystemID,
+                    TypeID = data.TypeID,
+                    ItemName = $"{planetDatasDict[data.OrbitID].ItemName} - {beltGroupName} {data.OrbitIndex}"
+                });
+            }
+            List<DBModels.MapDenormalizes> allDatas = new List<DBModels.MapDenormalizes>();
+            allDatas.AddRange(starDatas);
+            allDatas.AddRange(planetDatas);
+            allDatas.AddRange(moonDatas);
+            allDatas.AddRange(beltDatas);
+            return allDatas;
+        }
+        public static List<DBModels.Stations> GetStations(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language, Dictionary<int, DBModels.MapDenormalizes> mapDenormalizesDict)
+        {
+            if (!fileDatas.TryGetValue("npcStations", out var npcStations)
+                || !fileDatas.TryGetValue("npcCorporations", out var npcCorporations)
+                || !fileDatas.TryGetValue("stationOperations", out var stationOperations))
+            {
+                return null;
+            }
+            var npcCorporationsDict = npcCorporations.Select(p => p as NpcCorporations).ToDictionary(p => p.Id);
+            var stationOperationsDict = stationOperations.Select(p => p as StationOperations).ToDictionary(p => p.Id);
+            List<DBModels.Stations> datas = new List<DBModels.Stations>();
+            foreach (var item in npcStations)
+            {
+                var data = item as NpcStations;
+                datas.Add(new DBModels.Stations()
+                {
+                    Id = data.Id,
+                    SolarSystemID = data.SolarSystemID,
+                    StationName = $"{mapDenormalizesDict[data.OrbitID].ItemName} - {npcCorporationsDict[data.OwnerID].Names.GetValue(language)} {stationOperationsDict[data.OperationID].OperationName.GetValue(language)}"
+                });
+            }
+            return datas;
         }
     }
 }

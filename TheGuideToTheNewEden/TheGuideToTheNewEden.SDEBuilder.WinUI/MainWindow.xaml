@@ -29,7 +29,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Width="80"
+                        Width="100"
                         VerticalAlignment="Center"
                         Text="SDE Folder" />
                     <TextBox
@@ -51,7 +51,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Width="80"
+                        Width="100"
                         VerticalAlignment="Center"
                         Text="Database File" />
                     <TextBox
@@ -73,7 +73,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        Width="80"
+                        Width="100"
                         VerticalAlignment="Center"
                         Text="Language" />
                     <ComboBox
@@ -132,15 +132,21 @@
                 HorizontalAlignment="Center"
                 Orientation="Horizontal">
                 <Button
-                    Width="100"
+                    Width="120"
                     Margin="4,0"
                     Click="RefreshButton_Click"
                     Content="Refresh" />
                 <Button
-                    Width="100"
+                    Width="120"
                     Margin="4,0"
                     Click="StartButton_Click"
-                    Content="Start"
+                    Content="Build Selected"
+                    Style="{ThemeResource AccentButtonStyle}" />
+                <Button
+                    Width="120"
+                    Margin="4,0"
+                    Click="StartNewEdenButton_Click"
+                    Content="Build NewEden"
                     Style="{ThemeResource AccentButtonStyle}" />
             </StackPanel>
         </Grid>

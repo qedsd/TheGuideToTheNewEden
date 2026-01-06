@@ -16,18 +16,21 @@ namespace TheGuideToTheNewEden.SDEBuilder.DeserializeModels
         public string Zh { get; set; }
         public string GetValue(LanguageEnum language)
         {
+            string name = En;
             switch (language)
             {
-                case LanguageEnum.De:return De;
-                case LanguageEnum.En:return En;
-                case LanguageEnum.Es:return Es;
-                case LanguageEnum.Fr:return Fr;
-                case LanguageEnum.Ja: return Ja;
-                case LanguageEnum.Ko: return Ko;
-                case LanguageEnum.Ru: return Ru;
-                case LanguageEnum.Zh: return Zh;
-                default: return En;
+                case LanguageEnum.De: name = De; break;
+                case LanguageEnum.En: name = En; break;
+                case LanguageEnum.Es: name = Es; break;
+                case LanguageEnum.Fr: name = Fr; break;
+                case LanguageEnum.Ja: name = Ja; break;
+                case LanguageEnum.Ko: name = Ko; break;
+                case LanguageEnum.Ru: name = Ru; break;
+                case LanguageEnum.Zh: name = Zh; break;
+                default: name = En;break;
             }
+            name = string.IsNullOrEmpty(name) ? En : name;
+            return name;
         }
     }
 }
