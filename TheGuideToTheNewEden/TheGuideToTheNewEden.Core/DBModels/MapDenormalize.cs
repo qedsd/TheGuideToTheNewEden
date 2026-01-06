@@ -9,9 +9,10 @@ namespace TheGuideToTheNewEden.Core.DBModels
     /// 星系太空物品
     /// 如主权设施、恒星、行星、月球
     /// </summary>
-    [SugarTable("mapDenormalize")]
+    [SugarTable("mapDenormalizes")]
     public class MapDenormalize
     {
+        [SugarColumn(ColumnName = "Id")]
         public int ItemID { get; set; }
         public int TypeID { get; set; }
         public int GroupID { get; set; }

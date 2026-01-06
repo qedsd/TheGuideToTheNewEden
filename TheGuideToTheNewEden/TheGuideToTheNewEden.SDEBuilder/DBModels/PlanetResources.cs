@@ -12,14 +12,14 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
         [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
 
-        public int? Power { get; set; }
-        public int? Workforce { get; set; }
+        public int Power { get; set; }
+        public int Workforce { get; set; }
 
-        public int? AmountPerCycle { get; set; }
-        public int? CyclePeriod { get; set; }
-        public long? SecuredCapacity { get; set; }
-        public int? TypeId { get; set; }
-        public long? UnsecuredCapacity { get; set; }
+        public int AmountPerCycle { get; set; }
+        public int CyclePeriod { get; set; }
+        public long SecuredCapacity { get; set; }
+        public int TypeId { get; set; }
+        public long UnsecuredCapacity { get; set; }
         public PlanetResources() { }
         public PlanetResources(DeserializeModels.BaseModel model)
         {
@@ -28,11 +28,14 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             Power = data.Power;
             Workforce = data.Workforce;
 
-            AmountPerCycle = data.Reagent?.AmountPerCycle;
-            CyclePeriod = data.Reagent?.CyclePeriod;
-            SecuredCapacity = data.Reagent?.SecuredCapacity;
-            UnsecuredCapacity = data.Reagent?.UnsecuredCapacity;
-            TypeId = data.Reagent?.TypeId;
+            if(data.Reagent != null)
+            {
+                AmountPerCycle = data.Reagent.AmountPerCycle;
+                CyclePeriod = data.Reagent.CyclePeriod;
+                SecuredCapacity = data.Reagent.SecuredCapacity;
+                UnsecuredCapacity = data.Reagent.UnsecuredCapacity;
+                TypeId = data.Reagent.TypeId;
+            }
         }
     }
 }

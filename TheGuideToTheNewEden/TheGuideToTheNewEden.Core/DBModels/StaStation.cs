@@ -6,35 +6,20 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
 {
-    [SugarTable("staStations")]
+    [SugarTable("stations")]
     public class StaStation : StaStationBase
     {
-        public double Security { get; set; }
-        public double DockingCostPerVolume { get; set; }
-        public double MaxShipVolumeDockable { get; set; }
-        public double OfficeRentalCost { get; set; }
-        public int OperationID { get; set; }
-        public int StationTypeID { get; set; }
-        public int CorporationID { get; set; }
         public int SolarSystemID { get; set; }
-        public int ConstellationID { get; set; }
-        public int RegionID { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
-        public double ReprocessingEfficiency { get; set; }
-        public double ReprocessingStationsTake { get; set; }
-        public int ReprocessingHangarFlag { get; set; }
     }
 
-    [SugarTable("staStations")]
+    [SugarTable("stations")]
     public class StaStationBase
     {
         [Display(Order = 1)]
+        [SugarColumn(ColumnName = "Id")]
         public int StationID { get; set; }
 
         [Display(Order = 2)]
-        [SugarColumn(IsNullable = true)]
         public string StationName { get; set; }
     }
 }

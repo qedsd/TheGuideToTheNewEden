@@ -24,8 +24,8 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             {
                 solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
                 solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
-                solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
-                solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
+                solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
             }
             return solarSystemResources;
         }
@@ -68,8 +68,8 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                     {
                         solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
                         solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
-                        solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
-                        solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                        solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
+                        solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
                     }
                     list.Add(solarSystemResources);
                 }

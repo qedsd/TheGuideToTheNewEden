@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
 {
-    [SugarTable("invGroups")]
+    [SugarTable("groups")]
     public class InvGroup: InvGroupBase
     {
         public int CategoryID { get; set; }
@@ -18,14 +18,15 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public bool Published { get; set; }
     }
 
-    [SugarTable("invGroups")]
+    [SugarTable("groups")]
     public class InvGroupBase
     {
         [Display(Order = 1)]
+        [SugarColumn(ColumnName = "Id")]
         public int GroupID { get; set; }
 
         [Display(Order = 2)]
-        [SugarColumn(IsNullable = true)]
+        [SugarColumn(IsNullable = true,ColumnName = "Name")]
         public string GroupName { get; set; }
     }
 }

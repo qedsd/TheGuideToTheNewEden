@@ -8,32 +8,15 @@ namespace TheGuideToTheNewEden.Core.DBModels
     [SugarTable("planetResources")]
     public class PlanetResources
     {
-        [SugarColumn(IsPrimaryKey = true)]
-        public long StarID { get; set; }
+        [SugarColumn(IsPrimaryKey = true, ColumnName = "Id")]
+        public int StarID { get; set; }
 
-        public long Power { get; set; }
+        public int Power { get; set; }
 
-        public long Workforce { get; set; }
+        public int Workforce { get; set; }
 
-        [SugarColumn(ColumnName = "cycle_minutes")]
-        public int CycleMinutes { get; set; }
+        public int AmountPerCycle { get; set; }
 
-        [SugarColumn(ColumnName = "harvest_silo_max")]
-        public long HarvestSiloMax { get; set; }
-
-        [SugarColumn(ColumnName = "maturation_cycle_minutes")]
-        public long MaturationCycleMinutes { get; set; }
-
-        [SugarColumn(ColumnName = "maturation_percent")]
-        public int MaturationPercent { get; set; }
-
-        [SugarColumn(ColumnName = "mature_silo_max")]
-        public double MatureSiloMax { get; set; }
-
-        [SugarColumn(ColumnName = "reagent_harvest_amount")]
-        public long ReagentHarvestAmount { get; set; }
-
-        [SugarColumn(ColumnName = "reagent_type_id")]
-        public long ReagentTypeId { get; set; }
+        public int TypeId { get; set; }
     }
 }

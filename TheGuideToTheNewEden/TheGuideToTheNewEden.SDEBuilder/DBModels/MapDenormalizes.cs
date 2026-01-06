@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     /// 星系太空物品
     /// 如主权设施、恒星、行星、月球
     /// </summary>
-    [SugarTable("mapDenormalize")]
+    [SugarTable("mapDenormalizes")]
     [SugarIndex("index_mapdenormalize_solarsystemid", nameof(SolarSystemID), OrderByType.Asc)]
     public class MapDenormalizes
     {

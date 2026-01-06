@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TheGuideToTheNewEden.Core.DBModels
 {
-    [SugarTable("MarketGroups")]
+    [SugarTable("marketGroups")]
     public class InvMarketGroup : InvMarketGroupBase
     {
         public int? ParentGroupID { get; set; }
@@ -13,13 +13,16 @@ namespace TheGuideToTheNewEden.Core.DBModels
         public bool HasTypes { get; set; }
     }
 
-    [SugarTable("MarketGroups")]
+    [SugarTable("marketGroups")]
     public class InvMarketGroupBase
     {
+        [SugarColumn(ColumnName = "Id")]
         public int MarketGroupID { get; set; }
-        [SugarColumn(IsNullable = true, ColumnName = "nameId")]
+
+        [SugarColumn(IsNullable = true, ColumnName = "Name")]
         public string MarketGroupName { get; set; }
-        [SugarColumn(IsNullable = true, ColumnName = "descriptionId")]
+
+        [SugarColumn(IsNullable = true, ColumnName = "Description")]
         public string Description { get; set; }
     }
 }

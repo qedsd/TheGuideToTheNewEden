@@ -350,8 +350,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         {
                             regionResources.Power += resourcesDetails.Sum(p => p.PlanetResources.Power);
                             regionResources.Workforce += resourcesDetails.Sum(p => p.PlanetResources.Workforce);
-                            regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
-                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                            regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
+                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
                         }
                     }
                     if (regionResources.Power + regionResources.Workforce != 0)
@@ -372,8 +372,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             MapSolarSystem = (mapData as MapSystemData).MapSolarSystem,
                             Power = resources.Value.Sum(p => p.PlanetResources.Power),
                             Workforce = resources.Value.Sum(p => p.PlanetResources.Workforce),
-                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
-                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle),
+                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle),
                         };
                         _systemResourcesDic.Add(resources.Key, solarSystemResources);
                     }
