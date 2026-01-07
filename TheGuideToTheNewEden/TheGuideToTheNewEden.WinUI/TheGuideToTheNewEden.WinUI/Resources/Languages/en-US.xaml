@@ -31,6 +31,8 @@
     <x:String x:Key="ChannelTranslationPage">Channel Translation</x:String>
     <x:String x:Key="UpdatePage">App Update</x:String>
     <x:String x:Key="Channel">Channel</x:String>
+    <x:String x:Key="Tools">Tools</x:String>
+    <x:String x:Key="Tools_IME">IME</x:String>
 
     <x:String x:Key="InvType">Type</x:String>
     <x:String x:Key="MapSolarSystem">System</x:String>

@@ -331,6 +331,7 @@
     <None Remove="Views\Settings\TestSettingPage.xaml" />
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
+    <None Remove="Views\Tools\IMEPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\TranslationWindowPage.xaml" />
     <None Remove="Views\UpdatePage.xaml" />
@@ -649,6 +650,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Tools\IMEPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ViewLogPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

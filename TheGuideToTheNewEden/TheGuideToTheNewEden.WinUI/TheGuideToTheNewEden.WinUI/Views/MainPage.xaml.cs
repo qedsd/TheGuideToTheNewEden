@@ -189,7 +189,18 @@ namespace TheGuideToTheNewEden.WinUI.Views
                         }
                         else
                         {
-                            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("MainPage", $"Unknown type: {fullName}", Controls.InfoBarControl.InfoType.Error, true);
+                            fullName = $"{this.GetType().Namespace}.Tools.{tag}";
+                            type = Type.GetType(fullName);
+                            if (type != null)
+                            {
+                                var instance = Activator.CreateInstance(type);
+                                ToolWindow toolWindow = new ToolWindow(item.Content.ToString(), instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true);
+                                toolWindow.Activate();
+                            }
+                            else
+                            {
+                                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("MainPage", $"Unknown type: {fullName}", Controls.InfoBarControl.InfoType.Error, true);
+                            }
                         }
                     }
                 }

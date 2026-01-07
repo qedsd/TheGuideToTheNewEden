@@ -51,7 +51,17 @@ namespace TheGuideToTheNewEden.WinUI
             this.InitializeComponent();
             InitWindow(content, style, showTopButton, true, true, showInSwitcher);
         }
-        
+        public ToolWindow(string title, UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher, bool top)
+        {
+            this.InitializeComponent();
+            InitWindow(content, style, showTopButton, useThemeService, useBackground, showInSwitcher);
+            SetDisplayTitle(title);
+            SetWindowTitle(title);
+            if (top)
+            {
+                SetAlwaysOnTop();
+            }
+        }
         public void InitWindow(UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher)
         {
             if (useThemeService)
@@ -96,6 +106,7 @@ namespace TheGuideToTheNewEden.WinUI
                     case WindowTitleStyle.OnlyMax: CloseButton.Visibility = Visibility.Collapsed; MinimizeButton.Visibility = Visibility.Collapsed; break;
                     case WindowTitleStyle.NoButton: ButtonPanel.Visibility = Visibility.Collapsed; break;
                     case WindowTitleStyle.Empty: FullTitleArea.Visibility = Visibility.Collapsed; break;
+                    case WindowTitleStyle.MiniAndClose: MaximizeButton.Visibility = Visibility.Collapsed; break;
                 }
             }
             if (!showTopButton || style == WindowTitleStyle.Empty)
@@ -341,6 +352,7 @@ namespace TheGuideToTheNewEden.WinUI
         OnlyMini,
         OnlyMax,
         NoButton,
-        Empty
+        Empty,
+        MiniAndClose
     }
 }

@@ -31,6 +31,8 @@
     <x:String x:Key="ChannelTranslationPage">频道翻译</x:String>
     <x:String x:Key="UpdatePage">软件更新</x:String>
     <x:String x:Key="Channel">频道</x:String>
+    <x:String x:Key="Tools">小工具</x:String>
+    <x:String x:Key="Tools_IME">快捷输入</x:String>
 
     <x:String x:Key="InvType">物品</x:String>
     <x:String x:Key="MapSolarSystem">星系</x:String>
