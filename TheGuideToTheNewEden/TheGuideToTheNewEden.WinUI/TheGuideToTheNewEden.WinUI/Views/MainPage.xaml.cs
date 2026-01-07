@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Input;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -194,7 +195,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             if (type != null)
                             {
                                 var instance = Activator.CreateInstance(type);
-                                ToolWindow toolWindow = new ToolWindow(item.Content.ToString(), instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true);
+                                string content = item.Content.ToString();
+                                ToolWindow toolWindow = new ToolWindow(content, content, instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true, 400,160);
+                                //toolWindow.LogPositionAndSize(item.Content.ToString());
                                 toolWindow.Activate();
                             }
                             else

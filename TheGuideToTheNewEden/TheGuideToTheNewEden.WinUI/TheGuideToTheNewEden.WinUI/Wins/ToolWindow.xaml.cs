@@ -51,18 +51,18 @@ namespace TheGuideToTheNewEden.WinUI
             this.InitializeComponent();
             InitWindow(content, style, showTopButton, true, true, showInSwitcher);
         }
-        public ToolWindow(string title, UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher, bool top)
+        public ToolWindow(string displayTitle, string windowTitle, UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher, bool top, int defaultWidth, int defaultHight)
         {
             this.InitializeComponent();
-            InitWindow(content, style, showTopButton, useThemeService, useBackground, showInSwitcher);
-            SetDisplayTitle(title);
-            SetWindowTitle(title);
+            InitWindow(content, style, showTopButton, useThemeService, useBackground, showInSwitcher, defaultWidth, defaultHight);
+            SetDisplayTitle(displayTitle);
+            SetWindowTitle(windowTitle);
             if (top)
             {
                 SetAlwaysOnTop();
             }
         }
-        public void InitWindow(UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher)
+        public void InitWindow(UIElement content, WindowTitleStyle style, bool showTopButton, bool useThemeService, bool useBackground, bool showInSwitcher, int width = 800, int hight = 600)
         {
             if (useThemeService)
             {
@@ -93,7 +93,7 @@ namespace TheGuideToTheNewEden.WinUI
             ExtendsContentIntoTitleBar = true;
             if (style != WindowTitleStyle.Empty)
                 SetTitleBar(AppTitleBar);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(800,600));
+            AppWindow.Resize(new Windows.Graphics.SizeInt32(width,hight));
             AppWindow.IsShownInSwitchers = showInSwitcher;
 
             HideNavButton();
