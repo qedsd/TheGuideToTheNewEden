@@ -56,7 +56,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 new SettingItem(Helpers.ResourcesHelper.GetString("SettingPage_Test"), Helpers.ResourcesHelper.GetString("SettingPage_Test_Desc"), FluentIcons.Common.Icon.Bug, typeof(TestSettingPage)),
                 new SettingItem(Helpers.ResourcesHelper.GetString("SettingPage_KeyboardList"), Helpers.ResourcesHelper.GetString("SettingPage_KeyboardList_Desc"), FluentIcons.Common.Icon.Keyboard, typeof(KeyboardListPage)),
                 new SettingItem(Helpers.ResourcesHelper.GetString("SettingPage_Update"), Helpers.ResourcesHelper.GetString("SettingPage_Update_Desc"), FluentIcons.Common.Icon.ArrowSync, typeof(UpdatePage)),
-                new SettingItem(Helpers.ResourcesHelper.GetString("SettingPage_About"), Helpers.ResourcesHelper.GetString("SettingPage_About_Desc"), FluentIcons.Common.Icon.ErrorCircle, typeof(AboutPage)),
             };
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)

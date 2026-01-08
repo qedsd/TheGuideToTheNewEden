@@ -72,13 +72,6 @@
     <x:String x:Key="Setting_Config_Title">Application Config</x:String>
     <x:String x:Key="Setting_Config_Description">All application parameter configuration files are stored in this folder</x:String>
     <x:String x:Key="Setting_Config_Check">Check</x:String>
-    <x:String x:Key="Setting_About_Title">About</x:String>
-    <x:String x:Key="Setting_About_P1">An EVE Online utility collection app.</x:String>
-    <x:String x:Key="Setting_About_P2">All free and open-source. If possible, please give the repositories a star.</x:String>
-    <x:String x:Key="Setting_About_P3">Automatic updates rely on Github and may encounter network issues that prevent access to updates or download failures. You can manually download from Github：</x:String>
-    <x:String x:Key="Setting_About_P4">If you have any questions, please contact me in-game：</x:String>
-    <x:String x:Key="Setting_About_P5">Or join a QQ group：</x:String>
-    <x:String x:Key="Setting_About_P6">Welcome to raise bugs and provide feedback.</x:String>
     <x:String x:Key="Setting_Update_Update">APP Update</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">Auto Update</x:String>
     <x:String x:Key="Setting_GameLog_EVELogsPath_Description">Just select the logs folder</x:String>
@@ -1393,6 +1386,7 @@
     <x:String x:Key="HomePage_Wallet_Type_Tax">Tax</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Donation">Donation</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">Other</x:String>
+    <x:String x:Key="HomePage_About">About</x:String>
     <x:String x:Key="HomePage_Log">Log</x:String>
     <x:String x:Key="HomePage_Manual">Manual</x:String>
 
@@ -1410,4 +1404,10 @@
     <x:String x:Key="IMEPage_Translate">Translate"</x:String>
     <x:String x:Key="IMEPage_Copy">Copy</x:String>
     <x:String x:Key="IMEPage_NoResult">No Result</x:String>
+
+    <!--  About  -->
+    <x:String x:Key="About_P1">This is a free, open-source EVE Online toolkit app that includes various features such as market, intel, game previews, and DED guides. All features comply with the game's End User License Agreement (EULA) and are safe to use without violation.</x:String>
+    <x:String x:Key="About_P2">Certain features and implementation concepts of the software draw inspiration from the development achievements of pioneers within the community. Here, we extend our sincere respect and gratitude to them. At the same time, we sincerely thank all players who have actively contributed ideas and helped identify issues during the development process.</x:String>
+    <x:String x:Key="About_P3">The update feature relies on GitHub. Network issues may occasionally prevent updates from being fetched or downloaded. In such cases, you can manually download the latest version from GitHub or the QQ group.</x:String>
+    <x:String x:Key="About_P4">Powered by passion — if possible, please consider giving a star to the GitHub repository.</x:String>
 </ResourceDictionary>

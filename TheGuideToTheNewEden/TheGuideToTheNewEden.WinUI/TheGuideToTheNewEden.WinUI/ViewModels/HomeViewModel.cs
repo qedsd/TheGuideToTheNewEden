@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using ESI.NET;
+using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
@@ -104,7 +106,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand AppAboutCommand => new RelayCommand(() =>
         {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToAbout();
+            string title = Helpers.ResourcesHelper.GetString("HomePage_About");
+            ToolWindow toolWindow = new ToolWindow(title, title, new Views.AboutPage(), WindowTitleStyle.OnlyClose, true, true, true, true, true, 600, 800);
+            toolWindow.Activate();
         });
         public ICommand AppLogCommand => new RelayCommand(() =>
         {

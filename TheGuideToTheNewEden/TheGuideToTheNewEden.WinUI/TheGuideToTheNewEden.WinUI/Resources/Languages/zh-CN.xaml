@@ -72,13 +72,6 @@
     <x:String x:Key="Setting_Config_Title">App配置文件</x:String>
     <x:String x:Key="Setting_Config_Description">App所有参数配置文件均存放于此文件夹内</x:String>
     <x:String x:Key="Setting_Config_Check">查看</x:String>
-    <x:String x:Key="Setting_About_Title">关于</x:String>
-    <x:String x:Key="Setting_About_P1">一个EVE Online实用工具集合APP。</x:String>
-    <x:String x:Key="Setting_About_P2">用爱发电，厚颜无耻蹲有缘人施舍个小星星</x:String>
-    <x:String x:Key="Setting_About_P3">自动更新依赖于Github，可能出现网络问题导致无法获取更新、下载失败，可前往Github手动下载：</x:String>
-    <x:String x:Key="Setting_About_P4">有问题可游戏内联系我：</x:String>
-    <x:String x:Key="Setting_About_P5">或加QQ群：</x:String>
-    <x:String x:Key="Setting_About_P6">欢迎提Bug提意见。</x:String>
     <x:String x:Key="Setting_Update_Update">APP更新</x:String>
     <x:String x:Key="Setting_Update_AutoUpdate">自动检查更新</x:String>
     <x:String x:Key="Setting_GameLog_EVELogsPath_Description">只需选择logs文件夹</x:String>
@@ -1398,6 +1391,7 @@
     <x:String x:Key="HomePage_Wallet_Type_Tax">税</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Donation">转账</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">其他</x:String>
+    <x:String x:Key="HomePage_About">关于</x:String>
     <x:String x:Key="HomePage_Log">日志</x:String>
     <x:String x:Key="HomePage_Manual">手册</x:String>
 
@@ -1415,4 +1409,10 @@
     <x:String x:Key="IMEPage_Translate">翻译</x:String>
     <x:String x:Key="IMEPage_Copy">复制</x:String>
     <x:String x:Key="IMEPage_NoResult">无结果</x:String>
+
+    <!--  About  -->
+    <x:String x:Key="About_P1">这是一个免费、开源的EVE Online辅助工具集合软件，涵盖了商业管理、预警提醒、多开预览、攻略查询等多种实用功能。所有功能都不会违反游戏的最终用户许可协议（EULA），请放心使用。</x:String>
+    <x:String x:Key="About_P2">软件部分功能、实现思路源自社区内各位前辈的开发成果，在此特向他们致以诚挚的敬意与感谢。同时，也衷心感谢在开发过程中积极提出想法、协助发现问题的所有玩家。</x:String>
+    <x:String x:Key="About_P3">软件更新依赖于Github，可能出现网络问题导致无法获取更新、下载失败，可前往Github或QQ群手动下载。</x:String>
+    <x:String x:Key="About_P4">用爱发电，厚颜无耻蹲个有缘人给Github仓库点个小星星。</x:String>
 </ResourceDictionary>

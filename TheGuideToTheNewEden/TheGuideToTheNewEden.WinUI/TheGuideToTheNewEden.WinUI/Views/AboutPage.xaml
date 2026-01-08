@@ -9,26 +9,33 @@
     mc:Ignorable="d">
 
     <RichTextBlock Margin="20,10">
-        <Paragraph>
-            <Run Text="{StaticResource Setting_About_P1}" />
-            <Run Text="{StaticResource Setting_About_P2}" />
-            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">GitHub</Hyperlink>
+        <Paragraph Margin="0,24" TextAlignment="Center">
+            <Run
+                FontSize="24"
+                Foreground="{ThemeResource SystemAccentColor}"
+                Text="{StaticResource AppFullName}" />
         </Paragraph>
-        <Paragraph />
-        <Paragraph>
-            <Run Text="{StaticResource Setting_About_P3}" />
-            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden/releases">Releases</Hyperlink>
-            <Run>。</Run>
+        <Paragraph Margin="0,0,0,12">
+            <Run Text="{StaticResource About_P1}" />
         </Paragraph>
-        <Paragraph />
-        <Paragraph>
-            <Run Text="{StaticResource Setting_About_P4}" />
-            <Run FontWeight="Medium">QEDSD</Run>
-            <Run>，</Run>
-            <Run Text="{StaticResource Setting_About_P5}" />
-            <Run FontWeight="Medium">784194289</Run>
-            <Run>，</Run>
-            <Run Text="{StaticResource Setting_About_P6}" />
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P2}" />
+        </Paragraph>
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P3}" />
+        </Paragraph>
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P4}" />
+        </Paragraph>
+        <Paragraph Margin="0,12" TextAlignment="Center">
+            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">qedsd/TheGuideToTheNewEden</Hyperlink>
+        </Paragraph>
+        <Paragraph Margin="0,12,0,0" TextAlignment="Center">
+            <InlineUIContainer>
+                <Grid HorizontalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/qq.jpg" />
+                </Grid>
+            </InlineUIContainer>
         </Paragraph>
     </RichTextBlock>
 </Page>
