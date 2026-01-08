@@ -177,7 +177,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             else
             {
                 var item = args.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
-                if(item.Tag != null)
+                if(item?.Tag != null)
                 {
                     string tag = item.Tag.ToString();
                     if (!string.IsNullOrEmpty(tag))
@@ -196,9 +196,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             {
                                 var instance = Activator.CreateInstance(type);
                                 string content = item.Content.ToString();
-                                ToolWindow toolWindow = new ToolWindow(content, content, instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true, 400,160);
-                                //toolWindow.LogPositionAndSize(item.Content.ToString());
+                                ToolWindow toolWindow = new ToolWindow(content, content, instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true, 500,200);
+                                toolWindow.LogPositionAndSize(content);
                                 toolWindow.Activate();
+                                sender.SelectedItem = null;
                             }
                             else
                             {

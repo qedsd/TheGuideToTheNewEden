@@ -1408,4 +1408,10 @@
     <x:String x:Key="TestVersionInfo_Desc">
         此为测试版本，可能存在不稳定情况。请勿升级到正式版本，请勿长期使用。当前版本功能可能会在正式版中发生变化。
     </x:String>
+
+    <!--  IMEPage  -->
+    <x:String x:Key="IMEPage_Serach">搜索</x:String>
+    <x:String x:Key="IMEPage_Translate">翻译</x:String>
+    <x:String x:Key="IMEPage_Copy">复制</x:String>
+    <x:String x:Key="IMEPage_NoResult">无结果</x:String>
 </ResourceDictionary>

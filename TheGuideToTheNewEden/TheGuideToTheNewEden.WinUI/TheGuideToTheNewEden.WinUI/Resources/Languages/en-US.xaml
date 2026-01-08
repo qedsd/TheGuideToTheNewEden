@@ -1403,4 +1403,10 @@
     <x:String x:Key="TestVersionInfo_Desc">
         This is a beta version and may be unstable. Do not upgrade to the release version, do not use it for a long time. The current version features may change in the release version.
     </x:String>
+
+    <!--  IMEPage  -->
+    <x:String x:Key="IMEPage_Serach">Serach</x:String>
+    <x:String x:Key="IMEPage_Translate">Translate"</x:String>
+    <x:String x:Key="IMEPage_Copy">Copy</x:String>
+    <x:String x:Key="IMEPage_NoResult">No Result</x:String>
 </ResourceDictionary>
