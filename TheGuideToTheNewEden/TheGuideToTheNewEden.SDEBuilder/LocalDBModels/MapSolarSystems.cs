@@ -7,6 +7,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.LocalDBModels
 {
     [SqlSugar.SugarTable("mapSolarSystems")]
     [SugarIndex("index_mapSolarSystems_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_mapSolarSystems_name", nameof(Name), OrderByType.Asc)]
     public class MapSolarSystems
     {
         [SugarColumn(IsPrimaryKey = true)]

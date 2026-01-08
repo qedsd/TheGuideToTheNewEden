@@ -8,6 +8,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     [SugarTable("groups")]
     [SugarIndex("index_groups_id", nameof(Id), OrderByType.Asc)]
     [SugarIndex("index_groups_categoryID", nameof(CategoryID), OrderByType.Asc)]
+    [SugarIndex("index_groups_name", nameof(Name), OrderByType.Asc)]
     public class Groups 
     {
         [SugarColumn(IsPrimaryKey = true)]

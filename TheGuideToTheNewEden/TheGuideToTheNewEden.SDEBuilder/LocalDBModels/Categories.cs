@@ -7,6 +7,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.LocalDBModels
 {
     [SugarTable("categories")]
     [SugarIndex("index_categories_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_categories_name", nameof(Name), OrderByType.Asc)]
     public class Categories
     {
         [SugarColumn(IsPrimaryKey = true)]

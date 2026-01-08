@@ -7,6 +7,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
 {
     [SugarTable("mapRegions")]
     [SugarIndex("index_mapRegions_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_mapRegions_name", nameof(Name), OrderByType.Asc)]
     public class MapRegions
     {
         [SugarColumn(IsPrimaryKey = true)]

@@ -9,6 +9,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     [SugarIndex("index_types_id", nameof(Id), OrderByType.Asc)]
     [SugarIndex("index_types_groupID", nameof(GroupID), OrderByType.Asc)]
     [SugarIndex("index_types_marketGroupID", nameof(MarketGroupID), OrderByType.Asc)]
+    [SugarIndex("index_types_name", nameof(Name), OrderByType.Asc)]
     public class Types
     {
         [SugarColumn(IsPrimaryKey = true)]

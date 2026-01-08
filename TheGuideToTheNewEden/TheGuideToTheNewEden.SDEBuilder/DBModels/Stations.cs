@@ -7,6 +7,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
 {
     [SugarTable("stations")]
     [SugarIndex("index_stations_id", nameof(Id), OrderByType.Asc)]
+    [SugarIndex("index_stations_name", nameof(StationName), OrderByType.Asc)]
     public class Stations
     {
         [SugarColumn(IsPrimaryKey = true)]

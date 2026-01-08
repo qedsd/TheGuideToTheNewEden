@@ -9,6 +9,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
     [SugarIndex("index_mapSolarSystems_id", nameof(Id), OrderByType.Asc)]
     [SugarIndex("index_mapSolarSystems_regionID", nameof(RegionID), OrderByType.Asc)]
     [SugarIndex("index_mapSolarSystems_constellationID", nameof(ConstellationID), OrderByType.Asc)]
+    [SugarIndex("index_mapSolarSystems_name", nameof(Name), OrderByType.Asc)]
     public class MapSolarSystems
     {
         [SugarColumn(IsPrimaryKey = true)]
