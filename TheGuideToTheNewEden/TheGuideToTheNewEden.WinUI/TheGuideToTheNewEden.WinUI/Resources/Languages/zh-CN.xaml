@@ -1399,6 +1399,7 @@
     <x:String x:Key="HomePage_Wallet_Type_Donation">转账</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">其他</x:String>
     <x:String x:Key="HomePage_Log">日志</x:String>
+    <x:String x:Key="HomePage_Manual">手册</x:String>
 
     <!--  LogViewPage  -->
     <x:String x:Key="LogViewPage_ClearLog">清除显示</x:String>

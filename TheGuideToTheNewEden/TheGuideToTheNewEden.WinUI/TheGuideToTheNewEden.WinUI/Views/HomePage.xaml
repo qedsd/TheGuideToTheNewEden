@@ -202,14 +202,14 @@
                             </Button>
                         </GridViewItem>
                         <GridViewItem>
-                            <Button Command="{x:Bind VM.AppSettingCommand}">
+                            <Button Command="{x:Bind VM.ManualCommand}">
                                 <Grid Style="{StaticResource SmallCardGrid}">
                                     <StackPanel Orientation="Horizontal">
-                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="Settings" />
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="BookQuestionMark" />
                                         <TextBlock
                                             Margin="12,0,0,0"
                                             VerticalAlignment="Center"
-                                            Text="{StaticResource General_Setting}" />
+                                            Text="{StaticResource HomePage_Manual}" />
                                     </StackPanel>
                                 </Grid>
                             </Button>

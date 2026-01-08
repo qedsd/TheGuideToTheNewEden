@@ -1394,6 +1394,7 @@
     <x:String x:Key="HomePage_Wallet_Type_Donation">Donation</x:String>
     <x:String x:Key="HomePage_Wallet_Type_Other">Other</x:String>
     <x:String x:Key="HomePage_Log">Log</x:String>
+    <x:String x:Key="HomePage_Manual">Manual</x:String>
 
     <!--  LogViewPage  -->
     <x:String x:Key="LogViewPage_ClearLog">Clear Log</x:String>

@@ -115,5 +115,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToSetting();
         });
+        public ICommand ManualCommand => new RelayCommand(() =>
+        {
+            string fileName = "Manual_en.pdf";
+            if (LanguageSelectorService.Value == "zh-CN")
+            {
+                fileName = "Manual_zh.pdf";
+            }
+            string file = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Manuals", fileName);
+            System.Diagnostics.Process.Start("explorer.exe", file);
+        });
     }
 }
