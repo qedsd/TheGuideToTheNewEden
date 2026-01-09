@@ -167,6 +167,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 _instances.Remove(id);
             }
         }
+        public void Reset()
+        {
+            foreach (var instance in _instances)
+            {
+                _tabView.TabItems?.Remove(instance);
+            }
+            _instances.Clear();
+            _homeTabViewItem = null;
+            _tabView = null;
+        }
 
         public delegate void KBPageDelegate(long id, string name);
         public event KBPageDelegate PageChanged;

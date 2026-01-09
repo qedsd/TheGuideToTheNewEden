@@ -204,11 +204,29 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             else
                             {
                                 ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg("MainPage", $"Unknown type: {fullName}", Controls.InfoBarControl.InfoType.Error, true);
+                                return;
                             }
+                        }
+                        if(item.ContextFlyout == null)
+                        {
+                            MenuFlyout menuFlyout = new MenuFlyout();
+                            MenuFlyoutItem resetMenu = new MenuFlyoutItem();
+                            var resourceValue = Application.Current.Resources["General_Reset"] as string;
+                            resetMenu.Text = resourceValue;
+                            resetMenu.Tag = type;
+                            resetMenu.Click += ResetMenu_Click;
+                            menuFlyout.Items.Add(resetMenu);
+                            item.ContextFlyout = menuFlyout;
                         }
                     }
                 }
             }
+        }
+
+        private void ResetMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var pageType = (sender as MenuFlyoutItem).Tag as Type;
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ResetPage(pageType);
         }
 
         private void LogoButton_Click(object sender, RoutedEventArgs e)

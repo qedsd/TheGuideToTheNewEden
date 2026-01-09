@@ -143,5 +143,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             VM.GameLogSetting.ThreadErrorKeys.Remove((sender as Button).DataContext as GameLogMonityKey);
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

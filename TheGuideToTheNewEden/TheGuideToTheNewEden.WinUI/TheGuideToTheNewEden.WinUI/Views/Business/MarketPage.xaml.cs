@@ -24,21 +24,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public MarketPage()
         {
             this.InitializeComponent();
-            Loaded += MarketPage_Loaded;
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            if(e.Parameter is object[] ps && ps.Length > 0)
-            {
-                ViewType((int)ps[0]);
-            }
-        }
-
-        private void MarketPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= MarketPage_Loaded;
         }
 
         private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -54,6 +39,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void Close()
         {
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+            if (parameter is int id)
+            {
+                ViewType(id);
+            }
         }
     }
 }

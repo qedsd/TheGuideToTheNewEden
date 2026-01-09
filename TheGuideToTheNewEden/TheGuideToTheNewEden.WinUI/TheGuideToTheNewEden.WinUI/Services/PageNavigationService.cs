@@ -15,7 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class PageNavigationService : IService
     {
-        private Dictionary<string, Views.IPage> _pages;
+        private Dictionary<string, object> _pageInstances;
         private FrameworkElement _navPanel;
         private Frame _frame;
         private LoadingControl _LoadingControl;
@@ -25,7 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private Action<Type> _navigateToCallback;
         public void Init()
         {
-            _pages = new Dictionary<string, Views.IPage>();
+            _pageInstances = new Dictionary<string, object>();
             _loadingPages = new Dictionary<string, string>();
         }
         public void Init(FrameworkElement navPanel, Frame frame, LoadingControl loadingControl, InfoBarControl infoBarControl, Action<Type> navigateToCallback)
@@ -37,29 +37,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _navigateToCallback = navigateToCallback;
         }
 
-        public void NavigateTo(Type content, params object[] values)
-        {
-            if (content == null) return;
-            _frame.Navigate(content, values);
-            _currentPage = content.Name;
-            if(_frame.Content is IPage page)
-            {
-                _pages.TryAdd(content.Name, page);
-            }
-            if (_loadingPages.TryGetValue(content.Name, out string loadingContent))//要切换显示的页面还处于加载中，需要还原状态
-            {
-                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                _LoadingControl.IsLoading = true;
-                _LoadingControl.LoadingContent = loadingContent;
-                _frame.IsEnabled = false;
-            }
-            else
-            {
-                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                _LoadingControl.IsLoading = false;
-                _frame.IsEnabled = true;
-            }
-        }
         public void ShowWaiting(string page, string tip = null)
         {
             GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
@@ -161,10 +138,42 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return _navPanel.ActualWidth;
         }
 
-        public void NavigateToMarket(params object[] values)
+        private object _navigateParameter;
+        public void NavigateTo(Type content, object parameter = null)
+        {
+            if (content == null) return;
+            _navigateParameter = parameter;
+            object instance = null;
+            if(!_pageInstances.TryGetValue(content.Name, out instance))
+            {
+                instance = Activator.CreateInstance(content);
+                _pageInstances.Add(content.Name, instance);
+            }
+            _frame.Content = instance;
+            _currentPage = content.Name;
+            if (_frame.Content is IPage page)
+            {
+                page.NavigatedTo(parameter);
+            }
+            if (_loadingPages.TryGetValue(content.Name, out string loadingContent))//要切换显示的页面还处于加载中，需要还原状态
+            {
+                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                _LoadingControl.IsLoading = true;
+                _LoadingControl.LoadingContent = loadingContent;
+                _frame.IsEnabled = false;
+            }
+            else
+            {
+                _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                _LoadingControl.IsLoading = false;
+                _frame.IsEnabled = true;
+            }
+        }
+
+        public void NavigateToMarket(object value)
         {
             Helpers.WindowHelper.MainWindow.Activate();
-            NavigateTo(typeof(MarketPage), values);
+            NavigateTo(typeof(MarketPage), value);
             _navigateToCallback?.Invoke(typeof(MarketPage));
         }
 
@@ -185,13 +194,33 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _navigateToCallback?.Invoke(typeof(ZKBHomePage));
         }
 
+        public void ResetPage(Type type)
+        {
+            if(type != null && _pageInstances.TryGetValue(type.Name, out var instance))
+            {
+                if (instance is IPage ipage)
+                {
+                    ipage.Close();
+                }
+                _pageInstances.Remove(type.Name);
+                _frame.Content = null;
+                if (_currentPage == type.Name)
+                {
+                    NavigateTo(type);
+                }
+            }
+        }
+
         public void Dispose()
         {
             GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                foreach (var page in _pages.Values)
+                foreach (var page in _pageInstances.Values)
                 {
-                    page.Close();
+                    if(page is IPage ipage)
+                    {
+                        ipage.Close();
+                    }
                 }
             });
         }

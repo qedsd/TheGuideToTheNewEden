@@ -38,7 +38,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 
         public void Close()
         {
-            
+            ClientServiceHelper.GetRequiredService<KBNavigationService>().Reset();
         }
 
         private CancellationTokenSource _cancellationTokenSource;
@@ -201,6 +201,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
                     ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("ZKBHomePage_Disconnect"), Controls.InfoBarControl.InfoType.Success, true);
                 }
             }
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+
         }
     }
 }

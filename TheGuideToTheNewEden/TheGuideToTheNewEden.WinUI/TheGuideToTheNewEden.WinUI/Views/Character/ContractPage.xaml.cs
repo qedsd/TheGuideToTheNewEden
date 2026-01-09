@@ -160,5 +160,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             
         }
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

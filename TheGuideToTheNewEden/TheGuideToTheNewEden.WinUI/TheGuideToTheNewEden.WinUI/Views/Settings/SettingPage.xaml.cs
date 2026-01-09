@@ -58,25 +58,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 new SettingItem(Helpers.ResourcesHelper.GetString("SettingPage_Update"), Helpers.ResourcesHelper.GetString("SettingPage_Update_Desc"), FluentIcons.Common.Icon.ArrowSync, typeof(UpdatePage)),
             };
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            if (e.Parameter is object[] ps && ps.Length > 0)
-            {
-                switch (ps[0].ToString())
-                {
-                    case "Update":
-                        {
-                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(UpdatePage)));
-                        }break;
-                    case "About":
-                        {
-                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(AboutPage)));
-                        }
-                        break;
-                }
-            }
-        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public void Init()
@@ -112,6 +94,25 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 SettingFrame.Visibility = Visibility.Visible;
                 SettingList.Visibility = Visibility.Collapsed;
                 FirstSettinButton.Opacity = 0.6;
+            }
+        }
+        public void NavigatedTo(object parameter)
+        {
+            if(parameter is string str)
+            {
+                switch (str)
+                {
+                    case "Update":
+                        {
+                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(UpdatePage)));
+                        }
+                        break;
+                    case "About":
+                        {
+                            SetSelecteItem(SettingItems.FirstOrDefault(p => p.PageType == typeof(AboutPage)));
+                        }
+                        break;
+                }
             }
         }
     }

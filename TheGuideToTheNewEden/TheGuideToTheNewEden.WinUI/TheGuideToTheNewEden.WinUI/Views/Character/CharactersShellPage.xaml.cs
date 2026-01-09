@@ -20,7 +20,7 @@ using TheGuideToTheNewEden.WinUI.Models;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
-    public sealed partial class CharactersShellPage : Page
+    public sealed partial class CharactersShellPage : Page, IPage
     {
         public CharactersShellPage()
         {
@@ -28,6 +28,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             
             ClientServiceHelper.GetRequiredService<CharacterNavigationService>().Init(typeof(CharactersPage), typeof(CharacterPage), CharactersTabView);
             ClientServiceHelper.GetRequiredService<CharacterNavigationService>().NavigateToHome();
+        }
+
+        public void Close()
+        {
+            ClientServiceHelper.GetRequiredService<CharacterNavigationService>().Reset();
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+            
         }
 
         private void CharactersTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)

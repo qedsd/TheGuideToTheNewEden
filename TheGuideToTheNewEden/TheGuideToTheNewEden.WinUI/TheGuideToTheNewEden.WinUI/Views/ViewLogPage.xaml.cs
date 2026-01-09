@@ -136,5 +136,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
             string arguments = $"/select, \"{Core.Log.GetLogFile()}\"";
             System.Diagnostics.Process.Start("explorer.exe", arguments);
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

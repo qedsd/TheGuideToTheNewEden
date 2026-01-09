@@ -123,7 +123,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             Stop();
         }
+        public void NavigatedTo(object parameter)
+        {
 
+        }
         internal class PingStatus
         {
             internal PingStatus(int id, double ms)

@@ -372,5 +372,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Tools
                 DetailContent.Blocks.Add(item);
             }
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

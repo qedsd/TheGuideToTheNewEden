@@ -72,6 +72,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
+        public void Reset()
+        {
+            foreach(var instance in _instances)
+            {
+                _tabView.TabItems?.Remove(instance);
+            }
+            _instances.Clear();
+            _homeTabViewItem = null;
+            _homeType = null;
+            _contentType = null;
+            _tabView = null;
+        }
+
         public event EventHandler<object> Navigated;
         public event EventHandler<object> Removed;
     }

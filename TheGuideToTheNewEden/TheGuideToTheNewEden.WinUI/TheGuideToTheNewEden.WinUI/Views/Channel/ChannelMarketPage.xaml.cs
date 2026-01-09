@@ -46,5 +46,9 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
             }
         }
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

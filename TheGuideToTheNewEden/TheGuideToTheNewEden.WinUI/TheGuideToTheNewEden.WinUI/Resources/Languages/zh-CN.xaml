@@ -128,6 +128,7 @@
     <x:String x:Key="General_TokenExpiredAndRefrshFailed">Token已过期，尝试刷新失败</x:String>
     <x:String x:Key="General_CharacterList">角色列表</x:String>
     <x:String x:Key="General_Edit">编辑</x:String>
+    <x:String x:Key="General_Reset">重置</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

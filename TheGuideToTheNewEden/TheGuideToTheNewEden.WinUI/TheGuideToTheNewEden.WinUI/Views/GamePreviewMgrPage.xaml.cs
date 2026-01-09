@@ -250,5 +250,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 VM.RemoveHotkeyGroup(item);
             }
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

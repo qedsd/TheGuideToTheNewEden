@@ -38,5 +38,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }

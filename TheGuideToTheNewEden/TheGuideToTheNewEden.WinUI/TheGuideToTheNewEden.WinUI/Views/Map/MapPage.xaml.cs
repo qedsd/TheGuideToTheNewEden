@@ -662,5 +662,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             MapCanvas.Dispose();
         }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
     }
 }
