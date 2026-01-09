@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Market;
@@ -62,19 +63,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             GetOrders();
         }
+        private CancellationTokenSource _cancellationTokenSource;
+        private void CancelCallback()
+        {
+            _cancellationTokenSource?.Cancel();
+        }
         private async void GetOrders()
         {
-            this.ShowWaiting();
+            _cancellationTokenSource = new CancellationTokenSource();
+            this.ShowWaiting(null, CancelCallback);
             try
             {
                 var errorCount1 = Core.Log.GetErrorCount();
                 if (OrderFromComboBox.SelectedIndex == 0)
                 {
-                    await GetCharacterOrders();
+                    await GetCharacterOrders(_cancellationTokenSource.Token);
                 }
                 else
                 {
-                    await GetCorpOrders();
+                    await GetCorpOrders(_cancellationTokenSource.Token);
+                }
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    return;
                 }
                 if (_order.NotNullOrEmpty())
                 {
@@ -97,14 +108,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
             this.HideWaiting();
         }
-        private async Task GetCharacterOrders()
+        private async Task GetCharacterOrders(CancellationToken cancellationToken)
         {
             if(SelecteCharacterControl.SelectedItem != null)
             {
-                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                var orders = await Services.MarketOrderService.Current.GetCharacterOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID, cancellationToken);
                 if (orders.NotNullOrEmpty())
                 {
-                    var os = await CalOrderStatus(orders);
+                    var os = await CalOrderStatus(orders,cancellationToken);
                     _characterOrder = os;
                     _order = os;
                 }
@@ -119,7 +130,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 this.ShowError(Helpers.ResourcesHelper.GetString("General_CharacterUnselected"));
             }
         }
-        private async Task GetCorpOrders()
+        private async Task GetCorpOrders(CancellationToken cancellationToken)
         {
             if (SelecteCharacterControl.SelectedItem != null)
             {
@@ -127,7 +138,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 List<Core.Models.Market.Order> orders = null;
                 try
                 {
-                    orders = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID);
+                    orders = await Services.MarketOrderService.Current.GetCorpOrdersAsync(SelecteCharacterControl.SelectedItem.CharacterID, cancellationToken);
                 }
                 catch
                 {
@@ -135,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 if (orders.NotNullOrEmpty())
                 {
-                    var os = await CalOrderStatus(orders);
+                    var os = await CalOrderStatus(orders,cancellationToken);
                     _corpOrder = os;
                     _order = os;
                 }
@@ -151,7 +162,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        private async Task<List<StatusOrder>> CalOrderStatus(List<Core.Models.Market.Order> orders)
+        private async Task<List<StatusOrder>> CalOrderStatus(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken)
         {
             List<StatusOrder> statusOrders = new List<StatusOrder>();
             foreach(var order in orders)
@@ -161,7 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 {
                     if (order.IsStation)
                     {
-                        var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId, MarketOrderSettingService.ScalperSikpStructureValue);
+                        var results = await Services.MarketOrderService.Current.GetRegionOrdersAsync(order.TypeId, order.RegionId, cancellationToken,MarketOrderSettingService.ScalperSikpStructureValue);
                         if (results.NotNullOrEmpty())
                         {
                             if (order.IsBuyOrder)
@@ -279,7 +290,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void OrderFromComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OrderFromComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (OrderFromComboBox.SelectedIndex == 0)
             {
@@ -289,7 +300,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 else
                 {
-                    await GetCharacterOrders();
+                    GetOrders();
+                    return;
                 }
             }
             else
@@ -300,7 +312,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 else
                 {
-                    await GetCorpOrders();
+                    GetOrders();
+                    return;
                 }
             }
             if (_order.NotNullOrEmpty())

@@ -18,9 +18,9 @@ namespace TheGuideToTheNewEden.WinUI.Extensions
         {
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(page, msg, infoType, autoClose, title);
         }
-        public static void ShowWaiting(this Page page, string tip = null)
+        public static void ShowWaiting(this Page page, string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
-            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowWaiting(page, tip);
+            ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowWaiting(page, tip, cancelCallback);
         }
         public static void ShowError(this Page page, string msg)
         {

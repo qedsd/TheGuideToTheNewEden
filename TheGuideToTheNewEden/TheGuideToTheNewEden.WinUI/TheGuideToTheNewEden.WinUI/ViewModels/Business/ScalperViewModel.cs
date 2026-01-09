@@ -21,6 +21,7 @@ using System.Diagnostics;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using ESI.NET.Models.Universe;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -281,78 +282,83 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         }
         private void GetSourceOrdersPageCallBack(int page, int totalPage, string tag)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder")}:{page}/{totalPage}");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder")}:{page}/{totalPage}", CancelCallback);
             });
         }
         private void GetDestinationOrdersPageCallBack(int page, int totalPage, string tag)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder")}:{page}/{totalPage}");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder")}:{page}/{totalPage}", CancelCallback);
             });
         }
         private void GetSourceHistoryPageCallBack(int page, int totalPage, string tag)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory")}（{page}/{_typeCount}）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory")}（{page}/{_typeCount}）", CancelCallback);
             });
         }
         private void GetDestinationHistoryPageCallBack(int page, int totalPage, string tag)
         {
+            if (_cancellationTokenSource.IsCancellationRequested) return;
             ExecuteUIAction(() =>
             {
-                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketHistyory")}（{page}/{_typeCount}）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketHistyory")}（{page}/{_typeCount}）", CancelCallback);
             });
         }
-        private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
+        private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders(CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = null;
             switch (Setting.SourceMarketLocation.Type)
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
                     {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
             }
             return orders;
         }
-        private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
+        private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders(CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = null;
             switch (Setting.DestinationMarketLocation.Type)
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
                     {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
             }
             return orders;
         }
+        private CancellationTokenSource _cancellationTokenSource;
         private int _typeCount = 0;
         private async Task GetOrders()
         {
@@ -362,10 +368,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             stopwatch.Start();
             List<Order> allSourceOrders = null;
             List<Order> allDestinationOrders = null;
-            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder"));
+            _cancellationTokenSource = new CancellationTokenSource();
+            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder"), CancelCallback);
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                ShowError(Helpers.ResourcesHelper.GetString("General_Canceld"));
+                return;
+            }
             try
             {
-                allSourceOrders = await GetAllSourceOrders();
+                allSourceOrders = await GetAllSourceOrders(_cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -373,15 +385,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 ShowError($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrderFalied")}：{ex.Message}");
                 return;
             }
-            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder"));
+            if (IsCancel())
+            {
+                return;
+            }
+            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder"), CancelCallback);
             try
             {
-                allDestinationOrders = await GetAllDestinationOrders();
+                allDestinationOrders = await GetAllDestinationOrders(_cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
                 ShowError($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrderFalied")}：{ex.Message}");
+            }
+            if (IsCancel())
+            {
+                return;
             }
             if (FilterTypes.NotNullOrEmpty())//移除过滤物品
             {
@@ -406,10 +426,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 if (scalperItems.NotNullOrEmpty())
                 {
                     ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory"));
-                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId, _cancellationTokenSource.Token, GetSourceHistoryPageCallBack);
+                    if (IsCancel())
+                    {
+                        return;
+                    }
                     sourceNoHistoryCount = typeIds.Count - sourceHistory.Count;
                     ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketHistyory"));
-                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, _cancellationTokenSource.Token, GetDestinationHistoryPageCallBack);
+                    if (IsCancel())
+                    {
+                        return;
+                    }
                     destinatioNoHistoryCount = typeIds.Count - destinationHistory.Count;
                     ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_MatchinOorderHistory"));
                     await Task.Run(() =>
@@ -430,7 +458,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
             HideWaiting();
         }
-
+        private void CancelCallback()
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+        private bool IsCancel()
+        {
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                ShowError(Helpers.ResourcesHelper.GetString("General_Canceld"));
+                HideWaiting();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         private List<Order> RemoveFilterTypes(List<Order> orders)
         {
             if(FilterTypes.NotNullOrEmpty() && orders.NotNullOrEmpty())

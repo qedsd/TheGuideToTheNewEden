@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
 using TheGuideToTheNewEden.Core.Services;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -309,7 +310,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async Task<List<Core.Models.Universe.Structure>> GetStructures(List<long> ids)
         {
-            var result = await Core.Helpers.ThreadHelper.RunAsync(ids, GetStructure);
+            var result = await Core.Helpers.ThreadHelper.RunAsync(ids, GetStructure, CancellationToken.None);
             var data =  result?.Where(p=>p!=null).ToList();
             if(data.NotNullOrEmpty())
             {

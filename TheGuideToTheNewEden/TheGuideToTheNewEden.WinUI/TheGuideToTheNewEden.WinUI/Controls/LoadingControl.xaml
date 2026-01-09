@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
     mc:Ignorable="d">
 
     <StackPanel>
@@ -137,12 +138,24 @@
                 </Canvas>
             </Canvas>
         </Viewbox>
-        <TextBlock
-            x:Name="LoadingTip"
-            Margin="0,8,0,0"
-            HorizontalAlignment="Center"
-            Foreground="{ThemeResource DefaultForegroundBrush}"
-            Text="Loding..."
-            Visibility="Collapsed" />
+        <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+            <TextBlock
+                x:Name="LoadingTip"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource DefaultForegroundBrush}"
+                Text="Loding..."
+                Visibility="Collapsed" />
+            <Button
+                x:Name="CancelButton"
+                Padding="8,4"
+                VerticalAlignment="Center"
+                Click="CancelButton_Click"
+                Foreground="{ThemeResource RedBrush}"
+                Style="{StaticResource TransparentButton}"
+                ToolTipService.ToolTip="{StaticResource General_Cancel}"
+                Visibility="Collapsed">
+                <winui:FluentIcon Icon="Backspace" />
+            </Button>
+        </StackPanel>
     </StackPanel>
 </UserControl>

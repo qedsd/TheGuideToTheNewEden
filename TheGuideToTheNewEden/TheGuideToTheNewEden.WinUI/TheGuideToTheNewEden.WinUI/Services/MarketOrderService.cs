@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -84,9 +85,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="structureId"></param>
         /// <param name="invTypeId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, int invTypeId)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, int invTypeId, CancellationToken cancellationToken)
         {
-            var orders = await GetStructureOrdersAsync(structureId);
+            var orders = await GetStructureOrdersAsync(structureId, cancellationToken);
             if(orders.NotNullOrEmpty())
             {
                 return orders.Where(p => p.TypeId == invTypeId).ToList();
@@ -96,16 +97,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, CancellationToken cancellationToken)
         {
-            return await GetStructureOrdersAsync(structureId, null);
+            return await GetStructureOrdersAsync(structureId, cancellationToken, null);
         }
         /// <summary>
         /// 获取建筑所有订单，优先从缓存获取，缓存不存在或过期时自动刷新
         /// </summary>
         /// <param name="structureId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(structureId);
@@ -123,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders);
+                            await SetOrderInfo(localOrder.Orders, cancellationToken);
                             return localOrder.Orders;
                         }
                         else
@@ -138,7 +139,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             List<Core.Models.Market.Order> orders = null;
             try
             {
-                orders = await GetLatestStructureOrdersAsync(structureId, pageCallBack);
+                orders = await GetLatestStructureOrdersAsync(structureId, cancellationToken, pageCallBack);
             }
             catch(Exception ex)
             {
@@ -164,7 +165,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="structureId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestStructureOrdersAsync(long structureId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestStructureOrdersAsync(long structureId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var authData = await GetAuthByStructureId(structureId);
             var character = authData.Character;
@@ -176,7 +177,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
             while (true)
             {
                 page++;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 if (resp != null && resp.Model != null)
                 {
                     pageCallBack?.Invoke(page, resp.MaxPages, "Structure");
@@ -204,7 +213,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     order.SystemId = structure.SolarSystemId;
                 }
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
@@ -250,7 +259,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId, CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             if(typeId == PlexTypeId)
@@ -260,6 +269,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             int page = 1;
             while (true)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page++, typeId);
                 if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -290,7 +303,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
@@ -299,13 +312,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
             while (true)
             {
                 page++;
+                if(cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
                 if (resp != null && resp.Model != null)
                 {
@@ -330,7 +347,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
@@ -339,7 +356,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skillStructure, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skillStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(regionId);
@@ -358,7 +375,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders, skillStructure);
+                            await SetOrderInfo(localOrder.Orders, cancellationToken, skillStructure);
                             return localOrder.Orders;
                         }
                     }
@@ -366,7 +383,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
 
             //本地不存在或过期或解析失败，重新获取
-            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, pageCallBack);
+            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, pageCallBack);
             if (orders.NotNullOrEmpty())
             {
                 var newOrder = new RegionOrder()
@@ -386,7 +403,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int typeId, int regionId, CancellationToken cancellationToken)
         {
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if(strutures.NotNullOrEmpty())
@@ -394,7 +411,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                 foreach (var s in strutures)
                 {
-                    var list = await GetStructureOrdersAsync(s.Id, typeId);
+                    var list = await GetStructureOrdersAsync(s.Id, typeId, cancellationToken);
                     if (list.NotNullOrEmpty())
                     {
                         orders.AddRange(list);
@@ -409,7 +426,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId,CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if (strutures.NotNullOrEmpty())
@@ -417,7 +434,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                 foreach (var s in strutures)
                 {
-                    var result = await GetStructureOrdersAsync(s.Id, pageCallBack);
+                    var result = await GetStructureOrdersAsync(s.Id, cancellationToken, pageCallBack);
                     if (result.NotNullOrEmpty())
                     {
                         orders.AddRange(result);
@@ -434,13 +451,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId, bool skipStructure = false)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId,CancellationToken cancellationToken, bool skipStructure = false)
         {
-            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId);
+            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId, cancellationToken);
             List<Core.Models.Market.Order> structures = null;
             if (!skipStructure)
             {
-                structures = await GetOnlyStructureOrdersAsync(typeId, regionId);
+                structures = await GetOnlyStructureOrdersAsync(typeId, regionId, cancellationToken);
             }
             if(regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
@@ -470,13 +487,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, CancellationToken cancellationToken,PageCallBackDelegate pageCallBack = null)
         {
-            var regions = await GetOnlyRegionOrdersAsync(regionId, skipStructure, pageCallBack);
+            var regions = await GetOnlyRegionOrdersAsync(regionId, skipStructure, cancellationToken, pageCallBack);
             List<Core.Models.Market.Order> structures = null;
             if (!skipStructure)
             {
-                structures = await GetOnlyStructureOrdersAsync(regionId, pageCallBack);
+                structures = await GetOnlyStructureOrdersAsync(regionId, cancellationToken, pageCallBack);
             }
             if (regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
@@ -501,12 +518,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return null;
         }
-        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, bool skipStructure, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, bool skipStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(mapSolarSystemId);
             if(system != null)
             {
-                var regionOrders = await GetRegionOrdersAsync(system.RegionID, skipStructure, pageCallBack);
+                var regionOrders = await GetRegionOrdersAsync(system.RegionID, skipStructure,cancellationToken, pageCallBack);
                 if(regionOrders.NotNullOrEmpty())
                 {
                     return regionOrders.Where(p => p.SystemId == mapSolarSystemId).ToList();
@@ -671,7 +688,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="regionId"></param>
         /// <param name="pageCallBack"></param>
         /// <returns></returns>
-        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId,CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             int totalCount = typeId.Count;
             int doneCount = 0;
@@ -700,7 +717,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return null;
                 }
             }
-            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId, MaxThread, getHistory);
+            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId, MaxThread, getHistory, cancellationToken);
             var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
             Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
             foreach (var list in valid)
@@ -738,7 +755,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId)
+        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId, CancellationToken cancellationToken)
         {
             var character = await GetCharacter(characterId);
             var sso = CreateEVEStandardSSO(character);
@@ -748,7 +765,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (resp.Model.NotNullOrEmpty())
                 {
                     var orders = resp.Model.Select(p => new Core.Models.Market.Order(p)).ToList();
-                    await SetOrderInfo(orders);
+                    await SetOrderInfo(orders, cancellationToken);
                     return orders;
                 }
                 else
@@ -767,7 +784,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId)
+        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId, CancellationToken cancellationToken)
         {
             var autoData = await GetCharacter(characterId);
             var sso = CreateEVEStandardSSO(autoData);
@@ -775,6 +792,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             int page = 1;
             while (true)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 var resp = await _esiClient.Market.ListOpenOrdersFromCorporationV3Async(sso, autoData.CorporationID, page++);
                 if (resp != null)
                 {
@@ -798,18 +819,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
         #endregion
 
-        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, bool skillStructure = false)
+        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure = false)
         {
             if(orders.NotNullOrEmpty())
             {
                 await SetTypeInfo(orders);
-                await SetLocationInfo(orders, skillStructure);
+                await SetLocationInfo(orders, cancellationToken, skillStructure);
                 await SetSystemInfo(orders);
             }
         }
@@ -864,7 +885,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             }
         }
-        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, bool skillStructure)
+        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure)
         {
             var stationOrders = orders.Where(p => p.IsStation).ToList();
             var structureOrders = orders.Where(p => !p.IsStation).ToList();
@@ -887,6 +908,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
                 foreach (var order in structureOrders)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
                     var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
                     if(structure != null)
                     {

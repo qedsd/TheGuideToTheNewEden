@@ -129,6 +129,7 @@
     <x:String x:Key="General_CharacterList">角色列表</x:String>
     <x:String x:Key="General_Edit">编辑</x:String>
     <x:String x:Key="General_Reset">重置</x:String>
+    <x:String x:Key="General_Canceld">已取消</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

@@ -129,6 +129,7 @@
     <x:String x:Key="General_CharacterList">Characters</x:String>
     <x:String x:Key="General_Edit">Edit</x:String>
     <x:String x:Key="General_Reset">Reset</x:String>
+    <x:String x:Key="General_Canceld">Canceld</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>

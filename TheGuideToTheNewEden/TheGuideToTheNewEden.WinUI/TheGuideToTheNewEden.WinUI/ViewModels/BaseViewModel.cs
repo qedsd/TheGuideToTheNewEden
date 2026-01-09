@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Controls;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
 
@@ -69,7 +70,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
             }
         }
-        public void ShowWaiting(string tip = null)
+        public void ShowWaiting(string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
             if (_window != null)
             {
@@ -77,7 +78,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                _navigationService.ShowWaiting(this, tip);
+                _navigationService.ShowWaiting(this, tip, cancelCallback);
             }
         }
         public void HideWaiting()

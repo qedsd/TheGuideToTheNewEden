@@ -36,8 +36,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
             _infoBarControl = infoBarControl;
             _navigateToCallback = navigateToCallback;
         }
-
-        public void ShowWaiting(string page, string tip = null)
+        
+        public void ShowWaiting(string page, string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
             GetWindow().DispatcherQueue.SafelyTryEnqueue(() =>
             {
@@ -48,6 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     _LoadingControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                     _LoadingControl.IsLoading = true;
                     _LoadingControl.LoadingContent = tip;
+                    _LoadingControl.CancelCallback = cancelCallback;
                     _frame.IsEnabled = false;
                 }
             });
@@ -65,14 +66,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             });
         }
-        public void ShowWaiting(Page page, string tip = null)
+        public void ShowWaiting(Page page, string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
             string name = page.GetType().Name;
             if(_pageNameRef.TryGetValue(name, out var refName))
             {
                 name = refName;
             }
-            ShowWaiting(name, tip);
+            ShowWaiting(name, tip, cancelCallback);
         }
         public void HideWaiting(Page page)
         {
@@ -83,14 +84,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             HideWaiting(name);
         }
-        public void ShowWaiting(BaseViewModel vm, string tip = null)
+        public void ShowWaiting(BaseViewModel vm, string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
             string name = vm.GetType().Name.Replace("ViewModel", "Page");
             if (_pageNameRef.TryGetValue(name, out var refName))
             {
                 name = refName;
             }
-            ShowWaiting(name, tip);
+            ShowWaiting(name, tip, cancelCallback);
         }
         public void HideWaiting(BaseViewModel vm)
         {
@@ -138,11 +139,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return _navPanel.ActualWidth;
         }
 
-        private object _navigateParameter;
         public void NavigateTo(Type content, object parameter = null)
         {
             if (content == null) return;
-            _navigateParameter = parameter;
             object instance = null;
             if(!_pageInstances.TryGetValue(content.Name, out instance))
             {

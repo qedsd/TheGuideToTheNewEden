@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
@@ -79,7 +80,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         foreach (var item in marketChatContent.Items)
                         {
-                            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID, MarketOrderSettingService.MarketSikpStructureValue);
+                            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID, CancellationToken.None,MarketOrderSettingService.MarketSikpStructureValue);
                             var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
                             var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
                             var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);
@@ -94,7 +95,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 else
                 {
                     var item = marketChatContents.First().Items[0];
-                    List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID, MarketOrderSettingService.MarketSikpStructureValue);
+                    List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(item.TypeID, regionID, CancellationToken.None, MarketOrderSettingService.MarketSikpStructureValue);
                     var buyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToList();
                     var sellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToList();
                     var statistics = await Services.MarketOrderService.Current.GetHistoryAsync(item.TypeID, regionID);

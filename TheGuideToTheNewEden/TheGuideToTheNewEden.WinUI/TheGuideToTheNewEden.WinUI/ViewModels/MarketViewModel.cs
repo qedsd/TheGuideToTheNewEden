@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.DBModels;
@@ -226,7 +227,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingOrder"));
             try
             {
-                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID, MarketOrderSettingService.MarketSikpStructureValue);
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID, CancellationToken.None, MarketOrderSettingService.MarketSikpStructureValue);
                 BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
                 SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
                 SetOrderStatisticalInfo(SellOrders, BuyOrders);
@@ -257,7 +258,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private async Task GetSructureOrders()
         {
             ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingOrder"));
-            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID); ;
+            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID, CancellationToken.None);
             BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
             SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
