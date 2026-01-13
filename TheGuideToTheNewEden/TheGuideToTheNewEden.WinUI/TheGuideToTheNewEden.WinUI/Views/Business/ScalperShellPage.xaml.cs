@@ -17,11 +17,21 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views
 {
-    public sealed partial class ScalperShellPage : Page
+    public sealed partial class ScalperShellPage : Page, IPage
     {
         public ScalperShellPage()
         {
             this.InitializeComponent();
+        }
+
+        public void Close()
+        {
+            ScalperPage.Close();
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+            
         }
 
         private void ScalperPage_OnAddShoppingItem(List<Core.Models.Market.ScalperShoppingItem> items)

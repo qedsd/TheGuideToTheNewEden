@@ -1208,5 +1208,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
+            ClientServiceHelper.GetRequiredService<BusinessService>().FilterChanged -= ScalperViewModel_FilterChanged;
+        }
     }
 }

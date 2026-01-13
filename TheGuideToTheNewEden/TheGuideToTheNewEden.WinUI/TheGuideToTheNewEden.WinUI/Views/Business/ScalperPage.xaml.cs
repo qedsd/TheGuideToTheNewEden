@@ -19,7 +19,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
-    public sealed partial class ScalperPage : Page
+    public sealed partial class ScalperPage : Page, IPage
     {
         public ScalperPage()
         {
@@ -85,6 +85,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 var types = ListView_FilterTypes.SelectedItems.Select(p=> p as Core.DBModels.InvType).ToList();
                 VM.RemoveFilterTypes(types);
             }
+        }
+
+        public void Close()
+        {
+            VM.Dispose();
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+            
         }
     }
 }

@@ -312,7 +312,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken,bool skillStructure, PageCallBackDelegate pageCallBack = null)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
@@ -347,7 +347,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders, cancellationToken);
+                await SetOrderInfo(orders, cancellationToken, skillStructure);
             }
             return orders;
         }
@@ -383,7 +383,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
 
             //本地不存在或过期或解析失败，重新获取
-            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, pageCallBack);
+            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, skillStructure, pageCallBack);
             if (orders.NotNullOrEmpty())
             {
                 var newOrder = new RegionOrder()
@@ -906,21 +906,30 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
                 int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
+                Dictionary<long, string> structureNameCache = new Dictionary<long, string>();
                 foreach (var order in structureOrders)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
-                    var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
-                    if(structure != null)
+                    if(structureNameCache.TryGetValue(order.LocationId, out var cacheName))
                     {
-                        order.LocationName = structure.Name;
-                        order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
+                        order.LocationName = cacheName;
                     }
                     else
                     {
-                        order.LocationName = order.LocationId.ToString();
+                        var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
+                        if (structure != null)
+                        {
+                            order.LocationName = structure.Name;
+                            order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
+                        }
+                        else
+                        {
+                            order.LocationName = order.LocationId.ToString();
+                        }
+                        structureNameCache.Add(order.LocationId, order.LocationName);
                     }
                 }
             }
