@@ -50,7 +50,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             {
                 name = name.Substring(1);
             }
-            if(_shipsDict.TryGetValue(name.ToLower(), out var type))
+            if(_shipsDict.NotNullOrEmpty() && _shipsDict.TryGetValue(name.ToLower(), out var type))
             {
                 return type;
             }
