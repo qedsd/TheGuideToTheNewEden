@@ -75,8 +75,26 @@ namespace ZKB.NET.Models.KillStream
         }
         private async Task<KillmailDetail> GetKillMail(string url)
         {
-            string json = await HttpHelper.GetAsync(url);
-            return JsonConvert.DeserializeObject<KillmailDetail>(json);
+            for(int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    string json = await HttpHelper.GetAsync(url);
+                    return JsonConvert.DeserializeObject<KillmailDetail>(json);
+                }
+                catch(Exception ex)
+                {
+                    if(i == 2)
+                    {
+                        throw ex;
+                    }
+                    else
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
+            }
+            return null;
         }
         public void Close()
         {
