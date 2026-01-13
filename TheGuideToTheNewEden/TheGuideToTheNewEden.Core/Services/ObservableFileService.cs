@@ -99,6 +99,7 @@ namespace TheGuideToTheNewEden.Core.Services
                     {
                         watcher.RemoveFile(item.FilePath);
                     }
+                    ItemsDic.Remove(item.FilePath);
                 }
             }
         }
