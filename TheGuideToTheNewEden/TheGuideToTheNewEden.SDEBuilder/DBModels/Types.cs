@@ -19,6 +19,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
         public int MarketGroupID { get; set; }
         public double Mass { get; set; }
         public double Volume { get; set; }
+        public double PackagedVolume { get; set; }
         [SqlSugar.SugarColumn(IsNullable = true)]
         public string Description { get; set; }
         public int MetaGroupID { get; set; }
@@ -38,6 +39,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             MarketGroupID = types.MarketGroupID;
             Mass = types.Mass;
             Volume = types.Volume;
+            PackagedVolume = Volume;
             Description = types.Descriptions?.GetValue(language);
             MetaGroupID = types.MetaGroupID;
             PortionSize = types.PortionSize;
