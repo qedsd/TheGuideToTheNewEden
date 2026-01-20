@@ -56,7 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 CharacterOauths = new ObservableCollection<AuthorizedCharacterData>();
             }
         }
-        private static void Save()
+        public static void Save()
         {
             if (CharacterOauths != null)
             {
@@ -81,6 +81,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (CharacterOauths.Remove(characterOauth))
             {
                 Save();
+            }
+        }
+        public static void SetOrder(AuthorizedCharacterData characterOauth, int newIndex)
+        {
+            var index = CharacterOauths.IndexOf(characterOauth);
+            if(index >= 0 && index != newIndex)
+            {
+                var target = CharacterOauths[index];
+                var replace = CharacterOauths[newIndex];
+                CharacterOauths.RemoveAt(newIndex);
+                CharacterOauths.Insert(newIndex, target);
+                CharacterOauths.RemoveAt(index);
+                CharacterOauths.Insert(index, replace);
             }
         }
 

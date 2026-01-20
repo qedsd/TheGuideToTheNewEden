@@ -16,6 +16,7 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinUIEx;
@@ -56,6 +57,45 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private void RemoveCharacter_Click(object sender, RoutedEventArgs e)
         {
             VM.RemoveCommand.Execute((sender as FrameworkElement).DataContext);
+        }
+
+        private void GridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            //var item = e.Items.First() as CharacterViewModel;
+            //e.Data.SetText(item.SelectedCharacter.CharacterID.ToString());
+            //e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+
+        private async void GridView_Drop(object sender, DragEventArgs e)
+        {
+            GridView target = (GridView)sender;
+            if (e.DataView.Contains(StandardDataFormats.Text))
+            {
+                DragOperationDeferral def = e.GetDeferral();
+                string id = await e.DataView.GetTextAsync();
+                var character = VM.Characters.FirstOrDefault(p => p.SelectedCharacter.CharacterID.ToString() == id);
+                if (character != null)
+                {
+                    
+                }
+            }
+        }
+
+        private void GridView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            var characters = VM.Characters.Where(p => p.SelectedCharacter != null).Select(p=>p.SelectedCharacter).ToList();
+            if(characters.Count > 0)
+            {
+                for (int i = 0; i < characters.Count; i++)
+                {
+                    var character = characters[i];
+                    if (character != null)
+                    {
+                        Services.CharacterService.SetOrder(character, i);
+                    }
+                }
+                Services.CharacterService.Save();
+            }
         }
     }
     public class CharacterCardTemplateSelector : DataTemplateSelector
