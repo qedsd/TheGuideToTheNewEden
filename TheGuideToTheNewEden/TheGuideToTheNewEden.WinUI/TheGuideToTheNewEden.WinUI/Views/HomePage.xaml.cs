@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         public void Close()
         {
-            
+            VM.Dispose();
         }
 
         public void NavigatedTo(object parameter)

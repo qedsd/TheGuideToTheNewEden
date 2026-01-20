@@ -129,5 +129,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             string file = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Manuals", fileName);
             System.Diagnostics.Process.Start("explorer.exe", file);
         });
+
+        public void Dispose()
+        {
+            _dispatcherQueueTimer?.Stop();
+            _dispatcherQueueTimer = null;
+        }
     }
 }
