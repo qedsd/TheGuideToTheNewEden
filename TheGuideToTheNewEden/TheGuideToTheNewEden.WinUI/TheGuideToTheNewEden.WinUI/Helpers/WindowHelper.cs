@@ -22,11 +22,13 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         static public void TrackWindow(Window window)
         {
-            window.Closed += (sender, args) =>
-            {
-                _activeWindows.Remove(window);
-            };
+            window.Closed += Window_Closed;
             _activeWindows.Add(window);
+        }
+
+        private static void Window_Closed(object sender, WindowEventArgs args)
+        {
+            _activeWindows.Remove(sender as Window);
         }
 
         static public void UnTrackWindow(Window window)
@@ -59,6 +61,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 try
                 {
+                    win.Closed -= Window_Closed;
                     win.Close();
                 }
                 catch { }

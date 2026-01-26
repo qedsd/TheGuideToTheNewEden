@@ -17,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI
     {
         public static Core.Helpers.SingleInstanceHelper SingleInstanceHelper;
         public static bool HandleClosedEvents { get; set; } = true;
-        private NotificationManager notificationManager;
+        private static NotificationManager notificationManager;
         public App()
         {
             this.InitializeComponent();
@@ -26,13 +26,13 @@ namespace TheGuideToTheNewEden.WinUI
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             Application.Current.UnhandledException += Current_UnhandledException;
-            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            //AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             Log.Init();
         }
 
         private void CurrentDomain_FirstChanceException(object sender, FirstChanceExceptionEventArgs e)
         {
-            Log.Error(e.Exception);
+            //Log.Error(e.Exception);//会记录下太多内部记录
         }
 
         private void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -76,9 +76,19 @@ namespace TheGuideToTheNewEden.WinUI
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
-            notificationManager?.Unregister();
-            ForegroundWindowService.Current.Stop();
-            Helpers.WindowHelper.CloseAll();
+            HandleClose();
+        }
+        private static bool _closed = false;
+        private static void HandleClose()
+        {
+            if (!_closed)
+            {
+                _closed = true;
+                notificationManager?.Unregister();
+                ForegroundWindowService.Current.Stop();
+                Helpers.WindowHelper.CloseAll();
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
@@ -131,7 +141,8 @@ namespace TheGuideToTheNewEden.WinUI
             ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
             Services.MemoryIPCService.Dispose();
             App.HandleClosedEvents = false;
-            Application.Current.Exit();
+            Core.Log.Info("开始Close");
+            App.HandleClose();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
