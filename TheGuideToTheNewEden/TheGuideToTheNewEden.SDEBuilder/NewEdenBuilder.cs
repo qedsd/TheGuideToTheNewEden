@@ -10,19 +10,19 @@ namespace TheGuideToTheNewEden.SDEBuilder
 {
     public static class NewEdenBuilder
     {
-        public static async Task StartBuilder(string[] sdeFiles, string folder, LanguageEnum[] languages, DateTime releaseDate)
+        public static async Task StartBuilder(string[] sdeFiles, string folder, LanguageEnum[] languages, DateTime releaseDate, bool getPackagedVolume)
         {
             var fileDatas = await Task.Run(() => Builder.ReadAllFiles(sdeFiles, LanguageEnum.En));
             if (fileDatas.Any())
             {
-                await BuilderMain(folder, fileDatas, releaseDate);
+                await BuilderMain(folder, fileDatas, releaseDate, getPackagedVolume);
                 foreach(var lang in languages)
                 {
                     await BuilderLocal(folder, fileDatas, lang, releaseDate);
                 }
             }
         }
-        private static async Task BuilderMain(string folder, Dictionary<string, List<BaseModel>> fileDatas, DateTime releaseDate)
+        private static async Task BuilderMain(string folder, Dictionary<string, List<BaseModel>> fileDatas, DateTime releaseDate, bool getPackagedVolume)
         {
             string mainFile = Path.Combine(folder, $"main_{releaseDate.ToString("yyyyMMdd")}.db");
             if (File.Exists(mainFile))
@@ -68,7 +68,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     await db.Insertable(marketGroups).ExecuteCommandAsync();
                 }
 
-                var types = Builder.GetTypes(fileDatas, language);
+                var types = await Builder.GetTypes(fileDatas, language, getPackagedVolume);
                 if (types != null)
                 {
                     db.CodeFirst.InitTables(typeof(DBModels.Types));
@@ -159,7 +159,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     await db.Insertable(marketGroups.Select(p => new LocalDBModels.MarketGroups(p)).ToList()).ExecuteCommandAsync();
                 }
 
-                var types = Builder.GetTypes(fileDatas, language);
+                var types = await Builder.GetTypes(fileDatas, language, false);
                 if (types != null)
                 {
                     db.CodeFirst.InitTables(typeof(LocalDBModels.Types));

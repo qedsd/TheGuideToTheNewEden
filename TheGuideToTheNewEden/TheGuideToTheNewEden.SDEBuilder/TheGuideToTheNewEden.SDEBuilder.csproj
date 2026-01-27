@@ -7,8 +7,15 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="PointyHatGames.EVEStandard" Version="3.1.9" />
     <PackageReference Include="SqlSugarCore" Version="5.1.4.211" />
     <PackageReference Include="System.Data.SQLite" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\ref.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

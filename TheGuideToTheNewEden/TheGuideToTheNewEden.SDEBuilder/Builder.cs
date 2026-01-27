@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using EVEStandard.Enumerations;
 using Newtonsoft.Json;
 using SqlSugar;
 using TheGuideToTheNewEden.SDEBuilder.DeserializeModels;
@@ -17,7 +18,8 @@ namespace TheGuideToTheNewEden.SDEBuilder
 {
     public static class Builder
     {
-        public static async Task StartBuilder(string[] sdeFiles, LanguageEnum language, string outputFile)
+        private static EVEStandard.EVEStandardAPI _esiClient;
+        public static async Task StartBuilder(string[] sdeFiles, LanguageEnum language, string outputFile, bool getPackagedVolume)
         {
             var db = CreateDB(outputFile);
             try
@@ -60,7 +62,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                         await db.Insertable(marketGroups).ExecuteCommandAsync();
                     }
 
-                    var types = GetTypes(fileDatas, language);
+                    var types = await GetTypes(fileDatas, language, getPackagedVolume);
                     if (types != null)
                     {
                         db.CodeFirst.InitTables(typeof(DBModels.Types));
@@ -205,13 +207,50 @@ namespace TheGuideToTheNewEden.SDEBuilder
             }
             return datas.Select(p => new DBModels.MarketGroups(p, language)).ToList();
         }
-        public static List<DBModels.Types> GetTypes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        public static async Task<List<DBModels.Types>> GetTypes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language, bool getPackagedVolume)
         {
             if (!fileDatas.TryGetValue("types", out var datas))
             {
                 return null;
             }
-            return datas.Select(p => new DBModels.Types(p, language)).ToList();
+            var types = datas.Select(p => new DBModels.Types(p, language)).ToList();
+            if (getPackagedVolume)
+            {
+                var dict = RefDBHelper.QueryType().ToDictionary(p=>p.TypeID);
+                List<DBModels.Types> noPackagedVolumeTypes = new List<DBModels.Types>();
+                foreach (var type in types)
+                {
+                    if(dict.TryGetValue(type.Id, out var invType))
+                    {
+                        type.PackagedVolume = invType.PackagedVolume;
+                    }
+                    else
+                    {
+                        noPackagedVolumeTypes.Add(type);
+                    }
+                }
+                if (noPackagedVolumeTypes.Count > 0)
+                {
+                    if(_esiClient == null)
+                    {
+                        _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", DataSource.Tranquility, TimeSpan.FromSeconds(30));
+                    }
+                    foreach(var type in noPackagedVolumeTypes)
+                    {
+                        var result = await _esiClient.Universe.GetTypeInfoV3Async(type.Id);
+                        if (result.Model != null)
+                        {
+                            type.PackagedVolume = (double)result.Model.PackagedVolume;
+                        }
+                        else
+                        {
+                            throw new Exception($"Get {type.Name}({type.Id}) PackagedVolume failed");
+                        }
+                    }
+                    RefDBHelper.AddType(noPackagedVolumeTypes.Select(p => new InvType() { TypeID = p.Id, Volume = p.Volume, PackagedVolume = p.PackagedVolume }).ToList());
+                }
+            }
+            return types;
         }
         public static List<DBModels.PlanetResources> GetPlanetResources(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
         {

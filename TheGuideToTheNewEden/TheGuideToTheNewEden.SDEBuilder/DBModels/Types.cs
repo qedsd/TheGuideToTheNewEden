@@ -39,7 +39,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.DBModels
             MarketGroupID = types.MarketGroupID;
             Mass = types.Mass;
             Volume = types.Volume;
-            PackagedVolume = Volume;
+            //PackagedVolume = Volume;
             Description = types.Descriptions?.GetValue(language);
             MetaGroupID = types.MetaGroupID;
             PortionSize = types.PortionSize;

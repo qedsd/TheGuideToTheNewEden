@@ -27,6 +27,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
         public MainWindow()
         {
             this.InitializeComponent();
+            SDEBuilder.Helpers.RefDBHelper.Init();
             AppWindow.Resize(new Windows.Graphics.SizeInt32(840, 800));
             SettingService.Init();
             string sdeFolder = SettingService.GetValue(SettingService.SDEFolderKey);
@@ -48,6 +49,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
         {
             LanguageEnum language = (LanguageEnum)LangComboBox.SelectedIndex;
             var items = FilesListView.ItemsSource as List<SDEFile>;
+            bool getPackagedVolume = GetPackagedVolumeCheckBox.IsChecked == true;
             if (items != null && items.Count > 0) 
             {
                 try
@@ -73,7 +75,7 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
                     }
                     WaitingGrid.Visibility = Visibility.Visible;
                     WaitingRing.IsActive = true;
-                    await SDEBuilder.Builder.StartBuilder(items.Where(p => p.Checked == true).Select(p => p.File).ToArray(), language, SaveDB.Text);
+                    await SDEBuilder.Builder.StartBuilder(items.Where(p => p.Checked == true).Select(p => p.File).ToArray(), language, SaveDB.Text, getPackagedVolume);
                 }
                 catch (Exception ex)
                 {
@@ -207,13 +209,14 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
         {
             var items = FilesListView.ItemsSource as List<SDEFile>;
             string folder = AppContext.BaseDirectory;
+            bool getPackagedVolume = GetPackagedVolumeCheckBox.IsChecked == true;
             if (items != null && items.Count > 0)
             {
                 try
                 {
                     WaitingGrid.Visibility = Visibility.Visible;
                     WaitingRing.IsActive = true;
-                    await SDEBuilder.NewEdenBuilder.StartBuilder(items.Select(p => p.File).ToArray(), folder, new LanguageEnum[] { LanguageEnum.Zh},_releaseDate);
+                    await SDEBuilder.NewEdenBuilder.StartBuilder(items.Select(p => p.File).ToArray(), folder, new LanguageEnum[] { LanguageEnum.Zh},_releaseDate, getPackagedVolume);
                 }
                 catch (Exception ex)
                 {

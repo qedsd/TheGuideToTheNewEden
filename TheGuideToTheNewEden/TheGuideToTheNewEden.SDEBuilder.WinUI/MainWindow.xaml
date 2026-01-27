@@ -21,6 +21,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -90,6 +91,18 @@
                         <ComboBoxItem>Ru</ComboBoxItem>
                         <ComboBoxItem>Zh</ComboBoxItem>
                     </ComboBox>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="Get Packaged Volume" />
+                    <CheckBox
+                        x:Name="GetPackagedVolumeCheckBox"
+                        Grid.Column="1"
+                        Margin="8,0,0,0"
+                        IsChecked="True" />
                 </Grid>
             </Grid>
 
