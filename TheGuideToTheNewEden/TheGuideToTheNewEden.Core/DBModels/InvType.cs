@@ -12,7 +12,6 @@ namespace TheGuideToTheNewEden.Core.DBModels
     {
         public int GroupID { get; set; }
         public double Volume { get; set; }
-        //TODO:新版本SDE无打包体积
         public double PackagedVolume { get; set; }
         public int? MarketGroupID { get; set; }
     }
