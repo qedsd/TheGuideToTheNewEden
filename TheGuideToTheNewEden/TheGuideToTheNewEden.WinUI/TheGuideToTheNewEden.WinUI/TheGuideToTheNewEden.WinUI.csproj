@@ -539,9 +539,6 @@
     <None Update="Resources\Configs\SpeakerNames.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Configs\SolarSystemMap.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\Configs\UpgradeResources.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
