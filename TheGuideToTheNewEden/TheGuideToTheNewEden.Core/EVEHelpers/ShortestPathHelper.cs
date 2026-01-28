@@ -113,7 +113,9 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 
         public static List<MapSolarSystem> CalOneJumpCover(int systemId, double maxJump)
         {
-            double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
+            //1天文单位（AU） = 9460730472580800米
+            //数据库XY坐标单位为米
+            double maxJump2 = maxJump * 9460730472580800;
             var ps = SolarSystemPosHelper.PositionDic;
             var centerSystem = ps[systemId];
             var coversPos = ps.Values.Where(p => Math.Abs(centerSystem.X - p.X) <= maxJump2 && Math.Abs(centerSystem.Y - p.Y) <= maxJump2 && Math.Abs(centerSystem.Z - p.Z) <= maxJump2 && Math.Sqrt(Math.Pow(centerSystem.X - p.X, 2) + Math.Pow(centerSystem.Y - p.Y, 2) + Math.Pow(centerSystem.Z - p.Z, 2)) <= maxJump2).ToList();
