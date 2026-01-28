@@ -12,8 +12,8 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
     {
         public MapData(MapPosition pos)
         {
-            OriginalX = (float)pos.X;
-            OriginalY = (float)pos.Y;
+            OriginalX = (float)pos.X2;
+            OriginalY = (float)pos.Y2;
         }
         public int Id { get; set; }
         public float OriginalX { get; set; }
@@ -47,8 +47,8 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
             Id = solarSystemPosition.SolarSystemID;
             SolarSystemPosition = solarSystemPosition;
             MapSolarSystem = mapSolarSystem;
-            X = (float)SolarSystemPosition.X;
-            Y = (float)SolarSystemPosition.Y;
+            X = (float)SolarSystemPosition.X2;
+            Y = (float)SolarSystemPosition.Y2;
             MainText = MapSolarSystem.SolarSystemName;
             InnerText = MapSolarSystem.Security.ToString("N2");
             BgColor = Converters.SystemSecurityForegroundConverter.Convert(MapSolarSystem.Security).Color;

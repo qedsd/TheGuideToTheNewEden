@@ -267,8 +267,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 ellipse.PointerEntered += Ellipse_PointerEntered;
                 ellipse.PointerExited += Ellipse_PointerExited;
                 ellipse.RightTapped += Ellipse_RightTapped;
-                Canvas.SetLeft(ellipse, width * item.X);
-                Canvas.SetTop(ellipse, height * item.Y);
+                Canvas.SetLeft(ellipse, width * item.X2);
+                Canvas.SetTop(ellipse, height * item.Y2);
             }
             //line
             HashSet<string> drawn = new HashSet<string>();

@@ -367,12 +367,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             var borderWidth = data.W * 0.2f;
                             args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetEnableColor(tColor, data.Enable));
                         }
-                        if (_currentZoom >= 13)
+                        if (_currentZoom >= 3)
                         {
+                            float foontSize = _currentZoom;
+                            foontSize = foontSize > 12 ? 12 : foontSize;
                             //外文字
                             CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                             {
-                                FontSize = 12,
+                                FontSize = foontSize,
                                 HorizontalAlignment = CanvasHorizontalAlignment.Center,
                                 VerticalAlignment = CanvasVerticalAlignment.Top,
                             };
