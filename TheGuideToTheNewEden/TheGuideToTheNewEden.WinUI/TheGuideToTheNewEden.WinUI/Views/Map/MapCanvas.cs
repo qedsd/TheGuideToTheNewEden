@@ -350,11 +350,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         //内图形
                         args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(fColor,data.Enable));
                         //内文字
-                        if (_currentZoom >= 24)
+                        if (_currentZoom >= 6)
                         {
+                            float foontSize = _currentZoom / 2;
+                            foontSize = foontSize > 12 ? 12 : foontSize;
                             CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                             {
-                                FontSize = 12,
+                                FontSize = foontSize,
                                 HorizontalAlignment = CanvasHorizontalAlignment.Center,
                                 VerticalAlignment = CanvasVerticalAlignment.Center,
                                 //Options = CanvasDrawTextOptions.Clip

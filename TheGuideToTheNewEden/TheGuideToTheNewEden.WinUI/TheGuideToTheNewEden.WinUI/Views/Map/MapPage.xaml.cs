@@ -474,7 +474,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             else
             {
                 TopPanel.Visibility = Visibility.Visible;
-                PointedSystemName.Text = $"{(mapData as MapSystemData).MainText} {(mapData as MapSystemData).InnerText}";
+                var map = mapData as MapSystemData;
+                PointedSystemName.Text = $"{_mapRegions[map.MapSolarSystem.RegionID].RegionName} {map.MainText} {map.InnerText}";
             }
         }
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
