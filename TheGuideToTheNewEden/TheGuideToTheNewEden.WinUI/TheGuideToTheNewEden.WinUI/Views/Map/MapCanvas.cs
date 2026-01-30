@@ -530,38 +530,60 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             _otherMapGraphs.AddRange(mapGraphs);
             _otherCanvasControl.Invalidate();
+            EnableNoActiveData(_enableNoActiveData);
+        }
+        public void RemoveMapGraph(List<MapGraphBase> mapGraphs)
+        {
+            foreach (var mapGraph in mapGraphs)
+            {
+                _otherMapGraphs.Remove(mapGraph);
+            }
+            _otherCanvasControl.Invalidate();
+            EnableNoActiveData(_enableNoActiveData);
         }
         public void ClearMapGraph()
         {
             _otherMapGraphs.Clear();
             _otherCanvasControl.Invalidate();
         }
-        private Dictionary<int, bool> _temporaryDisableData = new Dictionary<int, bool>();
-        public void TemporaryEnableData(List<int> datas)
-        {
-            _temporaryDisableData.Clear();
-            foreach(var data in _usingMapDatas)
-            {
-                _temporaryDisableData.Add(data.Key, data.Value.Enable);
-                data.Value.Enable = false;
-            }
 
-            foreach (var data in datas)
-            {
-                _usingMapDatas[data].Enable = true;
-            }
-            Draw();
-        }
-        public void RemoveTemporary()
+        private bool _enableNoActiveData = true;
+        public void EnableNoActiveData(bool enable)
         {
-            if(_temporaryDisableData.Any())
+            _enableNoActiveData = enable;
+            if(_usingMapDatas == null) return;
+            if (enable)
             {
-                foreach (var data in _temporaryDisableData)
+                foreach (var data in _usingMapDatas)
                 {
-                    _usingMapDatas[data.Key].Enable = data.Value;
+                    data.Value.Enable = true;
+                }
+            }
+            else
+            {
+                if (_otherMapGraphs.Count > 0)
+                {
+                    HashSet<int> ids = new HashSet<int>();
+                    foreach (var data in _otherMapGraphs)
+                    {
+                        foreach (var id in data.GetActiveIds())
+                        {
+                            ids.Add(id);
+                        }
+                    }
+                    foreach (var data in _usingMapDatas)
+                    {
+                        data.Value.Enable = ids.Contains(data.Key);
+                    }
                 }
             }
             Draw();
+        }
+
+        public void ClearTool()
+        {
+            ClearMapGraph();
+            EnableNoActiveData(true);
         }
         public void Dispose()
         {
@@ -611,6 +633,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             public MapGraphType GraphType { get; set; }
             public abstract void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas);
+            public abstract List<int> GetActiveIds();
         }
         public class CircleMapGraph: MapGraphBase
         {
@@ -643,6 +666,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 args.DrawingSession.FillCircle(centerData.CenterX, centerData.CenterY, r, Windows.UI.Color.FromArgb(100, centerData.BgColor.R, centerData.BgColor.G, centerData.BgColor.B));
             }
+
+            public override List<int> GetActiveIds()
+            {
+                List<int> ids = new List<int> { CenterDataId };
+                if (CoverDataIds != null)
+                {
+                    ids.AddRange(CoverDataIds);
+                }
+                return ids;
+            }
         }
         public class LineMapGraph : MapGraphBase
         {
@@ -659,6 +692,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var data1 = datas[Data1Id];
                 var data2 = datas[Data2Id];
                 args.DrawingSession.DrawLine(data1.CenterX, data1.CenterY, data2.CenterX, data2.CenterY, Color, StrokeWidth);
+            }
+            public override List<int> GetActiveIds()
+            {
+                return new List<int> { Data1Id, Data2Id };
             }
         }
     }

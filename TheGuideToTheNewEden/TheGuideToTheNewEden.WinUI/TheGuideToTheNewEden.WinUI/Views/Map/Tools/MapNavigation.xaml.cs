@@ -22,11 +22,10 @@ using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.EVEHelpers;
 using TheGuideToTheNewEden.Core.Models.Map;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
-using Vanara.PInvoke;
-using SqlSugar.DistributedSystem.Snowflake;
-using ESI.NET.Models.Location;
-using Vanara.Extensions.Reflection;
 using static TheGuideToTheNewEden.WinUI.Views.Map.MapCanvas;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Interfaces;
+using TheGuideToTheNewEden.Core.Services;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -39,8 +38,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private Dictionary<int, int> _systemJumps;
         private Dictionary<int, SovData> _sovDatas;
         private MapCanvas _mapCanvas;
-        public MapNavigation()
+        private ToolWindow _window;
+        public MapNavigation(MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
         {
+            SetData(mapCanvas, kills, jumps, sovDatas);
             this.InitializeComponent();
             WaypointsListView.ItemsSource = _waypoints;
             AvoidSystemListView.ItemsSource = _avoidSystems;
@@ -57,6 +58,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private void MapNavigation_Loaded(object sender, RoutedEventArgs e)
         {
             this.Loaded -= MapNavigation_Loaded;
+            _window = this.GetWindow() as ToolWindow;
             InitCapitalJumpShipInfos();
             NavTypeComboBox.SelectionChanged += NavTypeComboBox_SelectionChanged;
         }
@@ -108,13 +110,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private async void StartNavigateButton_Click(object sender, RoutedEventArgs e)
         {
-            _mapCanvas.RemoveTemporary();
-            _mapCanvas.ClearMapGraph();
-            MainPivot.SelectedIndex = 1;
-            WaitingResultGrid.Visibility = Visibility.Visible;
-            WaitingResultRing.IsActive = true;
-            HasResultGrid.Visibility = Visibility.Collapsed;
-            NoResultGrid.Visibility = Visibility.Collapsed;
+            _window.ShowWaiting();
             List<int> avoid = await GetAvoidSystems();
             List<MapNavigationPoint> path = null;
             if(NavTypeComboBox.SelectedIndex == 1)//Æì½¢Ìø
@@ -128,48 +124,23 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             {
                 path = await CalStargatePath(_waypoints.Select(p => p.SolarSystemID).ToList(), avoid);
             }
-            
-            WaitingResultGrid.Visibility = Visibility.Collapsed;
-            WaitingResultRing.IsActive = false;
+            _window.HideWaiting();
             if (path != null)
             {
-                HasResultGrid.Visibility = Visibility.Visible;
-                PassSystemCountTextBlock.Text = path.Count.ToString();
-                ResultList.ItemsSource = path;
-                var startSys = _waypoints.First();
-                var endSys = _waypoints.Last();
-                var m = Math.Sqrt(Math.Pow(startSys.X - endSys.X, 2) + Math.Pow(startSys.Y - endSys.Y, 2) + Math.Pow(startSys.Z - endSys.Z, 2));
-                LinearDistanceTextBlock.Text = (m / 9460730472580800).ToString("N2");
-                PassStargateCountTextBlock.Text = path.Where(p => p.NavType == 1).Count().ToString();
-                CapitalJumpCountTextBlock.Text = path.Where(p => p.NavType == 2).Count().ToString();
-                RequireFuelTextBlock.Text = path.Sum(p => p.Fuel).ToString("N2");
-                CapitalJumpDistanceTextBlock.Text = path.Where(p=>p.NavType == 2).Sum(p => p.Distance).ToString("N2");
-
-                if(MapOnlyShowPathCheckBox.IsChecked == true)
+                MapNavigationResultPage page = new MapNavigationResultPage(_mapCanvas, _waypoints, path);
+                string header = _waypoints.Count == 2 ? $"{_waypoints.First().SolarSystemName}->{_waypoints.Last().SolarSystemName}" :
+                                $"{_waypoints.First().SolarSystemName}...{_waypoints.Last().SolarSystemName}";
+                TabViewItem tabViewItem = new TabViewItem()
                 {
-                    _mapCanvas.TemporaryEnableData(path.Select(p => p.System.SolarSystemID).ToList());
-                }
-                List<MapGraphBase> mapGraphs = new List<MapGraphBase>();
-                for(int i = 0; i< path.Count;i++)
-                {
-                    mapGraphs.Add(new CircleMapGraph()
-                    {
-                        CenterDataId = path[i].System.SolarSystemID,
-                    });
-                }
-                for (int i = 0; i < path.Count - 1;)
-                {
-                    mapGraphs.Add(new LineMapGraph()
-                    {
-                        Data1Id = path[i].System.SolarSystemID,
-                        Data2Id = path[++i].System.SolarSystemID,
-                    });
-                }
-                _mapCanvas.AddMapGraph(mapGraphs);
+                    Header = header,
+                    Content = page,
+                    IsSelected = true,
+                };
+                ResultTabView.TabItems.Add(tabViewItem);
             }
             else
             {
-                NoResultGrid.Visibility = Visibility.Visible;
+                _window.ShowError(Helpers.ResourcesHelper.GetString("MapNavigation_Result_Null"));
             }
         }
 
@@ -394,26 +365,79 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             UpdateShipMaxJumpAndFuel();
         }
 
-        private void MaxContentButton_Click(object sender, RoutedEventArgs e)
+        private void ResultTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
         {
-            this.MaxWidth = double.MaxValue;
-            MaxContentButton.Visibility = Visibility.Collapsed;
-            MinContentButton.Visibility = Visibility.Visible;
-        }
-
-        private void MinContentButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.MaxWidth = 656;
-            MaxContentButton.Visibility = Visibility.Visible;
-            MinContentButton.Visibility = Visibility.Collapsed;
-        }
-
-        private void ResultList_CellDoubleTapped(object sender, Syncfusion.UI.Xaml.DataGrid.GridCellDoubleTappedEventArgs e)
-        {
-            var point = ResultList.SelectedItem as MapNavigationPoint;
-            if(point != null)
+            if(args.Tab != null)
             {
-                _mapCanvas.ToSystem(point.System.SolarSystemID);
+                (args.Tab.Content as MapNavigationResultPage).Close();
+                sender.TabItems.Remove(args.Tab);
+            }
+        }
+
+        private void ShowInMap_Click(object sender, RoutedEventArgs e)
+        {
+            if (ResultTabView.SelectedItem != null)
+            {
+                ((ResultTabView.SelectedItem as TabViewItem).Content as MapNavigationResultPage).ShowInMap();
+            }
+        }
+
+        private void RemoveFromMap_Click(object sender, RoutedEventArgs e)
+        {
+            if (ResultTabView.SelectedItem != null)
+            {
+                ((ResultTabView.SelectedItem as TabViewItem).Content as MapNavigationResultPage).RemoveFromMap();
+            }
+        }
+
+        private void ShowInGame_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private EVEStandard.EVEStandardAPI _esi;
+
+        private async void ConfirmShowInGame_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (ResultTabView.SelectedItem != null)
+                {
+                    var path = ((ResultTabView.SelectedItem as TabViewItem).Content as MapNavigationResultPage).GetResult();
+                    if (path.NotNullOrEmpty())
+                    {
+                        if (ShowInGameSelecteCharacterControl.SelectedItem != null)
+                        {
+                            ShowInGameFlyout.Hide();
+                            if (!ShowInGameSelecteCharacterControl.SelectedItem.IsTokenValid())
+                            {
+                                _window.ShowWaiting();
+                                if (!await ShowInGameSelecteCharacterControl.SelectedItem.RefreshTokenAsync())
+                                {
+                                    throw new Exception(Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed"));
+                                }
+                            }
+                            _esi ??= ESIService.GetDefaultESI2();
+                            var sso = ESIService.ToEVEStandardSSO(ShowInGameSelecteCharacterControl.SelectedItem);
+                            int setp = path.Count - 1;
+                            _window.ShowWaiting($"1/{setp}");
+                            await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, true, true, path[1].System.SolarSystemID);
+                            for(int i = 2; i< path.Count - 1; i++)
+                            {
+                                _window.ShowWaiting($"{i}/{setp}");
+                                await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, false, false, path[i].System.SolarSystemID);
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                _window.ShowError(ex.Message);
+            }
+            finally
+            {
+                _window.HideWaiting();
             }
         }
     }

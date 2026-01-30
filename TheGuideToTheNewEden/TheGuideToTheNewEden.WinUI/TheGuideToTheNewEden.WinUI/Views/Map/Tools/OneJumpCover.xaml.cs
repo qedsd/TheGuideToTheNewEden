@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.DBModels;
 using Microsoft.UI.Xaml.Shapes;
 using static TheGuideToTheNewEden.WinUI.Views.Map.MapCanvas;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -30,8 +31,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private Dictionary<int, int> _systemJumps;
         private Dictionary<int, SovData> _sovDatas;
         private MapCanvas _mapCanvas;
+        private ToolWindow _window;
         public OneJumpCover()
         {
+            this.InitializeComponent();
+            Loaded += OneJumpCover_Loaded;
+        }
+        public OneJumpCover(MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        {
+            SetData(mapCanvas, kills, jumps, sovDatas);
             this.InitializeComponent();
             Loaded += OneJumpCover_Loaded;
         }
@@ -47,6 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             Loaded -= OneJumpCover_Loaded;
             ShipTypeComboBox.ItemsSource = Core.EVEHelpers.CapitalJumpShipInfoHelper.GetInfos();
+            _window = this.GetWindow() as ToolWindow;
         }
 
         #region »º¡œæ‡¿Îº∆À„
@@ -175,58 +184,58 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             StartButton.IsEnabled = selectedItem != null;
         }
 
+        private List<MapGraphBase> _mapGraphs = new List<MapGraphBase>();
+        private List<MapSolarSystem> _systems;
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            ProgressBar.IsIndeterminate = true;
-            ProgressBar.Visibility = Visibility.Visible;
-            _mapCanvas.RemoveTemporary();
-            _mapCanvas.ClearMapGraph();
             try
             {
                 CapitalJumpShipInfo ship = ShipTypeComboBox.SelectedItem as CapitalJumpShipInfo;
                 double maxLY = GetShipMaxJump(ship);
                 double perLyFuel = GetShipPerLyFuel(ship);
                 var system = MapSystemSelector.SelectedItem.SolarSystemID;
-                var list = await Task.Run(() => ShortestPathHelper.CalOneJumpCover(system, maxLY));
-                if (list != null)
+                _window.ShowWaiting();
+                _systems = await Task.Run(() => ShortestPathHelper.CalOneJumpCover(system, maxLY));
+                if (_systems != null)
                 {
-                    ResultList.ItemsSource = GetMapNavigationPoints(MapSystemSelector.SelectedItem, list, perLyFuel);
+                    ResultList.ItemsSource = GetMapNavigationPoints(MapSystemSelector.SelectedItem, _systems, perLyFuel);
                 }
-                _mapCanvas.TemporaryEnableData(list.Select(p => p.SolarSystemID).ToList());
-                List<MapGraphBase> mapGraphs = new List<MapGraphBase>();
-                for (int i = 0; i < list.Count; i++)
-                {
-                    mapGraphs.Add(new CircleMapGraph()
-                    {
-                        CenterDataId = list[i].SolarSystemID,
-                    });
-                }
-                _mapCanvas.AddMapGraph(mapGraphs);
-                _mapCanvas.ToSystem(system);
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                _window.ShowError(ex.Message);
             }
             finally
             {
-                ProgressBar.IsIndeterminate = false;
-                ProgressBar.Visibility = Visibility.Collapsed;
+                _window.HideWaiting();
             }
         }
 
-        private void MaxContentButton_Click(object sender, RoutedEventArgs e)
+        private void ShowInMap_Click(object sender, RoutedEventArgs e)
         {
-            this.MaxWidth = double.MaxValue;
-            MaxContentButton.Visibility = Visibility.Collapsed;
-            MinContentButton.Visibility = Visibility.Visible;
+            if(_systems != null)
+            {
+                List<MapGraphBase> mapGraphs = new List<MapGraphBase>();
+                for (int i = 0; i < _systems.Count; i++)
+                {
+                    mapGraphs.Add(new CircleMapGraph()
+                    {
+                        CenterDataId = _systems[i].SolarSystemID,
+                    });
+                }
+                _mapGraphs.AddRange(mapGraphs);
+                _mapCanvas.AddMapGraph(mapGraphs);
+                _mapCanvas.ToSystem(MapSystemSelector.SelectedItem.SolarSystemID);
+            }
         }
 
-        private void MinContentButton_Click(object sender, RoutedEventArgs e)
+        private void RemoveFromMap_Click(object sender, RoutedEventArgs e)
         {
-            this.MaxWidth = 560;
-            MaxContentButton.Visibility = Visibility.Visible;
-            MinContentButton.Visibility = Visibility.Collapsed;
+            if (_mapGraphs.NotNullOrEmpty())
+            {
+                _mapCanvas.RemoveMapGraph(_mapGraphs);
+                _mapGraphs.Clear();
+            }
         }
     }
 }

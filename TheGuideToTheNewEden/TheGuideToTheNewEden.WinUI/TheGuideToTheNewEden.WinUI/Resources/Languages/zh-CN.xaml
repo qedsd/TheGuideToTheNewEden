@@ -130,6 +130,7 @@
     <x:String x:Key="General_Edit">编辑</x:String>
     <x:String x:Key="General_Reset">重置</x:String>
     <x:String x:Key="General_Canceld">已取消</x:String>
+    <x:String x:Key="General_Result">结果</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -1040,6 +1041,7 @@
     <x:String x:Key="MapPage_Tools">工具</x:String>
     <x:String x:Key="MapPage_Setting_SystemIconContent">星系图标</x:String>
     <x:String x:Key="MapPage_Setting_JumpBridge">跳桥</x:String>
+    <x:String x:Key="MapPage_Setting_Tool">工具</x:String>
     <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
@@ -1057,7 +1059,8 @@
     <x:String x:Key="MapPage_SelectedSystem_Region">星域</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">插件需求</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">插件名</x:String>
-    <x:String x:Key="MapPage_Tools_None">无</x:String>
+    <x:String x:Key="MapPage_Tools_Clear">清除</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource">行星资源</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_Region">星域资源表</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_System">星系资源表</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_System_All">所有星系</x:String>
@@ -1067,6 +1070,12 @@
     <x:String x:Key="MapPage_Tools_Navigation">导航</x:String>
     <x:String x:Key="MapPage_Tools_GIS">地理信息统计</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+    <x:String x:Key="MapPage_DisableNoActiveSystem">仅显示激活的星系</x:String>
+    <x:String x:Key="MapPage_EnableNoActiveSystem">显示所有星系</x:String>
+    <x:String x:Key="MapPage_LoadingSystemData">加载星系中</x:String>
+    <x:String x:Key="MapPage_LoadingSOVData">加载主权信息中</x:String>
+    <x:String x:Key="MapPage_LoadingPlanetResourcesData">加载行星资源中</x:String>
+    <x:String x:Key="MapPage_LoadingStatisticsData">加载静态数据中</x:String>
 
     <x:String x:Key="JumpBridgeSetting_SelectSystem">选择星系...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">在星图上显示</x:String>
@@ -1144,7 +1153,8 @@
     <x:String x:Key="MapNavigation_PreferPath_Cheaper">省钱优先</x:String>
     <x:String x:Key="MapNavigation_MaxJump">最大跳跃距离</x:String>
     <x:String x:Key="MapNavigation_PerLyFuel">每光年消耗燃料</x:String>
-    <x:String x:Key="MapNavigation_MapOnlyShowPath">星图仅显示途径星系</x:String>
+    <x:String x:Key="MapNavigation_MapOnlyShowPath">仅显示途径星系</x:String>
+    <x:String x:Key="MapNavigation_ShowPathInMap">在星图显示</x:String>
     <x:String x:Key="MapNavigation_Go">计算导航</x:String>
     <x:String x:Key="MapNavigation_Result_Overview">导航总览</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">直线距离</x:String>
@@ -1162,6 +1172,11 @@
     <x:String x:Key="MapNavigation_Result_NpcKills">NPC击毁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Jumps">船跃迁数(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInMap">在星图显示</x:String>
+    <x:String x:Key="MapNavigation_Result_RemoveFromMap">从星图移除</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInGame">在游戏显示</x:String>
+    <x:String x:Key="MapNavigation_Result_SelecteCharacter">选择角色</x:String>
+    <x:String x:Key="MapNavigation_Result_ConfirmShowInGame">在游戏内导航</x:String>
 
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">计算</x:String>

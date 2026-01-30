@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Map.Tools.MapNavigationResultPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:MapNavTypeConverter x:Key="MapNavTypeConverter" />
+    </Page.Resources>
+    <Grid
+        x:Name="ResultGrid"
+        Padding="8,0,8,8"
+        HorizontalAlignment="Stretch">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid Margin="0,4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="32" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="32" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="32" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_LinearDistance}" />
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock x:Name="LinearDistanceTextBlock" Text="0" />
+                        <TextBlock Margin="4,0,0,0" Text="ly" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_PassSystemCount}" />
+                    <TextBlock
+                        x:Name="PassSystemCountTextBlock"
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="0" />
+                </Grid>
+
+                <Grid Grid.Column="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_PassStargateCount}" />
+                    <TextBlock
+                        x:Name="PassStargateCountTextBlock"
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="0" />
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpCount}" />
+                    <TextBlock
+                        x:Name="CapitalJumpCountTextBlock"
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="0" />
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_CapitalJumpDistance}" />
+                    <TextBlock
+                        x:Name="CapitalJumpDistanceTextBlock"
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="0" />
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_Overview_RequireFuel}" />
+                    <TextBlock
+                        x:Name="RequireFuelTextBlock"
+                        Grid.Column="1"
+                        Margin="24,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="0" />
+                </Grid>
+            </Grid>
+            <dataGrid:SfDataGrid
+                x:Name="ResultList"
+                Grid.Row="1"
+                HorizontalAlignment="Left"
+                AllowDraggingColumns="True"
+                AllowEditing="True"
+                AllowFiltering="False"
+                AllowGrouping="False"
+                AllowResizingColumns="True"
+                AllowSorting="False"
+                AutoGenerateColumns="False"
+                Background="Transparent"
+                CellDoubleTapped="ResultList_CellDoubleTapped"
+                ColumnWidthMode="Auto"
+                FrozenColumnsCount="2"
+                GridLinesVisibility="Both"
+                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                HeaderLinesVisibility="Both"
+                SelectionMode="Extended"
+                ShowGroupDropArea="False">
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridTextColumn
+                        Width="50"
+                        AllowEditing="False"
+                        AllowFiltering="False"
+                        AllowSorting="False"
+                        HeaderText="No."
+                        MappingName="Id" />
+                    <dataGrid:GridTextColumn
+                        Width="110"
+                        HeaderText="{StaticResource General_SolarSystemName}"
+                        MappingName="System.SolarSystemName" />
+                    <dataGrid:GridTextColumn
+                        Width="110"
+                        HeaderText="{StaticResource General_RegionName}"
+                        MappingName="Region.RegionName" />
+                    <dataGrid:GridNumericColumn
+                        Width="60"
+                        AllowEditing="False"
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource MapNavigation_Result_Sec}"
+                        MappingName="System.Security" />
+                    <dataGrid:GridTemplateColumn
+                        Width="100"
+                        HeaderText="{StaticResource MapNavigation_NavType}"
+                        MappingName="IsGate">
+                        <dataGrid:GridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding NavType, Converter={StaticResource MapNavTypeConverter}}" />
+                            </DataTemplate>
+                        </dataGrid:GridTemplateColumn.CellTemplate>
+                    </dataGrid:GridTemplateColumn>
+                    <dataGrid:GridNumericColumn
+                        Width="80"
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource MapNavigation_Result_Distance}"
+                        MappingName="Distance" />
+                    <dataGrid:GridNumericColumn
+                        Width="120"
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource MapNavigation_Result_RequireFuel}"
+                        MappingName="Fuel" />
+                    <dataGrid:GridTextColumn
+                        Width="200"
+                        HeaderText="{StaticResource MapNavigation_Result_SOV}"
+                        MappingName="Sov" />
+                    <dataGrid:GridNumericColumn
+                        AllowEditing="False"
+                        ColumnWidthMode="Auto"
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource MapNavigation_Result_ShipKills}"
+                        MappingName="ShipKills" />
+                    <dataGrid:GridNumericColumn
+                        AllowEditing="False"
+                        ColumnWidthMode="Auto"
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource MapNavigation_Result_PodKills}"
+                        MappingName="PodKills" />
+                    <dataGrid:GridNumericColumn
+                        AllowEditing="False"
+                        ColumnWidthMode="Auto"
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource MapNavigation_Result_Jumps}"
+                        MappingName="Jumps" />
+                </dataGrid:SfDataGrid.Columns>
+            </dataGrid:SfDataGrid>
+        </Grid>
+    </Grid>
+</Page>

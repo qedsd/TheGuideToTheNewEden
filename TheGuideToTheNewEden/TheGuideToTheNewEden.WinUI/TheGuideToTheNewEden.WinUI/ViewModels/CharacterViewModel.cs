@@ -359,6 +359,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 DateTime lastFinishDateTime = DateTime.MinValue;
                 if (skillQueueItems.NotNullOrEmpty())
                 {
+                    _skillQueueTotalCount = skillQueueItems.Count;
                     foreach (var skill in skillQueueItems)
                     {
                         var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
@@ -394,7 +395,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         _skillQueueRemainRatio = (remainTime / totalTime * 100).ToString("N0");
                     }
                 }
-                _skillQueueTotalCount = skillQueueItems.Count;
+                
                 _skillQueueUndoneCount = unFinishCount;
                 
                 #endregion

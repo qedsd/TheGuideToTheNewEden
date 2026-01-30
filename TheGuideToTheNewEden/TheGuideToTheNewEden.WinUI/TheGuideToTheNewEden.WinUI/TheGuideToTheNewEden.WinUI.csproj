@@ -317,7 +317,9 @@
     <None Remove="Views\Map\MapPage.xaml" />
     <None Remove="Views\Map\Tools\MapGIS.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
+    <None Remove="Views\Map\Tools\MapNavigationResultPage.xaml" />
     <None Remove="Views\Map\Tools\OneJumpCover.xaml" />
+    <None Remove="Views\Map\Tools\PlanetResourcListPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
     <None Remove="Views\ServerPingPage.xaml" />
@@ -653,6 +655,12 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Map\Tools\MapNavigationResultPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\PlanetResourcListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Tools\IMEPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

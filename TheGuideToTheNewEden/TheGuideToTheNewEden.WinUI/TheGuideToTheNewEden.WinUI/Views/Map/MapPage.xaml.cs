@@ -70,25 +70,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async void Init()
         {
-            this.ShowWaiting("Loading System Data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingSystemData"));
             await InitData();
             MapCanvas.SetData(_systemDatas);
 
-            this.ShowWaiting("Loading SOV Data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingSOVData"));
             var sovDatas = await InitSOV();
             MapDataTypeControl?.SetSOVData(sovDatas);
             SystemFilterControl?.SetData(_mapSolarSystems, _mapRegions, sovDatas);
 
-            this.ShowWaiting("Loading PlanetResources data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingPlanetResourcesData"));
             await InitPlanetResourcesData();
-            RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
-            UpdataSystemPlanetResourcList(0);
-            UpgradeList.ItemsSource = _upgrades;
 
-            this.ShowWaiting("Loading Statistics data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingStatisticsData"));
             await InitStatistics();
-            MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
-            OneJumpCover.SetData(MapCanvas, _systemKills, _systemJumps, _sovDatas);
             this.HideWaiting();
         }
         private async Task InitData()
@@ -591,82 +586,84 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
             }
             MapCanvas.Draw();
-            UpdataSystemPlanetResourcList(Tool_SystemPlanetResourcList_Mode.SelectedIndex);
-        }
-        private void Tool_SystemPlanetResourcList_Mode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_systemResourcesDic == null)
-                return;
-            UpdataSystemPlanetResourcList((sender as ComboBox).SelectedIndex);
-        }
-        private void UpdataSystemPlanetResourcList(int mode)
-        {
-            if (mode == 1)
-            {
-                List<Core.Models.PlanetResources.SolarSystemResources> solarSystemResources = new List<Core.Models.PlanetResources.SolarSystemResources>();
-                foreach (var v in _systemResourcesDic)
-                {
-                    if (_systemDatas.TryGetValue(v.Key, out var data))
-                    {
-                        if (data.Enable)
-                        {
-                            solarSystemResources.Add(v.Value);
-                        }
-                    }
-                }
-                SystemPlanetResourcList.ItemsSource = solarSystemResources;
-                Tool_SystemPlanetResourcList_Count.Text = solarSystemResources.Count.ToString();
-            }
-            else
-            {
-                SystemPlanetResourcList.ItemsSource = _systemResourcesDic.Values;
-                Tool_SystemPlanetResourcList_Count.Text = _systemResourcesDic.Count.ToString();
-            }
         }
         #endregion
 
         #region ¹¤¾ß
+        private List<ToolWindow> _toolWindows = new List<ToolWindow>();
         private void Tools_Click(object sender, RoutedEventArgs e)
         {
-            MapCanvas.ClearMapGraph();
-            MapCanvas.RemoveTemporary();
             MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
             foreach(var u in ToolGrid.Children)
             {
                 u.Visibility = Visibility.Collapsed;
             }
             UIElement targetTool = null;
+            string toolTitle = string.Empty;
             switch(menuFlyoutItem.Tag.ToString())
             {
-                case "None": targetTool = null; break;
-                case "PlanetResource_Region": targetTool = RegionPlanetResourcList; break;
-                case "PlanetResource_System": targetTool = Tool_SystemPlanetResourcList; break;
-                case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
-                case "OneJumpCover": targetTool = Tool_OneJumpCover; break;
-                case "Navigation": targetTool = Tool_Navigation; break;
+                case "Clear":
+                    {
+                        targetTool = null;
+                        MapCanvas.ClearTool();
+                    }
+                    break;
+                case "PlanetResource":
+                    {
+                        targetTool = new PlanetResourcListPage(_regionResourcesDic, _systemResourcesDic, _upgrades, _systemDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_PlanetResource");
+                    }
+                    break;
+                case "Navigation":
+                    {
+                        targetTool = new MapNavigation(MapCanvas, _systemKills, _systemJumps, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_Navigation");
+                    }
+                    break;
+                case "OneJumpCover":
+                    {
+                        targetTool = new OneJumpCover(MapCanvas, _systemKills, _systemJumps, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_InOneJumpSystems");
+                    }
+                    break;
             }
-            if(targetTool == null)
+            if(targetTool != null)
             {
-                ToolPanel.Visibility = Visibility.Collapsed;
+                ToolWindow toolWindow = new ToolWindow(toolTitle, toolTitle, targetTool, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                toolWindow.Activate();
+                toolWindow.Closed += ToolWindow_Closed;
+                _toolWindows.Add(toolWindow);
             }
-            else
+        }
+
+        private void ToolWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _toolWindows.Remove(sender as ToolWindow);
+            if(_toolWindows.Count == 0)
             {
-                ToolPanel.Visibility = Visibility.Visible;
-                targetTool.Visibility = Visibility.Visible;
-                ToolExpander.Header = menuFlyoutItem.Text;
-                ToolExpander.IsExpanded = true;
+                MapCanvas.ClearTool();
             }
         }
         #endregion
 
         public void Close()
         {
+            foreach(var win in _toolWindows)
+            {
+                win.Close();
+            }
+            _toolWindows.Clear();
             MapCanvas.Dispose();
         }
 
         public void NavigatedTo(object parameter)
         {
 
+        }
+
+        private void DisableNoActiveSystem_Toggled(object sender, RoutedEventArgs e)
+        {
+            MapCanvas.EnableNoActiveData(((ToggleSwitch)sender).IsOn);
         }
     }
 }

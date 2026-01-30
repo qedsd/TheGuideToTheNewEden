@@ -72,7 +72,9 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             var ps = SolarSystemPosHelper.PositionDic;
             var notCapJumpSystems = Services.DB.MapSolarSystemService.QueryByMinSec(0.45).Select(p=>p.SolarSystemID).ToHashSet2();
 
-            double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
+            //1天文单位（AU） = 9460730472580800米
+            //数据库XY坐标单位为米
+            double maxJump2 = maxJump * 9460730472580800;
             double gateWeight = mode == 0 ? maxJump2 : 1;
             
             CalWeightDelegate calWeight = EqualWeight;

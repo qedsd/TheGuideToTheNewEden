@@ -130,6 +130,7 @@
     <x:String x:Key="General_Edit">Edit</x:String>
     <x:String x:Key="General_Reset">Reset</x:String>
     <x:String x:Key="General_Canceld">Canceld</x:String>
+    <x:String x:Key="General_Result">Result</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -648,6 +649,10 @@
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">Switch Hotkey</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">When pressing the hotkey, switch and display game windows in order of activation</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_FormatTip">Combination key usage + splicing. eg: Ctrl+1</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey">Group Hotkey</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Tip">When you press the hotkey, the game windows displayed in that group are switched in the order of activation</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Name">Group Name</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_EditTip">Enter character names separated by the symbol ','</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize">Uniform Window Size</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">Set all preview windows to the specified size</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformWidth">Width</x:String>
@@ -1036,6 +1041,7 @@
     <x:String x:Key="MapPage_Tools">Tools</x:String>
     <x:String x:Key="MapPage_Setting_SystemIconContent">System Icon</x:String>
     <x:String x:Key="MapPage_Setting_JumpBridge">Jump Bridge</x:String>
+    <x:String x:Key="MapPage_Setting_Tool">Tools</x:String>
     <x:String x:Key="MapPage_Setting_DataType">Show Mode</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">Security</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">SOV</x:String>
@@ -1053,7 +1059,8 @@
     <x:String x:Key="MapPage_SelectedSystem_Region">Region</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Resource">Upgrade</x:String>
     <x:String x:Key="MapPage_PlanetResource_Upgrade_Name">Upgrade</x:String>
-    <x:String x:Key="MapPage_Tools_None">None</x:String>
+    <x:String x:Key="MapPage_Tools_Clear">Clear</x:String>
+    <x:String x:Key="MapPage_Tools_PlanetResource">Planet Resource</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_Region">Planet Resource of Region</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_System">Planet Resource of System</x:String>
     <x:String x:Key="MapPage_Tools_PlanetResource_System_All">All System</x:String>
@@ -1063,6 +1070,12 @@
     <x:String x:Key="MapPage_Tools_Navigation">Navigation</x:String>
     <x:String x:Key="MapPage_Tools_GIS">GIS</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+    <x:String x:Key="MapPage_DisableNoActiveSystem">Disable No Active System</x:String>
+    <x:String x:Key="MapPage_EnableNoActiveSystem">Enable No Active System</x:String>
+    <x:String x:Key="MapPage_LoadingSystemData">Loading System Data</x:String>
+    <x:String x:Key="MapPage_LoadingSOVData">Loading SOV Data</x:String>
+    <x:String x:Key="MapPage_LoadingPlanetResourcesData">Loading Planet Resources Data</x:String>
+    <x:String x:Key="MapPage_LoadingStatisticsData">Loading Statistics Data</x:String>
 
     <x:String x:Key="JumpBridgeSetting_SelectSystem">Select System...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">Show In Map</x:String>
@@ -1141,6 +1154,7 @@
     <x:String x:Key="MapNavigation_MaxJump">Max Jump</x:String>
     <x:String x:Key="MapNavigation_PerLyFuel">Fuel Of Per Ly</x:String>
     <x:String x:Key="MapNavigation_MapOnlyShowPath">Only Show Path In Map</x:String>
+    <x:String x:Key="MapNavigation_ShowPathInMap">Show Path In Map</x:String>
     <x:String x:Key="MapNavigation_Go">Go</x:String>
     <x:String x:Key="MapNavigation_Result_Overview">Overview</x:String>
     <x:String x:Key="MapNavigation_Result_Overview_LinearDistance">Linear Distance</x:String>
@@ -1158,6 +1172,11 @@
     <x:String x:Key="MapNavigation_Result_NpcKills">NPC Kills(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Jumps">Jumps(1h)</x:String>
     <x:String x:Key="MapNavigation_Result_Sec">Sec</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInMap">Show In Map</x:String>
+    <x:String x:Key="MapNavigation_Result_RemoveFromMap">Remove From Map</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInGame">Show In Game</x:String>
+    <x:String x:Key="MapNavigation_Result_SelecteCharacter">Selecte Character</x:String>
+    <x:String x:Key="MapNavigation_Result_ConfirmShowInGame">Show In Game</x:String>
 
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">Cal</x:String>
