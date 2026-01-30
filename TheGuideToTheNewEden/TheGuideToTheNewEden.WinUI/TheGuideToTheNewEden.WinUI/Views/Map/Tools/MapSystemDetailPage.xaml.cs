@@ -22,7 +22,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services.DB;
 using TheGuideToTheNewEden.Core.Models.Map;
 
-namespace TheGuideToTheNewEden.WinUI.Dialogs
+namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
     public class MapSystemDetailInfo
     {
@@ -36,9 +36,9 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
         public int PodKills { get; set; }
         public int Jumps { get; set; }
     }
-    public sealed partial class MapSystemDetailDialog : Page
+    public sealed partial class MapSystemDetailPage : Page
     {
-        public MapSystemDetailDialog(MapSystemDetailInfo mapSystemDetailInfo)
+        public MapSystemDetailPage(MapSystemDetailInfo mapSystemDetailInfo)
         {
             this.InitializeComponent();
             SystemIDTextBlock.Text = mapSystemDetailInfo.System.SolarSystemID.ToString();
@@ -73,18 +73,6 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             JumpsTextBlock.Text = mapSystemDetailInfo.Jumps.ToString();
             JumpTosList.ItemsSource = mapSystemDetailInfo.JumpTos;
         }
-        public static async Task ShowAsync(MapSystemDetailInfo mapSystemDetailInfo,  XamlRoot xamlRoot)
-        {
-            MapSystemDetailDialog content = new MapSystemDetailDialog(mapSystemDetailInfo);
-            ContentDialog contentDialog = new ContentDialog()
-            {
-                XamlRoot = xamlRoot,
-                Title = mapSystemDetailInfo.System.SolarSystemName,
-                Content = content,
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK")
-            };
-            await contentDialog.ShowAsync();
-        }
 
         public class UpgradeStatus
         {
@@ -92,20 +80,23 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
             public bool Fit { get; set; }
         }
 
-        private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
         {
             StatisticsGrid.Visibility = Visibility.Collapsed;
             UpgradeListGrid.Visibility = Visibility.Collapsed;
             ResourceDetailListGrid.Visibility = Visibility.Collapsed;
             JumpTosListGrid.Visibility = Visibility.Collapsed;
             CelestialListGrid.Visibility = Visibility.Collapsed;
-            switch ((sender as Pivot).SelectedIndex)
+            if (sender.SelectedItem != null)
             {
-                case 0: StatisticsGrid.Visibility = Visibility.Visible;break;
-                case 1: UpgradeListGrid.Visibility = Visibility.Visible; break;
-                case 2: ResourceDetailListGrid.Visibility = Visibility.Visible; break;
-                case 3: CelestialListGrid.Visibility = Visibility.Visible; break;
-                case 4: JumpTosListGrid.Visibility = Visibility.Visible; break;
+                switch (sender.SelectedItem.Tag.ToString())
+                {
+                    case "0": StatisticsGrid.Visibility = Visibility.Visible; break;
+                    case "1": UpgradeListGrid.Visibility = Visibility.Visible; break;
+                    case "2": ResourceDetailListGrid.Visibility = Visibility.Visible; break;
+                    case "3": CelestialListGrid.Visibility = Visibility.Visible; break;
+                    case "4": JumpTosListGrid.Visibility = Visibility.Visible; break;
+                }
             }
         }
     }

@@ -515,7 +515,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
         }
-        private async void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
+        private void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button).Tag as MapSystemData;
             _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
@@ -563,7 +563,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 mapSystemDetailInfo.Jumps = jumps;
             }
-            await MapSystemDetailDialog.ShowAsync(mapSystemDetailInfo, this.XamlRoot);
+            MapSystemDetailPage page = new MapSystemDetailPage(mapSystemDetailInfo);
+            ToolWindow toolWindow = new ToolWindow(mapSystemDetailInfo.System.SolarSystemName, mapSystemDetailInfo.System.SolarSystemName, page, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+            toolWindow.Activate();
         }
         #endregion
 
