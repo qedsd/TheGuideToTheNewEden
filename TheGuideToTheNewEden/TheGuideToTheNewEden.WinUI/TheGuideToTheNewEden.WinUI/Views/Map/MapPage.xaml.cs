@@ -260,10 +260,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             if (selectedItem != null)
             {
-                MapCanvas.ToSystem(selectedItem.SolarSystemID);
-                if(_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                if (_systemDatas[selectedItem.SolarSystemID].Enable)
                 {
-                    ShowSystemInfo(data as MapSystemData);
+                    MapCanvas.ToSystem(selectedItem.SolarSystemID);
+                    if (_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                    {
+                        ShowSystemInfo(data as MapSystemData);
+                    }
                 }
             }
         }
@@ -271,7 +274,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)
         {
             if(selectedItem != null)
-                MapCanvas.ToSystem(_systemDatas.Values.Where(p=>(p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p=>p.Id).ToList());
+            {
+                var systems = _systemDatas.Values.Where(p => p.Enable && (p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p => p.Id).ToList();
+                if(systems != null && systems.Count > 0)
+                {
+                    MapCanvas.ToSystem(_systemDatas.Values.Where(p => (p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p => p.Id).ToList());
+                }
+            }
         }
 
         private void SearchTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

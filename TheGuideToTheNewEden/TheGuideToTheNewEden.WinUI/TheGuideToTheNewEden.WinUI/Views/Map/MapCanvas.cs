@@ -133,7 +133,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 //选中高亮框
                 var w = _selectedData.W * 0.2;
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
-                var color = GetEnableColor(_selectedData.BgColor, _selectedData.Enable);
+                var color = GetActiveColor(_selectedData.BgColor, _selectedData.Active);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, color.R, color.G, color.B));
             }
         }
@@ -286,9 +286,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _lastPressedY = 0;
             SelectedSystemChanged?.Invoke(_selectedData);
         }
-        private Windows.UI.Color GetEnableColor(Windows.UI.Color targetColor, bool enable)
+        private Windows.UI.Color GetActiveColor(Windows.UI.Color targetColor, bool active)
         {
-            return enable ? targetColor : Windows.UI.Color.FromArgb(targetColor.A, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
+            return active ? targetColor : Windows.UI.Color.FromArgb(targetColor.A, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
         }
         private const double _visibleScale = 0.5;
         private void CanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -312,7 +312,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         invisibleCount++;
                     }
                 }
-                var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible);
+                var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible && p.Enable);
                 _visbleMapDatas = visibleDatas.OrderBy(p=>p.X).ToList();
                 foreach(var drawer in _mapDrawers)
                 {
@@ -329,9 +329,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             foreach (var jumpTo in data.LinkTo)
                             {
                                 var linkToData = _usingMapDatas[jumpTo];
-                                var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
-                                var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
-                                args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 1);
+                                if (linkToData.Enable)
+                                {
+                                    var ponit0 = new System.Numerics.Vector2((float)data.CenterX, (float)data.CenterY);
+                                    var ponit1 = new System.Numerics.Vector2((float)linkToData.CenterX, (float)linkToData.CenterY);
+                                    args.DrawingSession.DrawLine(ponit0, ponit1, _linkColor, 1);
+                                }
                             }
                         }
                     }
@@ -348,7 +351,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
 
                         //内图形
-                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(fColor,data.Enable));
+                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetActiveColor(fColor,data.Active));
                         //内文字
                         if (_currentZoom >= 6)
                         {
@@ -361,13 +364,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                                 VerticalAlignment = CanvasVerticalAlignment.Center,
                                 //Options = CanvasDrawTextOptions.Clip
                             };
-                            args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetEnableColor(Colors.White, data.Enable), innerTextFormat);
+                            args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetActiveColor(Colors.White, data.Active), innerTextFormat);
                         }
                         if (_currentZoom >= 24)
                         {
                             //外图形
                             var borderWidth = data.W * 0.2f;
-                            args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetEnableColor(tColor, data.Enable));
+                            args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetActiveColor(tColor, data.Active));
                         }
                         if (_currentZoom >= 3)
                         {
@@ -380,7 +383,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                                 HorizontalAlignment = CanvasHorizontalAlignment.Center,
                                 VerticalAlignment = CanvasVerticalAlignment.Top,
                             };
-                            args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetEnableColor(_mainTextColor, data.Enable), mainTextFormat);
+                            args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetActiveColor(_mainTextColor, data.Active), mainTextFormat);
                         }
                     }
                 }
@@ -462,7 +465,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         public void ToSystem(int id)
         {
-            if(_usingMapDatas.TryGetValue(id, out var data))
+            if(_usingMapDatas.TryGetValue(id, out var data) && data.Enable)
             {
                 float centerX = (float)ActualWidth / 2;
                 float centerY = (float)ActualHeight / 2;
@@ -490,7 +493,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             float maxY = float.MinValue;
             foreach(var id in ids)
             {
-                if (_usingMapDatas.TryGetValue(id, out var data))
+                if (_usingMapDatas.TryGetValue(id, out var data) && data.Enable)
                 {
                     if(data.X < minX)
                     {
@@ -556,7 +559,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 foreach (var data in _usingMapDatas)
                 {
-                    data.Value.Enable = true;
+                    data.Value.Active = true;
                 }
             }
             else
@@ -573,7 +576,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     }
                     foreach (var data in _usingMapDatas)
                     {
-                        data.Value.Enable = ids.Contains(data.Key);
+                        data.Value.Active = ids.Contains(data.Key);
                     }
                 }
             }
@@ -664,7 +667,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         }
                     }
                 }
-                args.DrawingSession.FillCircle(centerData.CenterX, centerData.CenterY, r, Windows.UI.Color.FromArgb(100, centerData.BgColor.R, centerData.BgColor.G, centerData.BgColor.B));
+                if(centerData.Enable)
+                    args.DrawingSession.FillCircle(centerData.CenterX, centerData.CenterY, r, Windows.UI.Color.FromArgb(100, centerData.BgColor.R, centerData.BgColor.G, centerData.BgColor.B));
             }
 
             public override List<int> GetActiveIds()
@@ -691,7 +695,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 var data1 = datas[Data1Id];
                 var data2 = datas[Data2Id];
-                args.DrawingSession.DrawLine(data1.CenterX, data1.CenterY, data2.CenterX, data2.CenterY, Color, StrokeWidth);
+                if(data1.Enable && data2.Enable)
+                    args.DrawingSession.DrawLine(data1.CenterX, data1.CenterY, data2.CenterX, data2.CenterY, Color, StrokeWidth);
             }
             public override List<int> GetActiveIds()
             {

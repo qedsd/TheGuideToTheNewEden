@@ -29,6 +29,9 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public string MainText { get; set; }
         public Windows.UI.Color BgColor { get; set; }
 
+        /// <summary>
+        /// 用于控制超出屏幕显示范围的点不进行绘制
+        /// </summary>
         public bool Visible { get; set; } = true;
 
         public List<int> LinkTo;
@@ -36,9 +39,15 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public float CenterX { get => X + W / 2; }
         public float CenterY { get => Y + H / 2; }
 
-        public bool Enable { get; set; } = true;
+        /// <summary>
+        /// 激活状态下的点才绘制颜色
+        /// 否则置灰色
+        /// </summary>
+        public bool Active { get; set; } = true;
 
         public object Tag { get; set; }
+
+        public bool Enable { get; set; } = true;
     }
     public class MapSystemData : MapData
     {
