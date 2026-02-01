@@ -102,9 +102,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
             InitDrawers();
         }
+
         private void InitDrawers()
         {
             _mapDrawers.Add(new JumpBridgeDrawer());
+            _mapDrawers.Add(new CharacterDrawer());
 
             _mapDrawers.ForEach(p =>
             {
@@ -138,7 +140,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
         }
 
-        
         private void FindDataTimer_Tick(object sender, object e)
         {
             var lastSelectedData = _selectedData;
@@ -373,7 +374,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetActiveColor(tColor, data.Active));
                         }
                         if (_currentZoom >= 3)
-                        {
+                        { 
                             float foontSize = _currentZoom;
                             foontSize = foontSize > 12 ? 12 : foontSize;
                             //外文字
@@ -581,6 +582,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
             }
             Draw();
+        }
+
+        public void AddCharacter()
+        {
+
+        }
+        public void RemoveCharacter()
+        {
+
         }
 
         public void ClearTool()

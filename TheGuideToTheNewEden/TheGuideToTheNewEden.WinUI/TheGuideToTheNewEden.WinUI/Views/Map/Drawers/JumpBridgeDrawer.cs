@@ -13,7 +13,7 @@ using Microsoft.Graphics.Canvas.Geometry;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
 {
-    public class JumpBridgeDrawer: IMapDrawer
+    public class JumpBridgeDrawer: MapDrawerBase
     {
         private bool _isDark = false;
         private Windows.UI.Color _linkColor;
@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         {
             _isDark = Services.Settings.ThemeSelectorService.IsDark;
             SetColor(_isDark);
-            DrawRequsted?.Invoke(this, EventArgs.Empty);
+            RequstDraw();
         }
         private void SetColor(bool isDark)
         {
@@ -40,14 +40,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                          Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.LightGray.R, Microsoft.UI.Colors.LightGray.G, Microsoft.UI.Colors.LightGray.B) :
                          Windows.UI.Color.FromArgb(255, Microsoft.UI.Colors.DarkGray.R, Microsoft.UI.Colors.DarkGray.G, Microsoft.UI.Colors.DarkGray.B);
         }
-        public event EventHandler DrawRequsted;
 
         private void JumpBridgeSetting_SettingChanged(object sender, EventArgs e)
         {
-            DrawRequsted?.Invoke(this, EventArgs.Empty);
+            RequstDraw();
         }
 
-        public void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas)
+        public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas)
         {
             if(JumpBridgeSetting.IsShowBridge() && JumpBridgeSetting.ExistBridge())
             {
