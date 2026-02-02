@@ -128,6 +128,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             if (path != null)
             {
                 MapNavigationResultPage page = new MapNavigationResultPage(_mapCanvas, _waypoints, path);
+                page.OnShowInGameRequested += Page_OnShowInGameRequested;
                 string header = _waypoints.Count == 2 ? $"{_waypoints.First().SolarSystemName}->{_waypoints.Last().SolarSystemName}" :
                                 $"{_waypoints.First().SolarSystemName}...{_waypoints.Last().SolarSystemName}";
                 TabViewItem tabViewItem = new TabViewItem()
@@ -142,6 +143,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             {
                 _window.ShowError(Helpers.ResourcesHelper.GetString("MapNavigation_Result_Null"));
             }
+        }
+
+        private void Page_OnShowInGameRequested(object sender, List<MapNavigationPoint> e)
+        {
+            SetAutopilotWaypoint(e);
         }
 
         private void NavTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -369,6 +375,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             if(args.Tab != null)
             {
+                (args.Tab.Content as MapNavigationResultPage).OnShowInGameRequested -= Page_OnShowInGameRequested;
                 (args.Tab.Content as MapNavigationResultPage).Close();
                 sender.TabItems.Remove(args.Tab);
             }
@@ -392,13 +399,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private void ShowInGame_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private EVEStandard.EVEStandardAPI _esi;
-
-        private async void ConfirmShowInGame_Click(object sender, RoutedEventArgs e)
-        {
             try
             {
                 if (ResultTabView.SelectedItem != null)
@@ -406,34 +406,54 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                     var path = ((ResultTabView.SelectedItem as TabViewItem).Content as MapNavigationResultPage).GetResult();
                     if (path.NotNullOrEmpty())
                     {
-                        if (ShowInGameSelecteCharacterControl.SelectedItem != null)
-                        {
-                            ShowInGameFlyout.Hide();
-                            if (!ShowInGameSelecteCharacterControl.SelectedItem.IsTokenValid())
-                            {
-                                _window.ShowWaiting();
-                                if (!await ShowInGameSelecteCharacterControl.SelectedItem.RefreshTokenAsync())
-                                {
-                                    throw new Exception(Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed"));
-                                }
-                            }
-                            _esi ??= ESIService.GetDefaultESI2();
-                            var sso = ESIService.ToEVEStandardSSO(ShowInGameSelecteCharacterControl.SelectedItem);
-                            int setp = path.Count - 1;
-                            _window.ShowWaiting($"1/{setp}");
-                            await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, true, true, path[1].System.SolarSystemID);
-                            for(int i = 2; i< path.Count - 1; i++)
-                            {
-                                _window.ShowWaiting($"{i}/{setp}");
-                                await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, false, false, path[i].System.SolarSystemID);
-                            }
-                        }
+                        SetAutopilotWaypoint(path);
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _window.ShowError(ex.Message);
+            }
+            finally
+            {
+                _window.HideWaiting();
+            }
+        }
+
+        private EVEStandard.EVEStandardAPI _esi;
+        private async void SetAutopilotWaypoint(List<MapNavigationPoint> path)
+        {
+            try
+            {
+                if (ShowInGameSelecteCharacterControl.SelectedItem != null)
+                {
+                    if (!ShowInGameSelecteCharacterControl.SelectedItem.IsTokenValid())
+                    {
+                        _window.ShowWaiting();
+                        if (!await ShowInGameSelecteCharacterControl.SelectedItem.RefreshTokenAsync())
+                        {
+                            throw new Exception(Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed"));
+                        }
+                    }
+                    _esi ??= ESIService.GetDefaultESI2();
+                    var sso = ESIService.ToEVEStandardSSO(ShowInGameSelecteCharacterControl.SelectedItem);
+                    int setp = path.Count - 1;
+                    _window.ShowWaiting($"1/{setp}");
+                    await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, true, true, path[1].System.SolarSystemID);
+                    for (int i = 2; i < path.Count - 1; i++)
+                    {
+                        _window.ShowWaiting($"{i}/{setp}");
+                        await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, false, false, path[i].System.SolarSystemID);
+                    }
+                }
+                else
+                {
+                    throw new Exception(Helpers.ResourcesHelper.GetString("MapNavigation_Result_NotSelectedCharacter"));
+                }
+            }
+            catch
+            {
+                throw;
             }
             finally
             {

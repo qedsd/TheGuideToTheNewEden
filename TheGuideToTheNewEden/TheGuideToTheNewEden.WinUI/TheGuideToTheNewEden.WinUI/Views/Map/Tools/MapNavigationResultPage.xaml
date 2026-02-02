@@ -207,6 +207,18 @@
                         HeaderText="{StaticResource MapNavigation_Result_Jumps}"
                         MappingName="Jumps" />
                 </dataGrid:SfDataGrid.Columns>
+                <dataGrid:SfDataGrid.RecordContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            Click="AddPathInGame_Click"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource MapNavigation_Result_AddPathInGame}" />
+                        <MenuFlyoutItem
+                            Click="SetDestinationInGame_Click"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource MapNavigation_Result_SetDestinationInGame}" />
+                    </MenuFlyout>
+                </dataGrid:SfDataGrid.RecordContextFlyout>
             </dataGrid:SfDataGrid>
         </Grid>
     </Grid>

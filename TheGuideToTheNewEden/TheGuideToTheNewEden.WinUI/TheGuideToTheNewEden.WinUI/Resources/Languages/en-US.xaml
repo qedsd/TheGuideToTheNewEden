@@ -1177,9 +1177,11 @@
     <x:String x:Key="MapNavigation_Result_Sec">Sec</x:String>
     <x:String x:Key="MapNavigation_Result_ShowInMap">Show In Map</x:String>
     <x:String x:Key="MapNavigation_Result_RemoveFromMap">Remove From Map</x:String>
-    <x:String x:Key="MapNavigation_Result_ShowInGame">Show In Game</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInGame">Add Waypoint To Game</x:String>
     <x:String x:Key="MapNavigation_Result_SelecteCharacter">Selecte Character</x:String>
-    <x:String x:Key="MapNavigation_Result_ConfirmShowInGame">Show In Game</x:String>
+    <x:String x:Key="MapNavigation_Result_NotSelectedCharacter">Not Selected Character</x:String>
+    <x:String x:Key="MapNavigation_Result_AddPathInGame">Add Path To Game</x:String>
+    <x:String x:Key="MapNavigation_Result_SetDestinationInGame">Set Destination To Game</x:String>
 
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">Cal</x:String>

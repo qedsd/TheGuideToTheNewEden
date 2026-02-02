@@ -32,6 +32,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <!--  航点设置  -->
                         <Grid>
@@ -389,6 +391,24 @@
                                     HorizontalAlignment="Right" />
                             </Grid>
                         </Grid>
+                        <Rectangle
+                            Grid.Row="4"
+                            Height="1"
+                            Margin="4,8"
+                            Fill="LightGray" />
+                        <Grid Grid.Row="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_SelecteCharacter}" />
+                            <controls:SelecteCharacterControl
+                                x:Name="ShowInGameSelecteCharacterControl"
+                                Grid.Column="1"
+                                Width="200"
+                                Margin="8,0,0,0"
+                                HorizontalAlignment="Right" />
+                        </Grid>
                     </Grid>
                 </ScrollViewer>
             </controls:CardControl.Content>
@@ -413,32 +433,7 @@
             </controls:CardControl.Content>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <Button Click="ShowInGame_Click" Content="{StaticResource MapNavigation_Result_ShowInGame}">
-                        <Button.Flyout>
-                            <Flyout x:Name="ShowInGameFlyout">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource MapNavigation_Result_SelecteCharacter}" />
-                                        <controls:SelecteCharacterControl
-                                            x:Name="ShowInGameSelecteCharacterControl"
-                                            Width="200"
-                                            Margin="8,0,0,0" />
-                                    </StackPanel>
-                                    <Button
-                                        Grid.Row="1"
-                                        Margin="0,8,0,0"
-                                        HorizontalAlignment="Stretch"
-                                        Click="ConfirmShowInGame_Click"
-                                        Content="{StaticResource MapNavigation_Result_ConfirmShowInGame}"
-                                        Style="{ThemeResource AccentButtonStyle}" />
-                                </Grid>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
+                    <Button Click="ShowInGame_Click" Content="{StaticResource MapNavigation_Result_ShowInGame}" />
                     <Button
                         Margin="8,0"
                         Click="ShowInMap_Click"

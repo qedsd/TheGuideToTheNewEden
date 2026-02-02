@@ -1177,9 +1177,11 @@
     <x:String x:Key="MapNavigation_Result_Sec">安等</x:String>
     <x:String x:Key="MapNavigation_Result_ShowInMap">在星图显示</x:String>
     <x:String x:Key="MapNavigation_Result_RemoveFromMap">从星图移除</x:String>
-    <x:String x:Key="MapNavigation_Result_ShowInGame">在游戏显示</x:String>
+    <x:String x:Key="MapNavigation_Result_ShowInGame">在游戏内导航</x:String>
     <x:String x:Key="MapNavigation_Result_SelecteCharacter">选择角色</x:String>
-    <x:String x:Key="MapNavigation_Result_ConfirmShowInGame">在游戏内导航</x:String>
+    <x:String x:Key="MapNavigation_Result_NotSelectedCharacter">未选择角色</x:String>
+    <x:String x:Key="MapNavigation_Result_AddPathInGame">添加路径到游戏内</x:String>
+    <x:String x:Key="MapNavigation_Result_SetDestinationInGame">设为游戏内目的地</x:String>
 
     <!--  OneJumpCover  -->
     <x:String x:Key="OneJumpCover_Start">计算</x:String>

@@ -95,5 +95,45 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             return _path;
         }
+
+        public event EventHandler<List<MapNavigationPoint>> OnShowInGameRequested;
+
+        private void AddPathInGame_Click(object sender, RoutedEventArgs e)
+        {
+            int index = ResultList.SelectedIndex;
+            if (index >= 0)
+            {
+                List<MapNavigationPoint> path = new List<MapNavigationPoint>()
+                {
+                    _path[index]
+                };
+                for (int i = index - 1; i >= 0; i--)
+                {
+                    if (_path[i].NavType == 1)//往回找通过星门导航的点
+                    {
+                        path.Add(_path[i]);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                path.Reverse();
+                OnShowInGameRequested?.Invoke(this, path);
+            }
+        }
+
+        private void SetDestinationInGame_Click(object sender, RoutedEventArgs e)
+        {
+            int index = ResultList.SelectedIndex;
+            if (index >= 0)
+            {
+                List<MapNavigationPoint> path = new List<MapNavigationPoint>()
+                {
+                    _path[index]
+                };
+                OnShowInGameRequested?.Invoke(this, path);
+            }
+        }
     }
 }
