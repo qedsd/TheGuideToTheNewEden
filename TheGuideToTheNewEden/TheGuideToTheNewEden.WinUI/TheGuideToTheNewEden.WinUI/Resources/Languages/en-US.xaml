@@ -1042,6 +1042,7 @@
     <x:String x:Key="MapPage_Setting_SystemIconContent">System Icon</x:String>
     <x:String x:Key="MapPage_Setting_JumpBridge">Jump Bridge</x:String>
     <x:String x:Key="MapPage_Setting_Tool">Tools</x:String>
+    <x:String x:Key="MapPage_Setting_Characters">Characters</x:String>
     <x:String x:Key="MapPage_Setting_DataType">Show Mode</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">Security</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">SOV</x:String>
@@ -1076,6 +1077,8 @@
     <x:String x:Key="MapPage_LoadingSOVData">Loading SOV Data</x:String>
     <x:String x:Key="MapPage_LoadingPlanetResourcesData">Loading Planet Resources Data</x:String>
     <x:String x:Key="MapPage_LoadingStatisticsData">Loading Statistics Data</x:String>
+    <x:String x:Key="MapPage_Setting_Characters_Show">Show In Map</x:String>
+    <x:String x:Key="MapPage_Setting_Characters_NotShow">Do Not Show In Map</x:String>
 
     <x:String x:Key="JumpBridgeSetting_SelectSystem">Select System...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">Show In Map</x:String>

@@ -1042,6 +1042,7 @@
     <x:String x:Key="MapPage_Setting_SystemIconContent">星系图标</x:String>
     <x:String x:Key="MapPage_Setting_JumpBridge">跳桥</x:String>
     <x:String x:Key="MapPage_Setting_Tool">工具</x:String>
+    <x:String x:Key="MapPage_Setting_Characters">角色</x:String>
     <x:String x:Key="MapPage_Setting_DataType">显示类型</x:String>
     <x:String x:Key="MapPage_Setting_DataType_Security">安全等级</x:String>
     <x:String x:Key="MapPage_Setting_DataType_SOV">主权</x:String>
@@ -1076,6 +1077,8 @@
     <x:String x:Key="MapPage_LoadingSOVData">加载主权信息中</x:String>
     <x:String x:Key="MapPage_LoadingPlanetResourcesData">加载行星资源中</x:String>
     <x:String x:Key="MapPage_LoadingStatisticsData">加载静态数据中</x:String>
+    <x:String x:Key="MapPage_Setting_Characters_Show">显示角色</x:String>
+    <x:String x:Key="MapPage_Setting_Characters_NotShow">不显示角色</x:String>
 
     <x:String x:Key="JumpBridgeSetting_SelectSystem">选择星系...</x:String>
     <x:String x:Key="JumpBridgeSetting_ShowInMap_True">在星图上显示</x:String>

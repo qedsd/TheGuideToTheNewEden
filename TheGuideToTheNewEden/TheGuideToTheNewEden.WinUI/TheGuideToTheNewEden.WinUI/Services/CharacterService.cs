@@ -74,6 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             CharacterOauths.Add(characterOauth);
             Save();
+            OnCharacterChanged?.Invoke(null, EventArgs.Empty);
         }
 
         public static void Remove(AuthorizedCharacterData characterOauth)
@@ -81,6 +82,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (CharacterOauths.Remove(characterOauth))
             {
                 Save();
+                OnCharacterChanged?.Invoke(null, EventArgs.Empty);
             }
         }
         public static void SetOrder(AuthorizedCharacterData characterOauth, int newIndex)
@@ -189,5 +191,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             return CharacterOauths.FirstOrDefault(p => p.CharacterID == id);
         }
+
+        public static ObservableCollection<AuthorizedCharacterData> GetCharacters()
+        {
+            return CharacterOauths.ToObservableCollection();
+        }
+
+        public static event EventHandler OnCharacterChanged;
     }
 }

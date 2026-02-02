@@ -1,0 +1,2 @@
+﻿Tools:可以随时开关的附加层，一般来说只有用户操作才能更新，相当于OneWay，简单图形通过继承MapGraphBase基类添加到_otherCanvasControl画布实现
+Drawers:持久化显示的层，如跳桥、角色位置，一般来说需要比较复杂的处理逻辑，比如定时刷新，用户交互更新，在地图基本画布_canvasControl上绘制

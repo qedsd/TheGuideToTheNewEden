@@ -15,12 +15,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         /// </summary>
         /// <param name="args"></param>
         /// <param name="datas"></param>
-        void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas);
+        void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor);
+
+        void Stop();
+        void Start();
+        void Close();
 
         /// <summary>
         /// 由Drawer触发MapCanvas绘制
         /// 当Drawer需要更新时使用
         /// </summary>
         event EventHandler DrawRequsted;
+        event EventHandler<string> OnError;
+        bool GetEnable();
+        void SetEnable(bool enable);
     }
 }

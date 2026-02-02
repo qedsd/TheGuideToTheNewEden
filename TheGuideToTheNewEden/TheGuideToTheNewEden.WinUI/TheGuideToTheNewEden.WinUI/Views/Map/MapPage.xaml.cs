@@ -85,7 +85,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingStatisticsData"));
             await InitStatistics();
             this.HideWaiting();
+
+            MapCanvas.OnError += MapCanvas_OnError;
         }
+
+        private void MapCanvas_OnError(object sender, string e)
+        {
+            this.ShowError(e);
+        }
+
         private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
@@ -675,6 +683,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void DisableNoActiveSystem_Toggled(object sender, RoutedEventArgs e)
         {
             MapCanvas.EnableNoActiveData(((ToggleSwitch)sender).IsOn);
+        }
+
+        private void ShowCharacters_Toggled(object sender, RoutedEventArgs e)
+        {
+            MapCanvas.ShowCharacters(((ToggleSwitch)sender).IsOn);
         }
     }
 }

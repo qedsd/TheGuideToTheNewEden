@@ -10,6 +10,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using ESI.NET.Models.Universe;
 using Microsoft.UI.Xaml;
 using Microsoft.Graphics.Canvas.Geometry;
+using Microsoft.Graphics.Canvas;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
 {
@@ -46,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             RequstDraw();
         }
 
-        public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas)
+        public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
         {
             if(JumpBridgeSetting.IsShowBridge() && JumpBridgeSetting.ExistBridge())
             {
@@ -64,6 +65,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     }
                 }
             }
+        }
+
+        public override void Close()
+        {
+            JumpBridgeSetting.SettingChanged -= JumpBridgeSetting_SettingChanged;
+            Services.Settings.ThemeSelectorService.OnChangedTheme -= ThemeSelectorService_OnChangedTheme;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using ICSharpCode.SharpZipLib.GZip;
+using System.Drawing;
 
 namespace TheGuideToTheNewEden.Core.Helpers
 {
@@ -109,6 +110,25 @@ namespace TheGuideToTheNewEden.Core.Helpers
             }
             catch (Exception)
             {
+                return null;
+            }
+        }
+
+        public static async Task<byte[]> GetByteArrayAsync(string url)
+        {
+            try
+            {
+                using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+                {
+                    httpClient.Timeout = TimeSpan.FromSeconds(30);
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
+                    return await httpClient.GetByteArrayAsync(url);
+                }
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
                 return null;
             }
         }

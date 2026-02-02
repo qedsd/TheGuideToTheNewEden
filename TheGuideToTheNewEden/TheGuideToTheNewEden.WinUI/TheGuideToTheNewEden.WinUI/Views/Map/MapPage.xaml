@@ -72,6 +72,16 @@
                                             OnContent="{StaticResource MapPage_EnableNoActiveSystem}"
                                             Toggled="DisableNoActiveSystem_Toggled" />
                                     </Expander>
+                                    <Expander
+                                        Margin="0,4"
+                                        Header="{StaticResource MapPage_Setting_Characters}"
+                                        Style="{StaticResource StretchExpander}">
+                                        <ToggleSwitch
+                                            IsOn="True"
+                                            OffContent="{StaticResource MapPage_Setting_Characters_NotShow}"
+                                            OnContent="{StaticResource MapPage_Setting_Characters_Show}"
+                                            Toggled="ShowCharacters_Toggled" />
+                                    </Expander>
                                 </StackPanel>
                             </ScrollView>
                         </Flyout>

@@ -110,11 +110,19 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
 
             _mapDrawers.ForEach(p =>
             {
-                p.DrawRequsted += ((s, e) =>
-                {
-                    Draw();
-                });
+                p.DrawRequsted += Drawer_DrawRequsted;
+                p.OnError += Drawer_OnError;
             });
+        }
+
+        private void Drawer_DrawRequsted(object sender, EventArgs e)
+        {
+            Draw();
+        }
+
+        private void Drawer_OnError(object sender, string e)
+        {
+            OnError?.Invoke(sender, e);
         }
 
         private void OtherCanvasControl_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -315,10 +323,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 var visibleDatas = _usingMapDatas.Values.Where(p => p.Visible && p.Enable);
                 _visbleMapDatas = visibleDatas.OrderBy(p=>p.X).ToList();
-                foreach(var drawer in _mapDrawers)
-                {
-                    drawer.Draw(args, _usingMapDatas, visibleDatas);
-                }
+
                 //先画的会被后画的遮盖
                 //连线
                 if (_currentZoom >= _lineZoom)
@@ -342,60 +347,57 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 //星系图形表示
                 TurnRGB turnRGB = _isDark ? TurnRGBToDark : TurnRGBToLight;
-                //if (_currentZoom >= 19)//画星系详细信息：安全等级、名称等
+                bool drawBorder = false;
+                foreach (var data in visibleDatas)
                 {
-                    foreach (var data in visibleDatas)
-                    {
-                        double drawX = data.X;
-                        double drawY = data.Y;
-                        var fColor = data.BgColor;
-                        var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
+                    double drawX = data.X;
+                    double drawY = data.Y;
+                    var fColor = data.BgColor;
+                    var tColor = Windows.UI.Color.FromArgb(50, data.BgColor.R, data.BgColor.G, data.BgColor.B);
 
-                        //内图形
-                        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetActiveColor(fColor,data.Active));
-                        //内文字
-                        if (_currentZoom >= 6)
+                    //内图形
+                    args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetActiveColor(fColor, data.Active));
+                    //内文字
+                    if (_currentZoom >= 6)
+                    {
+                        float foontSize = _currentZoom / 2;
+                        foontSize = foontSize > 12 ? 12 : foontSize;
+                        CanvasTextFormat innerTextFormat = new CanvasTextFormat()
                         {
-                            float foontSize = _currentZoom / 2;
-                            foontSize = foontSize > 12 ? 12 : foontSize;
-                            CanvasTextFormat innerTextFormat = new CanvasTextFormat()
-                            {
-                                FontSize = foontSize,
-                                HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                                VerticalAlignment = CanvasVerticalAlignment.Center,
-                                //Options = CanvasDrawTextOptions.Clip
-                            };
-                            args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetActiveColor(Colors.White, data.Active), innerTextFormat);
-                        }
-                        if (_currentZoom >= 24)
+                            FontSize = foontSize,
+                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                            VerticalAlignment = CanvasVerticalAlignment.Center,
+                            //Options = CanvasDrawTextOptions.Clip
+                        };
+                        args.DrawingSession.DrawText(data.InnerText, new Windows.Foundation.Rect((float)drawX, (float)drawY, (float)data.W, (float)data.H), GetActiveColor(Colors.White, data.Active), innerTextFormat);
+                    }
+                    if (_currentZoom >= 24)//外图形
+                    {
+                        drawBorder = true;
+                        var borderWidth = data.W * 0.2f;
+                        args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetActiveColor(tColor, data.Active));
+                    }
+                    if (_currentZoom >= 3)//外文字
+                    {
+                        float foontSize = _currentZoom;
+                        foontSize = foontSize > 12 ? 12 : foontSize;
+                        CanvasTextFormat mainTextFormat = new CanvasTextFormat()
                         {
-                            //外图形
-                            var borderWidth = data.W * 0.2f;
-                            args.DrawingSession.FillRectangle(new Windows.Foundation.Rect((float)drawX - borderWidth, (float)drawY - borderWidth, data.W + borderWidth * 2, data.H + borderWidth * 2), GetActiveColor(tColor, data.Active));
-                        }
-                        if (_currentZoom >= 3)
-                        { 
-                            float foontSize = _currentZoom;
-                            foontSize = foontSize > 12 ? 12 : foontSize;
-                            //外文字
-                            CanvasTextFormat mainTextFormat = new CanvasTextFormat()
-                            {
-                                FontSize = foontSize,
-                                HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                                VerticalAlignment = CanvasVerticalAlignment.Top,
-                            };
-                            args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetActiveColor(_mainTextColor, data.Active), mainTextFormat);
-                        }
+                            FontSize = foontSize,
+                            HorizontalAlignment = CanvasHorizontalAlignment.Center,
+                            VerticalAlignment = CanvasVerticalAlignment.Top,
+                        };
+                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetActiveColor(_mainTextColor, data.Active), mainTextFormat);
                     }
                 }
-                //else//只画大概的内图形
-                //{
-                //    foreach (var data in visibleDatas)
-                //    {
-                //        //只有内图形
-                //        args.DrawingSession.FillRectangle(data.X, data.Y, data.W, data.H, GetEnableColor(data.BgColor, data.Enable));
-                //    }
-                //}
+
+                foreach (var drawer in _mapDrawers)
+                {
+                    if (drawer.GetEnable())
+                    {
+                        drawer.Draw(args, _usingMapDatas, visibleDatas, _currentZoom, drawBorder, _mainTextColor);
+                    }
+                }
             }
         }
         delegate byte TurnRGB(float s);
@@ -584,6 +586,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             Draw();
         }
 
+        public void ShowCharacters(bool show)
+        {
+            var drawer = _mapDrawers.FirstOrDefault(p => p is CharacterDrawer);
+            drawer.SetEnable(show);
+            Draw();
+        }
         public void AddCharacter()
         {
 
@@ -609,6 +617,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             _findDataTimer.Stop();
             _findDataTimer = null;
             Services.Settings.ThemeSelectorService.OnChangedTheme -= ThemeSelectorService_OnChangedTheme;
+            foreach (var drawer in _mapDrawers)
+            {
+                drawer.DrawRequsted -= Drawer_DrawRequsted;
+                drawer.OnError -= Drawer_OnError;
+                drawer.Close();
+            }
         }
         public delegate void SelectedSystemChangedEventHandel(MapData mapData);
         private SelectedSystemChangedEventHandel PointedSystemChanged;
@@ -635,9 +649,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 SelectedSystemChanged -= value;
             }
         }
+        public event EventHandler<string> OnError;
 
         #endregion
 
+        #region MapGraph
         public enum MapGraphType
         {
             Circle, Line
@@ -713,5 +729,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 return new List<int> { Data1Id, Data2Id };
             }
         }
+        #endregion
     }
 }
