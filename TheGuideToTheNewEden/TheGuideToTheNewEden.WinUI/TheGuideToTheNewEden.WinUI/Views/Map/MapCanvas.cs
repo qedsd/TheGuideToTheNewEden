@@ -387,7 +387,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             HorizontalAlignment = CanvasHorizontalAlignment.Center,
                             VerticalAlignment = CanvasVerticalAlignment.Top,
                         };
-                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H + 4)), GetActiveColor(_mainTextColor, data.Active), mainTextFormat);
+                        args.DrawingSession.DrawText(data.MainText, new System.Numerics.Vector2((float)(drawX + data.W / 2), (float)(drawY + data.H*1.2)), GetActiveColor(_mainTextColor, data.Active), mainTextFormat);
                     }
                 }
 
@@ -440,7 +440,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             if(zoom != 1)//仅平移则无需缩放图形大小
             {
-                var z = _currentZoom > 26 ? 26 : _currentZoom;
+                var z = _currentZoom > 40 ? 40 : _currentZoom;
                 var whZoom = 1+ (z - 1) / 4;
                 foreach (var data in _usingMapDatas.Values)
                 {
