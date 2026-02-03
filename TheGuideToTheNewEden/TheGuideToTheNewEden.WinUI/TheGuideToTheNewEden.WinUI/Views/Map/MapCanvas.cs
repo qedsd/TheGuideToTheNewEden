@@ -1,8 +1,4 @@
-﻿using ESI.NET.Models.PlanetaryInteraction;
-using ESI.NET.Models.Universe;
-using log4net.Core;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Text;
+﻿using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
@@ -56,6 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// </summary>
         private List<MapData> _visbleMapDatas;
         private MapData _selectedData;
+        private List<MapData> _highLightData;
         private double _scaleCenterX = 0;
         private double _scaleCenterY = 0;
         private double _lastPressedX = 0;
@@ -145,6 +142,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var rect = new Windows.Foundation.Rect(_selectedData.X - w, _selectedData.Y - w, _selectedData.W + w * 2, _selectedData.H + w * 2);
                 var color = GetActiveColor(_selectedData.BgColor, _selectedData.Active);
                 args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, color.R, color.G, color.B));
+            }
+            if(_highLightData != null)
+            {
+                foreach(var data in _highLightData)
+                {
+                    var w = data.W * 0.2;
+                    var rect = new Windows.Foundation.Rect(data.X - w, data.Y - w, data.W + w * 2, data.H + w * 2);
+                    var color = GetActiveColor(data.BgColor, data.Active);
+                    args.DrawingSession.FillRectangle(rect, Windows.UI.Color.FromArgb(100, color.R, color.G, color.B));
+                }
             }
         }
 
@@ -264,7 +271,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             var pointerPoint = e.GetCurrentPoint(sender as UIElement);
             _lastPressedX = pointerPoint.Position.X;
             _lastPressedY = pointerPoint.Position.Y;
-            Debug.WriteLine($"PointerPressed:{_lastPressedX} {_lastPressedY}");
         }
         private void CanvasControl_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
@@ -486,6 +492,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     offsetY = centerY - data.Y;
                 }
                 Draw(zoom, offsetX, offsetY);
+                HighLightDatas(new List<int>() { id });
+                PointedSystemChanged?.Invoke(data);
             }
         }
         public void ToSystem(List<int> ids)
@@ -519,10 +527,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             if(minX < float.MaxValue)
             {
                 //适当将XY扩大以便显示完全
-                minX -= (float)(ActualWidth * 0.05);
-                maxX += (float)(ActualWidth * 0.05);
-                minY -= (float)(ActualHeight * 0.05);
-                maxY += (float)(ActualHeight * 0.05);
+                minX -= (float)(ActualWidth * 0.2);
+                maxX += (float)(ActualWidth * 0.2);
+                minY -= (float)(ActualHeight * 0.2);
+                maxY += (float)(ActualHeight * 0.2);
                 //按最大最小x/y差值缩小到显示范围宽度并以此缩放当作缩放
                 float xScale = (float)this.ActualWidth / (maxX - minX);
                 float yScale = (float)this.ActualHeight / (maxY - minY);
@@ -530,6 +538,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 float xOffset = -minX * scale;
                 float yOffset = -minY * scale;
                 Draw(scale, xOffset, yOffset);
+            }
+            HighLightDatas(ids);
+        }
+
+        public async void HighLightDatas(List<int> ids)
+        {
+            //通过选中层闪烁实现
+            List<MapData> datas = new List<MapData>();
+            foreach (int id in ids)
+            {
+                if (_usingMapDatas.TryGetValue(id, out var data) && data.Enable)
+                {
+                    datas.Add(data);
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                _highLightData = datas;
+                _selectedCanvasControl.Invalidate();
+                await Task.Delay(200);
+                _highLightData = null;
+                _selectedCanvasControl.Invalidate();
+                await Task.Delay(200);
             }
         }
         public void AddMapGraph(List<MapGraphBase> mapGraphs)

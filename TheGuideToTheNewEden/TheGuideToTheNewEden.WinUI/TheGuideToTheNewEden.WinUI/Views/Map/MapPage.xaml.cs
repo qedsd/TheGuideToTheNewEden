@@ -477,27 +477,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         #endregion
 
         #region Ñ¡ÖÐÐÇÏµ
+        private MapData _selectedData;
         private void MapCanvas_OnPointedSystemChanged(MapData mapData)
         {
-            if(mapData == null)
+            if(_selectedData == null)
             {
-                TopPanel.Visibility = Visibility.Collapsed;
+                ShowSystemInfo(mapData as MapSystemData);
             }
             else
             {
-                TopPanel.Visibility = Visibility.Visible;
-                var map = mapData as MapSystemData;
-                PointedSystemName.Text = $"{_mapRegions[map.MapSolarSystem.RegionID].RegionName} {map.MainText} {map.InnerText}";
+                if (mapData == null)
+                {
+                    TopPanel.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    TopPanel.Visibility = Visibility.Visible;
+                    var map = mapData as MapSystemData;
+                    PointedSystemName.Text = $"{_mapRegions[map.MapSolarSystem.RegionID].RegionName} {map.MainText} {map.InnerText}";
+                }
             }
         }
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
         {
-            ShowSystemInfo(mapData as MapSystemData);
+            _selectedData = mapData;
         }
         private void ShowSystemInfo(MapSystemData data)
         {
             if (data == null)
+            {
+                SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
                 return;
+            }
             SelectedSystemInfoPanel.Visibility = Visibility.Visible;
             SystemResourceDetailButton.Tag = data;
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
@@ -531,58 +542,66 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+            _selectedData = null;
         }
         private void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button).Tag as MapSystemData;
-            _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
-            SolarSystemResources resource = null;
-            if(!_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out resource))
+            ShowSystemDetail(data);
+        }
+        private void ShowSystemDetail(MapSystemData data)
+        {
+            if(data != null)
             {
-                resource = new SolarSystemResources()
+                _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
+                SolarSystemResources resource = null;
+                if (!_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out resource))
                 {
-                    MapSolarSystem = data.MapSolarSystem
-                };
-            }
-            List<MapSystemInfo> jumpTos = new List<MapSystemInfo>();
-            var jumpToIds = SolarSystemPosHelper.GetJumpTo(data.Id);
-            if(jumpToIds != null)
-            {
-                foreach(var id in jumpToIds)
-                {
-                    MapSystemInfo mapSystemInfo = new MapSystemInfo()
+                    resource = new SolarSystemResources()
                     {
-                        System = _mapSolarSystems[id],
+                        MapSolarSystem = data.MapSolarSystem
                     };
-                    mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
-                    if(_sovDatas.TryGetValue(id,out var sov))
-                    {
-                        mapSystemInfo.Sov = sov.AllianceName;
-                    }
-                    jumpTos.Add(mapSystemInfo);
                 }
+                List<MapSystemInfo> jumpTos = new List<MapSystemInfo>();
+                var jumpToIds = SolarSystemPosHelper.GetJumpTo(data.Id);
+                if (jumpToIds != null)
+                {
+                    foreach (var id in jumpToIds)
+                    {
+                        MapSystemInfo mapSystemInfo = new MapSystemInfo()
+                        {
+                            System = _mapSolarSystems[id],
+                        };
+                        mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
+                        if (_sovDatas.TryGetValue(id, out var sov))
+                        {
+                            mapSystemInfo.Sov = sov.AllianceName;
+                        }
+                        jumpTos.Add(mapSystemInfo);
+                    }
+                }
+                MapSystemDetailInfo mapSystemDetailInfo = new MapSystemDetailInfo()
+                {
+                    System = data.MapSolarSystem,
+                    Region = _mapRegions[data.MapSolarSystem.RegionID],
+                    Sov = sovData,
+                    Resources = resource,
+                    JumpTos = jumpTos
+                };
+                if (_systemKills.TryGetValue(data.MapSolarSystem.SolarSystemID, out var kills))
+                {
+                    mapSystemDetailInfo.ShipKills = kills.ShipKills;
+                    mapSystemDetailInfo.NpcKills = kills.NpcKills;
+                    mapSystemDetailInfo.PodKills = kills.PodKills;
+                }
+                if (_systemJumps.TryGetValue(data.MapSolarSystem.SolarSystemID, out var jumps))
+                {
+                    mapSystemDetailInfo.Jumps = jumps;
+                }
+                MapSystemDetailPage page = new MapSystemDetailPage(mapSystemDetailInfo);
+                ToolWindow toolWindow = new ToolWindow(mapSystemDetailInfo.System.SolarSystemName, mapSystemDetailInfo.System.SolarSystemName, page, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                toolWindow.Activate();
             }
-            MapSystemDetailInfo mapSystemDetailInfo = new MapSystemDetailInfo()
-            {
-                System = data.MapSolarSystem,
-                Region = _mapRegions[data.MapSolarSystem.RegionID],
-                Sov = sovData,
-                Resources = resource,
-                JumpTos = jumpTos
-            };
-            if(_systemKills.TryGetValue(data.MapSolarSystem.SolarSystemID,out var kills))
-            {
-                mapSystemDetailInfo.ShipKills = kills.ShipKills;
-                mapSystemDetailInfo.NpcKills = kills.NpcKills;
-                mapSystemDetailInfo.PodKills = kills.PodKills;
-            }
-            if(_systemJumps.TryGetValue(data.MapSolarSystem.SolarSystemID, out var jumps))
-            {
-                mapSystemDetailInfo.Jumps = jumps;
-            }
-            MapSystemDetailPage page = new MapSystemDetailPage(mapSystemDetailInfo);
-            ToolWindow toolWindow = new ToolWindow(mapSystemDetailInfo.System.SolarSystemName, mapSystemDetailInfo.System.SolarSystemName, page, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
-            toolWindow.Activate();
         }
         #endregion
 

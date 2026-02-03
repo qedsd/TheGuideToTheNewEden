@@ -113,37 +113,31 @@
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
-                <Button Style="{ThemeResource TransparentButton}">
-                    <Button.Content>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE11A;" />
-                    </Button.Content>
-                    <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedLeft">
-                            <Grid Height="34">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
-                                    <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
-                                    <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
-                                </ComboBox>
-                                <Grid
-                                    Grid.Column="1"
-                                    Width="200"
-                                    Margin="-4,0,-8,0">
-                                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True" />
-                                    <controls:SelecteRegionControl
-                                        x:Name="RegionSelector"
-                                        ShowList="False"
-                                        Visibility="Collapsed" />
-                                </Grid>
-                            </Grid>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
             </StackPanel>
         </StackPanel>
+        <Grid
+            Height="34"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
+                <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
+                <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
+            </ComboBox>
+            <Grid
+                Grid.Column="1"
+                Width="200"
+                Margin="-4,0,-8,0">
+                <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True" />
+                <controls:SelecteRegionControl
+                    x:Name="RegionSelector"
+                    ShowList="False"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Grid>
 
         <!--  左侧详细面板(暂废弃)  -->
         <Grid
