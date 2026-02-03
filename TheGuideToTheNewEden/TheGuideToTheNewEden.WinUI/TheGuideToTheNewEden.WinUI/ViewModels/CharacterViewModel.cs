@@ -27,6 +27,7 @@ using Vanara.PInvoke;
 using ESI.NET.Models.Location;
 using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -197,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skill = p.Result.Data;
+                        skill = JsonConvert.DeserializeObject<ESI.NET.Models.Skills.SkillDetails>(p.Result.Message);//BUG:p.Result.Data = null
                     }
                     else
                     {
@@ -244,7 +245,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skillQueueItems = p.Result.Data;
+                        skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null
                     }
                     else
                     {

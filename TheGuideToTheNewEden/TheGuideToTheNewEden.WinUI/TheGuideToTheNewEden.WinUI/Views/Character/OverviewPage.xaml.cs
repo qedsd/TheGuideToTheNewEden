@@ -23,6 +23,7 @@ using ESI.NET.Models.Skills;
 using System.Text.RegularExpressions;
 using TheGuideToTheNewEden.WinUI.Converters;
 using static Vanara.PInvoke.ComCtl32;
+using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -117,7 +118,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 {
                     if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skillQueueItems = p.Result.Data;
+                        skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null;
                     }
                     else
                     {
