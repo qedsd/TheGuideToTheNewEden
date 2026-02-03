@@ -147,7 +147,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 
         private void Page_OnShowInGameRequested(object sender, List<MapNavigationPoint> e)
         {
-            SetAutopilotWaypoint(e);
+            try
+            {
+                SetAutopilotWaypoint(e);
+            }
+            catch(Exception ex)
+            {
+                _window.ShowError(ex.Message);
+            }
         }
 
         private void NavTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -437,12 +444,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                     }
                     _esi ??= ESIService.GetDefaultESI2();
                     var sso = ESIService.ToEVEStandardSSO(ShowInGameSelecteCharacterControl.SelectedItem);
-                    int setp = path.Count - 1;
-                    _window.ShowWaiting($"1/{setp}");
-                    await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, true, true, path[1].System.SolarSystemID);
-                    for (int i = 2; i < path.Count - 1; i++)
+                    int setp = path.Count;
+                    for (int i = 0; i < path.Count; i++)
                     {
-                        _window.ShowWaiting($"{i}/{setp}");
+                        _window.ShowWaiting($"{i + 1}/{path.Count}");
                         await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, false, false, path[i].System.SolarSystemID);
                     }
                 }

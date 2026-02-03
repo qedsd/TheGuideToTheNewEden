@@ -329,7 +329,11 @@
                                     ValueChanged="JumpFreightersNumberBox_ValueChanged"
                                     Value="4" />
                             </Grid>
-                            <Grid Grid.Row="4" Margin="0,4">
+                            <!--  暂时屏蔽模式选择，默认省时优先  -->
+                            <Grid
+                                Grid.Row="4"
+                                Margin="0,4"
+                                Visibility="Collapsed">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
@@ -359,7 +363,7 @@
                                     x:Name="UseStargateCheckBox"
                                     Grid.Column="1"
                                     Margin="8,0,0,0"
-                                    IsChecked="False" />
+                                    IsChecked="True" />
                             </Grid>
                             <Grid Grid.Row="6" Margin="0,4">
                                 <Grid.ColumnDefinitions>

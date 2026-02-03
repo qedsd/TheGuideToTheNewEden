@@ -62,7 +62,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         /// <param name="avoidIds"></param>
         /// <param name="mode">
         /// 0 时间优先 - 权重全部相等
-        /// 1 省钱优先 - 以跳跃距离为权重，星门按最大跳跃距离算
+        /// 1 省钱优先 - 以跳跃距离为权重，星门按最大跳跃距离算，有bug，如1DQ到吉他算不出来
         /// </param>
         /// <returns></returns>
         public static List<int> CalCapitalJumpPath(int start, int end, double maxJump,bool useGate, List<int> avoidIds,int mode)
@@ -75,7 +75,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             //1天文单位（AU） = 9460730472580800米
             //数据库XY坐标单位为米
             double maxJump2 = maxJump * 9460730472580800;
-            double gateWeight = mode == 0 ? maxJump2 : 1;
+            double gateWeight = mode == 0 ? 1 : maxJump2;
             
             CalWeightDelegate calWeight = EqualWeight;
             switch(mode)
@@ -94,7 +94,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                         {
                             if (!avoidIdsHashSet.Contains(jump))
                             {
-                                edges.Add(jump, maxJump2);
+                                edges.Add(jump, gateWeight);
                             }
                         }
                     }
