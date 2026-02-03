@@ -315,6 +315,7 @@
     <None Remove="Views\LinksPage.xaml" />
     <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
+    <None Remove="Views\Map\Tools\IntelTool.xaml" />
     <None Remove="Views\Map\Tools\MapGIS.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
     <None Remove="Views\Map\Tools\MapNavigationResultPage.xaml" />
@@ -655,6 +656,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Map\Tools\IntelTool.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Map\Tools\MapNavigationResultPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

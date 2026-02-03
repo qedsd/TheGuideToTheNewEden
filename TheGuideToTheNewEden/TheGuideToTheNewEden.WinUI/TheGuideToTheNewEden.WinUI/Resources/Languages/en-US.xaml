@@ -1187,6 +1187,14 @@
     <x:String x:Key="OneJumpCover_Start">Cal</x:String>
     <x:String x:Key="OneJumpCover_Count">Count</x:String>
 
+    <!--  MapIntelTool  -->
+    <x:String x:Key="MapIntelTool_Setting">Setting</x:String>
+    <x:String x:Key="MapIntelTool_LiveData">Live Data</x:String>
+    <x:String x:Key="MapIntelTool_ClearList">Clear Data</x:String>
+    <x:String x:Key="MapIntelTool_ClearMap">Clear Map</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel">Channel Intel</x:String>
+    <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
+
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">Start</x:String>
     <x:String x:Key="ChannelIntelPage_Stop">Stop</x:String>

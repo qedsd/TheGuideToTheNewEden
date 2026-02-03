@@ -1187,6 +1187,14 @@
     <x:String x:Key="OneJumpCover_Start">计算</x:String>
     <x:String x:Key="OneJumpCover_Count">一跳范围内星系数量</x:String>
 
+    <!--  MapIntelTool  -->
+    <x:String x:Key="MapIntelTool_Setting">设置</x:String>
+    <x:String x:Key="MapIntelTool_LiveData">信息</x:String>
+    <x:String x:Key="MapIntelTool_ClearList">清空列表</x:String>
+    <x:String x:Key="MapIntelTool_ClearMap">清空地图</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel">频道预警</x:String>
+    <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
+
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>
     <x:String x:Key="ChannelIntelPage_Stop">停止预警</x:String>
