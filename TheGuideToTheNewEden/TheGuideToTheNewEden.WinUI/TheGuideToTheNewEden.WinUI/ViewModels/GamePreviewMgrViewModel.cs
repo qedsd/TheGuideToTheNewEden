@@ -188,10 +188,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
             }
+            RegisterHotKeyGroups();
         }
         private bool RegisterForwardHotkey()
         {
-            Core.Log.Info($"向前全局切换快捷键{PreviewSetting.SwitchHotkey_Forward}");
             if(!UnregisterForwardHotkey())
             {
                 return false;
@@ -207,7 +207,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private bool RegisterBackwardHotkey()
         {
-            Core.Log.Info($"向后全局切换快捷键{PreviewSetting.SwitchHotkey_Backward}");
             if (!UnregisterBackwardHotkey())
             {
                 return false;
@@ -219,6 +218,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 return RegisterHotkey(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId);
+            }
+        }
+        private void RegisterHotKeyGroups()
+        {
+            if (PreviewSetting.HotKeyGroups.NotNullOrEmpty())
+            {
+                foreach (var group in PreviewSetting.HotKeyGroups)
+                {
+                    RegisterHotkeyGroup(group);
+                }
             }
         }
         private bool RegisterHotkey(string hotkey, out int hotkeyRegisterId)
@@ -298,6 +307,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return true;
             }
         }
+        private void UnregisterHotKeyGroups()
+        {
+            if (PreviewSetting.HotKeyGroups.NotNullOrEmpty())
+            {
+                foreach (var group in PreviewSetting.HotKeyGroups)
+                {
+                    if (UnregisterHotkey(group.ForwardHotkeyRegisterId))
+                    {
+                        group.ForwardHotkeyRegisterId = -1;
+                    }
+                    if (UnregisterHotkey(group.BackwardHotkeyRegisterId))
+                    {
+                        group.BackwardHotkeyRegisterId = -1;
+                    }
+                }
+            }
+        }
         public ICommand SetForwardHotkeyCommand => new RelayCommand(() =>
         {
             SaveSetting();
@@ -362,6 +388,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 var runnings = targetProcesses;
+                bool foundLastActiveProcess = false;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -386,7 +413,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        foundLastActiveProcess = true;
                         break;
+                    }
+                }
+                if (!foundLastActiveProcess)
+                {
+                    var firstRunning = targetProcesses.FirstOrDefault();
+                    if (firstRunning != null)
+                    {
+                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                        {
+                            value.ActiveSourceWindow();
+                            _lastActiveProcessGUID = firstRunning.GUID;
+                        }
                     }
                 }
             }
@@ -412,6 +452,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 var runnings = targetProcesses;
+                bool foundLastActiveProcess = false;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -436,7 +477,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        foundLastActiveProcess = true;
                         break;
+                    }
+                }
+                if (!foundLastActiveProcess)
+                {
+                    var firstRunning = targetProcesses.FirstOrDefault();
+                    if (firstRunning != null)
+                    {
+                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                        {
+                            value.ActiveSourceWindow();
+                            _lastActiveProcessGUID = firstRunning.GUID;
+                        }
                     }
                 }
             }
@@ -481,6 +535,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     else
                     {
                         var runnings = targetProcesses;
+                        bool foundLastActiveProcess = false;
                         for (int i = 0; i < runnings.Count; i++)
                         {
                             var item = runnings[i];
@@ -519,7 +574,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                         targetGroup.LastActiveProcessGUID = targetGUID;
                                     }
                                 }
+                                foundLastActiveProcess = true;
                                 break;
+                            }
+                        }
+                        if(!foundLastActiveProcess)//存在上一个激活的进程关闭的情况
+                        {
+                            var firstRunning = targetProcesses.FirstOrDefault();
+                            if (firstRunning != null)
+                            {
+                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                                {
+                                    value.ActiveSourceWindow();
+                                    targetGroup.LastActiveProcessGUID = firstRunning.GUID;
+                                }
                             }
                         }
                     }
@@ -535,7 +603,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SaveSetting();
         }
 
-        public void SaveHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
+        public void RegisterHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
         {
             if(hotKeyGroup != null)
             {
@@ -1467,6 +1535,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
             UnregisterForwardHotkey();
             UnregisterBackwardHotkey();
+            UnregisterHotKeyGroups();
             StopGameMonitor();
         }
     }

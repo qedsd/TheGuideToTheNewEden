@@ -239,7 +239,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void GamePreviewGroupHotKeyControl_OnSaveClicked(object sender, PreviewHotKeyGroup e)
         {
-            VM.SaveHotkeyGroup(e);
+            VM.RegisterHotkeyGroup(e);
         }
 
         private void TabViewItem_CloseRequested(TabViewItem sender, TabViewTabCloseRequestedEventArgs args)
