@@ -13,7 +13,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
 {
     public class ChannelTranslation
     {
-        private const int MAXCHAR = 10000;
+        private const int MAXCHAR = 1000;
         /// <summary>
         /// 已查询字符数量
         /// </summary>
