@@ -57,7 +57,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         public static void CloseAll()
         {
-            foreach(var win in _activeWindows)
+            foreach(var win in _activeWindows.ToList())
             {
                 try
                 {
