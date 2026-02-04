@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
         {
             if(notificationActivatedEventArgs.Arguments.TryGetValue("id", out string id))
             {
-                GameLogMonitorNotifyService.Current.Stop(int.Parse(id));
+                //TODO:停止声音？
             }
             if (notificationActivatedEventArgs.Arguments.TryGetValue("listener", out string listener))
             {

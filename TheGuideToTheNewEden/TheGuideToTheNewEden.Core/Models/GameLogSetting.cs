@@ -12,23 +12,11 @@ namespace TheGuideToTheNewEden.Core.Models
     {
         public int ListenerID { get; set; }
 
-        //private bool monitorThreadError = true;
-        //public bool MonitorThreadError
-        //{
-        //    get => monitorThreadError; set => SetProperty(ref monitorThreadError, value);
-        //}
-
         private ObservableCollection<GameLogItemConfig> _itemConfigs = new ObservableCollection<GameLogItemConfig>();
         public ObservableCollection<GameLogItemConfig> ItemConfigs
         {
             get => _itemConfigs; set => SetProperty(ref _itemConfigs, value);
         }
-
-        //private GameLogItemConfig _threadErrorConfig;
-        //public GameLogItemConfig ThreadErrorConfig
-        //{
-        //    get => _threadErrorConfig; set => SetProperty(ref _threadErrorConfig, value);
-        //}
     }
 
     public class GameLogItemConfig : ObservableObject
