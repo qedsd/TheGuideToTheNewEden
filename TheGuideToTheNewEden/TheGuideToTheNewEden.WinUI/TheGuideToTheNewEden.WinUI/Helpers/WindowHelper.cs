@@ -410,11 +410,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static void SetForegroundWindow5(IntPtr targetHandle)
         {
             //SetForegroundWindow条件之一：The calling process received the last input event.
-            //Win32.keybd_event(0x11, 0, 0, 0);//Ctrl键
-            Win32.keybd_event(0, 0, 0, 0);
+            Win32.keybd_event(0x11, 0, 0, 0);//Ctrl键
+            //Win32.keybd_event(0, 0, 0, 0);
             SetForegroundWindow_Click(targetHandle);
-            //Win32.keybd_event(0x11, 0, 0x0002, 0);
-            Win32.keybd_event(0, 0, 0x0002, 0);
+            Win32.keybd_event(0x11, 0, 0x0002, 0);
+            //Win32.keybd_event(0, 0, 0x0002, 0);
         }
 
         /// <summary>
