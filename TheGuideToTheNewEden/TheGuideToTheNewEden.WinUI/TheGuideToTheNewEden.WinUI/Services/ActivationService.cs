@@ -56,7 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             else
             {
                 //TODO:release
-                return [""];
+                return ["", "", ""];
             }
         }
         private static string[] GetESILicense()
@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             else
             {
                 //TODO:release
-                return null;
+                return ["", ""];
             }
         }
         private static string GetGithubLicense()
