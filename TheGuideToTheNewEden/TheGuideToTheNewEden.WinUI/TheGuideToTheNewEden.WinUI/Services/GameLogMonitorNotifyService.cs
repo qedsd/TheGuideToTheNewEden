@@ -32,38 +32,39 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private Dictionary<int, MediaPlayer> NotifyMediaPlayers = new Dictionary<int, MediaPlayer>();
         public bool Add(Core.Models.GameLogInfo info, Core.Models.GameLogSetting setting, string title)
         {
-            if(setting.WindowNotify)
-            {
-                if(!NotifyWindows.ContainsKey(setting.ListenerID))
-                {
-                    GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.ListenerName, setting.ListenerID);
-                    messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_GameLogMonitor")} - {title}");
-                    messageWindow.OnHided += MessageWindow_OnHided;
-                    messageWindow.OnShowGameButtonClick += MessageWindow_OnShowGameButtonClick;
-                    NotifyWindows.Add(setting.ListenerID, messageWindow);
-                }
-                else
-                {
-                    Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
-                    return false;
-                }
-            }
-            if(setting.SoundNotify)
-            {
-                if (!NotifyMediaPlayers.TryAdd(setting.ListenerID, new MediaPlayer()
-                {
-                    Source = MediaSource.CreateFromUri(new Uri(string.IsNullOrEmpty(setting.SoundFile) ?
-                    System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3") :
-                    setting.SoundFile)),
-                    IsLoopingEnabled = setting.RepeatSound
-                }))
-                {
-                    Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
-                    NotifyWindows.Remove(setting.ListenerID);
-                    return false;
-                }
-            }
-            return true;
+            return false;
+            //if(setting.WindowNotify)
+            //{
+            //    if(!NotifyWindows.ContainsKey(setting.ListenerID))
+            //    {
+            //        GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.ListenerName, setting.ListenerID);
+            //        messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_GameLogMonitor")} - {title}");
+            //        messageWindow.OnHided += MessageWindow_OnHided;
+            //        messageWindow.OnShowGameButtonClick += MessageWindow_OnShowGameButtonClick;
+            //        NotifyWindows.Add(setting.ListenerID, messageWindow);
+            //    }
+            //    else
+            //    {
+            //        Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
+            //        return false;
+            //    }
+            //}
+            //if(setting.SoundNotify)
+            //{
+            //    if (!NotifyMediaPlayers.TryAdd(setting.ListenerID, new MediaPlayer()
+            //    {
+            //        Source = MediaSource.CreateFromUri(new Uri(string.IsNullOrEmpty(setting.SoundFile) ?
+            //        System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "default.mp3") :
+            //        setting.SoundFile)),
+            //        IsLoopingEnabled = setting.RepeatSound
+            //    }))
+            //    {
+            //        Core.Log.Error($"添加相同ListenerID{setting.ListenerID}");
+            //        NotifyWindows.Remove(setting.ListenerID);
+            //        return false;
+            //    }
+            //}
+            //return true;
         }
 
         private void MessageWindow_OnShowGameButtonClick(GaemLogMsgWindow gaemLogMsgWindow)

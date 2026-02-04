@@ -717,6 +717,7 @@
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">游戏日志出现相应关键词时将发出通知，支持正则表达式</x:String>
     <x:String x:Key="GameLogMonitorPage_Setting">监控设置</x:String>
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">打开日志文件</x:String>
+    <x:String x:Key="GameLogMonitorPage_OpenLogFolder">打开日志文件夹</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">监控关键词不可为空</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">监控关键词不可重复</x:String>
     <x:String x:Key="GameLogMonitorPage_AddNotifyServiceFalied">添加通知服务失败</x:String>
@@ -735,6 +736,8 @@
     <x:String x:Key="GameLogMonitorPage_Span">间隔时间（s）</x:String>
     <x:String x:Key="GameLogMonitorPage_Logs">实时日志</x:String>
     <x:String x:Key="GameLogMonitorPage_SoundFile">音频文件</x:String>
+    <x:String x:Key="GameLogMonitorPage_Type_GameLog">游戏日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_Type_ErrorLog">异常日志</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>

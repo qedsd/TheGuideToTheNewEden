@@ -18,6 +18,13 @@ namespace TheGuideToTheNewEden.Core.Models
             set => SetProperty(ref running, value);
         }
 
+        private GameLogSetting _setting;
+        public GameLogSetting Setting
+        {
+            get => _setting;
+            set => SetProperty(ref _setting, value);
+        }
+
         public List<Core.Models.EVELogs.GameLogContent> LogContents { get; set; } = new List<EVELogs.GameLogContent>();
         public string Folder()
         {

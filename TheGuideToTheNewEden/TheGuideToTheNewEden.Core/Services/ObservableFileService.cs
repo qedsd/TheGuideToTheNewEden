@@ -36,29 +36,23 @@ namespace TheGuideToTheNewEden.Core.Services
                     ItemsDic = new Dictionary<string, List<IObservableFile>>();
                 }
                 string folder = Path.GetDirectoryName(item.FilePath);
-                if (FileWatcherDic.TryGetValue(folder, out var watcher))
+                if (!FileWatcherDic.TryGetValue(folder, out var watcher))
                 {
-                    List<IObservableFile> items = null;
-                    if (!ItemsDic.TryGetValue(item.FilePath, out items))//该文件没监控过
-                    {
-                        items = new List<IObservableFile>();
-                        ItemsDic.Add(item.FilePath, items);
-                    }
+                    watcher = new EVEFileSystemWatcher(folder);
+                    watcher.OnChanged += Watcher_Changed;
+                    watcher.OnAdded += Watcher_OnAdded;
+                    watcher.Start();
+                    FileWatcherDic.Add(folder, watcher);
+                }
+                List<IObservableFile> items = null;
+                if (!ItemsDic.TryGetValue(item.FilePath, out items))//该文件没监控过
+                {
+                    items = new List<IObservableFile>();
+                    ItemsDic.Add(item.FilePath, items);
                     watcher.AddFile(item.FilePath);
-                    items.Add(item);
-                    return true;
                 }
-                else//未存在文件夹监控器，新建
-                {
-                    EVEFileSystemWatcher newWatcher = new EVEFileSystemWatcher(folder);
-                    newWatcher.OnChanged += Watcher_Changed;
-                    newWatcher.OnAdded += Watcher_OnAdded;
-                    newWatcher.Start();
-                    FileWatcherDic.Add(folder, newWatcher);
-                    ItemsDic.Add(item.FilePath, new List<IObservableFile>() { item });
-                    newWatcher.AddFile(item.FilePath);
-                    return true;
-                }
+                items.Add(item);
+                return true;
             }
             catch (Exception ex)
             {

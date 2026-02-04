@@ -134,19 +134,50 @@ namespace TheGuideToTheNewEden.WinUI.Views
                 System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
             }
         }
+        private void MenuFlyoutItem_LogFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as GameLogInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{info.FilePath}\"");
+            }
+        }
 
         private void Button_DeleteKey_Click(object sender, RoutedEventArgs e)
         {
-            VM.GameLogSetting.Keys.Remove((sender as Button).DataContext as GameLogMonityKey);
-        }
-        private void Button_DeleteThreadErrorKey_Click(object sender, RoutedEventArgs e)
-        {
-            VM.GameLogSetting.ThreadErrorKeys.Remove((sender as Button).DataContext as GameLogMonityKey);
+            VM.SelectedItemConfig.Keys.Remove((sender as Button).DataContext as GameLogMonityKey);
         }
 
         public void NavigatedTo(object parameter)
         {
 
         }
+
+        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            VM.RemoveConfig(args.Tab.DataContext as GameLogItemConfig);
+        }
+
+        private void AddKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddKeysCommand.Execute(null);
+        }
+
+        private void PickSoundFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.PickSoundFileCommand.Execute(null);
+        }
+
+        private void AddGameLog_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddConfig(0);
+        }
+
+        private void AddErrorLog_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddConfig(1);
+        }
+
+        
     }
 }

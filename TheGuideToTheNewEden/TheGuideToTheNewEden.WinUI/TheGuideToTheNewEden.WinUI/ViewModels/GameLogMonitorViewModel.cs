@@ -14,6 +14,7 @@ using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Models;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -21,6 +22,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
     {
         private readonly string _logPath = GameLogsSettingService.GetGamelogsPath();
         public ObservableCollection<GameLogInfo> GameLogInfos { get; } = new ObservableCollection<GameLogInfo>();
+
         private GameLogInfo _selectedGameLogInfo;
         public GameLogInfo SelectedGameLogInfo
         {
@@ -31,26 +33,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(value != null)
                     {
-                        var setting = Services.Settings.GameLogInfoSettingService.GetValue(value.ListenerID);
-                        if(setting == null)
+                        if(value.Setting == null)
                         {
-                            GameLogSetting = new GameLogSetting()
-                            {
-                                ListenerID = value.ListenerID
-                            };
-                            GameLogSetting.Keys.Add(new GameLogMonityKey("combat"));
-                            var errorRegex = ReadErrorRegex();
-                            if (errorRegex.NotNullOrEmpty())
-                            {
-                                foreach (var regex in errorRegex)
-                                {
-                                    GameLogSetting.ThreadErrorKeys.Add(new GameLogMonityKey(regex));
-                                }
-                            }
+                            var setting = GetSetting(value.ListenerID);
+                            value.Setting = setting;
+                            GameLogSetting = setting;
                         }
                         else
                         {
-                            GameLogSetting = setting;
+                            GameLogSetting = value.Setting;
                         }
                     }
                     else
@@ -60,11 +51,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
+
         private GameLogSetting gameLogSetting;
         public GameLogSetting GameLogSetting
         {
             get => gameLogSetting;
-            set => SetProperty(ref  gameLogSetting, value);
+            set 
+            {
+                if(SetProperty(ref gameLogSetting, value))
+                {
+                    if(value != null)
+                    {
+                        SelectedItemConfig = value.ItemConfigs.FirstOrDefault();
+                    }
+                    else
+                    {
+                        SelectedItemConfig = null;
+                    }
+                }
+            } 
+        }
+
+        private GameLogItemConfig _selectedItemConfig;
+        public GameLogItemConfig SelectedItemConfig
+        {
+            get => _selectedItemConfig;
+            set => SetProperty(ref _selectedItemConfig, value);
         }
 
         private bool running;
@@ -74,8 +86,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref running, value);
         }
 
-        private Core.Services.GameLogDelayMonitorService _gameLogDelayMonitorService;
-        private readonly Dictionary<int, Core.Models.GameLogItem> _gameLogItems = new Dictionary<int, GameLogItem>();
+        /// <summary>
+        /// key = GameLogItemConfig.GUID
+        /// </summary>
+        private readonly Dictionary<string, Models.GameLogMonitor> _monitors = new Dictionary<string, Models.GameLogMonitor>();
         internal GameLogMonitorViewModel()
         {
             InitAsync();
@@ -113,97 +127,146 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            Start(SelectedGameLogInfo, GameLogSetting);
+            Start(SelectedGameLogInfo);
         });
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
             foreach (var info in GameLogInfos)
             {
-                var setting = Services.Settings.GameLogInfoSettingService.GetValue(info.ListenerID);
-                if (setting != null)
-                {
-                    Start(info, setting);
-                }
+                Start(info);
             }
         });
-        private bool Start(GameLogInfo gameLogInfo,  GameLogSetting gameLogSetting)
+
+        /// <summary>
+        /// 若保存过则读取，若没保存过则生成默认
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private GameLogSetting GetSetting(int id)
         {
-            if (!gameLogSetting.Keys.Any())
+            var setting = Services.Settings.GameLogInfoSettingService.GetValue(id);
+            if (setting == null)
             {
-                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_NoneKeyError")}");
-                return false;
-            }
-            if (gameLogSetting.Keys.GroupBy(p => p.Pattern).FirstOrDefault(p => p.Count() > 1) != null)
-            {
-                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_SameKeyError")}");
-                return false;
-            }
-            if (GameLogMonitorNotifyService.Current.Add(gameLogInfo, gameLogSetting, gameLogInfo.ListenerName))
-            {
-                Core.Models.GameLogItem gameLogItem = new GameLogItem(gameLogInfo, gameLogSetting);
-                _gameLogItems.Remove(gameLogInfo.ListenerID);
-                _gameLogItems.Add(gameLogInfo.ListenerID, gameLogItem);
-                Core.Services.ObservableFileService.Add(gameLogItem);
-                gameLogItem.OnContentUpdate += GameLogItem_OnContentUpdate;
-                if (gameLogSetting.MonitorThreadError)
+                setting = new GameLogSetting()
                 {
-                    gameLogItem.InitThreadErrorLog();
-                }
-                gameLogInfo.Running = true;
-                Services.Settings.GameLogInfoSettingService.SetValue(gameLogSetting);
-                if (gameLogSetting.MonitorMode == 1)
+                    ListenerID = id,
+                    ItemConfigs = new ObservableCollection<GameLogItemConfig>(),
+                };
+
+                setting.ItemConfigs.Add(CreateErrorLogConfig());
+                setting.ItemConfigs.Add(CreateGameLogConfig());
+            }
+            return setting;
+        }
+        private bool Start(GameLogInfo gameLogInfo)
+        {
+            GameLogSetting setting = gameLogInfo.Setting;
+            if(setting != null)
+            {
+                try
                 {
-                    if (_gameLogDelayMonitorService == null)
+                    if (setting.ItemConfigs.Any())
                     {
-                        _gameLogDelayMonitorService = new Core.Services.GameLogDelayMonitorService();
-                        _gameLogDelayMonitorService.OnGameLogDelayExpire += GameLogDelayMonitorService_OnGameLogDelayExpire;
+                        foreach (var itemConfig in setting.ItemConfigs)
+                        {
+                            if (!_monitors.TryGetValue(itemConfig.GUID, out var itemMonitor))
+                            {
+                                if (itemConfig.LogType == 0)
+                                {
+                                    itemMonitor = new Models.GameLogMonitor(gameLogInfo, itemConfig, gameLogInfo.FilePath);
+                                }
+                                else
+                                {
+                                    if (!GameLogHelper.GetGameLogDateAndThreadId(gameLogInfo.FilePath, out int dateInt, out int threadId))
+                                    {
+                                        string msg = $"Get Game Log Date And Thread Id Failed:{System.IO.Path.GetFileNameWithoutExtension(gameLogInfo.FilePath)}";
+                                        Core.Log.Error(msg);
+                                        ShowError(msg);
+                                        return false;
+                                    }
+                                    string threadFile = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(gameLogInfo.FilePath), $"{dateInt}_{threadId}.txt");
+                                    if (System.IO.File.Exists(threadFile))
+                                    {
+                                        itemMonitor = new Models.GameLogMonitor(gameLogInfo, itemConfig, threadFile);
+                                    }
+                                    else
+                                    {
+                                        string msg = $"Thread File Not Exists:{threadFile}";
+                                        Core.Log.Error(msg);
+                                        ShowError(msg);
+                                        return false;
+                                    }
+                                }
+                                itemMonitor.OnContentUpdate += ContentUpdate;
+                                _monitors.Add(itemConfig.GUID, itemMonitor);
+                            }
+                            itemMonitor.Start();
+                        }
                     }
+                    gameLogInfo.Running = true;
+                    Running = true;
+                    return true;
                 }
-                Running = true;
-                return true;
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex);
+                    ShowError(ex);
+                    return false;
+                }
             }
             else
             {
-                ShowError($"{gameLogInfo.ListenerName}: {Helpers.ResourcesHelper.GetString("GameLogMonitorPage_AddNotifyServiceFalied")}");
                 return false;
             }
         }
+
         public ICommand AddKeysCommand => new RelayCommand(() =>
         {
-            GameLogSetting.Keys.Add(new GameLogMonityKey("系统消息"));
+            SelectedItemConfig.Keys.Add(new GameLogMonityKey("系统消息"));
         });
         public ICommand StopNotifyCommand => new RelayCommand(() =>
         {
-            GameLogMonitorNotifyService.Current.Stop(GameLogSetting.ListenerID);
+            
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
-            Stop(SelectedGameLogInfo, GameLogSetting);
+            Stop(SelectedGameLogInfo);
             Running = GameLogInfos.FirstOrDefault(p=>p.Running) != null;
         });
         public ICommand StopAllCommand => new RelayCommand(() =>
         {
             foreach (var info in GameLogInfos)
             {
-                var setting = Services.Settings.GameLogInfoSettingService.GetValue(info.ListenerID);
-                if (setting != null)
-                {
-                    Stop(info, setting);
-                }
+                Stop(info);
             }
             Running = false;
         });
-        private void Stop(GameLogInfo gameLogInfo, GameLogSetting gameLogSetting)
+        private void Stop(GameLogInfo gameLogInfo)
         {
-            GameLogMonitorNotifyService.Current.Stop(gameLogSetting.ListenerID);
-            GameLogMonitorNotifyService.Current.Remove(gameLogSetting.ListenerID);
-            Core.Services.ObservableFileService.Remove(_gameLogItems[gameLogInfo.ListenerID]);
-            if (_gameLogItems.TryGetValue(gameLogInfo.ListenerID, out var item))
+            if (gameLogInfo != null)
             {
-                item.Dispose();
+                var monitors = GetMonitor(gameLogInfo);
+                if (monitors.NotNullOrEmpty())
+                {
+                    foreach(var monitor in monitors)
+                    {
+                        monitor.Stop();
+                    }
+                }
+                gameLogInfo.Running = false;
             }
-            gameLogInfo.Running = false;
-            _gameLogItems.Remove(gameLogInfo.ListenerID);
+        }
+        private List<GameLogMonitor> GetMonitor(GameLogInfo gameLogInfo)
+        {
+            List<GameLogMonitor> monitors = new List<GameLogMonitor>();
+            foreach (var item in gameLogInfo.Setting.ItemConfigs)
+            {
+                if (_monitors.TryGetValue(item.GUID, out var itemMonitor))
+                {
+                    monitors.Add(itemMonitor);
+                }
+            }
+            return monitors;
         }
 
         public ICommand PickSoundFileCommand => new RelayCommand(async () =>
@@ -211,73 +274,91 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             var file = await Helpers.PickHelper.PickFileAsync(Window);
             if (file != null)
             {
-                GameLogSetting.SoundFile = file.Path;
+                SelectedItemConfig.SoundFile = file.Path;
             }
-        });
-
-        public ICommand AddThreadErrorKeysCommand => new RelayCommand(() =>
-        {
-            GameLogSetting.ThreadErrorKeys.Add(new GameLogMonityKey("接口被关闭了"));
         });
         public void Dispose()
         {
             GameLogInfos.Where(p => p.Running).ToList().ForEach(p =>
             {
-                GameLogMonitorNotifyService.Current.Stop(p.ListenerID);
-                GameLogMonitorNotifyService.Current.Remove(p.ListenerID);
-                Core.Services.ObservableFileService.Remove(_gameLogItems[p.ListenerID]);
+                var monitors = GetMonitor(p);
+                if (monitors.NotNullOrEmpty())
+                {
+                    foreach (var monitor in monitors)
+                    {
+                        monitor.Dispose();
+                        _monitors.Remove(monitor.GetGUID());
+                    }
+                }
                 p.Running = false;
             });
-            foreach(var item in _gameLogItems)
+            foreach(var item in _monitors)
             {
                 item.Value.Dispose();
             }
+            _monitors.Clear();
+        }
+        public void RemoveConfig(GameLogItemConfig config)
+        {
+            if (config != null)
+            {
+                if(_monitors.TryGetValue(config.GUID, out var itemMonitor))
+                {
+                    itemMonitor.Dispose();
+                    _monitors.Remove(config.GUID);
+                }
+                GameLogSetting.ItemConfigs.Remove(config);
+            }
+        }
+        public void AddConfig(int mode)
+        {
+            GameLogSetting.ItemConfigs.Add(mode == 0 ? CreateGameLogConfig() : CreateErrorLogConfig());
         }
 
         #region 消息处理
-        public delegate void ContentUpdate(GameLogItem item, IEnumerable<GameLogContent> news);
         /// <summary>
         /// 消息更新
         /// </summary>
-        public event ContentUpdate OnContentUpdate;
-        private void GameLogDelayMonitorService_OnGameLogDelayExpire(int id)
-        {
-            Window.DispatcherQueue.SafelyTryEnqueue(() =>
-            {
-                GameLogMonitorNotifyService.Current.Notify(_gameLogItems[id], Helpers.ResourcesHelper.GetString("GameLogMonitorPage_DelayExpireTip"));
-            });
-        }
-        private void GameLogItem_OnContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
+        public event GameLogItem.ContentUpdate OnContentUpdate;
+
+        private void ContentUpdate(GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
         {
             if(SelectedGameLogInfo != null && item.Info.ListenerID == SelectedGameLogInfo.ListenerID)
             {
                 OnContentUpdate?.Invoke(item, news);
             }
             item.Info.LogContents.AddRange(news);
-            foreach (var msg in news)
-            {
-                if (msg.Important)
-                {
-                    TryNotify(item, msg);
-                }
-            }
-        }
-        
-        private void TryNotify(GameLogItem item, Core.Models.EVELogs.GameLogContent msg)
-        {
-            if(item.Setting.MonitorMode == 0)//立即通知
-            {
-                GameLogMonitorNotifyService.Current.Notify(item, msg.SourceContent);
-            }
-            else//只更新时间
-            {
-                _gameLogDelayMonitorService.Update(item.Info.ListenerID, DateTime.Now.AddSeconds(item.Setting.DisappearDelay));
-            }
         }
         #endregion
         private string[] ReadErrorRegex()
         {
             return System.IO.File.ReadAllLines(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "GameThreadErrorLogRegex.txt"));
+        }
+
+        private GameLogItemConfig CreateGameLogConfig()
+        {
+            GameLogItemConfig itemConfig = new GameLogItemConfig(0)
+            {
+                ConfigName = Helpers.ResourcesHelper.GetString("GameLogMonitorPage_Type_GameLog")
+            };
+            itemConfig.Keys.Add(new GameLogMonityKey("combat"));
+            return itemConfig;
+        }
+        private GameLogItemConfig CreateErrorLogConfig()
+        {
+            GameLogItemConfig itemConfig = new GameLogItemConfig(1)
+            {
+                ConfigName = Helpers.ResourcesHelper.GetString("GameLogMonitorPage_Type_ErrorLog")
+            };
+            var errorRegex = ReadErrorRegex();
+            if (errorRegex.NotNullOrEmpty())
+            {
+                foreach (var regex in errorRegex)
+                {
+                    itemConfig.Keys.Add(new GameLogMonityKey(regex));
+                }
+            }
+            return itemConfig;
         }
     }
 }

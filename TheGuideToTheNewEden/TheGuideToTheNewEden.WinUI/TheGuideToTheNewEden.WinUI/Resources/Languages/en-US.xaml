@@ -717,6 +717,7 @@
     <x:String x:Key="GameLogMonitorPage_NotifyKey_Tip">When keywords appear in the game log, a notification will be issued, supporting regular expressions</x:String>
     <x:String x:Key="GameLogMonitorPage_Setting">Setting</x:String>
     <x:String x:Key="GameLogMonitorPage_OpenLogFile">Open log file</x:String>
+    <x:String x:Key="GameLogMonitorPage_OpenLogFolder">Open log folder</x:String>
     <x:String x:Key="GameLogMonitorPage_NoneKeyError">Keywords cannot be empty</x:String>
     <x:String x:Key="GameLogMonitorPage_SameKeyError">Keywords cannot be repeated</x:String>
     <x:String x:Key="GameLogMonitorPage_AddNotifyServiceFalied">Failed to add notification service</x:String>
@@ -735,6 +736,8 @@
     <x:String x:Key="GameLogMonitorPage_Span">Span（s）</x:String>
     <x:String x:Key="GameLogMonitorPage_Logs">Logs</x:String>
     <x:String x:Key="GameLogMonitorPage_SoundFile">Audio file</x:String>
+    <x:String x:Key="GameLogMonitorPage_Type_GameLog">Game Log</x:String>
+    <x:String x:Key="GameLogMonitorPage_Type_ErrorLog">Error Log</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">System notification</x:String>
