@@ -738,6 +738,9 @@
     <x:String x:Key="GameLogMonitorPage_SoundFile">Audio file</x:String>
     <x:String x:Key="GameLogMonitorPage_Type_GameLog">Game Log</x:String>
     <x:String x:Key="GameLogMonitorPage_Type_ErrorLog">Error Log</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config">Config</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config_Type">Log Type</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config_Name">Config Name</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">System notification</x:String>

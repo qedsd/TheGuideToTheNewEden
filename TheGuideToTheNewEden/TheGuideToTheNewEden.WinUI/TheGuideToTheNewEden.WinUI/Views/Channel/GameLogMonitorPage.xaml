@@ -132,9 +132,46 @@
                     TabItemsSource="{x:Bind VM.GameLogSetting.ItemConfigs, Mode=OneWay}">
                     <TabView.TabItemTemplate>
                         <DataTemplate x:DataType="models:GameLogItemConfig">
-                            <TabViewItem Header="{x:Bind ConfigName}">
+                            <TabViewItem Header="{x:Bind ConfigName, Mode=OneWay}">
                                 <ScrollViewer Padding="4,0">
                                     <StackPanel>
+                                        <Expander
+                                            Margin="0,0,0,4"
+                                            Header="{StaticResource GameLogMonitorPage_Config}"
+                                            IsExpanded="True"
+                                            Style="{StaticResource StretchExpander}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="16" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="32" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Text="{StaticResource GameLogMonitorPage_Config_Type}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{StaticResource GameLogMonitorPage_Type_GameLog}"
+                                                    Visibility="{x:Bind LogType, Converter={StaticResource ZeroToVisibleConverter}}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{StaticResource GameLogMonitorPage_Type_ErrorLog}"
+                                                    Visibility="{x:Bind LogType, Converter={StaticResource ZeroToCollapsedConverter}}" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{StaticResource GameLogMonitorPage_Config_Name}" />
+                                                <TextBox
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    Text="{x:Bind ConfigName, Mode=TwoWay}" />
+                                            </Grid>
+                                        </Expander>
                                         <Expander
                                             Margin="0,0,0,4"
                                             Header="{StaticResource GameLogMonitorPage_MonitorMode}"
@@ -162,7 +199,6 @@
                                                     Value="{x:Bind DisappearDelay, Mode=TwoWay}" />
                                             </Grid>
                                         </Expander>
-
                                         <Expander
                                             Margin="0,0,0,4"
                                             Header="{StaticResource GameLogMonitorPage_NotifyMode}"
@@ -232,7 +268,7 @@
                                         </Expander>
                                         <Expander
                                             Margin="0,0,0,4"
-                                            Header="{StaticResource GameLogMonitorPage_CharacterGameLog}"
+                                            Header="{StaticResource GameLogMonitorPage_NotifyKey}"
                                             IsExpanded="True"
                                             Style="{StaticResource StretchExpander}">
                                             <Grid>
@@ -241,20 +277,10 @@
                                                     <RowDefinition />
                                                 </Grid.RowDefinitions>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock VerticalAlignment="Center" Text="{StaticResource GameLogMonitorPage_NotifyKey}" />
-                                                    <Button
-                                                        Width="24"
-                                                        Height="24"
-                                                        Margin="4,0,0,0"
-                                                        Padding="0"
-                                                        BorderThickness="0"
-                                                        Content="!">
-                                                        <Button.Flyout>
-                                                            <Flyout>
-                                                                <TextBlock Text="{StaticResource GameLogMonitorPage_NotifyKey_Tip}" />
-                                                            </Flyout>
-                                                        </Button.Flyout>
-                                                    </Button>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Text="{StaticResource GameLogMonitorPage_NotifyKey_Tip}" />
                                                 </StackPanel>
                                                 <Button
                                                     HorizontalAlignment="Right"

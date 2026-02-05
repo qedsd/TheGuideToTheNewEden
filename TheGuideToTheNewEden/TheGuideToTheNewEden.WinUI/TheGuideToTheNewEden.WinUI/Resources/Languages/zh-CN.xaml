@@ -738,6 +738,9 @@
     <x:String x:Key="GameLogMonitorPage_SoundFile">音频文件</x:String>
     <x:String x:Key="GameLogMonitorPage_Type_GameLog">游戏日志</x:String>
     <x:String x:Key="GameLogMonitorPage_Type_ErrorLog">异常日志</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config">配置信息</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config_Type">日志类型</x:String>
+    <x:String x:Key="GameLogMonitorPage_Config_Name">配置名称</x:String>
 
     <!--  TestSettingPage  -->
     <x:String x:Key="TestSettingPage_SystemNotify">系统通知</x:String>

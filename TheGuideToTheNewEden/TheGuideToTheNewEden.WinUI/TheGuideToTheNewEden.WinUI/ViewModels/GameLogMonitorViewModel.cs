@@ -205,6 +205,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     gameLogInfo.Running = true;
                     Running = true;
+                    Services.Settings.GameLogInfoSettingService.SetValue(gameLogInfo.Setting);
                     return true;
                 }
                 catch (Exception ex)
