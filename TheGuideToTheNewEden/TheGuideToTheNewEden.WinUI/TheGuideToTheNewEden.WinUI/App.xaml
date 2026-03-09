@@ -59,6 +59,11 @@
                 x:Key="CharacterImgConverter128"
                 Size="128"
                 Type="Character" />
+            <converters:GameImageConverter
+                x:Key="CharacterImgConverter64"
+                Size="64"
+                Type="Character" />
+            <converters:GameImageConverter x:Key="IdNameImgConverter64" Size="64" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:ColorConverter x:Key="DrawColorToUIColorConverter" />
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />

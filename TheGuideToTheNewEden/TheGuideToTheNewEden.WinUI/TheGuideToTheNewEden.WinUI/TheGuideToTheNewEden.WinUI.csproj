@@ -235,6 +235,7 @@
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
     <None Remove="Controls\GamePreviewGroupHotKeyControl.xaml" />
+    <None Remove="Controls\IdNameSearchBox.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
     <None Remove="Controls\InfoBarControl.xaml" />
     <None Remove="Controls\JumpBridgeSetting.xaml" />
@@ -504,6 +505,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\GamePreviewGroupHotKeyControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\IdNameSearchBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="logo_128.png">

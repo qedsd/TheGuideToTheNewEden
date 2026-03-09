@@ -67,7 +67,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             EsiResponse<ESI.NET.Models.Status.Status> esiResponse = null;
             Task.Run(() =>
             {
-                esiResponse = Core.Services.ESIService.GetDefaultEsi().Status.Retrieve().Result;
+                try
+                {
+                    esiResponse = Core.Services.ESIService.GetDefaultEsi().Status.Retrieve().Result;
+                }
+                catch{ }
             }).ContinueWith((task) =>
             {
                 Window.DispatcherQueue.SafelyTryEnqueue(() =>

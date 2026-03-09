@@ -131,6 +131,8 @@
     <x:String x:Key="General_Reset">Reset</x:String>
     <x:String x:Key="General_Canceld">Canceld</x:String>
     <x:String x:Key="General_Result">Result</x:String>
+    <x:String x:Key="General_On">On</x:String>
+    <x:String x:Key="General_Off">Off</x:String>
 
     <x:String x:Key="General_En">En</x:String>
     <x:String x:Key="General_Zh">中文</x:String>
@@ -1077,6 +1079,7 @@
     <x:String x:Key="MapPage_Tools_Navigation">Navigation</x:String>
     <x:String x:Key="MapPage_Tools_GIS">GIS</x:String>
     <x:String x:Key="MapPage_Tools_KBStream">KB</x:String>
+    <x:String x:Key="MapPage_Tools_Intel">Map Intel</x:String>
     <x:String x:Key="MapPage_DisableNoActiveSystem">Disable No Active System</x:String>
     <x:String x:Key="MapPage_EnableNoActiveSystem">Enable No Active System</x:String>
     <x:String x:Key="MapPage_LoadingSystemData">Loading System Data</x:String>
@@ -1199,7 +1202,16 @@
     <x:String x:Key="MapIntelTool_ClearList">Clear Data</x:String>
     <x:String x:Key="MapIntelTool_ClearMap">Clear Map</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel">Channel Intel</x:String>
+    <x:String x:Key="MapIntelTool_General">General</x:String>
     <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
+    <x:String x:Key="MapIntelTool_ZKB_Enable">Enable ZKB</x:String>
+    <x:String x:Key="MapIntelTool_ZKB_Duration">Duration</x:String>
+    <x:String x:Key="MapIntelTool_ZKB_MaxAttackerCount">Max Attackers</x:String>
+    <x:String x:Key="MapIntelTool_MaxMsgCount">Max Data</x:String>
+    <x:String x:Key="MapIntelTool_Exclusions">Exclusions</x:String>
+    <x:String x:Key="MapIntelTool_Exclusions_Tip">Not displayed in the list</x:String>
+    <x:String x:Key="MapIntelTool_Inclusions">Inclusions</x:String>
+    <x:String x:Key="MapIntelTool_Inclusions_Tip">Not displayed in the list</x:String>
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">Start</x:String>

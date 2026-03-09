@@ -283,11 +283,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             if(selectedItem != null)
             {
-                var systems = _systemDatas.Values.Where(p => p.Enable && (p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p => p.Id).ToList();
-                if(systems != null && systems.Count > 0)
-                {
-                    MapCanvas.ToSystem(_systemDatas.Values.Where(p => (p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p => p.Id).ToList());
-                }
+                MapCanvas.ToRegion(selectedItem.RegionID);
             }
         }
 
@@ -664,6 +660,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_InOneJumpSystems");
                     }
                     break;
+                case "Intel":
+                    {
+                        targetTool = new IntelTool(MapCanvas,_systemDatas, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_Intel");
+                    }
+                    break;
             }
             if(targetTool != null)
             {
@@ -671,6 +673,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 toolWindow.Activate();
                 toolWindow.Closed += ToolWindow_Closed;
                 _toolWindows.Add(toolWindow);
+                MapCanvas.ActiveTool();
             }
         }
 

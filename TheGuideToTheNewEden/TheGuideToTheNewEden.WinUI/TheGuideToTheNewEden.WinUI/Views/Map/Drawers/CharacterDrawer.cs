@@ -149,7 +149,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         /// value = ids
         /// </summary>
         private Dictionary<int, List<int>> _characterOfDatas = new Dictionary<int, List<int>>();
-        public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
+        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
         {
             float foontSize = zoom > 12 ? 12 : zoom;
             CanvasTextFormat mainTextFormat = new CanvasTextFormat()
@@ -168,19 +168,24 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     {
                         if (_characterImgBytes.TryGetValue(character.Key, out var bytes))
                         {
-                            using (var stream = new InMemoryRandomAccessStream())
+                            //using (var stream = new InMemoryRandomAccessStream())
+                            //{
+                            //    using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
+                            //    {
+                            //        writer.WriteBytes(bytes);
+                            //        writer.StoreAsync().Wait();
+                            //    }
+                            //    stream.Seek(0);
+                            //    img = CanvasBitmap.LoadAsync(args.DrawingSession, stream).AsTask().Result;
+                            //    if (img != null)
+                            //    {
+                            //        _characterImgs.Add(character.Key, img);
+                            //    }
+                            //}
+                            img = CreateCanvasBitmap(sender, args, bytes, 64);
+                            if (img != null)
                             {
-                                using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
-                                {
-                                    writer.WriteBytes(bytes);
-                                    writer.StoreAsync().Wait();
-                                }
-                                stream.Seek(0);
-                                img = CanvasBitmap.LoadAsync(args.DrawingSession, stream).AsTask().Result;
-                                if (img != null)
-                                {
-                                    _characterImgs.Add(character.Key, img);
-                                }
+                                _characterImgs.Add(character.Key, img);
                             }
                         }
                     }

@@ -28,11 +28,11 @@
                     AllowDrop="True"
                     CanDragItems="True"
                     CanReorderItems="True"
+                    DragItemsCompleted="GridView_DragItemsCompleted"
                     DragItemsStarting="GridView_DragItemsStarting"
                     Drop="GridView_Drop"
                     IsItemClickEnabled="True"
                     ItemClick="GridView_ItemClick"
-                    DragItemsCompleted="GridView_DragItemsCompleted"
                     ItemsSource="{x:Bind VM.Characters, Mode=OneWay}"
                     SelectionMode="None">
                     <GridView.ItemContainerStyle>

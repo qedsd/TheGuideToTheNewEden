@@ -6,7 +6,7 @@
             <Color x:Key="ThemeMainColor">Black</Color>
             <SolidColorBrush x:Key="DefaultGrayBrush" Color="{ThemeResource DefaultGray}" />
             <SolidColorBrush x:Key="ForegroundBrush" Color="White" />
-            <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#323232" />
+            <SolidColorBrush x:Key="ContentBackgroudBrush" Color="#64323232" />
             <SolidColorBrush x:Key="MainBackgroudBrush" Color="#202020" />
             <SolidColorBrush x:Key="EntryDetailContantBrush" Color="#323232" />
             <SolidColorBrush x:Key="ContentDialogDimmingThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />

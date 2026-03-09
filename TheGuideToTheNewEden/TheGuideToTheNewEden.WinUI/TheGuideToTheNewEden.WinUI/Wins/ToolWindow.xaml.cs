@@ -310,32 +310,47 @@ namespace TheGuideToTheNewEden.WinUI
 
         public void ShowMsg(string msg, bool autoClose = true)
         {
-            InfoBar.Show(this.Title, msg, InfoType.Info, autoClose, null);
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                InfoBar.Show(this.Title, msg, InfoType.Info, autoClose, null);
+            });
         }
 
         public void ShowError(string msg, bool autoClose = true)
         {
-            InfoBar.Show(this.Title, msg, InfoType.Error, autoClose, null);
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                InfoBar.Show(this.Title, msg, InfoType.Error, autoClose, null);
+            });
         }
 
         public void ShowSuccess(string msg, bool autoClose = true)
         {
-            InfoBar.Show(this.Title, msg, InfoType.Success, autoClose, null);
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                InfoBar.Show(this.Title, msg, InfoType.Success, autoClose, null);
+            });
         }
 
         public void ShowWaiting(string tip = null)
         {
-            Loading.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-            Loading.IsLoading = true;
-            Loading.LoadingContent = tip;
-            ContentFrame.IsEnabled = false;
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                Loading.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                Loading.IsLoading = true;
+                Loading.LoadingContent = tip;
+                ContentFrame.IsEnabled = false;
+            });
         }
 
         public void HideWaiting()
         {
-            Loading.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            Loading.IsLoading = false;
-            ContentFrame.IsEnabled = true;
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                Loading.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                Loading.IsLoading = false;
+                ContentFrame.IsEnabled = true;
+            });
         }
 
         public Window GetWindow()

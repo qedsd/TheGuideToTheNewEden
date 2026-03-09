@@ -53,7 +53,7 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
-    <controls1:CardControl Margin="0,8" Background="Transparent">
+    <controls1:CardControl Background="Transparent">
         <controls1:CardControl.Header>
             <Grid Margin="-8,4,-8,6">
                 <Grid.ColumnDefinitions>

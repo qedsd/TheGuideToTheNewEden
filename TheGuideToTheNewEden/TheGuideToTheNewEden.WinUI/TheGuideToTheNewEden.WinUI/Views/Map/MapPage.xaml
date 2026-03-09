@@ -67,7 +67,7 @@
                                         Header="{StaticResource MapPage_Setting_Tool}"
                                         Style="{StaticResource StretchExpander}">
                                         <ToggleSwitch
-                                            IsOn="True"
+                                            IsOn="False"
                                             OffContent="{StaticResource MapPage_DisableNoActiveSystem}"
                                             OnContent="{StaticResource MapPage_EnableNoActiveSystem}"
                                             Toggled="DisableNoActiveSystem_Toggled" />
@@ -110,6 +110,10 @@
                                 Click="Tools_Click"
                                 Tag="OneJumpCover"
                                 Text="{StaticResource MapPage_Tools_InOneJumpSystems}" />
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="Intel"
+                                Text="{StaticResource MapPage_Tools_Intel}" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>

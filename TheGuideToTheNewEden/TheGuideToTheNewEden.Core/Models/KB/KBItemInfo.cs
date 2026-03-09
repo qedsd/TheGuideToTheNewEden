@@ -26,7 +26,9 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public IdName VictimCharacterName { get; set; }
         public IdName VictimCorporationIdName { get; set; }
         public IdName VictimAllianceName { get; set; }
-       
+
+        public IdName VictimFctionName { get; set; }
+
         public IdName FinalBlowCharacterName { get; set; }
         public IdName FinalBlowCorporationIdName { get; set; }
         public IdName FinalBlowAllianceName { get; set; }

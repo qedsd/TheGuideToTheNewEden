@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.DBModels;
 using static Vanara.PInvoke.Kernel32;
 
 namespace TheGuideToTheNewEden.WinUI.Converters
@@ -20,13 +21,28 @@ namespace TheGuideToTheNewEden.WinUI.Converters
         public ImgType Type { get; set; } = ImgType.Type;
         public object Convert(object value, Type targetType, object parameter, string language)
         {
+            if (value is IdName idName)
+            {
+                return GetImageUri(idName, Size);
+            }
             if (value == null || (int)value == 0)
             {
                 return null;
             }
             return GetImageUri((int)value, Type, Size);
         }
-
+        public static string GetImageUri(IdName idName, int size = 128)
+        {
+            ImgType type = ImgType.Type;
+            switch (idName.GetCategory())
+            {
+                case IdName.CategoryEnum.Character:type = ImgType.Type;break;
+                case IdName.CategoryEnum.Corporation:type = ImgType.Corporation;break;
+                case IdName.CategoryEnum.Alliance:type = ImgType.Alliance;break;
+                case IdName.CategoryEnum.InventoryType:type = ImgType.Type;break;
+            }
+            return GetImageUri(idName.Id, type, size);
+        }
         public static string GetImageUri(int id, ImgType type, int size = 128)
         {
             if (id <= 0)

@@ -53,33 +53,44 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
         }
 
-        public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header)
+        public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header, bool newWindow = false)
         {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToZKB();
+            if (!newWindow)
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToZKB();
+            }
             var statistic = await GetEntityStatisticAsync(id, entityType);
             if (statistic != null)
             {
                 Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    TabViewItem content = null;
-                    if (!_instances.TryGetValue(id, out content))
+                    if (_tabView != null && !newWindow)
                     {
-                        content = new TabViewItem()
+                        TabViewItem content = null;
+                        if (!_instances.TryGetValue(id, out content))
                         {
-                            Content = new EntityStatistPage(statistic, this),//KBNavigationService懒得改成IOC了，就这样传吧
-                            Header = header,
-                            IsClosable = true,
-                            IsSelected = true,
-                            Tag = (long)id,
-                        };
-                        _instances.Add(id, content);
-                        _tabView.TabItems.Add(content);
+                            content = new TabViewItem()
+                            {
+                                Content = new EntityStatistPage(statistic, this),//KBNavigationService懒得改成IOC了，就这样传吧
+                                Header = header,
+                                IsClosable = true,
+                                IsSelected = true,
+                                Tag = (long)id,
+                            };
+                            _instances.Add(id, content);
+                            _tabView.TabItems.Add(content);
+                        }
+                        PageChanged?.Invoke(id, header);
                     }
-                    PageChanged?.Invoke(id, header);
+                    else
+                    {
+                        ToolWindow toolWindow = new ToolWindow(header, header,new EntityStatistPage(statistic, this), WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                        toolWindow.Activate();
+                    }
                 });
             }
         }
-        public async Task NavigationTo(IdName idName)
+        public async Task NavigationTo(IdName idName, bool newWindow = false)
         {
             ZKB.NET.EntityType entityType;
             switch (idName.GetCategory())
@@ -98,31 +109,39 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         return;
                     }
             }
-            await NavigationTo(idName.Id, entityType, idName.Name);
+            await NavigationTo(idName.Id, entityType, idName.Name,newWindow);
         }
 
-        public void NavigateToKM(Core.Models.KB.KBItemInfo info)
+        public void NavigateToKM(Core.Models.KB.KBItemInfo info, bool newWindow = false)
         {
             Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 long id = info.SKBDetail.KillmailId;
                 string name = info.Victim == null ? id.ToString() : info.Victim.Name;
                 string header = $"KB-{name}";
-                TabViewItem content = null;
-                if (!_instances.TryGetValue(id, out content))
+                if (_tabView == null || newWindow)
                 {
-                    content = new TabViewItem()
-                    {
-                        Header = header,
-                        Content = new KBDetailPage(info),
-                        IsClosable = true,
-                        IsSelected = true,
-                        Tag = id,
-                    };
-                    _instances.Add(id, content);
-                    _tabView.TabItems.Add(content);
+                    ToolWindow toolWindow = new ToolWindow(header, header, new KBDetailPage(info), WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                    toolWindow.Activate();
                 }
-                PageChanged?.Invoke(id, $"KB-{name}");
+                else
+                {
+                    TabViewItem content = null;
+                    if (!_instances.TryGetValue(id, out content))
+                    {
+                        content = new TabViewItem()
+                        {
+                            Header = header,
+                            Content = new KBDetailPage(info),
+                            IsClosable = true,
+                            IsSelected = true,
+                            Tag = id,
+                        };
+                        _instances.Add(id, content);
+                        _tabView.TabItems.Add(content);
+                    }
+                    PageChanged?.Invoke(id, $"KB-{name}");
+                }
             });
         }
         public void NavigateToInstance(long id)

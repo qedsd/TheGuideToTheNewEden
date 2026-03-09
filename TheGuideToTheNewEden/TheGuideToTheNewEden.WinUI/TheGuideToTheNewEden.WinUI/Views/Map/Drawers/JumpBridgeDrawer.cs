@@ -47,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             RequstDraw();
         }
 
-        public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
+        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
         {
             if(JumpBridgeSetting.IsShowBridge() && JumpBridgeSetting.ExistBridge())
             {
