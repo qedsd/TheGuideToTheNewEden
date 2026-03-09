@@ -42,7 +42,7 @@
             Background="{ThemeResource TransparentBackgroudBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,0,1,0"
-            Content="{x:Bind Content, Mode=OneWay}"
+            Content="{x:Bind CustomContent, Mode=OneWay}"
             CornerRadius="{Binding CornerRadius, ElementName=ParentControl, Mode=OneWay, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
         <Grid
             x:Name="FonterLine"

@@ -51,13 +51,13 @@
             <controls:CardControl.Header>
                 <TextBlock Text="{StaticResource StructuresSettingPage_AddedStructureList}" />
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <ListView
                     ItemTemplate="{StaticResource StructureDataTemplate}"
                     ItemsSource="{x:Bind VM.Structures, Mode=OneWay}"
                     SelectionChanged="StructuresListView_SelectionChanged"
                     SelectionMode="Extended" />
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <Button
                     Margin="0,8,0,12"
@@ -71,7 +71,7 @@
             <controls:CardControl.Header>
                 <TextBlock Text="{StaticResource StructuresSettingPage_AddStructureList}" />
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Grid Margin="16,8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -138,7 +138,7 @@
                         </dataGrid:SfDataGrid.Columns>
                     </dataGrid:SfDataGrid>
                 </Grid>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <Button
                     Width="240"

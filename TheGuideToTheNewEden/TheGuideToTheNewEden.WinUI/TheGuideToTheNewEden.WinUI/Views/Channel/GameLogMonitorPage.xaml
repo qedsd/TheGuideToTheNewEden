@@ -26,7 +26,7 @@
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource GameLogMonitorPage_CharacterList}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     AllowDrop="True"
                     Background="Transparent"
@@ -79,7 +79,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -123,7 +123,7 @@
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource GameLogMonitorPage_Setting}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <TabView
                     CloseButtonOverlayMode="OnPointerOver"
                     IsAddTabButtonVisible="False"
@@ -340,7 +340,7 @@
                         </Grid>
                     </TabView.TabStripFooter>
                 </TabView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -373,14 +373,14 @@
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource GameLogMonitorPage_Logs}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ScrollViewer x:Name="GameLogContentsScroll">
                     <RichTextBlock
                         x:Name="GameLogContents"
                         Margin="4,0"
                         IsRightTapEnabled="False" />
                 </ScrollViewer>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
 
     </Grid>

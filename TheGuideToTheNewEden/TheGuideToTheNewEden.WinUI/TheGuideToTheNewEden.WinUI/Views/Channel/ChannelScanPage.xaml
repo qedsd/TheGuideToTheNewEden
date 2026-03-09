@@ -28,7 +28,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource ChannelScanPage_NameList}" />
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <TextBox
                     x:Name="InputContent"
                     Margin="4,0"
@@ -38,7 +38,7 @@
                     IsSpellCheckEnabled="False"
                     PlaceholderText="{StaticResource ChannelScanPage_NamesTip}"
                     TextWrapping="Wrap" />
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -64,7 +64,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource General_Setting}" />
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <ScrollViewer>
                     <StackPanel>
                         <Expander
@@ -215,7 +215,7 @@
                         </Expander>
                     </StackPanel>
                 </ScrollViewer>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <AppBarButton
                     Margin="4,0"
@@ -246,7 +246,7 @@
                                         Text="{x:Bind VM.StatisticsCorporation.Count, Mode=OneWay}" />
                                 </Grid>
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <ListView ItemsSource="{x:Bind VM.StatisticsCorporation, Mode=OneWay}" Style="{StaticResource StretchListView}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
@@ -281,7 +281,7 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                         <controls:CardControl Grid.Column="1">
                             <controls:CardControl.Header>
@@ -293,7 +293,7 @@
                                         Text="{x:Bind VM.StatisticsAlliance.Count, Mode=OneWay}" />
                                 </Grid>
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <ListView ItemsSource="{x:Bind VM.StatisticsAlliance, Mode=OneWay}" Style="{StaticResource StretchListView}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
@@ -328,7 +328,7 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                     </Grid>
                 </PivotItem>

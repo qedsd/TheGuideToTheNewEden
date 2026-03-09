@@ -30,7 +30,7 @@
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource ChannelIntelPage_Characters}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     x:Name="ProcessList"
                     Background="Transparent"
@@ -62,7 +62,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -93,7 +93,7 @@
             <controls1:CardControl.Header>
                 <TextBlock Text="{StaticResource ChannelIntelPage_Channels}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView IsEnabled="{x:Bind VM.SelectedCharacter.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" ItemsSource="{x:Bind VM.ChannelIntel.ChatChanelInfos, Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:ChatChanelInfo">
@@ -124,7 +124,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -156,7 +156,7 @@
                     </Button>
                 </Grid>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <Pivot Margin="0,-50,0,0" Padding="0">
                     <PivotItem>
                         <PivotItem.Header>
@@ -556,7 +556,7 @@
                         </ScrollViewer>
                     </PivotItem>
                 </Pivot>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton

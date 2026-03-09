@@ -29,7 +29,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_ProcessList}" />
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <ListView
                     x:Name="ProcessList"
                     Margin="0"
@@ -76,7 +76,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel
                     Grid.Row="2"
@@ -132,7 +132,7 @@
                     </Button>
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <ScrollViewer>
                     <StackPanel x:Name="SettingArea" Margin="0,0">
                         <Expander
@@ -405,7 +405,7 @@
                         </Expander>
                     </StackPanel>
                 </ScrollViewer>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton
@@ -444,7 +444,7 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource GamePreviewMgrPage_GlobalSetting}" />
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <ScrollViewer>
                     <StackPanel>
                         <Expander
@@ -870,7 +870,7 @@
                         </Expander>
                     </StackPanel>
                 </ScrollViewer>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton

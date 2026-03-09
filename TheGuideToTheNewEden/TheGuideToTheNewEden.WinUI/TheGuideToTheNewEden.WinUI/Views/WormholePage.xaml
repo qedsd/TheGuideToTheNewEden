@@ -45,7 +45,7 @@
                     Text="{x:Bind VM.SearchText, Mode=TwoWay}"
                     TextMemberPath="Name" />
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Grid Margin="16,4" Visibility="{x:Bind VM.WormholeDetail, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -211,7 +211,7 @@
                         </TabView.TabItems>
                     </TabView>
                 </Grid>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
         </controls:CardControl>
         <controls:CardControl Grid.Column="1" Visibility="{x:Bind VM.WormholeDetail, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
             <controls:CardControl.Header>
@@ -245,7 +245,7 @@
                     </StackPanel>
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Grid Padding="8">
                     <Grid Visibility="{x:Bind VM.LoadingZKB, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
                         <Grid.RowDefinitions>
@@ -426,7 +426,7 @@
                         IsLoading="{x:Bind VM.LoadingZKB, Mode=OneWay}"
                         Visibility="{x:Bind VM.LoadingZKB, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
                 </Grid>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
         </controls:CardControl>
     </Grid>
 </Page>

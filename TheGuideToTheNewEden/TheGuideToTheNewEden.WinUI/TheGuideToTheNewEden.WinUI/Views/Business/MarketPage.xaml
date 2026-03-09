@@ -88,9 +88,9 @@
                 </Grid>
 
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <controls:MarketTreeControl SelectedInvType="{x:Bind VM.SelectedInvType, Mode=TwoWay}" ShowSearchBox="True" />
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
         </controls:CardControl>
         <controls:CardControl
             Grid.Column="1"
@@ -414,7 +414,7 @@
                     </Grid>
                 </Grid>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Pivot>
                     <PivotItem>
                         <PivotItem.Header>
@@ -631,7 +631,7 @@
                         </Grid>
                     </PivotItem>
                 </Pivot>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
         </controls:CardControl>
     </Grid>
 </Page>

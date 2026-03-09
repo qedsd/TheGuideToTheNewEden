@@ -202,7 +202,7 @@
                 </Grid>
             </Grid>
         </controls1:CardControl.Header>
-        <controls1:CardControl.Content>
+        <controls1:CardControl.CustomContent>
             <Grid Grid.Row="2" Background="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="300" />
@@ -357,6 +357,6 @@
                 </Grid>
 
             </Grid>
-        </controls1:CardControl.Content>
+        </controls1:CardControl.CustomContent>
     </controls1:CardControl>
 </Page>

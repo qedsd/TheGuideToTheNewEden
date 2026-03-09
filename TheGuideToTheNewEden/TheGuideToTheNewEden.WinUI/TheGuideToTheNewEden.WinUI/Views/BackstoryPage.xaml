@@ -64,13 +64,13 @@
                     SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                     TextChanged="AutoSuggestBox_TextChanged" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     ItemTemplate="{StaticResource BackstoryDataTemplate}"
                     ItemsSource="{x:Bind VM.Backstories, Mode=TwoWay}"
                     SelectedItem="{x:Bind VM.SelectedListBackstory, Mode=TwoWay}"
                     Style="{StaticResource StretchListView}" />
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <ComboBox
                     Margin="0,0,0,8"
@@ -101,7 +101,7 @@
                         Text="{x:Bind VM.SelectedBackstory.Title_Zh, Mode=OneWay}" />
                 </StackPanel>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <Pivot Margin="0,-16,0,0">
                     <PivotItem>
                         <PivotItem.Header>
@@ -134,7 +134,7 @@
                         </ScrollViewer>
                     </PivotItem>
                 </Pivot>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
     </Grid>
 </Page>

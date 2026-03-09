@@ -58,7 +58,7 @@
                 </Button>
             </Grid>
         </controls:CardControl.Header>
-        <controls:CardControl.Content>
+        <controls:CardControl.CustomContent>
             <dataGrid:SfDataGrid
                 x:Name="OrderDataGrid"
                 HorizontalAlignment="Stretch"
@@ -126,6 +126,6 @@
                     </MenuFlyout>
                 </dataGrid:SfDataGrid.RecordContextFlyout>
             </dataGrid:SfDataGrid>
-        </controls:CardControl.Content>
+        </controls:CardControl.CustomContent>
     </controls:CardControl>
 </Page>

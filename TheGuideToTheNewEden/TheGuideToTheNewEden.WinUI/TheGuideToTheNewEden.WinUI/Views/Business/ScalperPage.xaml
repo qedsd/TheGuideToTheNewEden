@@ -24,7 +24,7 @@
         </Grid.ColumnDefinitions>
         <controls:CardControl Padding="0">
             <controls:CardControl.Header />
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Pivot Margin="0,-50,0,0" Padding="0">
                     <PivotItem>
                         <PivotItem.Header>
@@ -348,7 +348,7 @@
 
                     </PivotItem>
                 </Pivot>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton

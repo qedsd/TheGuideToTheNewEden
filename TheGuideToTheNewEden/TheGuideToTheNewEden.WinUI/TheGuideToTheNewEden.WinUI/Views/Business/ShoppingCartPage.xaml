@@ -20,7 +20,7 @@
             <controls:CardControl.Header>
                 <TextBlock Text="{StaticResource BusinessPage_Statistics}" />
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Grid Margin="16,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -77,7 +77,7 @@
                         Grid.Row="6"
                         Grid.Column="2" />
                 </Grid>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <Button

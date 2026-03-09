@@ -40,17 +40,17 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             set => SetValue(HeaderProperty, value);
         }
 
-        public static new readonly DependencyProperty ContentProperty
-            = DependencyProperty.Register(
-                nameof(Content),
-                typeof(FrameworkElement),
-                typeof(CardControl),
-                new PropertyMetadata(null));
+        public static readonly DependencyProperty CustomContentProperty =
+        DependencyProperty.Register(
+            nameof(CustomContent),
+            typeof(FrameworkElement),
+            typeof(CardControl),
+            new PropertyMetadata(null));
 
-        public new FrameworkElement Content
+        public FrameworkElement CustomContent
         {
-            get => (FrameworkElement)GetValue(ContentProperty);
-            set => SetValue(ContentProperty, value);
+            get => (FrameworkElement)GetValue(CustomContentProperty);
+            set => SetValue(CustomContentProperty, value);
         }
 
         public static readonly DependencyProperty FonterProperty

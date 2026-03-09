@@ -29,11 +29,11 @@
                     <SelectorBarItem Tag="1" Text="{StaticResource MapIntelTool_LiveData}" />
                 </SelectorBar>
             </controls:CardControl.Header>
-            <controls:CardControl.Content>
+            <controls:CardControl.CustomContent>
                 <Grid>
                     <Grid x:Name="SettingGrid">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="250" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition />
@@ -43,7 +43,7 @@
                             <controls:CardControl.Header>
                                 <TextBlock Text="{StaticResource MapIntelTool_General}" />
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Style="{StaticResource SettingHeader}" Text="{StaticResource MapIntelTool_MaxMsgCount}" />
@@ -53,21 +53,21 @@
                                             Value="{x:Bind VM.Config.MaxMsgCount, Mode=TwoWay}" />
                                     </StackPanel>
                                 </StackPanel>
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                         <controls:CardControl Grid.Column="1">
                             <controls:CardControl.Header>
                                 <TextBlock Text="{StaticResource MapIntelTool_ChannelIntel}" />
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <StackPanel />
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                         <controls:CardControl Grid.Column="2">
                             <controls:CardControl.Header>
                                 <TextBlock Text="{StaticResource MapIntelTool_ZKB}" />
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Style="{StaticResource SettingHeader}" Text="{StaticResource MapIntelTool_ZKB_Enable}" />
@@ -95,13 +95,13 @@
                                             Value="{x:Bind VM.Config.ZKBMaxAttackerCount, Mode=TwoWay}" />
                                     </StackPanel>
                                 </StackPanel>
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                         <controls:CardControl Grid.Column="3">
                             <controls:CardControl.Header>
                                 <TextBlock Text="{StaticResource MapIntelTool_Exclusions}" ToolTipService.ToolTip="{StaticResource MapIntelTool_Exclusions_Tip}" />
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content>
+                            <controls:CardControl.CustomContent>
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -159,13 +159,15 @@
                                         </ListView.ItemTemplate>
                                     </ListView>
                                 </Grid>
-                            </controls:CardControl.Content>
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                         <controls:CardControl Grid.Column="4">
                             <controls:CardControl.Header>
                                 <TextBlock Text="{StaticResource MapIntelTool_Inclusions}" ToolTipService.ToolTip="{StaticResource MapIntelTool_Inclusions_Tip}" />
                             </controls:CardControl.Header>
-                            <controls:CardControl.Content />
+                            <controls:CardControl.CustomContent>
+                                <StackPanel />
+                            </controls:CardControl.CustomContent>
                         </controls:CardControl>
                     </Grid>
                     <Grid x:Name="LiveDataGrid" Visibility="Collapsed">
@@ -398,7 +400,7 @@
                         </ListView>
                     </Grid>
                 </Grid>
-            </controls:CardControl.Content>
+            </controls:CardControl.CustomContent>
             <controls:CardControl.Fonter>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <AppBarButton

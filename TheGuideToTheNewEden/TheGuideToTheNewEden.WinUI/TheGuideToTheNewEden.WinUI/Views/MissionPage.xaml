@@ -59,13 +59,13 @@
                     SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                     TextChanged="AutoSuggestBox_TextChanged" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     ItemTemplate="{StaticResource MissionDataTemplate}"
                     ItemsSource="{x:Bind VM.Missions, Mode=TwoWay}"
                     SelectedItem="{x:Bind VM.SelectedListMission, Mode=TwoWay}"
                     Style="{StaticResource StretchListView}" />
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <ComboBox
                     HorizontalAlignment="Stretch"
@@ -91,7 +91,7 @@
                     Foreground="{ThemeResource SystemAccentColor}"
                     Text="{x:Bind VM.SelectedMission.Title_Zh, Mode=OneWay}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ScrollViewer>
                     <controls:MarkdownTextBlock
                         Margin="16,0"
@@ -102,7 +102,7 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         Text="{x:Bind VM.MissionContent.Content, Mode=OneWay}" />
                 </ScrollViewer>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
     </Grid>
 </Page>

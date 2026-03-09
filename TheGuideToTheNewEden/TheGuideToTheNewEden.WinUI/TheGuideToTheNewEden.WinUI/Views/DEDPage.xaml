@@ -71,7 +71,7 @@
                     </AutoSuggestBox.ItemTemplate>
                 </AutoSuggestBox>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     Background="Transparent"
                     ItemsSource="{x:Bind VM.DEDs, Mode=TwoWay}"
@@ -113,7 +113,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <ComboBox
                     Margin="0,0,0,8"
@@ -146,7 +146,7 @@
                         Text="{x:Bind VM.SelectedDED.TitleCN, Mode=OneWay}" />
                 </StackPanel>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ScrollViewer>
                     <controls:MarkdownTextBlock
                         Grid.Row="0"
@@ -158,7 +158,7 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         Text="{x:Bind VM.SelectedDED.Content, Mode=OneWay}" />
                 </ScrollViewer>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
     </Grid>
 </Page>
