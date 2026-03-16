@@ -48,6 +48,17 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public object Tag { get; set; }
 
         public bool Enable { get; set; } = true;
+
+        public List<MapDataExt> DataExts { get;private set; } = new List<MapDataExt>();
+
+        public void AddDataExt(MapDataExt dataExt)
+        {
+            DataExts.Add(dataExt);
+        }
+        public void RemoveDataExt(string dataGUID)
+        {
+            DataExts.Remove(DataExts.FirstOrDefault(p => p.GUID == dataGUID));
+        }
     }
     public class MapSystemData : MapData
     {
@@ -85,5 +96,17 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
     public enum MapMode
     {
         Region, System
+    }
+
+    public abstract class MapDataExt
+    {
+        public MapDataType DataType { get; set; }
+        public int MapDataId {  get; set; }
+        public string GUID {  get; set; }
+    }
+
+    public enum MapDataType
+    {
+        ZKBIntel,ChannelIntel
     }
 }

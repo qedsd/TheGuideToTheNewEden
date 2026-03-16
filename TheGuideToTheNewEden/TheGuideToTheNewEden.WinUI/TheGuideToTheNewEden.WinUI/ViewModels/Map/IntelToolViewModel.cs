@@ -157,6 +157,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
                     }
                     AllIntelMsgs.Remove(expiredMsg);
                     IntelMsgs.Remove(expiredMsg);
+                    _systemDatas[expiredMsg.System.SolarSystemID].RemoveDataExt(expiredMsg.GUID);
                 }
             }
             _mapCanvas.Draw();
@@ -251,6 +252,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
                 }
                 IntelMsgs.Insert(0, msg);
                 AllIntelMsgs.Add(msg);
+                _systemDatas[msg.System.SolarSystemID].AddDataExt(new MapDataZKBExt(msg));
                 if (msg.Type == MapIntelType.KB)
                 {
                     foreach(var attacker in msg.Attackers)
@@ -357,5 +359,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             }
         }
 
+    }
+
+    public class MapDataZKBExt: MapDataExt
+    {
+        public MapDataZKBExt(MapIntelMsg mapIntelMsg)
+        {
+            DataType = mapIntelMsg.Type == MapIntelType.KB ? MapDataType.ZKBIntel : MapDataType.ChannelIntel;
+        }
+        public MapIntelMsg Msg { get; set; }
     }
 }

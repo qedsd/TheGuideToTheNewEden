@@ -287,6 +287,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
     }
     public class MapIntelMsg : ObservableObject
     {
+        public string GUID = Guid.NewGuid().ToString();
         public MapIntelType Type { get; set; }
         public DateTime Time { get; set; }
         public string Msg { get; set; }
