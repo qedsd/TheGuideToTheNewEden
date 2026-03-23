@@ -1208,6 +1208,8 @@
     <x:String x:Key="MapIntelTool_ZKB_Duration">Duration</x:String>
     <x:String x:Key="MapIntelTool_ZKB_MaxAttackerCount">Max Attackers</x:String>
     <x:String x:Key="MapIntelTool_MaxMsgCount">Max Data</x:String>
+    <x:String x:Key="MapIntelTool_Setting_IntelFrom">Intel From</x:String>
+    <x:String x:Key="MapIntelTool_Setting_Filter">Filter</x:String>
     <x:String x:Key="MapIntelTool_Exclusions">Exclusions</x:String>
     <x:String x:Key="MapIntelTool_Exclusions_Tip">Not displayed in the list</x:String>
     <x:String x:Key="MapIntelTool_Inclusions">Inclusions</x:String>

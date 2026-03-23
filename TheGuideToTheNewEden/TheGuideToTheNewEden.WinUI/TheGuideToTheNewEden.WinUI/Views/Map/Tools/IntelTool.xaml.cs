@@ -284,6 +284,20 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 }
             }
         }
+
+        private void Setting2_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            IntelFromSetting.Visibility = Visibility.Collapsed;
+            FilterSetting.Visibility = Visibility.Collapsed;
+            if (sender.SelectedItem != null)
+            {
+                switch (sender.SelectedItem.Tag.ToString())
+                {
+                    case "0": IntelFromSetting.Visibility = Visibility.Visible; break;
+                    case "1": FilterSetting.Visibility = Visibility.Visible; break;
+                }
+            }
+        }
     }
     public class MapIntelMsg : ObservableObject
     {

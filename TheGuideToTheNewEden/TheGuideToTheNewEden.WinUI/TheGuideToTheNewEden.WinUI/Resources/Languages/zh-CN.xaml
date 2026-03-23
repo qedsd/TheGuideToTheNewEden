@@ -1204,10 +1204,12 @@
     <x:String x:Key="MapIntelTool_ChannelIntel">频道预警</x:String>
     <x:String x:Key="MapIntelTool_General">通用</x:String>
     <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
-    <x:String x:Key="MapIntelTool_ZKB_Enable">显示ZKB</x:String>
+    <x:String x:Key="MapIntelTool_ZKB_Enable">启用ZKB</x:String>
     <x:String x:Key="MapIntelTool_ZKB_Duration">有效期</x:String>
     <x:String x:Key="MapIntelTool_ZKB_MaxAttackerCount">最大显示击杀者数量</x:String>
     <x:String x:Key="MapIntelTool_MaxMsgCount">最大显示信息数量</x:String>
+    <x:String x:Key="MapIntelTool_Setting_IntelFrom">预警来源</x:String>
+    <x:String x:Key="MapIntelTool_Setting_Filter">预警过滤</x:String>
     <x:String x:Key="MapIntelTool_Exclusions">排除项</x:String>
     <x:String x:Key="MapIntelTool_Exclusions_Tip">不显示列表内的角色、军团、联盟等</x:String>
     <x:String x:Key="MapIntelTool_Inclusions">包含项</x:String>
