@@ -393,6 +393,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     }
                     Running = true;
                     SaveSetting();
+                    ChannelIntelManager.Instance.Register(this);
                 }
                 else
                 {
@@ -496,6 +497,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _localObservers = null;
             _zkbIntel?.Stop();
             Services.WarningService.Current.Remove(Setting?.Listener);
+            ChannelIntelManager.Instance.Unregister(this);
             GC.Collect();
         }
         public void StopSound()
@@ -514,6 +516,24 @@ namespace TheGuideToTheNewEden.WinUI.Models
             else
             {
                 return false;
+            }
+        }
+        public List<Core.Models.ChannelIntel.ChannelIntelObserver> GetObservers()
+        {
+            return _observers;
+        }
+        public void ListenChannelIntel()
+        {
+            foreach(var obs in _observers)
+            {
+                obs.IgnoreJumps = true;
+            }
+        }
+        public void UnListenChannelIntel()
+        {
+            foreach (var obs in _observers)
+            {
+                obs.IgnoreJumps = false;
             }
         }
     }

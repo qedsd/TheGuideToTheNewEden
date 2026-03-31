@@ -13,6 +13,7 @@ using Microsoft.UI;
 using Octokit;
 using TheGuideToTheNewEden.WinUI.Models.Map;
 using TheGuideToTheNewEden.WinUI.Views.Map.Tools;
+using Vanara.PInvoke;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -33,12 +34,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             List<MapCanvas.MapGraphBase> newMapGraphs = new List<MapCanvas.MapGraphBase>();
             foreach (var mapDataIntelInfo in _mapDataIntelInfos)
             {
-                var ships = mapDataIntelInfo.Value.GetShips();
-                if (ships.Any())
+                int intelWeight = mapDataIntelInfo.Value.GetWeigh();
+                if (intelWeight > 0)
                 {
                     var targetData = allDatas[mapDataIntelInfo.Key];
                     targetData.Active = true;
-                    if(mapDataIntelInfo.Value.MapGraph == null)
+                    if (mapDataIntelInfo.Value.MapGraph == null)
                     {
                         mapDataIntelInfo.Value.MapGraph = new MapCanvas.CircleMapGraph()
                         {
@@ -47,65 +48,81 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                         };
                         newMapGraphs.Add(mapDataIntelInfo.Value.MapGraph);
                     }
-                    mapDataIntelInfo.Value.MapGraph.Margin = targetData.W * 4 * ((ships.Count > 50 ? 50 : ships.Count) / 50f);
-                    if (zoom > 12)
+                    mapDataIntelInfo.Value.MapGraph.Margin = targetData.W * 4 * ((intelWeight > 50 ? 50 : intelWeight) / 50f);
+                    var ships = mapDataIntelInfo.Value.GetShips();
+                    int channels = mapDataIntelInfo.Value.GetChannelCount();
+                    if (ships.Any() || channels > 0)
                     {
-                        double w = targetData.W;
-                        double h = targetData.H;
-
-                        double xStart = targetData.X + targetData.W * (drawBorder ? 1.2 : 1);
-                        double xStep = w;
-                        double y = targetData.Y + (targetData.H - h) / 2;
-                        for (int i = 0; i < ships.Count; i++)
+                        if (zoom > 12)
                         {
-                            double targetX = xStart + i * xStep;
-                            if (_mapCanvas.FindMapData(targetX, y) != null || (i!= ships.Count - 1 && _mapCanvas.FindMapData(targetX + 2 * xStep, y) != null))
+                            double w = targetData.W;
+                            double h = targetData.H;
+
+                            double xStart = targetData.X + targetData.W * (drawBorder ? 1.2 : 1);
+                            double xStep = w;
+                            double y = targetData.Y + (targetData.H - h) / 2;
+                            if(channels > 0)
                             {
-                                CanvasTextFormat moreTextFormat = new CanvasTextFormat()
+                                CanvasTextFormat channelCountTextFormat = new CanvasTextFormat()
                                 {
-                                    FontSize = (int)(_mapCanvas.GetMainFootSize() + 4),
-                                    HorizontalAlignment = CanvasHorizontalAlignment.Left,
-                                    VerticalAlignment = CanvasVerticalAlignment.Center,
-                                };
-                                args.DrawingSession.DrawText($"+{ships.Skip(i).Sum(p => p.Count)}", new System.Numerics.Vector2((float)(targetX + w * 0.2), (float)(y + h * 0.5)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.OrangeRed, targetData.Active), moreTextFormat);
-                                break;
-                            }
-                            if (ships[i].Img != null)
-                            {
-                                args.DrawingSession.DrawImage(ships[i].Img, new Windows.Foundation.Rect() { X = targetX, Y = y, Width = w, Height = h });
-                            }
-                            
-                            if (ships[i].Count > 1)
-                            {
-                                CanvasTextFormat textFormat1 = new CanvasTextFormat()
-                                {
-                                    FontSize = _mapCanvas.GetMainFootSize() - 2,
-                                    HorizontalAlignment = CanvasHorizontalAlignment.Right,
+                                    FontSize = (int)(_mapCanvas.GetMainFootSize()) - 2,
+                                    HorizontalAlignment = CanvasHorizontalAlignment.Center,
                                     VerticalAlignment = CanvasVerticalAlignment.Top,
                                 };
-                                args.DrawingSession.DrawText($"×{ships[i].Count}", new System.Numerics.Vector2((float)(targetX + w * 0.9), (float)(y)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.White, targetData.Active), textFormat1);
+                                double xPos = targetData.X + w / 2;
+                                args.DrawingSession.DrawText($"📢 {channels}  🕒 {mapDataIntelInfo.Value.GetChannelLatestTime()}", new System.Numerics.Vector2((float)xPos, (float)(targetData.Y + h * 1.2 + _mapCanvas.GetMainFootSize() + 2)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.OrangeRed, targetData.Active), channelCountTextFormat);
                             }
-                            if(zoom > 16)
+                            for (int i = 0; i < ships.Count; i++)
                             {
-                                CanvasTextFormat textFormat2 = new CanvasTextFormat()
+                                double targetX = xStart + i * xStep;
+                                if (_mapCanvas.FindMapData(targetX, y) != null || (i != ships.Count - 1 && _mapCanvas.FindMapData(targetX + 2 * xStep, y) != null))
                                 {
-                                    FontSize = _mapCanvas.GetMainFootSize() - 2,
-                                    HorizontalAlignment = CanvasHorizontalAlignment.Right,
-                                    VerticalAlignment = CanvasVerticalAlignment.Bottom,
-                                };
-                                args.DrawingSession.DrawText($"🕒 {ships[i].Msg.Elapsed}", new System.Numerics.Vector2((float)(targetX + w * 0.9), (float)(y + h)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.White, targetData.Active), textFormat2);
+                                    CanvasTextFormat moreTextFormat = new CanvasTextFormat()
+                                    {
+                                        FontSize = (int)(_mapCanvas.GetMainFootSize() + 4),
+                                        HorizontalAlignment = CanvasHorizontalAlignment.Left,
+                                        VerticalAlignment = CanvasVerticalAlignment.Center,
+                                    };
+                                    args.DrawingSession.DrawText($"+{ships.Skip(i).Sum(p => p.Count)}", new System.Numerics.Vector2((float)(targetX + w * 0.2), (float)(y + h * 0.5)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.OrangeRed, targetData.Active), moreTextFormat);
+                                    break;
+                                }
+                                if (ships[i].Img != null)
+                                {
+                                    args.DrawingSession.DrawImage(ships[i].Img, new Windows.Foundation.Rect() { X = targetX, Y = y, Width = w, Height = h });
+                                }
+
+                                if (ships[i].Count > 1)
+                                {
+                                    CanvasTextFormat textFormat1 = new CanvasTextFormat()
+                                    {
+                                        FontSize = _mapCanvas.GetMainFootSize() - 2,
+                                        HorizontalAlignment = CanvasHorizontalAlignment.Right,
+                                        VerticalAlignment = CanvasVerticalAlignment.Top,
+                                    };
+                                    args.DrawingSession.DrawText($"×{ships[i].Count}", new System.Numerics.Vector2((float)(targetX + w * 0.9), (float)(y)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.White, targetData.Active), textFormat1);
+                                }
+                                if (zoom > 16)
+                                {
+                                    CanvasTextFormat textFormat2 = new CanvasTextFormat()
+                                    {
+                                        FontSize = _mapCanvas.GetMainFootSize() - 2,
+                                        HorizontalAlignment = CanvasHorizontalAlignment.Right,
+                                        VerticalAlignment = CanvasVerticalAlignment.Bottom,
+                                    };
+                                    args.DrawingSession.DrawText($"🕒 {ships[i].Msg.Elapsed}", new System.Numerics.Vector2((float)(targetX + w * 0.9), (float)(y + h)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.White, targetData.Active), textFormat2);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        CanvasTextFormat moreTextFormat = new CanvasTextFormat()
+                        else
                         {
-                            FontSize = (int)(_mapCanvas.GetMainFootSize() + 4),
-                            HorizontalAlignment = CanvasHorizontalAlignment.Left,
-                            VerticalAlignment = CanvasVerticalAlignment.Center,
-                        };
-                        args.DrawingSession.DrawText($"+{ships.Sum(p => p.Count)}", new System.Numerics.Vector2((float)(targetData.X + targetData.W * 1.2), (float)(targetData.Y + targetData.H * 0.5)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.OrangeRed, targetData.Active), moreTextFormat);
+                            CanvasTextFormat moreTextFormat = new CanvasTextFormat()
+                            {
+                                FontSize = (int)(_mapCanvas.GetMainFootSize() + 4),
+                                HorizontalAlignment = CanvasHorizontalAlignment.Left,
+                                VerticalAlignment = CanvasVerticalAlignment.Center,
+                            };
+                            args.DrawingSession.DrawText($"+{ships.Sum(p => p.Count) + channels}", new System.Numerics.Vector2((float)(targetData.X + targetData.W * 1.2), (float)(targetData.Y + targetData.H * 0.5)), _mapCanvas.GetActiveColor(Microsoft.UI.Colors.OrangeRed, targetData.Active), moreTextFormat);
+                        }
                     }
                 }
             }
@@ -168,12 +185,44 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             }
             RequstDraw();
         }
+        public void Add(int mapDataId, MapIntelChannelMsg msg)
+        {
+            lock (_locker)
+            {
+                if (!_mapDataIntelInfos.TryGetValue(mapDataId, out var mapDataIntelInfo))
+                {
+                    mapDataIntelInfo = new MapDataIntelInfo()
+                    {
+                        MapDataId = mapDataId,
+                    };
+                    _mapDataIntelInfos.Add(mapDataId, mapDataIntelInfo);
+                }
+                mapDataIntelInfo.AddChannelContent(msg);
+            }
+            RequstDraw();
+        }
         public void Remove(int mapDataId, int shipId, int attackerId, bool draw = false)
         {
             if (_mapDataIntelInfos.TryGetValue(mapDataId, out var mapDataIntelInfo))
             {
                 mapDataIntelInfo.RemoveShip(shipId, attackerId);//如果ship为0也不移除对象，复用对象
-                if (!mapDataIntelInfo.GetShips().Any())
+                if (mapDataIntelInfo.GetWeigh() > 0)
+                {
+                    _mapCanvas.RemoveMapGraph(mapDataIntelInfo.MapGraph, false);
+                    mapDataIntelInfo.MapGraph = null;
+                }
+            }
+            if (draw)
+            {
+                RequstDraw();
+            }
+        }
+        public void Remove(int mapDataId, MapIntelChannelMsg msg, bool draw = false)
+        {
+            if (_mapDataIntelInfos.TryGetValue(mapDataId, out var mapDataIntelInfo))
+            {
+                mapDataIntelInfo.RemoveChannelContent(msg);
+                if (mapDataIntelInfo.GetWeigh() > 0)
                 {
                     _mapCanvas.RemoveMapGraph(mapDataIntelInfo.MapGraph, false);
                     mapDataIntelInfo.MapGraph = null;
@@ -189,8 +238,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             foreach(var info in _mapDataIntelInfos)
             {
                 info.Value.ClearShip();
+                info.Value.ClearChannelContent();
                 _mapCanvas.RemoveMapGraph(info.Value.MapGraph, false);
                 info.Value.MapGraph = null;
+            }
+            RequstDraw();
+        }
+        public void Clear(int mapDataId, bool onlyClearChannle)
+        {
+            if (_mapDataIntelInfos.TryGetValue(mapDataId, out var mapDataIntelInfo))
+            {
+                if (!onlyClearChannle)
+                {
+                    mapDataIntelInfo.ClearShip();
+                }
+                mapDataIntelInfo.ClearChannelContent();
+                if(mapDataIntelInfo.GetWeigh() == 0)
+                {
+                    _mapCanvas.RemoveMapGraph(mapDataIntelInfo.MapGraph, false);
+                    mapDataIntelInfo.MapGraph = null;
+                }
             }
             RequstDraw();
         }
@@ -221,6 +288,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         internal class MapDataIntelInfo
         {
             public int MapDataId { get; set; }
+            #region ZKB
             private Dictionary<int, MapDataShip> _ships = new Dictionary<int, MapDataShip>();
             public void AddShip(int id, int attackerId, MapIntelMsg msg, CanvasBitmap img = null)
             {
@@ -258,6 +326,44 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             public List<MapDataShip> GetShips()
             {
                 return _ships.Values.ToList();
+            }
+            #endregion
+            #region Channel
+            private List<MapIntelChannelMsg> ChannelMsgs = new List<MapIntelChannelMsg>();
+            public void AddChannelContent(MapIntelChannelMsg msg)
+            {
+                ChannelMsgs.Add(msg);
+            }
+            public void RemoveChannelContent(MapIntelChannelMsg msg)
+            {
+                ChannelMsgs.Remove(msg);
+            }
+            public double GetChannelLatestTime()
+            {
+                if (ChannelMsgs.Any())
+                {
+                    return ChannelMsgs.Min(p => p.Elapsed);
+                }
+                return -1;
+            }
+            public int GetChannelCount()
+            {
+                return ChannelMsgs.Count;
+            }
+            public void ClearChannelContent()
+            {
+                ChannelMsgs.Clear();
+            }
+            #endregion
+            public int GetWeigh()
+            {
+                int weight = 0;
+                foreach (var ship in _ships.Values)
+                {
+                    weight += ship.Count;
+                }
+                weight += ChannelMsgs.Count * 5;
+                return weight;
             }
             public void Dispose()
             {
@@ -298,5 +404,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                 Count = 0;
             }
         } 
+
+        internal class MapDataChannel
+        {
+            public MapIntelMsg Msg { get; set; }
+            public List<Core.Models.EarlyWarningContent> Contents { get; set; }
+        }
     }
 }

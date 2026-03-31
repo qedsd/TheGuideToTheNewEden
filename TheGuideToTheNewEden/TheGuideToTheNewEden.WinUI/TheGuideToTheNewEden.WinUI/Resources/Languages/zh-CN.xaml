@@ -1199,13 +1199,14 @@
     <!--  MapIntelTool  -->
     <x:String x:Key="MapIntelTool_Setting">设置</x:String>
     <x:String x:Key="MapIntelTool_LiveData">信息</x:String>
+    <x:String x:Key="MapIntelTool_LiveData_Tip">左键点击查看KB详情/跳转游戏，右键在地图显示</x:String>
     <x:String x:Key="MapIntelTool_ClearList">清空列表</x:String>
     <x:String x:Key="MapIntelTool_ClearMap">清空地图</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel">频道预警</x:String>
     <x:String x:Key="MapIntelTool_General">通用</x:String>
     <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
     <x:String x:Key="MapIntelTool_ZKB_Enable">启用ZKB</x:String>
-    <x:String x:Key="MapIntelTool_ZKB_Duration">有效期</x:String>
+    <x:String x:Key="MapIntelTool_Duration">有效期</x:String>
     <x:String x:Key="MapIntelTool_ZKB_MaxAttackerCount">最大显示击杀者数量</x:String>
     <x:String x:Key="MapIntelTool_MaxMsgCount">最大显示信息数量</x:String>
     <x:String x:Key="MapIntelTool_Setting_IntelFrom">预警来源</x:String>
@@ -1214,6 +1215,9 @@
     <x:String x:Key="MapIntelTool_Exclusions_Tip">不显示列表内的角色、军团、联盟等</x:String>
     <x:String x:Key="MapIntelTool_Inclusions">包含项</x:String>
     <x:String x:Key="MapIntelTool_Inclusions_Tip">仅显示列表内的角色、军团、联盟等</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode">清除模式</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode1">频道+ZKB</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode2">仅频道</x:String>
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>

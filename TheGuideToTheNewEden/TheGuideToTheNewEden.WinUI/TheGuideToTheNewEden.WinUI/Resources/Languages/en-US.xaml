@@ -1199,13 +1199,14 @@
     <!--  MapIntelTool  -->
     <x:String x:Key="MapIntelTool_Setting">Setting</x:String>
     <x:String x:Key="MapIntelTool_LiveData">Live Data</x:String>
+    <x:String x:Key="MapIntelTool_LiveData_Tip">Left click to view KB details/jump to game, right click to show on map</x:String>
     <x:String x:Key="MapIntelTool_ClearList">Clear Data</x:String>
     <x:String x:Key="MapIntelTool_ClearMap">Clear Map</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel">Channel Intel</x:String>
     <x:String x:Key="MapIntelTool_General">General</x:String>
     <x:String x:Key="MapIntelTool_ZKB">ZKB</x:String>
     <x:String x:Key="MapIntelTool_ZKB_Enable">Enable ZKB</x:String>
-    <x:String x:Key="MapIntelTool_ZKB_Duration">Duration</x:String>
+    <x:String x:Key="MapIntelTool_Duration">Duration</x:String>
     <x:String x:Key="MapIntelTool_ZKB_MaxAttackerCount">Max Attackers</x:String>
     <x:String x:Key="MapIntelTool_MaxMsgCount">Max Data</x:String>
     <x:String x:Key="MapIntelTool_Setting_IntelFrom">Intel From</x:String>
@@ -1214,6 +1215,9 @@
     <x:String x:Key="MapIntelTool_Exclusions_Tip">Not displayed in the list</x:String>
     <x:String x:Key="MapIntelTool_Inclusions">Inclusions</x:String>
     <x:String x:Key="MapIntelTool_Inclusions_Tip">Not displayed in the list</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode">Clear Mode</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode1">Channel+ZKB</x:String>
+    <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode2">Only Channel</x:String>
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">Start</x:String>

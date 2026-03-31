@@ -47,7 +47,7 @@ namespace TheGuideToTheNewEden.Core.Models.Map
             set => SetProperty(ref _zkbMaxAttackerCount, value);
         }
 
-        private float _maxMsgCount = 100;
+        private float _maxMsgCount = 1000;
         /// <summary>
         /// 最大显示信息数量
         /// </summary>
@@ -57,14 +57,54 @@ namespace TheGuideToTheNewEden.Core.Models.Map
             set => SetProperty(ref _maxMsgCount, value);
         }
 
-        private ObservableCollection<IdName> zkbFilter = new ObservableCollection<IdName>();
+        private ObservableCollection<IdName> _exclusions = new ObservableCollection<IdName>();
         /// <summary>
-        /// ZKB攻击者在此列表内将不显示到星图
+        /// 排除项
         /// </summary>
-        public ObservableCollection<IdName> ZKBFilter
+        public ObservableCollection<IdName> Exclusions
         {
-            get => zkbFilter;
-            set => SetProperty(ref zkbFilter, value);
+            get => _exclusions;
+            set => SetProperty(ref _exclusions, value);
+        }
+
+        private ObservableCollection<IdName> _inclusions = new ObservableCollection<IdName>();
+        /// <summary>
+        /// 包含项
+        /// </summary>
+        public ObservableCollection<IdName> Inclusions
+        {
+            get => _inclusions;
+            set => SetProperty(ref _inclusions, value);
+        }
+
+        private HashSet<string> _channels = new HashSet<string>();
+
+        public HashSet<string> Channels
+        {
+            get => _channels;
+            set => SetProperty(ref _channels, value);
+        }
+
+        private int _clearChannelMode;
+        /// <summary>
+        /// 频道预警触发清除时如何响应
+        /// 0：清除频道+ZKB
+        /// 1：只清除频道
+        /// </summary>
+        public int ClearChannelMode
+        {
+            get => _clearChannelMode;
+            set => SetProperty(ref _clearChannelMode, value);
+        }
+
+        private float _channelDuration = 1200;
+        /// <summary>
+        /// 单位秒
+        /// </summary>
+        public float ChannelDuration
+        {
+            get => _channelDuration;
+            set => SetProperty(ref _channelDuration, value);
         }
     }
 }

@@ -32,6 +32,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 using DevWinUI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
+using TheGuideToTheNewEden.WinUI.Wins;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
@@ -50,13 +51,28 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private void IntelTool_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= IntelTool_Loaded;
-            IdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            ExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
             {
                 Core.DBModels.IdName.CategoryEnum.Character,
                 Core.DBModels.IdName.CategoryEnum.Corporation,
-                Core.DBModels.IdName.CategoryEnum.Alliance
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+                Core.DBModels.IdName.CategoryEnum.SolarSystem,
+                Core.DBModels.IdName.CategoryEnum.Region,
+                Core.DBModels.IdName.CategoryEnum.InventoryType,
+            }); 
+            ExclusionsIdNameSearchBox.OnSelectedItemChanged += ExclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            InclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+                Core.DBModels.IdName.CategoryEnum.SolarSystem,
+                Core.DBModels.IdName.CategoryEnum.Region,
+                Core.DBModels.IdName.CategoryEnum.InventoryType,
             });
-            IdNameSearchBox.OnSelectedItemChanged += IdNameSearchBox_OnSelectedItemChanged;
+            InclusionsIdNameSearchBox.OnSelectedItemChanged += InclusionsIdNameSearchBox_OnSelectedItemChanged;
+
             _window = this.GetWindow() as  ToolWindow;
             _window.Closed += IntelTool_Closed;
             VM.SetWindow(this.GetWindow() as ToolWindow);
@@ -67,23 +83,35 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             VM.Dispose();
         }
 
-        private void IdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        #region ¹ýÂËÁÐ±í
+        private void ExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
         {
-            VM.Config.ZKBFilter.Add(e);
+            VM.Config.Exclusions.Add(e);
         }
 
-
-        private void AddZKBFilter_Click(object sender, RoutedEventArgs e)
+        private void DeleteExclusions_Click(object sender, RoutedEventArgs e)
         {
-
+            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            if(data != null)
+            {
+                VM.Config.Exclusions.Remove(data);
+            }
+        }
+        private void InclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        {
+            VM.Config.Inclusions.Add(e);
         }
 
-        private void DeleteZKBFilter_Click(object sender, RoutedEventArgs e)
+        private void DeleteInclusions_Click(object sender, RoutedEventArgs e)
         {
-
+            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            if (data != null)
+            {
+                VM.Config.Inclusions.Remove(data);
+            }
         }
+        #endregion
 
-        
 
         private async void AttackerMain_Click(object sender, RoutedEventArgs e)
         {
@@ -218,6 +246,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             {
                 ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToKM(msg.KB, true);
             }
+            else if(msg?.Type == MapIntelType.Channel)
+            {
+                var channelMsg = msg as MapIntelChannelMsg;
+                if (channelMsg != null)
+                {
+                    var hwnd = Helpers.WindowHelper.GetGameHwndByCharacterName(channelMsg.ChhannelContent.Listener);
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
+                    }
+                }
+            }
         }
 
         private async void SOV_Click(object sender, RoutedEventArgs e)
@@ -275,12 +315,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         {
             SettingGrid.Visibility = Visibility.Collapsed;
             LiveDataGrid.Visibility = Visibility.Collapsed;
+            TextBlock_LiveDataTip.Visibility = Visibility.Collapsed;
             if (sender.SelectedItem != null)
             {
                 switch (sender.SelectedItem.Tag.ToString())
                 {
                     case "0": SettingGrid.Visibility = Visibility.Visible; break;
-                    case "1": LiveDataGrid.Visibility = Visibility.Visible; break;
+                    case "1": LiveDataGrid.Visibility = Visibility.Visible; TextBlock_LiveDataTip.Visibility = Visibility.Visible; break;
                 }
             }
         }
@@ -317,15 +358,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             get => _elapsed;
             set
             {
-                if (SetProperty(ref _elapsed, value))
-                {
-                    ElapsedStr = $"{value} min";
-                }
+                SetProperty(ref _elapsed, value);
+                ElapsedStr = $"{value} min";
             }
         }
 
         private string _elapsedStr;
         public string ElapsedStr { get => _elapsedStr; set => SetProperty(ref _elapsedStr, value); }
+    }
+    public class MapIntelChannelMsg : MapIntelMsg
+    {
+        public EarlyWarningContent ChhannelContent { get; set; }
     }
     public class MapIntelAttacker
     {
