@@ -321,11 +321,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
         {
             if (Setting.LocationID <= 0)
             {
-                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_NoLocaction"));
+                throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_NoLocaction")}");
             }
             if(LocalSolarSystem.IsSpecial())
             {
-                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_SystemNotSupport"));
+                throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_SystemNotSupport")}");
             }
             if (ChatChanelInfos.NotNullOrEmpty())
             {
@@ -397,7 +397,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 }
                 else
                 {
-                    throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_UnselectedChatChanel"));
+                    throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_UnselectedChatChanel")}");
                 }
             }
             SaveSetting();
