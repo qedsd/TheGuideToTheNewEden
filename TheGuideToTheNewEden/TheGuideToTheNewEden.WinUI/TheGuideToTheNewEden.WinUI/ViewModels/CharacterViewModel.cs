@@ -187,7 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        information = p.Result.Data;
+                        information = JsonConvert.DeserializeObject<ESI.NET.Models.Character.Information>(p.Result.Message);
                     }
                     else
                     {
