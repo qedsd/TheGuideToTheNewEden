@@ -41,7 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (_window != null)
             {
-                _window.ShowMsg(ex.ToString(), autoClose);
+                _window.ShowError(ex.ToString(), autoClose);
             }
             else
             {
@@ -52,7 +52,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if (_window != null)
             {
-                _window.ShowMsg(msg, autoClose);
+                _window.ShowError(msg, autoClose);
             }
             else
             {

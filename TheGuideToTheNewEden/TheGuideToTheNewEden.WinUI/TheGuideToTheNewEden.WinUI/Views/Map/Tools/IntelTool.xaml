@@ -30,7 +30,10 @@
                             IsSelected="True"
                             Tag="0"
                             Text="{StaticResource MapIntelTool_Setting}" />
-                        <SelectorBarItem Tag="1" Text="{StaticResource MapIntelTool_LiveData}" />
+                        <SelectorBarItem
+                            IsSelected="{x:Bind VM.MsgSelected, Mode=TwoWay}"
+                            Tag="1"
+                            Text="{StaticResource MapIntelTool_LiveData}" />
                     </SelectorBar>
                     <TextBlock
                         x:Name="TextBlock_LiveDataTip"

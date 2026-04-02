@@ -503,9 +503,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             if (data == null)
             {
                 SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+                SelectedSystemIntelPanel.Visibility = Visibility.Collapsed;
                 return;
             }
             SelectedSystemInfoPanel.Visibility = Visibility.Visible;
+
+            #region 基本信息
             SystemResourceDetailButton.Tag = data;
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
             SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
@@ -534,6 +537,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
             }
+
+            #endregion
+
+            #region 预警信息
+            if (data.Ships.Any())
+            {
+                SelectedSystemIntelPanel.Visibility = Visibility.Visible;
+                SelectedSystemIntelShipGrid.Visibility = Visibility.Visible;
+                SelectedSystemIntelShipListView.ItemsSource = data.Ships.Values.ToList();
+            }
+            else
+            {
+                SelectedSystemIntelShipGrid.Visibility = Visibility.Collapsed;
+            }
+            if (data.Msgs.Any())
+            {
+                SelectedSystemIntelPanel.Visibility = Visibility.Visible;
+                SelectedSystemIntelMsgGrid.Visibility = Visibility.Visible;
+                SelectedSystemIntelMsgListView.ItemsSource = data.Msgs;
+            }
+            else
+            {
+                SelectedSystemIntelMsgGrid.Visibility = Visibility.Collapsed;
+            }
+            #endregion
         }
         private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -628,10 +656,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void Tools_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
-            foreach(var u in ToolGrid.Children)
-            {
-                u.Visibility = Visibility.Collapsed;
-            }
             UIElement targetTool = null;
             string toolTitle = string.Empty;
             switch(menuFlyoutItem.Tag.ToString())

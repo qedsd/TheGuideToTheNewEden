@@ -143,19 +143,108 @@
             </Grid>
         </Grid>
 
-        <!--  左侧详细面板(暂废弃)  -->
+        <!--  左侧预警信息面板  -->
         <Grid
-            x:Name="ToolPanel"
+            x:Name="SelectedSystemIntelPanel"
+            MinWidth="260"
+            MaxWidth="400"
             Margin="8,42,0,8"
-            VerticalAlignment="Stretch"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="8"
             Visibility="Collapsed">
-            <Expander
-                x:Name="ToolExpander"
-                VerticalAlignment="Bottom"
-                ExpandDirection="Up"
-                IsExpanded="True">
-                <Grid x:Name="ToolGrid" Margin="-16" />
-            </Expander>
+            <Grid
+                Margin="8"
+                Padding="8,8,8,8"
+                Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Margin="0,4"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="Medium"
+                    Foreground="{ThemeResource SystemAccentColor}"
+                    Text="{StaticResource MapIntelTool_IntelInfo}" />
+                <ScrollViewer Grid.Row="1" HorizontalScrollMode="Disabled">
+                    <StackPanel>
+                        <Grid x:Name="SelectedSystemIntelShipGrid" Grid.Row="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                    Text="{StaticResource MapIntelTool_IntelShip}" />
+                                <ListView
+                                    x:Name="SelectedSystemIntelShipListView"
+                                    Grid.Row="1"
+                                    Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <controls:ImageControl Width="32" Source="{Binding ShipType.Id, Converter={StaticResource TypeImgConverter32}}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="8,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ShipType.Name}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="×" />
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Count}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Grid>
+                        <Grid
+                            x:Name="SelectedSystemIntelMsgGrid"
+                            Grid.Row="1"
+                            Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                    Text="{StaticResource MapIntelTool_IntelMsg}" />
+                                <ListView
+                                    x:Name="SelectedSystemIntelMsgListView"
+                                    Grid.Row="1"
+                                    Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Margin="0,4"
+                                                Text="{Binding}"
+                                                TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
         </Grid>
 
         <!--  右侧详细面板  -->

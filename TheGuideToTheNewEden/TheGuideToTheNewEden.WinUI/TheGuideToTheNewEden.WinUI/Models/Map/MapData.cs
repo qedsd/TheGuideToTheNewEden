@@ -51,6 +51,9 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
 
         public List<MapDataExt> DataExts { get;private set; } = new List<MapDataExt>();
 
+        public Dictionary<int, ShipItem> Ships { get; set; } = new Dictionary<int, ShipItem>();
+        public List<string> Msgs { get; set; } = new List<string>();
+
         public void AddDataExt(MapDataExt dataExt)
         {
             DataExts.Add(dataExt);
@@ -58,6 +61,51 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
         public void RemoveDataExt(string dataGUID)
         {
             DataExts.Remove(DataExts.FirstOrDefault(p => p.GUID == dataGUID));
+        }
+        public void AddShip(int shipId, int count)
+        {
+            if(!Ships.TryGetValue(shipId, out var shipItem))
+            {
+                IdName shipIdName = null;
+                var type = Core.Services.DB.InvTypeService.QueryType(shipId);
+                if(type == null)
+                {
+                    shipIdName = new IdName(shipId, shipId.ToString(), IdName.CategoryEnum.InventoryType);
+                }
+                else
+                {
+                    shipIdName = new IdName(type);
+                }
+                shipItem = new ShipItem() { ShipType = shipIdName, Count = 0 };
+                Ships.Add(shipId, shipItem);
+            }
+            shipItem.Count += count;
+        }
+        public void AddShip(IEnumerable<int> shipIds)
+        {
+            foreach (var shipId in shipIds)
+            {
+                AddShip(shipId, 1);
+            }
+        }
+        public void RemoveShip(int shipId, int count)
+        {
+            if (Ships.TryGetValue(shipId, out var shipItem))
+            {
+                shipItem.Count -= count;
+                if (shipItem.Count <= 0)
+                {
+                    Ships.Remove(shipId);
+                }
+            }
+        }
+        public void AddMsg(string msg)
+        {
+            Msgs.Add(msg);
+        }
+        public void RemoveMsg()
+        {
+            Msgs.Clear();
         }
     }
     public class MapSystemData : MapData
@@ -107,6 +155,11 @@ namespace TheGuideToTheNewEden.WinUI.Models.Map
 
     public enum MapDataType
     {
-        ZKBIntel,ChannelIntel
+        Ship,ZKBIntel,ChannelIntel
+    }
+    public class ShipItem
+    {
+        public IdName ShipType { get; set; }
+        public int Count { get; set; }
     }
 }

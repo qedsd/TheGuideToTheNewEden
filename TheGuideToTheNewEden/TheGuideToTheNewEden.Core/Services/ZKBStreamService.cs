@@ -28,17 +28,18 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public async Task Sub()
         {
-            System.Threading.Interlocked.Increment(ref _subCount);
             if(_killStream == null )
             {
                 _killStream = new KillStreamQ(ZKB.NET.Config.Redisq);
                 if(!await _killStream.ConnectAsync())
                 {
+                    _killStream = null;
                     throw new Exception("Connect Zkillredisq Failed");
                 }
                 _killStream.OnMessage += KillStream_OnMessage;
                 _killStream.OnError += KillStream_OnError;
             }
+            System.Threading.Interlocked.Increment(ref _subCount);
         }
 
         private void KillStream_OnError(object sender, Exception e)

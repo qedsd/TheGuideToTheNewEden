@@ -1218,6 +1218,9 @@
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode">清除模式</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode1">频道+ZKB</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode2">仅频道</x:String>
+    <x:String x:Key="MapIntelTool_IntelShip">KB舰船</x:String>
+    <x:String x:Key="MapIntelTool_IntelMsg">频道信息</x:String>
+    <x:String x:Key="MapIntelTool_IntelInfo">预警信息</x:String>
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">开始预警</x:String>

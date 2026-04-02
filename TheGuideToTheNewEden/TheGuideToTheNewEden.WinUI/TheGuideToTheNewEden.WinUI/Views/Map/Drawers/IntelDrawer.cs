@@ -170,7 +170,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     shipImg = await CanvasBitmap.LoadAsync(_mapCanvas._canvasControl.Device, stream);
                 }
             }
-           
+            bool added = false;
             lock (_locker)
             {
                 if (!_mapDataIntelInfos.TryGetValue(mapDataId, out var mapDataIntelInfo))
@@ -181,7 +181,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     };
                     _mapDataIntelInfos.Add(mapDataId, mapDataIntelInfo);
                 }
-                mapDataIntelInfo.AddShip(shipId, attackerId, msg, shipImg);
+                added = mapDataIntelInfo.AddShip(shipId, attackerId, msg, shipImg);
             }
             RequstDraw();
         }
@@ -290,7 +290,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             public int MapDataId { get; set; }
             #region ZKB
             private Dictionary<int, MapDataShip> _ships = new Dictionary<int, MapDataShip>();
-            public void AddShip(int id, int attackerId, MapIntelMsg msg, CanvasBitmap img = null)
+            public bool AddShip(int id, int attackerId, MapIntelMsg msg, CanvasBitmap img = null)
             {
                 if(!_ships.TryGetValue(id, out var mapDataShip))
                 {
@@ -302,7 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     };
                     _ships.Add(id, mapDataShip);
                 }
-                mapDataShip.Add(attackerId);
+                return mapDataShip.Add(attackerId);
             }
             public void RemoveShip(int id, int attackerId)
             {
@@ -383,12 +383,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             public int Count { get;private set; }
             public CanvasBitmap Img { get; set; }
             public MapIntelMsg Msg { get; set; }
-            public void Add(int attackerId)
+            public bool Add(int attackerId)
             {
                 if (!_attackerIds.Contains(attackerId))
                 {
                     _attackerIds.Add(attackerId);
                     Count++;
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
             public void Remove(int attackerId)

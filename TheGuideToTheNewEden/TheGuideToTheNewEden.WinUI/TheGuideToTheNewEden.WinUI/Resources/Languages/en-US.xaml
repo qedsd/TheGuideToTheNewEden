@@ -1218,6 +1218,9 @@
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode">Clear Mode</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode1">Channel+ZKB</x:String>
     <x:String x:Key="MapIntelTool_ChannelIntel_ClearMode2">Only Channel</x:String>
+    <x:String x:Key="MapIntelTool_IntelShip">KB Ship</x:String>
+    <x:String x:Key="MapIntelTool_IntelMsg">Channel Msg</x:String>
+    <x:String x:Key="MapIntelTool_IntelInfo">Intel Info</x:String>
 
     <!--  ChannelIntelPage  -->
     <x:String x:Key="ChannelIntelPage_Start">Start</x:String>

@@ -30,13 +30,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
         private bool _running;
         public bool Running { get => _running; set => SetProperty(ref _running, value); }
 
-        private Visibility _settingVisible = Visibility.Visible;
-        public Visibility SettingVisible 
-        { 
-            get => _settingVisible;
+        private bool _msgSelected = false;
+        public bool MsgSelected
+        {
+            get => _msgSelected;
             set
             {
-                SetProperty(ref _settingVisible, value);
+                SetProperty(ref _msgSelected, value);
             }
         }
 
@@ -92,20 +92,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             }
             Services.Settings.MapSettingService.Current.SaveIndel(Config);
             ShowWaiting();
-            await Start();
+            bool started = await Start();
             HideWaiting();
-            Running = true;
-            SettingVisible = Visibility.Collapsed;
+            if (started)
+            {
+                Running = true;
+                MsgSelected = true;
+            }
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
             Stop();
             Running = false;
-            SettingVisible = Visibility.Visible;
-        });
-        public ICommand SettingCommand => new RelayCommand(() =>
-        {
-            SettingVisible = SettingVisible == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
         });
         public ICommand ClearCommand => new RelayCommand(() =>
         {
@@ -150,6 +148,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             {
                 Log.Error(ex);
                 StopTimer();
+                ShowError(ex);
                 return false;
             }
         }
@@ -321,10 +320,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             {
                 IntelMsgs.Insert(0, msg);
                 AllIntelMsgs.Add(msg);
-                _systemDatas[msg.System.SolarSystemID].AddDataExt(new MapDataZKBExt(msg));
                 if (msg.Type == MapIntelType.KB)
                 {
-                    foreach(var attacker in msg.Attackers)
+                    _systemDatas[msg.System.SolarSystemID].AddShip(msg.KB.SKBDetail.Attackers.Where(p=>p.CharacterId > 0).Select(p => p.ShipTypeId));
+                    foreach (var attacker in msg.Attackers)
                     {
                         if (attacker.Type == 0 && attacker.Main != null && attacker.Attacker != null)
                         {
@@ -343,13 +342,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
                 {
                     if(msg is MapIntelChannelMsg channelMsg)
                     {
-                        if(channelMsg.ChhannelContent.IntelType == Core.Enums.IntelChatType.Intel)
+                        if (channelMsg.ChhannelContent.IntelType == Core.Enums.IntelChatType.Intel)
                         {
-                            _mapCanvas.IntelDrawer.Add(msg.System.SolarSystemID, msg as MapIntelChannelMsg);
+                            _systemDatas[msg.System.SolarSystemID].AddMsg($"[{channelMsg.ChhannelContent.Time.ToString("HH:mm:ss")}] {channelMsg.ChhannelContent.Content}");
+                            _mapCanvas.IntelDrawer.Add(msg.System.SolarSystemID, channelMsg);
                         }
                         else
                         {
                             _mapCanvas.IntelDrawer.Clear(msg.System.SolarSystemID, Config.ClearChannelMode == 1);
+                            _systemDatas[msg.System.SolarSystemID].RemoveMsg();
                         }
                     }
                 }
@@ -501,6 +502,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             DataType = mapIntelMsg.Type == MapIntelType.KB ? MapDataType.ZKBIntel : MapDataType.ChannelIntel;
         }
         public MapIntelMsg Msg { get; set; }
+    }
+
+    public class MapDataShipExt : MapDataExt
+    {
+        public MapDataShipExt()
+        {
+            DataType = MapDataType.Ship;
+        }
+        public Dictionary<int, ShipItem> Ships { get; set; } = new Dictionary<int, ShipItem>();
     }
 
     public class MapIntelFilter
