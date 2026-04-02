@@ -188,6 +188,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
+            SelectedCharacter.Setting.SelectedChannels = _chatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
             if (Start(SelectedCharacter))
             {
                 Running = true;
