@@ -805,8 +805,10 @@
     <x:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</x:String>
     <x:String x:Key="ZKBHomePage_KillStream">KB流</x:String>
     <x:String x:Key="ZKBHomePage_AutoConnect">自动连接KB流</x:String>
-    <x:String x:Key="ZKBHomePage_Connect">连接ZKB服务器</x:String>
-    <x:String x:Key="ZKBHomePage_Disconnect">已断开ZKB服务器</x:String>
+    <x:String x:Key="ZKBHomePage_Connect">连接</x:String>
+    <x:String x:Key="ZKBHomePage_Disconnect">断开</x:String>
+    <x:String x:Key="ZKBHomePage_DisconnectTip">未连接ZKB服务器，可以点击下方按钮连接服务器</x:String>
+    <x:String x:Key="ZKBHomePage_Disconnect_Tip">已断开ZKB服务器</x:String>
     <x:String x:Key="KBListControl_Date">日期</x:String>
     <x:String x:Key="KBListControl_Time">时间</x:String>
     <x:String x:Key="KBListControl_TotalValue">估价</x:String>
@@ -815,6 +817,8 @@
     <x:String x:Key="KBListControl_Victim">受害者</x:String>
     <x:String x:Key="KBListControl_FinalBlow">最后一击</x:String>
     <x:String x:Key="KBListControl_OpenBrowser">浏览器查看</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter">过滤设置</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Notify">通知设置</x:String>
 
 
     <x:String x:Key="KB_Point">点数</x:String>

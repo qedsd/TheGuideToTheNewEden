@@ -35,22 +35,58 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private void KillStreamPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= KillStreamPage_Loaded;
+            ExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+                Core.DBModels.IdName.CategoryEnum.SolarSystem,
+                Core.DBModels.IdName.CategoryEnum.Region,
+                Core.DBModels.IdName.CategoryEnum.InventoryType,
+            });
+            ExclusionsIdNameSearchBox.OnSelectedItemChanged += ExclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            InclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+                Core.DBModels.IdName.CategoryEnum.SolarSystem,
+                Core.DBModels.IdName.CategoryEnum.Region,
+                Core.DBModels.IdName.CategoryEnum.InventoryType,
+            });
+            InclusionsIdNameSearchBox.OnSelectedItemChanged += InclusionsIdNameSearchBox_OnSelectedItemChanged;
             if (_autoConnect && Services.Settings.ZKBSettingService.Setting.AutoConnect)
             {
                 Connect();
+                DisconnectGrid.Visibility = Visibility.Collapsed;
+                ConnectedGrid.Visibility = Visibility.Visible;
+                SettingGrid.Visibility = Visibility.Collapsed;
             }
             else
             {
-                KBListControl.Visibility = Visibility.Collapsed;
-                Button_Connect.Visibility = Visibility.Visible;
+                DisconnectGrid.Visibility = Visibility.Visible;
+                ConnectedGrid.Visibility = Visibility.Collapsed;
+                SettingGrid.Visibility = Visibility.Collapsed;
             }
         }
         private async void Connect()
         {
-            KBListControl.Visibility = Visibility.Visible;
-            Button_Connect.Visibility = Visibility.Collapsed;
             this.ShowWaiting(Helpers.ResourcesHelper.GetString("ZKBHomePage_ConnectingToWSS"));
-            await VM.InitAsync();
+            DisconnectGrid.Visibility = Visibility.Collapsed;
+            ConnectedGrid.Visibility = Visibility.Collapsed;
+            SettingGrid.Visibility = Visibility.Collapsed;
+            if(await VM.InitAsync())
+            {
+                Button_Connect.Visibility = Visibility.Collapsed;
+                Button_Disconnect.Visibility = Visibility.Visible;
+                Button_Setting.Visibility = Visibility.Collapsed;
+                ConnectedGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                DisconnectGrid.Visibility = Visibility.Visible;
+            }
             this.HideWaiting();
         }
         private void KBListControl_OnItemClicked(Core.Models.KB.KBItemInfo itemInfo)
@@ -84,5 +120,65 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             Connect();
         }
         private CancellationTokenSource _cancellationTokenSource;
+
+        private void Setting_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            FilterSetting.Visibility = Visibility.Collapsed;
+            NotifySetting.Visibility = Visibility.Collapsed;
+            if (sender.SelectedItem != null)
+            {
+                switch (sender.SelectedItem.Tag.ToString())
+                {
+                    case "0": FilterSetting.Visibility = Visibility.Visible; break;
+                    case "1": NotifySetting.Visibility = Visibility.Visible;break;
+                }
+            }
+        }
+
+        #region ¹ýÂËÁÐ±í
+        private void ExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        {
+            VM.Config.Exclusions.Add(e);
+        }
+
+        private void DeleteExclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            if (data != null)
+            {
+                VM.Config.Exclusions.Remove(data);
+            }
+        }
+        private void InclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        {
+            VM.Config.Inclusions.Add(e);
+        }
+
+        private void DeleteInclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            if (data != null)
+            {
+                VM.Config.Inclusions.Remove(data);
+            }
+        }
+        #endregion
+
+        private void Button_Setting_Click(object sender, RoutedEventArgs e)
+        {
+            DisconnectGrid.Visibility = Visibility.Collapsed;
+            ConnectedGrid.Visibility = Visibility.Collapsed;
+            SettingGrid.Visibility = Visibility.Visible;
+        }
+
+        private void Button_Disconnect_Click(object sender, RoutedEventArgs e)
+        {
+            VM.Stop();
+            Button_Connect.Visibility = Visibility.Visible;
+            Button_Disconnect.Visibility = Visibility.Collapsed;
+            Button_Setting.Visibility = Visibility.Visible;
+            ConnectedGrid.Visibility = Visibility.Collapsed;
+            DisconnectGrid.Visibility = Visibility.Visible;
+        }
     }
 }

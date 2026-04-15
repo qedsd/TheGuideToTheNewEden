@@ -24,6 +24,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ContentPresenter
+            x:Name="HeaderPresenter"
             MinHeight="48"
             Padding="16,4"
             HorizontalAlignment="Stretch"
@@ -33,7 +34,8 @@
             BorderThickness="1"
             Content="{x:Bind Header, Mode=OneWay}"
             CornerRadius="{Binding CornerRadius, ElementName=ParentControl, Mode=OneWay, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+            Visibility="Collapsed" />
         <ContentPresenter
             x:Name="ContentPresenter"
             Grid.Row="1"

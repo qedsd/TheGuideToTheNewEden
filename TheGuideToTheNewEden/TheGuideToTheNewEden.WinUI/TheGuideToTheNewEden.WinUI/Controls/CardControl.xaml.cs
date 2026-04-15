@@ -32,12 +32,25 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 nameof(Header),
                 typeof(FrameworkElement),
                 typeof(CardControl),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, new PropertyChangedCallback(HeaderPropertyPropertyChanged)));
 
         public FrameworkElement Header
         {
             get => (FrameworkElement)GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
+        }
+
+        private static void HeaderPropertyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as CardControl;
+            if (e.NewValue != null)
+            {
+                control.HeaderPresenter.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                control.HeaderPresenter.Visibility = Visibility.Collapsed;
+            }
         }
 
         public static readonly DependencyProperty CustomContentProperty =

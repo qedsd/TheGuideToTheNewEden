@@ -11,8 +11,8 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
     internal static class ZKBSettingService
     {
-        private static KBSetting _setting;
-        public static KBSetting Setting
+        private static ZKBStreamConfig _setting;
+        public static ZKBStreamConfig Setting
         {
             get
             {
@@ -21,17 +21,17 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                     if (System.IO.File.Exists(Path))
                     {
                         string json = System.IO.File.ReadAllText(Path);
-                        _setting = JsonConvert.DeserializeObject<KBSetting>(json);
+                        _setting = JsonConvert.DeserializeObject<ZKBStreamConfig>(json);
                     }
                     else
                     {
-                        _setting = new KBSetting();
+                        _setting = new ZKBStreamConfig();
                     }
                 }
                 return _setting;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ZKBSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ZKBStreamConfig.json");
         public static void Save()
         {
             string json = JsonConvert.SerializeObject(Setting);

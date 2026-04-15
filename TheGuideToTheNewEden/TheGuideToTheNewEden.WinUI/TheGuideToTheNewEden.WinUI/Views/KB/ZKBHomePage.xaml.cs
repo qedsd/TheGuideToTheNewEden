@@ -195,10 +195,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             var item = args.Item as TabViewItem;
             if (item != null)
             {
-                ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance((long)item.Tag);
-                if (item.Content.GetType() == typeof(KillStreamPage))
+                //ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance((long)item.Tag);
+                if (item.Content.GetType() != typeof(KillStreamPage))
                 {
-                    ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("ZKBHomePage_Disconnect"), Controls.InfoBarControl.InfoType.Success, true);
+                    ClientServiceHelper.GetRequiredService<KBNavigationService>().RemoveInstance((long)item.Tag);
+                    //ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this, Helpers.ResourcesHelper.GetString("ZKBHomePage_Disconnect"), Controls.InfoBarControl.InfoType.Success, true);
                 }
             }
         }

@@ -805,8 +805,10 @@
     <x:String x:Key="ZKBHomePage_Connected">Connected</x:String>
     <x:String x:Key="ZKBHomePage_KillStream">KB stream</x:String>
     <x:String x:Key="ZKBHomePage_AutoConnect">Auto start kb stream</x:String>
-    <x:String x:Key="ZKBHomePage_Connect">Connect to ZKB server</x:String>
-    <x:String x:Key="ZKBHomePage_Disconnect">Disconnected to ZKB server</x:String>
+    <x:String x:Key="ZKBHomePage_Connect">Connect</x:String>
+    <x:String x:Key="ZKBHomePage_Disconnect">Disconnect</x:String>
+    <x:String x:Key="ZKBHomePage_DisconnectTip">Not connected to the ZKB server. You can click the button below to connect to the server</x:String>
+    <x:String x:Key="ZKBHomePage_Disconnect_Tip">The ZKB server has been disconnected.</x:String>
     <x:String x:Key="KBListControl_Date">Date</x:String>
     <x:String x:Key="KBListControl_Time">Time</x:String>
     <x:String x:Key="KBListControl_TotalValue">TotalValue</x:String>
@@ -815,6 +817,8 @@
     <x:String x:Key="KBListControl_Victim">Victim</x:String>
     <x:String x:Key="KBListControl_FinalBlow">Final blow</x:String>
     <x:String x:Key="KBListControl_OpenBrowser">Open by browser</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter">Filter</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Notify">Notify</x:String>
 
 
     <x:String x:Key="KB_Point">Point</x:String>

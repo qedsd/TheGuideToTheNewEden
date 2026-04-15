@@ -164,7 +164,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Header = Helpers.ResourcesHelper.GetString("ZKBHomePage_KillStream"),
                     Content = new KillStreamPage(),
                     IsSelected = true,
-                    IsClosable = true,
+                    IsClosable = false,
                     Tag = -1L
                 };
                 _tabView.TabItems.Add(_homeTabViewItem);
