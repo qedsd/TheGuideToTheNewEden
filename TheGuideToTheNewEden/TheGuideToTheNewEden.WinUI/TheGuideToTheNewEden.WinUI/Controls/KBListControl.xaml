@@ -18,7 +18,7 @@
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="False"
-            AllowFiltering="False"
+            AllowFiltering="True"
             AllowGrouping="False"
             AllowResizingColumns="True"
             AllowSorting="False"
@@ -51,7 +51,8 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                    Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}"
+                                    ToolTipService.ToolTip="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                 <TextBlock
                                     Grid.Row="1"
                                     HorizontalAlignment="Center"

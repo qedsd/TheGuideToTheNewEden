@@ -35,27 +35,54 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private void KillStreamPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= KillStreamPage_Loaded;
-            ExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            VM.Config.EnsureRoleFiltersInitialized();
+            CommonExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
             {
-                Core.DBModels.IdName.CategoryEnum.Character,
-                Core.DBModels.IdName.CategoryEnum.Corporation,
-                Core.DBModels.IdName.CategoryEnum.Alliance,
                 Core.DBModels.IdName.CategoryEnum.SolarSystem,
                 Core.DBModels.IdName.CategoryEnum.Region,
                 Core.DBModels.IdName.CategoryEnum.InventoryType,
             });
-            ExclusionsIdNameSearchBox.OnSelectedItemChanged += ExclusionsIdNameSearchBox_OnSelectedItemChanged;
+            CommonExclusionsIdNameSearchBox.OnSelectedItemChanged += CommonExclusionsIdNameSearchBox_OnSelectedItemChanged;
 
-            InclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            CommonInclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
             {
-                Core.DBModels.IdName.CategoryEnum.Character,
-                Core.DBModels.IdName.CategoryEnum.Corporation,
-                Core.DBModels.IdName.CategoryEnum.Alliance,
                 Core.DBModels.IdName.CategoryEnum.SolarSystem,
                 Core.DBModels.IdName.CategoryEnum.Region,
                 Core.DBModels.IdName.CategoryEnum.InventoryType,
             });
-            InclusionsIdNameSearchBox.OnSelectedItemChanged += InclusionsIdNameSearchBox_OnSelectedItemChanged;
+            CommonInclusionsIdNameSearchBox.OnSelectedItemChanged += CommonInclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            VictimExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+            });
+            VictimExclusionsIdNameSearchBox.OnSelectedItemChanged += VictimExclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            VictimInclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+            });
+            VictimInclusionsIdNameSearchBox.OnSelectedItemChanged += VictimInclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            AttackerExclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+            });
+            AttackerExclusionsIdNameSearchBox.OnSelectedItemChanged += AttackerExclusionsIdNameSearchBox_OnSelectedItemChanged;
+
+            AttackerInclusionsIdNameSearchBox.SetFilterTypes(new List<Core.DBModels.IdName.CategoryEnum>()
+            {
+                Core.DBModels.IdName.CategoryEnum.Character,
+                Core.DBModels.IdName.CategoryEnum.Corporation,
+                Core.DBModels.IdName.CategoryEnum.Alliance,
+            });
+            AttackerInclusionsIdNameSearchBox.OnSelectedItemChanged += AttackerInclusionsIdNameSearchBox_OnSelectedItemChanged;
             if (_autoConnect && Services.Settings.ZKBSettingService.Setting.AutoConnect)
             {
                 Connect();
@@ -123,43 +150,120 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 
         private void Setting_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
         {
+            GeneralSetting.Visibility = Visibility.Collapsed;
             FilterSetting.Visibility = Visibility.Collapsed;
-            NotifySetting.Visibility = Visibility.Collapsed;
             if (sender.SelectedItem != null)
             {
                 switch (sender.SelectedItem.Tag.ToString())
                 {
-                    case "0": FilterSetting.Visibility = Visibility.Visible; break;
-                    case "1": NotifySetting.Visibility = Visibility.Visible;break;
+                    case "General": GeneralSetting.Visibility = Visibility.Visible; break;
+                    case "Filter": FilterSetting.Visibility = Visibility.Visible;break;
+                }
+            }
+        }
+        private void FilterGroup_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            CommonFilterPanel.Visibility = Visibility.Collapsed;
+            VictimFilterPanel.Visibility = Visibility.Collapsed;
+            AttackerFilterPanel.Visibility = Visibility.Collapsed;
+            if (sender.SelectedItem != null)
+            {
+                switch (sender.SelectedItem.Tag?.ToString())
+                {
+                    case "Common":
+                        CommonFilterPanel.Visibility = Visibility.Visible;
+                        break;
+                    case "Victim":
+                        VictimFilterPanel.Visibility = Visibility.Visible;
+                        break;
+                    case "Attacker":
+                        AttackerFilterPanel.Visibility = Visibility.Visible;
+                        break;
                 }
             }
         }
 
-        #region ¹ýÂËÁÐ±í
-        private void ExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        #region
+        private void CommonExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, IdName e)
         {
-            VM.Config.Exclusions.Add(e);
+            VM.Config.CommonExclusions.Add(e);
         }
 
-        private void DeleteExclusions_Click(object sender, RoutedEventArgs e)
+        private void DeleteCommonExclusions_Click(object sender, RoutedEventArgs e)
         {
-            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            var data = (sender as Button)?.DataContext as IdName;
             if (data != null)
             {
-                VM.Config.Exclusions.Remove(data);
+                VM.Config.CommonExclusions.Remove(data);
             }
         }
-        private void InclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+
+        private void CommonInclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, IdName e)
         {
-            VM.Config.Inclusions.Add(e);
+            VM.Config.CommonInclusions.Add(e);
         }
 
-        private void DeleteInclusions_Click(object sender, RoutedEventArgs e)
+        private void DeleteCommonInclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as IdName;
+            if (data != null)
+            {
+                VM.Config.CommonInclusions.Remove(data);
+            }
+        }
+
+        private void VictimExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        {
+            VM.Config.VictimExclusions.Add(e);
+        }
+
+        private void DeleteVictimExclusions_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
             if (data != null)
             {
-                VM.Config.Inclusions.Remove(data);
+                VM.Config.VictimExclusions.Remove(data);
+            }
+        }
+        private void VictimInclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, Core.DBModels.IdName e)
+        {
+            VM.Config.VictimInclusions.Add(e);
+        }
+
+        private void DeleteVictimInclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as Core.DBModels.IdName;
+            if (data != null)
+            {
+                VM.Config.VictimInclusions.Remove(data);
+            }
+        }
+
+        private void AttackerExclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, IdName e)
+        {
+            VM.Config.AttackerExclusions.Add(e);
+        }
+
+        private void DeleteAttackerExclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as IdName;
+            if (data != null)
+            {
+                VM.Config.AttackerExclusions.Remove(data);
+            }
+        }
+
+        private void AttackerInclusionsIdNameSearchBox_OnSelectedItemChanged(object sender, IdName e)
+        {
+            VM.Config.AttackerInclusions.Add(e);
+        }
+
+        private void DeleteAttackerInclusions_Click(object sender, RoutedEventArgs e)
+        {
+            var data = (sender as Button)?.DataContext as IdName;
+            if (data != null)
+            {
+                VM.Config.AttackerInclusions.Remove(data);
             }
         }
         #endregion
@@ -177,8 +281,34 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             Button_Connect.Visibility = Visibility.Visible;
             Button_Disconnect.Visibility = Visibility.Collapsed;
             Button_Setting.Visibility = Visibility.Visible;
-            ConnectedGrid.Visibility = Visibility.Collapsed;
-            DisconnectGrid.Visibility = Visibility.Visible;
+        }
+
+        private void CloseSettingButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingGrid.Visibility = Visibility.Collapsed;
+            if (VM.TotalReceivedCount > 0)
+            {
+                DisconnectGrid.Visibility = Visibility.Collapsed;
+                ConnectedGrid.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                DisconnectGrid.Visibility = Visibility.Visible;
+                ConnectedGrid.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void KBListTab_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            if (sender.SelectedItem != null)
+            {
+                switch (sender.SelectedItem.Tag?.ToString())
+                {
+                    case "Matched": MatchedKBListControl.Visibility = Visibility.Visible; FilteredOutKBListControl.Visibility = Visibility.Collapsed; break;
+                    case "FilteredOut": MatchedKBListControl.Visibility = Visibility.Collapsed; FilteredOutKBListControl.Visibility = Visibility.Visible; break;
+                    default:break;
+                }
+            }
         }
     }
 }

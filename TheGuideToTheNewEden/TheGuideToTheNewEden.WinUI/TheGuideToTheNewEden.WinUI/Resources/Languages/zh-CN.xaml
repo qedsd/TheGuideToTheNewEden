@@ -817,8 +817,17 @@
     <x:String x:Key="KBListControl_Victim">受害者</x:String>
     <x:String x:Key="KBListControl_FinalBlow">最后一击</x:String>
     <x:String x:Key="KBListControl_OpenBrowser">浏览器查看</x:String>
-    <x:String x:Key="ZKBHomePage_Setting_Filter">过滤设置</x:String>
-    <x:String x:Key="ZKBHomePage_Setting_Notify">通知设置</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter">过滤</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Global">通用</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Global_Tip">对KB所在星系、星域、被击杀舰船类型进行过滤</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Victim">受害者</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">对KB受害者角色、军团、联盟进行过滤</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Attacker">攻击者</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">对KB攻击者角色、军团、联盟进行过滤</x:String>
+    <x:String x:Key="ZKBHomePage_TotalReceivedCount">总KB数量</x:String>
+    <x:String x:Key="ZKBHomePage_MatchedCount">过滤后KB数量</x:String>
+    <x:String x:Key="ZKBHomePage_MatchedKB">筛选KB</x:String>
+    <x:String x:Key="ZKBHomePage_FilteredOutKB">已过滤KB</x:String>
 
 
     <x:String x:Key="KB_Point">点数</x:String>
@@ -920,7 +929,7 @@
     <x:String x:Key="ZKBSettingPage_AutoConnect">自动接收KB流</x:String>
     <x:String x:Key="ZKBSettingPage_AutoConnect_Desc">打开ZKillborad功能时是否自动连接服务器以接收KB流</x:String>
     <x:String x:Key="ZKBSettingPage_Notify">击杀系统通知</x:String>
-    <x:String x:Key="ZKBSettingPage_Notify_Desc">KB流有新KB时是否弹出系统通知</x:String>
+    <x:String x:Key="ZKBSettingPage_Notify_Desc">有新的符合过滤条件的KB时是否弹出系统通知</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue">击杀通知最小价值</x:String>
     <x:String x:Key="ZKBSettingPage_MinNotifyValue_Desc">仅当KB价值大于此值才通知，设为0则全部通知</x:String>
     <x:String x:Key="ZKBSettingPage_MaxKBItems">最大显示KB数</x:String>
@@ -932,6 +941,9 @@
     <x:String x:Key="ZKBSettingPage_Corps">军团ID</x:String>
     <x:String x:Key="ZKBSettingPage_Alliances">联盟ID</x:String>
     <x:String x:Key="ZKBSettingPage_IdsDesc">仅对列出的ID进行通知，多个ID请用符号,分割，留空则通知全部</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay">列表显示顺序</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay_UploadTime">上传时间</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay_CreateTime">发生时间</x:String>
 
     <!--  GamePreviewMgrPage  -->
     <x:String x:Key="GamePreviewMgrPage_MoveUp">上移</x:String>

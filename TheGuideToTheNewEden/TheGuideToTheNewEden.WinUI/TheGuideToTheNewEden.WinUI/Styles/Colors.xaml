@@ -78,7 +78,7 @@
                 Color="{ThemeResource ThemeMainColor}" />
             <SolidColorBrush x:Key="ThemeBorderBrush">LightGray</SolidColorBrush>
             <Color x:Key="DefaultForegroundColor">Black</Color>
-            <Color x:Key="SecondaryForegroundColor">#C8000000</Color>
+            <Color x:Key="SecondaryForegroundColor">#5f5f60</Color>
             <Color x:Key="PrimaryColor">#229fd6</Color>
             <Color x:Key="CancelColor">Red</Color>
             <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{ThemeResource DefaultForegroundColor}" />

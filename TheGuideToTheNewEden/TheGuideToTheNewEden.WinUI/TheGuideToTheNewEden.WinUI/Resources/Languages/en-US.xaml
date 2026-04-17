@@ -111,7 +111,7 @@
     <x:String x:Key="General_TryNotAdmin">Please try running the software without using administrator mode</x:String>
     <x:String x:Key="General_OpenFile">Open File</x:String>
     <x:String x:Key="General_OpenFolder">Open Folder</x:String>
-    <x:String x:Key="General_Clear">Clear"</x:String>
+    <x:String x:Key="General_Clear">Clear</x:String>
     <x:String x:Key="General_No">No</x:String>
     <x:String x:Key="General_Yes">Yes</x:String>
     <x:String x:Key="General_Close">Close</x:String>
@@ -233,7 +233,7 @@
 
     <!--  Contract  -->
     <x:String x:Key="ContractPage_Character">Character</x:String>
-    <x:String x:Key="ContractPage_Corp">Corpration</x:String>
+    <x:String x:Key="ContractPage_Corp">Corporation</x:String>
     <x:String x:Key="ContractPage_Type_All">All</x:String>
     <x:String x:Key="ContractPage_Type_Unknown">Unknown</x:String>
     <x:String x:Key="ContractPage_Type_ItemExchange">Item Exchange</x:String>
@@ -807,7 +807,7 @@
     <x:String x:Key="ZKBHomePage_AutoConnect">Auto start kb stream</x:String>
     <x:String x:Key="ZKBHomePage_Connect">Connect</x:String>
     <x:String x:Key="ZKBHomePage_Disconnect">Disconnect</x:String>
-    <x:String x:Key="ZKBHomePage_DisconnectTip">Not connected to the ZKB server. You can click the button below to connect to the server</x:String>
+    <x:String x:Key="ZKBHomePage_DisconnectTip">Disconnected to the ZKB server. You can click the button below to connect to the server</x:String>
     <x:String x:Key="ZKBHomePage_Disconnect_Tip">The ZKB server has been disconnected.</x:String>
     <x:String x:Key="KBListControl_Date">Date</x:String>
     <x:String x:Key="KBListControl_Time">Time</x:String>
@@ -818,7 +818,19 @@
     <x:String x:Key="KBListControl_FinalBlow">Final blow</x:String>
     <x:String x:Key="KBListControl_OpenBrowser">Open by browser</x:String>
     <x:String x:Key="ZKBHomePage_Setting_Filter">Filter</x:String>
-    <x:String x:Key="ZKBHomePage_Setting_Notify">Notify</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Global">Global</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Global_Tip">Filter KB's system, region, and killed ship</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Victim">Victim</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">Filter KB victim's character, corporation, and alliance</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Attacker">Attacker</x:String>
+    <x:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">Filter KB attacker's character, corporation, and alliance</x:String>
+    <x:String x:Key="ZKBHomePage_TotalReceivedCount">Total Received</x:String>
+    <x:String x:Key="ZKBHomePage_MatchedCount">Matched</x:String>
+    <x:String x:Key="ZKBHomePage_MatchedKB">Matched KB</x:String>
+    <x:String x:Key="ZKBHomePage_FilteredOutKB">Filtered Out KB</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay">List display order</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay_UploadTime">Upload Time</x:String>
+    <x:String x:Key="ZKBSettingPage_SortWay_CreateTime">Create Time</x:String>
 
 
     <x:String x:Key="KB_Point">Point</x:String>
