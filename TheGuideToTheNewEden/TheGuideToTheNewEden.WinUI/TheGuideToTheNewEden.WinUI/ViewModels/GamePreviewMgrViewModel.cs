@@ -94,7 +94,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public bool Running
         {
             get => running;
-            set => SetProperty(ref running, value);
+            set 
+            {
+                if(SetProperty(ref running, value))
+                {
+                    if (value)
+                    {
+                        RegisterHotkey();
+                    }
+                    else
+                    {
+                        UnregisterHotkey();
+                    }
+                }
+            }
         }
 
         public string OrderStr
@@ -163,7 +176,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Settings = new ObservableCollection<PreviewItem>();
             }
             Init();
-            RegisterHotkey();
         }
         #region 切换快捷键
         private int _forwardHotkeyRegisterId;
@@ -172,7 +184,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             bool result1 = RegisterForwardHotkey();
             bool result2 = RegisterBackwardHotkey();
-            if(result1 && result2)
+            RegisterHotKeyGroups();
+            if (result1 && result2)
             {
                 return;
             }
@@ -188,7 +201,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
             }
-            RegisterHotKeyGroups();
         }
         private bool RegisterForwardHotkey()
         {
@@ -250,6 +262,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     return false;
                 }
             }
+        }
+        private void UnregisterHotkey()
+        {
+            UnregisterForwardHotkey();
+            UnregisterBackwardHotkey();
+            UnregisterHotKeyGroups();
         }
         private bool UnregisterHotkey(int registerId)
         {
@@ -373,7 +391,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             var lastActiveProcess = Processes.FirstOrDefault(p=>p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null)
+            if (lastActiveProcess == null || _lastActiveGroup != null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -382,6 +400,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         value.ActiveSourceWindow();
                         _lastActiveProcessGUID = firstRunning.GUID;
+                        _lastActiveGroup = null;
                     }
                 }
             }
@@ -437,7 +456,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             var lastActiveProcess = Processes.FirstOrDefault(p => p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null)
+            if (lastActiveProcess == null || _lastActiveGroup != null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -446,6 +465,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         value.ActiveSourceWindow();
                         _lastActiveProcessGUID = firstRunning.GUID;
+                        _lastActiveGroup = null;
                     }
                 }
             }
@@ -495,7 +515,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
         }
-
+        private PreviewHotKeyGroup _lastActiveGroup = null;
         private void SwitchHotkeyGroup(int hotkeyId)
         {
             PreviewHotKeyGroup targetGroup = null;
@@ -520,7 +540,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && targetGroup.GameNames.Contains(p.GetCharacterName())).ToList();
                 if (targetProcesses.NotNullOrEmpty())
                 {
-                    if (targetGroup.LastActiveProcessGUID == null)
+                    //切换分组后判断分组是否设置了从头开始
+                    if ((_lastActiveGroup != targetGroup && targetGroup.Restart) || targetGroup.LastActiveProcessGUID == null)
                     {
                         var firstRunning = targetProcesses.FirstOrDefault();
                         if (firstRunning != null)
@@ -592,6 +613,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                     }
                 }
+                _lastActiveGroup = targetGroup;
             }
         }
 
@@ -1533,9 +1555,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Processes.CollectionChanged -= Processes_CollectionChanged;
             HotkeyService.GetHotkeyService(Window.GetWindowHandle()).HotkeyActived -= GamePreviewMgrViewModel_HotkeyActived;
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
-            UnregisterForwardHotkey();
-            UnregisterBackwardHotkey();
-            UnregisterHotKeyGroups();
+            UnregisterHotkey();
             StopGameMonitor();
         }
     }

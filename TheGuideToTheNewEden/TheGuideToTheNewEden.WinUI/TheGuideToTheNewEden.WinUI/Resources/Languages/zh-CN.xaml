@@ -688,6 +688,7 @@
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">同步当前设置到其他进程需停止所有运行中的预览，是否继续？</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">同步完成</x:String>
     <x:String x:Key="GamePreviewMgrPage_NotSupportedMinGameWindow">不支持最小化游戏窗口</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveRestart">切换分组后从头开始</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">开始</x:String>

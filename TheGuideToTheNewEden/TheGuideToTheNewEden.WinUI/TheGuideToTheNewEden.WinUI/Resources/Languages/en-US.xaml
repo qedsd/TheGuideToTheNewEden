@@ -688,6 +688,7 @@
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Tip">To synchronize the current settings to other processes, all running previews need to be stopped. Do you want to continue?</x:String>
     <x:String x:Key="GamePreviewMgrPage_ApplySettingToAll_Succes">Synchronization completed</x:String>
     <x:String x:Key="GamePreviewMgrPage_NotSupportedMinGameWindow">Minimizing the game window is not supported</x:String>
+    <x:String x:Key="GamePreviewMgrPage_ActiveRestart">Restar After Switching Groups</x:String>
 
     <!--  EarlyWarningItemPage  -->
     <x:String x:Key="EarlyWarningItemPage_Start">Start</x:String>

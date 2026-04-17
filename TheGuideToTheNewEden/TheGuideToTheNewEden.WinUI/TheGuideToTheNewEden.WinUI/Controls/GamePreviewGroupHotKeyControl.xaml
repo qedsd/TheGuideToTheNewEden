@@ -40,6 +40,7 @@
                     Margin="8,0,8,0"
                     PlaceholderText="{StaticResource GamePreviewMgrPage_SwitchHotkey_FormatTip}" />
             </Grid>
+            <CheckBox x:Name="CheckBox_ActiveRestart" Content="{StaticResource GamePreviewMgrPage_ActiveRestart}" />
         </StackPanel>
         <Grid
             Grid.Row="1"

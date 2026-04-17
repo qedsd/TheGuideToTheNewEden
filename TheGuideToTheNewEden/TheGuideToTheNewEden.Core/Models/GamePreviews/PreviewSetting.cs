@@ -216,5 +216,15 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         public int BackwardHotkeyRegisterId { get; set; }
         [JsonIgnore]
         public string LastActiveProcessGUID { get; set; }
+
+        private bool _restart = true;
+        /// <summary>
+        /// 从别的分组切换回来时是否从头开始显示
+        /// </summary>
+        public bool Restart
+        {
+            get => _restart;
+            set => SetProperty(ref _restart, value);
+        }
     }
 }

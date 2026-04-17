@@ -81,6 +81,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             NameTextBox.Text = HotKeyGroup?.GroupName;
             ForwardTextBox.Text = HotKeyGroup?.SwitchHotkey_Forward;
             BackwardTextBox.Text = HotKeyGroup?.SwitchHotkey_Backward;
+            CheckBox_ActiveRestart.IsChecked = HotKeyGroup?.Restart;
         }
         private void StartEidt()
         {
@@ -133,18 +134,9 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         {
             HotKeyGroup.SwitchHotkey_Forward = ForwardTextBox.Text;
             HotKeyGroup.SwitchHotkey_Backward = BackwardTextBox.Text;
+            HotKeyGroup.Restart = CheckBox_ActiveRestart.IsChecked == true;
             SaveCommand?.Execute(null);
             SaveClicked?.Invoke(this,HotKeyGroup);
-        }
-
-        private void ApplyForward_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void ApplyBackward_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
