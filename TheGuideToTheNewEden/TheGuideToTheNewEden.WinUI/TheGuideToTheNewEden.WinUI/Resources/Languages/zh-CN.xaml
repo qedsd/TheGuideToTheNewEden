@@ -33,6 +33,7 @@
     <x:String x:Key="Channel">频道</x:String>
     <x:String x:Key="Tools">小工具</x:String>
     <x:String x:Key="Tools_IME">快捷输入</x:String>
+    <x:String x:Key="Tools_ServerPing">游戏延迟</x:String>
 
     <x:String x:Key="InvType">物品</x:String>
     <x:String x:Key="MapSolarSystem">星系</x:String>
@@ -481,17 +482,26 @@
     <x:String x:Key="SettingPage_About">关于</x:String>
     <x:String x:Key="SettingPage_About_Desc">软件说明</x:String>
 
+    <x:String x:Key="ServerPingPage_SelectServer">选择服务器</x:String>
     <x:String x:Key="ServerPingPage_TranquilityHost">EVE欧服服务器</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">EVE国服服务器</x:String>
-    <x:String x:Key="ServerPingPage_Host">域名/IP</x:String>
+    <x:String x:Key="ServerPingPage_Host">Host/IP</x:String>
     <x:String x:Key="ServerPingPage_Port">端口</x:String>
-    <x:String x:Key="ServerPingPage_Times">次数</x:String>
-    <x:String x:Key="ServerPingPage_Span">间隔(ms)</x:String>
-    <x:String x:Key="ServerPingPage_Start">开始</x:String>
-    <x:String x:Key="ServerPingPage_Des">利用TCP握手实现的延迟测试，可以获取到真实的延迟</x:String>
-    <x:String x:Key="ServerPingPage_RTTAverage">平均延迟</x:String>
-    <x:String x:Key="ServerPingPage_RTTFluctuation">延迟波动</x:String>
-    <x:String x:Key="ServerPingPage_PacketLossRate">丢包率</x:String>
+    <x:String x:Key="ServerPingPage_CureentLatency">当前延迟</x:String>
+    <x:String x:Key="ServerPingPage_AverageLatency">平均延迟</x:String>
+    <x:String x:Key="ServerPingPage_Loss">丢包率</x:String>
+    <x:String x:Key="ServerPingPage_Statistics">测试统计</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_All">总测试次数</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Success">成功次数</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Failed">失败次数</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Duration">测试时长</x:String>
+    <x:String x:Key="ServerPingPage_Start">开始测试</x:String>
+    <x:String x:Key="ServerPingPage_Stop">停止测试</x:String>
+    <x:String x:Key="ServerPingPage_Result_Excellent">极佳</x:String>
+    <x:String x:Key="ServerPingPage_Result_Good">良好</x:String>
+    <x:String x:Key="ServerPingPage_Result_Normal">正常</x:String>
+    <x:String x:Key="ServerPingPage_Result_Poor">较差</x:String>
+    <x:String x:Key="ServerPingPage_Result_Bad">糟糕</x:String>
 
     <x:String x:Key="TranslationPage_EN">英文</x:String>
     <x:String x:Key="TranslationPage_Local">本地</x:String>

@@ -33,6 +33,7 @@
     <x:String x:Key="Channel">Channel</x:String>
     <x:String x:Key="Tools">Tools</x:String>
     <x:String x:Key="Tools_IME">IME</x:String>
+    <x:String x:Key="Tools_ServerPing">Ping</x:String>
 
     <x:String x:Key="InvType">Type</x:String>
     <x:String x:Key="MapSolarSystem">System</x:String>
@@ -481,17 +482,26 @@
     <x:String x:Key="SettingPage_About">About</x:String>
     <x:String x:Key="SettingPage_About_Desc">About App</x:String>
 
+    <x:String x:Key="ServerPingPage_SelectServer">Select Server</x:String>
     <x:String x:Key="ServerPingPage_TranquilityHost">Tranquility</x:String>
     <x:String x:Key="ServerPingPage_SerenityHost">Serenity</x:String>
     <x:String x:Key="ServerPingPage_Host">Host/IP</x:String>
     <x:String x:Key="ServerPingPage_Port">Port</x:String>
-    <x:String x:Key="ServerPingPage_Times">Times</x:String>
-    <x:String x:Key="ServerPingPage_Span">Span(ms)</x:String>
+    <x:String x:Key="ServerPingPage_CureentLatency">Cureent</x:String>
+    <x:String x:Key="ServerPingPage_AverageLatency">Average</x:String>
+    <x:String x:Key="ServerPingPage_Loss">Loss</x:String>
+    <x:String x:Key="ServerPingPage_Statistics">Statistics</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_All">All</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Success">Successful</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Failed">Failed</x:String>
+    <x:String x:Key="ServerPingPage_Statistics_Duration">Duration</x:String>
     <x:String x:Key="ServerPingPage_Start">Start</x:String>
-    <x:String x:Key="ServerPingPage_Des">The delay test implemented using TCP handshake can obtain the actual latency</x:String>
-    <x:String x:Key="ServerPingPage_RTTAverage">Average latency</x:String>
-    <x:String x:Key="ServerPingPage_RTTFluctuation">Latency fluctuation</x:String>
-    <x:String x:Key="ServerPingPage_PacketLossRate">Packet loss rate</x:String>
+    <x:String x:Key="ServerPingPage_Stop">Stop</x:String>
+    <x:String x:Key="ServerPingPage_Result_Excellent">Excellent</x:String>
+    <x:String x:Key="ServerPingPage_Result_Good">Good</x:String>
+    <x:String x:Key="ServerPingPage_Result_Normal">Normal</x:String>
+    <x:String x:Key="ServerPingPage_Result_Poor">Poor</x:String>
+    <x:String x:Key="ServerPingPage_Result_Bad">Bad</x:String>
 
     <x:String x:Key="TranslationPage_EN">En</x:String>
     <x:String x:Key="TranslationPage_Local">Local</x:String>

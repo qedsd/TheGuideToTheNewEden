@@ -184,6 +184,11 @@
                                     <ic:FluentIcon Icon="DrawText" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource Tools_ServerPing}" Tag="ServerPingPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="NetworkCheck" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>

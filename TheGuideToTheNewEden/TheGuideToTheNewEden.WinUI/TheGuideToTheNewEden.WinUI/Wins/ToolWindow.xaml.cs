@@ -122,6 +122,10 @@ namespace TheGuideToTheNewEden.WinUI
             BackdropSelectorService.OnBackdropTypeChanged -= BackdropSelectorService_OnBackdropTypeChanged;
             BackdropSelectorService.OnCustomPictureFileChanged -= BackdropSelectorService_OnCustomPictureFileChanged;
             BackdropSelectorService.OnCustomPictureOverlapColorChanged -= BackdropSelectorService_OnCustomPictureOverlapColorChanged;
+            if(ContentFrame.Content is IPage page)
+            {
+                page?.Close();
+            }
         }
 
         public void HideNavButton()

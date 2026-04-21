@@ -22,6 +22,7 @@ using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.ViewModels;
 using TheGuideToTheNewEden.WinUI.Views.Character;
 using TheGuideToTheNewEden.WinUI.Views.Map;
+using TheGuideToTheNewEden.WinUI.Views.Tools;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -195,8 +196,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
                             if (type != null)
                             {
                                 var instance = Activator.CreateInstance(type);
+                                int windowW = 500;
+                                int windowH = 200;
+                                if(instance is ITool tool)
+                                {
+                                    tool.GetWindowSize(out windowW, out windowH);
+                                }
                                 string content = item.Content.ToString();
-                                ToolWindow toolWindow = new ToolWindow(content, content, instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true, 500,200);
+                                ToolWindow toolWindow = new ToolWindow(content, content, instance as UIElement, WindowTitleStyle.MiniAndClose, true, true, true, true, true, windowW, windowH);
                                 toolWindow.LogPositionAndSize(content);
                                 toolWindow.Activate();
                                 sender.SelectedItem = null;

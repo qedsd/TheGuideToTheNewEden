@@ -33,7 +33,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 Core.Log.Error(ex);
                 _stopwatch.Stop();
                 sock.Dispose();
-                return 0;
+                return -1;
             }
         }
     }

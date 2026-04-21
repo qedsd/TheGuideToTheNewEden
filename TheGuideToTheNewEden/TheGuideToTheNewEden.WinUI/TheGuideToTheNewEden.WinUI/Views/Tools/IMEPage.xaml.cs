@@ -31,7 +31,7 @@ using TheGuideToTheNewEden.Core.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Tools
 {
-    public sealed partial class IMEPage : Page, IPage
+    public sealed partial class IMEPage : Page, IPage, ITool
     {
         public IMEPage()
         {
@@ -376,6 +376,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Tools
         public void NavigatedTo(object parameter)
         {
 
+        }
+
+        public void GetWindowSize(out int width, out int height)
+        {
+            width = 500;
+            height = 200;
         }
     }
 }

@@ -324,7 +324,6 @@
     <None Remove="Views\Map\Tools\PlanetResourcListPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
-    <None Remove="Views\ServerPingPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\Settings\ESIScopeSettingPage.xaml" />
     <None Remove="Views\Settings\GameLogSettingPage.xaml" />
@@ -336,6 +335,7 @@
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
     <None Remove="Views\Tools\IMEPage.xaml" />
+    <None Remove="Views\Tools\ServerPingPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\TranslationWindowPage.xaml" />
     <None Remove="Views\UpdatePage.xaml" />
@@ -553,10 +553,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\Local\zh.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\main.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\static.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -660,6 +660,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Tools\ServerPingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Map\Tools\IntelTool.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -820,9 +823,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\TranslationPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\ServerPingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Settings\MarketSettingPage.xaml">
