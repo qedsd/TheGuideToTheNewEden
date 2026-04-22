@@ -344,6 +344,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             return _setting.Highlight;
         }
 
+        public override void ChangeName(string name)
+        {
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                Title = name;
+                SetDisplayTitle(name);
+            });
+        }
+
         public override event IGamePreviewWindow.StopDelegate OnStop;
         public override event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
     }

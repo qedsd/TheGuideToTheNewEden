@@ -684,11 +684,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(allProcessDict.TryGetValue(process.MainWindowHandle,out var targetProcess))
                     {
-                        //进程还存在
-                        //判断进程名称是否需要更新，刚进入游戏时尚无角色名称，若名称改变，当作新进程处理
+                        //进程变化
                         if(process.WindowTitle != targetProcess.WindowTitle)
                         {
                             renameList.Add(process);
+                            process.WindowTitle = targetProcess.WindowTitle;
                         }
                         else
                         {
@@ -703,13 +703,68 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 foreach(var process in renameList)
                 {
-                    Processes.Remove(process);
-                    //若开启还需关闭
                     if(process.Running && process.Setting != null)
                     {
-                        Stop(process.Setting);
-                        process.Setting.ProcessInfo = null;
-                        process.Setting = null;
+                        allProcessDict.Remove(process.MainWindowHandle);
+                        PreviewItem newSetting = null;
+                        bool keepSetting = true;
+                        if (string.IsNullOrEmpty(process.Setting.Name))//由选择界面切换到角色
+                        {
+                            if (previewSetting.SwitchCharacterKeepSetting)
+                            {
+                                var savedSetting = GetSavedSetting(process.GetCharacterName());
+                                if (savedSetting == null)
+                                {
+                                    savedSetting = new PreviewItem();
+                                }
+                                savedSetting.ProcessInfo = process;
+                                savedSetting.Name = process.GetCharacterName();
+                                newSetting = savedSetting;
+                            }
+                            else
+                            {
+                                keepSetting = false;
+                            }
+                        }
+                        else if (process.Setting.Name.StartsWith("*Untitled"))//由退出角色后的选择界面切换到角色
+                        {
+                            if (previewSetting.SwitchCharacterKeepSetting)
+                            {
+                                var savedSetting = GetSavedSetting(process.GetCharacterName());
+                                if (savedSetting == null)
+                                {
+                                    savedSetting = new PreviewItem();
+                                }
+                                savedSetting.CopyFrom(process.Setting);
+                                savedSetting.Name = process.GetCharacterName();
+                                newSetting = savedSetting;
+                            }
+                            else
+                            {
+                                keepSetting = false;
+                            }
+                        }
+                        else//由角色切换到选择界面
+                        {
+                            newSetting = new PreviewItem();
+                            newSetting.CopyFrom(process.Setting);
+                            newSetting.Name = $"*Untitled[{process.Setting.Name}]";
+                            process.Setting.ProcessInfo = null;
+                        }
+                        if(keepSetting)
+                        {
+                            process.Setting = newSetting;
+                            if (_runningDic.TryGetValue(process.GUID, out var window))
+                            {
+                                window.ChangeName(newSetting.Name);
+                                window.ChangeSetting(newSetting);
+                            }
+                        }
+                        else
+                        {
+                            exitedList.Add(process);
+                            allProcessDict.Add(process.MainWindowHandle, process);
+                        }
                     }
                 }
                 foreach(var process in exitedList)//停止已退出进程预览
@@ -717,8 +772,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     if(process.Setting != null)
                     {
                         Stop(process.Setting);
-                        process.Setting.ProcessInfo = null;
-                        process.Setting = null;
                     }
                     Processes.Remove(process);
                 }
@@ -880,7 +933,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return null;
             }
         }
-
+        private PreviewItem GetSavedSetting(string characterName)
+        {
+            if (!string.IsNullOrEmpty(characterName))
+            {
+                //从保存列表里找出第一个同名且不在运行中的设置
+                return Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
+            }
+            else
+            {
+                return null;
+            }
+        }
         private bool Start(ProcessInfo processInfo, PreviewItem setting, PreviewSetting previewSetting)
         {
             if (processInfo != null && setting != null)
@@ -910,7 +974,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         gamePreviewWindow.Start(processInfo.MainWindowHandle);
                         processInfo.Running = true;
                         //保存
-                        if (!string.IsNullOrEmpty(setting.Name))
+                        if (!string.IsNullOrEmpty(setting.Name) && !setting.Name.StartsWith("*Untitled"))
                         {
                             if (!PreviewSetting.PreviewItems.Contains(setting))
                             {
@@ -1030,6 +1094,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
+                previewItem.ProcessInfo.Setting = null;
+                previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {

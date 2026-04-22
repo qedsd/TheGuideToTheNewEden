@@ -181,6 +181,19 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
                 SetProperty(ref _autoStartNewProcess, value);
             }
         }
+
+        private bool _switchCharacterKeepSetting = true;
+        /// <summary>
+        /// 同进程切换角色沿用切换前的设置
+        /// </summary>
+        public bool SwitchCharacterKeepSetting
+        {
+            get => _switchCharacterKeepSetting;
+            set
+            {
+                SetProperty(ref _switchCharacterKeepSetting, value);
+            }
+        }
     }
     public class PreviewHotKeyGroup : ObservableObject
     {

@@ -197,5 +197,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 });
             }
         }
+        public override void ChangeName(string name)
+        {
+            //TODO
+        }
     }
 }

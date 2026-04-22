@@ -368,6 +368,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             return _appWindow.ClientSize.Height;
         }
+        public override void ChangeName(string name)
+        {
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                SetDisplayTitle(name);
+                _titleTextBlock.Text = name;
+            });
+        }
 
         public override event IGamePreviewWindow.StopDelegate OnStop;
         public override event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;

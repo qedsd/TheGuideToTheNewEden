@@ -657,6 +657,7 @@
     <x:String x:Key="GamePreviewMgrPage_ProcessList">Processes</x:String>
     <x:String x:Key="GamePreviewMgrPage_StartAllWithNoneSetting">Start with all processes that have not been started yet</x:String>
     <x:String x:Key="GamePreviewMgrPage_AutoStartNewProcess">Automatically start new processes</x:String>
+    <x:String x:Key="GamePreviewMgrPage_SwitchCharacterKeepSetting">Keep Setting after switching character</x:String>
     <x:String x:Key="GamePreviewMgrPage_GlobalSetting">Setting</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey">Switch Hotkey</x:String>
     <x:String x:Key="GamePreviewMgrPage_SwitchHotkey_Tip">When pressing the hotkey, switch and display game windows in order of activation</x:String>

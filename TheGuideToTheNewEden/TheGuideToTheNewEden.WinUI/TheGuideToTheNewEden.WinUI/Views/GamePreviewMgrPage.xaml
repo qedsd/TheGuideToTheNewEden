@@ -831,6 +831,7 @@
                             <StackPanel>
                                 <CheckBox Content="{StaticResource GamePreviewMgrPage_StartAllWithNoneSetting}" IsChecked="{x:Bind VM.PreviewSetting.StartAllWithNoneSetting, Mode=TwoWay}" />
                                 <CheckBox Content="{StaticResource GamePreviewMgrPage_AutoStartNewProcess}" IsChecked="{x:Bind VM.PreviewSetting.AutoStartNewProcess, Mode=TwoWay}" />
+                                <CheckBox Content="{StaticResource GamePreviewMgrPage_SwitchCharacterKeepSetting}" IsChecked="{x:Bind VM.PreviewSetting.SwitchCharacterKeepSetting, Mode=TwoWay}" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

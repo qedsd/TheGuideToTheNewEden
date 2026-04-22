@@ -19,7 +19,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal abstract class GamePreviewBaseWindowBase : ToolWindow, IGamePreviewWindow
     {
         internal IntPtr _sourceHWnd;
-        internal readonly PreviewItem _setting;
+        internal PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
         internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton)
         {
@@ -146,6 +146,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public PreviewItem GetSetting()
         {
             return _setting;
+        }
+
+        public abstract void ChangeName(string name);
+
+        public void ChangeSetting(PreviewItem previewItem)
+        {
+            _setting = previewItem;
         }
     }
 }
