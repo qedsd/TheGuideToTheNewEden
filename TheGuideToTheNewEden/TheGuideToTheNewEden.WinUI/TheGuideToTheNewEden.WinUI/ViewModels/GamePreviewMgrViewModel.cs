@@ -966,7 +966,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         gamePreviewWindow = new InvisibleGamePreviewWindow(setting, previewSetting);
                     }
-                    
+                    setting.ProcessInfo = processInfo;
                     if (_runningDic.TryAdd(processInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
