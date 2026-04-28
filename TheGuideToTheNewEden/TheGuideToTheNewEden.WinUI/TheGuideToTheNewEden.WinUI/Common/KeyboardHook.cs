@@ -230,5 +230,10 @@ namespace TheGuideToTheNewEden.WinUI.Common
         {
             pressedKeyDic.Clear();
         }
+
+        public bool IsRunning()
+        {
+            return hKeyboardHook != 0;
+        }
     }
 }

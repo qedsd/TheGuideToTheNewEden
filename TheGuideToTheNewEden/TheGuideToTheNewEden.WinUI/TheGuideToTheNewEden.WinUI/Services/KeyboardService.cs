@@ -24,13 +24,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static void Start()
         {
-            Core.Log.Debug("监听按键");
             if (Current._keyboardHook == null)
             {
                 Current._keyboardHook = new KeyboardHook();
+            }
+            if (!Current._keyboardHook.IsRunning())
+            {
                 Current._keyboardHook.Start();
                 Current._keyboardHook.KeyboardEvent += _keyboardHook_KeyboardEvent;
             }
+            
             System.Threading.Interlocked.Increment(ref _startCount);
         }
 
@@ -42,7 +45,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public static void Stop()
         {
-            Core.Log.Debug("取消监听按键");
             System.Threading.Interlocked.Decrement(ref _startCount);
             if (_startCount <= 0 && Current._keyboardHook != null)
             {

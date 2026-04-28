@@ -8,6 +8,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Tools
 {
     public interface ITool
     {
-        void GetWindowSize(out int width, out int hight);
+        void GetWindowSize(out int width, out int height);
     }
 }

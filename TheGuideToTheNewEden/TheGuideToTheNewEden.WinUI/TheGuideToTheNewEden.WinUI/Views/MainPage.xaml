@@ -189,6 +189,11 @@
                                     <ic:FluentIcon Icon="NetworkCheck" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource Tools_KeyboardSpan}" Tag="KeyboardSpanPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="Keyboard" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>

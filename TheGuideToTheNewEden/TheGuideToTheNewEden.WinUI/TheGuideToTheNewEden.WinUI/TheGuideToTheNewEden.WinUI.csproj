@@ -335,6 +335,7 @@
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
     <None Remove="Views\Tools\IMEPage.xaml" />
+    <None Remove="Views\Tools\KeyboardSpanPage.xaml" />
     <None Remove="Views\Tools\ServerPingPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\TranslationWindowPage.xaml" />
@@ -660,6 +661,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Tools\KeyboardSpanPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Tools\ServerPingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

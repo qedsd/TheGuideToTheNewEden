@@ -34,6 +34,7 @@
     <x:String x:Key="Tools">小工具</x:String>
     <x:String x:Key="Tools_IME">快捷输入</x:String>
     <x:String x:Key="Tools_ServerPing">游戏延迟</x:String>
+    <x:String x:Key="Tools_KeyboardSpan">按键间隔</x:String>
 
     <x:String x:Key="InvType">物品</x:String>
     <x:String x:Key="MapSolarSystem">星系</x:String>
@@ -1494,6 +1495,17 @@
     <x:String x:Key="IMEPage_Translate">翻译</x:String>
     <x:String x:Key="IMEPage_Copy">复制</x:String>
     <x:String x:Key="IMEPage_NoResult">无结果</x:String>
+
+    <!--  KeyboardSpanPage  -->
+    <x:String x:Key="KeyboardSpanPage_Keyboard">按键</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode">模式</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode1">时间间隔</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode2">按键次数</x:String>
+    <x:String x:Key="KeyboardSpanPage_Span">间隔（秒）</x:String>
+    <x:String x:Key="KeyboardSpanPage_Count">次数</x:String>
+    <x:String x:Key="KeyboardSpanPage_Character">角色</x:String>
+    <x:String x:Key="KeyboardSpanPage_TotalKeyboardCount">累计按键次数</x:String>
+    <x:String x:Key="KeyboardSpanPage_TotalDuration">运行时长</x:String>
 
     <!--  About  -->
     <x:String x:Key="About_P1">这是一个免费、开源的EVE Online辅助工具集合软件，涵盖了商业管理、预警提醒、多开预览、攻略查询等多种实用功能。所有功能都不会违反游戏的最终用户许可协议（EULA），请放心使用。</x:String>

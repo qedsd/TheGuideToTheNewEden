@@ -34,6 +34,7 @@
     <x:String x:Key="Tools">Tools</x:String>
     <x:String x:Key="Tools_IME">IME</x:String>
     <x:String x:Key="Tools_ServerPing">Ping</x:String>
+    <x:String x:Key="Tools_KeyboardSpan">Keyboard Span</x:String>
 
     <x:String x:Key="InvType">Type</x:String>
     <x:String x:Key="MapSolarSystem">System</x:String>
@@ -1494,6 +1495,17 @@
     <x:String x:Key="IMEPage_Translate">Translate"</x:String>
     <x:String x:Key="IMEPage_Copy">Copy</x:String>
     <x:String x:Key="IMEPage_NoResult">No Result</x:String>
+
+    <!--  KeyboardSpanPage  -->
+    <x:String x:Key="KeyboardSpanPage_Keyboard">Keyboard</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode">Mode</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode1">Time Interval</x:String>
+    <x:String x:Key="KeyboardSpanPage_Mode2">Key Press Count</x:String>
+    <x:String x:Key="KeyboardSpanPage_Span">Interval(s)</x:String>
+    <x:String x:Key="KeyboardSpanPage_Count">Count</x:String>
+    <x:String x:Key="KeyboardSpanPage_Character">Character</x:String>
+    <x:String x:Key="KeyboardSpanPage_TotalKeyboardCount">Total key presses</x:String>
+    <x:String x:Key="KeyboardSpanPage_TotalDuration">Elapsed time</x:String>
 
     <!--  About  -->
     <x:String x:Key="About_P1">This is a free, open-source EVE Online toolkit app that includes various features such as market, intel, game previews, and DED guides. All features comply with the game's End User License Agreement (EULA) and are safe to use without violation.</x:String>

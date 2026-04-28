@@ -152,6 +152,10 @@ namespace TheGuideToTheNewEden.WinUI
             TitleTextBlock.Text = title;
             Title = title;
         }
+        public string GetDisplayTitle()
+        {
+            return TitleTextBlock.Text;
+        }
 
         /// <summary>
         /// 系统窗口显示的窗口名称
