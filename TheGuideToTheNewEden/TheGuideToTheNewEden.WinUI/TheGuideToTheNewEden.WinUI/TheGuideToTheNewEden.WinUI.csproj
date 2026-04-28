@@ -23,10 +23,10 @@
 		<AppxDefaultResourceQualifiers>Language=en-US;zh-CN</AppxDefaultResourceQualifiers>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<Version>3.0.0-beta.7</Version>
+		<Version>3.0.0-rc.1</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<Version>3.0.0-beta.7</Version>
+		<Version>3.0.0-rc.1</Version>
 	</PropertyGroup>
 	<ItemGroup>
     <Content Remove="Assets\Icon\KillRightsIcon.png" />
