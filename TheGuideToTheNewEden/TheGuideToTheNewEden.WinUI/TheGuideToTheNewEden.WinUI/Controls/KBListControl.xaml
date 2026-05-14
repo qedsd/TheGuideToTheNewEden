@@ -9,6 +9,7 @@
     xmlns:killstream="using:ZKB.NET.Models.KillStream"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <Grid>
@@ -17,12 +18,14 @@
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="False"
-            AllowFiltering="False"
+            AllowFiltering="True"
             AllowGrouping="False"
             AllowResizingColumns="True"
             AllowSorting="False"
             AutoExpandGroups="True"
             AutoGenerateColumns="False"
+            Background="Transparent"
+            BorderThickness="0"
             ColumnWidthMode="Star"
             GridLinesVisibility="Horizontal"
             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
@@ -35,8 +38,8 @@
             <dataGrid:SfDataGrid.Columns>
                 <dataGrid:GridTemplateColumn
                     Width="80"
-                    HeaderText="{StaticResource KBListControl_Time}"
                     AllowSorting="True"
+                    HeaderText="{StaticResource KBListControl_Time}"
                     MappingName="SKBDetail.KillmailTime">
                     <dataGrid:GridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="kb:KBItemInfo">
@@ -48,7 +51,8 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                    Text="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}"
+                                    ToolTipService.ToolTip="{x:Bind SKBDetail.KillmailTime, Converter={StaticResource UTCToLocalTimeConverter}}" />
                                 <TextBlock
                                     Grid.Row="1"
                                     HorizontalAlignment="Center"
@@ -100,9 +104,9 @@
                                         </Button.Content>
                                     </Button>
                                     <Button
-                                        Click="Button_Group_Clicked"
                                         Grid.Row="1"
                                         VerticalAlignment="Center"
+                                        Click="Button_Group_Clicked"
                                         Content="{x:Bind Group.GroupName}"
                                         FontSize="12"
                                         FontWeight="Light"

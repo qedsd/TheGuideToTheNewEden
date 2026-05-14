@@ -1,0 +1,183 @@
+using ESI.NET.Models.PlanetaryInteraction;
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.Core.Models;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models.EVELogs;
+using System.Threading;
+using System.Xml.Linq;
+using TheGuideToTheNewEden.WinUI.Extensions;
+
+namespace TheGuideToTheNewEden.WinUI.Views
+{
+    public sealed partial class GameLogMonitorPage : Page, IPage
+    {
+        private Window _window;
+        public GameLogMonitorPage()
+        {
+            this.InitializeComponent();
+            VM.OnContentUpdate += VM_OnContentUpdate;
+            GameLogContentsScroll.LayoutUpdated += GameLogContentsScroll_LayoutUpdated;
+            Loaded += GameLogMonitorPage_Loaded;
+            VM.PropertyChanged += VM_PropertyChanged;
+        }
+
+        private void VM_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(VM.SelectedGameLogInfo))
+            {
+                GameLogContents.Blocks.Clear();
+                if (VM.SelectedGameLogInfo?.LogContents.NotNullOrEmpty() == true)
+                {
+                    AddContentsToUI(VM.SelectedGameLogInfo.LogContents);
+                }
+            }
+        }
+
+        private void GameLogMonitorPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            _window = Helpers.WindowHelper.GetWindowForElement(this);
+        }
+
+        private void GameLogContentsScroll_LayoutUpdated(object sender, object e)
+        {
+            if (isAdded)
+            {
+                isAdded = false;
+                GameLogContentsScroll.ScrollToVerticalOffset(GameLogContentsScroll.ScrollableHeight);
+            }
+        }
+        private bool isAdded = false;
+
+        private void VM_OnContentUpdate(Core.Models.GameLogItem item, IEnumerable<Core.Models.EVELogs.GameLogContent> news)
+        {
+            _window?.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                AddContentsToUI(news);
+            });
+        }
+        private void AddContentsToUI(IEnumerable<Core.Models.EVELogs.GameLogContent> news)
+        {
+            var lastParagraph = GameLogContents.Blocks.LastOrDefault() as Paragraph;
+            if (lastParagraph != null)
+            {
+                foreach (var run in lastParagraph.Inlines)
+                {
+                    run.FontWeight = FontWeights.Normal;
+                }
+            }
+            //删除超出显示数量的
+            if (Services.Settings.GameLogsSettingService.MaxShowItems > 0)
+            {
+                //可能存在news数量大于最大显示数量的情况，需要先把news处理
+                if (news.Count() > Services.Settings.GameLogsSettingService.MaxShowItems)
+                {
+                    news = news.Skip(news.Count() - Services.Settings.GameLogsSettingService.MaxShowItems);
+                }
+                int removeCount = GameLogContents.Blocks.Count - Services.Settings.GameLogsSettingService.MaxShowItems + news.Count();
+                for (int i = 0; i < removeCount; i++)
+                {
+                    GameLogContents.Blocks.RemoveAt(0);
+                }
+            }
+            Run lastRun = null;
+            foreach (var item2 in news)
+            {
+                Paragraph paragraph = new Paragraph()
+                {
+                    Margin = new Thickness(0, 16, 0, 16),
+                };
+                Run contentRun = new Run()
+                {
+                    Text = item2.SourceContent
+                };
+                if (item2.Important)
+                {
+                    contentRun.Foreground = new SolidColorBrush(Microsoft.UI.Colors.OrangeRed);
+                }
+                paragraph.Inlines.Add(contentRun);
+                GameLogContents.Blocks.Add(paragraph);
+                lastRun = contentRun;
+            }
+            if (lastRun != null)
+            {
+                lastRun.FontWeight = FontWeights.Bold;
+            }
+            isAdded = true;
+        }
+
+        public void Close()
+        {
+            VM.Dispose();
+        }
+
+
+        private void MenuFlyoutItem_LogFile_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as GameLogInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", info.FilePath);
+            }
+        }
+        private void MenuFlyoutItem_LogFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var info = (sender as MenuFlyoutItem)?.DataContext as GameLogInfo;
+            if (info != null)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{info.FilePath}\"");
+            }
+        }
+
+        private void Button_DeleteKey_Click(object sender, RoutedEventArgs e)
+        {
+            VM.SelectedItemConfig.Keys.Remove((sender as Button).DataContext as GameLogMonityKey);
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
+
+        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            VM.RemoveConfig(args.Tab.DataContext as GameLogItemConfig);
+        }
+
+        private void AddKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddKeysCommand.Execute(null);
+        }
+
+        private void PickSoundFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.PickSoundFileCommand.Execute(null);
+        }
+
+        private void AddGameLog_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddConfig(0);
+        }
+
+        private void AddErrorLog_Click(object sender, RoutedEventArgs e)
+        {
+            VM.AddConfig(1);
+        }
+
+        
+    }
+}

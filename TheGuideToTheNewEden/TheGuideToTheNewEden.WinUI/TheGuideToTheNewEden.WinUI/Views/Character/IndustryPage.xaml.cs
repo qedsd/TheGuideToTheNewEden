@@ -19,12 +19,12 @@ using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models;
 using ESI.NET.Models.Industry;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class IndustryPage : Page, ICharacterPage
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         private int _characterId;
         private bool _isLoaded = false;
@@ -32,13 +32,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             this.InitializeComponent();
             Loaded += IndustryPage_Loaded;
-            Loaded += IndustryPage_Loaded1;
-        }
-
-        private void IndustryPage_Loaded1(object sender, RoutedEventArgs e)
-        {
-            Loaded -= IndustryPage_Loaded1;
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
         }
 
         private void IndustryPage_Loaded(object sender, RoutedEventArgs e)
@@ -62,12 +55,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         public async void Refresh()
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             var result = await _esiClient.Industry.JobsForCharacter();
             if (result.StatusCode != System.Net.HttpStatusCode.OK)
             {
-                _window?.HideWaiting();
-                _window?.ShowError(result.Message);
+                this.HideWaiting();
+                this.ShowError(result.Message);
                 Core.Log.Error(result.Message);
             }
             else
@@ -91,7 +84,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     DataGrid.ItemsSource = jobs;
                 }
             }
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
 
         private async Task<IndustryJob> CreateIndustryJob(ESI.NET.Models.Industry.Job job)

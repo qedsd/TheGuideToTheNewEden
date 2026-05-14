@@ -11,7 +11,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
-    internal class ChatChanelInfo: Core.Models.ChatChanelInfo, INotifyPropertyChanged
+    public class ChatChanelInfo: Core.Models.ChatChanelInfo, INotifyPropertyChanged
     {
         internal static ChatChanelInfo Create(Core.Models.ChatChanelInfo chatChanelInfo)
         {

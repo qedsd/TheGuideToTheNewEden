@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:setting="using:TheGuideToTheNewEden.WinUI.ViewModels.Setting"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.DataContext>
         <setting:MarketSettingViewModel x:Name="VM" />
@@ -37,11 +38,19 @@
                     Text="m" />
             </StackPanel>
         </controls:ExpandableSettingControl>
-        <controls:ExpandableSettingControl
-            Title="{StaticResource MarketSettingPage_MaxThread}"
-            Description="{StaticResource MarketSettingPage_MaxThread_Desc}">
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_MaxThread}" Description="{StaticResource MarketSettingPage_MaxThread_Desc}">
             <StackPanel Orientation="Horizontal">
                 <NumberBox Width="128" Value="{x:Bind VM.MaxThread, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_ScalperSikpStructure}" Description="{StaticResource MarketSettingPage_ScalperSikpStructure_Desc}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{x:Bind VM.ScalperSikpStructure, Mode=TwoWay}" />
+            </StackPanel>
+        </controls:ExpandableSettingControl>
+        <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_MarketSikpStructure}" Description="{StaticResource MarketSettingPage_MarketSikpStructure_Desc}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{x:Bind VM.MarketSikpStructure, Mode=TwoWay}" />
             </StackPanel>
         </controls:ExpandableSettingControl>
         <controls:ExpandableSettingControl Title="{StaticResource MarketSettingPage_ClearCache}">

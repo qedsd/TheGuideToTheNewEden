@@ -7,28 +7,29 @@ using System.Xml.Linq;
 using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal class ChannelMarketWindow : BaseWindow
+    internal class ChannelMarketWindow : ToolWindow
     {
         private Dictionary<int, string> _regionNames = new Dictionary<int, string>();
         private Views.ChannelMarketWinPage _page;
         private string _title;
         public ChannelMarketWindow()
         {
-            HideAppDisplayName();
-            _title = Helpers.ResourcesHelper.GetString("ShellPage_ChannelMarket");
-            this.Title = _title;
-            HideNavButton();
-            MainContentExtendsToTitleBar();
-            SetHeadText(_title);
             _page = new Views.ChannelMarketWinPage();
+            _title = Helpers.ResourcesHelper.GetString("ShellPage_ChannelMarket");
+            InitWindow(_page, WindowTitleStyle.OnlyClose, true, true, true, true);
+
+            SetDisplayTitle(_title);
+            SetWindowTitle(_title);
+            SetCloseToHide();
+
             _page.SetWindow(this);
-            MainContent = _page;
-            this.SetWindowSize(600, 600);
-            this.SetIsAlwaysOnTop(true);
+            this.SetAlwaysOnTop();
+            this.LogPositionAndSize();
         }
         public void UpdateContent(IEnumerable<MarketChatContent> items, int regionID)
         {
@@ -42,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     regionName = region.RegionName;
                 }
             }
-            SetHeadText($"{_title} - {regionName}");
+            SetDisplayTitle($"{_title} - {regionName}");
             _page.UpdateContent(items, regionID);
         }
     }

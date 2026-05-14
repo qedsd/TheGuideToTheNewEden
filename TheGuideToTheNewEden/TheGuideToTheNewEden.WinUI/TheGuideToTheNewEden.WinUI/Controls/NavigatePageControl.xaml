@@ -22,13 +22,14 @@
             Click="GoButton_Click"
             Content="Go"
             CornerRadius="6"
-            Style="{ThemeResource AccentButtonStyle}" />
+            Visibility="Collapsed" />
         <Button
             x:Name="PreButton"
             Height="32"
             Margin="8,0,0,0"
             Click="PreButton_Click"
-            CornerRadius="6">
+            CornerRadius="6"
+            Visibility="Collapsed">
             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00E;" />
         </Button>
         <Button
@@ -36,7 +37,8 @@
             Height="32"
             Margin="8,0,0,0"
             Click="NextButton_Click"
-            CornerRadius="6">
+            CornerRadius="6"
+            Visibility="Collapsed">
             <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE00F;" />
         </Button>
     </StackPanel>

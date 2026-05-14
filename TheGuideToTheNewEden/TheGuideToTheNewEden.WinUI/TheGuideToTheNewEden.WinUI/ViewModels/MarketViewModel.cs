@@ -9,12 +9,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -24,25 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public int SelectedMarketTypeIndex
         {
             get => selectedMarketTypeIndex;
-            set
-            {
-                if(SetProperty(ref selectedMarketTypeIndex, value))
-                {
-                    //if (value == 0)
-                    //{
-                    //    SelectedStructure = null;
-                    //}
-                    //else if (value == 1)
-                    //{
-                    //    SelectedRegion = null;
-                    //}
-                    //else
-                    //{
-                    //    SelectedStructure = null;
-                    //    SelectedRegion = null;
-                    //}
-                }
-            }
+            set => SetProperty(ref selectedMarketTypeIndex, value);
         }
         private string selectedMarketName = Helpers.ResourcesHelper.GetString("MarketPage_SelecteMarket");
         public string SelectedMarketName
@@ -217,7 +201,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SelectedInvTypeIcon = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(SelectedInvType.TypeID, Converters.GameImageConverter.ImgType.Type, 64)));
             if (SelectedRegion == null && SelectedStructure == null)
             {
-                Window.ShowError("未选择市场");
+                ShowError(Helpers.ResourcesHelper.GetString("MarketPage_UnSelectedMarket"));
                 return;
             }
             if (SelectedRegion != null)
@@ -240,22 +224,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             BuyOrders?.Clear();
             SellOrders?.Clear();
             StatisticsForShow?.Clear();
-            Window?.ShowWaiting("获取订单中...");
+            ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingOrder"));
             try
             {
-                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
+                List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync(SelectedInvType.TypeID, SelectedRegion.RegionID, CancellationToken.None, MarketOrderSettingService.MarketSikpStructureValue);
                 BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
                 SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
                 SetOrderStatisticalInfo(SellOrders, BuyOrders);
             }
             catch (Exception ex)
             {
-                Window?.HideWaiting();
-                Window?.ShowError(ex.Message);
+                HideWaiting();
+                ShowError(ex.Message);
                 Core.Log.Error(ex);
                 return;
             }
-            Window?.ShowWaiting("获取历史记录中...");
+            ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingHistroy"));
             try
             {
                 Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedRegion.RegionID);
@@ -263,22 +247,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             catch(Exception ex)
             {
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
                 Core.Log.Error(ex);
                 StatisticsForShow = null;
                 Statistics = null;
             }
-            Window?.HideWaiting();
+            HideWaiting();
         }
 
         private async Task GetSructureOrders()
         {
-            Window?.ShowWaiting("获取订单中...");
-            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID); ;
+            ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingOrder"));
+            List<Core.Models.Market.Order> orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(SelectedStructure.Id, SelectedInvType.TypeID, CancellationToken.None);
             BuyOrders = orders?.Where(p => p.IsBuyOrder).OrderByDescending(p => p.Price)?.ToObservableCollection();
             SellOrders = orders?.Where(p => !p.IsBuyOrder).OrderBy(p => p.Price)?.ToObservableCollection();
             SetOrderStatisticalInfo(SellOrders, BuyOrders);
-            Window?.ShowWaiting("获取历史记录中...");
+            ShowWaiting(Helpers.ResourcesHelper.GetString("MarketPage_GettingHistroy"));
             try
             {
                 Statistics = await Services.MarketOrderService.Current.GetHistoryAsync(SelectedInvType.TypeID, SelectedStructure.RegionId);
@@ -286,12 +270,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             catch (Exception ex)
             {
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
                 Core.Log.Error(ex);
                 StatisticsForShow = null;
                 Statistics = null;
             }
-            Window?.HideWaiting();
+            HideWaiting();
         }
         private void SetOrderStatisticalInfo(IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders)
         {
@@ -375,24 +359,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (MarketStarService.Current.Remove(SelectedInvType.TypeID))
                 {
-                    Window.ShowSuccess("已取消收藏");
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("MarketPage_CancelStarSuccess"));
                     Stared = false;
                 }
                 else
                 {
-                    Window.ShowError("取消收藏失败");
+                    ShowError(Helpers.ResourcesHelper.GetString("MarketPage_CancelStarFailed"));
                 }
             }
             else
             {
                 if (MarketStarService.Current.Add(SelectedInvType.TypeID))
                 {
-                    Window.ShowSuccess("已收藏");
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("MarketPage_StarSuccess"));
                     Stared = true;
                 }
                 else
                 {
-                    Window.ShowError("添加收藏失败");
+                    ShowError(Helpers.ResourcesHelper.GetString("MarketPage_StarFailed"));
                 }
             }
         });
@@ -597,7 +581,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     if (remainCount > 0)//卖单无法满足数量，剩余数量从最高卖单取
                     {
-                        Window?.ShowError(Helpers.ResourcesHelper.GetString("MarketPage_Cal_Buy_NoEnoughSellOrder"));
+                        ShowError(Helpers.ResourcesHelper.GetString("MarketPage_Cal_Buy_NoEnoughSellOrder"));
                         totalPrice += SellOrders.First().Price * remainCount;
                     }
                     CalBuyResult = (double)totalPrice;

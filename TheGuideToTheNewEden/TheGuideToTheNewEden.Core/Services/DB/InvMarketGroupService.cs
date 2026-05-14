@@ -72,5 +72,31 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return groups;
         }
+
+        /// <summary>
+        /// 查找物品最顶级分类id
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <returns></returns>
+        public static int QueryRootGroupOfType(int typeId)
+        {
+            var type = InvTypeService.QueryType(typeId, false);
+            if(type != null)
+            {
+                int? groupId = type.MarketGroupID;
+                int? groupIdTemp = groupId;
+                while (groupId != null && groupId > 0)
+                {
+                    groupIdTemp = groupId;
+                    groupId = QueryParentId((int)groupId);
+                }
+                return groupIdTemp == null ? -1 : (int)groupIdTemp;
+            }
+            return -1;
+        }
+        public static int? QueryParentId(int groupId)
+        {
+            return DBService.MainDb.Queryable<InvMarketGroup>().First(p => p.MarketGroupID == groupId).ParentGroupID;
+        }
     }
 }

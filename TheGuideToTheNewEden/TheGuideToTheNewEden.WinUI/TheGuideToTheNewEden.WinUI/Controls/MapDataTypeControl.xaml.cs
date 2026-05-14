@@ -95,7 +95,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
         }
 
 
-        private static readonly string SOVGroupPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "SOVGroup.json");
+        private static readonly string SOVGroupPath = System.IO.Path.Combine(App.DataPath, "Configs", "SOVGroup.json");
         public void SetSOVData(List<SovData> sovDatas)
         {
             _sovDatas = sovDatas;

@@ -12,5 +12,6 @@ namespace TheGuideToTheNewEden.WinUI.Views
         /// 关闭页面
         /// </summary>
         void Close();
+        void NavigatedTo(object parameter);
     }
 }

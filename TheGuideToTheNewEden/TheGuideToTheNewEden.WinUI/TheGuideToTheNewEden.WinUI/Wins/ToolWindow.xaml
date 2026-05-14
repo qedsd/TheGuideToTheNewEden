@@ -1,0 +1,108 @@
+﻿<Window
+    x:Class="TheGuideToTheNewEden.WinUI.ToolWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ic="using:FluentIcons.WinUI"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:TheGuideToTheNewEden.WinUI.Views"
+    mc:Ignorable="d">
+    <Grid x:Name="MainWindowGrid" Background="Transparent">
+        <Grid x:Name="BackgroundGrid" Visibility="Collapsed">
+            <Grid.Background>
+                <ImageBrush
+                    x:Name="BackgroundImage"
+                    Opacity="1"
+                    Stretch="UniformToFill" />
+            </Grid.Background>
+            <Grid>
+                <Grid.Background>
+                    <SolidColorBrush x:Name="BackgroundBrush" Color="Transparent" />
+                </Grid.Background>
+            </Grid>
+        </Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid x:Name="FullTitleArea">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid
+                    x:Name="AppTitleBarGrid"
+                    Height="32"
+                    Margin="0,0,136,0"
+                    VerticalAlignment="Top"
+                    Canvas.ZIndex="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="AppTitleBar" VerticalAlignment="Stretch">
+                        <StackPanel Margin="12,-4,0,0" Orientation="Horizontal">
+                            <Image Width="16" Source="/Resources/Images/logo.svg" />
+                            <TextBlock
+                                x:Name="TitleTextBlock"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Text="{StaticResource AppDisplayName}" />
+                        </StackPanel>
+                    </Border>
+                    <Button
+                        x:Name="TopButton"
+                        Grid.Column="1"
+                        VerticalAlignment="Stretch"
+                        Click="Button_Top_Click"
+                        Style="{StaticResource TitleBarTopButtonStyle}" />
+                </Grid>
+                <StackPanel
+                    x:Name="ButtonPanel"
+                    Grid.Column="1"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="MinimizeButton"
+                        Click="MinimizeWindow"
+                        Content="&#xE921;"
+                        FontSize="10"
+                        Style="{StaticResource DefaultTitleBarButtonStyle}" />
+
+                    <Button
+                        x:Name="MaximizeButton"
+                        Click="MaximizeWindow"
+                        Content="&#xE922;"
+                        FontSize="10"
+                        Style="{StaticResource DefaultTitleBarButtonStyle}" />
+
+                    <Button
+                        x:Name="CloseButton"
+                        Click="CloseWindow"
+                        Style="{StaticResource TitleBarCloseButtonStyle}" />
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Frame
+                    x:Name="ContentFrame"
+                    Grid.Row="1"
+                    Background="Transparent" />
+                <controls:LoadingControl
+                    x:Name="Loading"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsLoading="False"
+                    Visibility="Collapsed" />
+                <controls:InfoBarControl
+                    x:Name="InfoBar"
+                    Margin="0,0,0,16"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

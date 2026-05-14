@@ -19,14 +19,16 @@ using TheGuideToTheNewEden.Core.Models.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media.Imaging;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Interfaces;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class MailDetailPage : Page
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         private Core.Models.Mail.MailDetail _mailDetail;
+        private Window _window;
         public MailDetailPage(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail)
         {
             _esiClient = esiClient;
@@ -42,9 +44,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private async void MailDetailPage_Loaded(object sender, RoutedEventArgs e)
         {
+            _window = this.GetWindow();
             await WebView2_Content.EnsureCoreWebView2Async();
             WebView2_Content.NavigateToString(RegexMailBody(_mailDetail.Message.Body));
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if(_mailDetail.Message.Recipients.NotNullOrEmpty())
             {
                 _=Task.Run(() =>
@@ -61,7 +63,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         if (stringBuilder.Length > 1)
                         {
                             stringBuilder.Remove(stringBuilder.Length - 1, 1);
-                            _window.DispatcherQueue.TryEnqueue(() =>
+                            _window?.DispatcherQueue.SafelyTryEnqueue(() =>
                             {
                                 TextBlock_Recipients.Text = stringBuilder.ToString();
                             });

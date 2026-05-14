@@ -19,6 +19,7 @@ using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Services;
 using Microsoft.UI.Input;
 using WinUIEx;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -48,10 +49,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private System.Timers.Timer _pointerTimer;
         private void InitUI()
         {
-            SetSmallTitleBar();
-            HideAppDisplayName();
             Title = _setting.Name;
-            SetHeadText(_setting.Name);
             _pointerTimer = new System.Timers.Timer()
             {
                 AutoReset = true,
@@ -72,16 +70,16 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(new TextBlock()
             {
-                Text = "不支持最小化游戏窗口",
+                Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NotSupportedMinGameWindow"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            MainContent = content;
             MainUIElement.PointerReleased += Content_PointerReleased;
             content.PointerWheelChanged += Content_PointerWheelChanged;
             MainUIElement.PointerPressed += Content_PointerPressed;
             MainUIElement.PointerReleased += Content_PointerReleased1;
-            //_appWindow.Closing += AppWindow_Closing;
+            InitWindow(content, WindowTitleStyle.Default, false, true, false, false);
+            SetDisplayTitle(_setting.Name);
         }
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -188,7 +186,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateHideWindow()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 RestoreTitlebarOp();
                 this.Hide();
@@ -198,7 +196,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateShowWindow(bool hHighlight = false)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 RestoreTitlebarOp();
                 this.Activate();
@@ -275,8 +273,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             SizeChanged -= GamePreviewWindow_SizeChanged;
             _appWindow.Closing -= AppWindow_Closing;
             _appWindow.Changed -= AppWindow_Changed;
-            (MainContent as UIElement).PointerReleased -= Content_PointerReleased;
-            (MainContent as UIElement).PointerWheelChanged -= Content_PointerWheelChanged;
+            MainUIElement.PointerReleased -= Content_PointerReleased;
+            MainUIElement.PointerWheelChanged -= Content_PointerWheelChanged;
             Close();
         }
 
@@ -286,7 +284,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public override void PrivateHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
                 (int)_setting.HighlightMarginRight,
@@ -344,6 +342,15 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override bool IsHighlight()
         {
             return _setting.Highlight;
+        }
+
+        public override void ChangeName(string name)
+        {
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                Title = name;
+                SetDisplayTitle(name);
+            });
         }
 
         public override event IGamePreviewWindow.StopDelegate OnStop;

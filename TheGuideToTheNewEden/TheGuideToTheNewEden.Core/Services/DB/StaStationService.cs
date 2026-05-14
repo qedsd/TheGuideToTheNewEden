@@ -64,20 +64,20 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        public static async Task<List<DataBaseSearchItem>> SearchAsync(string partName)
         {
             return await Task.Run(() =>
             {
-                List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+                List<DataBaseSearchItem> searchs = new List<DataBaseSearchItem>();
                 var stations = DBService.MainDb.Queryable<StaStation>().Where(p => p.StationName.Contains(partName)).ToList();
                 if (stations.NotNullOrEmpty())
                 {
-                    stations.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    stations.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 var locals = LocalDbService.SearchStaStations(partName);
                 if (locals.NotNullOrEmpty())
                 {
-                    locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    locals.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 return searchs;
             });

@@ -25,6 +25,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
         public string ItemsSeparator { get; private set; }
         private long FileStreamOffset = 0;
         public WatcherChangeTypes WatcherChangeTypes { get; set; } = WatcherChangeTypes.Changed;
+        private ChatChanelInfo _chatChanelInfo;
         public ChannelMarketObserver(string path, string characterName, string keyWord, string itemsSeparator)
         {
             FilePath = path;
@@ -32,6 +33,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
             KeyWord = keyWord;
             ItemsSeparator = itemsSeparator;
             FileStreamOffset += FileHelper.GetStreamLength(FilePath);
+            _chatChanelInfo = GameLogHelper.GetChatChanelInfo(path);
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
             foreach (var item in array)
             {
                 if(string.IsNullOrEmpty(item)) continue;
-                var type = InvTypeService.QueryInvType(item.Trim());
+                var type = InvTypeService.QueryMarkeType(item.Trim());
                 if(type != null)
                 {
                     chatContent.Items.Add(type);
@@ -111,7 +113,21 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
 
         public bool IsReplaced(string file)
         {
-            return false;
+            var newChanelInfo = GameLogHelper.GetChatChanelInfo(file);
+            if (newChanelInfo != null
+                && newChanelInfo.Listener == _chatChanelInfo.Listener
+                && newChanelInfo.ChannelName == _chatChanelInfo.ChannelName
+                && newChanelInfo.SessionStarted > _chatChanelInfo.SessionStarted)
+            {
+                _chatChanelInfo = newChanelInfo;
+                FilePath = file;
+                FileStreamOffset = 0;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         public void CreatedFile(string newfile)
         {

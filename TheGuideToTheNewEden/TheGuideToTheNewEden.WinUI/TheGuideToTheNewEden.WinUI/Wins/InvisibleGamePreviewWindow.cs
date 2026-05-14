@@ -17,6 +17,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override event IGamePreviewWindow.SettingChangedDelegate OnSettingChanged;
         public override event IGamePreviewWindow.StopDelegate OnStop;
 
+        public override void ChangeName(string name)
+        {
+            
+        }
+
         public override int GetHeight()
         {
             return 0;

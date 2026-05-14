@@ -13,7 +13,6 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
             return ChatContent.Create(content).DepthClone<IntelChatContent>();
         }
         public IntelChatType IntelType { get; set; }
-        public string Listener {  get; set; }
         public List<IntelShipContent> IntelShips { get; set; }
     }
 }

@@ -19,12 +19,12 @@ using System.Reflection.PortableExecutable;
 using TheGuideToTheNewEden.WinUI.Wins;
 using TheGuideToTheNewEden.WinUI.Converters;
 using System.Text;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class MailPage : Page,ICharacterPage
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         public MailPage()
         {
@@ -34,7 +34,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private void MailPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if (!_isLoaded)
             {
                 Refresh();
@@ -57,7 +56,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         public async void Refresh()
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             var labelsResp = await _esiClient.Mail.Labels();
             if(labelsResp != null && labelsResp.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -69,7 +68,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             //{
             //    ListView_MailList.ItemsSource = maillistResp.Data;
             //}
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
 
         private void RenameLabel(List<ESI.NET.Models.Mail.Label> labels)
@@ -90,9 +89,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 var label = ListView_Label.SelectedItem as Label;
                 if (label != null)
                 {
-                    _window.ShowWaiting();
+                    this.ShowWaiting();
                     var headers = await _esiClient.Mail.Headers(new long[] { label.LabelId });
-                    _window.HideWaiting();
+                    this.HideWaiting();
                     if (headers != null && headers.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var list = headers.Data.Select(p => new Core.Models.Mail.Header(p)).ToList();
@@ -126,7 +125,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     else
                     {
                         Core.Log.Error(headers?.Message);
-                        _window.ShowError(headers?.Message);
+                        this.ShowError(headers?.Message);
                     }
                 }
             }
@@ -161,9 +160,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             var header = ListView_Mails.SelectedItem as Core.Models.Mail.Header;
             if (header != null)
             {
-                _window.ShowWaiting();
+                this.ShowWaiting();
                 var msgResp = await _esiClient.Mail.Retrieve((int)header.MailId);
-                _window.HideWaiting();
+                this.HideWaiting();
                 if (msgResp != null && msgResp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var mailDetail = new Core.Models.Mail.MailDetail(msgResp.Data);
@@ -205,7 +204,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 else
                 {
                     Core.Log.Error(msgResp?.Message);
-                    _window.ShowError(msgResp?.Message);
+                    this.ShowError(msgResp?.Message);
                 }
             }
         }

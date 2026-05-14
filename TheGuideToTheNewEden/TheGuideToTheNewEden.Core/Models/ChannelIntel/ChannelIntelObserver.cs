@@ -44,6 +44,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         public Dictionary<string, int> SolarSystemNames { get; set; }
         private long FileStreamOffset = 0;
         public ChannelIntelSetting Setting { get; set; }
+        public bool IgnoreJumps { get; set; } = false;
         /// <summary>
         /// 文件内容有更新
         /// </summary>
@@ -71,15 +72,21 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                         if (newContents.Count > 0)
                         {
                             List<EarlyWarningContent> newWarning = new List<EarlyWarningContent>();
+                            List<EarlyWarningContent> ignoreJumpsIntel = new List<EarlyWarningContent>();
                             foreach (var newContent in newContents)
                             {
                                 var result = AnalyzeContent(newContent);
                                 if (result != null)
                                 {
-                                    newWarning.Add(result);
-                                    newContent.Important = true;
-                                    newContent.IntelType = result.IntelType;
-                                    newContent.IntelShips = result.IntelShips;
+                                    if(result.Jumps != -1)
+                                    {
+                                        newWarning.Add(result);
+                                        newContent.Important = true;
+                                        newContent.IntelType = result.IntelType;
+                                        newContent.IntelShips = result.IntelShips;
+                                        newContent.SpeakerName = result.SpeakerName;
+                                    }
+                                    ignoreJumpsIntel.Add(result);
                                 }
                             }
                             Contents.AddRange(newContents);
@@ -87,6 +94,10 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                             if (newWarning.Count != 0)
                             {
                                 OnWarningUpdate?.Invoke(this, newWarning);
+                            }
+                            if (ignoreJumpsIntel.Count != 0)
+                            {
+                                OnIgnoreJumpsIntelUpdate?.Invoke(this, ignoreJumpsIntel);
                             }
                         }
                     }
@@ -109,6 +120,11 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         /// </summary>
         public event WarningUpdate OnWarningUpdate;
 
+        /// <summary>
+        /// 无视跳数的预警更新
+        /// </summary>
+        public event WarningUpdate OnIgnoreJumpsIntelUpdate;
+
         private EarlyWarningContent AnalyzeContent(IntelChatContent chatContent)
         {
             if (chatContent.IntelType != Enums.IntelChatType.Ignore)
@@ -122,7 +138,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                             if (IntelMap != null)
                             {
                                 int jumps = IntelMap.JumpsOf(name.Value);
-                                if (jumps != -1)
+                                if (jumps != -1 || IgnoreJumps)
                                 {
                                     List<IntelShipContent> shipContents = null;
                                     if(chatContent.IntelType != Enums.IntelChatType.Clear)
@@ -164,7 +180,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                                         IntelType = chatContent.IntelType == Enums.IntelChatType.Clear ? Enums.IntelChatType.Clear : Enums.IntelChatType.Intel,
                                         IntelMap = IntelMap,
                                         Jumps = jumps,
-                                        IntelShips = shipContents
+                                        IntelShips = shipContents,
+                                        // 2025-08-24 增加预警者名称的赋值
+                                        SpeakerName = chatContent.SpeakerName,
                                     };
                                 }
                                 else
@@ -187,6 +205,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         {
             var newChanelInfo = GameLogHelper.GetChatChanelInfo(file);
             if (newChanelInfo != null
+                && newChanelInfo.Listener == ChatChanelInfo.Listener
                 && newChanelInfo.ChannelName == ChatChanelInfo.ChannelName
                 && newChanelInfo.SessionStarted > ChatChanelInfo.SessionStarted)
             {
@@ -205,8 +224,9 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
         {
             if (Setting != null)
             {
-                IgnoreWords = Setting.IgnoreWords?.Split(',');
-                ClearWords = Setting.ClearWords?.Split(',');
+                // 2025-08-28 为免繁琐的大小写关键词设置，希望对于忽视预警关键词与解除预警关键词的判断不区分大小写，将忽视预警关键词与解除预警关键词全部转换为小写
+                IgnoreWords = Setting.IgnoreWords?.Split(',').Select(word => word.ToLower()).ToArray();
+                ClearWords = Setting.ClearWords?.Split(',').Select(word => word.ToLower()).ToArray();
             }
         }
         private string[] IgnoreWords;
@@ -219,7 +239,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in IgnoreWords)
                     {
-                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w))
+                        if (!string.IsNullOrWhiteSpace(w) && content.Content.Contains(w, StringComparison.OrdinalIgnoreCase))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Ignore; break;
                         }
@@ -229,7 +249,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelIntel
                 {
                     foreach (var w in ClearWords)
                     {
-                        if (content.Content.Contains(w))
+                        if (content.Content.Contains(w, StringComparison.OrdinalIgnoreCase))
                         {
                             content.IntelType = Core.Enums.IntelChatType.Clear; break;
                         }

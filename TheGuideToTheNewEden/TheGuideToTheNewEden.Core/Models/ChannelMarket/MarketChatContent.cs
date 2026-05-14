@@ -13,7 +13,6 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
         {
             return ChatContent.Create(content).DepthClone<MarketChatContent>();
         }
-        public string Listener { get; set; }
         public List<InvTypeBase> Items { get; set; }
     }
 }

@@ -19,7 +19,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
-    public sealed partial class ScalperPage : Page
+    public sealed partial class ScalperPage : Page, IPage
     {
         public ScalperPage()
         {
@@ -27,19 +27,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             Loaded += ScalperPage_Loaded;
         }
 
-        private async void ScalperPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScalperPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ScalperPage_Loaded;
-            VM.Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            await VM.Init();
-            if (VM.SelectedInvMarketGroups != null)
-            {
-                foreach (var group in VM.SelectedInvMarketGroups)
-                {
-                    ComboBox_SelectedGroup.SelectedItems.Add(group);
-                }
-            }
-            ComboBox_SelectedGroup.SelectionChanged += SfComboBox_SelectionChanged;
+            VM.Init();
         }
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
@@ -87,13 +78,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-
-
-        public void AddToFilter(List<Core.DBModels.InvType> types)
-        {
-            VM.AddFilterTypes(types);
-        }
-
         private void Button_RemoveSelectedFilterTypes_Click(object sender, RoutedEventArgs e)
         {
             if(ListView_FilterTypes.SelectedItems.Any())
@@ -103,22 +87,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        private void SfComboBox_SelectionChanged(object sender, Syncfusion.UI.Xaml.Editors.ComboBoxSelectionChangedEventArgs e)
+        public void Close()
         {
-            if(e.AddedItems.NotNullOrEmpty())
-            {
-                foreach(var item in e.AddedItems)
-                {
-                    VM.SelectedInvMarketGroups.Add(item as Core.DBModels.InvMarketGroup);
-                }
-            }
-            if (e.RemovedItems.NotNullOrEmpty())
-            {
-                foreach (var item in e.RemovedItems)
-                {
-                    VM.SelectedInvMarketGroups.Remove(item as Core.DBModels.InvMarketGroup);
-                }
-            }
+            VM.Dispose();
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+            
         }
     }
 }

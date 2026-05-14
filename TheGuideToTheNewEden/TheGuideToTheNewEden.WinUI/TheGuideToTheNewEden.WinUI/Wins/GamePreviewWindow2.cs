@@ -14,10 +14,9 @@ using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using TheGuideToTheNewEden.WinUI.Common;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using TheGuideToTheNewEden.WinUI.Services;
-using Vanara.PInvoke;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -27,23 +26,21 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private Window _thumbnailWindow;
         private readonly AppWindow _appWindow;
         private IntPtr _thumbHWnd = IntPtr.Zero;
-        private WinUICommunity.ThemeService _themeService;
         public GamePreviewWindow2(PreviewItem setting, PreviewSetting previewSetting) : base(setting, previewSetting, false, true)
         {
             _appWindow = Helpers.WindowHelper.GetAppWindow(this);
-            _appWindow.IsShownInSwitchers = false;
-            HideAppDisplayName();
-            Title = _setting.Name;
-            SetHeadText(_setting.Name);
+            Title = _setting.Name + "_Overlap";
             if (_setting.WinX != -1 && _setting.WinY != -1)
             {
                 Helpers.WindowHelper.MoveToScreen(this, _setting.WinX, _setting.WinY);
             }
-            this.SetIsAlwaysOnTop(true);
-            _themeService = new WinUICommunity.ThemeService();
-            _themeService.Initialize(this);
-            _themeService.ConfigBackdrop(WinUICommunity.BackdropType.Transparent);
             InitUI(_setting.Name);
+            Activated += GamePreviewWindow2_Activated;
+        }
+
+        private void GamePreviewWindow2_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            Activated -= GamePreviewWindow2_Activated;
             MonitorWindow();
         }
         #region UI
@@ -76,7 +73,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Text = title
             };
             content.Children.Add(_titleTextBlock);
-            this.Content = content;
+            InitWindow(content, WindowTitleStyle.Empty, false, false, false, false);
+            Helpers.WindowHelper.UnTrackWindow(this);
+            SystemBackdrop = new DevWinUI.TransparentBackdrop();
+            SetDisplayTitle(_setting.Name);
+            SetAlwaysOnTop();
         }
 
         private void Content_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -183,7 +184,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         #endregion
         public override void PrivateHideWindow()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 //RestoreTitlebarOp();
                 _thumbnailWindow?.Hide();
@@ -194,7 +195,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void PrivateShowWindow(bool hHighlight = false)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 //RestoreTitlebarOp();
                 _thumbnailWindow?.Show();
@@ -277,6 +278,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             UpdateThumbnail();
             this.Activate();
         }
+
         private void CreateThumbnailWindow()
         {
             var content = new Microsoft.UI.Xaml.Controls.Grid()
@@ -287,18 +289,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             content.Children.Add(new TextBlock()
             {
-                Text = "不支持最小化游戏窗口",
+                Text = Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NotSupportedMinGameWindow"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             });
             _thumbnailWindow = new Window()
             {
-                Content = content
+                Content = content,
+                Title = _setting.Name + "_Thumbnail"
             };
             _thumbnailWindow.ExtendsContentIntoTitleBar = true;
             var presenter = Helpers.WindowHelper.GetOverlappedPresenter(_thumbnailWindow);
             presenter.SetBorderAndTitleBar(true, false);
-            _thumbnailWindow.SetIsShownInSwitchers(false);
+            _thumbnailWindow.AppWindow.IsShownInSwitchers = false;
             _thumbnailWindow.SetIsAlwaysOnTop(true);
             _thumbnailWindow.AppWindow.Move(new Windows.Graphics.PointInt32(_setting.WinX, _setting.WinY));
             _thumbnailWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(_setting.WinW, _setting.WinH));
@@ -319,7 +322,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _titleTextBlock.Foreground = TitleHighlightBrush;
                 UpdateThumbnail((int)_setting.HighlightMarginLeft,
@@ -331,7 +334,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void PrivateCancelHighlight()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _titleTextBlock.Foreground = TitleNormalBrush;
                 UpdateThumbnail();
@@ -364,6 +367,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override int GetHeight()
         {
             return _appWindow.ClientSize.Height;
+        }
+        public override void ChangeName(string name)
+        {
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                SetDisplayTitle(name);
+                _titleTextBlock.Text = name;
+            });
         }
 
         public override event IGamePreviewWindow.StopDelegate OnStop;

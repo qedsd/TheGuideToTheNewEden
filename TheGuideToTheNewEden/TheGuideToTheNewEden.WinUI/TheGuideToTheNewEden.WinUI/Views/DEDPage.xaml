@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:DEDLevelConverter x:Key="DEDLevelConverter" />
@@ -19,7 +20,7 @@
     <Page.DataContext>
         <viewmodels:DEDViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="8">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
@@ -30,7 +31,6 @@
                     Name="Search_AutoSuggestBox"
                     Margin="0,14"
                     HorizontalAlignment="Stretch"
-                    Background="Transparent"
                     QueryIcon="Find"
                     SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                     TextChanged="AutoSuggestBox_TextChanged">
@@ -71,9 +71,9 @@
                     </AutoSuggestBox.ItemTemplate>
                 </AutoSuggestBox>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
-                    Grid.Row="1"
+                    Background="Transparent"
                     ItemsSource="{x:Bind VM.DEDs, Mode=TwoWay}"
                     SelectedItem="{x:Bind VM.SelectedListDED, Mode=TwoWay}"
                     Style="{StaticResource StretchListView}">
@@ -113,7 +113,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <ComboBox
                     Margin="0,0,0,8"
@@ -131,7 +131,7 @@
         </controls1:CardControl>
         <controls1:CardControl
             Grid.Column="1"
-            Margin="4,0"
+            Margin="4,0,0,0"
             Visibility="{x:Bind VM.SelectedDED, Converter={StaticResource NullToCollapsedConverter}, Mode=OneWay}">
             <controls1:CardControl.Header>
                 <StackPanel Margin="0,8" HorizontalAlignment="Left">
@@ -146,10 +146,11 @@
                         Text="{x:Bind VM.SelectedDED.TitleCN, Mode=OneWay}" />
                 </StackPanel>
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ScrollViewer>
                     <controls:MarkdownTextBlock
                         Grid.Row="0"
+                        Margin="16,0"
                         Background="Transparent"
                         FontSize="16"
                         ParagraphMargin="0,14"
@@ -157,7 +158,7 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         Text="{x:Bind VM.SelectedDED.Content, Mode=OneWay}" />
                 </ScrollViewer>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
     </Grid>
 </Page>

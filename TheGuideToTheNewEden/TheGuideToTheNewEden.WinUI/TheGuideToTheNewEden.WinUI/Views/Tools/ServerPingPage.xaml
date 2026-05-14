@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Tools.ServerPingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Tools"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Grid Padding="16,0,16,8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="SelectServerGrid"
+            Padding="16,16"
+            Background="{ThemeResource DefaultBackgroudBrush}"
+            CornerRadius="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TextBlock
+                FontSize="12"
+                Foreground="{ThemeResource SecondaryForegroundBrush}"
+                Text="{StaticResource ServerPingPage_SelectServer}" />
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        x:Name="ComboBox_Host"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        BorderThickness="0,0,0,1"
+                        IsEditable="True"
+                        SelectedIndex="0"
+                        ToolTipService.ToolTip="{StaticResource ServerPingPage_Host}">
+                        <ComboBoxItem Content="tranquility.servers.eveonline.com" ToolTipService.ToolTip="{StaticResource ServerPingPage_TranquilityHost}" />
+                        <ComboBoxItem Content="42.186.79.5" ToolTipService.ToolTip="{StaticResource ServerPingPage_SerenityHost}" />
+                    </ComboBox>
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="4,0"
+                        VerticalAlignment="Center"
+                        Text=":" />
+                    <NumberBox
+                        x:Name="NumberBox_Port"
+                        Grid.Column="2"
+                        Width="80"
+                        VerticalAlignment="Center"
+                        Minimum="1"
+                        ToolTipService.ToolTip="{StaticResource ServerPingPage_Port}"
+                        Value="26000" />
+                </Grid>
+                <Grid Grid.Column="1" Margin="8,0,0,0">
+                    <Button x:Name="StartButton" Click="StartButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <winui:FluentIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource DefaultGreen}"
+                                Icon="Play"
+                                IconVariant="Filled" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Top"
+                                Text="{StaticResource ServerPingPage_Start}" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        x:Name="StopButton"
+                        Click="StopButton_Click"
+                        Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <winui:FluentIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource DefaultRed}"
+                                Icon="Stop"
+                                IconVariant="Filled" />
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                VerticalAlignment="Top"
+                                Text="{StaticResource ServerPingPage_Stop}" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Grid>
+        <Grid
+            x:Name="TestingGrid"
+            Grid.Row="1"
+            Margin="0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="8" />
+                    <Setter Property="Height" Value="110" />
+                    <Setter Property="Padding" Value="16" />
+                    <Setter Property="Background" Value="{ThemeResource DefaultBackgroudBrush}" />
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+            </Grid.Resources>
+            <Border>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource ServerPingPage_CureentLatency}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                            x:Name="CureentLatencyTextBlock"
+                            FontSize="24"
+                            Text="--" />
+                        <TextBlock Margin="4,0,0,0" Text="ms" />
+                    </StackPanel>
+                    <TextBlock x:Name="CureentLatencyResultTextBlock" Grid.Row="2" />
+                </Grid>
+            </Border>
+            <Border Grid.Column="1" Margin="8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource ServerPingPage_AverageLatency}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                            x:Name="AverageLatencTextBlock"
+                            FontSize="24"
+                            Text="--" />
+                        <TextBlock Margin="4,0,0,0" Text="ms" />
+                    </StackPanel>
+                    <TextBlock x:Name="AverageLatencyResultTextBlock" Grid.Row="2" />
+                </Grid>
+            </Border>
+            <Border Grid.Column="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource ServerPingPage_Loss}" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock
+                            x:Name="LossTextBlock"
+                            FontSize="24"
+                            Text="--" />
+                        <TextBlock Margin="4,0,0,0" Text="%" />
+                    </StackPanel>
+                    <TextBlock x:Name="LossResultTextBlock" Grid.Row="2" />
+                </Grid>
+            </Border>
+        </Grid>
+        <Grid
+            x:Name="StatisticsGrid"
+            Grid.Row="2"
+            Padding="16,16"
+            Background="{ThemeResource DefaultBackgroudBrush}"
+            CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <winui:FluentIcon
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource DefaultGreen}"
+                        Icon="DataUsage" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Top"
+                        Text="{StaticResource ServerPingPage_Statistics}" />
+                </StackPanel>
+                <GridView
+                    Grid.Row="1"
+                    Margin="0,12,0,0"
+                    IsItemClickEnabled="False"
+                    SelectionMode="None">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="0,0,12,12" />
+                        </Style>
+                    </GridView.ItemContainerStyle>
+                    <GridView.Resources>
+                        <Style TargetType="Grid">
+                            <Setter Property="Width" Value="130" />
+                            <Setter Property="Padding" Value="16" />
+                            <Setter Property="Background" Value="{ThemeResource SecondaryBackgroudBrush}" />
+                            <Setter Property="CornerRadius" Value="4" />
+                        </Style>
+                    </GridView.Resources>
+                    <GridViewItem>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                Text="{StaticResource ServerPingPage_Statistics_All}" />
+                            <TextBlock
+                                x:Name="TotalCountTextBlock"
+                                Grid.Row="1"
+                                FontSize="14"
+                                Text="--" />
+                        </Grid>
+                    </GridViewItem>
+                    <GridViewItem>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                Text="{StaticResource ServerPingPage_Statistics_Success}" />
+                            <TextBlock
+                                x:Name="SuccessCountTextBlock"
+                                Grid.Row="1"
+                                FontSize="14"
+                                Text="--" />
+                        </Grid>
+                    </GridViewItem>
+                    <GridViewItem>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                Text="{StaticResource ServerPingPage_Statistics_Failed}" />
+                            <TextBlock
+                                x:Name="FaileCountTextBlock"
+                                Grid.Row="1"
+                                FontSize="14"
+                                Text="--" />
+                        </Grid>
+                    </GridViewItem>
+                    <GridViewItem>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                Text="{StaticResource ServerPingPage_Statistics_Duration}" />
+                            <TextBlock
+                                x:Name="DurationCountTextBlock"
+                                Grid.Row="1"
+                                FontSize="14"
+                                Text="--" />
+                        </Grid>
+                    </GridViewItem>
+                </GridView>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

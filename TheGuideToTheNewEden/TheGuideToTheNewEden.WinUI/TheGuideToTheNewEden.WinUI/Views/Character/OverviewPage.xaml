@@ -130,10 +130,10 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{StaticResource CharacterPage_LastLogin}" />
                     <TextBlock
-                        ToolTipService.ToolTip=""
                         x:Name="TextBlock_lastLogin"
                         Grid.Column="1"
-                        Margin="16,0,0,0" />
+                        Margin="16,0,0,0"
+                        ToolTipService.ToolTip="" />
                     <TextBlock Grid.Row="1" Text="{StaticResource CharacterPage_LoginCount}" />
                     <TextBlock
                         x:Name="TextBlock_LoginCount"

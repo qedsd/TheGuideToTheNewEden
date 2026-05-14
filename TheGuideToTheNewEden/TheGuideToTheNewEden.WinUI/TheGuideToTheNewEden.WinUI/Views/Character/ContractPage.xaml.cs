@@ -16,12 +16,12 @@ using TheGuideToTheNewEden.WinUI.Helpers;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class ContractPage : Page, ICharacterPage, IPage
     {
-        private BaseWindow _window;
         private EsiClient _esiClient;
         public ContractPage()
         {
@@ -34,7 +34,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         private void ContractPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if (!_isLoaded)
             {
                 Refresh();
@@ -90,7 +89,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private async void GetCharacterContractInfos(int page)
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             var resp = await _esiClient.Contracts.CharacterContracts(page);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -104,13 +103,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             else
             {
                 Core.Log.Error(resp?.Message);
-                _window?.ShowError(resp?.Message, true);
+                this.ShowError(resp?.Message);
             }
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
         private async void GetCorpContractInfos(int page)
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             var resp = await _esiClient.Contracts.CorporationContracts(page);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -124,9 +123,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             else
             {
                 Core.Log.Error(resp?.Message);
-                _window?.ShowError(resp?.Message, true);
+                this.ShowError(resp?.Message);
             }
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
 
         private void NavigatePageControl_Corp_OnPageChanged(int page)
@@ -160,6 +159,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         public void Close()
         {
             
+        }
+        public void NavigatedTo(object parameter)
+        {
+
         }
     }
 }

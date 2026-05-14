@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.TranslationWindowPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    xmlns:winui="using:FluentIcons.WinUI"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:TranslationViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid Margin="8,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox
+                x:Name="InputBox"
+                DisplayMemberPath="Name"
+                ItemsSource="{x:Bind VM.DataBaseSearchItems, Mode=OneWay}"
+                PlaceholderText="{StaticResource TranslationPage_Input_Tip}"
+                QueryIcon="Find"
+                QuerySubmitted="InputBox_QuerySubmitted"
+                SuggestionChosen="InputBox_SuggestionChosen"
+                TextChanged="InputBox_TextChanged" />
+            <Button Grid.Column="1" Style="{ThemeResource TransparentButton}">
+                <winui:FluentIcon Icon="Settings" />
+                <Button.Flyout>
+                    <Flyout>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ComboBox
+                                Width="100"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Header="{StaticResource TranslationPage_FromLanguage}"
+                                ItemsSource="{x:Bind VM.Froms}"
+                                SelectedItem="{x:Bind VM.FromLanguage, Mode=TwoWay}" />
+                            <ComboBox
+                                Grid.Row="1"
+                                Width="100"
+                                Margin="0,16,0,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Header="{StaticResource TranslationPage_ToLanguage}"
+                                ItemsSource="{x:Bind VM.Tos}"
+                                SelectedItem="{x:Bind VM.ToLanguage, Mode=TwoWay}" />
+                        </Grid>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+            <Grid Margin="16" Visibility="{x:Bind VM.TranslationResult, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="24" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="24" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="24" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{ThemeResource SecondaryForegroundBrush}" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <TextBlock Text="{StaticResource TranslationPage_Query}" />
+                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind VM.TranslationResult.IsFromDataBase, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                        <TextBlock Text="[" />
+                        <TextBlock Text="{x:Bind VM.TranslationResult.From, Mode=OneWay}" />
+                        <TextBlock Text="]" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock
+                    Grid.Column="2"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind VM.TranslationResult.Query, Mode=OneWay}"
+                    TextWrapping="Wrap" />
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{ThemeResource SecondaryForegroundBrush}" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <TextBlock Text="{StaticResource TranslationPage_Translation}" />
+                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind VM.TranslationResult.IsFromDataBase, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                        <TextBlock Text="[" />
+                        <TextBlock Text="{x:Bind VM.TranslationResult.To, Mode=OneWay}" />
+                        <TextBlock Text="]" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind VM.TranslationResult.Translation, Mode=OneWay}"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="4"
+                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                    Text="{StaticResource TranslationPage_QueryDescription}"
+                    Visibility="{x:Bind VM.TranslationResult.QueryDescription, Mode=OneWay, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind VM.TranslationResult.QueryDescription, Mode=OneWay}"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind VM.TranslationResult.QueryDescription, Mode=OneWay, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+
+                <TextBlock
+                    Grid.Row="6"
+                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                    Text="{StaticResource TranslationPage_TranslationDescription}"
+                    Visibility="{x:Bind VM.TranslationResult.TranslationDescription, Mode=OneWay, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+                <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="2"
+                    IsTextSelectionEnabled="True"
+                    Text="{x:Bind VM.TranslationResult.TranslationDescription, Mode=OneWay}"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind VM.TranslationResult.TranslationDescription, Mode=OneWay, Converter={StaticResource NullOrEmptyStringToCollapsedConverter}}" />
+            </Grid>
+        </ScrollViewer>
+        <Button
+            Grid.Row="1"
+            Margin="0,0,0,8"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Command="{x:Bind VM.CopyTranslationCommand}"
+            Style="{ThemeResource TransparentButton}"
+            ToolTipService.ToolTip="{StaticResource TranslationPage_CopyTranslation}"
+            Visibility="{x:Bind VM.TranslationResult, Mode=OneWay, Converter={StaticResource NullToCollapsedConverter}}">
+            <winui:FluentIcon Icon="Copy" />
+        </Button>
+    </Grid>
+</Page>

@@ -9,7 +9,7 @@
     x:Name="ParentControl"
     MinWidth="{ThemeResource FlyoutThemeMinWidth}"
     MinHeight="{StaticResource ExpanderMinHeight}"
-    Padding="{StaticResource ExpanderContentPadding}"
+    Padding="0"
     Background="{ThemeResource ExpanderContentBackground}"
     BorderBrush="{ThemeResource ExpanderContentBorderBrush}"
     BorderThickness="{ThemeResource ExpanderContentDownBorderThickness}"
@@ -24,6 +24,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ContentPresenter
+            x:Name="HeaderPresenter"
             MinHeight="48"
             Padding="16,4"
             HorizontalAlignment="Stretch"
@@ -33,22 +34,23 @@
             BorderThickness="1"
             Content="{x:Bind Header, Mode=OneWay}"
             CornerRadius="{Binding CornerRadius, ElementName=ParentControl, Mode=OneWay, Converter={StaticResource TopCornerRadiusFilterConverter}}"
-            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+            Visibility="Collapsed" />
         <ContentPresenter
             x:Name="ContentPresenter"
             Grid.Row="1"
             Padding="{Binding Padding, ElementName=ParentControl, Mode=OneWay}"
             HorizontalAlignment="Stretch"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            Background="{ThemeResource TransparentBackgroudBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,0,1,0"
-            Content="{x:Bind Content, Mode=OneWay}"
+            Content="{x:Bind CustomContent, Mode=OneWay}"
             CornerRadius="{Binding CornerRadius, ElementName=ParentControl, Mode=OneWay, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
         <Grid
             x:Name="FonterLine"
             Grid.Row="2"
             Padding="16,8"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            Background="{ThemeResource TransparentBackgroudBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,0,1,0"
             Visibility="Collapsed">
@@ -61,7 +63,7 @@
             Padding="16,4"
             HorizontalAlignment="Stretch"
             VerticalContentAlignment="Center"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            Background="{ThemeResource TransparentBackgroudBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1,0,1,1"
             Content="{x:Bind Fonter, Mode=OneWay}"

@@ -1,30 +1,34 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-	<WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
-    <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-    <ApplicationIcon>logo_128.ico</ApplicationIcon>
-    <PackageIcon>logo_128.png</PackageIcon>
-	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<AssemblyVersion>2.11.1.0</AssemblyVersion>
-	<AssemblyName>TheGuideToTheNewEden</AssemblyName>
-	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-	<!--package需注释掉-->
-	<EnableMsixTooling>true</EnableMsixTooling>
-	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-	<SelfContained>true</SelfContained>
-    <WindowsPackageType>None</WindowsPackageType>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <!--package需注释掉-->
-  </PropertyGroup>
-  <ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="RemoveLanguageFolders.targets" />
+	<PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+        <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <Platforms>x86;x64;arm64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+        <UseWinUI>true</UseWinUI>
+        <ApplicationIcon>logo.ico</ApplicationIcon>
+	    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+	    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+	    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
+	    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	    <EnableMsixTooling>true</EnableMsixTooling>
+	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	    <SelfContained>true</SelfContained>
+        <WindowsPackageType>None</WindowsPackageType>
+        <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+		<ExcludedLanguages>en-US;zh-CN</ExcludedLanguages>
+		<AppxDefaultResourceQualifiers>Language=en-US;zh-CN</AppxDefaultResourceQualifiers>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<Version>3.0.0-rc.1</Version>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<Version>3.0.0-rc.1</Version>
+	</PropertyGroup>
+	<ItemGroup>
     <Content Remove="Assets\Icon\KillRightsIcon.png" />
   </ItemGroup>
   <ItemGroup>
@@ -224,12 +228,16 @@
     <None Remove="Assets\Icon\WindowIcons\warning.png" />
     <None Remove="Assets\Icon\WindowIcons\warreport.png" />
     <None Remove="Assets\Icon\WindowIcons\wars.png" />
-    <None Remove="BaseWindow.xaml" />
     <None Remove="Controls\CardControl.xaml" />
     <None Remove="Controls\ChannelMarketItemDetailControl.xaml" />
+    <None Remove="Controls\ChannelTranslationResultControl.xaml" />
+    <None Remove="Controls\CheckBoxControl.xaml" />
     <None Remove="Controls\ExpandableSettingControl.xaml" />
     <None Remove="Controls\ExpandableSettingHeaderControl.xaml" />
+    <None Remove="Controls\GamePreviewGroupHotKeyControl.xaml" />
+    <None Remove="Controls\IdNameSearchBox.xaml" />
     <None Remove="Controls\ImageControl.xaml" />
+    <None Remove="Controls\InfoBarControl.xaml" />
     <None Remove="Controls\JumpBridgeSetting.xaml" />
     <None Remove="Controls\KBDamageControl.xaml" />
     <None Remove="Controls\KBListCharacterControl.xaml" />
@@ -237,12 +245,15 @@
     <None Remove="Controls\KBSystemInfoControl.xaml" />
     <None Remove="Controls\KBTopKillControl.xaml" />
     <None Remove="Controls\LinkInfoControl.xaml" />
+    <None Remove="Controls\LoadingControl.xaml" />
     <None Remove="Controls\MapDataTypeControl.xaml" />
     <None Remove="Controls\MapSystemControl.xaml" />
     <None Remove="Controls\MapSystemSelectorControl.xaml" />
     <None Remove="Controls\MarketLocationSelectorControl.xaml" />
+    <None Remove="Controls\MarketSearchControl.xaml" />
     <None Remove="Controls\MarketTreeControl.xaml" />
     <None Remove="Controls\NavigatePageControl.xaml" />
+    <None Remove="Controls\PriceCardControl.xaml" />
     <None Remove="Controls\ProgressBar.xaml" />
     <None Remove="Controls\SelecteCharacterControl.xaml" />
     <None Remove="Controls\SelecteRegionControl.xaml" />
@@ -253,14 +264,13 @@
     <None Remove="Dialogs\AddTranquilityAuthDialog.xaml" />
     <None Remove="Dialogs\EditLinkInfoDialog.xaml" />
     <None Remove="Dialogs\MapSystemDetailDialog.xaml" />
-    <None Remove="logo_128.ico" />
-    <None Remove="logo_64.ico" />
+    <None Remove="logo.ico" />
     <None Remove="Resources\Languages\en-US\English.xaml" />
     <None Remove="Resources\Languages\zh-CN\Chinese.xaml" />
     <None Remove="Styles\Syncfusion.xaml" />
+    <None Remove="Views\AboutPage.xaml" />
     <None Remove="Views\BackstoryPage.xaml" />
     <None Remove="Views\BusinessPage.xaml" />
-    <None Remove="Views\Business\CharacterOrderPage.xaml" />
     <None Remove="Views\Business\ScalperItemDetailPage.xaml" />
     <None Remove="Views\Business\ScalperPage.xaml" />
     <None Remove="Views\Business\ShoppingCartPage.xaml" />
@@ -270,7 +280,9 @@
     <None Remove="Views\ChannelMarketWinPage.xaml" />
     <None Remove="Views\ChannelMonitorPage.xaml" />
     <None Remove="Views\ChannelScanPage.xaml" />
+    <None Remove="Views\ChannelTranslationWinPage.xaml" />
     <None Remove="Views\CharacterPage.xaml" />
+    <None Remove="Views\Character\CharactersShellPage.xaml" />
     <None Remove="Views\Character\ClonePage.xaml" />
     <None Remove="Views\Character\ContractPage.xaml" />
     <None Remove="Views\Character\IndustryPage.xaml" />
@@ -283,9 +295,8 @@
     <None Remove="Views\ContractPage.xaml" />
     <None Remove="Views\DatabasePage.xaml" />
     <None Remove="Views\DEDPage.xaml" />
-    <None Remove="Views\EarlyWarningPage.xaml" />
     <None Remove="Views\GameLogMonitorPage.xaml" />
-    <None Remove="Views\HomePage.xaml" />
+    <None Remove="Views\Home\WalletStatistic.xaml" />
     <None Remove="Views\IntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\DefaultIntelOverlapPage.xaml" />
     <None Remove="Views\IntelOverlapPages\IntelBasePage.xaml" />
@@ -293,6 +304,7 @@
     <None Remove="Views\IntelOverlapPages\SMTIntelOverlapPage.xaml" />
     <None Remove="Views\KB\EntityStatistPage.xaml" />
     <None Remove="Views\KB\KBDetailPage.xaml" />
+    <None Remove="Views\KB\KillStreamPage.xaml" />
     <None Remove="Views\KB\StatistGroupPage.xaml" />
     <None Remove="Views\KB\StatistKBListPage.xaml" />
     <None Remove="Views\KB\StatistMonthPage.xaml" />
@@ -302,13 +314,16 @@
     <None Remove="Views\KB\StatistTopAllTimePage.xaml" />
     <None Remove="Views\KB\StatistTopValuePage.xaml" />
     <None Remove="Views\LinksPage.xaml" />
+    <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\Map\MapPage.xaml" />
+    <None Remove="Views\Map\Tools\IntelTool.xaml" />
     <None Remove="Views\Map\Tools\MapGIS.xaml" />
     <None Remove="Views\Map\Tools\MapNavigation.xaml" />
+    <None Remove="Views\Map\Tools\MapNavigationResultPage.xaml" />
     <None Remove="Views\Map\Tools\OneJumpCover.xaml" />
+    <None Remove="Views\Map\Tools\PlanetResourcListPage.xaml" />
     <None Remove="Views\MarketPage.xaml" />
     <None Remove="Views\MissionPage.xaml" />
-    <None Remove="Views\ServerPingPage.xaml" />
     <None Remove="Views\SettingPage.xaml" />
     <None Remove="Views\Settings\ESIScopeSettingPage.xaml" />
     <None Remove="Views\Settings\GameLogSettingPage.xaml" />
@@ -318,47 +333,51 @@
     <None Remove="Views\Settings\StructuresSettingPage.xaml" />
     <None Remove="Views\Settings\TestSettingPage.xaml" />
     <None Remove="Views\Settings\ZKBSettingPage.xaml" />
-    <None Remove="Views\ShellPage.xaml" />
     <None Remove="Views\TabViewBasePage.xaml" />
+    <None Remove="Views\Tools\IMEPage.xaml" />
+    <None Remove="Views\Tools\KeyboardSpanPage.xaml" />
+    <None Remove="Views\Tools\ServerPingPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
+    <None Remove="Views\TranslationWindowPage.xaml" />
+    <None Remove="Views\UpdatePage.xaml" />
+    <None Remove="Views\ViewLogPage.xaml" />
     <None Remove="Views\WormholePage.xaml" />
     <None Remove="Views\ZKBHomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="logo_128.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="logo_32.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="logo_64.ico">
+    <Page Remove="Styles\Colors_Dark.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageReference Include="H.NotifyIcon" Version="2.0.131" />
-    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.131" />
-    <PackageReference Include="log4net" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.2.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="28.1.38" />
-    <PackageReference Include="Syncfusion.Editors.WinUI" Version="28.1.38" />
-    <PackageReference Include="Syncfusion.Grid.WinUI" Version="28.1.38" />
-    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="28.1.38" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
-    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.0.1" />
-    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.0.1" />
-    <PackageReference Include="Vanara.PInvoke.User32" Version="4.0.1" />
-    <PackageReference Include="WinUICommunity.Components" Version="6.9.0" />
-    <PackageReference Include="WinUICommunity.Core" Version="6.9.0" />
-    <PackageReference Include="WinUIEx" Version="2.5.0" />
+    <PackageReference Include="DevWinUI" Version="9.9.4" />
+    <PackageReference Include="DevWinUI.Controls" Version="9.9.4" />
+    <PackageReference Include="FluentIcons.WinUI" Version="1.1.312" />
+    <PackageReference Include="H.NotifyIcon" Version="2.3.1" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.1" />
+    <PackageReference Include="log4net" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260416003" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="33.2.4" />
+    <PackageReference Include="Syncfusion.Editors.WinUI" Version="33.2.4" />
+    <PackageReference Include="Syncfusion.Grid.WinUI" Version="33.2.4" />
+    <PackageReference Include="Syncfusion.Sliders.WinUI" Version="33.2.4" />
+    <PackageReference Include="Syncfusion.TreeView.WinUI" Version="33.2.4" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.7" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="4.2.1" />
+    <PackageReference Include="Vanara.PInvoke.DwmApi" Version="4.2.1" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="4.2.1" />
+    <PackageReference Include="WinUIEx" Version="2.9.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -369,9 +388,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="Resources\Images\home.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -453,6 +487,30 @@
     <Page Update="Controls\ChannelMarketItemDetailControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Controls\LoadingControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\InfoBarControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\MarketSearchControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\ChannelTranslationResultControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\CheckBoxControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\PriceCardControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\GamePreviewGroupHotKeyControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\IdNameSearchBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="logo_128.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -489,9 +547,6 @@
     <None Update="Resources\Configs\SpeakerNames.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Configs\SolarSystemMap.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\Configs\UpgradeResources.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -499,10 +554,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\Local\zh.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\main.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Database\static.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -512,6 +567,18 @@
     </None>
     <None Update="Resources\Images\home.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\github-mark-white.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\github-mark.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\microsoft-store-2022.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\Home\qq.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Images\LinkIcons\adam4eve.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -567,6 +634,9 @@
     <None Update="Resources\Images\LinkIcons\neocom2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\LinkIcons\overview_icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\LinkIcons\pyfa.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -579,18 +649,69 @@
     <None Update="Resources\Images\LinkIcons\zkb.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Images\logo_128.ico">
+    <None Update="Resources\Images\logo.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Images\logo_128.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Images\logo_32.ico">
+    <None Update="Resources\Manuals\Manual_en.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Images\logo_32.png">
+    <None Update="Resources\Manuals\Manual_zh.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Styles\Colors_Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <Page Update="Views\Tools\KeyboardSpanPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Tools\ServerPingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\IntelTool.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\MapNavigationResultPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Map\Tools\PlanetResourcListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Tools\IMEPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ViewLogPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Home\WalletStatistic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\TranslationWindowPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\AboutPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\UpdatePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelTranslationWinPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ChannelTranslationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\KB\KillStreamPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Character\CharactersShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\HomePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\ChannelMarketPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -705,13 +826,7 @@
     <Page Update="Views\DEDPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\TranslationPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\ServerPingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Settings\MarketSettingPage.xaml">
@@ -729,7 +844,7 @@
     <Page Update="Views\Business\ScalperPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\Business\CharacterOrderPage.xaml">
+    <Page Update="Views\Business\OrderPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\Settings\StructuresSettingPage.xaml">
@@ -810,26 +925,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\EarlyWarningPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="BaseWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Update="Controls\ExpandableSettingHeaderControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Wins\ToolWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Channel\" />
   </ItemGroup>
 </Project>

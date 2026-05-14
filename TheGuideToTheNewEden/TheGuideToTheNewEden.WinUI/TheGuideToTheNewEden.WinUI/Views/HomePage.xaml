@@ -2,55 +2,242 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chart="using:Syncfusion.UI.Xaml.Charts"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:home="using:TheGuideToTheNewEden.WinUI.Views.Home"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tb="using:H.NotifyIcon"
+    xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
+    xmlns:winui="using:FluentIcons.WinUI"
     Background="Transparent"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
+    <Page.DataContext>
+        <viewmodels:HomeViewModel x:Name="VM" />
+    </Page.DataContext>
     <Page.Resources>
-        <MenuFlyout x:Key="TrayContextFlyout">
-            <MenuFlyoutItem Click="TaskbarIcon_Exit_Click" Text="{StaticResource TaskbarIcon_Exit}" />
-            <MenuFlyoutSeparator />
-        </MenuFlyout>
+        <Style x:Key="BaseCardGrid" TargetType="Grid">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Margin" Value="8,0,8,12" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="Background" Value="{ThemeResource DefaultBackgroudBrush}" />
+        </Style>
+        <Style x:Key="SmallCardGrid" TargetType="Grid">
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+        <Style
+            x:Key="MedCardGrid"
+            BasedOn="{StaticResource BaseCardGrid}"
+            TargetType="Grid">
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="100" />
+        </Style>
+        <Style
+            x:Key="LargeCardGrid"
+            BasedOn="{StaticResource BaseCardGrid}"
+            TargetType="Grid">
+            <Setter Property="Width" Value="400" />
+            <Setter Property="Height" Value="200" />
+        </Style>
     </Page.Resources>
-    <Grid>
-        <tb:TaskbarIcon
-            x:Name="TaskbarIcon"
-            IconSource="/Resources/Images/logo_32.ico"
-            LeftClickCommand="{x:Bind ShowCommand}"
-            MenuActivation="LeftOrRightClick"
-            NoLeftClickDelay="True"
-            PopupActivation="RightClick"
-            ToolTipText="{StaticResource AppDisplayName}">
-            <tb:TaskbarIcon.ContextFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Command="{x:Bind ShowCommand}" Text="{StaticResource TaskbarIcon_Show}" />
-                    <MenuFlyoutItem Command="{x:Bind ExitCommand}" Text="{StaticResource TaskbarIcon_Exit}" />
-                </MenuFlyout>
-            </tb:TaskbarIcon.ContextFlyout>
-        </tb:TaskbarIcon>
-        <TabView
-            x:Name="TabView"
-            Padding="0,0,0,0"
-            VerticalAlignment="Stretch"
-            AddTabButtonClick="TabView_AddTabButtonClick"
-            Background="Transparent"
-            CloseButtonOverlayMode="OnPointerOver"
-            SelectionChanged="TabView_SelectionChanged"
-            TabCloseRequested="TabView_TabCloseRequested">
-            <TabView.TabStripHeader>
-                <Grid
-                    x:Name="ShellTitleBarInset"
-                    Width="28"
-                    Background="Transparent" />
-            </TabView.TabStripHeader>
-            <TabView.TabStripFooter>
-                <Grid
-                    x:Name="CustomDragRegion"
-                    MinWidth="150"
-                    Background="Transparent" />
-            </TabView.TabStripFooter>
-        </TabView>
+    <Grid Margin="16,4,16,16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="1.5*" />
+            </Grid.RowDefinitions>
+            <Grid CornerRadius="12">
+                <Grid>
+                    <Image Source="/Resources/Images/home.jpg" Stretch="UniformToFill" />
+                    <StackPanel Margin="32,32,0,0">
+                        <TextBlock
+                            FontSize="32"
+                            RequestedTheme="Dark"
+                            Text="{StaticResource AppFullName}" />
+                    </StackPanel>
+                    <StackPanel
+                        Margin="0,0,8,8"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                                <Setter Property="Width" Value="32" />
+                                <Setter Property="Width" Value="32" />
+                                <Setter Property="Height" Value="32" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="4,0" />
+                                <Setter Property="RequestedTheme" Value="Dark" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button Command="{x:Bind VM.ToQQCommand}">
+                            <Image Margin="-4" Source="/Resources/Images/Home/QQ.svg" />
+                        </Button>
+                        <Button Command="{x:Bind VM.ToMSCommand}">
+                            <Image Width="20" Source="/Resources/Images/Home/microsoft-store-2022.svg" />
+                        </Button>
+                        <Button Command="{x:Bind VM.ToGithubCommand}">
+                            <Image Width="20" Source="/Resources/Images/Home/github-mark-white.svg" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <GridView SelectionMode="None">
+                        <GridView.Resources>
+                            <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Height" Value="42" />
+                                <Setter Property="Width" Value="140" />
+                                <Setter Property="CornerRadius" Value="6" />
+                                <Setter Property="Margin" Value="0,0,8,0" />
+                            </Style>
+                        </GridView.Resources>
+                        <GridViewItem>
+                            <Button>
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon x:Name="GameServerOnlineIcon" Icon="XboxController">
+                                            <interactivity:Interaction.Behaviors>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="True">
+                                                    <interactivity:ChangePropertyAction
+                                                        PropertyName="Foreground"
+                                                        TargetObject="{Binding ElementName=GameServerOnlineIcon}"
+                                                        Value="{ThemeResource SystemAccentColor}" />
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.GameServerOnline, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="False">
+                                                    <interactivity:ChangePropertyAction
+                                                        PropertyName="Foreground"
+                                                        TargetObject="{Binding ElementName=GameServerOnlineIcon}"
+                                                        Value="{StaticResource DefaultRed}" />
+                                                </interactivity:DataTriggerBehavior>
+                                            </interactivity:Interaction.Behaviors>
+                                        </winui:FluentIcon>
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.Players, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N0}, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button>
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{ThemeResource SystemAccentColor}" Icon="Clock" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.GameTime, Mode=OneWay}"
+                                            ToolTipService.ToolTip="{StaticResource HomePage_GameTime}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppUpdateCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{ThemeResource SystemAccentColor}" Icon="Apps" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind VM.AppVersion, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppAboutCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="ErrorCircle" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource HomePage_About}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.AppLogCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="Bug" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource HomePage_Log}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                        <GridViewItem>
+                            <Button Command="{x:Bind VM.ManualCommand}">
+                                <Grid Style="{StaticResource SmallCardGrid}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <winui:FluentIcon Foreground="{StaticResource SystemAccentColor}" Icon="BookQuestionMark" />
+                                        <TextBlock
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Text="{StaticResource HomePage_Manual}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </GridViewItem>
+                    </GridView>
+                    <home:WalletStatistic Grid.Row="1" />
+                </Grid>
+                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Hidden">
+                    <GridView
+                        IsItemClickEnabled="False"
+                        ItemsSource="{x:Bind VM.MarketTypes, Mode=OneWay}"
+                        SelectionMode="None">
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem">
+                                <Setter Property="Margin" Value="0,0,12,12" />
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <controls:PriceCardControl
+                                    Width="200"
+                                    Padding="10,4"
+                                    TypeId="{Binding}" />
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>

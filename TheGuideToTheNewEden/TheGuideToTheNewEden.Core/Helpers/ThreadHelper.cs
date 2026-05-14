@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.Core.Helpers
@@ -127,7 +128,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
         /// <param name="threadLimit">最大线程数限制</param>
         /// <param name="action">处理集合元素的委托</param>
         /// <returns>处理结果集合的异步任务</returns>
-        public static async Task<IReadOnlyList<K>> RunAsync<T, K>(IEnumerable<T> source, Func<T, Task<K>> action) => await RunAsync(source, Environment.ProcessorCount, action);
+        public static async Task<IReadOnlyList<K>> RunAsync<T, K>(IEnumerable<T> source, Func<T, Task<K>> action, CancellationToken cancellationToken) => await RunAsync(source, Environment.ProcessorCount, action, cancellationToken);
 
         /// <summary>
         /// 并行处理集合中的每一项，并将返回每一项的处理结果集合
@@ -137,7 +138,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
         /// <param name="threadLimit">最大线程数限制</param>
         /// <param name="action">处理集合元素的委托</param>
         /// <returns>处理结果集合的异步任务</returns>
-        public static async Task<IReadOnlyList<K>> RunAsync<T, K>(IEnumerable<T> source, int threadLimit, Func<T, Task<K>> action)
+        public static async Task<IReadOnlyList<K>> RunAsync<T, K>(IEnumerable<T> source, int threadLimit, Func<T, Task<K>> action, CancellationToken cancellationToken)
         {
             ConcurrentQueue<K> result = new ConcurrentQueue<K>();
             ConcurrentQueue<T> datas = new ConcurrentQueue<T>(source);
@@ -145,6 +146,10 @@ namespace TheGuideToTheNewEden.Core.Helpers
             {
                 while (datas.TryDequeue(out var data))
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
                     result.Enqueue(await action(data));
                 }
             }));

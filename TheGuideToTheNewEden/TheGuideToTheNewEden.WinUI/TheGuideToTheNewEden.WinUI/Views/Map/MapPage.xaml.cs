@@ -41,7 +41,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const int SuperionicIceID = 81144;
         private const int MagmaticGasID = 81143;
 
-        private BaseWindow _window;
         private Dictionary<int, MapData> _systemDatas;
         private Dictionary<int, MapSolarSystem> _mapSolarSystems;
         private Dictionary<int, MapRegion> _mapRegions;
@@ -64,7 +63,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void MapPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MapPage_Loaded;
-            _window = this.GetBaseWindow();
             SearchTypeComboBox.SelectionChanged += SearchTypeComboBox_SelectionChanged;
             MapSystemSelector.OnSelectedItemChanged += MapSystemSelector_OnSelectedItemChanged;
             RegionSelector.OnSelectedItemChanged += RegionSelector_OnSelectedItemChanged;
@@ -72,27 +70,30 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async void Init()
         {
-            _window?.ShowWaiting("Loading System Data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingSystemData"));
             await InitData();
             MapCanvas.SetData(_systemDatas);
 
-            _window?.ShowWaiting("Loading SOV Data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingSOVData"));
             var sovDatas = await InitSOV();
             MapDataTypeControl?.SetSOVData(sovDatas);
             SystemFilterControl?.SetData(_mapSolarSystems, _mapRegions, sovDatas);
 
-            _window?.ShowWaiting("Loading PlanetResources data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingPlanetResourcesData"));
             await InitPlanetResourcesData();
-            RegionPlanetResourcList.ItemsSource = _regionResourcesDic.Values;
-            UpdataSystemPlanetResourcList(0);
-            UpgradeList.ItemsSource = _upgrades;
 
-            _window?.ShowWaiting("Loading Statistics data");
+            this.ShowWaiting(Helpers.ResourcesHelper.GetString("MapPage_LoadingStatisticsData"));
             await InitStatistics();
-            MapNavigation.SetData(MapCanvas,_systemKills, _systemJumps, _sovDatas);
-            OneJumpCover.SetData(MapCanvas, _systemKills, _systemJumps, _sovDatas);
-            _window?.HideWaiting();
+            this.HideWaiting();
+
+            MapCanvas.OnError += MapCanvas_OnError;
         }
+
+        private void MapCanvas_OnError(object sender, string e)
+        {
+            this.ShowError(e);
+        }
+
         private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
@@ -169,13 +170,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 else
                 {
-                    _window?.ShowError(resp.StatusCode.ToString());
+                    this.ShowMsg(resp.StatusCode.ToString(), InfoBarControl.InfoType.Error, false);
                 }
             }
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                _window?.ShowError(ex.Message);
+                this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
             }
             _sovDatas = new Dictionary<int, SovData>();
             foreach (var data in sovDatas)
@@ -255,7 +256,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                _window?.ShowError(ex.Message);
+                this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
                 _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
                 _systemJumps = new Dictionary<int, int>();
             }
@@ -267,10 +268,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             if (selectedItem != null)
             {
-                MapCanvas.ToSystem(selectedItem.SolarSystemID);
-                if(_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                if (_systemDatas[selectedItem.SolarSystemID].Enable)
                 {
-                    ShowSystemInfo(data as MapSystemData);
+                    MapCanvas.ToSystem(selectedItem.SolarSystemID);
+                    if (_systemDatas.TryGetValue(selectedItem.SolarSystemID, out var data))
+                    {
+                        ShowSystemInfo(data as MapSystemData);
+                    }
                 }
             }
         }
@@ -278,7 +282,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private void RegionSelector_OnSelectedItemChanged(Core.DBModels.MapRegion selectedItem)
         {
             if(selectedItem != null)
-                MapCanvas.ToSystem(_systemDatas.Values.Where(p=>(p as MapSystemData).MapSolarSystem.RegionID == selectedItem.RegionID).Select(p=>p.Id).ToList());
+            {
+                MapCanvas.ToRegion(selectedItem.RegionID);
+            }
         }
 
         private void SearchTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -352,8 +358,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         {
                             regionResources.Power += resourcesDetails.Sum(p => p.PlanetResources.Power);
                             regionResources.Workforce += resourcesDetails.Sum(p => p.PlanetResources.Workforce);
-                            regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
-                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount);
+                            regionResources.SuperionicIce += resourcesDetails.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
+                            regionResources.MagmaticGas += resourcesDetails.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
                         }
                     }
                     if (regionResources.Power + regionResources.Workforce != 0)
@@ -374,8 +380,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                             MapSolarSystem = (mapData as MapSystemData).MapSolarSystem,
                             Power = resources.Value.Sum(p => p.PlanetResources.Power),
                             Workforce = resources.Value.Sum(p => p.PlanetResources.Workforce),
-                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == MagmaticGasID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
-                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.ReagentTypeId == SuperionicIceID).Sum(p => p.PlanetResources.ReagentHarvestAmount),
+                            MagmaticGas = resources.Value.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle),
+                            SuperionicIce = resources.Value.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle),
                         };
                         _systemResourcesDic.Add(resources.Key, solarSystemResources);
                     }
@@ -389,7 +395,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         }
         private async void SetDataToPlanetResourc(int type)
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             CalResources calResources = null;
             switch (type)
             { 
@@ -426,7 +432,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 long resc = (long)data.Tag;
                 data.BgColor = PlanetRecourceColorConverter.Convert(Math.Round(resc / max,1));
             }
-            _window?.HideWaiting();
+            this.HideWaiting();
             MapCanvas.Draw();
         }
         private void SetDataToSOV(List<SovData> sovDatas)
@@ -467,27 +473,42 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         #endregion
 
         #region 选中星系
+        private MapData _selectedData;
         private void MapCanvas_OnPointedSystemChanged(MapData mapData)
         {
-            if(mapData == null)
+            if(_selectedData == null)
             {
-                TopPanel.Visibility = Visibility.Collapsed;
+                ShowSystemInfo(mapData as MapSystemData);
             }
             else
             {
-                TopPanel.Visibility = Visibility.Visible;
-                PointedSystemName.Text = $"{(mapData as MapSystemData).MainText} {(mapData as MapSystemData).InnerText}";
+                if (mapData == null)
+                {
+                    TopPanel.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    TopPanel.Visibility = Visibility.Visible;
+                    var map = mapData as MapSystemData;
+                    PointedSystemName.Text = $"{_mapRegions[map.MapSolarSystem.RegionID].RegionName} {map.MainText} {map.InnerText}";
+                }
             }
         }
         private void MapCanvas_OnSelectedSystemChanged(MapData mapData)
         {
-            ShowSystemInfo(mapData as MapSystemData);
+            _selectedData = mapData;
         }
         private void ShowSystemInfo(MapSystemData data)
         {
             if (data == null)
+            {
+                SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+                SelectedSystemIntelPanel.Visibility = Visibility.Collapsed;
                 return;
+            }
             SelectedSystemInfoPanel.Visibility = Visibility.Visible;
+
+            #region 基本信息
             SystemResourceDetailButton.Tag = data;
             SelectedSystemNameTextBlock.Text = data.MapSolarSystem.SolarSystemName;
             SelectedSystemIDTextBlock.Text = data.MapSolarSystem.SolarSystemID.ToString();
@@ -516,60 +537,95 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 SelectedSystemResourceGrid.Visibility = Visibility.Collapsed;
             }
+
+            #endregion
+
+            #region 预警信息
+            if (data.Ships.Any())
+            {
+                SelectedSystemIntelPanel.Visibility = Visibility.Visible;
+                SelectedSystemIntelShipGrid.Visibility = Visibility.Visible;
+                SelectedSystemIntelShipListView.ItemsSource = data.Ships.Values.ToList();
+            }
+            else
+            {
+                SelectedSystemIntelShipGrid.Visibility = Visibility.Collapsed;
+            }
+            if (data.Msgs.Any())
+            {
+                SelectedSystemIntelPanel.Visibility = Visibility.Visible;
+                SelectedSystemIntelMsgGrid.Visibility = Visibility.Visible;
+                SelectedSystemIntelMsgListView.ItemsSource = data.Msgs;
+            }
+            else
+            {
+                SelectedSystemIntelMsgGrid.Visibility = Visibility.Collapsed;
+            }
+            #endregion
         }
         private void CloseSelectedSystemInfoPanelButton_Click(object sender, RoutedEventArgs e)
         {
             SelectedSystemInfoPanel.Visibility = Visibility.Collapsed;
+            _selectedData = null;
         }
-        private async void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
+        private void SystemResourceDetailButton_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button).Tag as MapSystemData;
-            _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
-            SolarSystemResources resource = null;
-            if(!_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out resource))
+            ShowSystemDetail(data);
+        }
+        private void ShowSystemDetail(MapSystemData data)
+        {
+            if(data != null)
             {
-                resource = new SolarSystemResources()
+                _sovDatas.TryGetValue(data.MapSolarSystem.SolarSystemID, out var sovData);
+                SolarSystemResources resource = null;
+                if (!_systemResourcesDic.TryGetValue(data.MapSolarSystem.SolarSystemID, out resource))
                 {
-                    MapSolarSystem = data.MapSolarSystem
-                };
-            }
-            List<MapSystemInfo> jumpTos = new List<MapSystemInfo>();
-            var jumpToIds = SolarSystemPosHelper.GetJumpTo(data.Id);
-            if(jumpToIds != null)
-            {
-                foreach(var id in jumpToIds)
-                {
-                    MapSystemInfo mapSystemInfo = new MapSystemInfo()
+                    resource = new SolarSystemResources()
                     {
-                        System = _mapSolarSystems[id],
+                        MapSolarSystem = data.MapSolarSystem
                     };
-                    mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
-                    if(_sovDatas.TryGetValue(id,out var sov))
-                    {
-                        mapSystemInfo.Sov = sov.AllianceName;
-                    }
-                    jumpTos.Add(mapSystemInfo);
                 }
+                List<MapSystemInfo> jumpTos = new List<MapSystemInfo>();
+                var jumpToIds = SolarSystemPosHelper.GetJumpTo(data.Id);
+                if (jumpToIds != null)
+                {
+                    foreach (var id in jumpToIds)
+                    {
+                        MapSystemInfo mapSystemInfo = new MapSystemInfo()
+                        {
+                            System = _mapSolarSystems[id],
+                        };
+                        mapSystemInfo.Region = _mapRegions[mapSystemInfo.System.RegionID];
+                        if (_sovDatas.TryGetValue(id, out var sov))
+                        {
+                            mapSystemInfo.Sov = sov.AllianceName;
+                        }
+                        jumpTos.Add(mapSystemInfo);
+                    }
+                }
+                MapSystemDetailInfo mapSystemDetailInfo = new MapSystemDetailInfo()
+                {
+                    System = data.MapSolarSystem,
+                    Region = _mapRegions[data.MapSolarSystem.RegionID],
+                    Sov = sovData,
+                    Resources = resource,
+                    JumpTos = jumpTos
+                };
+                if (_systemKills.TryGetValue(data.MapSolarSystem.SolarSystemID, out var kills))
+                {
+                    mapSystemDetailInfo.ShipKills = kills.ShipKills;
+                    mapSystemDetailInfo.NpcKills = kills.NpcKills;
+                    mapSystemDetailInfo.PodKills = kills.PodKills;
+                }
+                if (_systemJumps.TryGetValue(data.MapSolarSystem.SolarSystemID, out var jumps))
+                {
+                    mapSystemDetailInfo.Jumps = jumps;
+                }
+                MapSystemDetailPage page = new MapSystemDetailPage(mapSystemDetailInfo);
+                ToolWindow toolWindow = new ToolWindow(mapSystemDetailInfo.System.SolarSystemName, mapSystemDetailInfo.System.SolarSystemName, page, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                toolWindow.Activate();
             }
-            MapSystemDetailInfo mapSystemDetailInfo = new MapSystemDetailInfo()
-            {
-                System = data.MapSolarSystem,
-                Region = _mapRegions[data.MapSolarSystem.RegionID],
-                Sov = sovData,
-                Resources = resource,
-                JumpTos = jumpTos
-            };
-            if(_systemKills.TryGetValue(data.MapSolarSystem.SolarSystemID,out var kills))
-            {
-                mapSystemDetailInfo.ShipKills = kills.ShipKills;
-                mapSystemDetailInfo.NpcKills = kills.NpcKills;
-                mapSystemDetailInfo.PodKills = kills.PodKills;
-            }
-            if(_systemJumps.TryGetValue(data.MapSolarSystem.SolarSystemID, out var jumps))
-            {
-                mapSystemDetailInfo.Jumps = jumps;
-            }
-            await MapSystemDetailDialog.ShowAsync(mapSystemDetailInfo, this.XamlRoot);
         }
         #endregion
 
@@ -592,77 +648,92 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
             }
             MapCanvas.Draw();
-            UpdataSystemPlanetResourcList(Tool_SystemPlanetResourcList_Mode.SelectedIndex);
-        }
-        private void Tool_SystemPlanetResourcList_Mode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_systemResourcesDic == null)
-                return;
-            UpdataSystemPlanetResourcList((sender as ComboBox).SelectedIndex);
-        }
-        private void UpdataSystemPlanetResourcList(int mode)
-        {
-            if (mode == 1)
-            {
-                List<Core.Models.PlanetResources.SolarSystemResources> solarSystemResources = new List<Core.Models.PlanetResources.SolarSystemResources>();
-                foreach (var v in _systemResourcesDic)
-                {
-                    if (_systemDatas.TryGetValue(v.Key, out var data))
-                    {
-                        if (data.Enable)
-                        {
-                            solarSystemResources.Add(v.Value);
-                        }
-                    }
-                }
-                SystemPlanetResourcList.ItemsSource = solarSystemResources;
-                Tool_SystemPlanetResourcList_Count.Text = solarSystemResources.Count.ToString();
-            }
-            else
-            {
-                SystemPlanetResourcList.ItemsSource = _systemResourcesDic.Values;
-                Tool_SystemPlanetResourcList_Count.Text = _systemResourcesDic.Count.ToString();
-            }
         }
         #endregion
 
         #region 工具
+        private List<ToolWindow> _toolWindows = new List<ToolWindow>();
         private void Tools_Click(object sender, RoutedEventArgs e)
         {
-            MapCanvas.ClearMapGraph();
-            MapCanvas.RemoveTemporary();
             MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
-            foreach(var u in ToolGrid.Children)
-            {
-                u.Visibility = Visibility.Collapsed;
-            }
             UIElement targetTool = null;
+            string toolTitle = string.Empty;
             switch(menuFlyoutItem.Tag.ToString())
             {
-                case "None": targetTool = null; break;
-                case "PlanetResource_Region": targetTool = RegionPlanetResourcList; break;
-                case "PlanetResource_System": targetTool = Tool_SystemPlanetResourcList; break;
-                case "PlanetResource_Upgrade": targetTool = UpgradeList; break;
-                case "OneJumpCover": targetTool = Tool_OneJumpCover; break;
-                case "Navigation": targetTool = Tool_Navigation; break;
+                case "Clear":
+                    {
+                        targetTool = null;
+                        MapCanvas.ClearTool();
+                    }
+                    break;
+                case "PlanetResource":
+                    {
+                        targetTool = new PlanetResourcListPage(_regionResourcesDic, _systemResourcesDic, _upgrades, _systemDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_PlanetResource");
+                    }
+                    break;
+                case "Navigation":
+                    {
+                        targetTool = new MapNavigation(MapCanvas, _systemKills, _systemJumps, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_Navigation");
+                    }
+                    break;
+                case "OneJumpCover":
+                    {
+                        targetTool = new OneJumpCover(MapCanvas, _systemKills, _systemJumps, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_InOneJumpSystems");
+                    }
+                    break;
+                case "Intel":
+                    {
+                        targetTool = new IntelTool(MapCanvas,_systemDatas, _sovDatas);
+                        toolTitle = Helpers.ResourcesHelper.GetString("MapPage_Tools_Intel");
+                    }
+                    break;
             }
-            if(targetTool == null)
+            if(targetTool != null)
             {
-                ToolPanel.Visibility = Visibility.Collapsed;
+                ToolWindow toolWindow = new ToolWindow(toolTitle, toolTitle, targetTool, WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                toolWindow.Activate();
+                toolWindow.Closed += ToolWindow_Closed;
+                _toolWindows.Add(toolWindow);
+                MapCanvas.ActiveTool();
             }
-            else
+        }
+
+        private void ToolWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _toolWindows.Remove(sender as ToolWindow);
+            if(_toolWindows.Count == 0)
             {
-                ToolPanel.Visibility = Visibility.Visible;
-                targetTool.Visibility = Visibility.Visible;
-                ToolExpander.Header = menuFlyoutItem.Text;
-                ToolExpander.IsExpanded = true;
+                MapCanvas.ClearTool();
             }
         }
         #endregion
 
         public void Close()
         {
+            foreach(var win in _toolWindows)
+            {
+                win.Close();
+            }
+            _toolWindows.Clear();
             MapCanvas.Dispose();
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+
+        }
+
+        private void DisableNoActiveSystem_Toggled(object sender, RoutedEventArgs e)
+        {
+            MapCanvas.EnableNoActiveData(((ToggleSwitch)sender).IsOn);
+        }
+
+        private void ShowCharacters_Toggled(object sender, RoutedEventArgs e)
+        {
+            MapCanvas.ShowCharacters(((ToggleSwitch)sender).IsOn);
         }
     }
 }

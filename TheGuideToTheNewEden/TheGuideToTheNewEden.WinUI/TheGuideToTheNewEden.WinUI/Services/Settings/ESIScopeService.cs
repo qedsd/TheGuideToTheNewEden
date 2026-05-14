@@ -24,7 +24,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         }
 
         private static readonly string SourceFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "ESIScopes.txt");
-        private static readonly string SelectedFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ESIScopes.txt");
+        private static readonly string SelectedFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "ESIScopes.txt");
 
         private List<string> _allScopes;
         public List<string> GetAllScopes()

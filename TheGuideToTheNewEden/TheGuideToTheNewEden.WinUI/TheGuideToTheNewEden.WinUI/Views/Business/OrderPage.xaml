@@ -1,0 +1,131 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Business.OrderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:converters="using:TheGuideToTheNewEden.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:styleselectors="using:TheGuideToTheNewEden.WinUI.StyleSelectors"
+    xmlns:winui="using:FluentIcons.WinUI"
+    Background="Transparent"
+    NavigationCacheMode="Required"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:StatusOrderDescConverter x:Key="StatusOrderDescConverter" />
+        <styleselectors:StatusOrderCellStyleSelector x:Key="StatusOrderCellStyleSelector" />
+    </Page.Resources>
+    <controls:CardControl>
+        <controls:CardControl.Header>
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource StructuresSettingPage_Character}" />
+                    <controls:SelecteCharacterControl
+                        x:Name="SelecteCharacterControl"
+                        Width="160"
+                        Margin="8,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        OnSelectedItemChanged="SelecteCharacterControl_OnSelectedItemChanged" />
+                    <StackPanel Margin="24,0,0,0" Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="ComboBox">
+                                <Setter Property="Width" Value="160" />
+                                <Setter Property="SelectedIndex" Value="0" />
+                                <Setter Property="Margin" Value="8,0,0,0" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock VerticalAlignment="Center" Text="{StaticResource OrderPage_OrderType}" />
+                        <ComboBox x:Name="OrderTypeComboBox">
+                            <ComboBoxItem Content="{StaticResource OrderPage_SellOrder}" />
+                            <ComboBoxItem Content="{StaticResource OrderPage_BuyOrder}" />
+                        </ComboBox>
+                        <ComboBox x:Name="OrderFromComboBox">
+                            <ComboBoxItem Content="{StaticResource OrderPage_Character}" />
+                            <ComboBoxItem Content="{StaticResource OrderPage_Corp}" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+                <Button
+                    x:Name="Button_Refresh"
+                    HorizontalAlignment="Right"
+                    Click="Button_Refresh_Click"
+                    Style="{StaticResource TransparentButton}"
+                    ToolTipService.ToolTip="{StaticResource General_Refresh}">
+                    <winui:FluentIcon Icon="ArrowSync" IconSize="Resizable" />
+                </Button>
+            </Grid>
+        </controls:CardControl.Header>
+        <controls:CardControl.CustomContent>
+            <dataGrid:SfDataGrid
+                x:Name="OrderDataGrid"
+                HorizontalAlignment="Stretch"
+                AllowDraggingColumns="True"
+                AllowEditing="False"
+                AllowFiltering="True"
+                AllowGrouping="True"
+                AllowResizingColumns="True"
+                AllowSorting="True"
+                AutoExpandGroups="True"
+                AutoGenerateColumns="False"
+                BorderThickness="0"
+                CellStyleSelector="{StaticResource StatusOrderCellStyleSelector}"
+                ColumnWidthMode="Auto"
+                GridLinesVisibility="None"
+                GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                HeaderLinesVisibility="Both"
+                SelectionMode="Extended"
+                ShowGroupDropArea="True">
+                <dataGrid:SfDataGrid.Columns>
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="Target.InvType.TypeName" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N0"
+                        HeaderText="{StaticResource MarketPage_Amount}"
+                        MappingName="Target.VolumeRemain" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource MarketPage_Price}"
+                        MappingName="Target.Price" />
+                    <dataGrid:GridTextColumn
+                        DisplayBinding="{Binding Normal, Converter={StaticResource StatusOrderDescConverter}}"
+                        HeaderText="{StaticResource OrderPage_Difference_Status}"
+                        MappingName="Normal" />
+                    <dataGrid:GridNumericColumn
+                        DisplayNumberFormat="N2"
+                        HeaderText="{StaticResource OrderPage_Difference_Detail}"
+                        MappingName="Difference" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Location}" MappingName="Target.LocationName" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource General_SolarSystemName}" MappingName="Target.SolarSystem.SolarSystemName" />
+                    <dataGrid:GridTextColumn HeaderText="{StaticResource MarketPage_Range}" MappingName="Target.Range" />
+                    <dataGrid:GridTextColumn
+                        DisplayBinding="{Binding Target.RemainTimeSpan, Converter={StaticResource TimeSpanConverter}}"
+                        HeaderText="{StaticResource MarketPage_Duration}"
+                        MappingName="Target.RemainTime" />
+                    <dataGrid:GridTextColumn HeaderText="LocationId" MappingName="Target.LocationId" />
+                </dataGrid:SfDataGrid.Columns>
+                <dataGrid:SfDataGrid.RecordContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            Click="OrderDataGrid_AddToFilterList_Click"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource OrderPage_AddToFilterList}" />
+                        <MenuFlyoutItem
+                            Click="OrderDataGrid_AddToUpdatedScalperShoppingItem_Click"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource OrderPage_AddToUpdatedScalperShoppingItem}" />
+                        <MenuFlyoutItem
+                            Click="OrderDataGrid_AddToGameOrder"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource OrderPage_AddToGameOrder}" />
+                        <MenuFlyoutItem
+                            Click="OrderDataGrid_ShowInGame_Click"
+                            CommandParameter="{Binding}"
+                            Text="{StaticResource OrderPage_ShowInGame}" />
+                    </MenuFlyout>
+                </dataGrid:SfDataGrid.RecordContextFlyout>
+            </dataGrid:SfDataGrid>
+        </controls:CardControl.CustomContent>
+    </controls:CardControl>
+</Page>

@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:TheGuideToTheNewEden.WinUI.ViewModels"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.DataContext>
@@ -42,7 +43,7 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
-    <Grid Margin="8,4">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" />
             <ColumnDefinition />
@@ -53,19 +54,18 @@
                     Name="Search_AutoSuggestBox"
                     Margin="0,4"
                     HorizontalAlignment="Stretch"
-                    Background="Transparent"
                     ItemTemplate="{StaticResource MissionDataTemplate}"
                     QueryIcon="Find"
                     SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                     TextChanged="AutoSuggestBox_TextChanged" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ListView
                     ItemTemplate="{StaticResource MissionDataTemplate}"
                     ItemsSource="{x:Bind VM.Missions, Mode=TwoWay}"
                     SelectedItem="{x:Bind VM.SelectedListMission, Mode=TwoWay}"
                     Style="{StaticResource StretchListView}" />
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
             <controls1:CardControl.Fonter>
                 <ComboBox
                     HorizontalAlignment="Stretch"
@@ -91,9 +91,10 @@
                     Foreground="{ThemeResource SystemAccentColor}"
                     Text="{x:Bind VM.SelectedMission.Title_Zh, Mode=OneWay}" />
             </controls1:CardControl.Header>
-            <controls1:CardControl.Content>
+            <controls1:CardControl.CustomContent>
                 <ScrollViewer>
                     <controls:MarkdownTextBlock
+                        Margin="16,0"
                         Background="Transparent"
                         FontSize="16"
                         ParagraphMargin="0,14"
@@ -101,7 +102,7 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         Text="{x:Bind VM.MissionContent.Content, Mode=OneWay}" />
                 </ScrollViewer>
-            </controls1:CardControl.Content>
+            </controls1:CardControl.CustomContent>
         </controls1:CardControl>
     </Grid>
 </Page>

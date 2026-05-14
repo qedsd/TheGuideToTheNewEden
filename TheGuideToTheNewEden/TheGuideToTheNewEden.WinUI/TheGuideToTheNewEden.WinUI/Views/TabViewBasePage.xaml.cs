@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -29,7 +30,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         public void ShowWaiting(string tip = null)
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 if (string.IsNullOrEmpty(tip))
                 {
@@ -46,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         }
         public void HideWaiting()
         {
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 WaitingGrid.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                 WaitingProgressRing.IsActive = false;
@@ -56,6 +57,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
         public void Close()
         {
             (MainContent as IPage)?.Close();
+        }
+        public void NavigatedTo(object parameter)
+        {
+
         }
     }
 }

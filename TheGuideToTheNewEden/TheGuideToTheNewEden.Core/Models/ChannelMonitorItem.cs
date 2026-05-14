@@ -23,6 +23,7 @@ namespace TheGuideToTheNewEden.Core.Models
             get => setting; set => SetProperty(ref setting, value);
         }
 
+        public List<Core.Models.EVELogs.ChatContent> ChatContents { get; set; } = new List<EVELogs.ChatContent>();
     }
     public class ChannelMonitorSetting : ObservableObject
     {

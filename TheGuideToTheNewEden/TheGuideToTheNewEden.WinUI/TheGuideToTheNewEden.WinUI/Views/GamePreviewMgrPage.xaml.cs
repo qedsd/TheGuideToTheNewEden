@@ -27,7 +27,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
 {
     public sealed partial class GamePreviewMgrPage : Page,IPage
     {
-        private BaseWindow Window;
+        private Window Window;
         private Microsoft.UI.Windowing.AppWindow AppWindow;
         public GamePreviewMgrPage()
         {
@@ -75,8 +75,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             Loaded -= GamePreviewMgrPage_Loaded;
             ProcessList.SelectionChanged += ProcessList_SelectionChanged;
             PreviewGrid.SizeChanged += PreviewGrid_SizeChanged;
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-            VM.Window = Window;
+            Window = Helpers.WindowHelper.GetWindowForElement(this);
             windowHandle = Helpers.WindowHelper.GetWindowHandle(Window);
             AppWindow = Helpers.WindowHelper.GetAppWindow(Window);
         }
@@ -108,7 +107,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var thumbSize = WindowCaptureHelper.GetThumbSourceSize(lastThumb);
             if(thumbSize.x > thumbSize.y)//横向
             {
-                var showWPresent = PreviewGrid.ActualWidth / ContentGrid.ActualWidth;
+                var showWPresent = PreviewGrid.ActualWidth / (ContentGrid.ActualWidth + ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().GetNavPanelWidth());
                 var showW = showWPresent * (AppWindow.ClientSize.Width - (ContentGrid.Margin.Left + ContentGrid.Margin.Right));
                 var showH = showW / thumbSize.x * thumbSize.y;
                 int left = (int)(AppWindow.ClientSize.Width * (1 - showWPresent));
@@ -238,10 +237,23 @@ namespace TheGuideToTheNewEden.WinUI.Views
             }
         }
 
-
-        private void GlobalSetting_Flyout_Opened(object sender, object e)
+        private void GamePreviewGroupHotKeyControl_OnSaveClicked(object sender, PreviewHotKeyGroup e)
         {
-            VM.UpdateOrderCommand.Execute(null);
+            VM.RegisterHotkeyGroup(e);
+        }
+
+        private void TabViewItem_CloseRequested(TabViewItem sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            var item = sender.DataContext as PreviewHotKeyGroup;
+            if(item != null)
+            {
+                VM.RemoveHotkeyGroup(item);
+            }
+        }
+
+        public void NavigatedTo(object parameter)
+        {
+
         }
     }
 }

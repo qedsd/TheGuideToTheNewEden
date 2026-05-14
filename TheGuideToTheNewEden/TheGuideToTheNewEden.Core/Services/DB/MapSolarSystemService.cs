@@ -90,20 +90,20 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static async Task<List<TranslationSearchItem>> SearchAsync(string partName)
+        public static async Task<List<DataBaseSearchItem>> SearchAsync(string partName)
         {
             return await Task.Run(() =>
             {
-                List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+                List<DataBaseSearchItem> searchs = new List<DataBaseSearchItem>();
                 var systems = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => p.SolarSystemName.Contains(partName)).ToList();
                 if (systems.NotNullOrEmpty())
                 {
-                    systems.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    systems.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 var locals = LocalDbService.SearchMapSolarSystem(partName);
                 if (locals.NotNullOrEmpty())
                 {
-                    locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                    locals.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
                 }
                 return searchs;
             });
@@ -113,18 +113,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="partName"></param>
         /// <returns></returns>
-        public static List<TranslationSearchItem> Search(string partName)
+        public static List<DataBaseSearchItem> Search(string partName)
         {
-            List<TranslationSearchItem> searchs = new List<TranslationSearchItem>();
+            List<DataBaseSearchItem> searchs = new List<DataBaseSearchItem>();
             var systems = DBService.MainDb.Queryable<MapSolarSystem>().Where(p => p.SolarSystemName.Contains(partName)).ToList();
             if (systems.NotNullOrEmpty())
             {
-                systems.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                systems.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
             }
             var locals = LocalDbService.SearchMapSolarSystem(partName);
             if (locals.NotNullOrEmpty())
             {
-                locals.ForEach(p => searchs.Add(new TranslationSearchItem(p)));
+                locals.ForEach(p => searchs.Add(new DataBaseSearchItem(p)));
             }
             return searchs;
         }

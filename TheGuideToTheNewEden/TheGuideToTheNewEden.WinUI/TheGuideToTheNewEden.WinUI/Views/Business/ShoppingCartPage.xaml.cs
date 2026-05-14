@@ -22,42 +22,44 @@ using Windows.ApplicationModel.DataTransfer;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Business
 {
 
     public sealed partial class ShoppingCartPage : Page
     {
-        private BaseWindow Window;
         private ObservableCollection<ScalperShoppingItem> ShoppingItems = new ObservableCollection<ScalperShoppingItem>();
         public ShoppingCartPage()
         {
             this.InitializeComponent();
             ItemsDataGrid.ItemsSource = ShoppingItems;
-            Loaded += ShoppingCartPage_Loaded;
+            ClientServiceHelper.GetRequiredService<BusinessService>().TypeCountChanged += ShoppingCartPage_TypeCountChanged;
         }
 
-        private void ShoppingCartPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
-        }
-
-        private void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
+        private async void AppBarButton_CopyToGameOrder_Click(object sender, RoutedEventArgs e)
         {
             if(ShoppingItems.Any())
             {
-                StringBuilder stringBuilder = new StringBuilder();
-                foreach(var item in ShoppingItems)
+                if(ShoppingItems.Count > 100)
                 {
-                    stringBuilder.Append(item.InvType.TypeName);
-                    stringBuilder.Append(" ");
-                    stringBuilder.Append(item.Quantity);
-                    stringBuilder.AppendLine();
+                    await CopyToGameOrderDialog.ShowAsync(ShoppingItems, this.XamlRoot);
                 }
-                DataPackage dataPackage = new DataPackage();
-                dataPackage.SetText(stringBuilder.ToString());
-                Clipboard.SetContent(dataPackage);
-                Window?.ShowSuccess("已复制列表，在游戏批量购买界面粘贴即可");
+                else
+                {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    foreach (var item in ShoppingItems)
+                    {
+                        stringBuilder.Append(item.InvType.TypeName);
+                        stringBuilder.Append(" ");
+                        stringBuilder.Append(item.Quantity);
+                        stringBuilder.AppendLine();
+                    }
+                    DataPackage dataPackage = new DataPackage();
+                    dataPackage.SetText(stringBuilder.ToString());
+                    Clipboard.SetContent(dataPackage);
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_CopyToGameOrder_Success"));
+                }
             }
         }
 
@@ -66,7 +68,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             if(ShoppingItems.Any())
             {
                 ShoppingRecordService.Current.Add(ShoppingItems);
-                Window?.ShowSuccess("已保存");
+                this.ShowSuccess(Helpers.ResourcesHelper.GetString("General_SaveSuccess"));
             }
         }
 
@@ -110,6 +112,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 TextBlock_NetProfi.Text = netProfit.ToString("N2");
                 TextBlock_Principal.Text = principal.ToString("N2");
                 TextBlock_Volume.Text = ShoppingItems.Sum(p => p.Volume).ToString("N2");
+                TextBlock_IskPerJump.Text = ShoppingItems.Average(p => p.IskPerJump).ToString("N2");
+                TextBlock_IskPerVolume.Text = ShoppingItems.Average(p => p.IskPerVolume).ToString("N2");
+                TextBlock_TypeCount.Text = ShoppingItems.Count.ToString("N0");
             }
             else
             {
@@ -117,6 +122,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 TextBlock_NetProfi.Text = string.Empty;
                 TextBlock_Principal.Text = string.Empty;
                 TextBlock_Volume.Text = string.Empty;
+                TextBlock_IskPerJump.Text = string.Empty;
+                TextBlock_IskPerVolume.Text = string.Empty;
+                TextBlock_TypeCount.Text = string.Empty;
             }
         }
 
@@ -155,11 +163,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 }
                 if (updatedCount > 0)
                 {
-                    Window?.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
+                    this.ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem1")}{updatedCount}{Helpers.ResourcesHelper.GetString("BusinessPage_UpdatedScalperShoppingItem2")}");
                 }
                 else
                 {
-                    Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("BusinessPage_NoUpdatedScalperShoppingItem"));
                 }
             }
         }
@@ -207,39 +215,26 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                     }
                     else
                     {
-                        Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+                        this.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
                     }
                 }
                 catch(Exception ex)
                 {
                     Core.Log.Error(ex);
-                    Window.ShowError(ex.Message);
+                    this.ShowError(ex.Message);
                 }
             }
             else
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
+                this.ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NotPasteItem"));
             }
         }
 
-        public void UpdateItems(List<Core.Models.Market.Order> orders)
+        private void ShoppingCartPage_TypeCountChanged(List<(Core.DBModels.InvType type, int count)> types)
         {
-            if(orders.NotNullOrEmpty())
+            if (types.NotNullOrEmpty())
             {
-                Dictionary<int, int> items = new Dictionary<int, int>();
-                foreach (var item in orders)
-                {
-                    if(items.TryGetValue(item.TypeId, out int count))
-                    {
-                        items.Remove(item.TypeId);
-                        items.Add(item.TypeId, count + item.VolumeRemain);
-                    }
-                    else
-                    {
-                        items.Add(item.TypeId, item.VolumeRemain);
-                    }
-                }
-                UpdateItems(items);
+                UpdateItems(types.ToDictionary(p => p.type.TypeID, p => p.count));
             }
         }
     }

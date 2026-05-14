@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Map.Tools.IntelTool"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:controls1="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:map="using:TheGuideToTheNewEden.WinUI.ViewModels.Map"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="SettingHeader" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="140" />
+        </Style>
+    </Page.Resources>
+    <Page.DataContext>
+        <map:IntelToolViewModel x:Name="VM" />
+    </Page.DataContext>
+    <Grid>
+        <controls:CardControl>
+            <controls:CardControl.Header>
+                <Grid>
+                    <SelectorBar SelectionChanged="Setting_SelectionChanged">
+                        <SelectorBarItem
+                            IsSelected="True"
+                            Tag="0"
+                            Text="{StaticResource MapIntelTool_Setting}" />
+                        <SelectorBarItem
+                            IsSelected="{x:Bind VM.MsgSelected, Mode=TwoWay}"
+                            Tag="1"
+                            Text="{StaticResource MapIntelTool_LiveData}" />
+                    </SelectorBar>
+                    <TextBlock
+                        x:Name="TextBlock_LiveDataTip"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundColor}"
+                        Text="{StaticResource MapIntelTool_LiveData_Tip}" />
+                </Grid>
+            </controls:CardControl.Header>
+            <controls:CardControl.CustomContent>
+                <Grid>
+                    <Grid x:Name="SettingGrid">
+                        <controls:CardControl>
+                            <controls:CardControl.Header>
+                                <SelectorBar SelectionChanged="Setting2_SelectionChanged">
+                                    <SelectorBarItem
+                                        IsSelected="True"
+                                        Tag="0"
+                                        Text="{StaticResource MapIntelTool_Setting_IntelFrom}" />
+                                    <SelectorBarItem Tag="1" Text="{StaticResource MapIntelTool_Setting_Filter}" />
+                                </SelectorBar>
+                            </controls:CardControl.Header>
+                            <controls:CardControl.CustomContent>
+                                <Grid>
+                                    <Grid x:Name="IntelFromSetting">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:CardControl Grid.Column="0">
+                                            <controls:CardControl.Header>
+                                                <Grid>
+                                                    <TextBlock Text="{StaticResource MapIntelTool_ChannelIntel}" />
+                                                    <Button
+                                                        HorizontalAlignment="Right"
+                                                        Command="{x:Bind VM.RefreshChannelCommand}"
+                                                        IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                        Style="{StaticResource TransparentButton}">
+                                                        <winui:FluentIcon Icon="ArrowSync" />
+                                                    </Button>
+                                                </Grid>
+                                            </controls:CardControl.Header>
+                                            <controls:CardControl.CustomContent>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <ListView
+                                                        Margin="8,0"
+                                                        IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                        ItemsSource="{x:Bind VM.Channels, Mode=OneWay}"
+                                                        Style="{StaticResource StretchListView}">
+                                                        <ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <CheckBox Content="{Binding Data}" IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>
+                                                    </ListView>
+                                                    <Grid Grid.Row="1" Margin="4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition />
+                                                            <ColumnDefinition Width="16" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock
+                                                                Margin="0,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                Text="{StaticResource MapIntelTool_Duration}" />
+                                                            <NumberBox
+                                                                Width="100"
+                                                                IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                                Value="{x:Bind VM.Config.ChannelDuration, Mode=TwoWay}" />
+                                                            <TextBlock
+                                                                Margin="4,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                Text="{StaticResource General_Second}" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                            <TextBlock
+                                                                Margin="0,0,8,0"
+                                                                VerticalAlignment="Center"
+                                                                Text="{StaticResource MapIntelTool_ChannelIntel_ClearMode}" />
+                                                            <ComboBox HorizontalAlignment="Stretch" SelectedIndex="{x:Bind VM.Config.ClearChannelMode, Mode=TwoWay}">
+                                                                <ComboBoxItem Content="{StaticResource MapIntelTool_ChannelIntel_ClearMode1}" />
+                                                                <ComboBoxItem Content="{StaticResource MapIntelTool_ChannelIntel_ClearMode2}" />
+                                                            </ComboBox>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Grid>
+                                            </controls:CardControl.CustomContent>
+                                        </controls:CardControl>
+                                        <controls:CardControl Grid.Column="2">
+                                            <controls:CardControl.Header>
+                                                <TextBlock Text="{StaticResource MapIntelTool_ZKB}" />
+                                            </controls:CardControl.Header>
+                                            <controls:CardControl.CustomContent>
+                                                <StackPanel Margin="8,0">
+                                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                                        <TextBlock Style="{StaticResource SettingHeader}" Text="{StaticResource MapIntelTool_ZKB_Enable}" />
+                                                        <ToggleSwitch
+                                                            x:Name="ZKBToggleSwitch"
+                                                            IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                            IsOn="{x:Bind VM.Config.ZKB, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                                        <TextBlock Style="{StaticResource SettingHeader}" Text="{StaticResource MapIntelTool_Duration}" />
+                                                        <NumberBox
+                                                            Width="100"
+                                                            IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                            Value="{x:Bind VM.Config.ZKBDuration, Mode=TwoWay}" />
+                                                        <TextBlock
+                                                            Margin="4,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{StaticResource General_Second}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                                        <TextBlock Style="{StaticResource SettingHeader}" Text="{StaticResource MapIntelTool_ZKB_MaxAttackerCount}" />
+                                                        <NumberBox
+                                                            Width="100"
+                                                            IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                            Value="{x:Bind VM.Config.ZKBMaxAttackerCount, Mode=TwoWay}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </controls:CardControl.CustomContent>
+                                        </controls:CardControl>
+                                    </Grid>
+                                    <Grid x:Name="FilterSetting">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:CardControl Grid.Column="0">
+                                            <controls:CardControl.Header>
+                                                <TextBlock Text="{StaticResource MapIntelTool_Exclusions}" ToolTipService.ToolTip="{StaticResource MapIntelTool_Exclusions_Tip}" />
+                                            </controls:CardControl.Header>
+                                            <controls:CardControl.CustomContent>
+                                                <Grid Margin="8">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource General_Add}" />
+                                                        <controls:IdNameSearchBox
+                                                            x:Name="ExclusionsIdNameSearchBox"
+                                                            Grid.Column="1"
+                                                            Margin="8,0,0,0"
+                                                            IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                                                    </Grid>
+                                                    <ListView
+                                                        Grid.Row="1"
+                                                        Margin="0,8,0,0"
+                                                        BorderBrush="{ThemeResource GrayBrush}"
+                                                        BorderThickness="1"
+                                                        IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                        ItemsSource="{x:Bind VM.Config.Exclusions, Mode=OneWay}"
+                                                        SelectionMode="Single"
+                                                        Style="{StaticResource StretchListView}">
+                                                        <ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock
+                                                                        VerticalAlignment="Center"
+                                                                        Text="{Binding Name}"
+                                                                        TextTrimming="CharacterEllipsis"
+                                                                        ToolTipService.ToolTip="{Binding Id}" />
+                                                                    <TextBlock
+                                                                        Grid.Column="1"
+                                                                        VerticalAlignment="Center"
+                                                                        FontSize="12"
+                                                                        Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
+                                                                    <Button
+                                                                        Grid.Column="2"
+                                                                        Margin="8,0,0,0"
+                                                                        Click="DeleteExclusions_Click"
+                                                                        Content="×"
+                                                                        FontSize="16"
+                                                                        Foreground="{ThemeResource RedBrush}"
+                                                                        Style="{StaticResource TransparentButton}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>
+                                                    </ListView>
+                                                </Grid>
+                                            </controls:CardControl.CustomContent>
+                                        </controls:CardControl>
+                                        <controls:CardControl Grid.Column="2">
+                                            <controls:CardControl.Header>
+                                                <TextBlock Text="{StaticResource MapIntelTool_Inclusions}" ToolTipService.ToolTip="{StaticResource MapIntelTool_Inclusions_Tip}" />
+                                            </controls:CardControl.Header>
+                                            <controls:CardControl.CustomContent>
+                                                <Grid Margin="8">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock VerticalAlignment="Center" Text="{StaticResource General_Add}" />
+                                                        <controls:IdNameSearchBox
+                                                            x:Name="InclusionsIdNameSearchBox"
+                                                            Grid.Column="1"
+                                                            Margin="8,0,0,0"
+                                                            IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}" />
+                                                    </Grid>
+                                                    <ListView
+                                                        Grid.Row="1"
+                                                        Margin="0,8,0,0"
+                                                        BorderBrush="{ThemeResource GrayBrush}"
+                                                        BorderThickness="1"
+                                                        IsEnabled="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource BoolReverseConverte}}"
+                                                        ItemsSource="{x:Bind VM.Config.Inclusions, Mode=OneWay}"
+                                                        SelectionMode="Single"
+                                                        Style="{StaticResource StretchListView}">
+                                                        <ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock
+                                                                        VerticalAlignment="Center"
+                                                                        Text="{Binding Name}"
+                                                                        TextTrimming="CharacterEllipsis"
+                                                                        ToolTipService.ToolTip="{Binding Id}" />
+                                                                    <TextBlock
+                                                                        Grid.Column="1"
+                                                                        VerticalAlignment="Center"
+                                                                        FontSize="12"
+                                                                        Text="{Binding Category, Converter={StaticResource CategoryEnumToStringConverter}}" />
+                                                                    <Button
+                                                                        Grid.Column="2"
+                                                                        Margin="8,0,0,0"
+                                                                        Click="DeleteInclusions_Click"
+                                                                        Content="×"
+                                                                        FontSize="16"
+                                                                        Foreground="{ThemeResource RedBrush}"
+                                                                        Style="{StaticResource TransparentButton}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>
+                                                    </ListView>
+                                                </Grid>
+                                            </controls:CardControl.CustomContent>
+                                        </controls:CardControl>
+                                    </Grid>
+                                </Grid>
+                            </controls:CardControl.CustomContent>
+                        </controls:CardControl>
+                    </Grid>
+                    <Grid x:Name="LiveDataGrid" Visibility="Collapsed">
+                        <ListView
+                            x:Name="LiveDataListView"
+                            IsItemClickEnabled="True"
+                            ItemClick="MsgListView_ItemClick"
+                            ItemsSource="{x:Bind VM.IntelMsgs, Mode=OneWay}"
+                            Style="{ThemeResource StretchListView}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Margin" Value="0,0,0,1" />
+                                    <Setter Property="Background" Value="{ThemeResource ContentBackgroudBrush}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplateSelector>
+                                <local:IntelToolMsgTemplateSelector>
+                                    <local:IntelToolMsgTemplateSelector.ChannelTemplate>
+                                        <DataTemplate x:DataType="local:MapIntelChannelMsg">
+                                            <Grid IsRightTapEnabled="True" RightTapped="Msg_RightTapped">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid
+                                                    Width="42"
+                                                    Height="34"
+                                                    Margin="0,4,0,0"
+                                                    VerticalAlignment="Top">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource SecondaryForegroundColor}"
+                                                        Text="{x:Bind Time, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource DefaultGreen}"
+                                                        Text="{x:Bind ElapsedStr, Mode=OneWay}" />
+                                                </Grid>
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    Width="110"
+                                                    Height="34"
+                                                    Margin="2,4,0,0"
+                                                    VerticalAlignment="Top"
+                                                    Orientation="Horizontal">
+                                                    <Grid Width="28" Height="28">
+                                                        <Button
+                                                            Padding="0"
+                                                            Click="SOV_Click"
+                                                            Style="{StaticResource TransparentButton}"
+                                                            Visibility="{x:Bind Sov, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            <controls:ImageControl
+                                                                CornerRadius="4"
+                                                                Source="{x:Bind Sov.AllianceId, Converter={StaticResource AllianceImgConverter}}"
+                                                                ToolTipService.ToolTip="{x:Bind Sov.AllianceName}" />
+                                                        </Button>
+                                                    </Grid>
+                                                    <Grid Margin="6,0,0,0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Button
+                                                            Padding="0"
+                                                            Click="System_Click"
+                                                            Style="{StaticResource TransparentButton}">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Text="{x:Bind System.SolarSystemName}"
+                                                                ToolTipService.ToolTip="{x:Bind System.SolarSystemName}" />
+                                                        </Button>
+                                                        <Button
+                                                            Grid.Row="1"
+                                                            Padding="0"
+                                                            Click="Region_Click"
+                                                            Style="{StaticResource TransparentButton}">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="12"
+                                                                Foreground="{ThemeResource SecondaryForegroundColor}"
+                                                                Text="{x:Bind Region.RegionName}"
+                                                                ToolTipService.ToolTip="{x:Bind Region.RegionName}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind ChhannelContent.Content}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </local:IntelToolMsgTemplateSelector.ChannelTemplate>
+                                    <local:IntelToolMsgTemplateSelector.KBTemplate>
+                                        <DataTemplate x:DataType="local:MapIntelMsg">
+                                            <Grid IsRightTapEnabled="True" RightTapped="Msg_RightTapped">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid
+                                                    Width="42"
+                                                    Height="34"
+                                                    Margin="0,4,0,0"
+                                                    VerticalAlignment="Top">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Foreground="{ThemeResource SecondaryForegroundColor}"
+                                                        Text="{x:Bind Time, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:t}}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource DefaultGreen}"
+                                                        Text="{x:Bind ElapsedStr, Mode=OneWay}" />
+                                                </Grid>
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    Width="110"
+                                                    Height="34"
+                                                    Margin="2,4,0,0"
+                                                    VerticalAlignment="Top"
+                                                    Orientation="Horizontal">
+                                                    <Grid Width="28" Height="28">
+                                                        <Button
+                                                            Padding="0"
+                                                            Click="SOV_Click"
+                                                            Style="{StaticResource TransparentButton}"
+                                                            Visibility="{x:Bind Sov, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            <controls:ImageControl
+                                                                CornerRadius="4"
+                                                                Source="{x:Bind Sov.AllianceId, Converter={StaticResource AllianceImgConverter}}"
+                                                                ToolTipService.ToolTip="{x:Bind Sov.AllianceName}" />
+                                                        </Button>
+                                                    </Grid>
+                                                    <Grid Margin="6,0,0,0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Button
+                                                            Padding="0"
+                                                            Click="System_Click"
+                                                            Style="{StaticResource TransparentButton}">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Text="{x:Bind System.SolarSystemName}"
+                                                                ToolTipService.ToolTip="{x:Bind System.SolarSystemName}" />
+                                                        </Button>
+                                                        <Button
+                                                            Grid.Row="1"
+                                                            Padding="0"
+                                                            Click="Region_Click"
+                                                            Style="{StaticResource TransparentButton}">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="12"
+                                                                Foreground="{ThemeResource SecondaryForegroundColor}"
+                                                                Text="{x:Bind Region.RegionName}"
+                                                                ToolTipService.ToolTip="{x:Bind Region.RegionName}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </StackPanel>
+                                                <StackPanel
+                                                    Grid.Column="2"
+                                                    Height="32"
+                                                    Margin="12,4,0,0"
+                                                    VerticalAlignment="Top"
+                                                    Background="{ThemeResource CardBackgroundFillColorDefault}"
+                                                    CornerRadius="4"
+                                                    Orientation="Horizontal"
+                                                    ToolTipService.ToolTip="{StaticResource KBListControl_Victim}">
+                                                    <Border
+                                                        Width="3"
+                                                        Margin="0,8,12,8"
+                                                        Background="{ThemeResource DefaultRed}"
+                                                        CornerRadius="2" />
+                                                    <Button
+                                                        Margin="0"
+                                                        Padding="0"
+                                                        Click="VictimShip_Click"
+                                                        Style="{StaticResource TransparentButton}">
+                                                        <controls:ImageControl
+                                                            VerticalAlignment="Center"
+                                                            CornerRadius="4"
+                                                            Source="{Binding KB.Type.TypeID, Converter={StaticResource TypeImgConverter64}}"
+                                                            ToolTipService.ToolTip="{Binding KB.Type.TypeName}" />
+                                                    </Button>
+                                                    <Grid Margin="2,0,0,0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition />
+                                                            <RowDefinition />
+                                                        </Grid.RowDefinitions>
+                                                        <Button
+                                                            Margin="0"
+                                                            Padding="0"
+                                                            Click="Victim_Click"
+                                                            Visibility="{Binding KB.Victim, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            <controls:ImageControl
+                                                                CornerRadius="4"
+                                                                Source="{Binding KB.Victim.Id, Converter={StaticResource CharacterImgConverter64}}"
+                                                                ToolTipService.ToolTip="{Binding KB.Victim.Name}" />
+                                                        </Button>
+                                                        <Button
+                                                            Grid.Row="1"
+                                                            Margin="0"
+                                                            Padding="0"
+                                                            Click="VictimFaction_Click"
+                                                            Visibility="{Binding KB.VictimFctionName, Converter={StaticResource NullToCollapsedConverter}}">
+                                                            <controls:ImageControl
+                                                                CornerRadius="4"
+                                                                Source="{Binding KB.VictimFctionName, Converter={StaticResource IdNameImgConverter64}}"
+                                                                ToolTipService.ToolTip="{Binding KB.VictimFctionName.Name}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </StackPanel>
+                                                <ListView
+                                                    Grid.Column="3"
+                                                    Margin="16,0,0,0"
+                                                    IsItemClickEnabled="False"
+                                                    ItemsSource="{x:Bind Attackers}">
+                                                    <ListView.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <controls1:WrapPanel Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ListView.ItemsPanel>
+                                                    <ListView.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Height="36" Orientation="Horizontal">
+                                                                <Button
+                                                                    Margin="0"
+                                                                    Padding="0"
+                                                                    Click="AttackerMain_Click"
+                                                                    Style="{StaticResource TransparentButton}">
+                                                                    <controls:ImageControl
+                                                                        VerticalAlignment="Center"
+                                                                        CornerRadius="4"
+                                                                        Source="{Binding MainIconURL}"
+                                                                        ToolTipService.ToolTip="{Binding Main.Name}" />
+                                                                </Button>
+                                                                <TextBlock
+                                                                    Margin="2,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="{Binding MainContent}" />
+                                                                <Grid Margin="2,0,0,0">
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition />
+                                                                        <RowDefinition />
+                                                                    </Grid.RowDefinitions>
+                                                                    <Button
+                                                                        Margin="0"
+                                                                        Padding="0"
+                                                                        Click="AttackerCharacter_Click"
+                                                                        Visibility="{Binding Attacker, Converter={StaticResource NullToCollapsedConverter}}">
+                                                                        <controls:ImageControl
+                                                                            CornerRadius="4"
+                                                                            Source="{Binding AttackerURL}"
+                                                                            ToolTipService.ToolTip="{Binding Attacker.Name}" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        Grid.Row="1"
+                                                                        Margin="0"
+                                                                        Padding="0"
+                                                                        Click="AttackerFaction_Click"
+                                                                        Visibility="{Binding Faction, Converter={StaticResource NullToCollapsedConverter}}">
+                                                                        <controls:ImageControl
+                                                                            CornerRadius="4"
+                                                                            Source="{Binding FactionIconURL}"
+                                                                            ToolTipService.ToolTip="{Binding Faction.Name}" />
+                                                                    </Button>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ListView.ItemTemplate>
+                                                </ListView>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </local:IntelToolMsgTemplateSelector.KBTemplate>
+                                </local:IntelToolMsgTemplateSelector>
+                            </ListView.ItemTemplateSelector>
+                        </ListView>
+                    </Grid>
+                </Grid>
+            </controls:CardControl.CustomContent>
+            <controls:CardControl.Fonter>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton
+                        x:Name="StartButton"
+                        Command="{x:Bind VM.StartCommand}"
+                        Icon="Play"
+                        Label="{StaticResource General_Start}"
+                        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                    <AppBarButton
+                        Command="{x:Bind VM.StopCommand}"
+                        Foreground="OrangeRed"
+                        Icon="Stop"
+                        Label="{StaticResource General_Stop}"
+                        Visibility="{x:Bind VM.Running, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                    <AppBarButton
+                        Command="{x:Bind VM.ClearCommand}"
+                        Icon="Clear"
+                        Label="{StaticResource MapIntelTool_ClearList}" />
+                </StackPanel>
+            </controls:CardControl.Fonter>
+        </controls:CardControl>
+    </Grid>
+</Page>

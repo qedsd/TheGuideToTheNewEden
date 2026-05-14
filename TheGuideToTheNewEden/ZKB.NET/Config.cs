@@ -15,5 +15,6 @@ namespace ZKB.NET
         /// WebSocket
         /// </summary>
         public static string WWS { get; set; } = "wss://zkillboard.com/websocket/";
+        public static string Redisq { get; set; } = "https://zkillredisq.stream/listen.php";
     }
 }

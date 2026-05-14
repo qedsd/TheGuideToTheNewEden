@@ -7,6 +7,7 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <ScrollViewer>
@@ -43,6 +44,32 @@
                         Click="Button_MediaPlayer_Pick_Click"
                         Content="{StaticResource TestSettingPage_MediaPlayer_PickFile}" />
                 </StackPanel>
+            </controls:ExpandableSettingControl>
+            <controls:ExpandableSettingControl Title="{StaticResource TestSettingPage_HKCRProtocol}" Description="{StaticResource TestSettingPage_HKCRProtocol_Desc}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="AUTO" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ProtocolValueTextBlock" TextWrapping="Wrap" />
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <Button
+                            Margin="8,0"
+                            Click="Button_ReadProtocol_Click"
+                            Content="{StaticResource TestSettingPage_ReadProtocol}" />
+                        <Button
+                            Margin="8,0"
+                            Click="Button_RegistyProtocol_Click"
+                            Content="{StaticResource TestSettingPage_RegistyProtocol}" />
+                        <Button
+                            Margin="8,0"
+                            Click="Button_DeleteProtocol_Click"
+                            Content="{StaticResource TestSettingPage_DeleteProtocol}" />
+                    </StackPanel>
+                </Grid>
             </controls:ExpandableSettingControl>
         </StackPanel>
     </ScrollViewer>

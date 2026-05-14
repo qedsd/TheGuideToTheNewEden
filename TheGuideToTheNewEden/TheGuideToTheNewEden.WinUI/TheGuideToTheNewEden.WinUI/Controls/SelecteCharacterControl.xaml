@@ -5,11 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Parent"
     mc:Ignorable="d">
 
     <ComboBox
         x:Name="CharacterComboBox"
-        Margin="8,0,0,0"
+        Width="{Binding ElementName=Parent, Path=Width, Mode=OneWay}"
         DisplayMemberPath="CharacterName"
         SelectionChanged="CharacterComboBox_SelectionChanged" />
 </UserControl>

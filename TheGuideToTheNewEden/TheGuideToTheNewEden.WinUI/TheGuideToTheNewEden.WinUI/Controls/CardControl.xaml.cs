@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 nameof(Header),
                 typeof(FrameworkElement),
                 typeof(CardControl),
-                new PropertyMetadata(null));
+                new PropertyMetadata(null, new PropertyChangedCallback(HeaderPropertyPropertyChanged)));
 
         public FrameworkElement Header
         {
@@ -40,17 +40,30 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             set => SetValue(HeaderProperty, value);
         }
 
-        public static new readonly DependencyProperty ContentProperty
-            = DependencyProperty.Register(
-                nameof(Content),
-                typeof(FrameworkElement),
-                typeof(CardControl),
-                new PropertyMetadata(null));
-
-        public new FrameworkElement Content
+        private static void HeaderPropertyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get => (FrameworkElement)GetValue(ContentProperty);
-            set => SetValue(ContentProperty, value);
+            var control = d as CardControl;
+            if (e.NewValue != null)
+            {
+                control.HeaderPresenter.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                control.HeaderPresenter.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        public static readonly DependencyProperty CustomContentProperty =
+        DependencyProperty.Register(
+            nameof(CustomContent),
+            typeof(FrameworkElement),
+            typeof(CardControl),
+            new PropertyMetadata(null));
+
+        public FrameworkElement CustomContent
+        {
+            get => (FrameworkElement)GetValue(CustomContentProperty);
+            set => SetValue(CustomContentProperty, value);
         }
 
         public static readonly DependencyProperty FonterProperty

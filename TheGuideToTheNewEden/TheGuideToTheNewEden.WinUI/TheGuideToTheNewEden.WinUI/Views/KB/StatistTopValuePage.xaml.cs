@@ -43,7 +43,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         }
         private void ShowWaiting()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 ProgressGrid.Visibility = Visibility.Visible;
                 ProgressRing.IsActive = true;
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         }
         private void HideWaiting()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 ProgressGrid.Visibility = Visibility.Collapsed;
                 ProgressRing.IsActive = false;
@@ -60,9 +60,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 
         private async void KBTopKillControl_IdNameClicked(Core.DBModels.IdName idName)
         {
-            this.GetBaseWindow()?.ShowWaiting();
+            this.ShowWaiting();
             await _kbNavigationService.NavigationTo(idName);
-            this.GetBaseWindow()?.HideWaiting();
+            this.HideWaiting();
         }
 
         private void GridView_ItemClick(object sender, ItemClickEventArgs e)

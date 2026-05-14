@@ -6,9 +6,12 @@
     xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    xmlns:ic="using:FluentIcons.WinUI"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Map"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:tools="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tools="using:TheGuideToTheNewEden.WinUI.Views.Map.Tools"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid>
@@ -16,240 +19,232 @@
             x:Name="MapCanvas"
             OnPointedSystemChanged="MapCanvas_OnPointedSystemChanged"
             OnSelectedSystemChanged="MapCanvas_OnSelectedSystemChanged" />
-        <!--  搜索  -->
+
+        <!--  左上角工具栏  -->
+        <StackPanel Margin="2,0,0,0" VerticalAlignment="Top">
+            <StackPanel Padding="4" Orientation="Horizontal">
+                <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_SystemFilter}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16E;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <controls:SystemFilterControl
+                                x:Name="SystemFilterControl"
+                                Grid.Row="1"
+                                Width="400"
+                                OnFilterSystemChanged="SystemFilterControl_OnFilterSystemChanged" />
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_Setting}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <ScrollView>
+                                <StackPanel MinWidth="400">
+                                    <Expander
+                                        Margin="0,4"
+                                        Header="{StaticResource MapPage_Setting_SystemIconContent}"
+                                        Style="{StaticResource StretchExpander}">
+                                        <controls:MapDataTypeControl
+                                            x:Name="MapDataTypeControl"
+                                            Width="400"
+                                            OnDataTypChanged="MapDataTypeControl_OnDataTypChanged"
+                                            OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
+                                            OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
+                                    </Expander>
+                                    <Expander
+                                        Margin="0,4"
+                                        Header="{StaticResource MapPage_Setting_JumpBridge}"
+                                        Style="{StaticResource StretchExpander}">
+                                        <controls:JumpBridgeSetting />
+                                    </Expander>
+                                    <Expander
+                                        Margin="0,4"
+                                        Header="{StaticResource MapPage_Setting_Tool}"
+                                        Style="{StaticResource StretchExpander}">
+                                        <ToggleSwitch
+                                            IsOn="False"
+                                            OffContent="{StaticResource MapPage_DisableNoActiveSystem}"
+                                            OnContent="{StaticResource MapPage_EnableNoActiveSystem}"
+                                            Toggled="DisableNoActiveSystem_Toggled" />
+                                    </Expander>
+                                    <Expander
+                                        Margin="0,4"
+                                        Header="{StaticResource MapPage_Setting_Characters}"
+                                        Style="{StaticResource StretchExpander}">
+                                        <ToggleSwitch
+                                            IsOn="True"
+                                            OffContent="{StaticResource MapPage_Setting_Characters_NotShow}"
+                                            OnContent="{StaticResource MapPage_Setting_Characters_Show}"
+                                            Toggled="ShowCharacters_Toggled" />
+                                    </Expander>
+                                </StackPanel>
+                            </ScrollView>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_Tools}">
+                    <Button.Content>
+                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74C;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="Clear"
+                                Text="{StaticResource MapPage_Tools_Clear}" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="PlanetResource"
+                                Text="{StaticResource MapPage_Tools_PlanetResource}" />
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="Navigation"
+                                Text="{StaticResource MapPage_Tools_Navigation}" />
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="OneJumpCover"
+                                Text="{StaticResource MapPage_Tools_InOneJumpSystems}" />
+                            <MenuFlyoutItem
+                                Click="Tools_Click"
+                                Tag="Intel"
+                                Text="{StaticResource MapPage_Tools_Intel}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+        </StackPanel>
         <Grid
-            Width="240"
-            Margin="0,4,2,0"
+            Height="34"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
-            <Grid Height="34">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
-                    <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
-                    <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
-                </ComboBox>
-                <Grid Grid.Column="1" Margin="-4,0,-8,0">
-                    <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True"/>
-                    <controls:SelecteRegionControl
-                        x:Name="RegionSelector"
-                        ShowList="False"
-                        Visibility="Collapsed" />
-                </Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="SearchTypeComboBox" SelectedIndex="0">
+                <ComboBoxItem Content="{StaticResource MapPage_SearchSystem}" />
+                <ComboBoxItem Content="{StaticResource MapPage_SearchRegion}" />
+            </ComboBox>
+            <Grid
+                Grid.Column="1"
+                Width="200"
+                Margin="-4,0,-8,0">
+                <controls:MapSystemSelectorControl x:Name="MapSystemSelector" ShowSpecial="True" />
+                <controls:SelecteRegionControl
+                    x:Name="RegionSelector"
+                    ShowList="False"
+                    Visibility="Collapsed" />
             </Grid>
         </Grid>
-        <!--  设置  -->
-        <StackPanel
-            Margin="2,4,0,0"
-            Padding="4"
-            VerticalAlignment="Top"
-            Orientation="Horizontal">
-            <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_SystemFilter}">
-                <Button.Content>
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE16E;" />
-                </Button.Content>
-                <Button.Flyout>
-                    <Flyout>
-                        <controls:SystemFilterControl
-                            x:Name="SystemFilterControl"
-                            Grid.Row="1"
-                            Width="400"
-                            OnFilterSystemChanged="SystemFilterControl_OnFilterSystemChanged" />
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-            <Button Style="{ThemeResource TransparentButton}" ToolTipService.ToolTip="{StaticResource MapPage_Setting}">
-                <Button.Content>
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE115;" />
-                </Button.Content>
-                <Button.Flyout>
-                    <Flyout>
-                        <ScrollView>
-                            <StackPanel MinWidth="400">
-                                <Expander Header="{StaticResource MapPage_Setting_SystemIconContent}" Style="{StaticResource StretchExpander}"
-                                          Margin="0,4">
-                                    <controls:MapDataTypeControl
-                                        x:Name="MapDataTypeControl"
-                                        Width="400"
-                                        OnDataTypChanged="MapDataTypeControl_OnDataTypChanged"
-                                        OnPlanetResourceTypeChanged="MapDataTypeControl_OnPlanetResourceTypeChanged"
-                                        OnSOVDatasChanged="MapDataTypeControl_OnSOVDatasChanged" />
-                                </Expander>
-                                <Expander Header="{StaticResource MapPage_Setting_JumpBridge}" Style="{StaticResource StretchExpander}"
-                                          Margin="0,4">
-                                    <controls:JumpBridgeSetting/>
-                                </Expander>
-                            </StackPanel>
-                        </ScrollView>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-            <Button Style="{ThemeResource TransparentButton}"
-                    ToolTipService.ToolTip="{StaticResource MapPage_Tools}">
-                <Button.Content>
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE74C;" />
-                </Button.Content>
-                <Button.Flyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_None}" Click="Tools_Click" Tag="None"/>
-                        <MenuFlyoutSeparator/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_Region}" Click="Tools_Click" Tag="PlanetResource_Region"/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_System}" Click="Tools_Click" Tag="PlanetResource_System"/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_PlanetResource_Upgrade}" Click="Tools_Click" Tag="PlanetResource_Upgrade"/>
-                        <MenuFlyoutSeparator/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_Navigation}" Click="Tools_Click" Tag="Navigation"/>
-                        <MenuFlyoutItem Text="{StaticResource MapPage_Tools_InOneJumpSystems}" Click="Tools_Click" Tag="OneJumpCover"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-        </StackPanel>
-        <!--  左侧详细面板  -->
-        <Grid Margin="8,42,0,8" VerticalAlignment="Stretch" Visibility="Collapsed" x:Name="ToolPanel">
-            <Expander ExpandDirection="Up" x:Name="ToolExpander" VerticalAlignment="Bottom"
-                      IsExpanded="True">
-                <Grid x:Name="ToolGrid" Margin="-8">
-                    <dataGrid:SfDataGrid Visibility="Collapsed"
-                                         x:Name="RegionPlanetResourcList"
-                                         HorizontalAlignment="Stretch"
-                                         AllowDraggingColumns="True"
-                                         AllowEditing="False"
-                                         AllowFiltering="True"
-                                         AllowGrouping="False"
-                                         AllowResizingColumns="True"
-                                         AllowSorting="True"
-                                         AutoGenerateColumns="False"
-                                         Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-                                         ColumnWidthMode="Auto"
-                                         GridLinesVisibility="Both"
-                                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                                         HeaderLinesVisibility="Both"
-                                         SelectionMode="Extended"
-                                         ShowGroupDropArea="False">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Region_Name}" MappingName="Region.RegionName" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-                                MappingName="Power" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-                                MappingName="Workforce" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-                                MappingName="SuperionicIce" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-                                MappingName="MagmaticGas" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
-                    <Grid x:Name="Tool_SystemPlanetResourcList" Visibility="Collapsed">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <Grid>
-                            <ComboBox x:Name="Tool_SystemPlanetResourcList_Mode"
-                                      Margin="0,-4,0,4"
-                                      SelectedIndex="0"
-                                      SelectionChanged="Tool_SystemPlanetResourcList_Mode_SelectionChanged">
-                                <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_All}"/>
-                                <ComboBoxItem Content="{StaticResource MapPage_Tools_PlanetResource_System_Filtered}"/>
-                            </ComboBox>
-                            <TextBlock x:Name="Tool_SystemPlanetResourcList_Count" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                        </Grid>
 
-                        <dataGrid:SfDataGrid Grid.Row="1"
-                                             x:Name="SystemPlanetResourcList"
-                                             HorizontalAlignment="Stretch"
-                                             AllowDraggingColumns="True"
-                                             AllowEditing="False"
-                                             AllowFiltering="True"
-                                             AllowGrouping="True"
-                                             AllowResizingColumns="True"
-                                             AllowSorting="True"
-                                             AutoGenerateColumns="False"
-                                             Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-                                             ColumnWidthMode="Auto"
-                                             GridLinesVisibility="Both"
-                                             GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                                             HeaderLinesVisibility="Both"
-                                             SelectionMode="Extended"
-                                             ShowGroupDropArea="False">
-                            <dataGrid:SfDataGrid.Columns>
-                                <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_System_Name}" MappingName="MapSolarSystem.SolarSystemName" />
-                                <dataGrid:GridNumericColumn
-                                    DisplayNumberFormat="N2"
-                                    HeaderText="{StaticResource General_Sec}"
-                                    MappingName="MapSolarSystem.Security" />
-                                <dataGrid:GridNumericColumn
-                                    DisplayNumberFormat="N0"
-                                    HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-                                    MappingName="Power" />
-                                <dataGrid:GridNumericColumn
-                                    DisplayNumberFormat="N0"
-                                    HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-                                    MappingName="Workforce" />
-                                <dataGrid:GridNumericColumn
-                                    DisplayNumberFormat="N0"
-                                    HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-                                    MappingName="SuperionicIce" />
-                                <dataGrid:GridNumericColumn
-                                    DisplayNumberFormat="N0"
-                                    HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-                                    MappingName="MagmaticGas" />
-                            </dataGrid:SfDataGrid.Columns>
-                        </dataGrid:SfDataGrid>
-                    </Grid>
-                    <dataGrid:SfDataGrid Visibility="Collapsed"
-                                         x:Name="UpgradeList"
-                                         HorizontalAlignment="Stretch"
-                                         AllowDraggingColumns="True"
-                                         AllowEditing="False"
-                                         AllowFiltering="True"
-                                         AllowGrouping="False"
-                                         AllowResizingColumns="True"
-                                         AllowSorting="True"
-                                         AutoGenerateColumns="False"
-                                         Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-                                         ColumnWidthMode="Auto"
-                                         GridLinesVisibility="Both"
-                                         GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-                                         HeaderLinesVisibility="Both"
-                                         SelectionMode="Extended"
-                                         ShowGroupDropArea="False">
-                        <dataGrid:SfDataGrid.Columns>
-                            <dataGrid:GridTextColumn HeaderText="{StaticResource MapPage_PlanetResource_Upgrade_Name}" MappingName="Name" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_Power}"
-                                MappingName="Power" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_Workforce}"
-                                MappingName="Workforce" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_SuperionicIce}"
-                                MappingName="SuperionicIce" />
-                            <dataGrid:GridNumericColumn
-                                DisplayNumberFormat="N0"
-                                HeaderText="{StaticResource MapPage_PlanetResource_MagmaticGas}"
-                                MappingName="MagmaticGas" />
-                        </dataGrid:SfDataGrid.Columns>
-                    </dataGrid:SfDataGrid>
-                    <Grid x:Name="Tool_OneJumpCover" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
-                        <tools:OneJumpCover Margin="8" x:Name="OneJumpCover"/>
-                    </Grid>
-                    <Grid x:Name="Tool_Navigation" Visibility="Collapsed" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Margin="8">
-                        <tools:MapNavigation Margin="8" x:Name="MapNavigation"/>
-                    </Grid>
-                </Grid>
-            </Expander>
+        <!--  左侧预警信息面板  -->
+        <Grid
+            x:Name="SelectedSystemIntelPanel"
+            MinWidth="260"
+            MaxWidth="400"
+            Margin="8,42,0,8"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            CornerRadius="8"
+            Visibility="Collapsed">
+            <Grid
+                Margin="8"
+                Padding="8,8,8,8"
+                Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Margin="0,4"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    FontWeight="Medium"
+                    Foreground="{ThemeResource SystemAccentColor}"
+                    Text="{StaticResource MapIntelTool_IntelInfo}" />
+                <ScrollViewer Grid.Row="1" HorizontalScrollMode="Disabled">
+                    <StackPanel>
+                        <Grid x:Name="SelectedSystemIntelShipGrid" Grid.Row="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                    Text="{StaticResource MapIntelTool_IntelShip}" />
+                                <ListView
+                                    x:Name="SelectedSystemIntelShipListView"
+                                    Grid.Row="1"
+                                    Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <controls:ImageControl Width="32" Source="{Binding ShipType.Id, Converter={StaticResource TypeImgConverter32}}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Margin="8,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ShipType.Name}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Text="×" />
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Count}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Grid>
+                        <Grid
+                            x:Name="SelectedSystemIntelMsgGrid"
+                            Grid.Row="1"
+                            Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                    Text="{StaticResource MapIntelTool_IntelMsg}" />
+                                <ListView
+                                    x:Name="SelectedSystemIntelMsgListView"
+                                    Grid.Row="1"
+                                    Style="{StaticResource StretchListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Margin="0,4"
+                                                Text="{Binding}"
+                                                TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
         </Grid>
 
         <!--  右侧详细面板  -->
@@ -257,7 +252,7 @@
             x:Name="SelectedSystemInfoPanel"
             Width="260"
             Margin="16"
-            Padding="16"
+            Padding="8"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

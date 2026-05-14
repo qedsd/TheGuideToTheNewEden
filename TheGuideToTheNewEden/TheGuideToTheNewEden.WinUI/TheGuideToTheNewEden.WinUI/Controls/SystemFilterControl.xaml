@@ -110,12 +110,12 @@
                     <TextBlock VerticalAlignment="Center" Text="{StaticResource SystemFilterControl_System_Search}" />
                     <controls:MapSystemSelectorControl
                         x:Name="MapSystemSelector"
-                        ShowSpecial="False"
                         Grid.Row="1"
                         Grid.Column="1"
                         Height="32"
                         Margin="0,4"
-                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged" />
+                        OnSelectedItemChanged="MapSystemSelector_OnSelectedItemChanged"
+                        ShowSpecial="False" />
                 </Grid>
                 <GridView
                     x:Name="GridView_System"
@@ -155,22 +155,52 @@
                     ToolTipOption="BothThumb" />
                 <Grid Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_1}" x:Name="Security1CheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_2}" x:Name="Security2CheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_3}" x:Name="Security3CheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_4}" x:Name="Security4CheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_5}" x:Name="Security5CheckBox" IsChecked="True"/>
+                        <CheckBox
+                            x:Name="Security1CheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_1}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="Security2CheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_2}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="Security3CheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_3}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="Security4CheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_4}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="Security5CheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_5}"
+                            IsChecked="True" />
                     </StackPanel>
                     <StackPanel Grid.Column="1">
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_A}" x:Name="SecurityACheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_B}" x:Name="SecurityBCheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_C}" x:Name="SecurityCCheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_D}" x:Name="SecurityDCheckBox" IsChecked="True"/>
-                        <CheckBox Content="{StaticResource SystemFilterControl_SecurityMode_Level_E}" x:Name="SecurityECheckBox" IsChecked="True"/>
+                        <CheckBox
+                            x:Name="SecurityACheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_A}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="SecurityBCheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_B}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="SecurityCCheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_C}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="SecurityDCheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_D}"
+                            IsChecked="True" />
+                        <CheckBox
+                            x:Name="SecurityECheckBox"
+                            Content="{StaticResource SystemFilterControl_SecurityMode_Level_E}"
+                            IsChecked="True" />
                     </StackPanel>
                 </Grid>
             </StackPanel>
@@ -192,9 +222,9 @@
                             IsChecked="True" />
                         <CheckBox
                             x:Name="ContainNoneSOVCheckBox"
+                            Margin="4,0,0,0"
                             Content="{StaticResource SystemFilterControl_Sov_ContainNoneSOV}"
-                            IsChecked="True"
-                            Margin="4,0,0,0"/>
+                            IsChecked="True" />
                     </StackPanel>
                     <StackPanel
                         Grid.Column="1"

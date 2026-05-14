@@ -16,6 +16,12 @@ namespace TheGuideToTheNewEden.Core.DBModels
             Name = name;
             Category = (int)category;
         }
+        public IdName(InvType type)
+        {
+            Id = type.TypeID;
+            Name = type.TypeName;
+            Category = (int)CategoryEnum.InventoryType;
+        }
         [SugarColumn(IsPrimaryKey = true)]
         public int Id { get; set; }
         public string Name { get; set; }

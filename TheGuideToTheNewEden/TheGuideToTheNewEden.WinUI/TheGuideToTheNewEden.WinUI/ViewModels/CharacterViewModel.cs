@@ -26,10 +26,12 @@ using TheGuideToTheNewEden.WinUI.Converters;
 using Vanara.PInvoke;
 using ESI.NET.Models.Location;
 using ESI.NET.Models.Universe;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using Newtonsoft.Json;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
-    internal class CharacterViewModel: BaseViewModel
+    public class CharacterViewModel: BaseViewModel, IDisposable
     {
         private AuthorizedCharacterData _selectedCharacter;
         public AuthorizedCharacterData SelectedCharacter
@@ -144,24 +146,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand RefreshCommand => new RelayCommand(async() =>
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             await GetBaseInfoAsync();
             await GetZKBInfoAsync();
-            Window?.HideWaiting();
+            HideWaiting();
         });
         public ICommand ZKBCommand => new RelayCommand(async () =>
         {
-            await KBNavigationService.Default.NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
+            await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
         });
         private async Task GetBaseInfoAsync()
         {
-            var characterData = SelectedCharacter;
+            var characterData = _selectedCharacter;
             if (!characterData.IsTokenValid())
             {
-                if(!await characterData.RefreshTokenAsync())
+                if (!await characterData.RefreshTokenAsync())
                 {
-                    Window?.HideWaiting();
-                    Window?.ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}（{Core.Log.GetLastError()}）");
+                    HideWaiting();
+                    Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
+                    {
+                        ShowError($"{SelectedCharacter.CharacterName}: {Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed")}({Core.Log.GetLastError()})");
+                    });
                     return;
                 }
             }
@@ -182,7 +187,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        information = p.Result.Data;
+                        information = JsonConvert.DeserializeObject<ESI.NET.Models.Character.Information>(p.Result.Message);
                     }
                     else
                     {
@@ -193,7 +198,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skill = p.Result.Data;
+                        skill = JsonConvert.DeserializeObject<ESI.NET.Models.Skills.SkillDetails>(p.Result.Message);//BUG:p.Result.Data = null
                     }
                     else
                     {
@@ -240,7 +245,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skillQueueItems = p.Result.Data;
+                        skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null
                     }
                     else
                     {
@@ -291,9 +296,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _characterAvatar = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 512)));
                 _characterAvatar_Card = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 128)));
@@ -319,7 +324,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     _lp = 0;
                 }
                 _onlineStatus = onlineStatus;
-                if (!_onlineStatus.Online)
+                if (_onlineStatus != null && !_onlineStatus.Online)
                 {
                     var offLineDuration = DateTime.UtcNow - _onlineStatus.LastLogout;
                     if (offLineDuration.TotalDays > 365)
@@ -353,28 +358,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 int unFinishCount = 0;
                 DateTime firstStartDateTime = DateTime.MaxValue;
                 DateTime lastFinishDateTime = DateTime.MinValue;
-                foreach (var skill in skillQueueItems)
+                if (skillQueueItems.NotNullOrEmpty())
                 {
-                    var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
-                    if(finishDateTime > lastFinishDateTime)
+                    _skillQueueTotalCount = skillQueueItems.Count;
+                    foreach (var skill in skillQueueItems)
                     {
-                        lastFinishDateTime = finishDateTime;
-                    }
-                    var startDateTime = string.IsNullOrEmpty(skill.StartDate) ? DateTime.MinValue : DateTime.Parse(skill.StartDate);//已经是本地时间
-                    if (startDateTime < firstStartDateTime)
-                    {
-                        firstStartDateTime = startDateTime;
-                    }
-                    var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
-                    var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
-                    var isPause = string.IsNullOrEmpty(skill.FinishDate) || string.IsNullOrEmpty(skill.StartDate);
-                    var isRunning = !(isFinished || isWaiting || isPause);
-                    running = running || isRunning;
-                    if (!isFinished)
-                    {
-                        unFinishCount++;
+                        var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
+                        if (finishDateTime > lastFinishDateTime)
+                        {
+                            lastFinishDateTime = finishDateTime;
+                        }
+                        var startDateTime = string.IsNullOrEmpty(skill.StartDate) ? DateTime.MinValue : DateTime.Parse(skill.StartDate);//已经是本地时间
+                        if (startDateTime < firstStartDateTime)
+                        {
+                            firstStartDateTime = startDateTime;
+                        }
+                        var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
+                        var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
+                        var isPause = string.IsNullOrEmpty(skill.FinishDate) || string.IsNullOrEmpty(skill.StartDate);
+                        var isRunning = !(isFinished || isWaiting || isPause);
+                        running = running || isRunning;
+                        if (!isFinished)
+                        {
+                            unFinishCount++;
+                        }
                     }
                 }
+                
                 _skillQueueRunning = running;
                 if (running && lastFinishDateTime > DateTime.MinValue)
                 {
@@ -386,7 +396,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         _skillQueueRemainRatio = (remainTime / totalTime * 100).ToString("N0");
                     }
                 }
-                _skillQueueTotalCount = skillQueueItems.Count;
+                
                 _skillQueueUndoneCount = unFinishCount;
                 
                 #endregion
@@ -413,8 +423,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

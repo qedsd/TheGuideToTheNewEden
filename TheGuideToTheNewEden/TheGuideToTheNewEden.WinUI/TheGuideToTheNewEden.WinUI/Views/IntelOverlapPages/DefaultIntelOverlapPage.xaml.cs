@@ -44,13 +44,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
         private readonly System.Numerics.Vector3 _defaultScale = new System.Numerics.Vector3(1, 1, 1);
         private Ellipse _lastPointerToEllipse;
         private Dictionary<int, Ellipse> _ellipseDic = new Dictionary<int, Ellipse>();
-        private BaseWindow _window;
+        private Window _window;
         private List<Core.Models.Map.IntelSolarSystemMap> _allSolarSystem;
         public DefaultIntelOverlapPage()
         {
             this.InitializeComponent();
         }
-        void IIntelOverlapPage.Init(BaseWindow window, ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
+        void IIntelOverlapPage.Init(Window window, ChannelIntelSetting setting, IntelSolarSystemMap intelMap)
         {
             _window = window;
             _intelMap = intelMap;
@@ -267,8 +267,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages
                 ellipse.PointerEntered += Ellipse_PointerEntered;
                 ellipse.PointerExited += Ellipse_PointerExited;
                 ellipse.RightTapped += Ellipse_RightTapped;
-                Canvas.SetLeft(ellipse, width * item.X);
-                Canvas.SetTop(ellipse, height * item.Y);
+                Canvas.SetLeft(ellipse, width * item.X2);
+                Canvas.SetTop(ellipse, height * item.Y2);
             }
             //line
             HashSet<string> drawn = new HashSet<string>();

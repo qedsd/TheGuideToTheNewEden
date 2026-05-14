@@ -40,7 +40,20 @@ namespace TheGuideToTheNewEden.Core.Models
 
         public bool IsReplaced(string newfile)
         {
-            return false;
+            var newChanelInfo = GameLogHelper.GetChatChanelInfo(newfile);
+            if (newChanelInfo != null
+                && newChanelInfo.Listener == ChatChanelInfo.Listener
+                && newChanelInfo.ChannelName == ChatChanelInfo.ChannelName
+                && newChanelInfo.SessionStarted > ChatChanelInfo.SessionStarted)
+            {
+                ChatChanelInfo = newChanelInfo;
+                _fileStreamOffset = 0;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void Update()

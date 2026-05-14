@@ -41,8 +41,8 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 kbItemInfo.VictimCharacterName = results.FirstOrDefault(p=>p.Id ==  detail.Victim.CharacterId);
                 kbItemInfo.VictimCorporationIdName = results.FirstOrDefault(p => p.Id == detail.Victim.CorporationId);
                 kbItemInfo.VictimAllianceName = results.FirstOrDefault(p => p.Id == detail.Victim.AllianceId);
-
-                if(finalBlow != null)
+                kbItemInfo.VictimFctionName = kbItemInfo.VictimAllianceName == null ? kbItemInfo.VictimCorporationIdName : kbItemInfo.VictimAllianceName;
+                if (finalBlow != null)
                 {
                     kbItemInfo.FinalBlowCharacterName = results.FirstOrDefault(p => p.Id == finalBlow.CharacterId);
                     kbItemInfo.FinalBlowCorporationIdName = results.FirstOrDefault(p => p.Id == finalBlow.CorporationId);
@@ -86,7 +86,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 kbItemInfo.VictimCharacterName = results.FirstOrDefault(p => p.Id == detail.Victim.CharacterId);
                 kbItemInfo.VictimCorporationIdName = results.FirstOrDefault(p => p.Id == detail.Victim.CorporationId);
                 kbItemInfo.VictimAllianceName = results.FirstOrDefault(p => p.Id == detail.Victim.AllianceId);
-
+                kbItemInfo.VictimFctionName = kbItemInfo.VictimAllianceName == null ? kbItemInfo.VictimCorporationIdName : kbItemInfo.VictimAllianceName;
                 if (finalBlow != null)
                 {
                     kbItemInfo.FinalBlowCharacterName = results.FirstOrDefault(p => p.Id == finalBlow.CharacterId);

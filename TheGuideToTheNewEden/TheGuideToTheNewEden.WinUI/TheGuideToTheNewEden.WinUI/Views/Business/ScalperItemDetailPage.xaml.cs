@@ -29,6 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         {
             _scalperItem = item;
             Image_Type.Source = new BitmapImage(new Uri(Converters.GameImageConverter.GetImageUri(item.InvType.TypeID, Converters.GameImageConverter.ImgType.Type, 64)));
+            TextBlock_TypeId.Text = item.InvType.TypeID.ToString();
             TextBlock_TypeName.Text = item.InvType.TypeName;
             TextBlock_Suggestion.Text = item.Suggestion.ToString("N2");
             TextBlock_BuyPrice.Text = item.BuyPrice.ToString("N2");
@@ -46,6 +47,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
             TextBlock_NetProfit.Text = item.NetProfit.ToString("N2");
             TextBlock_Volume.Text = item.InvType.PackagedVolume.ToString("N2");
+            TextBlock_TargetVolumeVolume.Text = item.TargetVolume.ToString("N2");
+            TextBlock_IskPerJump.Text = item.IskPerJump.ToString("N2");
+            TextBlock_IskPerVolume.Text = item.IskPerVolume.ToString("N2");
 
             DataGrid_SourceSell.ItemsSource = item.SourceSellOrders;
             DatGrid_SourceBuy.ItemsSource = item.SourceBuyOrders;

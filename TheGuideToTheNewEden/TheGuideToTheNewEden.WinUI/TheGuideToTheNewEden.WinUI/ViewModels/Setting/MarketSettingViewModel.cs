@@ -51,6 +51,32 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
             }
         }
 
+        private bool scalperSikpStructure = MarketOrderSettingService.ScalperSikpStructureValue;
+        public bool ScalperSikpStructure
+        {
+            get => scalperSikpStructure;
+            set
+            {
+                if (SetProperty(ref scalperSikpStructure, value))
+                {
+                    MarketOrderSettingService.ScalperSikpStructureValue = value;
+                }
+            }
+        }
+
+        private bool marketSikpStructure = MarketOrderSettingService.MarketSikpStructureValue;
+        public bool MarketSikpStructure
+        {
+            get => marketSikpStructure;
+            set
+            {
+                if (SetProperty(ref marketSikpStructure, value))
+                {
+                    MarketOrderSettingService.MarketSikpStructureValue = value;
+                }
+            }
+        }
+
         public ICommand ClearCacheCommand => new RelayCommand(() =>
         {
             if(System.IO.Directory.Exists(MarketOrderSettingService.StructureOrderFolder))
@@ -61,7 +87,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Setting
 
             if (System.IO.Directory.Exists(MarketOrderSettingService.HistoryOrderFolder))
                 System.IO.Directory.Delete(MarketOrderSettingService.HistoryOrderFolder, true);
-            Window?.ShowSuccess("已清除缓存订单信息");
+            ShowSuccess("已清除缓存订单信息");
         });
     }
 }

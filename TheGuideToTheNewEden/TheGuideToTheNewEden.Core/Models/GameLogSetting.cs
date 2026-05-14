@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,68 +11,91 @@ namespace TheGuideToTheNewEden.Core.Models
     public class GameLogSetting : ObservableObject
     {
         public int ListenerID { get; set; }
-        private bool windowNotify = true;
-        public bool WindowNotify
+
+        private ObservableCollection<GameLogItemConfig> _itemConfigs = new ObservableCollection<GameLogItemConfig>();
+        public ObservableCollection<GameLogItemConfig> ItemConfigs
         {
-            get => windowNotify; set => SetProperty(ref windowNotify, value);
+            get => _itemConfigs; set => SetProperty(ref _itemConfigs, value);
         }
-        private bool soundNotify = true;
-        public bool SoundNotify
+    }
+
+    public class GameLogItemConfig : ObservableObject
+    {
+        [JsonIgnore]
+        public string GUID {  get;} = Guid.NewGuid().ToString();
+
+        /// <summary>
+        /// 0 = 游戏日志
+        /// 1 = 异常日志
+        /// </summary>
+        public int LogType {  get; set; }
+
+        private string _configName;
+        public string ConfigName
         {
-            get => soundNotify; set => SetProperty(ref soundNotify, value);
-        }
-        private string soundFile;
-        public string SoundFile
-        {
-            get => soundFile; set => SetProperty(ref soundFile, value);
-        }
-        private bool systemNotify = true;
-        public bool SystemNotify
-        {
-            get => systemNotify; set => SetProperty(ref systemNotify, value);
+            get => _configName; set => SetProperty(ref _configName, value);
         }
 
-        private int monitorMode = 0;
+        private bool _windowNotify = true;
+        public bool WindowNotify
+        {
+            get => _windowNotify; set => SetProperty(ref _windowNotify, value);
+        }
+
+        private bool _soundNotify = true;
+        public bool SoundNotify
+        {
+            get => _soundNotify; set => SetProperty(ref _soundNotify, value);
+        }
+
+        private string _soundFile;
+        public string SoundFile
+        {
+            get => _soundFile; set => SetProperty(ref _soundFile, value);
+        }
+
+        private bool _repeatSound = false;
+        public bool RepeatSound
+        {
+            get => _repeatSound; set => SetProperty(ref _repeatSound, value);
+        }
+
+        private bool _systemNotify = true;
+        public bool SystemNotify
+        {
+            get => _systemNotify; set => SetProperty(ref _systemNotify, value);
+        }
+
+        private int _monitorMode = 0;
         /// <summary>
         /// 0:出现关键词通知
         /// 1:停止出现关键词通知
         /// </summary>
         public int MonitorMode
         {
-            get => monitorMode; set => SetProperty(ref monitorMode, value);
+            get => _monitorMode; set => SetProperty(ref _monitorMode, value);
         }
 
-        private double disappearDelay = 30;
+        private double _disappearDelay = 30;
         /// <summary>
         /// 停止出现关键词延时
         /// </summary>
         public double DisappearDelay
         {
-            get => disappearDelay; set => SetProperty(ref disappearDelay, value);
+            get => _disappearDelay; set => SetProperty(ref _disappearDelay, value);
         }
 
-        private bool repeatSound = false;
-        public bool RepeatSound
-        {
-            get => repeatSound; set => SetProperty(ref repeatSound, value);
-        }
-
-        private ObservableCollection<GameLogMonityKey> keys = new ObservableCollection<GameLogMonityKey>();
+        
+        private ObservableCollection<GameLogMonityKey> _keys = new ObservableCollection<GameLogMonityKey>();
         public ObservableCollection<GameLogMonityKey> Keys
         {
-            get => keys; set => SetProperty(ref keys, value);
+            get => _keys; set => SetProperty(ref _keys, value);
         }
 
-        private bool monitorThreadError = true;
-        public bool MonitorThreadError
+        public GameLogItemConfig() { }
+        public GameLogItemConfig(int logType)
         {
-            get => monitorThreadError; set => SetProperty(ref monitorThreadError, value);
-        }
-
-        private ObservableCollection<GameLogMonityKey> threadErrorKeys = new ObservableCollection<GameLogMonityKey>();
-        public ObservableCollection<GameLogMonityKey> ThreadErrorKeys
-        {
-            get => threadErrorKeys; set => SetProperty(ref threadErrorKeys, value);
+            LogType = logType;
         }
     }
     public class GameLogMonityKey : ObservableObject
@@ -82,11 +106,5 @@ namespace TheGuideToTheNewEden.Core.Models
         }
         private string pattern;
         public string Pattern { get => pattern; set => SetProperty(ref pattern, value);}
-
-        private int span;
-        /// <summary>
-        /// 监控间隔时间，间隔时间内重复检测到关键词不预警
-        /// </summary>
-        public int Span { get => span; set => SetProperty(ref span, value); }
     }
 }

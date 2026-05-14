@@ -46,7 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
 
         private void ShowWaiting()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 ProgressGrid.Visibility = Visibility.Visible;
                 ProgressRing.IsActive = true;
@@ -54,7 +54,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         }
         private void HideWaiting()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 ProgressGrid.Visibility = Visibility.Collapsed;
                 ProgressRing.IsActive = false;
@@ -66,7 +66,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
             var info = (sender as FrameworkElement).DataContext as KillDataInfo;
             if (info != null)
             {
-                this.GetBaseWindow()?.ShowWaiting();
+                this.ShowWaiting();
                 IdName.CategoryEnum? categoryEnum;
                 switch(info.Type)
                 {
@@ -88,7 +88,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
                     Name = info.Name,
                     Category = (int)categoryEnum
                 });
-                this.GetBaseWindow()?.HideWaiting();
+                this.HideWaiting();
             }
         }
     }

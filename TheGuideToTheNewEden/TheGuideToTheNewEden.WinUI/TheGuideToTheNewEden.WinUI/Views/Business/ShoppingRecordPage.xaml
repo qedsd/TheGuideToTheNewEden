@@ -2,10 +2,12 @@
     x:Class="TheGuideToTheNewEden.WinUI.Views.Business.ShoppingRecordPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Business"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:FluentIcons.WinUI"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -14,85 +16,104 @@
             <ColumnDefinition Width="240" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <ListView
-            x:Name="ItemsList"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-            CornerRadius="4"
-            SelectionChanged="ItemsList_SelectionChanged"
-            Style="{StaticResource StretchListView}">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <Grid>
-                        <Grid.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="{StaticResource General_Remove}" />
-                            </MenuFlyout>
-                        </Grid.ContextFlyout>
-                        <TextBlock Text="{Binding Value, Converter={StaticResource FileToNameWithoutExtConverter}}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-        <dataGrid:SfDataGrid
-            x:Name="ItemsDataGrid"
-            Grid.Column="1"
-            Margin="8,0,0,0"
-            HorizontalAlignment="Stretch"
-            AllowDraggingColumns="True"
-            AllowEditing="False"
-            AllowFiltering="True"
-            AllowGrouping="True"
-            AllowResizingColumns="True"
-            AllowSorting="True"
-            AutoGenerateColumns="False"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-            ColumnWidthMode="Auto"
-            GridLinesVisibility="None"
-            GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
-            HeaderLinesVisibility="Both"
-            SelectionMode="Extended"
-            ShowGroupDropArea="True">
-            <dataGrid:SfDataGrid.Columns>
-                <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource BusinessPage_ROIPercent}"
-                    MappingName="ROI" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource BusinessPage_NetProfit}"
-                    MappingName="NetProfit" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
-                    MappingName="BuyPrice" />
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource BusinessPage_DestinationSellPrice}"
-                    MappingName="SellPrice" />
+        <controls:CardControl>
+            <controls:CardControl.Header>
+                <Grid>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource BusinessPage_ShoppingRecord_All}" />
+                    <Button
+                        HorizontalAlignment="Right"
+                        Click="DeleteSelected_Click"
+                        Style="{StaticResource TransparentButton}"
+                        ToolTipService.ToolTip="{StaticResource General_RemoveSelected}">
+                        <winui:FluentIcon
+                            Foreground="{ThemeResource DefaultRed}"
+                            Icon="Delete"
+                            IconSize="Resizable" />
+                    </Button>
+                </Grid>
+            </controls:CardControl.Header>
+            <controls:CardControl.CustomContent>
+                <ListView
+                    x:Name="ItemsList"
+                    SelectionChanged="ItemsList_SelectionChanged"
+                    Style="{StaticResource StretchListView}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Grid>
+                                <Grid.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="{StaticResource General_Remove}" />
+                                    </MenuFlyout>
+                                </Grid.ContextFlyout>
+                                <TextBlock Text="{Binding Value, Converter={StaticResource FileToNameWithoutExtConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </controls:CardControl.CustomContent>
+        </controls:CardControl>
 
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N0"
-                    HeaderText="{StaticResource General_Quantity}"
-                    MappingName="Quantity" />
+        <controls:CardControl Grid.Column="1">
+            <controls:CardControl.Header>
+                <Grid>
+                    <TextBlock VerticalAlignment="Center" Text="{StaticResource BusinessPage_ShoppingRecord_Detail}" />
+                    <Button
+                        HorizontalAlignment="Right"
+                        Click="Button_Add_Click"
+                        Style="{StaticResource TransparentButton}"
+                        ToolTipService.ToolTip="{StaticResource BusinessPage_AddSelectedToShoppingCart}">
+                        <winui:FluentIcon Icon="Cart" IconSize="Resizable" />
+                    </Button>
+                </Grid>
+            </controls:CardControl.Header>
+            <controls:CardControl.CustomContent>
+                <dataGrid:SfDataGrid
+                    x:Name="ItemsDataGrid"
+                    HorizontalAlignment="Stretch"
+                    AllowDraggingColumns="True"
+                    AllowEditing="False"
+                    AllowFiltering="True"
+                    AllowGrouping="True"
+                    AllowResizingColumns="True"
+                    AllowSorting="True"
+                    AutoGenerateColumns="False"
+                    ColumnWidthMode="Auto"
+                    GridLinesVisibility="None"
+                    GroupDropAreaText="{StaticResource General_GroupDropAreaText}"
+                    HeaderLinesVisibility="Both"
+                    SelectionMode="Extended"
+                    ShowGroupDropArea="True">
+                    <dataGrid:SfDataGrid.Columns>
+                        <dataGrid:GridTextColumn HeaderText="{StaticResource BusinessPage_Type}" MappingName="InvType.TypeName" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource BusinessPage_ROIPercent}"
+                            MappingName="ROI" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource BusinessPage_NetProfit}"
+                            MappingName="NetProfit" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource BusinessPage_SourceBuyPrice}"
+                            MappingName="BuyPrice" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource BusinessPage_DestinationSellPrice}"
+                            MappingName="SellPrice" />
 
-                <dataGrid:GridNumericColumn
-                    DisplayNumberFormat="N2"
-                    HeaderText="{StaticResource BusinessPage_Volume}"
-                    MappingName="Volume" />
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N0"
+                            HeaderText="{StaticResource General_Quantity}"
+                            MappingName="Quantity" />
 
-
-            </dataGrid:SfDataGrid.Columns>
-
-        </dataGrid:SfDataGrid>
-        <Button
-            Grid.Column="1"
-            Margin="0,-34,4,0"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            Click="Button_Add_Click"
-            ToolTipService.ToolTip="{StaticResource BusinessPage_AddSelectedToShoppingCart}">
-            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE109;" />
-        </Button>
+                        <dataGrid:GridNumericColumn
+                            DisplayNumberFormat="N2"
+                            HeaderText="{StaticResource BusinessPage_Volume}"
+                            MappingName="Volume" />
+                    </dataGrid:SfDataGrid.Columns>
+                </dataGrid:SfDataGrid>
+            </controls:CardControl.CustomContent>
+        </controls:CardControl>
     </Grid>
 </Page>

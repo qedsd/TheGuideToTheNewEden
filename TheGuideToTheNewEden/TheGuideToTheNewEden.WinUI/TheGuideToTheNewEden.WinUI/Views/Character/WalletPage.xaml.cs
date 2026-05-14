@@ -20,13 +20,13 @@ using TheGuideToTheNewEden.Core.Extensions;
 using System.Collections.ObjectModel;
 using TheGuideToTheNewEden.Core.DBModels;
 using Syncfusion.UI.Xaml.DataGrid;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class WalletPage : Page, ICharacterPage
     {
         private EsiClient _esiClient;
-        private BaseWindow _window;
         public WalletPage()
         {
             this.InitializeComponent();
@@ -35,7 +35,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private void WalletPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             MainPivot.SelectionChanged += Pivot_SelectionChanged;
             if (!_isLoaded)
             {
@@ -55,7 +54,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         public void Refresh()
         {
-            _window.ShowWaiting();
+            this.ShowWaiting();
             _characterJournalsLoaded = false;
             _corpJournalsLoaded = false;
             _characterTransactionsLoaded = false;
@@ -68,7 +67,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 MainPivot.SelectedIndex = 0;
             }
-            _window.HideWaiting();
+            this.HideWaiting();
         }
 
         private async Task<List<Core.Models.Wallet.JournalEntry>> GetCharacterJournalsAsync(int page)
@@ -92,12 +91,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 else
                 {
                     Log.Error(esiResponse.Message);
-                    _window.ShowError(esiResponse.Message);
+                    this.ShowError(esiResponse.Message);
                 }
             }
             else
             {
-                _window.ShowError("None");
+                this.ShowError("None");
             }
             return null;
         }
@@ -127,12 +126,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 else
                 {
                     Log.Error(esiResponse.Message);
-                    _window.ShowError(esiResponse.Message);
+                    this.ShowError(esiResponse.Message);
                 }
             }
             else
             {
-                _window.ShowError("None");
+                this.ShowError("None");
             }
             return null;
         }
@@ -183,13 +182,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
-                        _window.ShowError(resp.Message);
+                        this.ShowError(resp.Message);
                         Log.Error(resp.Message);
                     }
                 }
                 else
                 {
-                    _window.ShowError("None");
+                    this.ShowError("None");
                 }
             }
 
@@ -225,7 +224,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     else
                     {
                         Log.Error(structuresResp?.Message);
-                        _window.ShowError(structuresResp?.Message);
+                        this.ShowError(structuresResp?.Message);
                     }
                 }
                 foreach(var t in transactions)
@@ -249,7 +248,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private bool _corpTransactionsLoaded = false;
         private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _window.ShowWaiting();
+            this.ShowWaiting();
             switch((sender as Pivot).SelectedIndex)
             {
                 case 0: 
@@ -285,7 +284,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         }
                     } break;
             }
-            _window.HideWaiting();
+            this.HideWaiting();
         }
 
         private async void NavigatePageControl_CharacterJournal_OnPageChanged(int page)
@@ -295,9 +294,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 DataGrid_CharacterJournal.ItemsSource = null;
                 return;
             }
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             DataGrid_CharacterJournal.ItemsSource = await GetCharacterJournalsAsync(page);
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
         private async void NavigatePageControl_CorpJournal_OnPageChanged(int page)
         {
@@ -306,34 +305,36 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 DataGrid_CorpJournal.ItemsSource = null;
                 return;
             }
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             DataGrid_CorpJournal.ItemsSource = await GetCorpJournalsAsync((int)NumberBox_CorpJournal.Value, page);
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
         private async void LoadCharacterTransactionsAsync()
         {
-            _window?.ShowWaiting();
+            this.ShowWaiting();
             DataGrid_CharacterTransaction.ItemsSource = await GetCharacterTransactionsAsync(0);
-            _window?.HideWaiting();
+            this.HideWaiting();
         }
         private async void LoadCorpTransactionsAsync()
         {
-            _window?.ShowWaiting();
-            DataGrid_CorpTransaction.ItemsSource = await GetCorpTransactionsAsync((int)NumberBox_CorpTransaction.Value, 0);
-            _window?.HideWaiting();
+            if(_esiClient != null)
+            {
+                this.ShowWaiting();
+                DataGrid_CorpTransaction.ItemsSource = await GetCorpTransactionsAsync((int)NumberBox_CorpTransaction.Value, 0);
+                this.HideWaiting();
+            }
         }
         private void NumberBox_CorpJournal_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            if (_window == null)
-                return;
-            NavigatePageControl_CorpJournal.Page = 0;
-            NavigatePageControl_CorpJournal.Page = 1;
+            if(NavigatePageControl_CorpJournal != null)
+            {
+                NavigatePageControl_CorpJournal.Page = 0;
+                NavigatePageControl_CorpJournal.Page = 1;
+            }
         }
 
         private void NumberBox_CorpTransaction_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            if (_window == null)
-                return;
             LoadCorpTransactionsAsync();
         }
     }

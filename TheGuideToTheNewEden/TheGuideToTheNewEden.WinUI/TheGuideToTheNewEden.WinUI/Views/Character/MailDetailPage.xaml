@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource MainBackgroudBrush}"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <Grid Margin="12,4">
@@ -83,6 +83,6 @@
             x:Name="WebView2_Content"
             Grid.Row="5"
             Margin="0,4"
-            DefaultBackgroundColor="Transparent" />
+            DefaultBackgroundColor="{ThemeResource DefaultBackgroudColor}" />
     </Grid>
 </Page>

@@ -12,17 +12,13 @@ using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
-using Octokit;
-using ESI.NET.Models.Character;
-using WinUICommunity;
-using Newtonsoft.Json.Linq;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class StructureService
     {
-        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "MarketStructures.json");
-        private static readonly string AutoStructureFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Structures.json");
+        private static readonly string MarketStrutureFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "MarketStructures.json");
+        private static readonly string AutoStructureFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Structures.json");
         private static ObservableCollection<Structure> MarketStructures { get; set; }
         private static Dictionary<long, Structure> AutoStructures { get; set; }
         public static void Init()

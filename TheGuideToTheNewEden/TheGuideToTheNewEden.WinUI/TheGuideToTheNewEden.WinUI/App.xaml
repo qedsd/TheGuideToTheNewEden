@@ -14,7 +14,7 @@
                 <ResourceDictionary Source="/Styles/Custom.xaml" />
                 <ResourceDictionary Source="/Resources/Languages/zh-CN.xaml" />
                 <ResourceDictionary Source="/Styles/Syncfusion.xaml" />
-                <ResourceDictionary Source="ms-appx:///WinUICommunity.Components/Themes/Generic.xaml" />
+                <ResourceDictionary Source="ms-appx:///DevWinUI.Controls/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
@@ -59,6 +59,11 @@
                 x:Key="CharacterImgConverter128"
                 Size="128"
                 Type="Character" />
+            <converters:GameImageConverter
+                x:Key="CharacterImgConverter64"
+                Size="64"
+                Type="Character" />
+            <converters:GameImageConverter x:Key="IdNameImgConverter64" Size="64" />
             <converters:StringFormatConverter x:Key="StringFormatConverter" />
             <converters:ColorConverter x:Key="DrawColorToUIColorConverter" />
             <converters:DrawColorToBrushConverter x:Key="DrawColorToBrushConverter" />
@@ -78,6 +83,7 @@
             <converters:OrderTypeConverter x:Key="OrderTypeConverter" />
             <converters:IdNameCategoryConverter x:Key="IdNameCategoryConverter" />
             <converters:UTCToLocalTimeConverter x:Key="UTCToLocalTimeConverter" />
+            <converters:DynamicResourceFromBindingConverter x:Key="DynamicResourceFromBindingConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

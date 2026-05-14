@@ -265,7 +265,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 bool result = RegisterHotKey(_hwnd, registerId, fsModifier, vk);
                 if (result)
                 {
-                    Core.Log.Info($"注册热键{_hwnd}_{registerId}成功");
+                    //Core.Log.Info($"注册热键{_hwnd}_{registerId}成功");
                     return TryMonitorHotKey(_hwnd);
                 }
                 else
@@ -291,7 +291,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             if(UnregisterHotKey(_hwnd, id))
             {
-                Core.Log.Info($"注销热键{_hwnd}_{id}成功");
+                //Core.Log.Info($"注销热键{_hwnd}_{id}成功");
                 _registerIds.Remove(id);
                 return true;
             }
@@ -343,7 +343,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     var hotkeyId = (int)wParam;
                     HotkeyActived?.Invoke(hotkeyId);
-                    Core.Log.Info($"Got hotkey {_hwnd}_{hotkeyId}");
+                    //Core.Log.Info($"Got hotkey {_hwnd}_{hotkeyId}");
                 }
                 catch(Exception ex)
                 {

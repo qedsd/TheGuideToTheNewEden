@@ -1,7 +1,10 @@
-﻿using Microsoft.UI.Xaml;
+﻿using H.NotifyIcon;
+using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Notifications;
@@ -12,15 +15,36 @@ namespace TheGuideToTheNewEden.WinUI
 {
     public partial class App : Application
     {
+        public static Core.Helpers.SingleInstanceHelper SingleInstanceHelper;
         public static bool HandleClosedEvents { get; set; } = true;
-        private NotificationManager notificationManager;
+        private static NotificationManager notificationManager;
         public App()
         {
             this.InitializeComponent();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
             UnhandledException += App_UnhandledException;//UI线程
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;//后台线程
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            Application.Current.UnhandledException += Current_UnhandledException;
+            //AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             Log.Init();
+        }
+
+        private void CurrentDomain_FirstChanceException(object sender, FirstChanceExceptionEventArgs e)
+        {
+            //Log.Error(e.Exception);//会记录下太多内部记录
+        }
+
+        private void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            Log.Error(e.Exception);
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            e.SetObserved();
+            Log.Error(e.Exception);
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -30,17 +54,41 @@ namespace TheGuideToTheNewEden.WinUI
                 Log.Error("发生致命错误");
             }
             Log.Error(e.ExceptionObject);
+            var processPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CrashReporter", "CrashReporter.exe");
+            if(File.Exists(processPath))
+            {
+                System.Diagnostics.Process.Start(processPath, e.ExceptionObject.ToString());
+            }
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             e.Handled = true;
             Log.Error(e.Exception);
+            try
+            {
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, e.Exception.Message, Controls.InfoBarControl.InfoType.Error, false);
+            }
+            catch
+            {
+
+            }
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
-            notificationManager.Unregister();
-            ForegroundWindowService.Current.Stop();
+            HandleClose();
+        }
+        private static bool _closed = false;
+        private static void HandleClose()
+        {
+            if (!_closed)
+            {
+                _closed = true;
+                notificationManager?.Unregister();
+                ForegroundWindowService.Current.Stop();
+                Helpers.WindowHelper.CloseAll();
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
@@ -50,50 +98,51 @@ namespace TheGuideToTheNewEden.WinUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            Services.ActivationService.Init();
-            m_window = new BaseWindow()
+            SingleInstanceHelper = new Core.Helpers.SingleInstanceHelper();
+            if (SingleInstanceHelper.RegisterSingleInstance(DataPath))
             {
-                MainContent = new Views.HomePage()
-            };
-            m_window.Closed += M_window_Closed;
-            (m_window as BaseWindow).SetTavViewHomeMode();
+                SingleInstanceHelper.Activated += SingleInstanceHelper_Activated;
+            }
+            else
+            {
+                Application.Current.Exit();
+                return;
+            }
+            Services.ActivationService.Init();
+            ClientServiceHelper.Init(Log.GetInstance());
+            m_window = new MainWindow();
+            m_window.AppWindow.Closing += AppWindow_Closing;
             WindowHelper.SetMainWindow(m_window);
             m_window.Activated += M_window_Activated;
             m_window.Activate();
         }
 
-        private IntPtr GetSameProcess()
-        {
-            var allProcesses = System.Diagnostics.Process.GetProcesses();
-            if (allProcesses.Any())
-            {
-                var targets = allProcesses.Where(p => p.ProcessName == "TheGuideToTheNewEden").ToList();
-                if(targets.Any())
-                {
-                    string dir = System.AppDomain.CurrentDomain.BaseDirectory;
-                    var p = targets.FirstOrDefault(p => Path.GetDirectoryName(p.MainModule.FileName) == dir);
-                    if (p != null)
-                    {
-                        return p.MainWindowHandle;
-                    }
-                }
-            }
-            return IntPtr.Zero;
-        }
-
-        private void M_window_Closed(object sender, WindowEventArgs args)
+        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             if (HandleClosedEvents)
             {
-                args.Handled = true;
-                (sender as Window).Hide();
-                Helpers.WindowHelper.TrackWindow(sender as Window);
+                args.Cancel = true;
+                m_window.Hide();
+                Helpers.WindowHelper.TrackWindow(m_window);
             }
-            else
+        }
+
+        private void SingleInstanceHelper_Activated(object sender, string[] e)
+        {
+            if (m_window != null)
             {
-                ((m_window as BaseWindow).MainContent as Views.HomePage).Dispose();
-                Services.MemoryIPCService.Dispose();
+                Helpers.WindowHelper.SetForegroundWindow_Click(m_window.GetWindowHandle());
             }
+        }
+
+
+        public static void Close()
+        {
+            ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
+            Services.MemoryIPCService.Dispose();
+            App.HandleClosedEvents = false;
+            Core.Log.Info("开始Close");
+            App.HandleClose();
         }
 
         private void M_window_Activated(object sender, WindowActivatedEventArgs args)
@@ -109,16 +158,6 @@ namespace TheGuideToTheNewEden.WinUI
 
         private Window m_window;
 
-        public static string GetFullPathToExe()
-        {
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-            var pos = path.LastIndexOf("\\");
-            return path.Substring(0, pos);
-        }
-
-        public static string GetFullPathToAsset(string assetName)
-        {
-            return GetFullPathToExe() + "\\Assets\\" + assetName;
-        }
+        public static string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TheGuideToTheNewEden");
     }
 }

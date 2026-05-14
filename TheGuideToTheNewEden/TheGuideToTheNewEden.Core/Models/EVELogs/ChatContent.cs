@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
                                     if (index2 > 0)
                                     {
                                         string speakerName = content2.Substring(0, index2);
-                                        string content3 = content2.Substring(index2 + 1);
+                                        string content3 = content2.Substring(index2 + 1).Trim();
                                         return new ChatContent()
                                         {
                                             EVETime = eveTime,
@@ -60,5 +60,8 @@ namespace TheGuideToTheNewEden.Core.Models.EVELogs
         /// 重要消息
         /// </summary>
         public bool Important { get; set; }
+        public string Listener { get; set; }
+        public string ChannelName {  get; set; }
+        public string ChannelID { get; set; }
     }
 }

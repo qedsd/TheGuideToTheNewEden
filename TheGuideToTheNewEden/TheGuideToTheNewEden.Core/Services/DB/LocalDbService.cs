@@ -74,9 +74,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranInvTypeAsync(InvType invType)
         {
-            var type = await TranInvTypeAsync(invType.TypeID);
-            invType.TypeName = type?.TypeName;
-            invType.Description = type?.Description;
+            if(invType != null)
+            {
+                var type = await TranInvTypeAsync(invType.TypeID);
+                invType.TypeName = type?.TypeName;
+                invType.Description = type?.Description;
+            }
         }
         public static void TranInvType(InvType invType)
         {
@@ -90,6 +93,10 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static InvTypeBase QueryInvType(string name)
         {
             return DBService.LocalDb.Queryable<InvTypeBase>().First(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase));
+        }
+        public static List<InvTypeBase> QueryInvTypes(string name)
+        {
+            return DBService.LocalDb.Queryable<InvTypeBase>().Where(p => name.Equals(p.TypeName, StringComparison.OrdinalIgnoreCase)).ToList();
         }
         #endregion
 

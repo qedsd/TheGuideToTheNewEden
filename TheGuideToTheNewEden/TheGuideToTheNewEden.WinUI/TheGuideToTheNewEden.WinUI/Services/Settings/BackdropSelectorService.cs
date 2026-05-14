@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WinUICommunity;
+using TheGuideToTheNewEden.WinUI.Interfaces;
+using DevWinUI;
 
 namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
@@ -15,9 +16,8 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             None,
             Mica,
             MicaAlt,
-            DesktopAcrylic,
+            Acrylic,
             AcrylicThin,
-            AcrylicBase,
             Transparent,
             CustomPicture
         }
@@ -61,9 +61,9 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             SaveCustomPictureOverlapColor(CustomPictureOverlapColorValue);
             OnCustomPictureOverlapColorChanged?.Invoke(null, CustomPictureOverlapColorValue);
         }
-        public static WinUICommunity.BackdropType GetWinUICommunityBackdropTypeValue()
+        public static DevWinUI.BackdropType GetDevWinUIBackdropTypeValue()
         {
-            return (WinUICommunity.BackdropType)(((int)BackdropTypeValue) % 7);
+            return (DevWinUI.BackdropType)(((int)BackdropTypeValue) % 6);
         }
         public static Windows.UI.Color GetCustomPictureOverlapColor()
         {
@@ -82,7 +82,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             }
             else
             {
-                return BackdropType.AcrylicBase;
+                return BackdropType.Mica;
             }
         }
         private static string LoadCustomPictureFileFromSettings()
@@ -127,7 +127,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
         {
             foreach (Window window in Helpers.WindowHelper.ActiveWindows)
             {
-                (window as BaseWindow).ThemeService?.SetBackdropType(GetWinUICommunityBackdropTypeValue());
+                (window as IWindow).ThemeService?.SetBackdropTypeAsync(GetDevWinUIBackdropTypeValue());
             }
         }
         public static event EventHandler<BackdropType> OnBackdropTypeChanged;

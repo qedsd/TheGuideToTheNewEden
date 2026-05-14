@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
@@ -16,7 +17,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     internal class MessageWindow
     {
         public object Tag { get; set; }
-        private readonly BaseWindow _window = new BaseWindow();
+        private readonly ToolWindow _window = new ToolWindow();
         private RichTextBlock _mainContent;
         private ScrollViewer _scrollViewer;
         public delegate void HideDelegate(MessageWindow messageWindow);
@@ -30,10 +31,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             };
             _scrollViewer.Content = _mainContent;
             _scrollViewer.LayoutUpdated += ScrollViewer_LayoutUpdated;
-            _window.HideAppDisplayName();
-            _window.SetSmallTitleBar();
             _window.AppWindow.Closing += AppWindow_Closing;
-            _window.MainContent = _scrollViewer;
+            _window.InitWindow(_scrollViewer, WindowTitleStyle.Empty, false, true, true, true);
             _window.SetWindowSize(400,300);
             _window.SetIsAlwaysOnTop(true);
             Helpers.WindowHelper.CenterToScreen(_window);
@@ -58,14 +57,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void SetTitle(string text)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _window.SetHeadText(text);
+                _window.SetDisplayTitle(text);
             });
         }
         public void Show(string content)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 Paragraph paragraph = new Paragraph()
                 {
@@ -92,7 +91,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Show(string title, string content)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 SetTitle(title);
                 Show(content);
@@ -100,14 +99,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Clear()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _mainContent.Blocks.Clear();
             });
         }
         public void Hide()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.Hide();
                 OnHided?.Invoke(this);
@@ -115,7 +114,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public void Close()
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _window.AppWindow.Closing -= AppWindow_Closing;
                 _window.Close();

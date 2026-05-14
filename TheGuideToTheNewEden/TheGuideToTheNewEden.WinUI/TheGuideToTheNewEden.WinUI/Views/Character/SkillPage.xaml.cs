@@ -23,7 +23,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class SkillPage : Page, ICharacterPage
     {
-        private BaseWindow _window;
         private ESI.NET.Models.Skills.SkillDetails _skillDetails;
         public SkillPage()
         {
@@ -36,7 +35,6 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         private void SkillPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _window = Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow;
             if(!_isLoaded)
             {
                 Init();

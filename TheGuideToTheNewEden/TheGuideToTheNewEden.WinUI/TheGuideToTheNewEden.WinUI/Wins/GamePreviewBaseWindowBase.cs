@@ -16,12 +16,12 @@ using WinUIEx;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
-    internal abstract class GamePreviewBaseWindowBase : BaseWindow, IGamePreviewWindow
+    internal abstract class GamePreviewBaseWindowBase : ToolWindow, IGamePreviewWindow
     {
         internal IntPtr _sourceHWnd;
-        internal readonly PreviewItem _setting;
+        internal PreviewItem _setting;
         internal readonly PreviewSetting _previewSetting;
-        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton) : base(useThemeService,false, hideCaptionButton)
+        internal GamePreviewBaseWindowBase(PreviewItem setting, PreviewSetting previewSetting, bool useThemeService, bool hideCaptionButton)
         {
             _previewSetting = previewSetting;
             _setting = setting;
@@ -137,12 +137,22 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public virtual void Stop()
         {
             IsClosed = true;
-            HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+            if(_hotkeyRegisterId > 0)
+            {
+                HotkeyService.GetHotkeyService(this.GetWindowHandle()).Unregister(_hotkeyRegisterId);
+            }
         }
         public abstract void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);
         public PreviewItem GetSetting()
         {
             return _setting;
+        }
+
+        public abstract void ChangeName(string name);
+
+        public void ChangeSetting(PreviewItem previewItem)
+        {
+            _setting = previewItem;
         }
     }
 }

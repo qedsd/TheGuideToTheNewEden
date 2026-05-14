@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
 {
     internal static class ChannelScanSettingService
     {
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelScanSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ChannelScanSetting.json");
 
         public static ChannelScanConfig GetChannelScanConfig()
         {

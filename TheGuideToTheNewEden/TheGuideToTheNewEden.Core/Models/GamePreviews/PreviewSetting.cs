@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace TheGuideToTheNewEden.Core.Models.GamePreviews
@@ -17,24 +19,29 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => processeKeywords;
             set => SetProperty(ref processeKeywords, value);
         }
+
         private string switchHotkey_Forward = "F5";
         /// <summary>
-        /// 切换运行中的窗口对应的源窗口
+        /// 默认快捷键：切换运行中的窗口对应的源窗口
         /// </summary>
         public string SwitchHotkey_Forward
         {
             get => switchHotkey_Forward;
             set => SetProperty(ref switchHotkey_Forward, value);
         }
+
         private string switchHotkey_Backward = "F4";
         /// <summary>
-        /// 切换运行中的窗口对应的源窗口
+        /// 默认快捷键：切换运行中的窗口对应的源窗口
         /// </summary>
         public string SwitchHotkey_Backward
         {
             get => switchHotkey_Backward;
             set => SetProperty(ref switchHotkey_Backward, value);
         }
+
+        public ObservableCollection<PreviewHotKeyGroup> HotKeyGroups { get; set; } = new ObservableCollection<PreviewHotKeyGroup>();
+
         private List<PreviewItem> previewItems = new List<PreviewItem>();
         public List<PreviewItem> PreviewItems
         {
@@ -146,7 +153,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             }
         }
 
-        private int setForegroundWindowMode = 0;
+        private int setForegroundWindowMode = 4;
         public int SetForegroundWindowMode
         {
             get => setForegroundWindowMode;
@@ -173,6 +180,64 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             {
                 SetProperty(ref _autoStartNewProcess, value);
             }
+        }
+
+        private bool _switchCharacterKeepSetting = true;
+        /// <summary>
+        /// 同进程切换角色沿用切换前的设置
+        /// </summary>
+        public bool SwitchCharacterKeepSetting
+        {
+            get => _switchCharacterKeepSetting;
+            set
+            {
+                SetProperty(ref _switchCharacterKeepSetting, value);
+            }
+        }
+    }
+    public class PreviewHotKeyGroup : ObservableObject
+    {
+        private string switchHotkey_Forward;
+        public string SwitchHotkey_Forward
+        {
+            get => switchHotkey_Forward;
+            set => SetProperty(ref switchHotkey_Forward, value);
+        }
+
+        private string switchHotkey_Backward;
+        public string SwitchHotkey_Backward
+        {
+            get => switchHotkey_Backward;
+            set => SetProperty(ref switchHotkey_Backward, value);
+        }
+
+        private string groupName = "Group";
+        public string GroupName
+        {
+            get => groupName;
+            set => SetProperty(ref groupName, value);
+        }
+
+        public HashSet<string> GameNames { get; set; } = new HashSet<string>();
+
+        [JsonIgnore]
+
+        public int ForwardHotkeyRegisterId { get; set; }
+
+        [JsonIgnore]
+
+        public int BackwardHotkeyRegisterId { get; set; }
+        [JsonIgnore]
+        public string LastActiveProcessGUID { get; set; }
+
+        private bool _restart = true;
+        /// <summary>
+        /// 从别的分组切换回来时是否从头开始显示
+        /// </summary>
+        public bool Restart
+        {
+            get => _restart;
+            set => SetProperty(ref _restart, value);
         }
     }
 }

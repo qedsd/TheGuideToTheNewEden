@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.PlanetResources;
-using static TheGuideToTheNewEden.WinUI.Dialogs.MapSystemDetailDialog;
 
 namespace TheGuideToTheNewEden.WinUI.StyleSelectors
 {
@@ -15,7 +14,7 @@ namespace TheGuideToTheNewEden.WinUI.StyleSelectors
     {
         protected override Style SelectStyleCore(object item, DependencyObject container)
         {
-            var data = item as UpgradeStatus;
+            var data = item as Views.Map.Tools.MapSystemDetailPage.UpgradeStatus;
             var mappingName = (container as GridCell).ColumnBase.GridColumn.MappingName;
 
             if (mappingName == "Upgrade.Name")

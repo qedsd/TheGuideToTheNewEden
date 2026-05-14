@@ -28,6 +28,7 @@ using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.Models.GamePreviews;
 using Newtonsoft.Json.Linq;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
@@ -35,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
         private ChannelIntelSetting Setting;
-        private readonly BaseWindow Window = new BaseWindow(true, false);
+        private readonly ToolWindow Window = new ToolWindow();
         private DispatcherTimer autoIntelTimer;
         private AppWindow AppWindow;
         private Interfaces.IIntelOverlapPage _intelPage;
@@ -54,9 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _intelBasePage.OnIntelInfoButtonClicked += IntelBasePage_OnIntelInfoButtonClicked;
             _intelBasePage.OnStopSoundButtonClicked += IntelBasePage_OnStopSoundButtonClicked;
             _intelBasePage.OnClearButtonClicked += IntelBasePage_OnClearButtonClicked;
-            Window.MainContent = _intelBasePage;
-            Window.HideAppDisplayName();
-            Window.SetSmallTitleBar();
+            Window.InitWindow(_intelBasePage, WindowTitleStyle.Default, true, true, true, false);
             IntelMap = intelMap;
             Setting = setting;
             IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
@@ -159,13 +158,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     _allSolarSystem.Add(item.SolarSystemID);
                 }
             }
-            Window.Head = $"{Setting.Listener} - {Setting.IntelJumps}";
+            Window.SetDisplayTitle($"{Setting.Listener} - {Setting.IntelJumps}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}");
             _intelPage.Init(Window,setting,intelMap);
             InitTimer();
         }
 
-
-        
         private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
@@ -187,7 +184,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 }
             }
         }
-
         private void InitTimer()
         {
             if(autoIntelTimer != null)
@@ -275,14 +271,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void UpdateUI()
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateUI();
             });
         }
         public void UpdateHome(IntelSolarSystemMap intelMap)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateHome(intelMap);
             });

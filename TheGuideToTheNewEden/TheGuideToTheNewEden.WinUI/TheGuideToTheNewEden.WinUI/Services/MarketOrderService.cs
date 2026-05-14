@@ -1,5 +1,10 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using ESI.NET.Models.Bookmarks;
 using ESI.NET.Models.Character;
+using EVEStandard;
+using EVEStandard.API;
+using EVEStandard.Models.API;
+using EVEStandard.Models.SSO;
 using Microsoft.UI.Xaml;
 using Newtonsoft.Json;
 using System;
@@ -8,18 +13,39 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
+using static Vanara.PInvoke.Kernel32;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
+    /// <summary>
+    /// 市场相关ESI改为EVEStandard，EVEStandard自带限速及错误处理，更好提高速度及稳定性
+    /// </summary>
     public class MarketOrderService
     {
-        private readonly static string NOTPAGE = "Requested page does not exist!";
+        private const string NOTPAGE = "Requested page does not exist!";
         private static string StructureOrderFolder => MarketOrderSettingService.StructureOrderFolder;
         private static string RegionOrderFolder => MarketOrderSettingService.RegionOrderFolder;
         private static string HistoryOrderFolder => MarketOrderSettingService.HistoryOrderFolder;
+
+        /// <summary>
+        /// 默认市场星域：伏尔戈
+        /// </summary>
+        private const int DefaultMarketRegion = 10000002;
+
+        /// <summary>
+        /// Plex专用的星域
+        /// </summary>
+        private const int GlobalMarketRegion = 19000001;
+
+        public const int PlexTypeId = 44992;
+        public const int LargeSkillInjectorTypeId = 40520;
+        public const int TritaniumTypeId = 34;
+
+
         private static MarketOrderService current;
         public static MarketOrderService Current
         {
@@ -33,9 +59,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private ESI.NET.EsiClient EsiClient;
+        private EVEStandard.EVEStandardAPI _esiClient;
         public MarketOrderService()
         {
             EsiClient = Core.Services.ESIService.GetDefaultEsi();
+            EVEStandard.Enumerations.DataSource dataSource = Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
+            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
         }
 
         /// <summary>
@@ -56,9 +85,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="structureId"></param>
         /// <param name="invTypeId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, int invTypeId)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, int invTypeId, CancellationToken cancellationToken)
         {
-            var orders = await GetStructureOrdersAsync(structureId);
+            var orders = await GetStructureOrdersAsync(structureId, cancellationToken);
             if(orders.NotNullOrEmpty())
             {
                 return orders.Where(p => p.TypeId == invTypeId).ToList();
@@ -68,16 +97,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
         }
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, CancellationToken cancellationToken)
         {
-            return await GetStructureOrdersAsync(structureId, null);
+            return await GetStructureOrdersAsync(structureId, cancellationToken, null);
         }
         /// <summary>
         /// 获取建筑所有订单，优先从缓存获取，缓存不存在或过期时自动刷新
         /// </summary>
         /// <param name="structureId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(structureId);
@@ -95,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders);
+                            await SetOrderInfo(localOrder.Orders, cancellationToken);
                             return localOrder.Orders;
                         }
                         else
@@ -110,7 +139,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             List<Core.Models.Market.Order> orders = null;
             try
             {
-                orders = await GetLatestStructureOrdersAsync(structureId, pageCallBack);
+                orders = await GetLatestStructureOrdersAsync(structureId, cancellationToken, pageCallBack);
             }
             catch(Exception ex)
             {
@@ -136,42 +165,34 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="structureId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestStructureOrdersAsync(long structureId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestStructureOrdersAsync(long structureId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
-            var structure = Services.StructureService.GetStructure(structureId);
-            if(structure == null)
-            {
-                Core.Log.Error($"获取建筑订单时，未找到建筑{structureId}");
-                return null;
-            }
-            var character = CharacterService.GetCharacter(structure.CharacterId);
-            if (character == null)
-            {
-                Core.Log.Error($"获取建筑订单时，未能找到建筑{structureId}对应的角色{structure.CharacterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
-                {
-                    Core.Log.Error("获取建筑订单时，角色{structure.CharacterId}的Token已过期，尝试刷新失败");
-                    return null;
-                }
-            }
+            var authData = await GetAuthByStructureId(structureId);
+            var character = authData.Character;
+            var structure = authData.Structure;
             EsiClient.SetCharacterData(character);
+            var auth = CreateEVEStandardSSO(character);
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
             while (true)
             {
                 page++;
-                var resp = await EsiClient.Market.StructureOrders(structureId, page);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    pageCallBack?.Invoke(page, "Structure");
-                    if (resp.Data.Any())
+                    return null;
+                }
+                var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+                if (resp != null && resp.Model != null)
+                {
+                    pageCallBack?.Invoke(page, resp.MaxPages, "Structure");
+                    if (resp.Model.Any())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -183,14 +204,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    break;
                 }
             }
             if (orders.Any())
@@ -199,7 +213,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     order.SystemId = structure.SolarSystemId;
                 }
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
@@ -245,12 +259,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId, CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+            if(typeId == PlexTypeId)
+            {
+                regionId = GlobalMarketRegion;
+            }
             int page = 1;
             while (true)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
                 var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page++, typeId);
                 if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -281,7 +303,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
@@ -290,21 +312,25 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken,bool skillStructure, PageCallBackDelegate pageCallBack = null)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
             while (true)
             {
                 page++;
-                var resp = await EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                if(cancellationToken.IsCancellationRequested)
                 {
-                    pageCallBack?.Invoke(page, "Region");
-                    if (resp.Data.Any())
+                    return null;
+                }
+                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
+                if (resp != null && resp.Model != null)
+                {
+                    pageCallBack?.Invoke(page, resp.MaxPages, "Region");
+                    if (resp.Model.NotNullOrEmpty())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -316,19 +342,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    break;
                 }
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken, skillStructure);
             }
             return orders;
         }
@@ -337,7 +356,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skillStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(regionId);
@@ -356,7 +375,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders);
+                            await SetOrderInfo(localOrder.Orders, cancellationToken, skillStructure);
                             return localOrder.Orders;
                         }
                     }
@@ -364,7 +383,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
 
             //本地不存在或过期或解析失败，重新获取
-            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, pageCallBack);
+            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, skillStructure, pageCallBack);
             if (orders.NotNullOrEmpty())
             {
                 var newOrder = new RegionOrder()
@@ -384,7 +403,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int typeId, int regionId, CancellationToken cancellationToken)
         {
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if(strutures.NotNullOrEmpty())
@@ -392,7 +411,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                 foreach (var s in strutures)
                 {
-                    var list = await GetStructureOrdersAsync(s.Id, typeId);
+                    var list = await GetStructureOrdersAsync(s.Id, typeId, cancellationToken);
                     if (list.NotNullOrEmpty())
                     {
                         orders.AddRange(list);
@@ -407,7 +426,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId,CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if (strutures.NotNullOrEmpty())
@@ -415,7 +434,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
                 foreach (var s in strutures)
                 {
-                    var result = await GetStructureOrdersAsync(s.Id, pageCallBack);
+                    var result = await GetStructureOrdersAsync(s.Id, cancellationToken, pageCallBack);
                     if (result.NotNullOrEmpty())
                     {
                         orders.AddRange(result);
@@ -432,10 +451,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int typeId, int regionId,CancellationToken cancellationToken, bool skipStructure = false)
         {
-            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId);
-            var structures = await GetOnlyStructureOrdersAsync(typeId, regionId);
+            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId, cancellationToken);
+            List<Core.Models.Market.Order> structures = null;
+            if (!skipStructure)
+            {
+                structures = await GetOnlyStructureOrdersAsync(typeId, regionId, cancellationToken);
+            }
             if(regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -464,10 +487,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, CancellationToken cancellationToken,PageCallBackDelegate pageCallBack = null)
         {
-            var regions = await GetOnlyRegionOrdersAsync(regionId, pageCallBack);
-            var structures = await GetOnlyStructureOrdersAsync(regionId, pageCallBack);
+            var regions = await GetOnlyRegionOrdersAsync(regionId, skipStructure, cancellationToken, pageCallBack);
+            List<Core.Models.Market.Order> structures = null;
+            if (!skipStructure)
+            {
+                structures = await GetOnlyStructureOrdersAsync(regionId, cancellationToken, pageCallBack);
+            }
             if (regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
             {
                 List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
@@ -491,12 +518,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return null;
         }
-        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetMapSolarSystemOrdersAsync(int mapSolarSystemId, bool skipStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(mapSolarSystemId);
             if(system != null)
             {
-                var regionOrders = await GetRegionOrdersAsync(system.RegionID, pageCallBack);
+                var regionOrders = await GetRegionOrdersAsync(system.RegionID, skipStructure,cancellationToken, pageCallBack);
                 if(regionOrders.NotNullOrEmpty())
                 {
                     return regionOrders.Where(p => p.SystemId == mapSolarSystemId).ToList();
@@ -515,14 +542,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    var resp = await EsiClient.Universe.Structure(id);
-                    if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var authData = await GetAuthByStructureId(id);
+                    var character = authData.Character;
+                    var structure = authData.Structure;
+                    var auth = CreateEVEStandardSSO(character);
+                    var resp = await _esiClient.Universe.GetStructureInfoV2Async(auth, id);
+                    if (resp != null && resp.Model != null)
                     {
                         return new Core.Models.Universe.Structure()
                         {
                             Id = id,
-                            Name = resp.Data.Name,
-                            SolarSystemId = resp.Data.SolarSystemId
+                            Name = resp.Model.Name,
+                            SolarSystemId = resp.Model.SolarSystemId
                         };
                     }
                     else
@@ -555,6 +586,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistoryAsync(int typeId, int regionId)
         {
+            if(typeId == PlexTypeId)
+            {
+                regionId = GlobalMarketRegion;
+            }
             string folder = System.IO.Path.Combine(HistoryOrderFolder, regionId.ToString());
             string localFile = System.IO.Path.Combine(folder, $"{typeId}.json");
             if(System.IO.File.Exists(localFile))
@@ -576,21 +611,21 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return local;
                 }
             }
-            var resp = await EsiClient.Market.TypeHistoryInRegion(regionId, typeId);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            if (resp != null && resp.Model != null)
             {
                 if(!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
                 }
-                string json = JsonConvert.SerializeObject(resp.Data);
+                List<ESI.NET.Models.Market.Statistic> datas = resp.Model.DepthClone<List<ESI.NET.Models.Market.Statistic>>();
+                string json = JsonConvert.SerializeObject(datas);
                 File.WriteAllText(localFile, json);
-                return resp.Data;
+                return datas;
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                throw new Exception(resp?.Message);
+                throw new Exception();
             }
         }
         
@@ -638,7 +673,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     Core.Log.Error(ex);
                 }
                 doneCount++;
-                pageCallBack?.Invoke(doneCount, "History");
+                pageCallBack?.Invoke(doneCount,typeIds.Count, "History");
                 if (statistics.NotNullOrEmpty())
                 {
                     dic.Add(id, statistics);
@@ -653,8 +688,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="regionId"></param>
         /// <param name="pageCallBack"></param>
         /// <returns></returns>
-        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId, PageCallBackDelegate pageCallBack = null)
+        public async Task<Dictionary<int, List<Core.Models.Market.Statistic>>> GetHistoryBatchAsync(List<int> typeId, int regionId,CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
+            int totalCount = typeId.Count;
             int doneCount = 0;
             object locker = new object();
             async Task<List<Core.Models.Market.Statistic>> getHistory(int typeId)
@@ -672,7 +708,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 lock (locker)
                 {
                     doneCount++;
-                    pageCallBack?.Invoke(doneCount, "History");
+                    pageCallBack?.Invoke(doneCount, totalCount,"History");
                 }
                 if (statistics.NotNullOrEmpty())
                     return statistics.Select(p => new Core.Models.Market.Statistic(p, typeId)).ToList();
@@ -681,7 +717,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return null;
                 }
             }
-            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId, MaxThread, getHistory);
+            var result = await Core.Helpers.ThreadHelper.RunAsync(typeId, MaxThread, getHistory, cancellationToken);
             var valid = result?.Where(p => p.NotNullOrEmpty()).ToList();
             Dictionary<int, List<Core.Models.Market.Statistic>> dic = new Dictionary<int, List<Core.Models.Market.Statistic>>();
             foreach (var list in valid)
@@ -719,30 +755,17 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId)
+        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(int characterId, CancellationToken cancellationToken)
         {
-            var character = CharacterService.GetCharacter(characterId);
-            if (character == null)
+            var character = await GetCharacter(characterId);
+            var sso = CreateEVEStandardSSO(character);
+            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterV2Async(sso);
+            if (resp != null)
             {
-                Core.Log.Error($"未找到角色{characterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
+                if (resp.Model.NotNullOrEmpty())
                 {
-                    Core.Log.Error("Token已过期，尝试刷新失败");
-                    return null;
-                }
-            }
-            EsiClient.SetCharacterData(character);
-            var resp = await EsiClient.Market.CharacterOrders();
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                if (resp.Data.Any())
-                {
-                    var orders = resp.Data.Select(p => new Core.Models.Market.Order(p)).ToList();
-                    await SetOrderInfo(orders);
+                    var orders = resp.Model.Select(p => new Core.Models.Market.Order(p)).ToList();
+                    await SetOrderInfo(orders, cancellationToken);
                     return orders;
                 }
                 else
@@ -752,8 +775,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                return null;
+                throw new Exception();
             }
         }
         /// <summary>
@@ -762,34 +784,25 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="characterId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId)
+        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(int characterId, CancellationToken cancellationToken)
         {
-            var character = CharacterService.GetCharacter(characterId);
-            if (character == null)
-            {
-                Core.Log.Error($"未找到角色{characterId}");
-                return null;
-            }
-            if (!character.IsTokenValid())
-            {
-                if (!await character.RefreshTokenAsync())
-                {
-                    Core.Log.Error("Token已过期，尝试刷新失败");
-                    return null;
-                }
-            }
-            EsiClient.SetCharacterData(character);
+            var autoData = await GetCharacter(characterId);
+            var sso = CreateEVEStandardSSO(autoData);
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 1;
             while (true)
             {
-                var resp = await EsiClient.Market.CorporationOrders(page++);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    if (resp.Data.Any())
+                    return null;
+                }
+                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationV3Async(sso, autoData.CorporationID, page++);
+                if (resp != null)
+                {
+                    if (resp.Model.NotNullOrEmpty())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
@@ -801,30 +814,23 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if (resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    throw new Exception();
                 }
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders);
+                await SetOrderInfo(orders, cancellationToken);
             }
             return orders;
         }
         #endregion
 
-        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders)
+        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure = false)
         {
             if(orders.NotNullOrEmpty())
             {
                 await SetTypeInfo(orders);
-                await SetLocationInfo(orders);
+                await SetLocationInfo(orders, cancellationToken, skillStructure);
                 await SetSystemInfo(orders);
             }
         }
@@ -840,6 +846,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     if(typesDic.TryGetValue(order.TypeId,out var type))
                     {
                         order.InvType = type;
+                    }
+                    else
+                    {
+                        order.InvType = new Core.DBModels.InvType()
+                        {
+                            TypeName = order.TypeId.ToString(),
+                            TypeID = order.TypeId
+                        };
                     }
                 }
             }
@@ -871,7 +885,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             }
         }
-        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders)
+        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure)
         {
             var stationOrders = orders.Where(p => p.IsStation).ToList();
             var structureOrders = orders.Where(p => !p.IsStation).ToList();
@@ -888,27 +902,137 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
             }
-            if (structureOrders.NotNullOrEmpty())
+            if (structureOrders.NotNullOrEmpty() && !skillStructure)
             {
                 var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
                 int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
+                Dictionary<long, string> structureNameCache = new Dictionary<long, string>();
                 foreach (var order in structureOrders)
                 {
-                    var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
-                    if(structure != null)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        order.LocationName = structure.Name;
-                        order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
+                        return;
+                    }
+                    if(structureNameCache.TryGetValue(order.LocationId, out var cacheName))
+                    {
+                        order.LocationName = cacheName;
                     }
                     else
                     {
-                        order.LocationName = order.LocationId.ToString();
+                        var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
+                        if (structure != null)
+                        {
+                            order.LocationName = structure.Name;
+                            order.SystemId = structure.SolarSystemId;//避免个人订单只有LocationId没有SystemId
+                        }
+                        else
+                        {
+                            order.LocationName = order.LocationId.ToString();
+                        }
+                        structureNameCache.Add(order.LocationId, order.LocationName);
                     }
                 }
             }
         }
 
+        private async Task<(Core.Models.Universe.Structure Structure ,ESI.NET.Models.SSO.AuthorizedCharacterData Character)> GetAuthByStructureId(long structureId)
+        {
+            var structure = GetStructureSetting(structureId);
+            var character = await GetCharacter(structure.CharacterId);
+            return (structure,character);
+        }
+        private Core.Models.Universe.Structure GetStructureSetting(long structureId)
+        {
+            var structure = Services.StructureService.GetStructure(structureId);
+            if (structure == null)
+            {
+                throw new Exception($"获取建筑订单时，未找到建筑{structureId}");
+            }
+            else
+            {
+                return structure;
+            }
+        }
+        private async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> GetCharacter(int characterId)
+        {
+            var character = CharacterService.GetCharacter(characterId);
+            if (character == null)
+            {
+                throw new Exception($"{Helpers.ResourcesHelper.GetString("General_CharacterNotFound")}: {characterId}");
+            }
+            else
+            {
+                if (!character.IsTokenValid())
+                {
+                    if (!await character.RefreshTokenAsync())
+                    {
+                        Core.Log.Error(Helpers.ResourcesHelper.GetString("General_TokenExpiredAndRefrshFailed"));
+                        return null;
+                    }
+                }
+                return character;
+            }
+        }
+        private EVEStandard.Models.API.AuthDTO CreateEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
+        {
+            if(character != null)
+            {
+                return new AuthDTO
+                {
+                    AccessToken = new AccessTokenDetails
+                    {
+                        AccessToken = character.Token,
+                        ExpiresUtc = character.ExpiresOn,
+                        RefreshToken = character.RefreshToken
+                    },
+                    CharacterId = character.CharacterID,
+                    Scopes = character.Scopes,
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public delegate void PageCallBackDelegate(int page,int totalPage, string tag);
 
-        public delegate void PageCallBackDelegate(int page, string tag);
+        public async Task<List<EVEStandard.Models.MarketRegionHistory>> GetHistoryAsync(int typeId)
+        {
+            int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            return resp.Model;
+        }
+
+        public async Task<List<EVEStandard.Models.MarketOrder>> GetOrderAsync(int typeId)
+        {
+            int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
+            List<EVEStandard.Models.MarketOrder> orders = new List<EVEStandard.Models.MarketOrder>();
+            int page = 0;
+            while (true)
+            {
+                page++;
+                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, typeId, page);
+                if (resp != null && resp.Model != null)
+                {
+                    if (resp.Model.NotNullOrEmpty())
+                    {
+                        orders.AddRange(resp.Model);
+                        if (resp.MaxPages == page)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return orders;
+        }
     }
 }

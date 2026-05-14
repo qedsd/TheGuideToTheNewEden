@@ -7,30 +7,20 @@
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <Grid Margin="4">
+    <Grid Margin="8,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <StackPanel
-                x:Name="StackPanel_SearchResult"
-                Margin="8,0,0,0"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <TextBlock FontWeight="Light" Text="{StaticResource DatabasePage_SearchResult}" />
-                <TextBlock
-                    x:Name="TextBlock_SearchCount"
-                    Margin="8,0,0,0"
-                    FontWeight="Light" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal">
                 <ComboBox x:Name="ComboBox_SerachType" SelectedIndex="0">
                     <ComboBoxItem Content="{StaticResource DatabasePage_InvType}" />
                     <ComboBoxItem Content="{StaticResource DatabasePage_InvGroup}" />
@@ -41,14 +31,31 @@
                 </ComboBox>
                 <AutoSuggestBox
                     x:Name="SuggestBox"
-                    Width="200"
+                    Width="300"
+                    Margin="4,0,0,0"
                     QueryIcon="Find"
                     QuerySubmitted="SuggestBox_QuerySubmitted" />
             </StackPanel>
+            <StackPanel
+                x:Name="StackPanel_SearchResult"
+                Grid.Column="1"
+                Margin="0,0,8,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <TextBlock FontWeight="Light" Text="{StaticResource DatabasePage_SearchResult}" />
+                <TextBlock
+                    x:Name="TextBlock_SearchCount"
+                    Margin="8,0,0,0"
+                    FontWeight="Light"
+                    Text="0" />
+            </StackPanel>
+
         </Grid>
         <dataGrid:SfDataGrid
             x:Name="ResultDataGrid"
             Grid.Row="1"
+            Margin="0,8,0,0"
             HorizontalAlignment="Stretch"
             AllowDraggingColumns="True"
             AllowEditing="True"
@@ -57,7 +64,7 @@
             AllowResizingColumns="True"
             AllowSorting="True"
             AutoGenerateColumns="True"
-            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+            Background="{ThemeResource TransparentBackgroudBrush}"
             ColumnWidthMode="Auto"
             FrozenColumnsCount="2"
             GridLinesVisibility="Both"

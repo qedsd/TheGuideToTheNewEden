@@ -65,13 +65,15 @@
                             IsReadOnly="True"
                             MappingName="AllianceName" />
                         <dataGrid:GridTextColumn
+                            Width="90"
                             HeaderText="{StaticResource MapDataTypeControl_SOV_Count}"
                             IsReadOnly="True"
-                            Width="90"
                             MappingName="Count" />
-                        <dataGrid:GridNumericColumn HeaderText="{StaticResource MapDataTypeControl_SOV_Group}" MappingName="GroupId" 
-                                                    Width="90"
-                                                    MinValue="1"/>
+                        <dataGrid:GridNumericColumn
+                            Width="90"
+                            HeaderText="{StaticResource MapDataTypeControl_SOV_Group}"
+                            MappingName="GroupId"
+                            MinValue="1" />
                     </dataGrid:SfDataGrid.Columns>
                 </dataGrid:SfDataGrid>
                 <Button
@@ -86,7 +88,7 @@
                     Margin="0,8"
                     HorizontalAlignment="Right"
                     Click="Button_ResetGroup_Click"
-                    Content="{StaticResource MapDataTypeControl_SOV_ResetGroup}"/>
+                    Content="{StaticResource MapDataTypeControl_SOV_ResetGroup}" />
             </Grid>
             <Grid x:Name="PlanetResourcGrid" Visibility="Collapsed">
                 <Grid>

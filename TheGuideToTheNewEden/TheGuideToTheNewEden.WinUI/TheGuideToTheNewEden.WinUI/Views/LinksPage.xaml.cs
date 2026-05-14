@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using TheGuideToTheNewEden.WinUI.Dialogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -36,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         private List<Core.Models.LinkInfo> _linkInfos;
         private void Init()
         {
-            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory,"Configs", "Links.json");
+            string filePath = System.IO.Path.Combine(App.DataPath, "Configs", "Links.json");
             if (!File.Exists(filePath))
             {
                 var defaultFile = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Resources", "Configs", "Links.json");
@@ -73,7 +74,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var info = e.ClickedItem as Core.Models.LinkInfo;
             if(info != null)
             {
-                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                //System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                Helpers.UrlHelper.OpenInBrower(info.Url);
             }
         }
 
@@ -99,10 +101,10 @@ namespace TheGuideToTheNewEden.WinUI.Views
 
         private void Save()
         {
-            string filePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Configs", "Links.json");
+            string filePath = System.IO.Path.Combine(App.DataPath, "Configs", "Links.json");
             string json = JsonConvert.SerializeObject(_linkInfos);
             File.WriteAllText(filePath, json);
-            (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowSuccess("已保存");
+            this.ShowSuccess("已保存");
         }
 
         private async void MenuFlyoutItem_Edit_Click(object sender, RoutedEventArgs e)
@@ -132,7 +134,8 @@ namespace TheGuideToTheNewEden.WinUI.Views
             var info = (sender as FrameworkElement).DataContext as Core.Models.LinkInfo;
             if (info != null)
             {
-                System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                //System.Diagnostics.Process.Start("explorer.exe", info.Url);
+                Helpers.UrlHelper.OpenInBrower(info.Url);
             }
         }
 
@@ -143,7 +146,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
             dataPackage.RequestedOperation = DataPackageOperation.Copy;
             dataPackage.SetText(info.Url);
             Clipboard.SetContent(dataPackage);
-            (Helpers.WindowHelper.GetWindowForElement(this) as BaseWindow).ShowSuccess("已复制");
+            this.ShowSuccess("已复制");
         }
 
         private void MenuFlyoutItem_Remove_Click(object sender, RoutedEventArgs e)

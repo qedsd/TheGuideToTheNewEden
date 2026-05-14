@@ -63,7 +63,9 @@ namespace ZKB.NET.Models.Killmails
         /// </summary>
         public bool Awox { get; set; }
 
-        public string Esi { get; set; }
-        public string Url { get; set;}
+        /// <summary>
+        /// ESI
+        /// </summary>
+        public string Href { get; set; }
     }
 }

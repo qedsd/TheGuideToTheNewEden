@@ -178,19 +178,23 @@
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="{StaticResource WalletPage_Division}" VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-                    <NumberBox x:Name="NumberBox_CorpJournal"
-                               VerticalAlignment="Center"
-                               Value="1"
-                               SpinButtonPlacementMode="Inline"
-                               ValueChanged="NumberBox_CorpJournal_ValueChanged"
-                               Minimum="1"
-                               SmallChange="1"/>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Text="{StaticResource WalletPage_Division}" />
+                    <NumberBox
+                        x:Name="NumberBox_CorpJournal"
+                        VerticalAlignment="Center"
+                        Minimum="1"
+                        SmallChange="1"
+                        SpinButtonPlacementMode="Inline"
+                        ValueChanged="NumberBox_CorpJournal_ValueChanged"
+                        Value="1" />
                 </StackPanel>
-                <dataGrid:SfDataGrid Grid.Row="1"
+                <dataGrid:SfDataGrid
                     x:Name="DataGrid_CorpJournal"
+                    Grid.Row="1"
                     HorizontalAlignment="Stretch"
                     AllowDraggingColumns="True"
                     AllowEditing="False"
@@ -254,20 +258,23 @@
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="{StaticResource WalletPage_Division}" VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-                    <NumberBox x:Name="NumberBox_CorpTransaction"
-                               Value="1"
-                               VerticalAlignment="Center"
-                               SpinButtonPlacementMode="Inline"
-                               ValueChanged="NumberBox_CorpTransaction_ValueChanged"
-                               Minimum="1"
-                               SmallChange="1"/>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Text="{StaticResource WalletPage_Division}" />
+                    <NumberBox
+                        x:Name="NumberBox_CorpTransaction"
+                        VerticalAlignment="Center"
+                        Minimum="1"
+                        SmallChange="1"
+                        SpinButtonPlacementMode="Inline"
+                        ValueChanged="NumberBox_CorpTransaction_ValueChanged"
+                        Value="1" />
                 </StackPanel>
                 <dataGrid:SfDataGrid
-                    Grid.Row="1"
                     x:Name="DataGrid_CorpTransaction"
+                    Grid.Row="1"
                     HorizontalAlignment="Stretch"
                     AllowDraggingColumns="True"
                     AllowEditing="False"

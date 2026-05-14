@@ -107,6 +107,7 @@ namespace ZKB.NET
                 }
             }
             HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
             string responseBody;
             if (client.DefaultRequestHeaders.TryGetValues("Accept-Encoding", out var encodes))
             {

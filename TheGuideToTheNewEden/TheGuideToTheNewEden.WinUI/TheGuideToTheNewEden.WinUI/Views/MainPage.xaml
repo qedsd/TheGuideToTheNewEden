@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="TheGuideToTheNewEden.WinUI.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:TheGuideToTheNewEden.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ic="using:FluentIcons.WinUI"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="using:H.NotifyIcon"
+    xmlns:x1="using:System"
+    Background="Transparent"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style TargetType="ic:FluentIcon">
+            <Setter Property="IconSize" Value="Resizable" />
+            <Setter Property="IconVariant" Value="Regular" />
+        </Style>
+    </UserControl.Resources>
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <!--  导航  -->
+        <Grid x:Name="NavPanel" Margin="8,0,8,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <!--  标题  -->
+            <StackPanel Margin="6,0,0,0" Orientation="Horizontal">
+                <Button Click="LogoButton_Click" Style="{StaticResource TransparentButton}">
+                    <Image Width="16" Source="/Resources/Images/logo.svg" />
+                </Button>
+                <TextBlock
+                    x:Name="AppDisplayNameTextBlock"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    FontFamily="Calibri"
+                    FontSize="16"
+                    Text="{StaticResource AppDisplayName}"
+                    Visibility="{Binding ElementName=MenuList, Path=IsPaneOpen, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+            </StackPanel>
+            <!--  菜单  -->
+            <NavigationView
+                x:Name="MenuList"
+                Grid.Row="1"
+                Width="200"
+                HorizontalAlignment="Left"
+                CompactPaneLength="50"
+                IsBackButtonVisible="Collapsed"
+                IsPaneToggleButtonVisible="False"
+                IsTabStop="False"
+                OpenPaneLength="200"
+                PaneDisplayMode="Left"
+                SelectionChanged="NavigationView_SelectionChanged">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem
+                        x:Name="HomeNavigationViewItem"
+                        Content="{StaticResource HomePage}"
+                        Tag="HomePage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Home" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource CharactersShellPage}" Tag="Character.CharactersShellPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Person" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource BusinessPage}">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="ArrowTrendingLines" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="{StaticResource MarketPage}" Tag="MarketPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="DataTrending" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource OrderPage}" Tag="Business.OrderPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="ArrowTrendingText" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource ScalperShellPage}" Tag="ScalperShellPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="ArrowTrendingSparkle" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource GamePreviewMgrPage}" Tag="GamePreviewMgrPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="SquareMultiple" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource Channel}">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Comment" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="{StaticResource ChannelIntelPage}" Tag="ChannelIntelPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentError" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource ChannelMonitorPage}" Tag="ChannelMonitorPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentBadge" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource ChannelScanPage}" Tag="ChannelScanPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentMultiple" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource ChannelMarketPage}" Tag="ChannelMarketPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentLightning" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource ChannelTranslationPage}" Tag="ChannelTranslationPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentMention" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource GameLogMonitorPage}" Tag="GameLogMonitorPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="CommentText" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource TranslationPage}" Tag="TranslationPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Translate" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource DEDPage}" Tag="DEDPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="DataSunburst" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource MissionPage}" Tag="MissionPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="DocumentOnePageSparkle" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource WormholePage}" Tag="WormholePage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Target" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource LinksPage}" Tag="LinksPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="LinkMultiple" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource MapPage}" Tag="Map.MapPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Map" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource ZKBHomePage}" Tag="KB.ZKBHomePage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="ScanObject" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource DatabasePage}" Tag="DatabasePage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Database" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="{StaticResource Tools}">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Toolbox" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="{StaticResource Tools_IME}" Tag="IMEPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="DrawText" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource Tools_ServerPing}" Tag="ServerPingPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="NetworkCheck" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource Tools_KeyboardSpan}" Tag="KeyboardSpanPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="Keyboard" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+            </NavigationView>
+        </Grid>
+        <!--  内容  -->
+        <Border
+            Grid.Column="1"
+            Padding="0,32,0,0"
+            CornerRadius="0">
+            <Grid>
+                <Frame x:Name="ContentFrame" />
+                <Grid
+                    Margin="0,-4,0,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="{ThemeResource TransparentBackgroudBrush}"
+                    CornerRadius="4,4,0,0"
+                    Visibility="{Binding ElementName=Loading, Path=Visibility, Mode=OneWay}" />
+                <controls:LoadingControl
+                    x:Name="Loading"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsLoading="True" />
+                <controls:InfoBarControl
+                    x:Name="InfoBar"
+                    Margin="0,0,0,16"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Border>
+        <tb:TaskbarIcon
+            x:Name="TaskbarIcon"
+            IconSource="/logo.ico"
+            LeftClickCommand="{x:Bind ShowCommand}"
+            MenuActivation="LeftOrRightClick"
+            NoLeftClickDelay="True"
+            PopupActivation="RightClick"
+            ToolTipText="{StaticResource AppDisplayName}">
+            <tb:TaskbarIcon.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Command="{x:Bind ShowCommand}" Text="{StaticResource TaskbarIcon_Show}" />
+                    <MenuFlyoutItem Command="{x:Bind ExitCommand}" Text="{StaticResource TaskbarIcon_Exit}" />
+                </MenuFlyout>
+            </tb:TaskbarIcon.ContextFlyout>
+        </tb:TaskbarIcon>
+    </Grid>
+</UserControl>

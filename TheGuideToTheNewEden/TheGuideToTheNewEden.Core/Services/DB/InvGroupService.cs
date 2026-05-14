@@ -110,7 +110,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             return groups.Select(p => p.GroupID).ToList();
         }
 
-        public static async Task<List<TranslationSearchItem>> SearchAsync(string name)
+        public static async Task<List<DataBaseSearchItem>> SearchAsync(string name)
         {
             return await Task.Run(() =>
             {
@@ -118,18 +118,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             });
         }
 
-        public static List<TranslationSearchItem> Search(string name)
+        public static List<DataBaseSearchItem> Search(string name)
         {
-            List<TranslationSearchItem> searchItems = new List<TranslationSearchItem>();
+            List<DataBaseSearchItem> searchItems = new List<DataBaseSearchItem>();
             var types = DBService.MainDb.Queryable<InvGroup>().Where(p => p.GroupName.Contains(name)).ToList();
             if (types.NotNullOrEmpty())
             {
-                types.ForEach(p => searchItems.Add(new TranslationSearchItem(p)));
+                types.ForEach(p => searchItems.Add(new DataBaseSearchItem(p)));
             }
             var localTypes = LocalDbService.SearchInvType(name);
             if (localTypes.NotNullOrEmpty())
             {
-                localTypes.ForEach(p => searchItems.Add(new TranslationSearchItem(p)));
+                localTypes.ForEach(p => searchItems.Add(new DataBaseSearchItem(p)));
             }
             return searchItems;
         }

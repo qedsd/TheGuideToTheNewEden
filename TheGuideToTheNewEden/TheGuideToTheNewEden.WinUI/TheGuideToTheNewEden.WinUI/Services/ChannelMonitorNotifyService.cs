@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Notifications;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.Media.Core;
@@ -36,14 +37,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 if (!NotifyWindows.ContainsKey(info.Name))
                 {
                     GaemLogMsgWindow messageWindow = new GaemLogMsgWindow(info.Name, info.Name);
-                    messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ShellPage_ChannelMonitor")} - {info.Name}");
+                    messageWindow.SetTitle($"{Helpers.ResourcesHelper.GetString("ChannelMonitorPage")} - {info.Name}");
                     messageWindow.OnHided += MessageWindow_OnHided;
                     messageWindow.OnShowGameButtonClick += MessageWindow_OnShowGameButtonClick;
                     NotifyWindows.Add(info.Name, messageWindow);
                 }
                 else
                 {
-                    Core.Log.Error($"添加相同Name{info.Name}");
+                    Core.Log.Error($"Add ChannelMonitorNotifyService Same Name: {info.Name}");
                     return false;
                 }
             }
@@ -57,7 +58,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     IsLoopingEnabled = info.Setting.RepeatSound
                 }))
                 {
-                    Core.Log.Error($"添加相同Name {info.Name}");
+                    Core.Log.Error($"Add ChannelMonitorNotifyService Same Name: {info.Name}");
                     NotifyWindows.Remove(info.Setting.Name);
                     return false;
                 }
@@ -102,7 +103,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         public void Notify(Core.Models.ChannelMonitorItem info, string content)
         {
-            Helpers.WindowHelper.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 if (NotifyWindows.TryGetValue(info.Name, out var messageWindow))
                 {

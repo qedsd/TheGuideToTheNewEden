@@ -37,7 +37,7 @@ namespace TheGuideToTheNewEden.WinUI.Notifications
             if (notificationActivatedEventArgs.Arguments.TryGetValue("id", out string idStr))
             {
                 var info = await KBHelpers.CreateKBItemInfoAsync(int.Parse(idStr));
-                Services.KBNavigationService.Default.NavigateToKM(info);
+                ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigateToKM(info);
                 Helpers.WindowHelper.MainWindow.SetForegroundWindow();
             }
         }

@@ -52,7 +52,7 @@
                 Grid.Row="1"
                 Margin="8,8,8,0" />
         </Grid>
-        <Grid Grid.Row="3"  Margin="0,8">
+        <Grid Grid.Row="3" Margin="0,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -78,9 +78,10 @@
                 Grid.Row="2"
                 Margin="8,8,8,16"
                 Visibility="Collapsed">
-                <TextBlock x:Name="TextBlock_Step3FailedDesc"
-                           HorizontalAlignment="Center"
-                           Foreground="OrangeRed"/>
+                <TextBlock
+                    x:Name="TextBlock_Step3FailedDesc"
+                    HorizontalAlignment="Center"
+                    Foreground="OrangeRed" />
             </Grid>
             <Grid
                 x:Name="Grid_Step3_Success"

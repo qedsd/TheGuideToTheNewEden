@@ -55,7 +55,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             else
             {
-                sender.ItemsSource = MapRegions.Where(p => p.RegionName.Contains(sender.Text)).ToList();
+                sender.ItemsSource = MapRegions.Where(p => p.RegionName.Contains(sender.Text, StringComparison.OrdinalIgnoreCase)).ToList();
             }
         }
 

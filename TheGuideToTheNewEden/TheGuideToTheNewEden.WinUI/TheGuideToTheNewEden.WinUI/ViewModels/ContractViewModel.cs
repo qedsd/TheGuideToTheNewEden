@@ -117,7 +117,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 return;
             }
-            Window?.ShowWaiting();
+            ShowWaiting();
             var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.Contracts(SelectedMapRegionBase.RegionID, Page);
             if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -132,9 +132,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 AllContracts = null;
                 Core.Log.Error(resp?.Message);
-                Window?.ShowError(resp?.Message, true);
+                ShowError(resp?.Message, true);
             }
-            Window?.HideWaiting();
+            HideWaiting();
         }
         private void GetContracts()
         {

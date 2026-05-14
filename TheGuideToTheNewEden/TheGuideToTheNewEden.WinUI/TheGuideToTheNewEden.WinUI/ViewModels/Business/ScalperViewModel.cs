@@ -10,7 +10,6 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.Market;
 using static TheGuideToTheNewEden.Core.Models.Market.ScalperSetting;
 using TheGuideToTheNewEden.Core.Extensions;
-using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Syncfusion.UI.Xaml.Data;
@@ -19,6 +18,10 @@ using TheGuideToTheNewEden.Core.DBModels;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
+using TheGuideToTheNewEden.WinUI.Extensions;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
+using ESI.NET.Models.Universe;
+using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
 {
@@ -86,26 +89,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private List<Core.DBModels.InvMarketGroup> invMarketGroups;
-        public List<Core.DBModels.InvMarketGroup> InvMarketGroups
-        {
-            get => invMarketGroups;
-            set
-            {
-                SetProperty(ref invMarketGroups, value);
-            }
-        }
-
-        private List<Core.DBModels.InvMarketGroup> selectedInvMarketGroups;
-        public List<Core.DBModels.InvMarketGroup> SelectedInvMarketGroups
-        {
-            get => selectedInvMarketGroups;
-            set
-            {
-                SetProperty(ref selectedInvMarketGroups, value);
-            }
-        }
-
         private List<ScalperItem> scalperItems;
         public List<ScalperItem> ScalperItems
         {
@@ -129,22 +112,51 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
         }
 
-        private Views.TabViewBasePage _page;
+        private List<int> targetMarketTypes;
+        public List<int> TargetMarketTypes
+        {
+            get => targetMarketTypes;
+            set
+            {
+                SetProperty(ref targetMarketTypes, value);
+            }
+        }
+
+        private int targetMarketTypesCount;
+        public int TargetMarketTypesCount
+        {
+            get => targetMarketTypesCount;
+            set
+            {
+                SetProperty(ref targetMarketTypesCount, value);
+            }
+        }
+
         public ScalperViewModel()
         {
             
         }
-        private static readonly string SettingFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ScalperSetting.json");
-        private static readonly string SettingFolderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
-        public async Task Init()
+        private static readonly string SettingFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "ScalperSetting.json");
+        private static readonly string SettingFolderPath = System.IO.Path.Combine(App.DataPath, "Configs");
+        public void Init()
         {
-            _page = NavigationService.GetCurrentPage();
             if (System.IO.File.Exists(SettingFilePath))
             {
                 string json = System.IO.File.ReadAllText(SettingFilePath);
                 if(!string.IsNullOrEmpty(json))
                 {
                     Setting = JsonConvert.DeserializeObject<ScalperSetting>(json);
+                    //新版本添加了SolarSystemId字段，旧版本配置需补上
+                    if (Setting.SourceMarketLocation.SolarSystemId == 0)
+                    {
+                        int? systemId = GetSolarSystemId(Setting.SourceMarketLocation);
+                        Setting.SourceMarketLocation.SolarSystemId = systemId == null ? 0 : systemId.Value;
+                    }
+                    if (Setting.DestinationMarketLocation.SolarSystemId == 0)
+                    {
+                        int? systemId = GetSolarSystemId(Setting.DestinationMarketLocation);
+                        Setting.DestinationMarketLocation.SolarSystemId = systemId == null ? 0 : systemId.Value;
+                    }
                 }
             }
             Setting ??= new ScalperSetting();
@@ -152,38 +164,55 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             SellPriceType = (int)Setting.SellPrice;
             SourceSalesType = (int)Setting.SourceSalesType;
             DestinationSalesType = (int)Setting.DestinationSalesType;
-            InvMarketGroups = await Core.Services.DB.InvMarketGroupService.QueryRootGroupAsync();
-            if(Setting.MarketGroups.NotNullOrEmpty())
+            
+            if (Setting.MarketTypes.NotNullOrEmpty())
             {
-                SelectedInvMarketGroups = InvMarketGroups.Where(p => Setting.MarketGroups.Contains(p.MarketGroupID)).ToList();
+                TargetMarketTypes = Setting.MarketTypes.ToList();
             }
             else
             {
-                SelectedInvMarketGroups = new List<InvMarketGroup>();
+                TargetMarketTypes = new List<int>();
             }
+            var filterOrders = ClientServiceHelper.GetRequiredService<BusinessService>().GetFilterTypes();
+            if (filterOrders.NotNullOrEmpty())
+            {
+                AddFilterTypes(filterOrders);
+            }
+            ClientServiceHelper.GetRequiredService<BusinessService>().FilterChanged += ScalperViewModel_FilterChanged;
         }
 
+
+        private static int? GetSolarSystemId(MarketLocation marketLocation)
+        {
+            switch (marketLocation.Type)
+            {
+                case MarketLocationType.SolarSystem: return (int)marketLocation.Id;
+                case MarketLocationType.Region: return Core.Services.DB.MapSolarSystemService.QueryByRegionID((int)marketLocation.Id).First().SolarSystemID;
+                case MarketLocationType.Structure: return Services.StructureService.GetStructure(marketLocation.Id)?.SolarSystemId;
+                default: return null;
+            }
+        }
         public ICommand AnalyseCommand => new RelayCommand(async() =>
         {
             if(ScalperItems.NotNullOrEmpty())
             {
-                Window?.ShowWaiting(_page, "计算中");
+                ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_Analyzing"));
                 if (IsValid())
                 {
                     SaveSetting();
                     await Cal();
-                    Window?.ShowSuccess($"完成{ScalperItems.Count}个订单计算");
+                    ShowSuccess($"{Helpers.ResourcesHelper.GetString("BusinessPage_Analysed")}: {ScalperItems.Count}");
                 }
-                Window?.HideWaiting(_page);
+                HideWaiting();
             }
             else
             {
-                Window?.ShowError("请先获取订单");
+                ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_NoOrder"));
             }
         });
         public ICommand GetOrdersCommand => new RelayCommand(async () =>
         {
-            Window?.ShowWaiting(_page, "获取订单中");
+            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingOrder"));
             try
             {
                 if (IsValid())
@@ -195,9 +224,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
-            Window?.HideWaiting(_page);
+            HideWaiting();
         });
         private void SaveSetting()
         {
@@ -205,7 +234,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             {
                 System.IO.Directory.CreateDirectory(SettingFolderPath);
             }
-            Setting.MarketGroups = SelectedInvMarketGroups.Select(p=>p.MarketGroupID).ToArray();
+            Setting.MarketTypes = TargetMarketTypes.ToArray();
             string json = JsonConvert.SerializeObject(Setting);
             System.IO.File.WriteAllText(SettingFilePath, json);
         }
@@ -215,17 +244,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             if(Setting.SourceMarketLocation == null)
             {
-                Window?.ShowError("请选择源市场");
+                ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_UnselectedSourceMarket"));
                 return false;
             }
             if(Setting.DestinationMarketLocation == null)
             {
-                Window?.ShowError("请选择目的市场");
+                ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_UnselectedDestinationMarket"));
                 return false;
             }
-            if(!SelectedInvMarketGroups.Any())
+            if(!TargetMarketTypes.NotNullOrEmpty())
             {
-                Window?.ShowError("请选择物品类型");
+                ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_UnselectedTargetType"));
                 return false;
             }
             return true;
@@ -251,80 +280,85 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             itemDetailWindow = null;
         }
-        private void GetSourceOrdersPageCallBack(int page, string tag)
+        private void GetSourceOrdersPageCallBack(int page, int totalPage, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+            ExecuteUIAction(() =>
             {
-                Window?.ShowWaiting(_page, $"获取源市场订单中（{page}页）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder")}:{page}/{totalPage}", CancelCallback);
             });
         }
-        private void GetDestinationOrdersPageCallBack(int page, string tag)
+        private void GetDestinationOrdersPageCallBack(int page, int totalPage, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+            ExecuteUIAction(() =>
             {
-                Window?.ShowWaiting(_page, $"获取目的市场订单中（{page}页）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder")}:{page}/{totalPage}", CancelCallback);
             });
         }
-        private void GetSourceHistoryPageCallBack(int page, string tag)
+        private void GetSourceHistoryPageCallBack(int page, int totalPage, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+            ExecuteUIAction(() =>
             {
-                Window?.ShowWaiting(_page, $"获取源市场订单历史中（{page}/{_typeCount}）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory")}（{page}/{_typeCount}）", CancelCallback);
             });
         }
-        private void GetDestinationHistoryPageCallBack(int page, string tag)
+        private void GetDestinationHistoryPageCallBack(int page, int totalPage, string tag)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            if (_cancellationTokenSource.IsCancellationRequested) return;
+            ExecuteUIAction(() =>
             {
-                Window?.ShowWaiting(_page, $"获取目的市场订单历史中（{page}/{_typeCount}）");
+                ShowWaiting($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketHistyory")}（{page}/{_typeCount}）", CancelCallback);
             });
         }
-        private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders()
+        private async Task<List<Core.Models.Market.Order>> GetAllSourceOrders(CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = null;
             switch (Setting.SourceMarketLocation.Type)
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.SourceMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
                     {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, GetSourceOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.SourceMarketLocation.Id, cancellationToken, GetSourceOrdersPageCallBack);
                     }
                     break;
             }
             return orders;
         }
-        private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders()
+        private async Task<List<Core.Models.Market.Order>> GetAllDestinationOrders(CancellationToken cancellationToken)
         {
             List<Core.Models.Market.Order> orders = null;
             switch (Setting.DestinationMarketLocation.Type)
             {
                 case MarketLocationType.Region:
                     {
-                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetRegionOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.SolarSystem:
                     {
-                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetMapSolarSystemOrdersAsync((int)Setting.DestinationMarketLocation.Id, MarketOrderSettingService.ScalperSikpStructureValue, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
                 case MarketLocationType.Structure:
                     {
-                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, GetDestinationOrdersPageCallBack);
+                        orders = await Services.MarketOrderService.Current.GetStructureOrdersAsync(Setting.DestinationMarketLocation.Id, cancellationToken, GetDestinationOrdersPageCallBack);
                     }
                     break;
             }
             return orders;
         }
+        private CancellationTokenSource _cancellationTokenSource;
         private int _typeCount = 0;
         private async Task GetOrders()
         {
@@ -334,26 +368,40 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             stopwatch.Start();
             List<Order> allSourceOrders = null;
             List<Order> allDestinationOrders = null;
-            Window?.ShowWaiting(_page, "获取源市场订单中");
-            try
+            _cancellationTokenSource = new CancellationTokenSource();
+            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrder"), CancelCallback);
+            if (_cancellationTokenSource.IsCancellationRequested)
             {
-                allSourceOrders = await GetAllSourceOrders();
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex);
-                Window?.ShowError($"获取源市场订单出错：{ex.Message}");
+                ShowError(Helpers.ResourcesHelper.GetString("General_Canceld"));
                 return;
             }
-            Window?.ShowWaiting(_page, "获取目的市场订单中");
             try
             {
-                allDestinationOrders = await GetAllDestinationOrders();
+                allSourceOrders = await GetAllSourceOrders(_cancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
                 Core.Log.Error(ex);
-                Window?.ShowError($"获取目的市场订单出错：{ex.Message}");
+                ShowError($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketOrderFalied")}：{ex.Message}");
+                return;
+            }
+            if (IsCancel())
+            {
+                return;
+            }
+            ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrder"), CancelCallback);
+            try
+            {
+                allDestinationOrders = await GetAllDestinationOrders(_cancellationTokenSource.Token);
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+                ShowError($"{Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketOrderFalied")}：{ex.Message}");
+            }
+            if (IsCancel())
+            {
+                return;
             }
             if (FilterTypes.NotNullOrEmpty())//移除过滤物品
             {
@@ -365,27 +413,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             }
             if (allSourceOrders.NotNullOrEmpty() && allDestinationOrders.NotNullOrEmpty())
             {
-                var subGroupsOfSelectedInvMarketGroup = await GetSubGroupOfTargetGroup();
-                List<int> typeIds = null;
+                List<int> typeIds = TargetMarketTypes;
                 List<ScalperItem> scalperItems = null;
                 await Task.Run(() =>
                 {
-                    var subGroupsIds = subGroupsOfSelectedInvMarketGroup.Select(p => p.MarketGroupID).ToHashSet2();
-                    scalperItems = GetScalperItems(allSourceOrders, allDestinationOrders,subGroupsIds);
-                    typeIds = scalperItems.Select(p=>p.InvType.TypeID).ToList().Distinct().ToList();
+                    scalperItems = GetScalperItems(allSourceOrders, allDestinationOrders, targetMarketTypes.ToHashSet2());
+                    typeIds = scalperItems.Select(p => p.InvType.TypeID).ToList().Distinct().ToList();
                 });
                 _typeCount = typeIds.Count;
                 int sourceNoHistoryCount = -1;
                 int destinatioNoHistoryCount = -1;
                 if (scalperItems.NotNullOrEmpty())
                 {
-                    Window?.ShowWaiting(_page, "获取源市场订单历史中");
-                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId,GetSourceHistoryPageCallBack);
+                    ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingSourceMarketHistyory"));
+                    var sourceHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.SourceMarketLocation.RegionId, _cancellationTokenSource.Token, GetSourceHistoryPageCallBack);
+                    if (IsCancel())
+                    {
+                        return;
+                    }
                     sourceNoHistoryCount = typeIds.Count - sourceHistory.Count;
-                    Window?.ShowWaiting(_page, "获取目的市场订单历史中");
-                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, GetDestinationHistoryPageCallBack);
+                    ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_GettingTargetMarketHistyory"));
+                    var destinationHistory = await Services.MarketOrderService.Current.GetHistoryBatchAsync(typeIds, Setting.DestinationMarketLocation.RegionId, _cancellationTokenSource.Token, GetDestinationHistoryPageCallBack);
+                    if (IsCancel())
+                    {
+                        return;
+                    }
                     destinatioNoHistoryCount = typeIds.Count - destinationHistory.Count;
-                    Window?.ShowWaiting(_page, "匹配订单历史中");
+                    ShowWaiting(Helpers.ResourcesHelper.GetString("BusinessPage_MatchinOorderHistory"));
                     await Task.Run(() =>
                     {
                         SetHistory(scalperItems, sourceHistory, destinationHistory);
@@ -396,15 +450,31 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 stopwatch.Stop();
                 long errorCount2 = Core.Log.GetErrorCount();
                 long infoCount2 = Core.Log.GetInfoCount();
-                Window?.ShowSuccess($"已获取到{ScalperItems.Count}个有效物品订单(耗时：{stopwatch.Elapsed.TotalMinutes.ToString("N2")}分钟  错误：{errorCount2 - errorCount}  异常：{infoCount2 - infoCount}) 无历史记录：{sourceNoHistoryCount} + {destinatioNoHistoryCount}",false);
+                ShowSuccess(string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_GotOrder"), ScalperItems.Count, stopwatch.Elapsed.TotalMinutes.ToString("N2"), errorCount2 - errorCount, infoCount2 - infoCount, sourceNoHistoryCount, destinatioNoHistoryCount), false);
             }
             else
             {
-                Window?.ShowError("未获取到有效订单");
+                ShowError(Helpers.ResourcesHelper.GetString("BusinessPage_GetOrderFailed"));
             }
-            Window?.HideWaiting(_page);
+            HideWaiting();
         }
-
+        private void CancelCallback()
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+        private bool IsCancel()
+        {
+            if (_cancellationTokenSource.IsCancellationRequested)
+            {
+                ShowError(Helpers.ResourcesHelper.GetString("General_Canceld"));
+                HideWaiting();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         private List<Order> RemoveFilterTypes(List<Order> orders)
         {
             if(FilterTypes.NotNullOrEmpty() && orders.NotNullOrEmpty())
@@ -433,7 +503,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         /// <param name="destinationOrders"></param>
         /// <param name="marketGroupIDs"></param>
         /// <returns></returns>
-        private List<ScalperItem> GetScalperItems(List<Order> sourceOrders, List<Order> destinationOrders, HashSet<int> marketGroupIDs)
+        private List<ScalperItem> GetScalperItems(List<Order> sourceOrders, List<Order> destinationOrders, HashSet<int> typeIds)
         {
             try
             {
@@ -445,7 +515,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     var invType = list.First().InvType;
                     if (invType?.MarketGroupID != null)
                     {
-                        if (marketGroupIDs.Contains((int)invType.MarketGroupID))
+                        if (typeIds.Contains(invType.TypeID))
                         {
                             var item = new ScalperItem()
                             {
@@ -493,36 +563,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
-        private async Task<List<Core.DBModels.InvMarketGroup>> GetSubGroupOfTargetGroup()
-        {
-            var subGroups = await Core.Services.DB.InvMarketGroupService.QuerySubGroupAsync();
-            return await Task.Run(() =>
-            {
-                List<Core.DBModels.InvMarketGroup> targetroups = new List<Core.DBModels.InvMarketGroup>();
-                var ids = SelectedInvMarketGroups.Select(p => p.MarketGroupID).ToHashSet2();
-                foreach (var group in subGroups)
-                {
-                    var top = GetTopGroup(subGroups, group);
-                    if (ids.Contains((int)top.ParentGroupID))
-                    {
-                        targetroups.Add(group);
-                    }
-                }
-                return targetroups;
-            });
-        }
-        private Core.DBModels.InvMarketGroup GetTopGroup(List<Core.DBModels.InvMarketGroup> subGroups, Core.DBModels.InvMarketGroup targetGroup)
-        {
-            var parent = subGroups.FirstOrDefault(p=>p.MarketGroupID == targetGroup.ParentGroupID);
-            if(parent == null)
-            {
-                return targetGroup;
-            }
-            else
-            {
-                return GetTopGroup(subGroups, parent);
-            }
-        }
 
         private async Task Cal()
         {
@@ -559,13 +599,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                     CalNowPriceFluctuation(items);
                     CalSaturation(items);
                     CalHeatValue(items);
+                    CalIskPerJump(items);
+                    CalIskPerVolume(items);
                     CalSuggestion(items);
                     items = items.OrderByDescending(p => p.Suggestion).ToList();
                 }
                 catch(Exception ex)
                 {
                     Core.Log.Error(ex);
-                    Window?.ShowError(ex.Message);
+                    ShowError(ex.Message);
                 }
             });
             ScalperItems = items;
@@ -1008,6 +1050,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 }
             }
         }
+        private void CalIskPerJump(List<ScalperItem> items)
+        {
+            var path = Core.EVEHelpers.ShortestPathHelper.CalStargatePath(Setting.SourceMarketLocation.SolarSystemId, Setting.DestinationMarketLocation.SolarSystemId, null, null);
+            if(path.NotNullOrEmpty())
+            {
+                int jump = path.Count;
+                foreach (var item in items)
+                {
+                    item.Jumps = jump;
+                    item.IskPerJump = item.TargetNetProfit / jump;
+                }
+            }
+            else
+            {
+                Core.Log.Warn($"Can not found path between {Setting.SourceMarketLocation.Name} and {Setting.DestinationMarketLocation.Name}");
+            }
+        }
+        private void CalIskPerVolume(List<ScalperItem> items)
+        {
+            foreach (var item in items)
+            {
+                item.IskPerVolume = item.TargetNetProfit / item.TargetVolume;
+            }
+        }
 
         private void CalSuggestion(List<ScalperItem> items)
         {
@@ -1085,6 +1151,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 i++;
             }
 
+            //ISK/单位体积
+            i = 1;
+            foreach (var item in items.Where(p=>p.IskPerVolume > 0).OrderBy(p => p.IskPerVolume))
+            {
+                item.Suggestion += Setting.SuggestionIskPerVolume * i / c;
+                i++;
+            }
+            i = 1;
+            foreach (var item in items.Where(p => p.IskPerVolume <= 0).OrderByDescending(p => p.IskPerVolume))
+            {
+                item.Suggestion -= Setting.SuggestionIskPerVolume * i / c;
+                i++;
+            }
+
             i = 1;
             //转成百分比
             foreach (var item in items.OrderBy(p => p.Suggestion))
@@ -1113,8 +1193,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
                 {
                     FilterTypes.Remove(invType);
                 }
-                Window?.ShowSuccess($"已移除{invTypes.Count}个物品");
+                ShowSuccess(string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_RemovedItem"), invTypes.Count));
+                ClientServiceHelper.GetRequiredService<BusinessService>().RemoveFromFilter(invTypes);
             }
+        }
+
+        private void ScalperViewModel_FilterChanged(List<InvType> types, bool isAdd)
+        {
+            if (isAdd)
+            {
+                foreach (var item in types)
+                {
+                    FilterTypes.Add(item);
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
+            ClientServiceHelper.GetRequiredService<BusinessService>().FilterChanged -= ScalperViewModel_FilterChanged;
         }
     }
 }

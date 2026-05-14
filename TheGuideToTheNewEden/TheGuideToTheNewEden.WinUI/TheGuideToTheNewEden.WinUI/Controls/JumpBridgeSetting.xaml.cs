@@ -124,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             if (file != null)
             {
                 File.WriteAllText(file.Path, JsonConvert.SerializeObject(Services.Settings.JumpBridgeSetting.GetValue()));
-                (win as BaseWindow).ShowSuccess(Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Output_Success"));
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Output_Success"), InfoBarControl.InfoType.Success, true);
             }
         }
 
@@ -156,14 +156,14 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                                 _bridges.Add(new Tuple<Core.DBModels.MapSolarSystem, Core.DBModels.MapSolarSystem>(system1, system2));
                             }
                         }
-                        (win as BaseWindow).ShowSuccess(Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Input_Success"));
+                        ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, Helpers.ResourcesHelper.GetString("JumpBridgeSetting_Input_Success"), InfoBarControl.InfoType.Success, true);
                     }
                 }
             }
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
-                (win as BaseWindow).ShowError(ex.Message);
+                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(string.Empty, ex.Message, InfoBarControl.InfoType.Error, false);
             }
         }
     }

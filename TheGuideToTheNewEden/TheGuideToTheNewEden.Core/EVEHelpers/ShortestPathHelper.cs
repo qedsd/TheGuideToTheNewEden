@@ -14,24 +14,24 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         public static List<int> CalStargatePath(int start, int end, List<int> avoidIds, Dictionary<int, int> bridge)
         {
             Dijkstras dijkstras = new Dijkstras();
-            var avoidIdsHashSet =  avoidIds.ToHashSet2();
+            var avoidIdsHashSet =  avoidIds?.ToHashSet2();
             var ps = SolarSystemPosHelper.PositionDic;
             foreach (var p in ps.Values)
             {
-                if(!avoidIdsHashSet.Contains(p.SolarSystemID))
+                if(avoidIdsHashSet == null || !avoidIdsHashSet.Contains(p.SolarSystemID))
                 {
                     Dictionary<int, double> edges = new Dictionary<int, double>();
                     if (p.JumpTo.NotNullOrEmpty())//添加星门关联的星系
                     {
                         foreach (var jump in p.JumpTo)
                         {
-                            if (!avoidIdsHashSet.Contains(jump))
+                            if (avoidIdsHashSet == null || !avoidIdsHashSet.Contains(jump))
                             {
                                 edges.Add(jump, 1);
                             }
                         }
                     }
-                    if(bridge.TryGetValue(p.SolarSystemID, out var bridgeTo))//添加跳桥关联的星系
+                    if(bridge != null && bridge.TryGetValue(p.SolarSystemID, out var bridgeTo))//添加跳桥关联的星系
                     {
                         edges.Add(bridgeTo, 1);
                     }
@@ -62,7 +62,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
         /// <param name="avoidIds"></param>
         /// <param name="mode">
         /// 0 时间优先 - 权重全部相等
-        /// 1 省钱优先 - 以跳跃距离为权重，星门按最大跳跃距离算
+        /// 1 省钱优先 - 以跳跃距离为权重，星门按最大跳跃距离算，有bug，如1DQ到吉他算不出来
         /// </param>
         /// <returns></returns>
         public static List<int> CalCapitalJumpPath(int start, int end, double maxJump,bool useGate, List<int> avoidIds,int mode)
@@ -72,8 +72,10 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             var ps = SolarSystemPosHelper.PositionDic;
             var notCapJumpSystems = Services.DB.MapSolarSystemService.QueryByMinSec(0.45).Select(p=>p.SolarSystemID).ToHashSet2();
 
-            double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
-            double gateWeight = mode == 0 ? maxJump2 : 1;
+            //1天文单位（AU） = 9460730472580800米
+            //数据库XY坐标单位为米
+            double maxJump2 = maxJump * 9460730472580800;
+            double gateWeight = mode == 0 ? 1 : maxJump2;
             
             CalWeightDelegate calWeight = EqualWeight;
             switch(mode)
@@ -92,7 +94,7 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
                         {
                             if (!avoidIdsHashSet.Contains(jump))
                             {
-                                edges.Add(jump, maxJump2);
+                                edges.Add(jump, gateWeight);
                             }
                         }
                     }
@@ -113,7 +115,9 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
 
         public static List<MapSolarSystem> CalOneJumpCover(int systemId, double maxJump)
         {
-            double maxJump2 = maxJump * 9460730472580800 / Math.Pow(10, 15);//将光年缩小到与星系位置配置文件相同单位
+            //1天文单位（AU） = 9460730472580800米
+            //数据库XY坐标单位为米
+            double maxJump2 = maxJump * 9460730472580800;
             var ps = SolarSystemPosHelper.PositionDic;
             var centerSystem = ps[systemId];
             var coversPos = ps.Values.Where(p => Math.Abs(centerSystem.X - p.X) <= maxJump2 && Math.Abs(centerSystem.Y - p.Y) <= maxJump2 && Math.Abs(centerSystem.Z - p.Z) <= maxJump2 && Math.Sqrt(Math.Pow(centerSystem.X - p.X, 2) + Math.Pow(centerSystem.Y - p.Y, 2) + Math.Pow(centerSystem.Z - p.Z, 2)) <= maxJump2).ToList();

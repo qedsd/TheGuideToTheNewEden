@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RichTextBlock Margin="20,10">
+        <Paragraph Margin="0,24" TextAlignment="Center">
+            <Run
+                FontSize="24"
+                Foreground="{ThemeResource SystemAccentColor}"
+                Text="{StaticResource AppFullName}" />
+        </Paragraph>
+        <Paragraph Margin="0,0,0,12">
+            <Run Text="{StaticResource About_P1}" />
+        </Paragraph>
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P2}" />
+        </Paragraph>
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P3}" />
+        </Paragraph>
+        <Paragraph Margin="0,12">
+            <Run Text="{StaticResource About_P4}" />
+        </Paragraph>
+        <Paragraph Margin="0,12" TextAlignment="Center">
+            <Hyperlink NavigateUri="https://github.com/qedsd/TheGuideToTheNewEden">qedsd/TheGuideToTheNewEden</Hyperlink>
+        </Paragraph>
+        <Paragraph Margin="0,12,0,0" TextAlignment="Center">
+            <InlineUIContainer>
+                <Grid HorizontalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/qq.jpg" />
+                </Grid>
+            </InlineUIContainer>
+        </Paragraph>
+    </RichTextBlock>
+</Page>

@@ -12,6 +12,7 @@ using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Models
 {
@@ -81,14 +82,12 @@ namespace TheGuideToTheNewEden.WinUI.Models
             set => SetProperty(ref _running, value);
         }
 
-        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs,
-            Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue)
+        public ChannelIntel(string listener, List<ChatChanelInfo> chatChanelInfos, List<Core.DBModels.MapSolarSystemBase> mapSolarSystems, List<string> nameDbs)
         {
             Listener = listener;
             _chatChanelInfos = chatChanelInfos;
             _mapSolarSystems = mapSolarSystems;
             _nameDbs = nameDbs;
-            _dispatcherQueue = dispatcherQueue;
             var setting = Services.Settings.IntelSettingService.GetValue(listener);
             if(setting == null)
             {
@@ -322,11 +321,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
         {
             if (Setting.LocationID <= 0)
             {
-                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_NoLocaction"));
+                throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_NoLocaction")}");
             }
             if(LocalSolarSystem.IsSpecial())
             {
-                throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_SystemNotSupport"));
+                throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_SystemNotSupport")}");
             }
             if (ChatChanelInfos.NotNullOrEmpty())
             {
@@ -377,8 +376,15 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     if (Setting.SubZKB)
                     {
                         _zkbIntel = new Core.Intel.ZKBIntel(Setting, _intelMap);
-                        await _zkbIntel.Start();
-                        _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        if (await _zkbIntel.Start())
+                        {
+                            _zkbIntel.OnError += ZKBIntel_OnError;
+                            _zkbIntel.OnWarningUpdate += ZkbIntel_OnWarningUpdate;
+                        }
+                        else
+                        {
+                            throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_StartZKBFaild"));
+                        }
                     }
                     var intelWindow = Services.WarningService.Current.GetIntelWindow(Setting.Listener);
                     if (intelWindow != null)
@@ -387,18 +393,24 @@ namespace TheGuideToTheNewEden.WinUI.Models
                     }
                     Running = true;
                     SaveSetting();
+                    ChannelIntelManager.Instance.Register(this);
                 }
                 else
                 {
-                    throw new Exception(Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_UnselectedChatChanel"));
+                    throw new Exception($"{Listener}: {Helpers.ResourcesHelper.GetString("ChannelIntelPage_Error_UnselectedChatChanel")}");
                 }
             }
             SaveSetting();
         }
 
+        private void ZKBIntel_OnError(object sender, Exception e)
+        {
+            OnZKBError?.Invoke(this, e);
+        }
+
         private void Observer_OnWarningUpdate(Core.Models.ChannelIntel.ChannelIntelObserver channelIntelObserver, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            _dispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var ch in news)
                 {
@@ -431,7 +443,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i), _nameDbs);
                 if (id > 0)
                 {
-                    _dispatcherQueue.TryEnqueue(async () =>
+                    Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(async () =>
                     {
                         Setting.LocationID = id;
                         //LocalSolarSystem = _mapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
@@ -448,10 +460,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
             }
         }
         public event EventHandler<Core.Models.EarlyWarningContent> ZKBIntelEvent;
+        public event EventHandler<Exception> OnZKBError;
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
             ZKBIntelEvent?.Invoke(this, e);
-            _dispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 var span = DateTime.UtcNow - e.Time;
                 string desc;
@@ -484,6 +497,7 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _localObservers = null;
             _zkbIntel?.Stop();
             Services.WarningService.Current.Remove(Setting?.Listener);
+            ChannelIntelManager.Instance.Unregister(this);
             GC.Collect();
         }
         public void StopSound()
@@ -502,6 +516,24 @@ namespace TheGuideToTheNewEden.WinUI.Models
             else
             {
                 return false;
+            }
+        }
+        public List<Core.Models.ChannelIntel.ChannelIntelObserver> GetObservers()
+        {
+            return _observers;
+        }
+        public void ListenChannelIntel()
+        {
+            foreach(var obs in _observers)
+            {
+                obs.IgnoreJumps = true;
+            }
+        }
+        public void UnListenChannelIntel()
+        {
+            foreach (var obs in _observers)
+            {
+                obs.IgnoreJumps = false;
             }
         }
     }

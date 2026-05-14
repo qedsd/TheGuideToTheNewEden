@@ -8,6 +8,7 @@ using System.Linq;
 using TheGuideToTheNewEden.Core.Services.DB;
 using System.Threading.Tasks;
 using System.IO;
+using System.Drawing;
 
 namespace TheGuideToTheNewEden.Core.EVEHelpers
 {
@@ -20,13 +21,26 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             {
                 if (positionDic == null)
                 {
-                    var json = System.IO.File.ReadAllText(Config.SolarSystemMapPath);
-                    if(!string.IsNullOrEmpty(json) )
+                    var allJumpsDict = Core.Services.DB.MapSolarSystemJumpService.QueryAll().GroupBy(p => p.FromSolarSystemID).ToDictionary(p => p.Key);
+                    var mapSolarSystems = Core.Services.DB.MapSolarSystemService.QueryAll().Where(p => !p.IsSpecial()).ToDictionary(p => p.SolarSystemID);
+                    positionDic = new Dictionary<int, SolarSystemPosition>();
+                    var maxY = mapSolarSystems.Max(p => p.Value.Y2);
+                    foreach (var mapSolarSystem in mapSolarSystems.Values)
                     {
-                        var list = JsonConvert.DeserializeObject<List<SolarSystemPosition>>(json);
-                        if(list.NotNullOrEmpty())
+                        if (allJumpsDict.TryGetValue(mapSolarSystem.SolarSystemID, out var jumps))
                         {
-                            positionDic = list.ToDictionary(p => p.SolarSystemID);
+                            SolarSystemPosition pos = new SolarSystemPosition()
+                            {
+                                X = mapSolarSystem.X,
+                                Y = mapSolarSystem.Y,
+                                Z = mapSolarSystem.Z,
+                                X2 = mapSolarSystem.X2,
+                                Y2 = maxY - mapSolarSystem.Y2,//游戏原点在左下角，软件原点在左上角，需要将Y轴翻转
+                                SolarSystemID = mapSolarSystem.SolarSystemID,
+                                SolarSystemName = mapSolarSystem.SolarSystemName,
+                                JumpTo = jumps.Select(p => p.ToSolarSystemID).ToList(),
+                            };
+                            positionDic.Add(pos.SolarSystemID, pos);
                         }
                     }
                 }
@@ -238,73 +252,35 @@ namespace TheGuideToTheNewEden.Core.EVEHelpers
             }
         }
 
+        /// <summary>
+        /// 将XY坐标缩放到[0,1]范围
+        /// </summary>
+        /// <param name="all"></param>
         public static void ResetXY(List<IntelSolarSystemMap> all)
         {
-            var orderX = all.OrderBy(p => p.X).ToList();
-            var orderY = all.OrderBy(p => p.Y).ToList();
-            int spanCount = (int)Math.Ceiling(Math.Sqrt(all.Count));
-            double spanXY = Math.Round(1f / spanCount, 2);//每档XY坐标跨越
-            for (int i = 0; i < spanCount; i++)
-            {
-                var currentSpanItemXs = orderX.Skip(i * spanCount).Take(spanCount);
-                foreach (var currentSpanItemX in currentSpanItemXs)
-                {
-                    currentSpanItemX.X = spanXY * i;
-                }
-                var currentSpanItemYs = orderY.Skip(i * spanCount).Take(spanCount);
-                foreach (var currentSpanItemY in currentSpanItemYs)
-                {
-                    currentSpanItemY.Y = spanXY * i;
-                }
-            }
-            //再重新按100%比例调整
-            double maxX = orderX.Last().X;
-            double maxY = orderY.Last().Y;
-            double addX = (1 - maxX) / 2;
-            double addY = (1 - maxY) / 2;
-            foreach (var item in all)
-            {
-                item.X += addX;
-                item.Y += addY;
-            }
+            // 找到原始数据的边界
+            double minX = all.Min(p => p.X2);
+            double maxX = all.Max(p => p.X2);
+            double minY = all.Min(p => p.Y2);
+            double maxY = all.Max(p => p.Y2);
 
-            //解决两个星系xy过于相近导致的重叠
-            var sameXY = all.GroupBy(p=>new {p.X, p.Y}).ToList();
-            foreach(var sames in sameXY)
+            // 计算原始数据的范围
+            double rangeX = maxX - minX;
+            double rangeY = maxY - minY;
+
+            // 计算缩放比例（保持纵横比）
+            double scaleRatio = Math.Min(1.0 / rangeX, 1.0 / rangeY);
+
+            // 计算居中偏移量
+            double centerX = (1 - (rangeX * scaleRatio)) / 2;
+            double centerY = (1 - (rangeY * scaleRatio)) / 2;
+
+            // 缩放所有点
+            List<Point> scaledPoints = new List<Point>();
+            foreach (var point in all)
             {
-                int count = sames.Count();
-                if (count > 1)
-                {
-                    var splitSpan = spanXY * 0.8 / count;
-                    var moveSpan = splitSpan * (count / 2);
-                    if(sames.Key.X - moveSpan < 0)//只能往右挪
-                    {
-                        for(int i = 0; i < count; i++)
-                        {
-                            sames.ElementAt(i).X += (i * moveSpan);
-                        }
-                    }
-                    else if(sames.Key.X + moveSpan > 1)//只能往左挪
-                    {
-                        for (int i = 0; i < count; i++)
-                        {
-                            sames.ElementAt(i).X -= (i * moveSpan);
-                        }
-                    }
-                    else//居中挪
-                    {
-                        for (int i = 0; i < count; i++)
-                        {
-                            sames.ElementAt(i).X -= moveSpan;
-                            sames.ElementAt(i).X += (i * moveSpan);
-                        }
-                    }
-                    foreach(var item in sames)
-                    {
-                        item.X = item.X > 1 ? 1 : item.X;
-                        item.Y = item.Y > 1 ? 1 : item.Y;
-                    }
-                }
+                point.X2 = ((point.X2 - minX) * scaleRatio) + centerX;
+                point.Y2 = ((point.Y2 - minY) * scaleRatio) + centerY;
             }
         }
 

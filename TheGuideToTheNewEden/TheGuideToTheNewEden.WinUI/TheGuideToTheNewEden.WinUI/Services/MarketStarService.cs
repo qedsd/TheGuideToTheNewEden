@@ -31,7 +31,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
 
         private HashSet<int> StaredTypeIds;
-        private string StaredFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StaredMarketInvType.json");
+        private string StaredFile = System.IO.Path.Combine(App.DataPath, "Configs", "StaredMarketInvType.json");
         private void InitStaredTypes()
         {
             if (System.IO.File.Exists(StaredFile))

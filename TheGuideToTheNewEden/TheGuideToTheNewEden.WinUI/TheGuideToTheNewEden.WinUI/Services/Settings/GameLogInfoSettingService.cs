@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GameLogInfoSettings.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "GameLogInfoSettings.json");
         private Dictionary<int, GameLogSetting> Values { get; set; }
         private GameLogInfoSettingService()
         {

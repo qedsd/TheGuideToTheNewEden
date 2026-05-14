@@ -25,7 +25,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return current;
             }
         }
-        private static readonly string Folder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ShoppingRecords");
+        private static readonly string Folder = System.IO.Path.Combine(App.DataPath, "Configs", "ShoppingRecords");
         public ObservableCollection<string> Files = new ObservableCollection<string>();
         public ShoppingRecordService()
         {

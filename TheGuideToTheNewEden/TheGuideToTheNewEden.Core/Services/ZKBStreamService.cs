@@ -21,20 +21,32 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
         private int _subCount = 0;
-        private KillStream _killStream;
+        private KillStreamQ _killStream;
         public ZKBStreamService()
         {
 
         }
         public async Task Sub()
         {
-            System.Threading.Interlocked.Increment(ref _subCount);
             if(_killStream == null )
             {
-                _killStream = await ZKB.NET.ZKB.SubKillStreamAsync();
+                _killStream = new KillStreamQ(ZKB.NET.Config.Redisq);
+                if(!await _killStream.ConnectAsync())
+                {
+                    _killStream = null;
+                    throw new Exception("Connect Zkillredisq Failed");
+                }
                 _killStream.OnMessage += KillStream_OnMessage;
+                _killStream.OnError += KillStream_OnError;
             }
+            System.Threading.Interlocked.Increment(ref _subCount);
         }
+
+        private void KillStream_OnError(object sender, Exception e)
+        {
+            OnError?.Invoke(this, e);
+        }
+
         public void UnSub()
         {
             System.Threading.Interlocked.Decrement(ref _subCount);
@@ -49,6 +61,7 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
         public event MessageEventHandler OnMessage;
+        public event EventHandler<Exception> OnError;
         private void KillStream_OnMessage(object sender, SKBDetail detail, string sourceData)
         {
             OnMessage?.Invoke(sender, detail, sourceData);

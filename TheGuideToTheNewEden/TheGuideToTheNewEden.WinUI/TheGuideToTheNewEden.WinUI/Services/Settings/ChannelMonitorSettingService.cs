@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 return current;
             }
         }
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "ChannelMonitorSetting.json");
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "ChannelMonitorSetting.json");
         private Dictionary<string, ChannelMonitorSetting> Values { get; set; }
         private ChannelMonitorSettingService()
         {

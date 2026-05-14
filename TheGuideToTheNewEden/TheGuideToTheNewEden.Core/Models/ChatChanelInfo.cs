@@ -14,6 +14,8 @@ namespace TheGuideToTheNewEden.Core.Models
         public string ChannelName { get; set; }
         public string Listener { get; set; }
         public DateTime SessionStarted { get; set; }
+
+        public string UID { get => Listener + ChannelID; }
         public string Folder()
         {
             return System.IO.Path.GetDirectoryName(FilePath);

@@ -39,6 +39,8 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         {
             get => marketGroups; set => SetProperty(ref marketGroups, value);
         }
+
+        public int[] MarketTypes { get; set; }
         #endregion
 
         #region 买入卖出价格
@@ -362,6 +364,15 @@ namespace TheGuideToTheNewEden.Core.Models.Market
         public double SuggestionHeatValue
         {
             get => suggestionHeatValue; set => SetProperty(ref suggestionHeatValue, value);
+        }
+
+        private double suggestionIskPerVolume = 10;
+        /// <summary>
+        /// ISK/单位体积
+        /// </summary>
+        public double SuggestionIskPerVolume
+        {
+            get => suggestionIskPerVolume; set => SetProperty(ref suggestionIskPerVolume, value);
         }
         #endregion
 

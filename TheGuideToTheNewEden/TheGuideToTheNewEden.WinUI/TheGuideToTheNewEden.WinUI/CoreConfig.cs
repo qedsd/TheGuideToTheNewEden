@@ -28,9 +28,9 @@ namespace TheGuideToTheNewEden.WinUI
         public static string DEDDbPath { set => Core.Config.DEDDBPath = value; }
         public static string StaticDbPath { set => Core.Config.StaticDBPath = value; }
         public static string CacheDbPath { set => Core.Config.CacheDBPath = value; }
-        public static string SolarSystemMapPath { set=> Core.Config.SolarSystemMapPath = value; }
         public static string CapitalJumpShipInfoPath { set => Core.Config.CapitalJumpShipInfoPath = value; }
         public static string RegionMapPath { set => Core.Config.RegionMapPath = value; }
+        public static string AppDataPath { set => Core.Config.AppDataPath = value; }
         #endregion
 
         public static bool InitDb()

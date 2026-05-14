@@ -25,6 +25,8 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
         void GetSizeAndPos(out int x, out int y, out int w, out int h);
         int GetWidth();
         int GetHeight();
+        void ChangeName(string name);
+        void ChangeSetting(PreviewItem previewItem);
         public delegate void SettingChangedDelegate(PreviewItem previewItem);
         public event SettingChangedDelegate OnSettingChanged;
 

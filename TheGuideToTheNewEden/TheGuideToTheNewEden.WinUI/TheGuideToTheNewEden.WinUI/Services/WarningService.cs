@@ -111,7 +111,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         value.Show();
                         value.Intel(content);
                     }
-                    if (SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem))
+                    if (SoundNotifyItems.TryGetValue(listener, out var soundNotifyItem) && soundNotifyItem.Listener != content.SpeakerName)//不对自己的发言播放声音
                     {
                         soundNotifyItem.PlaySound(soundSetting);
                     }

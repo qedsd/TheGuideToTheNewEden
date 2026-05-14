@@ -49,73 +49,34 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private async void EntityStatistPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= EntityStatistPage_Loaded;
-            VM.SetData(_statistic, _kbNavigationService);
-            await VM.InitAsync();
-            SetAvatar();
+            await VM.InitAsync(_statistic);
             SetSuper();
         }
 
-        private void SetAvatar()
-        {
-            Converters.GameImageConverter.ImgType imgType;
-            switch (_statistic.Type)
-            {
-                case "characterID":
-                    {
-                        imgType = Converters.GameImageConverter.ImgType.Character;
-                    }
-                    break;
-                case "corporationID":
-                    {
-                        imgType = Converters.GameImageConverter.ImgType.Corporation;
-                    }
-                    break;
-                case "allianceID":
-                    {
-                        imgType = Converters.GameImageConverter.ImgType.Alliance;
-                    }
-                    break;
-                case "shipTypeID":
-                    {
-                        imgType = Converters.GameImageConverter.ImgType.Type;
-                    }
-                    break;
-                case "groupID":
-                case "solarSystemID":
-                case "regionID":
-                case "factionID":
-                default:
-                    {
-                        Image_Avatar.Visibility = Visibility.Collapsed;
-                    }
-                    return;
-            }
-            Image_Avatar.Source = Converters.GameImageConverter.GetImageUri(_statistic.Id, imgType, 128);
-        }
         private void SetSuper()
         {
-            switch (_statistic.Type)
-            {
-                case "characterID":
-                case "corporationID":
-                case "allianceID":
-                    {
-                        if(_statistic.HasSupers)
-                        {
-                            TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_Yes");
-                        }
-                        else
-                        {
-                            TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_No");
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        StackPanel_HasSupers.Visibility = Visibility.Collapsed;
-                    }
-                    return;
-            }
+            //switch (_statistic.Type)
+            //{
+            //    case "characterID":
+            //    case "corporationID":
+            //    case "allianceID":
+            //        {
+            //            if(_statistic.HasSupers)
+            //            {
+            //                TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_Yes");
+            //            }
+            //            else
+            //            {
+            //                TextBlock_HasSupers.Text = Helpers.ResourcesHelper.GetString("General_No");
+            //            }
+            //        }
+            //        break;
+            //    default:
+            //        {
+            //            StackPanel_HasSupers.Visibility = Visibility.Collapsed;
+            //        }
+            //        return;
+            //}
         }
 
         private void Button_Character_Click(object sender, RoutedEventArgs e)
@@ -161,29 +122,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.KB
         private async void ClickInfo(object sender)
         {
             var idName = (sender as Button).Tag as IdName;
-            this.GetBaseWindow()?.ShowWaiting();
+            this.ShowWaiting();
             await _kbNavigationService.NavigationTo(idName);
-            this.GetBaseWindow()?.HideWaiting();
-        }
-
-        private void Menu_OpenInZKB_Click(object sender, RoutedEventArgs e)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append("https://zkillboard.com/");
-            switch (_statistic.Type)
-            {
-                case "shipTypeID": stringBuilder.Append("ship");break;
-                case "solarSystemID": stringBuilder.Append("system"); break;
-                default:
-                    {
-                        stringBuilder.Append(_statistic.Type[..^2]);
-                    }break;
-            }
-            
-            stringBuilder.Append('/');
-            stringBuilder.Append(_statistic.Id);
-            stringBuilder.Append('/');
-            Helpers.UrlHelper.OpenInBrower(stringBuilder.ToString());
+            this.HideWaiting();
         }
     }
 }

@@ -28,7 +28,6 @@ using System.Xml.Linq;
 using TheGuideToTheNewEden.Core;
 using WinUIEx;
 using TheGuideToTheNewEden.WinUI.Interfaces;
-using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -84,6 +83,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                     Setting = setting;
                 }
+                if(value != null)
+                {
+                    IsSetting = false;
+                }
             }
         }
 
@@ -91,7 +94,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public bool Running
         {
             get => running;
-            set => SetProperty(ref running, value);
+            set 
+            {
+                if(SetProperty(ref running, value))
+                {
+                    if (value)
+                    {
+                        RegisterHotkey();
+                    }
+                    else
+                    {
+                        UnregisterHotkey();
+                    }
+                }
+            }
         }
 
         public string OrderStr
@@ -101,7 +117,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private string _orderStr;
 
-        private static readonly string Path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "GamePreviewSetting.json");
+        private bool _isSetting;
+        public bool IsSetting
+        {
+            get => _isSetting;
+            set 
+            {
+                if(SetProperty(ref _isSetting, value))
+                {
+                    if (value)
+                    {
+                        SelectedProcess = null;
+                    }
+                }
+            } 
+        }
+
+        private int _selectedHotkeyGroupIndex = 0;
+        public int SelectedHotkeyGroupIndex
+        {
+            get => _selectedHotkeyGroupIndex;
+            set
+            {
+                SetProperty(ref _selectedHotkeyGroupIndex, value);
+            }
+        }
+
+        private static readonly string Path = System.IO.Path.Combine(App.DataPath, "Configs", "GamePreviewSetting.json");
         /// <summary>
         /// key为ProcessInfo.Guid,进程唯一标识符，与角色名称、设置名称无关
         /// </summary>
@@ -134,7 +176,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Settings = new ObservableCollection<PreviewItem>();
             }
             Init();
-            RegisterHotkey();
         }
         #region 切换快捷键
         private int _forwardHotkeyRegisterId;
@@ -143,26 +184,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             bool result1 = RegisterForwardHotkey();
             bool result2 = RegisterBackwardHotkey();
-            if(result1 && result2)
+            RegisterHotKeyGroups();
+            if (result1 && result2)
             {
                 return;
             }
             else if(!result1 && !result2)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterHotkeyFailed"));
             }
             else if(result1)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed"));
             }
             else if(result2)
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed"));
             }
         }
         private bool RegisterForwardHotkey()
         {
-            Core.Log.Info($"向前全局切换快捷键{PreviewSetting.SwitchHotkey_Forward}");
             if(!UnregisterForwardHotkey())
             {
                 return false;
@@ -178,7 +219,6 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private bool RegisterBackwardHotkey()
         {
-            Core.Log.Info($"向后全局切换快捷键{PreviewSetting.SwitchHotkey_Backward}");
             if (!UnregisterBackwardHotkey())
             {
                 return false;
@@ -190,6 +230,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 return RegisterHotkey(PreviewSetting.SwitchHotkey_Backward, out _backwardHotkeyRegisterId);
+            }
+        }
+        private void RegisterHotKeyGroups()
+        {
+            if (PreviewSetting.HotKeyGroups.NotNullOrEmpty())
+            {
+                foreach (var group in PreviewSetting.HotKeyGroups)
+                {
+                    RegisterHotkeyGroup(group);
+                }
             }
         }
         private bool RegisterHotkey(string hotkey, out int hotkeyRegisterId)
@@ -211,6 +261,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     return false;
                 }
+            }
+        }
+        private void UnregisterHotkey()
+        {
+            UnregisterForwardHotkey();
+            UnregisterBackwardHotkey();
+            UnregisterHotKeyGroups();
+        }
+        private bool UnregisterHotkey(int registerId)
+        {
+            if (registerId > 0)
+            {
+                if (HotkeyService.GetHotkeyService(Window.GetWindowHandle()).Unregister(registerId))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
             }
         }
         private bool UnregisterForwardHotkey()
@@ -251,16 +325,33 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return true;
             }
         }
+        private void UnregisterHotKeyGroups()
+        {
+            if (PreviewSetting.HotKeyGroups.NotNullOrEmpty())
+            {
+                foreach (var group in PreviewSetting.HotKeyGroups)
+                {
+                    if (UnregisterHotkey(group.ForwardHotkeyRegisterId))
+                    {
+                        group.ForwardHotkeyRegisterId = -1;
+                    }
+                    if (UnregisterHotkey(group.BackwardHotkeyRegisterId))
+                    {
+                        group.BackwardHotkeyRegisterId = -1;
+                    }
+                }
+            }
+        }
         public ICommand SetForwardHotkeyCommand => new RelayCommand(() =>
         {
             SaveSetting();
             if(RegisterForwardHotkey())
             {
-                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Forward}");
+                ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Forward}");
             }
             else
             {
-                Window.ShowError($"{ Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{ PreviewSetting.SwitchHotkey_Forward}");
+                ShowError($"{ Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{ PreviewSetting.SwitchHotkey_Forward}");
             }
         });
         public ICommand SetBackwardHotkeyCommand => new RelayCommand(() =>
@@ -268,11 +359,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             SaveSetting();
             if (RegisterBackwardHotkey())
             {
-                Window.ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Backward}");
+                ShowSuccess($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeySuccessful")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
             else
             {
-                Window.ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{PreviewSetting.SwitchHotkey_Backward}");
+                ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{PreviewSetting.SwitchHotkey_Backward}");
             }
         });
 
@@ -288,6 +379,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     SwitchBackward();
                 }
+                else
+                {
+                    SwitchHotkeyGroup(hotkeyId);
+                }
             }
         }
         private string _lastActiveProcessGUID;
@@ -296,7 +391,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             var lastActiveProcess = Processes.FirstOrDefault(p=>p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null)
+            if (lastActiveProcess == null || _lastActiveGroup != null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -305,12 +400,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         value.ActiveSourceWindow();
                         _lastActiveProcessGUID = firstRunning.GUID;
+                        _lastActiveGroup = null;
                     }
                 }
             }
             else
             {
                 var runnings = targetProcesses;
+                bool foundLastActiveProcess = false;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -335,7 +432,20 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        foundLastActiveProcess = true;
                         break;
+                    }
+                }
+                if (!foundLastActiveProcess)
+                {
+                    var firstRunning = targetProcesses.FirstOrDefault();
+                    if (firstRunning != null)
+                    {
+                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                        {
+                            value.ActiveSourceWindow();
+                            _lastActiveProcessGUID = firstRunning.GUID;
+                        }
                     }
                 }
             }
@@ -346,7 +456,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             //筛选出正在运行中的和响应全局快捷键的
             var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
             var lastActiveProcess = Processes.FirstOrDefault(p => p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null)
+            if (lastActiveProcess == null || _lastActiveGroup != null)
             {
                 var firstRunning = targetProcesses.FirstOrDefault();
                 if (firstRunning != null)
@@ -355,12 +465,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         value.ActiveSourceWindow();
                         _lastActiveProcessGUID = firstRunning.GUID;
+                        _lastActiveGroup = null;
                     }
                 }
             }
             else
             {
                 var runnings = targetProcesses;
+                bool foundLastActiveProcess = false;
                 for (int i = 0; i < runnings.Count; i++)
                 {
                     var item = runnings[i];
@@ -385,20 +497,178 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 _lastActiveProcessGUID = targetGUID;
                             }
                         }
+                        foundLastActiveProcess = true;
                         break;
+                    }
+                }
+                if (!foundLastActiveProcess)
+                {
+                    var firstRunning = targetProcesses.FirstOrDefault();
+                    if (firstRunning != null)
+                    {
+                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                        {
+                            value.ActiveSourceWindow();
+                            _lastActiveProcessGUID = firstRunning.GUID;
+                        }
                     }
                 }
             }
         }
+        private PreviewHotKeyGroup _lastActiveGroup = null;
+        private void SwitchHotkeyGroup(int hotkeyId)
+        {
+            PreviewHotKeyGroup targetGroup = null;
+            bool forward = true;
+            var target = PreviewSetting.HotKeyGroups.FirstOrDefault(p => p.ForwardHotkeyRegisterId == hotkeyId);
+            if (target != null)
+            {
+                targetGroup = target;
+                forward = true;
+            }
+            else
+            {
+                target = PreviewSetting.HotKeyGroups.FirstOrDefault(p => p.BackwardHotkeyRegisterId == hotkeyId);
+                if (target != null)
+                {
+                    targetGroup = target;
+                    forward = false;
+                }
+            }
+            if(targetGroup != null)
+            {
+                var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && targetGroup.GameNames.Contains(p.GetCharacterName())).ToList();
+                if (targetProcesses.NotNullOrEmpty())
+                {
+                    //切换分组后判断分组是否设置了从头开始
+                    if ((_lastActiveGroup != targetGroup && targetGroup.Restart) || targetGroup.LastActiveProcessGUID == null)
+                    {
+                        var firstRunning = targetProcesses.FirstOrDefault();
+                        if (firstRunning != null)
+                        {
+                            if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                            {
+                                value.ActiveSourceWindow();
+                                targetGroup.LastActiveProcessGUID = firstRunning.GUID;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var runnings = targetProcesses;
+                        bool foundLastActiveProcess = false;
+                        for (int i = 0; i < runnings.Count; i++)
+                        {
+                            var item = runnings[i];
+                            if (item.GUID == targetGroup.LastActiveProcessGUID)
+                            {
+                                string targetGUID = null;
+                                if (forward)//向前
+                                {
+                                    //上一次激活的窗口不是最后一个窗口，则依序激活下一个，是最后一个窗口则激活第一个
+                                    if (i != runnings.Count - 1)
+                                    {
+                                        targetGUID = runnings[i + 1].GUID;
+                                    }
+                                    else
+                                    {
+                                        targetGUID = runnings.First().GUID;
+                                    }
+                                }
+                                else//向后
+                                {
+                                    //上一次激活的窗口第一个窗口，则依序激活上一个，是第一个窗口则激活最后一个
+                                    if (i != 0)
+                                    {
+                                        targetGUID = runnings[i - 1].GUID;
+                                    }
+                                    else
+                                    {
+                                        targetGUID = runnings.Last().GUID;
+                                    }
+                                }
+                                if (targetGUID != null)
+                                {
+                                    if (_runningDic.TryGetValue(targetGUID, out var value))
+                                    {
+                                        value.ActiveSourceWindow();
+                                        targetGroup.LastActiveProcessGUID = targetGUID;
+                                    }
+                                }
+                                foundLastActiveProcess = true;
+                                break;
+                            }
+                        }
+                        if(!foundLastActiveProcess)//存在上一个激活的进程关闭的情况
+                        {
+                            var firstRunning = targetProcesses.FirstOrDefault();
+                            if (firstRunning != null)
+                            {
+                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
+                                {
+                                    value.ActiveSourceWindow();
+                                    targetGroup.LastActiveProcessGUID = firstRunning.GUID;
+                                }
+                            }
+                        }
+                    }
+                }
+                _lastActiveGroup = targetGroup;
+            }
+        }
+
+        public void RemoveHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
+        {
+            UnregisterHotkey(hotKeyGroup.ForwardHotkeyRegisterId);
+            UnregisterHotkey(hotKeyGroup.BackwardHotkeyRegisterId);
+            PreviewSetting.HotKeyGroups.Remove(hotKeyGroup);
+            SaveSetting();
+        }
+
+        public void RegisterHotkeyGroup(PreviewHotKeyGroup hotKeyGroup)
+        {
+            if(hotKeyGroup != null)
+            {
+                if(UnregisterHotkey(hotKeyGroup.ForwardHotkeyRegisterId))
+                {
+                    if (!string.IsNullOrEmpty(hotKeyGroup.SwitchHotkey_Forward))
+                    {
+                        if(RegisterHotkey(hotKeyGroup.SwitchHotkey_Forward, out int id))
+                        {
+                            hotKeyGroup.ForwardHotkeyRegisterId = id;
+                        }
+                        else
+                        {
+                            ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterForwardHotkeyFailed")}:{hotKeyGroup.SwitchHotkey_Forward}");
+                        }
+                    }
+                }
+                if (UnregisterHotkey(hotKeyGroup.BackwardHotkeyRegisterId))
+                {
+                    if (!string.IsNullOrEmpty(hotKeyGroup.SwitchHotkey_Backward))
+                    {
+                        if (RegisterHotkey(hotKeyGroup.SwitchHotkey_Backward, out int id))
+                        {
+                            hotKeyGroup.BackwardHotkeyRegisterId = id;
+                        }
+                        else
+                        {
+                            ShowError($"{Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_RegisterBackwardHotkeyFailed")}:{hotKeyGroup.SwitchHotkey_Backward}");
+                        }
+                    }
+                }
+            }
+        }
+        
         #endregion
         private async void Init()
         {
-            Window?.ShowWaiting();
+            ShowWaiting();
             StopGameMonitor();
             await RefreshProcesses();
             SelectedProcess = null;
             StartGameMonitor();
-            Window?.HideWaiting();
+            HideWaiting();
         }
         private async Task<List<ProcessInfo>> RefreshProcesses()
         {
@@ -414,11 +684,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(allProcessDict.TryGetValue(process.MainWindowHandle,out var targetProcess))
                     {
-                        //进程还存在
-                        //判断进程名称是否需要更新，刚进入游戏时尚无角色名称，若名称改变，当作新进程处理
+                        //进程变化
                         if(process.WindowTitle != targetProcess.WindowTitle)
                         {
                             renameList.Add(process);
+                            process.WindowTitle = targetProcess.WindowTitle;
                         }
                         else
                         {
@@ -433,20 +703,76 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 foreach(var process in renameList)
                 {
-                    Processes.Remove(process);
-                    //若开启还需关闭
                     if(process.Running && process.Setting != null)
                     {
-                        Stop(process.Setting);
-                        process.Setting.ProcessInfo = null;
-                        process.Setting = null;
+                        allProcessDict.Remove(process.MainWindowHandle);
+                        PreviewItem newSetting = null;
+                        bool keepSetting = true;
+                        if (string.IsNullOrEmpty(process.Setting.Name))//由选择界面切换到角色
+                        {
+                            if (previewSetting.SwitchCharacterKeepSetting)
+                            {
+                                var savedSetting = GetSavedSetting(process.GetCharacterName());
+                                if (savedSetting == null)
+                                {
+                                    savedSetting = new PreviewItem();
+                                }
+                                savedSetting.ProcessInfo = process;
+                                savedSetting.Name = process.GetCharacterName();
+                                newSetting = savedSetting;
+                            }
+                            else
+                            {
+                                keepSetting = false;
+                            }
+                        }
+                        else if (process.Setting.Name.StartsWith("*Untitled"))//由退出角色后的选择界面切换到角色
+                        {
+                            if (previewSetting.SwitchCharacterKeepSetting)
+                            {
+                                var savedSetting = GetSavedSetting(process.GetCharacterName());
+                                if (savedSetting == null)
+                                {
+                                    savedSetting = new PreviewItem();
+                                }
+                                savedSetting.CopyFrom(process.Setting);
+                                savedSetting.Name = process.GetCharacterName();
+                                newSetting = savedSetting;
+                            }
+                            else
+                            {
+                                keepSetting = false;
+                            }
+                        }
+                        else//由角色切换到选择界面
+                        {
+                            newSetting = new PreviewItem();
+                            newSetting.CopyFrom(process.Setting);
+                            newSetting.Name = $"*Untitled[{process.Setting.Name}]";
+                            process.Setting.ProcessInfo = null;
+                        }
+                        if(keepSetting)
+                        {
+                            process.Setting = newSetting;
+                            if (_runningDic.TryGetValue(process.GUID, out var window))
+                            {
+                                window.ChangeName(newSetting.Name);
+                                window.ChangeSetting(newSetting);
+                            }
+                        }
+                        else
+                        {
+                            exitedList.Add(process);
+                            allProcessDict.Add(process.MainWindowHandle, process);
+                        }
                     }
                 }
                 foreach(var process in exitedList)//停止已退出进程预览
                 {
-                    Stop(process.Setting);
-                    process.Setting.ProcessInfo = null;
-                    process.Setting = null;
+                    if(process.Setting != null)
+                    {
+                        Stop(process.Setting);
+                    }
                     Processes.Remove(process);
                 }
                 if(allProcessDict.Any())//此时还剩下的allProcessDict进程均为新加
@@ -607,7 +933,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return null;
             }
         }
-
+        private PreviewItem GetSavedSetting(string characterName)
+        {
+            if (!string.IsNullOrEmpty(characterName))
+            {
+                //从保存列表里找出第一个同名且不在运行中的设置
+                return Settings.FirstOrDefault(p => p.Name == characterName && p.ProcessInfo == null);
+            }
+            else
+            {
+                return null;
+            }
+        }
         private bool Start(ProcessInfo processInfo, PreviewItem setting, PreviewSetting previewSetting)
         {
             if (processInfo != null && setting != null)
@@ -629,7 +966,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         gamePreviewWindow = new InvisibleGamePreviewWindow(setting, previewSetting);
                     }
-                    
+                    setting.ProcessInfo = processInfo;
                     if (_runningDic.TryAdd(processInfo.GUID, gamePreviewWindow))
                     {
                         gamePreviewWindow.OnSettingChanged += GamePreviewWindow_OnSettingChanged;
@@ -637,7 +974,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         gamePreviewWindow.Start(processInfo.MainWindowHandle);
                         processInfo.Running = true;
                         //保存
-                        if (!string.IsNullOrEmpty(setting.Name))
+                        if (!string.IsNullOrEmpty(setting.Name) && !setting.Name.StartsWith("*Untitled"))
                         {
                             if (!PreviewSetting.PreviewItems.Contains(setting))
                             {
@@ -651,7 +988,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                         else
                         {
-                            Window.ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
+                            ShowMsg(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_EmptyCharacterName"));
                         }
                     }
                     return true;
@@ -659,7 +996,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 catch (Exception ex)
                 {
                     Log.Error(ex);
-                    Window.ShowError(ex.Message, false);
+                    ShowError(ex.Message, false);
                     return false;
                 }
             }
@@ -692,14 +1029,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             SaveSetting();
         }
+
+        private object _locker = new object();
         private void SaveSetting()
         {
-            if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(Path)))
+            lock (_locker)
             {
-                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
+                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(Path)))
+                {
+                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
+                }
+                string json = JsonConvert.SerializeObject(PreviewSetting);
+                System.IO.File.WriteAllText(Path, json);
             }
-            string json = JsonConvert.SerializeObject(PreviewSetting);
-            System.IO.File.WriteAllText(Path,json);
         }
 
         public void SaveOrder()
@@ -752,6 +1094,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 _runningDic.Remove(previewItem.ProcessInfo.GUID);
                 previewItem.ProcessInfo.Running = false;
+                previewItem.ProcessInfo.Setting = null;
+                previewItem.ProcessInfo = null;
                 window.Stop();
                 if (_runningDic.Count == 0)
                 {
@@ -760,7 +1104,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             else
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_CannotFindTargetWindow"));
             }
         }
 
@@ -780,7 +1124,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(!_runningDic.NotNullOrEmpty())
             {
-                Window.ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NoRunning"), true);
+                ShowError(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_NoRunning"), true);
             }
             else
             {
@@ -788,7 +1132,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     window.SetSize(PreviewSetting.UniformWidth, PreviewSetting.UniformHeight);
                 }
-                Window.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_SetUniformSizeSuccessful"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_SetUniformSizeSuccessful"));
                 SaveSetting();
             }
         });
@@ -893,17 +1237,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(PreviewSetting.AutoLayout < 0)
             {
-                Window.ShowError("请选择对齐方式", true);
+                ShowError("请选择对齐方式", true);
                 return;
             }
             if (PreviewSetting.AutoLayoutAnchor < 0)
             {
-                Window.ShowError("请选择对齐位置", true);
+                ShowError("请选择对齐位置", true);
                 return;
             }
             if(_runningDic.Count < 2)
             {
-                Window.ShowError("请激活至少两个预览窗口", true);
+                ShowError("请激活至少两个预览窗口", true);
                 return;
             }
 
@@ -916,11 +1260,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     case 2: SetAutoLayout3(window); break;
                     case 3: SetAutoLayout4(window); break;
                 }
-                Window.ShowSuccess("已应用对齐布局");
+                ShowSuccess("已应用对齐布局");
             }
             else
             {
-                Window.ShowError("未找到第一个运行窗口");
+                ShowError("未找到第一个运行窗口");
             }
             
         }
@@ -935,8 +1279,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach(var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if(!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -976,8 +1324,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refY = targetWinY;//参考y，默认为targetWindow的y，如果换行后，则为换行后的行首个窗口y
             int yWrap = 1;//y换行方向，默认向下换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -1017,8 +1369,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -1058,8 +1414,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             int refX = targetWinX;//参考x，默认为targetWindow的x，如果换行后，则为换行后的行首个窗口x
             int xWrap = 1;//x换行方向，默认向右换行
             int lineCount = 1;
-            foreach (var win in _runningDic.Values)
+            foreach (var proc in Processes.Where(p => p.Running && p.Setting.ShowPreviewWindow))
             {
+                if (!_runningDic.TryGetValue(proc.GUID, out var win))
+                {
+                    continue;
+                }
                 if (win == targetWindow || !win.GetSetting().ShowPreviewWindow)
                 {
                     continue;
@@ -1116,7 +1476,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             catch(Exception ex)
             {
                 Log.Error(ex);
-                Window?.ShowError(ex.Message);
+                ShowError(ex.Message);
             }
         });
         public ICommand StopAllCommand => new RelayCommand(() =>
@@ -1147,6 +1507,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 }
             }
+        });
+
+        public ICommand SettingCommand => new RelayCommand(() =>
+        {
+            if (!IsSetting)
+            {
+                UpdateOrderCommand.Execute(null);
+            }
+             IsSetting = !IsSetting;
+        });
+        public ICommand AddHotkeyGroupCommand => new RelayCommand(() =>
+        {
+            PreviewSetting.HotKeyGroups.Add(new PreviewHotKeyGroup()
+            {
+                GroupName = $"Group{PreviewSetting.HotKeyGroups.Count + 1}",
+            });
+            SelectedHotkeyGroupIndex = PreviewSetting.HotKeyGroups.Count - 1;
         });
 
         #region 排序设置
@@ -1189,7 +1566,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
             }
             SaveSetting();
-            Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_OrderSetting_SaveSuccess"));
+            ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_OrderSetting_SaveSuccess"));
         });
         #endregion
 
@@ -1234,7 +1611,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     }
                 }
                 SaveSetting();
-                Window?.ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
+                ShowSuccess(Helpers.ResourcesHelper.GetString("GamePreviewMgrPage_ApplySettingToAll_Succes"));
             }
             ShowThumbRequsted.Invoke(null, EventArgs.Empty);
         });
@@ -1244,8 +1621,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             Processes.CollectionChanged -= Processes_CollectionChanged;
             HotkeyService.GetHotkeyService(Window.GetWindowHandle()).HotkeyActived -= GamePreviewMgrViewModel_HotkeyActived;
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
-            UnregisterForwardHotkey();
-            UnregisterBackwardHotkey();
+            UnregisterHotkey();
             StopGameMonitor();
         }
     }

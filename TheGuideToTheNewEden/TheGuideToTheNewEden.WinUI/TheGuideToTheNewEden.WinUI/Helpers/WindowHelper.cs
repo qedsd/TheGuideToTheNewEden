@@ -22,11 +22,18 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
 
         static public void TrackWindow(Window window)
         {
-            window.Closed += (sender, args) =>
-            {
-                _activeWindows.Remove(window);
-            };
+            window.Closed += Window_Closed;
             _activeWindows.Add(window);
+        }
+
+        private static void Window_Closed(object sender, WindowEventArgs args)
+        {
+            _activeWindows.Remove(sender as Window);
+        }
+
+        static public void UnTrackWindow(Window window)
+        {
+            _activeWindows.Remove(window);
         }
 
         static public Window GetWindowForElement(UIElement element)
@@ -47,6 +54,19 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         static public List<Window> ActiveWindows { get { return _activeWindows; } }
 
         static private List<Window> _activeWindows = new List<Window>();
+
+        public static void CloseAll()
+        {
+            foreach(var win in _activeWindows.ToList())
+            {
+                try
+                {
+                    win.Closed -= Window_Closed;
+                    win.Close();
+                }
+                catch { }
+            }
+        }
 
         public static Window MainWindow { get; private set; }
         public static void SetMainWindow(Window window)
@@ -389,8 +409,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         /// <param name="targetHandle"></param>
         public static void SetForegroundWindow5(IntPtr targetHandle)
         {
-            Win32.keybd_event(0, 0, 0, 0);//SetForegroundWindow条件之一：The calling process received the last input event.
+            //SetForegroundWindow条件之一：The calling process received the last input event.
+            Win32.keybd_event(0x11, 0, 0, 0);//Ctrl键
+            //Win32.keybd_event(0, 0, 0, 0);
             SetForegroundWindow_Click(targetHandle);
+            Win32.keybd_event(0x11, 0, 0x0002, 0);
+            //Win32.keybd_event(0, 0, 0x0002, 0);
         }
 
         /// <summary>

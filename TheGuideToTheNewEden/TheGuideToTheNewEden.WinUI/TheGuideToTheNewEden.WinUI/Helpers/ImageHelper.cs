@@ -125,5 +125,29 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             }
             source.Save(Path.Combine(folder, $"{fileName}.{imageFormat.ToString().ToLower()}"), imageFormat);
         }
+
+        public static async Task<Bitmap> GetBitmapFromUrlAsync(string url)
+        {
+            try
+            {
+                using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+                {
+                    httpClient.Timeout = TimeSpan.FromSeconds(30);
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
+                    byte[] imageBytes = await httpClient.GetByteArrayAsync(url);
+
+                    using (MemoryStream ms = new MemoryStream(imageBytes))
+                    {
+                        return new Bitmap(ms);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"下载图片失败: {ex.Message}");
+                return null;
+            }
+        }
     }
 }

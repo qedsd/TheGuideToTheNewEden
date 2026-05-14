@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
@@ -11,6 +12,10 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
     {
         public static string GetString(string key,bool returnKey = true)
         {
+            if(string.IsNullOrEmpty(key))
+            {
+                return string.Empty;
+            }
             if (Application.Current.Resources.TryGetValue(key, out var str))
             {
                 return str.ToString();

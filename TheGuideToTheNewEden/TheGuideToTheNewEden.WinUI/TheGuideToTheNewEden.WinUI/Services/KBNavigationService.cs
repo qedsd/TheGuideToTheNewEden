@@ -1,5 +1,7 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using Octokit;
+﻿using Azure;
+using ESI.NET.Models.PlanetaryInteraction;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,34 +19,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
 {
     public class KBNavigationService
     {
-        private static KBNavigationService _default;
-        public static KBNavigationService Default
+        private TabView _tabView;
+        private TabViewItem _homeTabViewItem;
+        private Dictionary<long, TabViewItem> _instances = new Dictionary<long, TabViewItem>();
+        public void Init(TabView tabView)
         {
-            get
-            {
-                _default ??= new KBNavigationService();
-                return _default;
-            }
+            _tabView = tabView;
         }
-        private readonly Action<string, Microsoft.UI.Xaml.Controls.Page> _addTabAction;
-        private readonly BaseWindow _window;
-        public KBNavigationService(ZKBHomePage page)
-        {
-            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h,p) =>
-            {
-                page.AddTab(h, p);
-            });
-            _window = page.GetBaseWindow();
-        }
-        public KBNavigationService()
-        {
-            _addTabAction = new Action<string, Microsoft.UI.Xaml.Controls.Page>((h, p) =>
-            {
-                Services.NavigationService.NavigateTo(p,h);
-            });
-            _window = Helpers.WindowHelper.MainWindow as BaseWindow;
-        }
-
         public static async Task<EntityStatistic> GetEntityStatisticAsync(int id, ZKB.NET.EntityType entityType)
         {
             return await ZKB.NET.ZKB.GetStatisticAsync(entityType, id);
@@ -72,19 +53,44 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
         }
 
-        public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header)
+        public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header, bool newWindow = false)
         {
+            if (!newWindow)
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToZKB();
+            }
             var statistic = await GetEntityStatisticAsync(id, entityType);
             if (statistic != null)
             {
-                EntityStatistPage page = new EntityStatistPage(statistic,this);
-                _window.DispatcherQueue.TryEnqueue(() =>
+                Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    _addTabAction($"ZKB - {header}", page);
+                    if (_tabView != null && !newWindow)
+                    {
+                        TabViewItem content = null;
+                        if (!_instances.TryGetValue(id, out content))
+                        {
+                            content = new TabViewItem()
+                            {
+                                Content = new EntityStatistPage(statistic, this),//KBNavigationService懒得改成IOC了，就这样传吧
+                                Header = header,
+                                IsClosable = true,
+                                IsSelected = true,
+                                Tag = (long)id,
+                            };
+                            _instances.Add(id, content);
+                            _tabView.TabItems.Add(content);
+                        }
+                        PageChanged?.Invoke(id, header);
+                    }
+                    else
+                    {
+                        ToolWindow toolWindow = new ToolWindow(header, header,new EntityStatistPage(statistic, this), WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                        toolWindow.Activate();
+                    }
                 });
             }
         }
-        public async Task NavigationTo(IdName idName)
+        public async Task NavigationTo(IdName idName, bool newWindow = false)
         {
             ZKB.NET.EntityType entityType;
             switch (idName.GetCategory())
@@ -103,18 +109,95 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         return;
                     }
             }
-            await NavigationTo(idName.Id, entityType, idName.Name);
+            await NavigationTo(idName.Id, entityType, idName.Name,newWindow);
         }
 
-        public void NavigateToKM(Core.Models.KB.KBItemInfo info)
+        public void NavigateToKM(Core.Models.KB.KBItemInfo info, bool newWindow = false)
         {
-            _window.DispatcherQueue.TryEnqueue(() =>
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                KBDetailPage detailPage = new KBDetailPage(info, this);
-                string name = info.Victim == null ? info.SKBDetail.KillmailId.ToString() : info.Victim.Name;
-                _addTabAction($"KB - {name}", detailPage);
+                long id = info.SKBDetail.KillmailId;
+                string name = info.Victim == null ? id.ToString() : info.Victim.Name;
+                string header = $"KB-{name}";
+                if (_tabView == null || newWindow)
+                {
+                    ToolWindow toolWindow = new ToolWindow(header, header, new KBDetailPage(info), WindowTitleStyle.Default, true, true, true, true, false, 1000, 800);
+                    toolWindow.Activate();
+                }
+                else
+                {
+                    TabViewItem content = null;
+                    if (!_instances.TryGetValue(id, out content))
+                    {
+                        content = new TabViewItem()
+                        {
+                            Header = header,
+                            Content = new KBDetailPage(info),
+                            IsClosable = true,
+                            IsSelected = true,
+                            Tag = id,
+                        };
+                        _instances.Add(id, content);
+                        _tabView.TabItems.Add(content);
+                    }
+                    PageChanged?.Invoke(id, $"KB-{name}");
+                }
+            });
+        }
+        public void NavigateToInstance(long id)
+        {
+            Helpers.WindowHelper.MainWindow.DispatcherQueue.SafelyTryEnqueue(() =>
+            {
+                if (_instances.TryGetValue(id, out var content))
+                {
+                    content.IsSelected = true;
+                }
             });
         }
 
+        public void NavigateToHome()
+        {
+            if(_homeTabViewItem == null)
+            {
+                _homeTabViewItem = new TabViewItem()
+                {
+                    Header = Helpers.ResourcesHelper.GetString("ZKBHomePage_KillStream"),
+                    Content = new KillStreamPage(),
+                    IsSelected = true,
+                    IsClosable = false,
+                    Tag = -1L
+                };
+                _tabView.TabItems.Add(_homeTabViewItem);
+            }
+            _homeTabViewItem.IsSelected = true;
+        }
+
+        public void RemoveInstance(long id)
+        {
+            if(id == -1)//Home
+            {
+                (_homeTabViewItem.Content as KillStreamPage).Close();
+                _homeTabViewItem.Content = null;
+                _homeTabViewItem.Content = new KillStreamPage(false);
+            }
+            if (_instances.TryGetValue(id, out var content))
+            {
+                _tabView.TabItems.Remove(content);
+                _instances.Remove(id);
+            }
+        }
+        public void Reset()
+        {
+            foreach (var instance in _instances)
+            {
+                _tabView.TabItems?.Remove(instance);
+            }
+            _instances.Clear();
+            _homeTabViewItem = null;
+            _tabView = null;
+        }
+
+        public delegate void KBPageDelegate(long id, string name);
+        public event KBPageDelegate PageChanged;
     }
 }

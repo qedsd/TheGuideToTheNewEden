@@ -57,8 +57,42 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
             set => SettingService.SetValue(ThreadKey, value.ToString());
         }
 
-        public static readonly string StructureOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "StructureOrders");
-        public static readonly string RegionOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "RegionOrders");
-        public static readonly string HistoryOrderFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "HistoryOrders");
+        private const string ScalperSikpStructureKey = "ScalperSikpStructure";
+        public static bool ScalperSikpStructureValue
+        {
+            get
+            {
+                if (bool.TryParse(SettingService.GetValue(ScalperSikpStructureKey), out var result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            set => SettingService.SetValue(ScalperSikpStructureKey, value.ToString());
+        }
+
+        private const string MarketSikpStructureKey = "MarketSikpStructure";
+        public static bool MarketSikpStructureValue
+        {
+            get
+            {
+                if (bool.TryParse(SettingService.GetValue(MarketSikpStructureKey), out var result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            set => SettingService.SetValue(MarketSikpStructureKey, value.ToString());
+        }
+
+        public static readonly string StructureOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "StructureOrders");
+        public static readonly string RegionOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "RegionOrders");
+        public static readonly string HistoryOrderFolder = System.IO.Path.Combine(App.DataPath, "Configs", "HistoryOrders");
     }
 }

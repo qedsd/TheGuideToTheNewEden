@@ -8,12 +8,12 @@
     xmlns:kb1="using:TheGuideToTheNewEden.Core.Models.KB"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.KB"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+    Background="Transparent"
     mc:Ignorable="d">
     <Page.DataContext>
         <kb:StatistTopAllTimeViewModel x:Name="VM" />
     </Page.DataContext>
-    <Grid Margin="4,0">
+    <Grid>
         <Grid x:Name="ContentGrid">
             <ListView ItemsSource="{x:Bind VM.KillStatisticInfos, Mode=OneWay}">
                 <ListView.ItemContainerStyle>
@@ -28,6 +28,7 @@
                         <Expander
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Left"
+                            Background="Transparent"
                             Header="{Binding Type}">
                             <GridView HorizontalAlignment="Stretch" ItemsSource="{Binding KillDataInfos}">
                                 <GridView.ItemContainerStyle>
@@ -42,7 +43,7 @@
                                             Width="240"
                                             Margin="4"
                                             Padding="8"
-                                            Background="{ThemeResource MainBackgroudBrush}">
+                                            Background="{ThemeResource SecondaryBackgroudBrush}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="24" />
                                                 <ColumnDefinition Width="Auto" />

@@ -25,37 +25,40 @@ namespace TheGuideToTheNewEden.Core.Services
         /// 所有的监控项
         /// key为文件路径
         /// </summary>
-        private static Dictionary<string, IObservableFile> ItemsDic;
+        private static Dictionary<string, List<IObservableFile>> ItemsDic;
         public static bool Add(IObservableFile item)
         {
-            if(FileWatcherDic == null)
+            try
             {
-                FileWatcherDic = new Dictionary<string, EVEFileSystemWatcher>();
-                ItemsDic = new Dictionary<string, IObservableFile>();
-            }
-            string folder = Path.GetDirectoryName(item.FilePath);
-            if(FileWatcherDic.TryGetValue(folder,out var watcher))
-            {
-                if (!ItemsDic.ContainsKey(item.FilePath))
+                if (FileWatcherDic == null)
                 {
-                    ItemsDic.Add(item.FilePath, item);
-                    watcher.AddFile(item.FilePath);
-                    return true;
+                    FileWatcherDic = new Dictionary<string, EVEFileSystemWatcher>();
+                    ItemsDic = new Dictionary<string, List<IObservableFile>>();
                 }
-            }
-            else//未存在文件夹监控器，新建
-            {
-                EVEFileSystemWatcher newWatcher = new EVEFileSystemWatcher(folder);
-                newWatcher.OnChanged += Watcher_Changed;
-                newWatcher.OnAdded += Watcher_OnAdded;
-                newWatcher.Start();
-                FileWatcherDic.Add(folder, newWatcher);
-                ItemsDic.Add(item.FilePath, item);
-                newWatcher.AddFile(item.FilePath);
+                string folder = Path.GetDirectoryName(item.FilePath);
+                if (!FileWatcherDic.TryGetValue(folder, out var watcher))
+                {
+                    watcher = new EVEFileSystemWatcher(folder);
+                    watcher.OnChanged += Watcher_Changed;
+                    watcher.OnAdded += Watcher_OnAdded;
+                    watcher.Start();
+                    FileWatcherDic.Add(folder, watcher);
+                }
+                List<IObservableFile> items = null;
+                if (!ItemsDic.TryGetValue(item.FilePath, out items))//该文件没监控过
+                {
+                    items = new List<IObservableFile>();
+                    ItemsDic.Add(item.FilePath, items);
+                    watcher.AddFile(item.FilePath);
+                }
+                items.Add(item);
                 return true;
             }
-            
-            return false;
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+                return false;
+            }
         }
 
         public static void Add(IEnumerable<IObservableFile> items)
@@ -80,15 +83,25 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static void Remove(IObservableFile item)
         {
-            if(item != null && ItemsDic.Remove(item.FilePath))
+            if(item != null && ItemsDic.TryGetValue(item.FilePath, out var items))
             {
-                string folder = Path.GetDirectoryName(item.FilePath);
-                if (FileWatcherDic.TryGetValue(folder, out var watcher))
+                items.Remove(item);
+                if (!items.Any())//该文件移除所有监听器后需要取消文件监控
                 {
-                    watcher.RemoveFile(item.FilePath);
+                    string folder = Path.GetDirectoryName(item.FilePath);
+                    if (FileWatcherDic.TryGetValue(folder, out var watcher))
+                    {
+                        watcher.RemoveFile(item.FilePath);
+                    }
+                    ItemsDic.Remove(item.FilePath);
                 }
             }
         }
+
+        /// <summary>
+        /// 此方法会移除该文件所有监听器
+        /// </summary>
+        /// <param name="filePath"></param>
         public static void Remove(string filePath)
         {
             if (ItemsDic.Remove(filePath))
@@ -102,28 +115,37 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         private static void Watcher_Changed(string file)
         {
-            if (ItemsDic.TryGetValue(file, out var item))
+            if (ItemsDic.TryGetValue(file, out var items))
             {
-                item.Update();
+                foreach(var item in items)
+                {
+                    item.Update();
+                }
             }
         }
         private static void Watcher_OnAdded(string file)
         {
-            foreach(var item in ItemsDic.ToList())
+            foreach(var items in ItemsDic.ToList())
             {
-                if(item.Value.IsReplaced(file))
+                if(items.Value.First().IsReplaced(file))
                 {
                     if (FileWatcherDic.TryGetValue(Path.GetDirectoryName(file), out var watcher))
                     {
-                        watcher.RemoveFile(item.Key);
+                        watcher.RemoveFile(items.Key);
                         watcher.AddFile(file);
-                        ItemsDic.Remove(item.Key);
-                        ItemsDic.Add(file, item.Value);
-                        item.Value.Update();
+                        ItemsDic.Remove(items.Key);
+                        ItemsDic.Add(file, items.Value);
+                    }
+                    foreach(var item in items.Value)
+                    {
+                        item.Update();
                     }
                     break;
                 }
-                item.Value.CreatedFile(file);
+                foreach (var item in items.Value)
+                {
+                    item.CreatedFile(file);
+                }
             }
             OnAdded?.Invoke(file);
         }

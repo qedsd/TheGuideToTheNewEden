@@ -52,48 +52,51 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public CharactersViewModel()
         {
-            Init();
         }
-        private async void Init()
+        public async void Init()
         {
-            var characterDatas = Services.CharacterService.CharacterOauths;
-            if (characterDatas.NotNullOrEmpty())
+            try
             {
-                var vms = characterDatas.Select(p => new CharacterViewModel(p)).ToList();
-                Window?.ShowWaiting();
-                await Core.Helpers.ThreadHelper.RunAsync(vms, (c) =>
+                var characterDatas = Services.CharacterService.CharacterOauths;
+                if (characterDatas.NotNullOrEmpty())
                 {
-                    c.Init();
-                });
-                Window.HideWaiting();
-                Characters = vms.ToObservableCollection();
+                    var vms = characterDatas.Select(p => new CharacterViewModel(p)).ToList();
+                    ShowWaiting();
+                    await Core.Helpers.ThreadHelper.RunAsync(vms, (c) =>
+                    {
+                        c.Init();
+                    });
+                    HideWaiting();
+                    Characters = vms.ToObservableCollection();
+                }
+                else
+                {
+                    Characters = new ObservableCollection<CharacterViewModel>();
+                }
+                Characters.Add(new CharacterViewModel());
+                Calstatistic();
             }
-            else
+            catch (Exception ex)
             {
-                Characters = new ObservableCollection<CharacterViewModel>();
+                Core.Log.Error(ex);
+                HideWaiting();
+                ShowError(ex.Message);
             }
-            Characters.Add(new CharacterViewModel());
-            Calstatistic();
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
             if (GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
-                if (!AuthHelper.RegistyProtocol())
-                {
-                    Window.ShowError(Helpers.ResourcesHelper.GetString("CharacterPage_RegistyProtocol"));
-                    return;
-                }
                 var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if(result != null)
                 {
-                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
                     var vm = new CharacterViewModel(result);
-                    Window.ShowWaiting();
+                    ShowWaiting();
                     await Task.Run(()=>vm.Init());
                     Characters.Insert(Characters.Count - 1, vm);
                     Calstatistic();
-                    Window.HideWaiting();
+                    HideWaiting();
                 }
             }
             else
@@ -101,7 +104,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
                 if (result != null)
                 {
-                    Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
                     
                 }
             }
@@ -111,23 +114,24 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public ICommand RemoveCommand => new RelayCommand<CharacterViewModel>((character) =>
         {
             Services.CharacterService.Remove(character.SelectedCharacter);
+            ClientServiceHelper.GetRequiredService<CharacterNavigationService>().RemoveInstance(character);
             Characters.Remove(character);
             Calstatistic();
-            Window.ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
+            ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_Removed"));
         });
 
         public ICommand ShowCommand => new RelayCommand<CharacterViewModel>((character) =>
         {
-            Services.NavigationService.NavigateTo(new CharacterPage(character), character.SelectedCharacter.CharacterName);
+            ClientServiceHelper.GetRequiredService<CharacterNavigationService>().NavigateTo(character);
         });
 
         private void Calstatistic()
         {
             var cs = Characters.Take(Characters.Count - 1).ToList();
             CharactersCount = Characters.Count - 1;
-            TotalSP = cs.Sum(p => p.Skill.TotalSp).ToString("N0");
+            TotalSP = cs.Where(p=>p.Skill != null).Sum(p => p.Skill.TotalSp).ToString("N0");
             TotalISK = cs.Sum(p => p.CharacterWallet).ToString("N2");
-            TotalLP = cs.Sum(p => p.LoyaltyPoints.Sum(p2=>p2.LoyaltyPoints)).ToString("N0");
+            TotalLP = cs.Where(p => p.LoyaltyPoints != null).Sum(p => p.LoyaltyPoints.Sum(p2=>p2.LoyaltyPoints)).ToString("N0");
         }
     }
 }

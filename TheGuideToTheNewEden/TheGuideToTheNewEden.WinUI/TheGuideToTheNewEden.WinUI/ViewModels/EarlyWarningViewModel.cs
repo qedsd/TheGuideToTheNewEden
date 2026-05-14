@@ -18,6 +18,7 @@ using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.Core.Intel;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
 using TheGuideToTheNewEden.Core.Services.DB;
+using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
@@ -255,18 +256,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             if(SelectedCharacter == null)
             {
-                Window.ShowError("请选择角色");
+                ShowError("请选择角色");
                 return;
             }
             if(string.IsNullOrEmpty(LocationSolarSystem))
             {
-                Window.ShowError("请设置角色当前所处星系");
+                ShowError("请设置角色当前所处星系");
                 return;
             }
             var location = MapSolarSystems.FirstOrDefault(p => p.SolarSystemName == LocationSolarSystem);
             if (location == null)
             {
-                Window.ShowError("无效的星系名称");
+                ShowError("无效的星系名称");
                 HideWaiting();
                 return;
             }
@@ -367,11 +368,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if(WarningService.Current.RestoreWindowPos(Setting.Listener))
                 {
-                    Window?.ShowSuccess("重置成功");
+                    ShowSuccess("重置成功");
                 }
                 else
                 {
-                    Window?.ShowError("重置失败");
+                    ShowError("重置失败");
                 }
             }
         });
@@ -391,7 +392,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="news"></param>
         private void EarlyWarningItem_OnWarningUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<Core.Models.EarlyWarningContent> news)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var ch in news)
                 {
@@ -419,7 +420,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="newlines"></param>
         private void EarlyWarningItem_OnContentUpdate(Core.Models.EarlyWarningItem earlyWarningItem, IEnumerable<IntelChatContent> news)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 foreach (var line in news)
                 {
@@ -440,7 +441,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 var id = await Core.EVEHelpers.ChatLogHelper.TryGetCharacterLocationAsync(news.ElementAt(i),NameDbs);
                 if(id > 0)
                 {
-                    Window.DispatcherQueue.TryEnqueue(async() =>
+                    Window.DispatcherQueue.SafelyTryEnqueue(async() =>
                     {
                         Setting.LocationID = id;
                         SelectedMapSolarSystem = MapSolarSystems.FirstOrDefault(p => p.SolarSystemID == id);
@@ -458,7 +459,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private void ZkbIntel_OnWarningUpdate(object sender, Core.Models.EarlyWarningContent e)
         {
-            Window.DispatcherQueue.TryEnqueue(() =>
+            Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 var span = DateTime.UtcNow - e.Time;
                 string desc;
