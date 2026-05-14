@@ -25,7 +25,7 @@
         <controls:CardControl Padding="0">
             <controls:CardControl.Header />
             <controls:CardControl.CustomContent>
-                <Pivot Margin="0,-50,0,0" Padding="0">
+                <Pivot Margin="0,0,0,0" Padding="0">
                     <PivotItem>
                         <PivotItem.Header>
                             <TextBlock FontSize="14" Text="{StaticResource BusinessPage_BaseSetting}" />
