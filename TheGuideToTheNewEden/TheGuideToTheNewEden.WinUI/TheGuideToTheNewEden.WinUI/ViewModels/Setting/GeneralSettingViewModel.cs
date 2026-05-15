@@ -141,6 +141,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 selectedGameServerIndex = value;
                 _ = GameServerSelectorService.SetAsync((Core.Enums.GameServerType)value);
+                ApplyGameServer();
             }
         }
 
@@ -235,6 +236,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 Content = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Description"),
                 PrimaryButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Yes"),
                 CloseButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_No"),
+                IsSecondaryButtonEnabled = false,
+                OwnerWindow = Helpers.WindowHelper.MainWindow,
+            };
+            if (await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            {
+                App.Close();
+            }
+        }
+        private async void ApplyGameServer()
+        {
+            WindowedContentDialog dialog = new()
+            {
+                Title = Helpers.ResourcesHelper.GetString("Setting_GameServer_Restart_Title"),
+                Content = Helpers.ResourcesHelper.GetString("Setting_GameServer_Restart_Description"),
+                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_Yes"),
+                CloseButtonText = Helpers.ResourcesHelper.GetString("General_No"),
                 IsSecondaryButtonEnabled = false,
                 OwnerWindow = Helpers.WindowHelper.MainWindow,
             };

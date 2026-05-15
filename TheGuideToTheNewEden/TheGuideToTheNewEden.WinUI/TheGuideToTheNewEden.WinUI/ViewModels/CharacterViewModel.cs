@@ -187,7 +187,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        information = JsonConvert.DeserializeObject<ESI.NET.Models.Character.Information>(p.Result.Message);
+                        if(p.Result.Data != null)
+                        {
+                            information = p.Result.Data;
+                        }
+                        else
+                        {
+                            information = JsonConvert.DeserializeObject<ESI.NET.Models.Character.Information>(p.Result.Message);
+                        }
                     }
                     else
                     {
@@ -198,7 +205,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skill = JsonConvert.DeserializeObject<ESI.NET.Models.Skills.SkillDetails>(p.Result.Message);//BUG:p.Result.Data = null
+                        if(p.Result.Data != null)
+                        {
+                            skill = p.Result.Data;
+                        }
+                        else
+                        {
+                             skill = JsonConvert.DeserializeObject<ESI.NET.Models.Skills.SkillDetails>(p.Result.Message);//BUG:p.Result.Data = null
+                        }
                     }
                     else
                     {
@@ -245,7 +259,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null
+                        if(p.Result.Data != null)
+                        {
+                            skillQueueItems = p.Result.Data;
+                        }
+                        else
+                        {
+                            skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null
+                        }
                     }
                     else
                     {

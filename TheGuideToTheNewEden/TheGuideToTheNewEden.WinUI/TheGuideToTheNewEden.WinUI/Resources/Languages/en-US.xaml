@@ -66,6 +66,8 @@
     <x:String x:Key="Setting_LocalDb_Title">Localized Database Language</x:String>
     <x:String x:Key="Setting_GameServer_Description">After modifying the game server used, it is necessary to restart the application</x:String>
     <x:String x:Key="Setting_GameServer_Title">Game Server</x:String>
+    <x:String x:Key="Setting_GameServer_Restart_Title">Restart the application</x:String>
+    <x:String x:Key="Setting_GameServer_Restart_Description">After modifying the server of game, it is necessary to restart the application. Do you want to shut down the software immediately?</x:String>
     <x:String x:Key="Setting_PlayerStatus_Description">API server address for counting the number of online players on the server and the activity level of Tieba</x:String>
     <x:String x:Key="Setting_PlayerStatus_Title">Player Statistics API Address</x:String>
     <x:String x:Key="Setting_Log_Description">Record Application Exception Information</x:String>
