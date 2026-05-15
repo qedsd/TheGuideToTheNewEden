@@ -37,6 +37,10 @@ namespace TheGuideToTheNewEden.WinUI.Services.Settings
                 {
                     _allScopes.Add(lines[i]);
                 }
+                if (GameServerSelectorService.Value == Core.Enums.GameServerType.Serenity)
+                {
+                    _allScopes.Remove("esi-corporations.read_projects.v1");
+                }
             }
             return _allScopes;
         }

@@ -66,6 +66,8 @@
     <x:String x:Key="Setting_LocalDb_Title">本地化数据库语言</x:String>
     <x:String x:Key="Setting_GameServer_Description">修改使用的游戏服务器后，部分功能可能需要重启生效</x:String>
     <x:String x:Key="Setting_GameServer_Title">游戏服务器</x:String>
+    <x:String x:Key="Setting_GameServer_Restart_Title">需要重启应用</x:String>
+    <x:String x:Key="Setting_GameServer_Restart_Description">修改游戏服务器后，需要重启应用程序才能生效，是否立即关闭软件？</x:String>
     <x:String x:Key="Setting_PlayerStatus_Description">统计服务器在线人数、贴吧活跃度的API服务器地址</x:String>
     <x:String x:Key="Setting_PlayerStatus_Title">玩家统计API地址</x:String>
     <x:String x:Key="Setting_Log_Description">记录App异常信息</x:String>

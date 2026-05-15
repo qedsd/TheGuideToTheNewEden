@@ -81,9 +81,6 @@
                         <Button Command="{x:Bind VM.ToQQCommand}">
                             <Image Margin="-4" Source="/Resources/Images/Home/QQ.svg" />
                         </Button>
-                        <Button Command="{x:Bind VM.ToMSCommand}">
-                            <Image Width="20" Source="/Resources/Images/Home/microsoft-store-2022.svg" />
-                        </Button>
                         <Button Command="{x:Bind VM.ToGithubCommand}">
                             <Image Width="20" Source="/Resources/Images/Home/github-mark-white.svg" />
                         </Button>

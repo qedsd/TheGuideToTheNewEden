@@ -27,12 +27,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private static string ClientId = string.Empty;
         private static string RedirectUri = string.Empty;
         private static readonly string AuthFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Auth.json");
+        private static readonly string AuthFilePath_Serenity = System.IO.Path.Combine(App.DataPath, "Configs", "Auth_Serenity.json");
+
         private static List<string> EsiScopes { get => Services.Settings.ESIScopeService.Current.GetSelectedScopes(); }
         private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public static ObservableCollection<AuthorizedCharacterData> CharacterOauths { get; private set; }
         public static AuthorizedCharacterData CurrentCharacter { get; private set; }
 
+        private static string GetAuthFilePath()
+        {
+            return GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? AuthFilePath: AuthFilePath_Serenity;
+        }
         public static void RegisterLicense(string[] param)
         {
             if(param?.Length == 2)
@@ -46,9 +52,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.ClientId = GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? ClientId : SerenityAuthHelper.ClientId;
             CoreConfig.ESICallback = RedirectUri;
             CoreConfig.Scopes = EsiScopes;
-            if (File.Exists(AuthFilePath))
+            if (File.Exists(GetAuthFilePath()))
             {
-                string json = File.ReadAllText(AuthFilePath);
+                string json = File.ReadAllText(GetAuthFilePath());
                 CharacterOauths = JsonConvert.DeserializeObject<ObservableCollection<AuthorizedCharacterData>>(json);
             }
             else
@@ -61,12 +67,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if (CharacterOauths != null)
             {
                 string json = JsonConvert.SerializeObject(CharacterOauths);
-                string folder = Path.GetDirectoryName(AuthFilePath);
+                string folder = Path.GetDirectoryName(GetAuthFilePath());
                 if(!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
                 }
-                File.WriteAllText(AuthFilePath, json);
+                File.WriteAllText(GetAuthFilePath(), json);
             }
         }
 
