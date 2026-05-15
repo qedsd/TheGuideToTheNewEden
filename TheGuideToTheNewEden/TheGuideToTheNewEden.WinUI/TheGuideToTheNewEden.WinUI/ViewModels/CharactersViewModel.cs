@@ -85,30 +85,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public ICommand AddCommand => new RelayCommand(async() =>
         {
+            AuthorizedCharacterData result = null;
             if (GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
-                var result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
-                if(result != null)
-                {
-                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
-                    var vm = new CharacterViewModel(result);
-                    ShowWaiting();
-                    await Task.Run(()=>vm.Init());
-                    Characters.Insert(Characters.Count - 1, vm);
-                    Calstatistic();
-                    HideWaiting();
-                }
+                result = await AddTranquilityAuthDialog.ShowAsync(Window.Content.XamlRoot);
             }
             else
             {
-                var result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
-                if (result != null)
-                {
-                    ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
-                    
-                }
+                result = await AddSerenityAuthDialog.ShowAsync(Window.Content.XamlRoot);
             }
-            
+            if (result != null)
+            {
+                ShowSuccess(Helpers.ResourcesHelper.GetString("CharacterPage_AddSuccess"));
+                var vm = new CharacterViewModel(result);
+                ShowWaiting();
+                await Task.Run(() => vm.Init());
+                Characters.Insert(Characters.Count - 1, vm);
+                Calstatistic();
+                HideWaiting();
+            }
         });
 
         public ICommand RemoveCommand => new RelayCommand<CharacterViewModel>((character) =>
