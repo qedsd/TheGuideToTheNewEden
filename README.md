@@ -12,6 +12,8 @@
 - 电脑系统：Windows 10 19041.0及以上，推荐Window 11。不支持各种LTSC、特供版、精简版Windows系统，不支持Mac系统，不支持Linux系统，无手机版本。
 - .NET 桌面运行时 9.0 ：[.NET 9.0](https://dotnet.microsoft.com/zh-cn/download/dotnet/9.0)
 
+## 下载
+[Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
 
 ---
 
@@ -66,17 +68,28 @@
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelScan_Detail.png?raw=true?raw=true)
 
 
-# 下载
-[Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
-
-# 后续计划
-软件会持续修BUG及添加更多功能，欢迎提bug提想法，但无法保证更新频率。
+# 项目说明
+- **TheGuideToTheNewEden.Core** 基于.NET Standard 2.1的核心库，放与平台无关的代码，如Model、Helper、数据库管理等
+- **TheGuideToTheNewEden.WinUI** 软件最主要项目，负责UI交互及数据处理，基于WindowAppSDK+WinUI3+.NET6，解决方案的**启动项目**，若想调试、修改软件代码请从此入手
+- TheGuideToTheNewEden.ServerLogger V1版本遗留，目前未启用，用于在服务器记录每个小时游戏在线人数、每天贴吧活跃度
+- ZKB.NET 将Zkillboard的API二次封装成.NET库，一键调用，ZKB.Net.Test为该库的测试项目
+- TheGuideToTheNewEden.PreviewWindow 使用WPF实现的多开预览窗口，通过内存映射将WPF与WINUI建立通讯，具体通讯实现在项目TheGuideToTheNewEden.PreviewIPC
+- TheGuideToTheNewEden.ExefileSimulation 测试工具，游戏模拟器，模拟游戏进程供多开预览测试用、模拟聊天频道自动发言、模拟游戏日志
+- TheGuideToTheNewEden.DevTools 配置生成工具，用来生成各种数据给到软件当作配置文件使用，如生成星系间位置关系的json文件
+- TheGuideToTheNewEden.SystemCheck 测试工具，检查数据库星系名字与官方API的名字是不是一致
+- TheGuideToTheNewEden.WhomholeCrawler 配置生成工具，到网站上抓虫洞的信息
+- TheGuideToTheNewEden.SDEBuilder 将官方SDE转换为sqlite数据库，一键生成软件需要的中英文数据库
+- TheGuideToTheNewEden.CrashReporter 软件崩溃报告器
 
 # 新伊甸往事
 ## V1
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV1.jpg?raw=true?raw=true)
 ## V2
 ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV2.jpg?raw=true?raw=true)
+
+
+# 后续计划
+软件会持续修BUG及添加更多功能，欢迎提bug提想法，但无法保证更新频率。
 
 # 联系我
 - 游戏ID：QEDSD
