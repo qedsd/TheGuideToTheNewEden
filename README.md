@@ -6,7 +6,7 @@
 
 软件部分功能、实现思路源自社区内各位前辈的开发成果，在此特向他们致以诚挚的敬意与感谢。同时，也衷心感谢在开发过程中积极提出想法、协助发现问题的所有玩家。
 
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Light.png?raw=true?raw=true)
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Dark.png?raw=true?raw=true)
 
 ## 运行环境
 - 电脑系统：Windows 10 19041.0及以上，推荐Window 11。不支持各种LTSC、特供版、精简版Windows系统，不支持Mac系统，不支持Linux系统，无手机版本。
@@ -40,29 +40,15 @@
 - **游戏延迟:** 测试电脑与游戏服务器间网络延迟
 - **按键间隔:** 监控指定按键过去多长时间、按下多少次，数鱼雷专用
 
-
-## 项目说明
-- **TheGuideToTheNewEden.Core** 基于.NET Standard 2.1的核心库，放与平台无关的代码，如Model、Helper、数据库管理等
-- **TheGuideToTheNewEden.WinUI** 软件最主要项目，负责UI交互及数据处理，基于WindowAppSDK+WinUI3+.NET6，解决方案的**启动项目**，若想调试、修改软件代码请从此入手
-- TheGuideToTheNewEden.WPF WPF版软件，仅供测试用
-- TheGuideToTheNewEden.UWP UWP版软件，仅供测试用
-- TheGuideToTheNewEden.ServerLogger V1版本遗留，目前未启用，用于在服务器记录每个小时游戏在线人数、每天贴吧活跃度
-- TheGuideToTheNewEden.Updater 软件更新器，软件检查到更新后，启动该项目生成的exe去执行下载、解压
-- ZKB.NET 将Zkillboard的API二次封装成.NET库，一键调用
-- TheGuideToTheNewEden.PreviewWindow 使用WPF实现的多开预览窗口，通过内存映射将WPF与WINUI建立通讯，具体通讯实现在项目TheGuideToTheNewEden.PreviewIPC
-- TheGuideToTheNewEden.ExefileSimulation 测试工具，游戏模拟器，模拟游戏进程供多开预览测试用、模拟聊天频道自动发言、模拟游戏日志
-- TheGuideToTheNewEden.DevTools 配置生成工具，用来生成各种数据给到软件当作配置文件使用，如生成星系间位置关系的json文件
-- TheGuideToTheNewEden.ExefileSimulation 测试工具，一个简单的控制台程序，模拟游戏进程供多开预览测试用，无实际功能
-- TheGuideToTheNewEden.SystemCheck 测试工具，检查数据库星系名字与官方API的名字是不是一致
-- TheGuideToTheNewEden.WhomholeCrawler配置生成工具，到网站上抓虫洞的信息
-- ZKB.Net.Test 测试工具，测试ZKB.NET库的功能
-
 ## 软件截图
-- 黑暗模式
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Dark.png?raw=true?raw=true)
-  
+- 白色模式
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Home_Light.png?raw=true?raw=true)
+
+- 角色中心
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Characters.png?raw=true?raw=true)
+
 - 频道预警
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelIntel.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Intel.png?raw=true?raw=true)
 
 - 市场
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Market.png?raw=true?raw=true)
@@ -71,7 +57,7 @@
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Overview.png?raw=true?raw=true)
 
 - 倒货
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Scalper.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Business.png?raw=true?raw=true)
 
 - ZKillboard
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ZKB.png?raw=true?raw=true)
@@ -79,9 +65,6 @@
 - 星图
   ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/Map.png?raw=true?raw=true)
 
-- 频道玩家统计
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelScan_Statistics.png?raw=true?raw=true)
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/zh/ChannelScan_Detail.png?raw=true?raw=true)
 
 
 # 项目说明
