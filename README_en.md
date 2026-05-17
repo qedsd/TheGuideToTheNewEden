@@ -1,76 +1,93 @@
-[中文](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README.md "中文Reamme")  | [English](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README_en.md "English Reamme") 
+[Chinese](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README.md "Chinese Readme") | [English](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/README_en.md "English Readme")
 
-# The Guide To The NewEden
-An EVE Online utility collection app. Supports Chinese and English
+# The Guide to the New Eden
 
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Home_Light.png?raw=true?raw=true)
+This is a free, open-source collection of helper tools for the game EVE Online, covering various functions such as business management, alert reminders, multi-client previews, and guide queries. All features comply with the game's End User License Agreement (EULA), so please feel free to use them.
+
+Some features and implementation ideas of this software are derived from the development achievements of community predecessors, to whom we extend our sincere respect and gratitude. We also sincerely thank all players who actively provided ideas and helped identify issues during the development process.
+
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Home_Dark.png?raw=true)
+
+## Runtime Environment
+- **Operating System:** Windows 10 19041.0 or higher, Windows 11 recommended. Does not support any LTSC, special edition, or slimmed-down Windows systems. Does not support Mac or Linux systems. No mobile version.
+- **.NET Desktop Runtime 9.0:** [.NET 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
+## Download
+[Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
 
 ---
 
-# NewEden Memories
-
-Many years ago, I would make some small tools for Eve for personal use. Later on, the functions gradually increased. Although each function was simple, I found that it could still be shared with everyone. Therefore, I launched the first version of The Guide To The NewEden.
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/homeV1.jpg?raw=true?raw=true)
-If you are fortunate enough to have seen the V1 version above, then you must be rich now. Unfortunately, after the V1 version was updated for a period of time. The software came to a temporary end.
-
-# Newborn
-After many years, I discovered that there was still a legend of a the app in New Eden, so I decided to revive the app, upgrade the framework from UWP to WinUI3. Remove some outdated features from the app and add more useful new features.
-
 # Features
-- **Character:** Manage character authorization and view personal information of character, such as skill points, skill training queue, wallet balance, wallet logs, contracts, emails, and industrial data
-- **Channel Intel:** Real time notification of enemy locations through monitoring chat channels, similar to SMT Near2
-- **Game Preview:** Display the game screen on a small window at the top, commonly used for multi opening viewing and quick switching to other character game windows, similar to eve-o-preveew
-- **Market:** View market orders and historical prices for regions or structure
-- **Business:** Check the status of sell or buy orders of character, compare the price differences and profit margins of each item between different region and solar system
-- **Contract:** View public contract information for various region
-- **Server Ping:** Test the network latency between the computer and the game server
-- **Translation:** Translation of proprietary terms in the game between Chinese and English
-- **Wormhole:** View information on wormhole levels
-- **DED:** Some guides of DED(Some may be outdated, for reference only)
-- **Backstory:** Contains some official background stories
-- **Mission:** Expired Wiki of mission
-- **Game Log Monitor:** Monitor game battle logs and abnormal logs, and issue notifications for information that meets the criteria
-- **Channel Monitor:** Monitor chat channel information and issue notifications for eligible information
-- **Links:** Contains some commonly used official and third-party website links
-- **ZKillboard:** KB reporter through zkillboard API
-- **Database:** Can view software database information
-- **Map:** Game map, which can be viewed by security level, sov, and planetary resources, with small tools such as navigation and upgrade resource
-- **Channel Scan:** Statistics of player faction within the channel, and the ability to query each player's threat value, commonly used ships, and other information through ZKillboard
+- **Character:** Manage character authorization center, view character personal info such as skill points, skill training queue, wallet balance, wallet logs, contracts, mail, industry.
+- **Market:** View market orders and historical prices for various solar systems or player structures.
+- **Orders:** View personal and corporation order lists.
+- **Trade Route:** Compare and recommend profit margins for different items between two markets.
+- **Overview:** Display the game view in an always-on-top small window, commonly used to view and quickly switch between other character game windows while multi-boxing, similar to eve-o-preview.
+- **Intel:** Monitor chat channels for real-time notifications of hostile locations, similar to SMT or Near2.
+- **Chat Monitor:** Monitor chat channel messages and send notifications for information matching specific criteria.
+- **Stats:** Count player factions in a channel, and query each player's threat level, common ships, etc., via ZKillboard.
+- **Price Check:** Send an item name in the in-game chat channel, and the software will pop up a window showing the item's market price.
+- **Log Monitor:** Monitor game combat logs and anomaly logs, sending notifications for information matching specific criteria.
+- **Translation:** Query English-Chinese translations of game-specific terms, and perform general text translation after incorporating the game-specific term database.
+- **DED Expedition:** Guides for some DED expeditions (some guides may be outdated; use for reference only).
+- **Mission Guide:** Mission guides from the ancient server wiki (mostly outdated).
+- **Wormhole:** View wormhole classes, static connections, wandering connections information.
+- **Quick Links:** A collection of commonly used official and third-party website links.
+- **Map:** In-game star map, viewable by security status, sovereignty ownership, planetary resources, includes navigation tools, sovereignty plugin requirements table, etc.
+- **ZKillboard:** A youth version of the killboard using the open API from zkillboard.
+- **Database:** View software database information.
+- **Quick Input:** Typing window to avoid candidate word invisibility with built-in input methods.
+- **Latency:** Test network latency between your computer and the game server.
+- **Key Press Interval:** Monitor the time elapsed and number of presses for specified keys, dedicated for torpedo counting.
 
-## App screenshot
-- Dark mode
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Home_Dark.png?raw=true?raw=true)
-  
-- Channel Intel
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/ChannelIntel.png?raw=true?raw=true)
+## Screenshots
+- Light Mode
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Home_Light.png?raw=true)
+
+- Character Hub
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Characters.png?raw=true)
+
+- Intel
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Intel.png?raw=true)
 
 - Market
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Market.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Market.png?raw=true)
 
-- Game Preview
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Overview.png?raw=true?raw=true)
+- Overview (Multi-client preview)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Overview.png?raw=true)
 
-- Business
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Scalper.png?raw=true?raw=true)
+- Trade Route
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Business.png?raw=true)
 
 - ZKillboard
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/ZKB.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/ZKB.png?raw=true)
 
 - Map
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Map.png?raw=true?raw=true)
+  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/Map.png?raw=true)
 
-- Channel Scan
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/ChannelScan_Statistics.png?raw=true?raw=true)
-  ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/en/ChannelScan_Detail.png?raw=true?raw=true)
+# Project Structure
+- **TheGuideToTheNewEden.Core**: A core library based on .NET Standard 2.1, containing platform-agnostic code such as Models, Helpers, database management, etc.
+- **TheGuideToTheNewEden.WinUI**: The main project of the software, responsible for UI interaction and data processing, based on Windows App SDK + WinUI 3 + .NET 9. This is the **startup project** of the solution. Start here if you want to debug or modify the software code.
+- TheGuideToTheNewEden.ServerLogger: Leftover from V1, currently not enabled. Used to record hourly online player counts and daily subreddit activity on a server.
+- ZKB.NET: A .NET library that wraps the Zkillboard API for one-call access. ZKB.Net.Test is the test project for this library.
+- TheGuideToTheNewEden.PreviewWindow: Multi-client preview window implemented using WPF. Uses memory mapping to establish communication between WPF and WINUI. Specific communication implementation is in the project TheGuideToTheNewEden.PreviewIPC.
+- TheGuideToTheNewEden.ExefileSimulation: Testing tool, game simulator. Simulates game processes for multi-client preview testing, simulates chat channel auto-messaging, simulates game logs.
+- TheGuideToTheNewEden.DevTools: Configuration generation tool. Used to generate various data for the software to use as configuration files, e.g., generating a JSON file of positional relationships between solar systems.
+- TheGuideToTheNewEden.SystemCheck: Testing tool. Checks if the solar system names in the database match those from the official API.
+- TheGuideToTheNewEden.WormholeCrawler: Configuration generation tool. Crawls wormhole information from websites.
+- TheGuideToTheNewEden.SDEBuilder: Converts the official SDE (Static Data Export) into an SQLite database, generating the required Chinese/English database for the software with one click.
+- TheGuideToTheNewEden.CrashReporter: Software crash reporter.
 
+# The New Eden Past
+## V1
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/homeV1.jpg?raw=true)
+## V2
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV2.png?raw=true)
 
-# Download
-[Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
+# Future Plans
+The software will continue to have bugs fixed and more features added. Suggestions and bug reports are welcome, but update frequency cannot be guaranteed.
 
-# Update plan
-The app will continue to fix bugs and add more features. I welcome bug suggestions and ideas, but I cannot guarantee the frequency of updates.
-
-# Contact me
-- Game character：QEDSD
-- [QQ：784194289](https://jq.qq.com/?_wv=1027&k=m8Ttv1DX)
-- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/qq.jpg?raw=true?raw=true)
+# Contact Me
+- In-game ID: QEDSD
+- [QQ Group: 784194289](https://jq.qq.com/?_wv=1027&k=m8Ttv1DX)
+- ![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/qq.jpg?raw=true)
