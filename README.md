@@ -69,7 +69,7 @@
 
 # 项目说明
 - **TheGuideToTheNewEden.Core** 基于.NET Standard 2.1的核心库，放与平台无关的代码，如Model、Helper、数据库管理等
-- **TheGuideToTheNewEden.WinUI** 软件最主要项目，负责UI交互及数据处理，基于WindowAppSDK+WinUI3+.NET6，解决方案的**启动项目**，若想调试、修改软件代码请从此入手
+- **TheGuideToTheNewEden.WinUI** 软件最主要项目，负责UI交互及数据处理，基于WindowAppSDK+WinUI3+.NET9，解决方案的**启动项目**，若想调试、修改软件代码请从此入手
 - TheGuideToTheNewEden.ServerLogger V1版本遗留，目前未启用，用于在服务器记录每个小时游戏在线人数、每天贴吧活跃度
 - ZKB.NET 将Zkillboard的API二次封装成.NET库，一键调用，ZKB.Net.Test为该库的测试项目
 - TheGuideToTheNewEden.PreviewWindow 使用WPF实现的多开预览窗口，通过内存映射将WPF与WINUI建立通讯，具体通讯实现在项目TheGuideToTheNewEden.PreviewIPC
@@ -82,9 +82,9 @@
 
 # 新伊甸往事
 ## V1
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV1.jpg?raw=true?raw=true)
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/homeV1.jpg?raw=true?raw=true)
 ## V2
-![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV2.jpg?raw=true?raw=true)
+![Img](https://github.com/qedsd/TheGuideToTheNewEden/blob/master/Img/HomeV2.png?raw=true?raw=true)
 
 
 # 后续计划
