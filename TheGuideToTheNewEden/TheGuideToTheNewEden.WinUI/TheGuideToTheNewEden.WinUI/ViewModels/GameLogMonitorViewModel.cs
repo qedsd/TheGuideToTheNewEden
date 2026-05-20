@@ -133,7 +133,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach (var info in GameLogInfos)
             {
-                Start(info);
+                if (!info.Running)
+                {
+                    Start(info);
+                }
             }
         });
 
@@ -160,8 +163,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private bool Start(GameLogInfo gameLogInfo)
         {
+            if(gameLogInfo.Setting == null)
+            {
+                gameLogInfo.Setting = GetSetting(gameLogInfo.ListenerID);
+            }
             GameLogSetting setting = gameLogInfo.Setting;
-            if(setting != null)
+            if (setting != null)
             {
                 try
                 {
@@ -238,7 +245,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach (var info in GameLogInfos)
             {
-                Stop(info);
+                if (info.Running)
+                {
+                    Stop(info);
+                }
             }
             Running = false;
         });
