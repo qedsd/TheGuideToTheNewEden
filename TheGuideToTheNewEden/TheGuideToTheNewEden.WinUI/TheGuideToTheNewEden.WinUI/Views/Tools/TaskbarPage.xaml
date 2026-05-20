@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="TheGuideToTheNewEden.WinUI.Views.Tools.TaskbarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Tools"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Grid Margin="8,4">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style BasedOn="{StaticResource AccentButtonStyle}" TargetType="Button">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="CornerRadius" Value="6" />
+                </Style>
+            </Grid.Resources>
+            <Button
+                Margin="8,0,4,0"
+                Click="Separate_Click"
+                Content="{StaticResource TaskbarPage_Separate}" />
+            <Button
+                Grid.Column="1"
+                Margin="4,0,8,0"
+                Click="Merge_Click"
+                Content="{StaticResource TaskbarPage_Merge}" />
+        </Grid>
+        <TextBlock
+            Grid.Row="1"
+            FontSize="12"
+            Foreground="{ThemeResource SecondaryForegroundBrush}"
+            Text="{StaticResource TaskbarPage_Tip}" />
+    </Grid>
+
+</Page>

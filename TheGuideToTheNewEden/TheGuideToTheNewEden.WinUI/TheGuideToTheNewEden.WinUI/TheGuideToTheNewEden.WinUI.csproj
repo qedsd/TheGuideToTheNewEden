@@ -337,6 +337,7 @@
     <None Remove="Views\Tools\IMEPage.xaml" />
     <None Remove="Views\Tools\KeyboardSpanPage.xaml" />
     <None Remove="Views\Tools\ServerPingPage.xaml" />
+    <None Remove="Views\Tools\TaskbarPage.xaml" />
     <None Remove="Views\TranslationPage.xaml" />
     <None Remove="Views\TranslationWindowPage.xaml" />
     <None Remove="Views\UpdatePage.xaml" />
@@ -661,6 +662,9 @@
     <None Update="Styles\Colors_Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\Tools\TaskbarPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Tools\KeyboardSpanPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
