@@ -690,10 +690,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             renameList.Add(process);
                             process.WindowTitle = targetProcess.WindowTitle;
                         }
-                        else
-                        {
-                            allProcessDict.Remove(process.MainWindowHandle);
-                        }
+                        allProcessDict.Remove(process.MainWindowHandle);
                     }
                     else
                     {
@@ -765,6 +762,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             exitedList.Add(process);
                             allProcessDict.Add(process.MainWindowHandle, process);
                         }
+                    }
+                    else
+                    {
+                        Processes.Remove(process);
+                        allProcessDict.Add(process.MainWindowHandle, process);
                     }
                 }
                 foreach(var process in exitedList)//停止已退出进程预览
