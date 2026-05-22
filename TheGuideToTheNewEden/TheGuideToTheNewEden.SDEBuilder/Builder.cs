@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using EVEStandard.Enumerations;
 using Newtonsoft.Json;
@@ -237,7 +238,27 @@ namespace TheGuideToTheNewEden.SDEBuilder
                     }
                     foreach(var type in noPackagedVolumeTypes)
                     {
-                        var result = await _esiClient.Universe.GetTypeInfoV3Async(type.Id);
+                        EVEStandard.Models.API.ESIModelDTO<EVEStandard.Models.Type> result = null;
+                        for(int i = 0; i < 3; i++)
+                        {
+                            try
+                            {
+                                result = await _esiClient.Universe.GetTypeInfoV3Async(type.Id);
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                if(i == 2)
+                                {
+                                    throw new Exception($"Get {type.Name}({type.Id}) PackagedVolume failed after 3 retries", ex);
+                                }
+                                else
+                                {
+                                    Thread.Sleep(1000);
+                                }
+                            }
+                        }
+                        
                         if (result.Model != null)
                         {
                             type.PackagedVolume = (double)result.Model.PackagedVolume;
