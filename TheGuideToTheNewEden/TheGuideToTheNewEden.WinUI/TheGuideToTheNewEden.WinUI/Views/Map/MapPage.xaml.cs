@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -118,6 +119,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
                 if (resp.StatusCode == System.Net.HttpStatusCode.OK)
                 {
+                    if(resp.Data == null)
+                    {
+                        resp.Data = JsonConvert.DeserializeObject<List<ESI.NET.Models.Sovereignty.SystemSovereignty>>(resp.Message);
+                    }
                     var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
                     foreach (var item in dic)
                     {
