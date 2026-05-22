@@ -194,6 +194,11 @@
                                     <ic:FluentIcon Icon="Keyboard" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource Tools_Taskbar}" Tag="TaskbarPage">
+                                <NavigationViewItem.Icon>
+                                    <ic:FluentIcon Icon="SplitVertical" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>

@@ -220,11 +220,13 @@ namespace TheGuideToTheNewEden.SDEBuilder.WinUI
                 }
                 catch (Exception ex)
                 {
+                    ScrollViewer scrollViewer = new ScrollViewer();
+                    scrollViewer.Content = ex.ToString();
                     ContentDialog contentDialog = new ContentDialog()
                     {
                         XamlRoot = this.Content.XamlRoot,
                         Title = "Error",
-                        Content = ex.ToString(),
+                        Content = scrollViewer,
                         PrimaryButtonText = "OK",
                         IsSecondaryButtonEnabled = false,
                     };
