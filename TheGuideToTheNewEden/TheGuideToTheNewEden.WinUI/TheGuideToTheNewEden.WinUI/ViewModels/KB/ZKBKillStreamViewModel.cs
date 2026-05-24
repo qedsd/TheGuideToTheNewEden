@@ -86,7 +86,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                                 bool pass = PassFilters(detail);
                                 if (pass)
                                 {
-                                    ZKBToast.SendToast(info);
+                                    if (detail.Zkb.TotalValue >= Config.MinNotifyValue)
+                                    {
+                                        ZKBToast.SendToast(info);
+                                    } 
                                 }
                                 Window?.DispatcherQueue?.SafelyTryEnqueue(() =>
                                 {

@@ -21,7 +21,7 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
         private int _subCount = 0;
-        private KillStreamQ _killStream;
+        private KillStreamR2Z2 _killStream;
         public ZKBStreamService()
         {
 
@@ -30,7 +30,7 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             if(_killStream == null )
             {
-                _killStream = new KillStreamQ(ZKB.NET.Config.Redisq);
+                _killStream = new KillStreamR2Z2();
                 if(!await _killStream.ConnectAsync())
                 {
                     _killStream = null;
