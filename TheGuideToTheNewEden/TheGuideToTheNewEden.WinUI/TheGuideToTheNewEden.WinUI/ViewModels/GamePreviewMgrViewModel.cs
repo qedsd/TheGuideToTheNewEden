@@ -837,23 +837,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     foreach (var process in allProcesses)
                     {
-                        foreach (var keyword in keywords)
+                        var keepProcess = false;
+                        try
                         {
-                            if (process.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                            foreach (var keyword in keywords)
                             {
-                                if (process.MainWindowHandle != IntPtr.Zero)
+                                if (process.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string title = Helpers.FindWindowHelper.GetWindowTitle(process.MainWindowHandle);
-                                    ProcessInfo processInfo = new ProcessInfo()
+                                    if (process.MainWindowHandle != IntPtr.Zero)
                                     {
-                                        MainWindowHandle = process.MainWindowHandle,
-                                        ProcessName = process.ProcessName,
-                                        WindowTitle = title,
-                                        Process = process
-                                    };
-                                    targetProcesses.Add(processInfo);
+                                        string title = Helpers.FindWindowHelper.GetWindowTitle(process.MainWindowHandle);
+                                        ProcessInfo processInfo = new ProcessInfo()
+                                        {
+                                            MainWindowHandle = process.MainWindowHandle,
+                                            ProcessName = process.ProcessName,
+                                            WindowTitle = title,
+                                            Process = process
+                                        };
+                                        targetProcesses.Add(processInfo);
+                                        keepProcess = true;
+                                    }
+                                    break;
                                 }
-                                break;
+                            }
+                        }
+                        finally
+                        {
+                            if (!keepProcess)
+                            {
+                                process.Dispose();
                             }
                         }
                     }
@@ -1029,6 +1041,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void GamePreviewWindow_OnSettingChanged(PreviewItem previewItem)
         {
+            ScheduleSaveSetting();
+        }
+
+        private DispatcherTimer _saveSettingDebounceTimer;
+        private void ScheduleSaveSetting()
+        {
+            ExecuteUIAction(() =>
+            {
+                if (_saveSettingDebounceTimer == null)
+                {
+                    _saveSettingDebounceTimer = new DispatcherTimer()
+                    {
+                        Interval = TimeSpan.FromMilliseconds(500),
+                    };
+                    _saveSettingDebounceTimer.Tick += SaveSettingDebounceTimer_Tick;
+                }
+                _saveSettingDebounceTimer.Stop();
+                _saveSettingDebounceTimer.Start();
+            });
+        }
+
+        private void SaveSettingDebounceTimer_Tick(object sender, object e)
+        {
+            _saveSettingDebounceTimer.Stop();
             SaveSetting();
         }
 
@@ -1194,6 +1230,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// </summary>
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
+        {
+            ExecuteUIAction(() => ApplyForegroundWindowChanged(hWnd));
+        }
+
+        private void ApplyForegroundWindowChanged(IntPtr hWnd)
         {
             foreach(var process in Processes)
             {
@@ -1625,6 +1666,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
             UnregisterHotkey();
             StopGameMonitor();
+            if (_saveSettingDebounceTimer != null)
+            {
+                _saveSettingDebounceTimer.Stop();
+                _saveSettingDebounceTimer.Tick -= SaveSettingDebounceTimer_Tick;
+                _saveSettingDebounceTimer = null;
+            }
+            SaveSetting();
         }
     }
 }

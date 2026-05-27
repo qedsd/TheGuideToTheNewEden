@@ -56,12 +56,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Interval = 10,
             };
             _pointerTimer.Elapsed += PointerTimer_Elapsed;
-            _pointerTimer = new System.Timers.Timer()
-            {
-                AutoReset = true,
-                Interval = 10,
-            };
-            _pointerTimer.Elapsed += PointerTimer_Elapsed;
             var content = new Microsoft.UI.Xaml.Controls.Grid()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -83,11 +77,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            System.Drawing.Point lpPoint = new System.Drawing.Point();
-            Helpers.Win32Helper.GetCursorPos(ref lpPoint);
-            Debug.WriteLine($"{lpPoint.X} {lpPoint.Y} {_appWindow.Position.X} {_appWindow.Position.Y}");
-            _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
-
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                System.Drawing.Point lpPoint = new System.Drawing.Point();
+                Helpers.Win32Helper.GetCursorPos(ref lpPoint);
+                _appWindow.Move(new Windows.Graphics.PointInt32(
+                    lpPoint.X - _appWindow.Size.Width / 2 - xOffset,
+                    lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
+            });
         }
         
         private void Content_PointerReleased1(object sender, PointerRoutedEventArgs e)
@@ -213,8 +210,23 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             });
         }
 
+        private DateTime _lastThumbnailUpdateUtc = DateTime.MinValue;
+        private static readonly TimeSpan ThumbnailUpdateMinInterval = TimeSpan.FromMilliseconds(50);
+
         public override void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
         {
+            if (!DispatcherQueue.HasThreadAccess)
+            {
+                DispatcherQueue.SafelyTryEnqueue(() => UpdateThumbnail(left1, right1, top1, bottom1));
+                return;
+            }
+            var now = DateTime.UtcNow;
+            bool forceUpdate = left1 != 0 || right1 != 0 || top1 != 0 || bottom1 != 0;
+            if (!forceUpdate && now - _lastThumbnailUpdateUtc < ThumbnailUpdateMinInterval)
+            {
+                return;
+            }
+            _lastThumbnailUpdateUtc = now;
             if (_thumbHWnd != IntPtr.Zero)
             {
                 try
@@ -265,6 +277,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void Stop()
         {
             base.Stop();
+            if (_pointerTimer != null)
+            {
+                _pointerTimer.Stop();
+                _pointerTimer.Elapsed -= PointerTimer_Elapsed;
+                _pointerTimer.Dispose();
+                _pointerTimer = null;
+            }
             if (_thumbHWnd != IntPtr.Zero)
             {
                 WindowCaptureHelper.HideThumb(_thumbHWnd);
@@ -274,6 +293,8 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _appWindow.Closing -= AppWindow_Closing;
             _appWindow.Changed -= AppWindow_Changed;
             MainUIElement.PointerReleased -= Content_PointerReleased;
+            MainUIElement.PointerReleased -= Content_PointerReleased1;
+            MainUIElement.PointerPressed -= Content_PointerPressed;
             MainUIElement.PointerWheelChanged -= Content_PointerWheelChanged;
             Close();
         }
@@ -297,7 +318,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// </summary>
         public override void PrivateCancelHighlight()
         {
-            UpdateThumbnail();
+            this.DispatcherQueue.SafelyTryEnqueue(() => UpdateThumbnail());
         }
         /// <summary>
         /// 设置窗口尺寸

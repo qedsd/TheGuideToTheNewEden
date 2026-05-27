@@ -112,12 +112,22 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         private void PointerTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if(Helpers.Win32Helper.IsKeyDown(0x02))
+            if (!Helpers.Win32Helper.IsKeyDown(0x02))
             {
+                return;
+            }
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (!Helpers.Win32Helper.IsKeyDown(0x02))
+                {
+                    return;
+                }
                 System.Drawing.Point lpPoint = new System.Drawing.Point();
                 Helpers.Win32Helper.GetCursorPos(ref lpPoint);
-                _appWindow.Move(new Windows.Graphics.PointInt32(lpPoint.X - _appWindow.Size.Width / 2 - xOffset, lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
-            }
+                _appWindow.Move(new Windows.Graphics.PointInt32(
+                    lpPoint.X - _appWindow.Size.Width / 2 - xOffset,
+                    lpPoint.Y - _appWindow.Size.Height / 2 - yOffset));
+            });
         }
 
         private System.Timers.Timer _pointerTimer;
@@ -223,8 +233,23 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         private readonly object _updateThumbnailLocker = new object();
+        private DateTime _lastThumbnailUpdateUtc = DateTime.MinValue;
+        private static readonly TimeSpan ThumbnailUpdateMinInterval = TimeSpan.FromMilliseconds(50);
+
         public override void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
         {
+            if (!DispatcherQueue.HasThreadAccess)
+            {
+                DispatcherQueue.SafelyTryEnqueue(() => UpdateThumbnail(left1, right1, top1, bottom1));
+                return;
+            }
+            var now = DateTime.UtcNow;
+            bool forceUpdate = left1 != 0 || right1 != 0 || top1 != 0 || bottom1 != 0;
+            if (!forceUpdate && now - _lastThumbnailUpdateUtc < ThumbnailUpdateMinInterval)
+            {
+                return;
+            }
+            _lastThumbnailUpdateUtc = now;
             lock(_updateThumbnailLocker)
             {
                 if (_thumbHWnd != IntPtr.Zero)
@@ -311,6 +336,14 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void Stop()
         {
             base.Stop();
+            if (_pointerTimer != null)
+            {
+                _pointerTimer.Stop();
+                _pointerTimer.Elapsed -= PointerTimer_Elapsed;
+                _pointerTimer.Dispose();
+                _pointerTimer = null;
+            }
+            _appWindow.Changed -= AppWindow_Changed2;
             if (_thumbHWnd != IntPtr.Zero)
             {
                 WindowCaptureHelper.HideThumb(_thumbHWnd);
