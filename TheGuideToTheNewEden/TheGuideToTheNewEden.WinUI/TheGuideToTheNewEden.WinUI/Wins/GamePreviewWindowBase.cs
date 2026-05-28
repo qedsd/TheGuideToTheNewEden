@@ -133,6 +133,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             HotkeyService.GetHotkeyService(Helpers.WindowHelper.MainWindow.GetWindowHandle()).Unregister(_hotkeyRegisterId);
         }
         public abstract void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);
+        public virtual void RecoverThumbnail() { }
 
         public PreviewItem GetSetting()
         {

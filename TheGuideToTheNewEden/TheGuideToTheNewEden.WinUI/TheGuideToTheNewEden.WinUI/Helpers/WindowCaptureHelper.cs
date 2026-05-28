@@ -7,12 +7,15 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.WinUI.Common;
 using Windows.System;
 
 namespace TheGuideToTheNewEden.WinUI.Helpers
 {
     internal static class WindowCaptureHelper
     {
+        [DllImport("user32.dll")]
+        private static extern bool IsWindow(IntPtr hWnd);
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindowRect(IntPtr hWnd, ref Rectangle rect);
         [DllImport("gdi32.dll")]
@@ -171,20 +174,93 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         }
         public static IntPtr Show(IntPtr targetHWnd, IntPtr sourceHWnd)
         {
-            DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb);
-            UpdateThumb(thumb);
-            return thumb;
+            return RebuildThumbnail(targetHWnd, IntPtr.Zero, sourceHWnd);
         }
         public static int HideThumb(IntPtr thumb)
         {
+            if (thumb == IntPtr.Zero)
+            {
+                return 0;
+            }
             return DwmUnregisterThumbnail(thumb);
+        }
+        private static bool HResultSucceeded(int hr) => hr >= 0;
+        public static bool IsSourceWindowIconic(IntPtr sourceHWnd)
+        {
+            return sourceHWnd != IntPtr.Zero && IsWindow(sourceHWnd) && Win32.IsIconic(sourceHWnd);
+        }
+        public static bool IsSourceWindowValid(IntPtr sourceHWnd)
+        {
+            if (sourceHWnd == IntPtr.Zero || !IsWindow(sourceHWnd))
+            {
+                return false;
+            }
+            if (Win32.IsIconic(sourceHWnd))
+            {
+                return false;
+            }
+            var clientRect = new Rectangle();
+            Win32.GetClientRect(sourceHWnd, ref clientRect);
+            return clientRect.Width > 0 && clientRect.Height > 0;
+        }
+        public static bool TryQueryThumbnailSourceSize(IntPtr thumb, out PSIZE size)
+        {
+            size = default;
+            if (thumb == IntPtr.Zero)
+            {
+                return false;
+            }
+            if (!HResultSucceeded(DwmQueryThumbnailSourceSize(thumb, out size)))
+            {
+                return false;
+            }
+            return size.x > 0 && size.y > 0;
+        }
+        public static bool IsThumbnailHealthy(IntPtr thumb, IntPtr sourceHWnd)
+        {
+            if (thumb == IntPtr.Zero || !IsSourceWindowValid(sourceHWnd))
+            {
+                return false;
+            }
+            return TryQueryThumbnailSourceSize(thumb, out _);
+        }
+        public static bool TrySetThumbnailVisible(IntPtr thumb, bool visible)
+        {
+            if (thumb == IntPtr.Zero)
+            {
+                return false;
+            }
+            DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+            props.fVisible = visible;
+            props.dwFlags = DWM_TNP_VISIBLE;
+            return HResultSucceeded(DwmUpdateThumbnailProperties(thumb, ref props));
+        }
+        public static IntPtr RebuildThumbnail(IntPtr targetHWnd, IntPtr currentThumb, IntPtr sourceHWnd)
+        {
+            if (targetHWnd == IntPtr.Zero || !IsSourceWindowValid(sourceHWnd))
+            {
+                return IntPtr.Zero;
+            }
+            if (currentThumb != IntPtr.Zero)
+            {
+                DwmUnregisterThumbnail(currentThumb);
+            }
+            if (!HResultSucceeded(DwmRegisterThumbnail(targetHWnd, sourceHWnd, out var thumb)) || thumb == IntPtr.Zero)
+            {
+                return IntPtr.Zero;
+            }
+            UpdateThumb(thumb);
+            return thumb;
         }
         private static void UpdateThumb(IntPtr thumb)
         {
             if (thumb != IntPtr.Zero)
             {
                 PSIZE size;
-                DwmQueryThumbnailSourceSize(thumb, out size);
+                if (!TryQueryThumbnailSourceSize(thumb, out size))
+                {
+                    return;
+                }
                 DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
 
                 props.fVisible = true;
@@ -196,13 +272,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         }
         public static void UpdateThumbDestination(IntPtr thumb, Rect rect)
         {
-            if (thumb != IntPtr.Zero)
-            {
-                DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
-                props.dwFlags = DWM_TNP_RECTDESTINATION;
-                props.rcDestination = rect;//显示的位置大小
-                DwmUpdateThumbnailProperties(thumb, ref props);
-            }
+            TryUpdateThumbDestination(thumb, rect);
         }
         public static void UpdateThumbDestination2(IntPtr thumb, Rect rcDestination)
         {
@@ -210,20 +280,47 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
                 props.rcDestination = rcDestination;//显示的位置大小
-                props.dwFlags = DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_RECTDESTINATION;
+                props.fVisible = true;
+                props.dwFlags = DWM_TNP_VISIBLE | DWM_TNP_SOURCECLIENTAREAONLY | DWM_TNP_RECTDESTINATION;
                 DwmUpdateThumbnailProperties(thumb, ref props);
             }
         }
         public static void UpdateThumbDestination(IntPtr thumb, Rect rcDestination, Rect rcSource)
         {
-            if (thumb != IntPtr.Zero)
+            TryUpdateThumbDestination(thumb, rcDestination, rcSource);
+        }
+        public static bool TryUpdateThumbDestination(IntPtr thumb, Rect rect)
+        {
+            if (thumb == IntPtr.Zero)
             {
-                DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
-                props.dwFlags = DWM_TNP_RECTDESTINATION | DWM_TNP_RECTSOURCE;
-                props.rcDestination = rcDestination;//显示的位置大小
-                props.rcSource = rcSource;
-                DwmUpdateThumbnailProperties(thumb, ref props);
+                return false;
             }
+            DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+            props.fVisible = true;
+            props.dwFlags = DWM_TNP_VISIBLE | DWM_TNP_RECTDESTINATION;
+            props.rcDestination = rect;
+            return HResultSucceeded(DwmUpdateThumbnailProperties(thumb, ref props));
+        }
+        public static bool TryUpdateThumbDestination(IntPtr thumb, Rect rcDestination, Rect rcSource)
+        {
+            if (thumb == IntPtr.Zero)
+            {
+                return false;
+            }
+            if (rcDestination.Right <= rcDestination.Left || rcDestination.Bottom <= rcDestination.Top)
+            {
+                return false;
+            }
+            if (rcSource.Right <= rcSource.Left || rcSource.Bottom <= rcSource.Top)
+            {
+                return false;
+            }
+            DWM_THUMBNAIL_PROPERTIES props = new DWM_THUMBNAIL_PROPERTIES();
+            props.fVisible = true;
+            props.dwFlags = DWM_TNP_VISIBLE | DWM_TNP_RECTDESTINATION | DWM_TNP_RECTSOURCE;
+            props.rcDestination = rcDestination;
+            props.rcSource = rcSource;
+            return HResultSucceeded(DwmUpdateThumbnailProperties(thumb, ref props));
         }
         public static PSIZE GetThumbSourceSize(IntPtr thumb)
         {

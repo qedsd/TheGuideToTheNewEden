@@ -182,8 +182,17 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         public override void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0)
         {
-            if (_setting.ShowPreviewWindow)
-                _previewIPC.SendMsg(IPCOp.UpdateSizeAndPos, new int[] { left, right, top, bottom });
+            if (_setting.ShowPreviewWindow && _previewIPC != null)
+            {
+                _previewIPC.SendMsg(IPCOp.UpdateThumbnail, new int[] { left, right, top, bottom });
+            }
+        }
+        public override void RecoverThumbnail()
+        {
+            if (_setting.ShowPreviewWindow && _previewIPC != null)
+            {
+                _previewIPC.SendMsg(IPCOp.UpdateThumbnail);
+            }
         }
         public override void Stop()
         {

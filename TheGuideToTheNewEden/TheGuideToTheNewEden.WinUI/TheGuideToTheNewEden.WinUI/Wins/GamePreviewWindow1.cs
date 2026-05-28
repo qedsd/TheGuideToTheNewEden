@@ -19,13 +19,14 @@ using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Services;
 using Microsoft.UI.Input;
 using WinUIEx;
+using TheGuideToTheNewEden.WinUI.Common;
 using TheGuideToTheNewEden.WinUI.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class GamePreviewWindow1 : GamePreviewBaseWindowBase
     {
-        private IntPtr _thumbHWnd = IntPtr.Zero;
+        private readonly GamePreviewDwmThumbnailHost _dwmThumbnail = new GamePreviewDwmThumbnailHost();
         private readonly AppWindow _appWindow;
         private readonly IntPtr _windowHandle = IntPtr.Zero;
         private readonly OverlappedPresenter _presenter;
@@ -160,7 +161,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         public override void PrivateStart(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
-            _thumbHWnd = WindowCaptureHelper.Show(_windowHandle, sourceHWnd);
+            _dwmThumbnail.Start(this, _windowHandle, sourceHWnd, () => UpdateThumbnailCore(0, 0, 0, 0, true));
             SizeChanged += GamePreviewWindow_SizeChanged;
             if (_setting.WinW == 0 || _setting.WinH == 0)
             {
@@ -215,45 +216,62 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public override void UpdateThumbnail(int left1 = 0, int right1 = 0, int top1 = 0, int bottom1 = 0)
         {
+            UpdateThumbnailCore(left1, right1, top1, bottom1, false);
+        }
+
+        public override void RecoverThumbnail()
+        {
             if (!DispatcherQueue.HasThreadAccess)
             {
-                DispatcherQueue.SafelyTryEnqueue(() => UpdateThumbnail(left1, right1, top1, bottom1));
+                DispatcherQueue.SafelyTryEnqueue(RecoverThumbnail);
+                return;
+            }
+            _dwmThumbnail.RecoverAfterSourceRestore();
+        }
+
+        private void UpdateThumbnailCore(int left1, int right1, int top1, int bottom1, bool bypassThrottle)
+        {
+            if (!DispatcherQueue.HasThreadAccess)
+            {
+                DispatcherQueue.SafelyTryEnqueue(() => UpdateThumbnailCore(left1, right1, top1, bottom1, bypassThrottle));
+                return;
+            }
+            if (!_dwmThumbnail.IsActive)
+            {
                 return;
             }
             var now = DateTime.UtcNow;
-            bool forceUpdate = left1 != 0 || right1 != 0 || top1 != 0 || bottom1 != 0;
+            bool forceUpdate = bypassThrottle || left1 != 0 || right1 != 0 || top1 != 0 || bottom1 != 0;
             if (!forceUpdate && now - _lastThumbnailUpdateUtc < ThumbnailUpdateMinInterval)
             {
                 return;
             }
             _lastThumbnailUpdateUtc = now;
-            if (_thumbHWnd != IntPtr.Zero)
+            try
             {
-                try
+                int left = left1;
+                int top = (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) + top1;
+                int right = _appWindow.ClientSize.Width - right1;
+                int bottom = _appWindow.ClientSize.Height - bottom1;
+                var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
+                int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
+                var clientRect = new System.Drawing.Rectangle();
+                Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
+                WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
+                WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
+                if (!_dwmThumbnail.TryUpdate(rcD, scS))
                 {
-                    int left = left1;
-                    int top = (int)(TitleBarHeight * Helpers.WindowHelper.GetDpiScale(this)) + top1;
-                    int right = _appWindow.ClientSize.Width - right1;
-                    int bottom = _appWindow.ClientSize.Height - bottom1;
-                    var titleBarHeight = WindowHelper.GetTitleBarHeight(_sourceHWnd);//去掉标题栏高度
-                    int widthMargin = WindowHelper.GetBorderWidth(_sourceHWnd);//去掉左边白边及右边显示完整
-                    var clientRect = new System.Drawing.Rectangle();
-                    Win32.GetClientRect(_sourceHWnd, ref clientRect);//源窗口显示区域分辨率大小
-                    //目标窗口显示区域，即GamePreviewWindow
-                    WindowCaptureHelper.Rect rcD = new WindowCaptureHelper.Rect(left, top, right, bottom);
-                    //源窗口捕获区域，即游戏的窗口
-                    WindowCaptureHelper.Rect scS = new WindowCaptureHelper.Rect(widthMargin, titleBarHeight, clientRect.Right + widthMargin, clientRect.Bottom);
-                    WindowCaptureHelper.UpdateThumbDestination(_thumbHWnd, rcD, scS);
+                    Log.Error($"GamePreviewWindow1 update thumbnail failed. source={_sourceHWnd}");
                 }
-                catch (Exception ex)
-                {
-                    Log.Error(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
             }
         }
         private void GamePreviewWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
-            if (_thumbHWnd != IntPtr.Zero)
+            if (_dwmThumbnail.IsActive)
             {
                 UpdateThumbnail();
             }
@@ -284,11 +302,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 _pointerTimer.Dispose();
                 _pointerTimer = null;
             }
-            if (_thumbHWnd != IntPtr.Zero)
-            {
-                WindowCaptureHelper.HideThumb(_thumbHWnd);
-                _thumbHWnd = IntPtr.Zero;
-            }
+            _dwmThumbnail.Stop();
             SizeChanged -= GamePreviewWindow_SizeChanged;
             _appWindow.Closing -= AppWindow_Closing;
             _appWindow.Changed -= AppWindow_Changed;

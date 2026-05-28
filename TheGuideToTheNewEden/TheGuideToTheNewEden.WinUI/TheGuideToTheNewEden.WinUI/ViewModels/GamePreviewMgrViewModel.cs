@@ -1257,6 +1257,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                     previewWindow.Highlight();
                                 }
                             }
+                            previewWindow.RecoverThumbnail();
                         }
                         else
                         {

@@ -18,6 +18,7 @@ namespace TheGuideToTheNewEden.WinUI.Interfaces
         void ShowWindow(bool hHighlight = false);
         void HideWindow();
         void UpdateThumbnail(int left = 0, int right = 0, int top = 0, int bottom = 0);
+        void RecoverThumbnail();
         void Highlight();
         void CancelHighlight();
         void SetSize(int w, int h);
