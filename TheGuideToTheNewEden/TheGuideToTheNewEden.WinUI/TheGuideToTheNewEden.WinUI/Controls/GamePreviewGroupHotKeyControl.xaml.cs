@@ -137,12 +137,28 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                     {
                         if(!string.IsNullOrEmpty(name))
                         {
-                            HotKeyGroup.GameNames.Add(name);
+                            HotKeyGroup.GameNames.Add(GetCharacterName(name));
                         }
                     }
                 }
             }
             GameNameListBox.ItemsSource = HotKeyGroup.GameNames.ToList();
+        }
+        public string GetCharacterName(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                int index = name.IndexOf('-');
+                if (index > -1)
+                {
+                    return name.Substring(index + 1).Trim();
+                }
+                else
+                {
+                    return name;
+                }
+            }
+            return null;
         }
 
         private void SaveEdit_Click(object sender, RoutedEventArgs e)
