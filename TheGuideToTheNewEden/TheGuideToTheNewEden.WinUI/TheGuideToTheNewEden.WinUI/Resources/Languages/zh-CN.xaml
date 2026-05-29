@@ -670,6 +670,7 @@
     <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Tip">按下快捷键时，按激活顺序依次切换显示在该分组内的游戏窗口</x:String>
     <x:String x:Key="GamePreviewMgrPage_GroupHotkey_Name">分组名</x:String>
     <x:String x:Key="GamePreviewMgrPage_GroupHotkey_EditTip">输入以英文符号,分割的角色名称</x:String>
+    <x:String x:Key="GamePreviewMgrPage_GroupHotkey_SelectFromProcess">从进程列表选择</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize">统一窗口大小</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformSize_Tip">将所有的预览窗口设置为指定的大小</x:String>
     <x:String x:Key="GamePreviewMgrPage_UniformWidth">窗口宽度</x:String>
