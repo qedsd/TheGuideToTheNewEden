@@ -495,7 +495,13 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _observers.Clear();
             Running = false;
             _localObservers = null;
-            _zkbIntel?.Stop();
+            if (_zkbIntel != null)
+            {
+                _zkbIntel.OnError -= ZKBIntel_OnError;
+                _zkbIntel.OnWarningUpdate -= ZkbIntel_OnWarningUpdate;
+                _zkbIntel.Stop();
+                _zkbIntel = null;
+            }
             Services.WarningService.Current.Remove(Setting?.Listener);
             ChannelIntelManager.Instance.Unregister(this);
             GC.Collect();
