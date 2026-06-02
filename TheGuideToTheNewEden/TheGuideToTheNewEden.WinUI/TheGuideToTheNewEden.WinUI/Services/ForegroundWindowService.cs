@@ -26,6 +26,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
         private Timer _timer;
+        private bool _isDisposing;
         public void Start()
         {
             if(_timer == null)
@@ -41,6 +42,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void Stop()
         {
+            _isDisposing = true;
             _timer?.Stop();
         }
         private IntPtr _lastForegroundWindow;
@@ -61,7 +63,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             finally
             {
-                _timer.Start();
+                if (!_isDisposing)
+                {
+                    _timer.Start();
+                }
             }
         }
         public delegate void ForegroundWindowChangedDelegate(IntPtr hWnd);

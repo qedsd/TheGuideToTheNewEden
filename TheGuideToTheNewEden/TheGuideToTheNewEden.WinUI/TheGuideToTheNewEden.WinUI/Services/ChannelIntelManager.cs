@@ -105,5 +105,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 channelIntel.UnListenChannelIntel();
             }
         }
+        /// <summary>
+        /// 停止并注销所有活跃的 ChannelIntel 实例
+        /// </summary>
+        public void Clear()
+        {
+            foreach (var channelIntel in _activeChannelIntels.ToList())
+            {
+                channelIntel.Stop();
+            }
+        }
     }
 }

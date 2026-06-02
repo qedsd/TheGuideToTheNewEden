@@ -134,5 +134,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             _ = AppNotificationManager.Default.RemoveByGroupAsync(name);
         }
+        public void Dispose()
+        {
+            foreach (var name in NotifyWindows.Keys.ToList())
+            {
+                Remove(name);
+            }
+        }
     }
 }
