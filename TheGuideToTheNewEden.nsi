@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "TheGuideToTheNewEden"
-!define PRODUCT_VERSION "3.0.0.0"
+!define PRODUCT_VERSION "3.0.1.0"
 !define PRODUCT_PUBLISHER "QEDSD"
 !define PRODUCT_WEB_SITE "https://github.com/qedsd/TheGuideToTheNewEden"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\TheGuideToTheNewEden.exe"
@@ -63,7 +63,7 @@ FunctionEnd
 
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
-  SetOverwrite ifnewer
+  SetOverwrite on
   File /r "D:\QEDSD\Code\TheGuideToTheNewEden\TheGuideToTheNewEden\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\bin\x64\Release\net9.0-windows10.0.19041.0\win-x64\*.*"
 
 ; Shortcuts
@@ -114,7 +114,6 @@ Section Uninstall
   RMDir "$SMPROGRAMS\$ICONS_GROUP"
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
-  RMDir /r "$LOCALAPPDATA\${PRODUCT_NAME}"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
