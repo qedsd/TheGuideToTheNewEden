@@ -75,7 +75,11 @@ namespace TheGuideToTheNewEden.WinUI.Views
         });
         private ICommand ExitCommand => new RelayCommand(() =>
         {
-            TaskbarIcon.Dispose();
+            try
+            {
+                TaskbarIcon.Dispose();
+            }
+            catch { }
             App.Close();
         });
         #endregion
