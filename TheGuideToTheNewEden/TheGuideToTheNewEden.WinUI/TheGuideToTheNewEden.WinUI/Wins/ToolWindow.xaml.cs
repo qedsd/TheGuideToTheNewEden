@@ -286,6 +286,7 @@ namespace TheGuideToTheNewEden.WinUI
 
         private void MinimizeWindow(object sender, RoutedEventArgs e)
         {
+            OnHide?.Invoke(this, EventArgs.Empty);
             this.Minimize();
         }
 
@@ -308,6 +309,7 @@ namespace TheGuideToTheNewEden.WinUI
         {
             if (_canClose)
             {
+                OnClosing?.Invoke(this, EventArgs.Empty);
                 this.Close();
             }
             else
@@ -316,6 +318,12 @@ namespace TheGuideToTheNewEden.WinUI
             }
         }
 
+        public event EventHandler OnClosing;
+        public event EventHandler OnHide;
+
+        #endregion
+
+        #region 状态消息
         public void ShowMsg(string msg, bool autoClose = true)
         {
             this.DispatcherQueue.SafelyTryEnqueue(() =>
@@ -360,10 +368,30 @@ namespace TheGuideToTheNewEden.WinUI
                 ContentFrame.IsEnabled = true;
             });
         }
+        #endregion
 
+        #region AppWindow
         public Window GetWindow()
         {
             return this;
+        }
+        public IntPtr GetHWnd()
+        {
+            return WinRT.Interop.WindowNative.GetWindowHandle(this);
+        }
+        public Microsoft.UI.Windowing.AppWindow GetAppWindow()
+        {
+            IntPtr hWnd = GetHWnd();
+            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            return Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+        }
+        public void SetTransparent(int opacity)
+        {
+            TransparentWindowHelper.TransparentWindow(GetWindow(), opacity);
+        }
+        public void CenterToScreen()
+        {
+            Helpers.WindowHelper.CenterToScreen(this);
         }
         #endregion
     }

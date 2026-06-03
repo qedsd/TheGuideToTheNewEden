@@ -369,13 +369,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void GamePreviewMgrViewModel_HotkeyActived(int hotkeyId)
         {
-            if (_runningDic.Any())
+            ExecuteUIAction(() =>
             {
-                if(hotkeyId == _forwardHotkeyRegisterId)
+                if (!_runningDic.Any())
+                {
+                    return;
+                }
+                if (hotkeyId == _forwardHotkeyRegisterId)
                 {
                     SwitchForward();
                 }
-                else if(hotkeyId == _backwardHotkeyRegisterId)
+                else if (hotkeyId == _backwardHotkeyRegisterId)
                 {
                     SwitchBackward();
                 }
@@ -383,139 +387,94 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     SwitchHotkeyGroup(hotkeyId);
                 }
-            }
+            });
         }
         private string _lastActiveProcessGUID;
-        private void SwitchForward()
+        private PreviewHotKeyGroup _lastActiveGroup = null;
+
+        private int GetProcessOrderIndex(ProcessInfo process)
         {
-            //筛选出正在运行中的和响应全局快捷键的
-            var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
-            var lastActiveProcess = Processes.FirstOrDefault(p=>p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null || _lastActiveGroup != null)
+            if (process == null)
             {
-                var firstRunning = targetProcesses.FirstOrDefault();
-                if (firstRunning != null)
+                return int.MaxValue;
+            }
+            int orderIndex = PreviewSetting.ProcessOrder.IndexOf(process.WindowTitle);
+            if (orderIndex >= 0)
+            {
+                return orderIndex;
+            }
+            int listIndex = Processes.IndexOf(process);
+            return listIndex >= 0 ? PreviewSetting.ProcessOrder.Count + listIndex : int.MaxValue;
+        }
+
+        private List<ProcessInfo> GetOrderedSwitchTargets(Func<ProcessInfo, bool> extraFilter = null)
+        {
+            IEnumerable<ProcessInfo> query = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey);
+            if (extraFilter != null)
+            {
+                query = query.Where(extraFilter);
+            }
+            var list = query.ToList();
+            list.Sort((a, b) =>
+            {
+                int orderCompare = GetProcessOrderIndex(a).CompareTo(GetProcessOrderIndex(b));
+                if (orderCompare != 0)
                 {
-                    if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                    {
-                        value.ActiveSourceWindow();
-                        _lastActiveProcessGUID = firstRunning.GUID;
-                        _lastActiveGroup = null;
-                    }
+                    return orderCompare;
                 }
+                return Processes.IndexOf(a).CompareTo(Processes.IndexOf(b));
+            });
+            return list;
+        }
+
+        private void ActivateSwitchTarget(ProcessInfo process)
+        {
+            if (process != null && _runningDic.TryGetValue(process.GUID, out var window))
+            {
+                window.ActiveSourceWindow();
+                _lastActiveProcessGUID = process.GUID;
+            }
+        }
+
+        private void SwitchProcess(bool forward, List<ProcessInfo> orderedTargets, ref string lastActiveGuid)
+        {
+            if (orderedTargets == null || orderedTargets.Count == 0)
+            {
+                return;
+            }
+            ProcessInfo targetProcess;
+            string activeGuid = lastActiveGuid;
+            int currentIndex = orderedTargets.FindIndex(p => p.GUID == activeGuid);
+            if (currentIndex < 0)
+            {
+                targetProcess = orderedTargets[0];
+            }
+            else if (forward)
+            {
+                targetProcess = orderedTargets[(currentIndex + 1) % orderedTargets.Count];
             }
             else
             {
-                var runnings = targetProcesses;
-                bool foundLastActiveProcess = false;
-                for (int i = 0; i < runnings.Count; i++)
-                {
-                    var item = runnings[i];
-                    if (item.GUID == _lastActiveProcessGUID)
-                    {
-                        string targetGUID = null;
-                        //上一次激活的窗口不是最后一个窗口，则依序激活下一个
-                        //是最后一个窗口则激活第一个
-                        if (i != runnings.Count - 1)
-                        {
-                            targetGUID = runnings[i + 1].GUID;
-                        }
-                        else
-                        {
-                            targetGUID = runnings.First().GUID;
-                        }
-                        if (targetGUID != null)
-                        {
-                            if (_runningDic.TryGetValue(targetGUID, out var value))
-                            {
-                                value.ActiveSourceWindow();
-                                _lastActiveProcessGUID = targetGUID;
-                            }
-                        }
-                        foundLastActiveProcess = true;
-                        break;
-                    }
-                }
-                if (!foundLastActiveProcess)
-                {
-                    var firstRunning = targetProcesses.FirstOrDefault();
-                    if (firstRunning != null)
-                    {
-                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                        {
-                            value.ActiveSourceWindow();
-                            _lastActiveProcessGUID = firstRunning.GUID;
-                        }
-                    }
-                }
+                targetProcess = orderedTargets[(currentIndex - 1 + orderedTargets.Count) % orderedTargets.Count];
             }
+            ActivateSwitchTarget(targetProcess);
+            lastActiveGuid = targetProcess.GUID;
+        }
+
+        private void SwitchForward()
+        {
+            _lastActiveGroup = null;
+            var orderedTargets = GetOrderedSwitchTargets();
+            SwitchProcess(true, orderedTargets, ref _lastActiveProcessGUID);
         }
 
         private void SwitchBackward()
         {
-            //筛选出正在运行中的和响应全局快捷键的
-            var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && p.Setting.RespondGlobalHotKey).ToList();
-            var lastActiveProcess = Processes.FirstOrDefault(p => p.GUID == _lastActiveProcessGUID);
-            if (lastActiveProcess == null || _lastActiveGroup != null)
-            {
-                var firstRunning = targetProcesses.FirstOrDefault();
-                if (firstRunning != null)
-                {
-                    if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                    {
-                        value.ActiveSourceWindow();
-                        _lastActiveProcessGUID = firstRunning.GUID;
-                        _lastActiveGroup = null;
-                    }
-                }
-            }
-            else
-            {
-                var runnings = targetProcesses;
-                bool foundLastActiveProcess = false;
-                for (int i = 0; i < runnings.Count; i++)
-                {
-                    var item = runnings[i];
-                    if (item.GUID == _lastActiveProcessGUID)
-                    {
-                        string targetGUID = null;
-                        //上一次激活的窗口第一个窗口，则依序激活上一个
-                        //是第一个窗口则激活最后一个
-                        if (i != 0)
-                        {
-                            targetGUID = runnings[i - 1].GUID;
-                        }
-                        else
-                        {
-                            targetGUID = runnings.Last().GUID;
-                        }
-                        if (targetGUID != null)
-                        {
-                            if (_runningDic.TryGetValue(targetGUID, out var value))
-                            {
-                                value.ActiveSourceWindow();
-                                _lastActiveProcessGUID = targetGUID;
-                            }
-                        }
-                        foundLastActiveProcess = true;
-                        break;
-                    }
-                }
-                if (!foundLastActiveProcess)
-                {
-                    var firstRunning = targetProcesses.FirstOrDefault();
-                    if (firstRunning != null)
-                    {
-                        if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                        {
-                            value.ActiveSourceWindow();
-                            _lastActiveProcessGUID = firstRunning.GUID;
-                        }
-                    }
-                }
-            }
+            _lastActiveGroup = null;
+            var orderedTargets = GetOrderedSwitchTargets();
+            SwitchProcess(false, orderedTargets, ref _lastActiveProcessGUID);
         }
-        private PreviewHotKeyGroup _lastActiveGroup = null;
+
         private void SwitchHotkeyGroup(int hotkeyId)
         {
             PreviewHotKeyGroup targetGroup = null;
@@ -535,83 +494,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     forward = false;
                 }
             }
-            if(targetGroup != null)
+            if (targetGroup != null)
             {
-                var targetProcesses = Processes.Where(p => p.Running && p.Setting != null && targetGroup.GameNames.Contains(p.GetCharacterName())).ToList();
-                if (targetProcesses.NotNullOrEmpty())
+                var orderedTargets = GetOrderedSwitchTargets(p =>
+                    !string.IsNullOrEmpty(p.GetCharacterName()) && targetGroup.GameNames.Contains(p.GetCharacterName()));
+                if (orderedTargets.NotNullOrEmpty())
                 {
-                    //切换分组后判断分组是否设置了从头开始
-                    if ((_lastActiveGroup != targetGroup && targetGroup.Restart) || targetGroup.LastActiveProcessGUID == null)
+                    bool restart = (_lastActiveGroup != targetGroup && targetGroup.Restart)
+                        || string.IsNullOrEmpty(targetGroup.LastActiveProcessGUID)
+                        || orderedTargets.All(p => p.GUID != targetGroup.LastActiveProcessGUID);
+                    if (restart)
                     {
-                        var firstRunning = targetProcesses.FirstOrDefault();
-                        if (firstRunning != null)
-                        {
-                            if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                            {
-                                value.ActiveSourceWindow();
-                                targetGroup.LastActiveProcessGUID = firstRunning.GUID;
-                            }
-                        }
+                        ActivateSwitchTarget(orderedTargets[0]);
+                        targetGroup.LastActiveProcessGUID = orderedTargets[0].GUID;
                     }
                     else
                     {
-                        var runnings = targetProcesses;
-                        bool foundLastActiveProcess = false;
-                        for (int i = 0; i < runnings.Count; i++)
-                        {
-                            var item = runnings[i];
-                            if (item.GUID == targetGroup.LastActiveProcessGUID)
-                            {
-                                string targetGUID = null;
-                                if (forward)//向前
-                                {
-                                    //上一次激活的窗口不是最后一个窗口，则依序激活下一个，是最后一个窗口则激活第一个
-                                    if (i != runnings.Count - 1)
-                                    {
-                                        targetGUID = runnings[i + 1].GUID;
-                                    }
-                                    else
-                                    {
-                                        targetGUID = runnings.First().GUID;
-                                    }
-                                }
-                                else//向后
-                                {
-                                    //上一次激活的窗口第一个窗口，则依序激活上一个，是第一个窗口则激活最后一个
-                                    if (i != 0)
-                                    {
-                                        targetGUID = runnings[i - 1].GUID;
-                                    }
-                                    else
-                                    {
-                                        targetGUID = runnings.Last().GUID;
-                                    }
-                                }
-                                if (targetGUID != null)
-                                {
-                                    if (_runningDic.TryGetValue(targetGUID, out var value))
-                                    {
-                                        value.ActiveSourceWindow();
-                                        targetGroup.LastActiveProcessGUID = targetGUID;
-                                    }
-                                }
-                                foundLastActiveProcess = true;
-                                break;
-                            }
-                        }
-                        if(!foundLastActiveProcess)//存在上一个激活的进程关闭的情况
-                        {
-                            var firstRunning = targetProcesses.FirstOrDefault();
-                            if (firstRunning != null)
-                            {
-                                if (_runningDic.TryGetValue(firstRunning.GUID, out var value))
-                                {
-                                    value.ActiveSourceWindow();
-                                    targetGroup.LastActiveProcessGUID = firstRunning.GUID;
-                                }
-                            }
-                        }
+                        var lastActiveGuid = targetGroup.LastActiveProcessGUID;
+                        SwitchProcess(forward, orderedTargets, ref lastActiveGuid);
+                        targetGroup.LastActiveProcessGUID = lastActiveGuid;
                     }
+                    _lastActiveProcessGUID = targetGroup.LastActiveProcessGUID;
                 }
                 _lastActiveGroup = targetGroup;
             }
@@ -837,23 +740,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     foreach (var process in allProcesses)
                     {
-                        foreach (var keyword in keywords)
+                        var keepProcess = false;
+                        try
                         {
-                            if (process.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                            foreach (var keyword in keywords)
                             {
-                                if (process.MainWindowHandle != IntPtr.Zero)
+                                if (process.ProcessName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string title = Helpers.FindWindowHelper.GetWindowTitle(process.MainWindowHandle);
-                                    ProcessInfo processInfo = new ProcessInfo()
+                                    if (process.MainWindowHandle != IntPtr.Zero)
                                     {
-                                        MainWindowHandle = process.MainWindowHandle,
-                                        ProcessName = process.ProcessName,
-                                        WindowTitle = title,
-                                        Process = process
-                                    };
-                                    targetProcesses.Add(processInfo);
+                                        string title = Helpers.FindWindowHelper.GetWindowTitle(process.MainWindowHandle);
+                                        ProcessInfo processInfo = new ProcessInfo()
+                                        {
+                                            MainWindowHandle = process.MainWindowHandle,
+                                            ProcessName = process.ProcessName,
+                                            WindowTitle = title,
+                                            Process = process
+                                        };
+                                        targetProcesses.Add(processInfo);
+                                        keepProcess = true;
+                                    }
+                                    break;
                                 }
-                                break;
+                            }
+                        }
+                        finally
+                        {
+                            if (!keepProcess)
+                            {
+                                process.Dispose();
                             }
                         }
                     }
@@ -1029,6 +944,30 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void GamePreviewWindow_OnSettingChanged(PreviewItem previewItem)
         {
+            ScheduleSaveSetting();
+        }
+
+        private DispatcherTimer _saveSettingDebounceTimer;
+        private void ScheduleSaveSetting()
+        {
+            ExecuteUIAction(() =>
+            {
+                if (_saveSettingDebounceTimer == null)
+                {
+                    _saveSettingDebounceTimer = new DispatcherTimer()
+                    {
+                        Interval = TimeSpan.FromMilliseconds(500),
+                    };
+                    _saveSettingDebounceTimer.Tick += SaveSettingDebounceTimer_Tick;
+                }
+                _saveSettingDebounceTimer.Stop();
+                _saveSettingDebounceTimer.Start();
+            });
+        }
+
+        private void SaveSettingDebounceTimer_Tick(object sender, object e)
+        {
+            _saveSettingDebounceTimer.Stop();
             SaveSetting();
         }
 
@@ -1058,8 +997,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 int p2Order = PreviewSetting.ProcessOrder.IndexOf(p2.WindowTitle);
                 if(p1Order == -1 && p2Order == -1)//均为新增
                 {
-                    PreviewSetting.ProcessOrder.Insert(0, p1.WindowTitle);
-                    PreviewSetting.ProcessOrder.Insert(1, p2.WindowTitle);
+                    if (!PreviewSetting.ProcessOrder.Contains(p1.WindowTitle))
+                    {
+                        PreviewSetting.ProcessOrder.Add(p1.WindowTitle);
+                    }
+                    if (!PreviewSetting.ProcessOrder.Contains(p2.WindowTitle))
+                    {
+                        PreviewSetting.ProcessOrder.Add(p2.WindowTitle);
+                    }
                 }
                 else if(p1Order == -1)//p1新增
                 {
@@ -1195,6 +1140,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         /// <param name="hWnd"></param>
         private void Current_OnForegroundWindowChanged(IntPtr hWnd)
         {
+            ExecuteUIAction(() => ApplyForegroundWindowChanged(hWnd));
+        }
+
+        private void ApplyForegroundWindowChanged(IntPtr hWnd)
+        {
             foreach(var process in Processes)
             {
                 if(process.Running)
@@ -1203,7 +1153,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     {
                         if (process.MainWindowHandle == hWnd)
                         {
-                            _lastActiveProcessGUID = process.GUID;
+                            if (process.Setting?.RespondGlobalHotKey == true)
+                            {
+                                _lastActiveProcessGUID = process.GUID;
+                                _lastActiveGroup = null;
+                            }
                             if (previewWindow.IsHideOnForeground())
                             {
                                 previewWindow.HideWindow();
@@ -1216,6 +1170,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                     previewWindow.Highlight();
                                 }
                             }
+                            previewWindow.RecoverThumbnail();
                         }
                         else
                         {
@@ -1625,6 +1580,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             ForegroundWindowService.Current.OnForegroundWindowChanged -= Current_OnForegroundWindowChanged;
             UnregisterHotkey();
             StopGameMonitor();
+            if (_saveSettingDebounceTimer != null)
+            {
+                _saveSettingDebounceTimer.Stop();
+                _saveSettingDebounceTimer.Tick -= SaveSettingDebounceTimer_Tick;
+                _saveSettingDebounceTimer = null;
+            }
+            SaveSetting();
         }
     }
 }

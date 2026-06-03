@@ -312,6 +312,19 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             _dic.Remove(_hwnd);
         }
+        /// <summary>
+        /// 注销所有已注册的热键
+        /// </summary>
+        public static void DisposeAll()
+        {
+            if (_dic != null)
+            {
+                foreach (var pair in _dic.ToList())
+                {
+                    pair.Value.Dispose();
+                }
+            }
+        }
 
         #region 监控热键触发
         public delegate void HotkeyActivedDeletegate(int hotkeyId);

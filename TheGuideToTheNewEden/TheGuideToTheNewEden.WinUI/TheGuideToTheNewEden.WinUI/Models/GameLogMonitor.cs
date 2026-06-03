@@ -97,8 +97,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _gameLogItem.OnContentUpdate -= GameLogItem_OnContentUpdate;
             Core.Services.ObservableFileService.Remove(_gameLogItem);
             _msgWindow?.Hide();
-            _mediaPlayer?.Pause();
-            _mediaPlayer.Source = null;
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Pause();
+                _mediaPlayer.Source = null;
+            }
             _mediaSource?.Dispose();
             _mediaSource = null;
             _timer?.Stop();
@@ -196,8 +199,11 @@ namespace TheGuideToTheNewEden.WinUI.Models
             Stop();
             _msgWindow?.Close();
             _msgWindow = null;
-            _mediaPlayer.Source = null;
-            _mediaPlayer?.Dispose();
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Source = null;
+                _mediaPlayer.Dispose();
+            }
             _mediaSource?.Dispose();
             _mediaSource = null;
             _mediaPlayer = null;

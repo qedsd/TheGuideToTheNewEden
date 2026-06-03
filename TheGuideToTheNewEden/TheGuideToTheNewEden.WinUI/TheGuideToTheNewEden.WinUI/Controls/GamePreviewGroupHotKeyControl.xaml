@@ -52,6 +52,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -71,6 +72,13 @@
                     AcceptsReturn="True"
                     PlaceholderText="{StaticResource GamePreviewMgrPage_GroupHotkey_EditTip}"
                     TextWrapping="Wrap" />
+                <Button
+                    Grid.Row="2"
+                    x:Name="SelectFromProcessButton"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Stretch"
+                    Click="SelectFromProcessButton_Click"
+                    Content="{StaticResource GamePreviewMgrPage_GroupHotkey_SelectFromProcess}" />
             </Grid>
         </Grid>
         <Grid Grid.Row="2" HorizontalAlignment="Right">

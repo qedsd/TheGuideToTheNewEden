@@ -261,7 +261,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 {
                     foreach(var monitor in monitors)
                     {
+                        monitor.OnContentUpdate -= ContentUpdate;
                         monitor.Stop();
+                        _monitors.Remove(monitor.GetGUID());
                     }
                 }
                 gameLogInfo.Running = false;

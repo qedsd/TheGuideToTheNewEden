@@ -14,164 +14,166 @@
         <viewmodels:UpdateViewModel x:Name="VM" />
     </Page.DataContext>
     <Grid Margin="8,0,8,8">
-        <Grid Visibility="{x:Bind VM.Checked, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Border
-                Margin="8,0"
-                Padding="16"
-                Background="{ThemeResource TransparentBackgroudBrush}"
-                CornerRadius="6">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
+        <ScrollViewer HorizontalScrollMode="Disabled" Visibility="{x:Bind VM.Checked, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border
+                    Margin="8,0"
+                    Padding="16"
+                    Background="{ThemeResource TransparentBackgroudBrush}"
+                    CornerRadius="6">
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Resources>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="16" />
-                                    <Setter Property="FontWeight" Value="Black" />
-                                </Style>
-                            </StackPanel.Resources>
-                            <TextBlock Text="{StaticResource Update_LastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                            <TextBlock Text="{StaticResource Update_FoundLastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                            <TextBlock Margin="8,0,0,0" Text="{x:Bind VM.LastRelease.Version, Mode=OneWay}" />
-                        </StackPanel>
-                        <Grid Grid.Column="1">
-                            <Button
-                                Content="{StaticResource Update_AlreadyLastVersion}"
-                                Style="{ThemeResource AccentButtonStyle}"
-                                Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
-                            <Grid Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
-                                <Grid Visibility="{x:Bind VM.Downloaded, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
-                                    <Button
-                                        Command="{x:Bind VM.StartDownloadCommand}"
-                                        Content="{StaticResource Update_StartDownload}"
-                                        Style="{ThemeResource AccentButtonStyle}"
-                                        Visibility="{x:Bind VM.Downloading, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
-                                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind VM.Downloading, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.DownloadedSize, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}}" />
-                                        <TextBlock
-                                            Margin="4,0"
-                                            VerticalAlignment="Center"
-                                            Text="/" />
-                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.DownloadSize, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}}" />
-                                        <TextBlock
-                                            Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Text="MB" />
-                                        <Button
-                                            Margin="16,0,0,0"
-                                            Command="{x:Bind VM.StopDownloadCommand}"
-                                            Content="{StaticResource Update_StopDownload}"
-                                            Style="{ThemeResource AccentButtonStyle}" />
-                                    </StackPanel>
-                                </Grid>
-                                <Grid Visibility="{x:Bind VM.Downloaded, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
-                                    <Button
-                                        Command="{x:Bind VM.StartInstallCommand}"
-                                        Content="{StaticResource Update_InstallUpdate}"
-                                        Style="{ThemeResource AccentButtonStyle}" />
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <TextBlock
-                        Grid.Row="1"
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind VM.LastRelease.Description, Mode=OneWay}"
-                        TextWrapping="Wrap" />
-                </Grid>
-            </Border>
-            <StackPanel
-                Grid.Row="1"
-                Margin="8,16,16,12"
-                Orientation="Horizontal">
-                <TextBlock
-                    FontSize="13"
-                    Foreground="{ThemeResource SecondaryForegroundBrush}"
-                    Text="{StaticResource Update_AllRelease}" />
-                <TextBlock
-                    Margin="4,0"
-                    FontSize="13"
-                    Foreground="{ThemeResource SecondaryForegroundBrush}"
-                    Text="-" />
-                <TextBlock
-                    FontSize="13"
-                    Foreground="{ThemeResource SecondaryForegroundBrush}"
-                    Text="{x:Bind VM.Releases.Count}" />
-            </StackPanel>
-            <ListView
-                Grid.Row="2"
-                ItemsSource="{x:Bind VM.Releases, Mode=OneWay}"
-                SelectionMode="None"
-                Style="{StaticResource StretchListView}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Grid>
-                                <Rectangle
-                                    Width="1"
-                                    Margin="2,0,0,0"
-                                    HorizontalAlignment="Center"
-                                    Fill="{ThemeResource SystemAccentColorLight3}" />
-                                <Grid
-                                    Margin="0,6,0,0"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Top">
-                                    <Border
-                                        Width="4"
-                                        Height="4"
-                                        Background="{ThemeResource SystemAccentColor}" />
-                                    <Border
-                                        Width="8"
-                                        Height="8"
-                                        Background="{ThemeResource SystemAccentColor}"
-                                        Opacity="0.5" />
-                                </Grid>
-                            </Grid>
-                            <Grid Grid.Column="1" Margin="16,0,0,16">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <TextBlock
-                                    FontSize="13"
-                                    Foreground="{ThemeResource SecondaryForegroundBrush}"
-                                    Text="{Binding Date}" />
-                                <Grid
-                                    Grid.Row="1"
-                                    Margin="0,8,0,0"
-                                    Padding="16"
-                                    Background="{ThemeResource TransparentBackgroudBrush}"
-                                    CornerRadius="6">
-                                    <StackPanel>
-                                        <TextBlock FontWeight="Black" Text="{Binding Version}" />
-                                        <TextBlock
-                                            Margin="0,8,0,0"
-                                            Text="{Binding Description}"
-                                            TextWrapping="Wrap" />
-                                    </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="16" />
+                                        <Setter Property="FontWeight" Value="Black" />
+                                    </Style>
+                                </StackPanel.Resources>
+                                <TextBlock Text="{StaticResource Update_LastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <TextBlock Text="{StaticResource Update_FoundLastVersion}" Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                                <TextBlock Margin="8,0,0,0" Text="{x:Bind VM.LastRelease.Version, Mode=OneWay}" />
+                            </StackPanel>
+                            <Grid Grid.Column="1">
+                                <Button
+                                    Content="{StaticResource Update_AlreadyLastVersion}"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <Grid Visibility="{x:Bind VM.IsLast, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                                    <Grid Visibility="{x:Bind VM.Downloaded, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
+                                        <Button
+                                            Command="{x:Bind VM.StartDownloadCommand}"
+                                            Content="{StaticResource Update_StartDownload}"
+                                            Style="{ThemeResource AccentButtonStyle}"
+                                            Visibility="{x:Bind VM.Downloading, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}" />
+                                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind VM.Downloading, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.DownloadedSize, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}}" />
+                                            <TextBlock
+                                                Margin="4,0"
+                                                VerticalAlignment="Center"
+                                                Text="/" />
+                                            <TextBlock VerticalAlignment="Center" Text="{x:Bind VM.DownloadSize, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter={}{0:N1}}" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Text="MB" />
+                                            <Button
+                                                Margin="16,0,0,0"
+                                                Command="{x:Bind VM.StopDownloadCommand}"
+                                                Content="{StaticResource Update_StopDownload}"
+                                                Style="{ThemeResource AccentButtonStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid Visibility="{x:Bind VM.Downloaded, Mode=OneWay, Converter={StaticResource TrueToVisibleConverter}}">
+                                        <Button
+                                            Command="{x:Bind VM.StartInstallCommand}"
+                                            Content="{StaticResource Update_InstallUpdate}"
+                                            Style="{ThemeResource AccentButtonStyle}" />
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
+                        <TextBlock
+                            Grid.Row="1"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind VM.LastRelease.Description, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+                <StackPanel
+                    Grid.Row="1"
+                    Margin="8,16,16,12"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{StaticResource Update_AllRelease}" />
+                    <TextBlock
+                        Margin="4,0"
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="-" />
+                    <TextBlock
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                        Text="{x:Bind VM.Releases.Count}" />
+                </StackPanel>
+                <ListView
+                    Grid.Row="2"
+                    ItemsSource="{x:Bind VM.Releases, Mode=OneWay}"
+                    SelectionMode="None"
+                    Style="{StaticResource StretchListView}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Rectangle
+                                        Width="1"
+                                        Margin="2,0,0,0"
+                                        HorizontalAlignment="Center"
+                                        Fill="{ThemeResource SystemAccentColorLight3}" />
+                                    <Grid
+                                        Margin="0,6,0,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Top">
+                                        <Border
+                                            Width="4"
+                                            Height="4"
+                                            Background="{ThemeResource SystemAccentColor}" />
+                                        <Border
+                                            Width="8"
+                                            Height="8"
+                                            Background="{ThemeResource SystemAccentColor}"
+                                            Opacity="0.5" />
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Column="1" Margin="16,0,0,16">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock
+                                        FontSize="13"
+                                        Foreground="{ThemeResource SecondaryForegroundBrush}"
+                                        Text="{Binding Date}" />
+                                    <Grid
+                                        Grid.Row="1"
+                                        Margin="0,8,0,0"
+                                        Padding="16"
+                                        Background="{ThemeResource TransparentBackgroudBrush}"
+                                        CornerRadius="6">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="Black" Text="{Binding Version}" />
+                                            <TextBlock
+                                                Margin="0,8,0,0"
+                                                Text="{Binding Description}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </ScrollViewer>
         <Grid Visibility="{x:Bind VM.Checked, Mode=OneWay, Converter={StaticResource FalseToVisibleConverter}}">
             <Button
                 HorizontalAlignment="Center"

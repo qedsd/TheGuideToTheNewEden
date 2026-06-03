@@ -36,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
     {
         private Core.Models.Map.IntelSolarSystemMap IntelMap;
         private ChannelIntelSetting Setting;
-        private readonly ToolWindow Window = new ToolWindow();
+        private readonly ToolWindow _window = new ToolWindow();
         private DispatcherTimer autoIntelTimer;
         private AppWindow AppWindow;
         private Interfaces.IIntelOverlapPage _intelPage;
@@ -44,34 +44,32 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         private IntelBasePage _intelBasePage;
         public IntelWindow(ChannelIntelSetting setting, Core.Models.Map.IntelSolarSystemMap intelMap)
         {
+            IntelMap = intelMap;
+            Setting = setting;
             _intelPage = null;
-            switch((Core.Enums.IntelOverlapStyle)setting.OverlapStyle)
+            switch ((Core.Enums.IntelOverlapStyle)setting.OverlapStyle)
             {
-                case Core.Enums.IntelOverlapStyle.Neweden: _intelPage = new DefaultIntelOverlapPage();break;
-                case Core.Enums.IntelOverlapStyle.SMT: _intelPage = new SMTIntelOverlapPage();break;
+                case Core.Enums.IntelOverlapStyle.Neweden: _intelPage = new DefaultIntelOverlapPage(); break;
+                case Core.Enums.IntelOverlapStyle.SMT: _intelPage = new SMTIntelOverlapPage(); break;
                 case Core.Enums.IntelOverlapStyle.Near2: _intelPage = new Near2IntelOverlapPage(); break;
             }
             _intelBasePage = new IntelBasePage(_intelPage);
             _intelBasePage.OnIntelInfoButtonClicked += IntelBasePage_OnIntelInfoButtonClicked;
             _intelBasePage.OnStopSoundButtonClicked += IntelBasePage_OnStopSoundButtonClicked;
             _intelBasePage.OnClearButtonClicked += IntelBasePage_OnClearButtonClicked;
-            Window.InitWindow(_intelBasePage, WindowTitleStyle.Default, true, true, true, false);
-            IntelMap = intelMap;
-            Setting = setting;
-            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(Setting.WinW, Setting.WinH));
-            if(Setting.WinX != -1 && Setting.WinY != -1)
+            _window.InitWindow(_intelBasePage, WindowTitleStyle.OnlyMini, true, true, true, true);
+            _window.SetSize(Setting.WinW, Setting.WinH);
+            _window.SetAlwaysOnTop();
+            _window.OnHide += Window_OnHide;
+           
+            AppWindow = _window.GetAppWindow();
+            if (Setting.WinX != -1 && Setting.WinY != -1)
             {
-                Helpers.WindowHelper.MoveToScreen(Window, Setting.WinX, Setting.WinY);
+                _window.SetPosition(Setting.WinX, Setting.WinY);
             }
-            Window.SizeChanged += Window_SizeChanged;
+            _window.SizeChanged += Window_SizeChanged;
             AppWindow.Changed += AppWindow_Changed;
-            AppWindow.Closing += AppWindow_Closing;
-            AppWindow.IsShownInSwitchers = false;
-            (AppWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
-            TransparentWindowHelper.TransparentWindow(Window, Setting.OverlapOpacity);
+            _window.SetTransparent(Setting.OverlapOpacity);
             Init(Setting, IntelMap);
         }
 
@@ -94,22 +92,25 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 Helpers.WindowHelper.SetForegroundWindow_Click(hwnd);
             }
         }
-
+        private void Window_OnHide(object sender, EventArgs e)
+        {
+            Services.WarningService.Current.StopSound(Setting.Listener);
+        }
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
         {
             if (args.DidPositionChange)
             {
                 if (!Helpers.WindowHelper.IsInWindow(sender.Position.X, sender.Position.Y))
                 {
-                    //ø…ƒ‹ «◊Ó–°ªØ∫Û≤ªœ‘ æ‘⁄∆¡ƒª∑∂Œßƒ⁄
+                    //ÂèØËÉΩÊòØÊúÄÂ∞èÂåñÂêé‰∏çÊòæÁ§∫Âú®Â±èÂπïËåÉÂõ¥ÂÜÖ
                     sender.IsShownInSwitchers = true;
-                    return;//≤ª±£¥ÊŒª÷√
+                    return;//‰∏ç‰øùÂ≠ò‰ΩçÁΩÆ
                 }
                 else if (sender.IsShownInSwitchers)
                 {
-                    //◊Ó–°ªØª÷∏¥’˝≥£œ‘ æ
+                    //ÊúÄÂ∞èÂåñÊÅ¢Â§çÊ≠£Â∏∏ÊòæÁ§∫
                     sender.IsShownInSwitchers = false;
-                    return;//≤ª±£¥ÊŒª÷√
+                    return;//‰∏ç‰øùÂ≠ò‰ΩçÁΩÆ
                 }
             }
             if (args.DidPositionChange || args.DidSizeChange)
@@ -122,13 +123,6 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             }
         }
 
-        private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
-        {
-            args.Cancel = true;
-            Services.WarningService.Current.StopSound(Setting.Listener);
-            Window.Hide();
-        }
-
         public delegate void StopDelegate();
         public event StopDelegate OnStop;
 
@@ -139,11 +133,18 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void Show()
         {
-            Window.Activate();
+            try
+            {
+                _window.Activate();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
         }
 
         /// <summary>
-        /// µ˜”√ª·÷ÿ–¬ªÊ÷∆ui
+        /// Ë∞ÉÁî®‰ºöÈáçÊñ∞ÁªòÂà∂ui
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="intelMap"></param>
@@ -151,19 +152,19 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             _allSolarSystem.Clear();
             var all = intelMap.GetAllSolarSystem();
-            if(all.NotNullOrEmpty())
+            if (all.NotNullOrEmpty())
             {
-                foreach(var item in all)
+                foreach (var item in all)
                 {
                     _allSolarSystem.Add(item.SolarSystemID);
                 }
             }
-            Window.SetDisplayTitle($"{Setting.Listener} - {Setting.IntelJumps}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}");
-            _intelPage.Init(Window,setting,intelMap);
+            _window.SetDisplayTitle($"{Setting.Listener} - {Setting.IntelJumps}{Helpers.ResourcesHelper.GetString("EarlyWarningPage_Jumps")}");
+            _intelPage.Init(_window, setting, intelMap);
             InitTimer();
         }
 
-        private Dictionary<int,DateTime> StartTimes = new Dictionary<int, DateTime>();
+        private Dictionary<int, DateTime> StartTimes = new Dictionary<int, DateTime>();
         public void Intel(EarlyWarningContent content)
         {
             _intelPage.Intel(content);
@@ -171,13 +172,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             _intelBasePage.SetIntelInfo(intelInfo, content.Content, content.IntelShips);
             if (_allSolarSystem.Contains(content.SolarSystemId))
             {
-                if(content.IntelType == Core.Enums.IntelChatType.Intel)
+                if (content.IntelType == Core.Enums.IntelChatType.Intel)
                 {
                     StartTimes.Remove(content.SolarSystemId);
                     StartTimes.Add(content.SolarSystemId, DateTime.Now);
                     Show();
                 }
-                else if(content.IntelType == Core.Enums.IntelChatType.Clear)
+                else if (content.IntelType == Core.Enums.IntelChatType.Clear)
                 {
                     StartTimes.Remove(content.SolarSystemId);
                     TyrHideWindow();
@@ -186,11 +187,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private void InitTimer()
         {
-            if(autoIntelTimer != null)
+            if (autoIntelTimer != null)
             {
                 autoIntelTimer.Stop();
             }
-            if(Setting.AutoClear || Setting.AutoDowngrade)
+            if (Setting.AutoClear || Setting.AutoDowngrade)
             {
                 autoIntelTimer = new DispatcherTimer();
                 autoIntelTimer.Interval = TimeSpan.FromSeconds(10);
@@ -211,9 +212,9 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         {
             DateTime now = DateTime.Now;
             List<int> remove = new List<int>();
-            foreach(var item in StartTimes)
+            foreach (var item in StartTimes)
             {
-                if((now - item.Value).TotalMinutes >= Setting.AutoClearMinute)
+                if ((now - item.Value).TotalMinutes >= Setting.AutoClearMinute)
                 {
                     remove.Add(item.Key);
                 }
@@ -223,7 +224,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                 StartTimes.Remove(item);
             }
             _intelPage.Clear(remove);
-            if(remove.Any())
+            if (remove.Any())
             {
                 TyrHideWindow();
             }
@@ -243,11 +244,11 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
         private void TyrHideWindow()
         {
-            if(Setting.OverlapType == 1)
+            if (Setting.OverlapType == 1)
             {
                 if (StartTimes.Count == 0)
                 {
-                    //—”≥Ÿ30√Î∫Ûπÿ±’¥∞ø⁄
+                    //Âª∂Ëøü30ÁßíÂêéÂÖ≥Èó≠Á™óÂè£
                     Timer timer = new Timer()
                     {
                         AutoReset = false,
@@ -255,13 +256,10 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     };
                     timer.Elapsed += ((s, e) =>
                     {
-                        //‘Ÿ¥Œ≈–∂œ
+                        //ÂÜçÊ¨°Âà§Êñ≠
                         if (StartTimes.Count == 0)
                         {
-                            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-                            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-                            Microsoft.UI.Windowing.AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-                            appWindow?.Hide();
+                            _window.Hide();
                         }
                     });
                     timer.Start();
@@ -271,30 +269,30 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 
         public void UpdateUI()
         {
-            Window.DispatcherQueue.SafelyTryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateUI();
             });
         }
         public void UpdateHome(IntelSolarSystemMap intelMap)
         {
-            Window.DispatcherQueue.SafelyTryEnqueue(() =>
+            _window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
                 _intelPage.UpdateHome(intelMap);
             });
         }
+        public void RestoreWindowPos()
+        {
+            _window.CenterToScreen();
+        }
         public void Dispose()
         {
             _intelPage.Dispose();
-            AppWindow.Closing -= AppWindow_Closing;
-            Window?.Close();
+            AppWindow.Changed -= AppWindow_Changed;
+            _window.OnHide -= Window_OnHide;
+            _window?.Close();
             autoIntelTimer?.Stop();
             autoIntelTimer = null;
-        }
-
-        public void RestoreWindowPos()
-        {
-            Helpers.WindowHelper.CenterToScreen(Window);
         }
     }
 }

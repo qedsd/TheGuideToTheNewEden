@@ -84,10 +84,20 @@ namespace TheGuideToTheNewEden.WinUI
             if (!_closed)
             {
                 _closed = true;
-                notificationManager?.Unregister();
-                ForegroundWindowService.Current.Stop();
-                Helpers.WindowHelper.CloseAll();
-                Environment.Exit(0);
+                try
+                {
+                    notificationManager?.Unregister();
+                    ForegroundWindowService.Current.Stop();
+                    Helpers.WindowHelper.CloseAll();
+                }
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex);
+                }
+                finally
+                {
+                    Environment.Exit(0);
+                }
             }
         }
 
@@ -138,7 +148,70 @@ namespace TheGuideToTheNewEden.WinUI
 
         public static void Close()
         {
-            ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
+            try
+            {
+                ClientServiceHelper.GetRequiredService<PageNavigationService>().Dispose();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                Services.WarningService.Current.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                Services.ChannelIntelManager.Instance.Clear();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                Services.KeyboardService.Stop();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                Services.HotkeyService.DisposeAll();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                TheGuideToTheNewEden.Core.Services.ZKBStreamService.Current.UnSub();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                Services.ChannelMonitorNotifyService.Current.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
+            try
+            {
+                TheGuideToTheNewEden.Core.Services.ObservableFileService.StopAll();
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
             Services.MemoryIPCService.Dispose();
             App.HandleClosedEvents = false;
             Core.Log.Info("开始Close");

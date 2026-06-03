@@ -28,68 +28,110 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         public void ShowMsg(string msg, bool autoClose = true)
         {
-            if (_window != null)
+            try
             {
-                _window.ShowMsg(msg, autoClose);
+                if (_window != null)
+                {
+                    _window.ShowMsg(msg, autoClose);
+                }
+                else
+                {
+                    _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Info, autoClose);
+                Core.Log.Error(ex);
             }
         }
         public void ShowError(Exception ex, bool autoClose = false)
         {
-            if (_window != null)
+            try
             {
-                _window.ShowError(ex.ToString(), autoClose);
+                if (_window != null)
+                {
+                    _window.ShowError(ex.ToString(), autoClose);
+                }
+                else
+                {
+                    _navigationService.ShowMsg(this, ex.ToString(), Controls.InfoBarControl.InfoType.Error, autoClose);
+                }
             }
-            else
+            catch (Exception ex2)
             {
-                _navigationService.ShowMsg(this, ex.ToString(), Controls.InfoBarControl.InfoType.Error, autoClose);
+                Core.Log.Error(ex2);
             }
         }
         public void ShowError(string msg, bool autoClose = false)
         {
-            if (_window != null)
+            try
             {
-                _window.ShowError(msg, autoClose);
+                if (_window != null)
+                {
+                    _window.ShowError(msg, autoClose);
+                }
+                else
+                {
+                    _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Error, autoClose);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Error, autoClose);
+                Core.Log.Error(ex);
             }
         }
         public void ShowSuccess(string msg, bool autoClose = true)
         {
-            if (_window != null)
+            try
             {
-                _window.ShowSuccess(msg, autoClose);
+                if (_window != null)
+                {
+                    _window.ShowSuccess(msg, autoClose);
+                }
+                else
+                {
+                    _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _navigationService.ShowMsg(this, msg, Controls.InfoBarControl.InfoType.Success, autoClose);
+                Core.Log.Error(ex);
             }
         }
         public void ShowWaiting(string tip = null, LoadingControl.CancelWaitingCallbackDelegate cancelCallback = null)
         {
-            if (_window != null)
+            try
             {
-                _window.ShowWaiting(tip);
+                if (_window != null)
+                {
+                    _window.ShowWaiting(tip);
+                }
+                else
+                {
+                    _navigationService.ShowWaiting(this, tip, cancelCallback);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _navigationService.ShowWaiting(this, tip, cancelCallback);
+                Core.Log.Error(ex);
             }
         }
         public void HideWaiting()
         {
-            if (_window != null)
+            try
             {
-                _window.HideWaiting();
+                if (_window != null)
+                {
+                    _window.HideWaiting();
+                }
+                else
+                {
+                    _navigationService.HideWaiting(this);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _navigationService.HideWaiting(this);
+                Core.Log.Error(ex);
             }
         }
 

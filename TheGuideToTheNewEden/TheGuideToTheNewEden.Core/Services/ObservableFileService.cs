@@ -113,6 +113,22 @@ namespace TheGuideToTheNewEden.Core.Services
                 }
             }
         }
+        public static void StopAll()
+        {
+            if (FileWatcherDic != null)
+            {
+                foreach (var watcher in FileWatcherDic.Values)
+                {
+                    watcher.Stop();
+                    watcher.Dispose();
+                }
+                FileWatcherDic.Clear();
+            }
+            if (ItemsDic != null)
+            {
+                ItemsDic.Clear();
+            }
+        }
         private static void Watcher_Changed(string file)
         {
             if (ItemsDic.TryGetValue(file, out var items))

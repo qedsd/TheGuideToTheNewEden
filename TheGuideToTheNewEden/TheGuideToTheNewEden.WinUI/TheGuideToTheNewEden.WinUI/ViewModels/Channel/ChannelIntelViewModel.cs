@@ -174,6 +174,15 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return c;
             }
         }
+        private void UnsubscribeEvents(ChannelIntel channelIntel)
+        {
+            if (channelIntel == null)
+                return;
+            channelIntel.ChatContentEvent -= ChannelIntel_ChatContentEvent;
+            channelIntel.ZKBIntelEvent -= ChannelIntel_ZKBIntelEvent;
+            channelIntel.OnZKBError -= ChannelIntel_OnZKBError;
+        }
+
         private async Task<bool> Start(ChannelIntel channelIntel, ChannelIntelListener channelIntelListener)
         {
             if (channelIntel == null)
@@ -205,7 +214,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private void ChannelIntel_OnZKBError(object sender, Exception e)
         {
             Core.Log.Error(e);
-            ShowError(e);
+            try
+            {
+                ShowError(e);
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
         }
 
         public ICommand StartCommand => new RelayCommand(async() =>
@@ -227,6 +243,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StopCommand => new RelayCommand(() =>
         {
+            UnsubscribeEvents(ChannelIntel);
             ChannelIntel.Stop();
             SelectedCharacter.Running = false;
             if(Characters.Count(p => p.Running) == 0)
@@ -238,6 +255,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             foreach(var c in _channelIntels.Values)
             {
+                UnsubscribeEvents(c);
                 c.Stop();
             }
             foreach(var c in Characters)
@@ -306,6 +324,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand ApplySettingToAllCommand => new RelayCommand(async () =>
         {
+            if (Window?.Content?.XamlRoot == null)
+                return;
             Microsoft.UI.Xaml.Controls.ContentDialog contentDialog = new Microsoft.UI.Xaml.Controls.ContentDialog()
             {
                 XamlRoot = Window.Content.XamlRoot,
@@ -355,21 +375,35 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         private void ChannelIntel_ZKBIntelEvent(object sender, Core.Models.EarlyWarningContent e)
         {
-            Window.DispatcherQueue.SafelyTryEnqueue(() =>
+            try
             {
-                ZKBIntelContents.Add(e);
-            });
+                Window.DispatcherQueue.SafelyTryEnqueue(() =>
+                {
+                    ZKBIntelContents.Add(e);
+                });
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
         }
 
         private void ChannelIntel_ChatContentEvent(object sender, IEnumerable<IntelChatContent> e)
         {
-            Window.DispatcherQueue.SafelyTryEnqueue(() =>
+            try
             {
-                foreach (IntelChatContent content in e)
+                Window.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    ChatContents.Add(content);
-                }
-            });
+                    foreach (IntelChatContent content in e)
+                    {
+                        ChatContents.Add(content);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Error(ex);
+            }
         }
     }
 }

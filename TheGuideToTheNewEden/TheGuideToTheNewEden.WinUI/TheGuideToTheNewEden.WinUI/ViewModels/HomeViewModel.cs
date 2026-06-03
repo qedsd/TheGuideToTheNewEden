@@ -10,11 +10,13 @@ using ESI.NET;
 using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.WinUI.Wins;
 using Windows.System;
 
@@ -30,6 +32,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private string _appVersion;
         public string AppVersion { get => _appVersion; set => SetProperty(ref _appVersion, value); }
+
+        private string _checkUpdateError;
+        public string CheckUpdateError { get => _checkUpdateError; set => SetProperty(ref _checkUpdateError, value); }
+
+        private bool _hasCheckUpdateError;
+        public bool HasCheckUpdateError { get => _hasCheckUpdateError; set => SetProperty(ref _hasCheckUpdateError, value); }
 
         private List<int> _marketTypes;
         public List<int> MarketTypes { get => _marketTypes; set => SetProperty(ref _marketTypes, value); }
@@ -61,6 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public void Init()
         {
             GameServerStatus();
+            CheckUpdate();
         }
         private void GameServerStatus()
         {
@@ -90,6 +99,50 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 
             });
         }
+        private async void CheckUpdate()
+        {
+            if (AutoUpdateService.Value)
+            {
+                try
+                {
+                    var failedMsg = await ClientServiceHelper.GetRequiredService<AppUpdateService>().UpdateReleasesStatusAsync();
+                    if (!string.IsNullOrEmpty(failedMsg))
+                    {
+                        HasCheckUpdateError = true;
+                        CheckUpdateError = failedMsg;
+                    }
+                    else
+                    {
+                        HasCheckUpdateError = false;
+                        CheckUpdateError = null;
+                        ClientServiceHelper.GetRequiredService<AppUpdateService>().GetReleasesStatus(out var releases, out var lastRelease, out var isLatest);
+                        if (!isLatest)
+                        {
+                            ContentDialog contentDialog = new ContentDialog();
+                            contentDialog.Title = $"{Helpers.ResourcesHelper.GetString("Update_FoundLastVersion")} {lastRelease.Version}";
+                            contentDialog.Content = new TextBlock()
+                            {
+                                Text = lastRelease.Description,
+                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                            };
+                            contentDialog.XamlRoot = Helpers.WindowHelper.MainWindow.Content.XamlRoot;
+                            contentDialog.PrimaryButtonText = Helpers.ResourcesHelper.GetString("Update_ConfirmUpdate");
+                            contentDialog.SecondaryButtonText = Helpers.ResourcesHelper.GetString("Update_NotUpdate");
+                            if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
+                            {
+                                ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex.Message);
+                    HasCheckUpdateError = true;
+                    CheckUpdateError = ex.Message;
+                }
+            }
+        }
 
         public ICommand ToQQCommand => new RelayCommand(() =>
         {
@@ -106,6 +159,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         public ICommand AppUpdateCommand => new RelayCommand(() =>
         {
+            HasCheckUpdateError = false;
+            CheckUpdateError = null;
             ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
         });
         public ICommand AppAboutCommand => new RelayCommand(() =>

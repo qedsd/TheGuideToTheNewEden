@@ -94,7 +94,6 @@ namespace TheGuideToTheNewEden.WinUI.Models
                 setting = new Core.Models.ChannelIntel.ChannelIntelSetting();
                 setting.Listener = listener;
             }
-            FixSoundSetting(setting);
             Setting = setting;
             LoadSetting();
             Setting.PropertyChanged += Setting_PropertyChanged;
@@ -153,34 +152,6 @@ namespace TheGuideToTheNewEden.WinUI.Models
             if (Setting.AutoUpdateLocaltion)
             {
                 UpdateCharacterLocation();
-            }
-        }
-        private static void FixSoundSetting(Core.Models.ChannelIntel.ChannelIntelSetting setting)
-        {
-            if (setting != null)
-            {
-                int diff = setting.IntelJumps + 1 - setting.Sounds.Count;
-                if (diff != 0)
-                {
-                    if (diff < 0)
-                    {
-                        for (int i = 0; i < -diff; i++)
-                        {
-                            setting.Sounds.RemoveAt(setting.Sounds.Count - 1);
-                        }
-                    }
-                    else
-                    {
-                        for (int i = 0; i < diff; i++)
-                        {
-                            setting.Sounds.Add(new Core.Models.ChannelIntel.ChannelIntelSoundSetting()
-                            {
-                                Id = setting.Sounds.Count
-                            });
-                        }
-                    }
-                }
-
             }
         }
         private void SaveSetting()
@@ -495,7 +466,13 @@ namespace TheGuideToTheNewEden.WinUI.Models
             _observers.Clear();
             Running = false;
             _localObservers = null;
-            _zkbIntel?.Stop();
+            if (_zkbIntel != null)
+            {
+                _zkbIntel.OnError -= ZKBIntel_OnError;
+                _zkbIntel.OnWarningUpdate -= ZkbIntel_OnWarningUpdate;
+                _zkbIntel.Stop();
+                _zkbIntel = null;
+            }
             Services.WarningService.Current.Remove(Setting?.Listener);
             ChannelIntelManager.Instance.Unregister(this);
             GC.Collect();

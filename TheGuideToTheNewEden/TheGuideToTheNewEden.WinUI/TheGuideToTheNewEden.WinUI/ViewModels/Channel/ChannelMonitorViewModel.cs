@@ -188,7 +188,13 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartCommand => new RelayCommand(() =>
         {
-            SelectedCharacter.Setting.SelectedChannels = _chatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
+            var channelInfos = _chatChanelInfos;
+            if (channelInfos == null && _selectedCharacter != null)
+            {
+                _listenerChannelDic.TryGetValue(_selectedCharacter.Name, out channelInfos);
+            }
+            SelectedCharacter.Setting.SelectedChannels = (channelInfos ?? Enumerable.Empty<ChatChanelInfo>())
+                .Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
             if (Start(SelectedCharacter))
             {
                 Running = true;
@@ -196,11 +202,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand StartAllCommand => new RelayCommand(() =>
         {
+            var channelInfos = _chatChanelInfos;
+            if (channelInfos == null && _selectedCharacter != null)
+            {
+                _listenerChannelDic.TryGetValue(_selectedCharacter.Name, out channelInfos);
+            }
             foreach (var character in Characters)
             {
                 if(character == _selectedCharacter)
                 {
-                    character.Setting.SelectedChannels = _chatChanelInfos.Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
+                    character.Setting.SelectedChannels = (channelInfos ?? Enumerable.Empty<ChatChanelInfo>())
+                        .Where(p => p.IsChecked).Select(p => p.ChannelName).ToList();
                 }
                 if (!character.Running)
                 {
@@ -295,6 +307,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 foreach (var item in items)
                 {
+                    item.OnContentUpdate -= ChatlogObservableItem_OnContentUpdate;
                     Core.Services.ObservableFileService.Remove(item);
                 }
             }
