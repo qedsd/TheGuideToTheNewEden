@@ -15,7 +15,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border BorderBrush="Red" BorderThickness="1">
+        <Border
+            x:Name="CrasheHeader"
+            BorderBrush="Red"
+            BorderThickness="1">
             <StackPanel>
                 <TextBlock
                     Margin="4,2"
@@ -32,10 +35,12 @@
             Grid.Row="1"
             Margin="0,8,0,0"
             Header="Error Info">
-            <RichTextBox
-                x:Name="MsgTextBox"
-                BorderThickness="0"
-                FontSize="16" />
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <RichTextBox
+                    x:Name="MsgTextBox"
+                    BorderThickness="0"
+                    FontSize="16" />
+            </ScrollViewer>
         </GroupBox>
     </Grid>
 </Window>
