@@ -59,7 +59,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }))
                 {
                     Core.Log.Error($"Add ChannelMonitorNotifyService Same Name: {info.Name}");
-                    NotifyWindows.Remove(info.Setting.Name);
+                    NotifyWindows.Remove(info.Name);
                     return false;
                 }
             }
@@ -95,7 +95,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (NotifyMediaPlayers.TryGetValue(name, out var mediaPlayer))
             {
-                (mediaPlayer.Source as MediaSource).Dispose();
+                if (mediaPlayer.Source is MediaSource ms)
+                {
+                    ms.Dispose();
+                }
                 mediaPlayer.Dispose();
                 NotifyMediaPlayers.Remove(name);
             }
