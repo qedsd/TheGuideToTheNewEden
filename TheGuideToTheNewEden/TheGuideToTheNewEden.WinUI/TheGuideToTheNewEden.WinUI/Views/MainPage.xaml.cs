@@ -64,40 +64,7 @@ namespace TheGuideToTheNewEden.WinUI.Views
         #region ¸üÐÂ
         private async void CheckUpdate()
         {
-            try
-            {
-                var failedMsg = await ClientServiceHelper.GetRequiredService<AppUpdateService>().UpdateReleasesStatusAsync();
-                if (!string.IsNullOrEmpty(failedMsg))
-                {
-                    ClientServiceHelper.GetRequiredService<PageNavigationService>().ShowMsg(this.Name, failedMsg, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
-                }
-                else
-                {
-                    ClientServiceHelper.GetRequiredService<AppUpdateService>().GetReleasesStatus(out var releases, out var lastRelease, out var isLatest);
-                    if (!isLatest)
-                    {
-                        ContentDialog contentDialog = new ContentDialog();
-                        contentDialog.Title = $"{Helpers.ResourcesHelper.GetString("Update_FoundLastVersion")} {lastRelease.Version}";
-                        contentDialog.Content = new TextBlock()
-                        {
-                            Text = lastRelease.Description,
-                            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
-                        };
-                        contentDialog.XamlRoot = WindowHelper.GetWindowForElement(this).Content.XamlRoot;
-                        contentDialog.PrimaryButtonText = Helpers.ResourcesHelper.GetString("Update_ConfirmUpdate");
-                        contentDialog.SecondaryButtonText = Helpers.ResourcesHelper.GetString("Update_NotUpdate");
-                        if (await contentDialog.ShowAsync() == ContentDialogResult.Primary)
-                        {
-                            ClientServiceHelper.GetRequiredService<PageNavigationService>().NavigateToUpdate();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Core.Log.Error(ex.Message);
-                ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowMsg(Name, ex.Message, Controls.InfoBarControl.InfoType.Error, false, Helpers.ResourcesHelper.GetString("Update_CheckUpdateFailed"));
-            }
+            
         }
         #endregion
 

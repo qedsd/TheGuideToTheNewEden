@@ -168,6 +168,27 @@
                                             Margin="12,0,0,0"
                                             VerticalAlignment="Center"
                                             Text="{x:Bind VM.AppVersion, Mode=OneWay}" />
+                                        <winui:FluentIcon
+                                            x:Name="UpdateErrorIcon"
+                                            Margin="4,0,0,0"
+                                            Foreground="{StaticResource DefaultRed}"
+                                            Icon="ErrorCircle"
+                                            ToolTipService.ToolTip="{x:Bind VM.CheckUpdateError, Mode=OneWay}">
+                                            <interactivity:Interaction.Behaviors>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.HasCheckUpdateError, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="True">
+                                                    <interactivity:ChangePropertyAction PropertyName="Visibility" Value="Visible" />
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior
+                                                    Binding="{x:Bind VM.HasCheckUpdateError, Mode=OneWay}"
+                                                    ComparisonCondition="Equal"
+                                                    Value="False">
+                                                    <interactivity:ChangePropertyAction PropertyName="Visibility" Value="Collapsed" />
+                                                </interactivity:DataTriggerBehavior>
+                                            </interactivity:Interaction.Behaviors>
+                                        </winui:FluentIcon>
                                     </StackPanel>
                                 </Grid>
                             </Button>
