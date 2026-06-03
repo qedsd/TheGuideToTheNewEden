@@ -448,7 +448,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                     for (int i = 0; i < path.Count; i++)
                     {
                         _window.ShowWaiting($"{i + 1}/{path.Count}");
-                        await _esi.UserInterface.SetAutopilotWaypointV2Async(sso, false, false, path[i].System.SolarSystemID);
+                        await _esi.UserInterface.SetAutopilotWaypointAsync(sso, false, false, path[i].System.SolarSystemID);
                     }
                 }
                 else

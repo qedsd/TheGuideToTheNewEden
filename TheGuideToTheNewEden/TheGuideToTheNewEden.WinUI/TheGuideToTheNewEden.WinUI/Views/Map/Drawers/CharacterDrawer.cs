@@ -105,8 +105,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                             auth = ESIService.ToEVEStandardSSO(character);
                             _charactersAuth.Add(character.CharacterID, auth);
                         }
-                        var location = _esi.Location.GetCharacterLocationV1Async(auth).Result;
-                        if(_charactersLocationTemp.TryAdd(character.CharacterID, location.Model.SolarSystemId))
+                        var location = _esi.Location.GetCharacterLocationAsync(auth).Result;
+                        if(_charactersLocationTemp.TryAdd(character.CharacterID, (int)location.Model.SolarSystemId))
                         {
                             if (!withImgs.Contains(character.CharacterID))
                             {

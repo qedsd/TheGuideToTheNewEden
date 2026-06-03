@@ -183,7 +183,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             try
             {
                 List<IdName> idNames = new List<IdName>();
-                var result = await _esi.Universe.BulkNamesToIdsV1Async(new List<string>() { sender.Text });
+                var result = await _esi.Universe.BulkNamesToIdsAsync(new List<string>() { sender.Text });
                 if(result?.Model != null)
                 {
                     if(result.Model.Alliances.NotNullOrEmpty() && IsTargetType(IdName.CategoryEnum.Alliance))

@@ -103,7 +103,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                             }
                             EVEStandard.EVEStandardAPI esiClient = ESIService.GetDefaultESI2();
                             var auth = ESIService.ToEVEStandardSSO(characterData);
-                            var walletResult = esiClient.Wallet.GetCharacterWalletBalanceV1Async(auth).Result;
+                            var walletResult = esiClient.Wallet.GetCharacterWalletBalanceAsync(auth).Result;
                             if (walletResult.Model > 0)
                             {
                                 lock (locker)
@@ -115,7 +115,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                             List<EVEStandard.Models.CharacterWalletJournal> journals = new List<EVEStandard.Models.CharacterWalletJournal>();
                             while (true)
                             {
-                                var walletJounyResult = esiClient.Wallet.GetCharacterWalletJournalV6Async(auth, page).Result;
+                                var walletJounyResult = esiClient.Wallet.GetCharacterWalletJournalAsync(auth, page).Result;
                                 if (walletJounyResult.Model.NotNullOrEmpty())
                                 {
                                     journals.AddRange(walletJounyResult.Model);
@@ -141,14 +141,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                                         continue;
                                     }
                                     double amount = journal.Amount.Value;
-                                    if(journal.RefType == EVEStandard.Enumerations.TransactionType.player_donation)
+                                    if(journal.RefType == EVEStandard.Enumerations.TransactionType.player_donation.ToString())
                                     {
                                         if (amount > 0)
                                             donationStatistic_in.Wallet += amount;
                                         else
                                             donationStatistic_out.Wallet += amount;
                                     }
-                                    else if (journalType.Contains("tax") || journalType.Contains("fee") || journal.RefType == EVEStandard.Enumerations.TransactionType.player_trading)
+                                    else if (journalType.Contains("tax") || journalType.Contains("fee") || journal.RefType == EVEStandard.Enumerations.TransactionType.player_trading.ToString())
                                     {
                                         if (amount > 0)
                                             otherStatistic_in.Wallet += amount;

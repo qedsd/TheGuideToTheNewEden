@@ -178,7 +178,7 @@ namespace TheGuideToTheNewEden.Core.Services
         public static EVEStandard.EVEStandardAPI GetDefaultESI2()
         {
             EVEStandard.Enumerations.DataSource dataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
-            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
+            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, EVEStandard.Enumerations.CompatibilityDate.v2025_12_16,TimeSpan.FromSeconds(30));
         }
         public static EVEStandard.Models.API.AuthDTO ToEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
         {

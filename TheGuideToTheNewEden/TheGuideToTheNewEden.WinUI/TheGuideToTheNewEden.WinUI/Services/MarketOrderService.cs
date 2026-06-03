@@ -64,7 +64,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             EsiClient = Core.Services.ESIService.GetDefaultEsi();
             EVEStandard.Enumerations.DataSource dataSource = Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
-            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
+            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, EVEStandard.Enumerations.CompatibilityDate.v2025_12_16, TimeSpan.FromSeconds(30));
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
+                var resp = await _esiClient.Market.ListOrdersInStructureAsync(auth, structureId, page);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return null;
@@ -323,7 +323,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
+                var resp = await _esiClient.Market.ListOrdersInRegionAsync(regionId, null, page);
                 if (resp != null && resp.Model != null)
                 {
                     pageCallBack?.Invoke(page, resp.MaxPages, "Region");
@@ -546,14 +546,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     var character = authData.Character;
                     var structure = authData.Structure;
                     var auth = CreateEVEStandardSSO(character);
-                    var resp = await _esiClient.Universe.GetStructureInfoV2Async(auth, id);
+                    var resp = await _esiClient.Universe.GetStructureInfoAsync(auth, id);
                     if (resp != null && resp.Model != null)
                     {
                         return new Core.Models.Universe.Structure()
                         {
                             Id = id,
                             Name = resp.Model.Name,
-                            SolarSystemId = resp.Model.SolarSystemId
+                            SolarSystemId = (int)resp.Model.SolarSystemId
                         };
                     }
                     else
@@ -611,7 +611,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return local;
                 }
             }
-            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionAsync(regionId, typeId);
             if (resp != null && resp.Model != null)
             {
                 if(!Directory.Exists(folder))
@@ -759,7 +759,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             var character = await GetCharacter(characterId);
             var sso = CreateEVEStandardSSO(character);
-            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterV2Async(sso);
+            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterAsync(sso);
             if (resp != null)
             {
                 if (resp.Model.NotNullOrEmpty())
@@ -796,7 +796,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationV3Async(sso, autoData.CorporationID, page++);
+                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationAsync(sso, autoData.CorporationID, page++);
                 if (resp != null)
                 {
                     if (resp.Model.NotNullOrEmpty())
@@ -999,7 +999,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public async Task<List<EVEStandard.Models.MarketRegionHistory>> GetHistoryAsync(int typeId)
         {
             int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
-            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionAsync(regionId, typeId);
             return resp.Model;
         }
 
@@ -1011,7 +1011,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             while (true)
             {
                 page++;
-                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, typeId, page);
+                var resp = await _esiClient.Market.ListOrdersInRegionAsync(regionId, typeId, page);
                 if (resp != null && resp.Model != null)
                 {
                     if (resp.Model.NotNullOrEmpty())
