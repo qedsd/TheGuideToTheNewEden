@@ -202,7 +202,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public void PlaySound(Core.Models.ChannelIntel.ChannelIntelSoundSetting soundSetting)
         {
-            string soundFile = string.IsNullOrEmpty(soundSetting.FilePath) ? DefaultMediaFile : soundSetting.FilePath;
+            string soundFile = soundSetting == null || string.IsNullOrEmpty(soundSetting.FilePath) ? DefaultMediaFile : soundSetting.FilePath;
             MediaPlayer mediaPlayer;
             if (!MediaPlayers.TryGetValue(soundFile, out mediaPlayer))
             {
