@@ -6,9 +6,9 @@ namespace TheGuideToTheNewEden.Core.Models.Map
 {
     public class MapSystemStatistics
     {
-        public int ShipKills { get; set; }
-        public int PodKills { get; set; }
-        public int Jumps { get; set; }
+        public long ShipKills { get; set; }
+        public long PodKills { get; set; }
+        public long Jumps { get; set; }
         public string Sov { get; set; }
     }
 }

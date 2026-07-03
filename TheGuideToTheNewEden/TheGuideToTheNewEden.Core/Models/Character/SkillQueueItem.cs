@@ -53,7 +53,7 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         }
         public bool IsPause { get => string.IsNullOrEmpty(FinishDate) || string.IsNullOrEmpty(StartDate); }
         public SkillQueueItem() { }
-        public SkillQueueItem(ESI.NET.Models.Skills.SkillQueueItem skillQueueItem)
+        public SkillQueueItem(EVEStandard.Models.SkillQueue skillQueueItem)
         {
             this.CopyFrom(skillQueueItem);
             FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTimeOffset.MinValue : DateTimeOffset.Parse(FinishDate);

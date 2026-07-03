@@ -1,8 +1,4 @@
-using ESI.NET;
-using ESI.NET.Models.Bookmarks;
-using ESI.NET.Models.Character;
-using ESI.NET.Models.Market;
-using ESI.NET.Models.SSO;
+using EVEStandard.Models.API;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -35,11 +31,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         private List<StatusOrder> _characterOrder;
         private List<StatusOrder> _corpOrder;
         private List<StatusOrder> _order;
-        private EsiClient _esiClient;
+        private EVEStandard.EVEStandardAPI _esiClient;
         public OrderPage()
         {
             this.InitializeComponent();
-            _esiClient = ESIService.GetDefaultEsi();
+            _esiClient = ESIService.GetDefaultESI();
             Loaded += OrderPage_Loaded;
         }
 
@@ -49,10 +45,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             OrderTypeComboBox.SelectionChanged += OrderTypeComboBox_SelectionChanged;
             OrderFromComboBox.SelectionChanged += OrderFromComboBox_SelectionChanged;
         }
-
-        private void SelecteCharacterControl_OnSelectedItemChanged(ESI.NET.Models.SSO.AuthorizedCharacterData selectedItem)
+        private AuthDTO _auth;
+        private void SelecteCharacterControl_OnSelectedItemChanged(Core.Models.Character.AuthorizedCharacterData selectedItem)
         {
-            _esiClient.SetCharacterData(selectedItem);
+            _auth = selectedItem?.ToAuthDTO();
             _characterOrder = null;
             _corpOrder = null;
             _order = null;
@@ -254,15 +250,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                             return;
                         }
                     }
-                    var resp = await _esiClient.UserInterface.MarketDetails(order.Target.TypeId);
-                    if(resp.StatusCode == System.Net.HttpStatusCode.OK || resp.StatusCode == System.Net.HttpStatusCode.NoContent)
-                    {
-                        this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_ShowInGame_Succcess"));
-                    }
-                    else
-                    {
-                        this.ShowError(resp.Message);
-                    }
+                    await _esiClient.UserInterface.OpenMarketDetailsAsync(_auth, order.Target.TypeId);
+                    this.ShowSuccess(Helpers.ResourcesHelper.GetString("OrderPage_ShowInGame_Succcess"));
                 }
                 catch(Exception ex)
                 {

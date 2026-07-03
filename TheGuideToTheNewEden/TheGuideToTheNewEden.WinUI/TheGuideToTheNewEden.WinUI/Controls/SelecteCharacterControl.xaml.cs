@@ -13,8 +13,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using ESI.NET.Models.Character;
-using ESI.NET.Models.SSO;
 using System.Collections.ObjectModel;
+using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.WinUI.Controls
 {

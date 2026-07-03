@@ -76,18 +76,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         break;
                     case "Skill":
                         {
-                            ContentFrame.Navigate(typeof(SkillPage), VM.Skill);
+                            ContentFrame.Navigate(typeof(SkillPage), new object[] { VM.EsiClient, VM.SelectedCharacter });
                         }
                         break;
                     case "Clone":
                         {
-                            ContentFrame.Navigate(typeof(ClonePage), VM.EsiClient);
+                            ContentFrame.Navigate(typeof(ClonePage), new object[] { VM.EsiClient, VM.SelectedCharacter });
                         }
                         break;
-                    case "Wallet": ContentFrame.Navigate(typeof(WalletPage), VM.EsiClient); break;
-                    case "Mail": ContentFrame.Navigate(typeof(MailPage), VM.EsiClient); break;
-                    case "Contract": ContentFrame.Navigate(typeof(Character.ContractPage), VM.EsiClient); break;
-                    case "Industry": ContentFrame.Navigate(typeof(Character.IndustryPage), new dynamic[] { VM.EsiClient, VM.SelectedCharacter.CharacterID }); break;
+                    case "Wallet": ContentFrame.Navigate(typeof(WalletPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
+                    case "Mail": ContentFrame.Navigate(typeof(MailPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
+                    case "Contract": ContentFrame.Navigate(typeof(Character.ContractPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
+                    case "Industry": ContentFrame.Navigate(typeof(Character.IndustryPage), new dynamic[] { VM.EsiClient, VM.SelectedCharacter }); break;
                 }
                 if (_contentPages.ContainsKey(tag))
                 {

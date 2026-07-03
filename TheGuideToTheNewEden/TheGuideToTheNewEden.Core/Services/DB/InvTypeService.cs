@@ -12,7 +12,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 {
     public class InvTypeService
     {
-        public static async Task<InvType> QueryTypeAsync(int id)
+        public static async Task<InvType> QueryTypeAsync(long id)
         {
             var type = await DBService.MainDb.Queryable<InvType>().FirstAsync(p => p.TypeID == id);
             if (DBService.NeedLocalization)
@@ -21,7 +21,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
-        public static InvType QueryType(int id, bool local = true)
+        public static InvType QueryType(long id, bool local = true)
         {
             var type = DBService.MainDb.Queryable<InvType>().First(p => p.TypeID == id);
             if (local && DBService.NeedLocalization)
@@ -30,7 +30,15 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
             return type;
         }
-
+        public static async Task<List<InvType>> QueryTypesAsync(List<long> ids)
+        {
+            var types = await DBService.MainDb.Queryable<InvType>().Where(p => ids.Contains(p.TypeID)).ToListAsync();
+            if (DBService.NeedLocalization)
+            {
+                await LocalDbService.TranInvTypesAsync(types);
+            }
+            return types;
+        }
         public static async Task<List<InvType>> QueryTypesAsync(List<int> ids)
         {
             var types = await DBService.MainDb.Queryable<InvType>().Where(p => ids.Contains(p.TypeID)).ToListAsync();

@@ -1,6 +1,4 @@
-﻿using ESI.NET;
-using ESI.NET.Models.SSO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +10,7 @@ using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.Services;
+using EVEStandard;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -21,6 +20,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
         private static readonly string AutoStructureFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Structures.json");
         private static ObservableCollection<Structure> MarketStructures { get; set; }
         private static Dictionary<long, Structure> AutoStructures { get; set; }
+
+        private static EVEStandardAPI _api;
         public static void Init()
         {
             if (File.Exists(AutoStructureFilePath))
@@ -40,6 +41,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     MarketStructures = list.Where(p => p != null).ToObservableCollection();
             }
             MarketStructures ??= new ObservableCollection<Structure>();
+            _api = ESIService.GetDefaultESI();
         }
 
         private static void SaveAutoStructure()
@@ -125,66 +127,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             }
         }
-        public static async Task<Structure> QueryStructureAsync(long id, EsiClient esiClient)
-        {
-            var local = GetStructure(id);
-            if(local != null)
-            {
-                return local;
-            }
-            else
-            {
-                var esi = await GetStructureByESI(id, esiClient);
-                if(esi != null)
-                {
-                    AutoStructures.Add(id, esi);
-                    SaveAutoStructure();
-                }
-                return esi;
-            }
-        }
-        public static async Task<List<Structure>> QueryStructureAsync(List<long> ids, int characterID = -1)
-        {
-            var locals = GetStructure(ids);
-            if(locals.Any())
-            {
-                var notInLocals = ids.Except(locals.Select(p=>p.Id).ToList()).ToList();
-                if(notInLocals.Any())
-                {
-                    var esis = await GetStructureByESI(notInLocals, characterID);
-                    if(esis.NotNullOrEmpty())
-                    {
-                        var notNull = esis.Where(p=>p != null).ToList();
-                        if(notNull.NotNullOrEmpty())
-                        {
-                            locals.AddRange(notNull);
-                            foreach (var item in notNull)
-                            {
-                                AutoStructures.Add(item.Id, item);
-                            }
-                            SaveAutoStructure();
-                        }
-                    }
-                }
-                return locals;
-            }
-            else
-            {
-                var esis = await GetStructureByESI(ids, characterID);
-                if(esis.NotNullOrEmpty())
-                {
-                    foreach (var item in esis)
-                    {
-                        if(item != null)
-                        {
-                            AutoStructures.Add(item.Id, item);
-                        }
-                    }
-                    SaveAutoStructure();
-                }
-                return esis;
-            }
-        }
 
         public static List<Structure> GetStructuresOfRegion(int regionId)
         {
@@ -231,9 +173,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
 
         private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, int characterID)
         {
-            EsiClient esiClient = ESIService.GetDefaultEsi();
-            esiClient.SetCharacterData(Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID));
-            var structure = await GetStructureByESI(id, esiClient);
+            var auth = Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID);
+            var structure = await GetStructureByESI(id, auth);
             if(structure != null)
             {
                 structure.CharacterId = characterID;
@@ -253,20 +194,15 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         private static async Task<List<Core.Models.Universe.Structure>> GetStructureByESI(List<long> ids, int characterID = -1)
         {
-            EsiClient esiClient;
+            AuthorizedCharacterData authorized = null;
             if (characterID > -1)
             {
-                esiClient = ESIService.GetDefaultEsi();
-                esiClient.SetCharacterData(Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID));
-            }
-            else
-            {
-                esiClient = ESIService.Current.EsiClient;
+                authorized = Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID);
             }
             List<Core.Models.Universe.Structure> structures = new List<Structure>();
             foreach(var id in ids)
             {
-                var structure = await GetStructureByESI(id, esiClient);
+                var structure = await GetStructureByESI(id, authorized);
                 if (structure != null)
                 {
                     structure.CharacterId = characterID;
@@ -304,13 +240,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return structures;
         }
 
-        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, EsiClient inputESIClient = null)
+        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, AuthorizedCharacterData auth)
         {
-            EsiClient esiClient = inputESIClient ?? ESIService.Current.EsiClient;
-            var resp = await esiClient.Universe.Structure(id);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await _api.Universe.GetStructureInfoAsync(auth.Auth, id);
+            if (resp?.Model != null)
             {
-                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(resp.Data.SolarSystemId);
+                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync((int)resp.Model.SolarSystemId);
                 if (system != null)
                 {
                     var region = await Core.Services.DB.MapRegionService.QueryAsync(system.RegionID);
@@ -319,8 +254,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         return new Structure()
                         {
                             Id = id,
-                            Name = resp.Data.Name,
-                            SolarSystemId = resp.Data.SolarSystemId,
+                            Name = resp.Model.Name,
+                            SolarSystemId = (int)resp.Model.SolarSystemId,
                             SolarSystemName = system.SolarSystemName,
                             RegionId = region.RegionID,
                             RegionName = region.RegionName
@@ -330,8 +265,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return new Structure()
                 {
                     Id = id,
-                    Name = resp.Data.Name,
-                    SolarSystemId = resp.Data.SolarSystemId
+                    Name = resp.Model.Name,
+                    SolarSystemId = (int)resp.Model.SolarSystemId
                 };
             }
             else

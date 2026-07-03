@@ -101,7 +101,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Home
                                     }
                                 }
                             }
-                            EVEStandard.EVEStandardAPI esiClient = ESIService.GetDefaultESI2();
+                            EVEStandard.EVEStandardAPI esiClient = ESIService.GetDefaultESI();
                             var auth = ESIService.ToEVEStandardSSO(characterData);
                             var walletResult = esiClient.Wallet.GetCharacterWalletBalanceAsync(auth).Result;
                             if (walletResult.Model > 0)

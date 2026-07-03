@@ -9,13 +9,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
-using ESI.NET.Models.SSO;
 using TheGuideToTheNewEden.Core.Services;
 using System.Timers;
 using TheGuideToTheNewEden.Core.Extensions;
-using Microsoft.UI.Xaml.Documents;
-using ESI.NET.Models.Character;
-using Microsoft.UI.Xaml;
 
 namespace TheGuideToTheNewEden.WinUI.Services
 {
@@ -116,7 +112,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             string uri;
             if (Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility)
             {
-                uri = Core.Services.ESIService.SSO.CreateAuthenticationUrl(EsiScopes, Version);
+                uri = Core.Services.ESIService.Current.GetAuthorizeUrl();
             }
             else
             {
@@ -135,15 +131,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 var array = uri.Split(new char[2] { '=', '&' });
                 string code = array[1];
-                var token = await Core.Services.ESIService.GetToken(ESI.NET.Enumerations.GrantType.AuthorizationCode, code, Guid.NewGuid().ToString());
+                var token = await Core.Services.ESIService.Current.VerifyAuthorization(code);
                 if (token != null)
                 {
-                    var data = await Core.Services.ESIService.Verify(token);
-                    if (data?.Token != null)
-                    {
-                        Add(data);
-                        return data;
-                    }
+                    Add(token);
+                    return token;
                 }
             }
             catch(Exception ex)
@@ -152,17 +144,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return null;
             }
             return null;
-        }
-
-        public static void SetCurrentCharacter(AuthorizedCharacterData characterData)
-        {
-            ESIService.Current.EsiClient.SetCharacterData(characterData);
-            CurrentCharacter = characterData;
-        }
-
-        public static AuthorizedCharacterData GetCurrentCharacter()
-        {
-            return CurrentCharacter;
         }
 
         /// <summary>

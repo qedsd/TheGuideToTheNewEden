@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using ESI.NET.Logic;
-using ESI.NET.Models.SSO;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -22,10 +20,6 @@ using ESI.NET.Enumerations;
 using Microsoft.Extensions.Options;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Dialogs;
-using TheGuideToTheNewEden.WinUI.Converters;
-using Vanara.PInvoke;
-using ESI.NET.Models.Character;
-using TheGuideToTheNewEden.WinUI.Views;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -126,7 +120,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             CharactersCount = Characters.Count - 1;
             TotalSP = cs.Where(p=>p.Skill != null).Sum(p => p.Skill.TotalSp).ToString("N0");
             TotalISK = cs.Sum(p => p.CharacterWallet).ToString("N2");
-            TotalLP = cs.Where(p => p.LoyaltyPoints != null).Sum(p => p.LoyaltyPoints.Sum(p2=>p2.LoyaltyPoints)).ToString("N0");
+            TotalLP = cs.Where(p => p.LoyaltyPoints != null).Sum(p => p.LoyaltyPoints.Sum(p2=>p2.Points)).ToString("N0");
         }
     }
 }

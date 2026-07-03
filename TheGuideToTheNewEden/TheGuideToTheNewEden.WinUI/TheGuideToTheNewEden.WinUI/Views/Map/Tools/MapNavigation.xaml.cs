@@ -34,12 +34,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         private readonly ObservableCollection<MapSolarSystem> _waypoints = new ObservableCollection<MapSolarSystem>();
         private readonly ObservableCollection<MapSolarSystem> _avoidSystems = new ObservableCollection<MapSolarSystem>();
         private readonly ObservableCollection<MapRegion> _avoidRegions = new ObservableCollection<MapRegion>();
-        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
-        private Dictionary<int, int> _systemJumps;
-        private Dictionary<int, SovData> _sovDatas;
+        private Dictionary<long, EVEStandard.Models.SystemKills> _systemKills;
+        private Dictionary<long, long> _systemJumps;
+        private Dictionary<long, SovData> _sovDatas;
         private MapCanvas _mapCanvas;
         private ToolWindow _window;
-        public MapNavigation(MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public MapNavigation(MapCanvas mapCanvas, Dictionary<long, EVEStandard.Models.SystemKills> kills, Dictionary<long, long> jumps, Dictionary<long, SovData> sovDatas)
         {
             SetData(mapCanvas, kills, jumps, sovDatas);
             this.InitializeComponent();
@@ -48,7 +48,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             AvoidRegionListView.ItemsSource = _avoidRegions;
             Loaded += MapNavigation_Loaded;
         }
-        public void SetData(MapCanvas mapCanvas,Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public void SetData(MapCanvas mapCanvas,Dictionary<long, EVEStandard.Models.SystemKills> kills, Dictionary<long, long> jumps, Dictionary<long, SovData> sovDatas)
         {
             _mapCanvas = mapCanvas;
             _systemKills = kills;
@@ -442,7 +442,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                             throw new Exception(Helpers.ResourcesHelper.GetString("CharacterPage_TryUpdateTokenFailed"));
                         }
                     }
-                    _esi ??= ESIService.GetDefaultESI2();
+                    _esi ??= ESIService.GetDefaultESI();
                     var sso = ESIService.ToEVEStandardSSO(ShowInGameSelecteCharacterControl.SelectedItem);
                     int setp = path.Count;
                     for (int i = 0; i < path.Count; i++)

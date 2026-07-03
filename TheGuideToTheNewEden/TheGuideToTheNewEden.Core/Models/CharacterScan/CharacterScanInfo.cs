@@ -181,9 +181,9 @@ namespace TheGuideToTheNewEden.Core.Models.CharacterScan
         private string _topRegionsStr;
         public string TopRegionsStr { get => _topRegionsStr; set => SetProperty(ref _topRegionsStr, value); }
 
-        public static CharacterScanInfo Create(int characterId, int corporationId, int allianceId)
+        public static CharacterScanInfo Create(long characterId, long corporationId, long allianceId)
         {
-            List<int> ids = new List<int>();
+            List<long> ids = new List<long>();
             if(characterId > 0) ids.Add(characterId);
             if(corporationId > 0) ids.Add(corporationId);
             if(allianceId > 0) ids.Add(allianceId);

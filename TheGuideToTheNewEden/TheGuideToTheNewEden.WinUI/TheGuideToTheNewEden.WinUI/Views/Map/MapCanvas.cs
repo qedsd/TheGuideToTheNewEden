@@ -47,7 +47,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private Windows.UI.Color _selectedColor;
         private bool _isDark = false;
         private DispatcherTimer _findDataTimer;
-        private Dictionary<int, MapData> _usingMapDatas;
+        private Dictionary<long, MapData> _usingMapDatas;
         /// <summary>
         /// 按x从小到大排序的可见数据
         /// </summary>
@@ -476,7 +476,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             Draw(1, 0, 0);
         }
-        public void SetData(Dictionary<int, MapData> datas)
+        public void SetData(Dictionary<long, MapData> datas)
         {
             _usingMapDatas = datas;
             _currentZoom = 1;
@@ -636,7 +636,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             {
                 if (_otherMapGraphs.Count > 0)
                 {
-                    HashSet<int> ids = new HashSet<int>();
+                    HashSet<long> ids = new HashSet<long>();
                     foreach (var data in _otherMapGraphs)
                     {
                         foreach (var id in data.GetActiveIds())
@@ -744,7 +744,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         public abstract class MapGraphBase
         {
             public MapGraphType GraphType { get; set; }
-            public abstract void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas);
+            public abstract void Draw(CanvasDrawEventArgs args, Dictionary<long, MapData> datas);
             public abstract List<int> GetActiveIds();
         }
         public class CircleMapGraph: MapGraphBase
@@ -758,7 +758,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             public Windows.UI.Color Color { get; set; } = Windows.UI.Color.FromArgb(100, Colors.LightGray.R, Colors.LightGray.G, Colors.LightGray.B);
             public float Margin { get; set; } = 1;
 
-            public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas)
+            public override void Draw(CanvasDrawEventArgs args, Dictionary<long, MapData> datas)
             {
                 var centerData = datas[CenterDataId];
                 float r = centerData.W + Margin;
@@ -800,7 +800,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             public int Data2Id { get; set; }
             public Windows.UI.Color Color { get; set; } = Windows.UI.Color.FromArgb(255, Colors.LightSeaGreen.R, Colors.LightSeaGreen.G, Colors.LightSeaGreen.B);
             public float StrokeWidth { get; set; } = 3;
-            public override void Draw(CanvasDrawEventArgs args, Dictionary<int, MapData> datas)
+            public override void Draw(CanvasDrawEventArgs args, Dictionary<long, MapData> datas)
             {
                 var data1 = datas[Data1Id];
                 var data2 = datas[Data2Id];

@@ -1,5 +1,3 @@
-using ESI.NET;
-using ESI.NET.Models.Opportunities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -17,12 +15,17 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using EVEStandard;
+using EVEStandard.API;
+using EVEStandard.Models.API;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class ContractPage : Page, ICharacterPage, IPage
     {
-        private EsiClient _esiClient;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
         public ContractPage()
         {
             this.InitializeComponent();
@@ -30,7 +33,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            _esiClient = e.Parameter as EsiClient;
+            var paras = e.Parameter as object[];
+            if (paras != null && paras.Length == 2)
+            {
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData?.Auth;
+            }
         }
         private void ContractPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -90,10 +99,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         private async void GetCharacterContractInfos(int page)
         {
             this.ShowWaiting();
-            var resp = await _esiClient.Contracts.CharacterContracts(page);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await _esiClient.Contracts.GetContractsAsync(_auth, page);
+            if (resp.Model != null)
             {
-                var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
+                var datas = resp.Model.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
                 if (datas.NotNullOrEmpty())
                 {
                     await ContractInfoHelper.CompleteinfoAsync(datas);
@@ -102,18 +111,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                this.ShowError(resp?.Message);
+                this.ShowError("GetCharacterContractInfos Failed");
             }
             this.HideWaiting();
         }
         private async void GetCorpContractInfos(int page)
         {
             this.ShowWaiting();
-            var resp = await _esiClient.Contracts.CorporationContracts(page);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await _esiClient.Contracts.GetCorporationContractsAsync(_auth, _characterData.CorporationID,page);
+            if (resp.Model != null)
             {
-                var datas = resp.Data.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
+                var datas = resp.Model.Select(p => new Core.Models.Contract.ContractInfo(p)).ToList();
                 if (datas.NotNullOrEmpty())
                 {
                     await ContractInfoHelper.CompleteinfoAsync(datas);
@@ -122,8 +130,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             else
             {
-                Core.Log.Error(resp?.Message);
-                this.ShowError(resp?.Message);
+                this.ShowError("GetCorpContractInfos Failed");
             }
             this.HideWaiting();
         }
@@ -144,7 +151,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 return;
             }
-            new Wins.ContractDetailWindow(_esiClient, DataGrid_Character.SelectedItem as Core.Models.Contract.ContractInfo, 1).Activate();
+            new Wins.ContractDetailWindow(_esiClient, _auth, DataGrid_Character.SelectedItem as Core.Models.Contract.ContractInfo, 1).Activate();
         }
 
         private void DataGrid_Corp_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grids.GridSelectionChangedEventArgs e)
@@ -153,7 +160,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 return;
             }
-            new Wins.ContractDetailWindow(_esiClient, DataGrid_Corp.SelectedItem as Core.Models.Contract.ContractInfo, 2).Activate();
+            new Wins.ContractDetailWindow(_esiClient, _auth, DataGrid_Corp.SelectedItem as Core.Models.Contract.ContractInfo, 2).Activate();
         }
 
         public void Close()

@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Models.Universe;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET;
-using ESI.NET.Enumerations;
 using Microsoft.Extensions.Options;
-using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml.Media.Imaging;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using SqlSugar;
 using TheGuideToTheNewEden.Core.Services;
 using System.Threading;
+using EVEStandard;
+using TheGuideToTheNewEden.Core.Models.Character;
+using EVEStandard.Models.API;
+using Dm.util;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -75,7 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref _searchClone, value);
         }
 
-        public EsiClient EsiClient;
+        public EVEStandardAPI EsiClient;
         private ObservableCollection<AuthorizedCharacterData> _characters;
         public ObservableCollection<AuthorizedCharacterData> Characters
         {
@@ -95,16 +96,18 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
         }
 
+        private AuthDTO _auth;
+
         public StructuresSettingViewModel()
         {
             Characters = Services.CharacterService.CharacterOauths;
             Structures = Services.StructureService.GetMarketStrutures();
-            EsiClient = ESIService.GetDefaultEsi();
+            EsiClient = ESIService.GetDefaultESI();
             SelectedCharacter = Characters.FirstOrDefault();
         }
         private void SetSelectedCharacter(AuthorizedCharacterData characterData)
         {
-            EsiClient.SetCharacterData(characterData);
+            _auth = characterData.ToAuthDTO();
         }
         public ICommand AddCommand => new RelayCommand(() =>
         {
@@ -217,28 +220,27 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async Task<List<long>> GetStructuresByAssets()
         {
-            List<ESI.NET.Models.Assets.Item> assetsItems = new List<ESI.NET.Models.Assets.Item>();
+            List<EVEStandard.Models.Asset> assetsItems = new List<EVEStandard.Models.Asset>();
             int page = 1;
             while (true)
             {
-                var resp = await EsiClient.Assets.ForCharacter(page++);
+                var resp = await EsiClient.Assets.GetCharacterAssetsAsync(_auth,page++);
                 if (resp != null)
                 {
-                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (resp?.Model != null)
                     {
-                        if (resp.Data.NotNullOrEmpty())
+                        if (resp.Model.NotNullOrEmpty())
                         {
-                            assetsItems.AddRange(resp.Data);
+                            assetsItems.AddRange(resp.Model);
                         }
-                        if (resp.Data.Count != 1000)
+                        if (resp.MaxPages == page)
                         {
                             break;
                         }
                     }
                     else
                     {
-                        ShowError(resp.Message);
-                        Core.Log.Error(resp.Message);
+                        ShowError("GetCharacterAssetsAsync Failed");
                         break;
                     }
                 }
@@ -255,17 +257,16 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async Task<List<long>> GetStructureIdsByPublic()
         {
-            var resp = await EsiClient.Universe.Structures();
+            var resp = await EsiClient.Universe.ListAllPublicStructuresAsync(EVEStandard.API.Universe.StructureHas.NoFilter);
             if (resp != null)
             {
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (resp?.Model != null)
                 {
-                    return resp.Data.ToList();
+                    return resp.Model.ToList();
                 }
                 else
                 {
-                    ShowError(resp.Message);
-                    Core.Log.Error(resp.Message);
+                    ShowError("ListAllPublicStructuresAsync Failed");
                     return null;
                 }
             }
@@ -276,19 +277,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async Task<List<long>> GetStructureIdsByClone()
         {
-            var resp = await EsiClient.Clones.List();
+            var resp = await EsiClient.Clones.GetClonesAsync(_auth);
             if (resp != null)
             {
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (resp?.Model != null)
                 {
                     List<long> ids = new List<long>();
-                    if (resp.Data.HomeLocation.LocationType == "structure")
+                    if (resp.Model.HomeLocation.LocationType == "structure")
                     {
-                        ids.Add(resp.Data.HomeLocation.LocationId);
+                        ids.Add(resp.Model.HomeLocation.LocationId.Value);
                     }
-                    if(resp.Data.JumpClones.NotNullOrEmpty())
+                    if(resp.Model.JumpClones.NotNullOrEmpty())
                     {
-                        var structureClones = resp.Data.JumpClones.Where(p => p.LocationType == "structure").ToList();
+                        var structureClones = resp.Model.JumpClones.Where(p => p.LocationType == "structure").ToList();
                         if(structureClones.NotNullOrEmpty())
                         {
                             ids.AddRange(structureClones.Select(p => p.LocationId));
@@ -298,8 +299,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else
                 {
-                    ShowError(resp.Message);
-                    Core.Log.Error(resp.Message);
+                    ShowError("GetClonesAsync Failed");
                     return null;
                 }
             }
@@ -344,10 +344,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private async Task<Core.Models.Universe.Structure> GetStructure(long id)
         {
-            var resp = await EsiClient.Universe.Structure(id);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await EsiClient.Universe.GetStructureInfoAsync(_auth, id);
+            if (resp?.Model != null)
             {
-                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(resp.Data.SolarSystemId);
+                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(resp.Model.SolarSystemId);
                 if (system != null)
                 {
                     var region = await Core.Services.DB.MapRegionService.QueryAsync(system.RegionID);
@@ -356,26 +356,26 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         return new Structure()
                         {
                             Id = id,
-                            Name = resp.Data.Name,
-                            SolarSystemId = resp.Data.SolarSystemId,
+                            Name = resp.Model.Name,
+                            SolarSystemId = (int)resp.Model.SolarSystemId,
                             SolarSystemName = system.SolarSystemName,
                             RegionId = region.RegionID,
                             RegionName = region.RegionName,
-                            CharacterId = SelectedCharacter.CharacterID
+                            CharacterId = (int)SelectedCharacter.CharacterID
                         };
                     }
                 }
                 return new Structure()
                 {
                     Id = id,
-                    Name = resp.Data.Name,
-                    SolarSystemId = resp.Data.SolarSystemId,
-                    CharacterId = SelectedCharacter.CharacterID
+                    Name = resp.Model.Name,
+                    SolarSystemId = (int)resp.Model.SolarSystemId,
+                    CharacterId = (int)SelectedCharacter.CharacterID
                 };
             }
             else
             {
-                Core.Log.Error(resp.StatusCode);
+                Core.Log.Error($"GetStructureInfoAsync Failed:{id}");
                 return null;
             }
         }

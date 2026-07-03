@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 {
     public class MapSolarSystemService
     {
-        public static async Task<MapSolarSystem> QueryAsync(int id)
+        public static async Task<MapSolarSystem> QueryAsync(long id)
         {
             var type = await DBService.MainDb.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemID == id);
             if (DBService.NeedLocalization)

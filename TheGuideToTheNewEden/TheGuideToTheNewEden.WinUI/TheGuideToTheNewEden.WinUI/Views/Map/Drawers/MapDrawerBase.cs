@@ -28,7 +28,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         {
             OnError?.Invoke(this, error);
         }
-        public abstract void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor);
+        public abstract void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<long, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor);
         public abstract void Close();
         public virtual void Stop()
         {

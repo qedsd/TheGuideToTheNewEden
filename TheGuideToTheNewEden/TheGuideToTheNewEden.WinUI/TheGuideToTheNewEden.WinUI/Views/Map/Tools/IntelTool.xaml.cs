@@ -40,7 +40,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
     {
         private MapCanvas _mapCanvas;
         private ToolWindow _window;
-        public IntelTool(MapCanvas mapCanvas, Dictionary<int, MapData> systemDatas, Dictionary<int, SovData> sovDatas)
+        public IntelTool(MapCanvas mapCanvas, Dictionary<long, MapData> systemDatas, Dictionary<long, SovData> sovDatas)
         {
             _mapCanvas = mapCanvas;
             this.InitializeComponent();

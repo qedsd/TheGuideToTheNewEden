@@ -15,7 +15,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         /// </summary>
         /// <param name="args"></param>
         /// <param name="datas"></param>
-        void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor);
+        void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<long, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor);
 
         void Stop();
         void Start();

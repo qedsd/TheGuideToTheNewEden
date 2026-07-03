@@ -177,7 +177,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 return;
             }
-            _esi ??= Core.Services.ESIService.GetDefaultESI2();
+            _esi ??= Core.Services.ESIService.GetDefaultESI();
             ProgressBar.Visibility = Visibility.Visible;
             SearchBox.IsEnabled = false;
             try

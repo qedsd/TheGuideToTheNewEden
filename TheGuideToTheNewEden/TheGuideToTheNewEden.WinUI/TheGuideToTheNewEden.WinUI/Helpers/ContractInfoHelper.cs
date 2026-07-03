@@ -16,7 +16,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
         public static async Task CompleteinfoAsync(List<Core.Models.Contract.ContractInfo> datas)
         {
             #region name
-            List<int> nameIds = new List<int>();
+            List<long> nameIds = new List<long>();
             var list = datas.Select(p => p.IssuerId).ToList();
             if (list.NotNullOrEmpty())
             {
@@ -32,12 +32,12 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 nameIds.AddRange(list);
             }
-            var nameResp = await Core.Services.ESIService.Current.EsiClient.Universe.Names(nameIds.Distinct().ToList());
+            var nameResp = await Core.Services.ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(nameIds.Distinct().Select(p => (long)p).ToList());
             if (nameResp != null)
             {
-                if (nameResp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (nameResp.Model != null)
                 {
-                    var namesDic = nameResp.Data.ToDictionary(p => p.Id);
+                    var namesDic = nameResp.Model.ToDictionary(p => p.Id);
                     foreach (var data in datas)
                     {
                         if (namesDic.TryGetValue(data.IssuerId, out var name))
@@ -74,7 +74,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
                 else
                 {
-                    Log.Error(nameResp.Message);
+                    Log.Error("GetNamesAndCategoriesFromIdsAsync Failed");
                 }
             }
             #endregion
@@ -84,11 +84,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 if (data.StartLocationId > 0)
                 {
-                    allLocationIds.Add(data.StartLocationId);
+                    allLocationIds.Add(data.StartLocationId.Value);
                 }
                 if (data.EndLocationId > 0)
                 {
-                    allLocationIds.Add(data.EndLocationId);
+                    allLocationIds.Add(data.EndLocationId.Value);
                 }
             }
             if (allLocationIds.Count > 0)
@@ -109,24 +109,24 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                 }
                 if (structures.NotNullOrEmpty())
                 {
-                    var structuresResp = await Core.Services.ESIService.Current.EsiClient.Universe.Names(structures.Select(p => (int)p).ToList());
-                    if (structuresResp != null && structuresResp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var structuresResp = await Core.Services.ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(structures.Select(p => (long)p).ToList());
+                    if (structuresResp.Model != null)
                     {
-                        foreach (var data in structuresResp.Data)
+                        foreach (var data in structuresResp.Model)
                         {
                             locationNames.Add(data.Id, data.Name);
                         }
                     }
                     else
                     {
-                        Log.Error(structuresResp?.Message);
+                        Log.Error("GetNamesAndCategoriesFromIdsAsync Failed");
                     }
                 }
                 foreach (var data in datas)
                 {
                     if (data.StartLocationId > 0)
                     {
-                        if (locationNames.TryGetValue(data.StartLocationId, out var value))
+                        if (locationNames.TryGetValue(data.StartLocationId.Value, out var value))
                         {
                             data.StartLocationName = value;
                         }
@@ -137,7 +137,7 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
                     }
                     if (data.EndLocationId > 0)
                     {
-                        if (locationNames.TryGetValue(data.EndLocationId, out var value))
+                        if (locationNames.TryGetValue(data.EndLocationId.Value, out var value))
                         {
                             data.EndLocationName = value;
                         }
@@ -158,13 +158,13 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             string loan = Helpers.ResourcesHelper.GetString("ContractPage_Type_Loan");
             foreach (var data in datas)
             {
-                switch(data.Type)
+                switch(data.GetTypeEnum())
                 {
-                    case ESI.NET.Enumerations.ContractType.Unknown:data.TypeStr = unknown;break;
-                    case ESI.NET.Enumerations.ContractType.ItemExchange: data.TypeStr = itemExchange; break;
-                    case ESI.NET.Enumerations.ContractType.Auction: data.TypeStr = auction; break;
-                    case ESI.NET.Enumerations.ContractType.Courier: data.TypeStr = courier; break;
-                    case ESI.NET.Enumerations.ContractType.Loan: data.TypeStr = loan; break;
+                    case EVEStandard.Models.Contract.TypeEnum.unknown:data.TypeStr = unknown;break;
+                    case EVEStandard.Models.Contract.TypeEnum.item_exchange: data.TypeStr = itemExchange; break;
+                    case EVEStandard.Models.Contract.TypeEnum.auction: data.TypeStr = auction; break;
+                    case EVEStandard.Models.Contract.TypeEnum.courier: data.TypeStr = courier; break;
+                    case EVEStandard.Models.Contract.TypeEnum.loan: data.TypeStr = loan; break;
                 }
             }
             #endregion

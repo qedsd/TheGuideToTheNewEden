@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.Killmails;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -111,12 +110,12 @@ namespace TheGuideToTheNewEden.Core.Helpers
         {
             if (killmaills.NotNullOrEmpty())
             {
-                ESI.NET.Models.Killmails.Information getInfo(ZKillmaill zKillmaill)
+                EVEStandard.Models.Killmail getInfo(ZKillmaill zKillmaill)
                 {
-                    var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
-                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var resp = ESIService.Current.EsiClient.Killmails.GetKillmailAsync(zKillmaill.KillmailId, zKillmaill.Zkb.Hash.ToString()).Result;
+                    if (resp.Model != null)
                     {
-                        return resp.Data;
+                        return resp.Model;
                     }
                     else
                     {
@@ -194,10 +193,10 @@ namespace TheGuideToTheNewEden.Core.Helpers
             {
                 try
                 {
-                    var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
-                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var resp = ESIService.Current.EsiClient.Killmails.GetKillmailAsync(zKillmaill.KillmailId, zKillmaill.Zkb.Hash.ToString()).Result;
+                    if (resp.Model != null)
                     {
-                        var detail = resp.Data.DepthClone<SKBDetail>();
+                        var detail = resp.Model.DepthClone<SKBDetail>();
                         detail.Zkb = zKillmaill.Zkb;
                         return CreateKBItemInfoForScan(detail);
                     }
@@ -229,10 +228,10 @@ namespace TheGuideToTheNewEden.Core.Helpers
                 {
                     try
                     {
-                        var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
-                        if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                        var resp = ESIService.Current.EsiClient.Killmails.GetKillmailAsync(zKillmaill.KillmailId, zKillmaill.Zkb.Hash.ToString()).Result;
+                        if (resp.Model != null)
                         {
-                            var detail = resp.Data.DepthClone<SKBDetail>();
+                            var detail = resp.Model.DepthClone<SKBDetail>();
                             detail.Zkb = zKillmaill.Zkb;
                             kBItemInfoForScans.Add(CreateKBItemInfoForScan(detail));
                         }
