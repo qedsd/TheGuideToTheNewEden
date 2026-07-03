@@ -45,12 +45,12 @@ namespace TheGuideToTheNewEden.WinUI.Views
         {
             Loaded -= ContractDetailPage_Loaded;
             LoadDefault();
-            var type = Enum.Parse<EVEStandard.Models.Contract.TypeEnum>(_contractInfo.Type);
+            var type = Enum.Parse<Core.Models.Contract.ContractInfo.TypeEnum>(_contractInfo.Type);
             switch(_contractInfo.GetTypeEnum())
             {
-                case EVEStandard.Models.Contract.TypeEnum.auction:LoadAuction(); break;
-                case EVEStandard.Models.Contract.TypeEnum.courier: LoadCourier(); break;
-                case EVEStandard.Models.Contract.TypeEnum.item_exchange: LoadItemExchange(); break;
+                case Core.Models.Contract.ContractInfo.TypeEnum.auction:LoadAuction(); break;
+                case Core.Models.Contract.ContractInfo.TypeEnum.courier: LoadCourier(); break;
+                case Core.Models.Contract.ContractInfo.TypeEnum.item_exchange: LoadItemExchange(); break;
             }
             LoadItems();
         }

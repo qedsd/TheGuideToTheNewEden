@@ -160,11 +160,11 @@ namespace TheGuideToTheNewEden.WinUI.Helpers
             {
                 switch(data.GetTypeEnum())
                 {
-                    case EVEStandard.Models.Contract.TypeEnum.unknown:data.TypeStr = unknown;break;
-                    case EVEStandard.Models.Contract.TypeEnum.item_exchange: data.TypeStr = itemExchange; break;
-                    case EVEStandard.Models.Contract.TypeEnum.auction: data.TypeStr = auction; break;
-                    case EVEStandard.Models.Contract.TypeEnum.courier: data.TypeStr = courier; break;
-                    case EVEStandard.Models.Contract.TypeEnum.loan: data.TypeStr = loan; break;
+                    case Core.Models.Contract.ContractInfo.TypeEnum.unknown:data.TypeStr = unknown;break;
+                    case Core.Models.Contract.ContractInfo.TypeEnum.item_exchange: data.TypeStr = itemExchange; break;
+                    case Core.Models.Contract.ContractInfo.TypeEnum.auction: data.TypeStr = auction; break;
+                    case Core.Models.Contract.ContractInfo.TypeEnum.courier: data.TypeStr = courier; break;
+                    case Core.Models.Contract.ContractInfo.TypeEnum.loan: data.TypeStr = loan; break;
                 }
             }
             #endregion

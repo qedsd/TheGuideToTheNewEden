@@ -20,6 +20,7 @@ using TheGuideToTheNewEden.WinUI.Wins;
 using TheGuideToTheNewEden.WinUI.Converters;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using CoreMail = TheGuideToTheNewEden.Core.Models.Mail;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
@@ -60,8 +61,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             var labelsResp = await _esiClient.Mail.Labels();
             if(labelsResp != null && labelsResp.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                RenameLabel(labelsResp.Data?.Labels);
-                ListView_Label.ItemsSource = labelsResp.Data?.Labels;
+                var labelsList = labelsResp.Data?.Labels?.Select(CoreMail.MailLabel.FromESI).ToList();
+                RenameLabel(labelsList);
+                ListView_Label.ItemsSource = labelsList;
             }
             //var maillistResp = await _esiClient.Mail.MailingLists();
             //if (maillistResp != null && maillistResp.StatusCode == System.Net.HttpStatusCode.OK)
@@ -71,7 +73,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             this.HideWaiting();
         }
 
-        private void RenameLabel(List<ESI.NET.Models.Mail.Label> labels)
+        private void RenameLabel(List<CoreMail.MailLabel> labels)
         {
             if(labels.NotNullOrEmpty())
             {
@@ -86,7 +88,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             if (ListView_Label.SelectedItem != null)
             {
-                var label = ListView_Label.SelectedItem as Label;
+                var label = ListView_Label.SelectedItem as CoreMail.MailLabel;
                 if (label != null)
                 {
                     this.ShowWaiting();
@@ -170,7 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     if(mailDetail.Message.Labels.NotNullOrEmpty())
                     {
                         StringBuilder stringBuilder = new StringBuilder();
-                        var labels = ListView_Label.ItemsSource as List<ESI.NET.Models.Mail.Label>;
+                        var labels = ListView_Label.ItemsSource as List<CoreMail.MailLabel>;
                         foreach (var item in  mailDetail.Message.Labels)
                         {
                             var label = labels.FirstOrDefault(p => p.LabelId == item);

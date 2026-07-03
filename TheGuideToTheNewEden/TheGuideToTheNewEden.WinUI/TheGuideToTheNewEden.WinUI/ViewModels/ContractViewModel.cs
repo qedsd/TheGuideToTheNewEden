@@ -145,7 +145,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else
                 {
-                    var type = ((EVEStandard.Models.Contract.TypeEnum)(ContractType - 1)).ToString();
+                    var type = ((Core.Models.Contract.ContractInfo.TypeEnum)(ContractType - 1)).ToString();
                     Contracts = AllContracts.Where(p => p.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
             }
