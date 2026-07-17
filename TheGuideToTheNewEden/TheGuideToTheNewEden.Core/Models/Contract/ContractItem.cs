@@ -13,7 +13,7 @@ namespace TheGuideToTheNewEden.Core.Models.Contract
     {
         public string TypeName { get; set; }
         public bool IsBlueprint { get; set; }
-        public ContractItem(ESI.NET.Models.Contracts.ContractItem contractItem) 
+        public ContractItem(EVEStandard.Models.PublicContractItem contractItem) 
         { 
             this.CopyFrom(contractItem);
         }
