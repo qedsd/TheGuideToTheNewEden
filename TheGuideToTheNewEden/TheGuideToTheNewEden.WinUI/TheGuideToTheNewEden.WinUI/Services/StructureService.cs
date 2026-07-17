@@ -128,7 +128,45 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
+        public static async Task<Structure> QueryStructureAsync(long id, long characterID = -1)
+        {
+            var local = GetStructure(id);
+            if (local != null)
+            {
+                return local;
+            }
+            else
+            {
+                if (characterID > 0)
+                {
+                    try
+                    {
+                        var esi = await GetStructureByESI(id, characterID);
+                        if (esi != null)
+                        {
+                            AutoStructures.Add(id, esi);
+                            SaveAutoStructure();
+                        }
+                        return esi;
+                    }
+                    catch (Exception ex)
+                    {
+                        Core.Log.Error(ex);
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public static List<Structure> GetStructuresOfRegion(int regionId)
+        {
+            return GetStructuresOfRegion((long)regionId);
+        }
+        public static List<Structure> GetStructuresOfRegion(long regionId)
         {
             var autos = AutoStructures.Values.Where(p => p.RegionId == regionId).ToList();
             var market = MarketStructures.Where(p => p.RegionId == regionId).ToList();
@@ -141,9 +179,9 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 if (market.NotNullOrEmpty())
                 {
-                    foreach(var s in market)
+                    foreach (var s in market)
                     {
-                        if(structures.FirstOrDefault(p=>p.Id == s.Id) == null)
+                        if (structures.FirstOrDefault(p => p.Id == s.Id) == null)
                         {
                             structures.Add(s);
                         }
@@ -178,6 +216,27 @@ namespace TheGuideToTheNewEden.WinUI.Services
             if(structure != null)
             {
                 structure.CharacterId = characterID;
+                var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(structure.SolarSystemId);
+                if (system != null)
+                {
+                    structure.RegionId = system.RegionID;
+                    structure.SolarSystemName = system.SolarSystemName;
+                    var region = await Core.Services.DB.MapRegionService.QueryAsync(structure.RegionId);
+                    if (region != null)
+                    {
+                        structure.RegionName = region.RegionName;
+                    }
+                }
+            }
+            return structure;
+        }
+        private static async Task<Core.Models.Universe.Structure> GetStructureByESI(long id, long characterID)
+        {
+            var auth = Services.CharacterService.CharacterOauths.FirstOrDefault(p => p.CharacterID == characterID);
+            var structure = await GetStructureByESI(id, auth);
+            if (structure != null)
+            {
+                structure.CharacterId = (int)characterID;
                 var system = await Core.Services.DB.MapSolarSystemService.QueryAsync(structure.SolarSystemId);
                 if (system != null)
                 {

@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ESI.NET.Models.Location;
 using Octokit;
 using SqlSugar.DistributedSystem.Snowflake;
 using System;

@@ -25,7 +25,6 @@ using System.Text;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Text;
 using TheGuideToTheNewEden.Core.Models.EVELogs;
-using ESI.NET.Models.PlanetaryInteraction;
 using TheGuideToTheNewEden.Core.Interfaces;
 
 

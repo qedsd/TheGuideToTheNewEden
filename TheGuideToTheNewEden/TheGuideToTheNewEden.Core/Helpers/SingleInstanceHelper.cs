@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
-using ESI.NET.Models.PlanetaryInteraction;
 
 namespace TheGuideToTheNewEden.Core.Helpers
 {

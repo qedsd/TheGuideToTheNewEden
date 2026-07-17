@@ -1,6 +1,4 @@
-﻿using Azure;
-using ESI.NET.Models.PlanetaryInteraction;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;

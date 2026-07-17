@@ -18,7 +18,6 @@ using System.Text;
 using TheGuideToTheNewEden.Core.Services.DB;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI;
-using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Services;
 using DevWinUI;
 using TheGuideToTheNewEden.WinUI.Models;

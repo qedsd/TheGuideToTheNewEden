@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.Character;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Data;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Text;

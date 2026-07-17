@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using CommunityToolkit.WinUI.UI.Controls;
 using TheGuideToTheNewEden.Core.Models.KB;
-using ESI.NET.Models.Character;
 using TheGuideToTheNewEden.Core.DBModels;
 using static TheGuideToTheNewEden.Core.Events.IdNameEvent;
 

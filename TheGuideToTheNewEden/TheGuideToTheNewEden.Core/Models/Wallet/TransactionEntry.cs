@@ -6,12 +6,12 @@ namespace TheGuideToTheNewEden.Core.Models.Wallet
 {
     public class TransactionEntry
     {
-        public TransactionEntry(ESI.NET.Models.Wallet.Transaction transaction)
+        public TransactionEntry(EVEStandard.Models.WalletTransaction transaction)
         {
             Transaction = transaction;
         }
-        public ESI.NET.Models.Wallet.Transaction Transaction { get; set; }
-        public decimal TotalPrice
+        public EVEStandard.Models.WalletTransaction Transaction { get; set; }
+        public double TotalPrice
         {
             get => Transaction.Quantity * Transaction.UnitPrice;
         }

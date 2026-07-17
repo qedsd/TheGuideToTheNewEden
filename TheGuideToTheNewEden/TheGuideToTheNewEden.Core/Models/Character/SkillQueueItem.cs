@@ -5,7 +5,7 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.Character
 {
-    public class SkillQueueItem: ESI.NET.Models.Skills.SkillQueueItem
+    public class SkillQueueItem: EVEStandard.Models.SkillQueue
     {
         /// <summary>
         /// UTC时间
@@ -21,7 +21,7 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         {
             get
             {
-                if(string.IsNullOrEmpty(FinishDate) || string.IsNullOrEmpty(StartDate))
+                if(FinishDateTime == DateTimeOffset.MinValue)
                 {
                     return "";
                 }
@@ -51,13 +51,13 @@ namespace TheGuideToTheNewEden.Core.Models.Character
                 return StartDateTime != DateTimeOffset.MinValue && FinishDateTime != DateTimeOffset.MinValue && StartDateTime > DateTimeOffset.UtcNow;
             }
         }
-        public bool IsPause { get => string.IsNullOrEmpty(FinishDate) || string.IsNullOrEmpty(StartDate); }
+        public bool IsPause { get => FinishDate == null || StartDate == null; }
         public SkillQueueItem() { }
         public SkillQueueItem(EVEStandard.Models.SkillQueue skillQueueItem)
         {
             this.CopyFrom(skillQueueItem);
-            FinishDateTime = string.IsNullOrEmpty(FinishDate) ? DateTimeOffset.MinValue : DateTimeOffset.Parse(FinishDate);
-            StartDateTime = string.IsNullOrEmpty(StartDate) ? DateTimeOffset.MinValue : DateTimeOffset.Parse(StartDate);
+            FinishDateTime = FinishDate == null ? DateTimeOffset.MinValue : new DateTimeOffset(FinishDate.Value);
+            StartDateTime = StartDate == null ? DateTimeOffset.MinValue : new DateTimeOffset(StartDate.Value);
         }
     }
 }

@@ -24,6 +24,8 @@ using TheGuideToTheNewEden.WinUI.Converters;
 using Vanara.PInvoke;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using Newtonsoft.Json;
+using EVEStandard.Models.API;
+using EVEStandard.Models;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -134,6 +136,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public CharacterViewModel(AuthorizedCharacterData characterData)
         {
             SelectedCharacter = characterData;
+            _api = ESIService.GetDefaultESI();
         }
         public void Init()
         {
@@ -176,51 +179,60 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
             EVEStandard.Models.CorporationInfo corporation = null;
             EVEStandard.Models.Alliance alliance = null;
-            var tasks = new List<Task>()
-            {
-                _api.Character.GetCharacterPublicInfoAsync(characterData.CharacterID).ContinueWith((p)=>
-                {
-                    information = p.Result.Model;
-                }),
-                _api.Skills.GetCharacterSkillsAsync(characterData.Auth).ContinueWith((p)=>
-                {
-                    skill = p.Result.Model;
-                }),
-                _api.Loyalty.GetLoyaltyPointsAsync(characterData.Auth).ContinueWith((p)=>
-                {
-                    loyalties = p.Result.Model;
-                }),
-                _api.Wallet.GetCharacterWalletBalanceAsync(characterData.Auth).ContinueWith((p)=>
-                {
-                    characterWallet = p.Result.Model;
-                }),
-                _api.Wallet.ReturnCorporationWalletBalanceAsync(characterData.Auth, characterData.CorporationID).ContinueWith((p)=>
-                {
-                    corpWallets = p.Result.Model;
-                }),
-                _api.Skills.GetCharacterSkillQueueAsync(characterData.Auth).ContinueWith((p) =>
-                {
-                    skillQueueItems = p.Result.Model;
-                }),
-                _api.Location.GetCharacterOnlineAsync(characterData.Auth).ContinueWith((p)=>
-                {
-                    onlineStatus = p.Result.Model;
-                }),
-                _api.Corporation.GetCorporationInfoAsync(characterData.CorporationID).ContinueWith((p) =>
-                {
-                    corporation = p.Result.Model;
-                })
-            };
-            if (characterData.AllianceID > 0)
-            {
-                tasks.Add(_api.Alliance.GetAllianceInfoAsync(characterData.AllianceID).ContinueWith((p) =>
-                {
-                    alliance = p.Result.Model;
-                }));
-            }
+            // 并发启动所有请求
+            var infoTask = _api.Character.GetCharacterPublicInfoAsync(characterData.CharacterID);
+            var skillsTask = _api.Skills.GetCharacterSkillsAsync(characterData.Auth);
+            var loyaltyTask = _api.Loyalty.GetLoyaltyPointsAsync(characterData.Auth);
+            var walletTask = _api.Wallet.GetCharacterWalletBalanceAsync(characterData.Auth);
+            //var corpWalletTask = _api.Wallet.ReturnCorporationWalletBalanceAsync(characterData.Auth, characterData.CorporationID);
+            var queueTask = _api.Skills.GetCharacterSkillQueueAsync(characterData.Auth);
+            var onlineTask = _api.Location.GetCharacterOnlineAsync(characterData.Auth);
+            //var corpTask = _api.Corporation.GetCorporationInfoAsync(characterData.CorporationID);
+            //Task<EVEStandard.Models.API.ESIModelDTO<EVEStandard.Models.Alliance>> allianceTask = null;
+            //if (characterData.AllianceID > 0)
+            //{
+            //    allianceTask = _api.Alliance.GetAllianceInfoAsync(characterData.AllianceID);
+            //}
             try
             {
-                await Task.WhenAll(tasks);
+                var allTasks = new List<Task> { infoTask, skillsTask, loyaltyTask, walletTask,queueTask, onlineTask};
+
+                await Task.WhenAll(allTasks);
+
+                information = (await infoTask).Model;
+                skill = (await skillsTask).Model;
+                loyalties = (await loyaltyTask).Model;
+                characterWallet = (await walletTask).Model;
+                skillQueueItems = (await queueTask).Model;
+                onlineStatus = (await onlineTask).Model;
+
+                if(information != null)
+                {
+                    allTasks.Clear();
+                    Task<ESIModelDTO<List<CorporationWallet>>> corpWalletTask = null;
+                    Task<ESIModelDTO<CorporationInfo>> corpTask = null;
+                    Task<ESIModelDTO<Alliance>> allianceTask = null;
+                    if (information.CorporationId > 0)
+                    {
+                        characterData.CorporationID = information.CorporationId;
+                        corpWalletTask = _api.Wallet.ReturnCorporationWalletBalanceAsync(characterData.Auth, characterData.CorporationID);
+                        corpTask = _api.Corporation.GetCorporationInfoAsync(characterData.CorporationID);
+                        allTasks.Add(corpWalletTask);
+                        allTasks.Add(corpTask);
+                    }
+                    if(information.AllianceId > 0)
+                    {
+                        characterData.AllianceID = information.AllianceId.Value;
+                        allianceTask = _api.Alliance.GetAllianceInfoAsync(characterData.AllianceID);
+                    }
+                    await Task.WhenAll(allTasks);
+                    if(corpWalletTask != null)
+                    {
+                        corpWallets = (await corpWalletTask).Model;
+                        corporation = (await corpTask).Model;
+                    }
+                    alliance = allianceTask == null ? null : (await allianceTask).Model;
+                }
             }
             catch (Exception ex)
             {
@@ -304,7 +316,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         }
                         var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
                         var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
-                        var isPause = skill.FinishDate != null || skill.StartDate != null;
+                        var isPause = skill.FinishDate != null || skill.StartDate != null || (skill.FinishDate == null && skill.StartDate == null);
                         var isRunning = !(isFinished || isWaiting || isPause);
                         running = running || isRunning;
                         if (!isFinished)

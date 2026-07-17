@@ -54,14 +54,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
         #endregion
 
         #region 物品数量变化通知
-        public void NotifyTypeCountChanged(List<(InvType type, int count)> types)
+        public void NotifyTypeCountChanged(List<(InvType type, long count)> types)
         {
             if (types.NotNullOrEmpty())
             {
                 TypeCountChanged?.Invoke(types);
             }
         }
-        public delegate void TypeCountChangedDelegate(List<(InvType type, int count)> types);
+        public delegate void TypeCountChangedDelegate(List<(InvType type, long count)> types);
         public event TypeCountChangedDelegate TypeCountChanged;
         #endregion
     }

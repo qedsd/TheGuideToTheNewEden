@@ -7,7 +7,7 @@ namespace TheGuideToTheNewEden.Core.Models.Character
 {
     public class SkillItem
     {
-        public ESI.NET.Models.Skills.Skill Skill { get; set; }
+        public EVEStandard.Models.Skill Skill { get; set; }
         public InvType InvType { get; set; }
     }
 }

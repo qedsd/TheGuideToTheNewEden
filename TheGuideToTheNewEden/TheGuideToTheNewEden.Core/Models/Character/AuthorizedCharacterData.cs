@@ -35,10 +35,10 @@ namespace TheGuideToTheNewEden.Core.Models.Character
         public string Scopes { get; set; }
 
         [JsonProperty("AllianceID")]
-        public int AllianceID { get; set; }
+        public long AllianceID { get; set; }
 
         [JsonProperty("CorporationID")]
-        public int CorporationID { get; set; }
+        public long CorporationID { get; set; }
 
         [JsonProperty("FactionID")]
         public int FactionID { get; set; }

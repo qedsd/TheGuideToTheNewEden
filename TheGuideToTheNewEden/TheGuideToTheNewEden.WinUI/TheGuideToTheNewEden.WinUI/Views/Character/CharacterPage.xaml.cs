@@ -76,7 +76,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         break;
                     case "Skill":
                         {
-                            ContentFrame.Navigate(typeof(SkillPage), new object[] { VM.EsiClient, VM.SelectedCharacter });
+                            ContentFrame.Navigate(typeof(SkillPage), new object[] { VM.EsiClient, VM.SelectedCharacter,VM.Skill });
                         }
                         break;
                     case "Clone":

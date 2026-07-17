@@ -6,28 +6,28 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.Mail
 {
-    public class Header: ESI.NET.Models.Mail.Header, INotifyPropertyChanged
+    public class Header: EVEStandard.Models.Mail, INotifyPropertyChanged
     {
         public string FromName { get; set; }
         public DateTime DateTime { get; set; }
-        public ESI.NET.Enumerations.ResolvedInfoCategory Category { get; set; }
+        public EVEStandard.Enumerations.CategoryEnum Category { get; set; }
 
-        private bool isRead;
-        public new bool IsRead
+        private bool isReadForUI;
+        public bool IsReadForUI
         {
-            get => isRead;
+            get => isReadForUI;
             set
             {
-                isRead = value;
-                NotifyPropertyChanged(nameof(IsRead));
+                isReadForUI = value;
+                NotifyPropertyChanged(nameof(IsReadForUI));
             }
         }
 
-        public Header(ESI.NET.Models.Mail.Header header)
+        public Header(EVEStandard.Models.Mail header)
         {
             this.CopyFrom(header);
-            IsRead = header.IsRead;
-            DateTime = DateTime.Parse(Timestamp, null, System.Globalization.DateTimeStyles.RoundtripKind);
+            IsReadForUI = header.IsRead == true;
+            DateTime = Timestamp.Value;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

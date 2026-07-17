@@ -7,9 +7,9 @@ using TheGuideToTheNewEden.Core.Services;
 
 namespace TheGuideToTheNewEden.Core.Models.Indusrty
 {
-    public class IndustryJob : ESI.NET.Models.Industry.Job
+    public class IndustryJob : EVEStandard.Models.IndustryJob
     {
-        public IndustryJob(ESI.NET.Models.Industry.Job job)
+        public IndustryJob(EVEStandard.Models.IndustryJob job)
         {
             this.CopyFrom(job);
             Span = TimeSpan.FromSeconds(Duration);

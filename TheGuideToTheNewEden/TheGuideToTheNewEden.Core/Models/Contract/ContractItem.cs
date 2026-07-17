@@ -9,7 +9,7 @@ namespace TheGuideToTheNewEden.Core.Models.Contract
     /// 合同包含物品
     /// Raw_Quantity 当不是蓝图时，-1表明该物品不可重叠，为蓝图时，-1表示原图，-2表示拷贝图
     /// </summary>
-    public class ContractItem: ESI.NET.Models.Contracts.ContractItem
+    public class ContractItem: EVEStandard.Models.PublicContractItem
     {
         public string TypeName { get; set; }
         public bool IsBlueprint { get; set; }

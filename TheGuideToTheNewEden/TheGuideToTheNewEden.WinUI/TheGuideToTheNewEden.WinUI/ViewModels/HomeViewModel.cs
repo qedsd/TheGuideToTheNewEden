@@ -6,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using ESI.NET;
-using ESI.NET.Models.PlanetaryInteraction;
 using EVEStandard.Models.API;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;

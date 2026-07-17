@@ -22,6 +22,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
     {
         private static string ClientId = string.Empty;
         private static string RedirectUri = string.Empty;
+        private static string ClientSecret = string.Empty;
         private static readonly string AuthFilePath = System.IO.Path.Combine(App.DataPath, "Configs", "Auth.json");
         private static readonly string AuthFilePath_Serenity = System.IO.Path.Combine(App.DataPath, "Configs", "Auth_Serenity.json");
 
@@ -37,10 +38,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public static void RegisterLicense(string[] param)
         {
-            if(param?.Length == 2)
+            if(param?.Length == 3)
             {
                 ClientId = param[0];
                 RedirectUri = param[1];
+                ClientSecret = param[2];
             }
         }
         public static void Init()
@@ -48,6 +50,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
             CoreConfig.ClientId = GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? ClientId : SerenityAuthHelper.ClientId;
             CoreConfig.ESICallback = RedirectUri;
             CoreConfig.Scopes = EsiScopes;
+            CoreConfig.ClientSecret = ClientSecret;
+
             if (File.Exists(GetAuthFilePath()))
             {
                 string json = File.ReadAllText(GetAuthFilePath());

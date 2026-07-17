@@ -44,6 +44,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 _esiClient = paras[0] as EVEStandardAPI;
                 _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
             }
         }
         private void OverviewPage_Loaded(object sender, RoutedEventArgs e)

@@ -9,20 +9,20 @@ namespace TheGuideToTheNewEden.Core.Models.Mail
         public string Color { get; set; }
         public int Label_id { get; set; }
         public string Name { get; set; }
-        public int Unread_count { get; set; }
+        public long Unread_count { get; set; }
 
         /// <summary>
         /// XAML 绑定用的 PascalCase 属性
         /// </summary>
         public long LabelId => Label_id;
-        public int UnreadCount => Unread_count;
+        public long UnreadCount => Unread_count;
 
-        public static MailLabel FromESI(ESI.NET.Models.Mail.Label label) => new MailLabel
+        public static MailLabel FromESI(EVEStandard.Models.MailLabel label) => new MailLabel
         {
             Color = label.Color,
             Label_id = (int)label.LabelId,
             Name = label.Name,
-            Unread_count = label.UnreadCount,
+            Unread_count = label.UnreadCount == null ? 0 : label.UnreadCount.Value,
         };
     }
 }

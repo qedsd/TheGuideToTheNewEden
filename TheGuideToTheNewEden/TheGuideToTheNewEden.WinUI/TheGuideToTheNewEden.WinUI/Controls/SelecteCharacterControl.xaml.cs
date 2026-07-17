@@ -12,7 +12,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using ESI.NET.Models.Character;
 using System.Collections.ObjectModel;
 using TheGuideToTheNewEden.Core.Models.Character;
 

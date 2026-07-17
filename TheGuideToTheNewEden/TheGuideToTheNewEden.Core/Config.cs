@@ -72,6 +72,7 @@ namespace TheGuideToTheNewEden.Core
         /// </summary>
         public static string PlayerStatusApi { get; set; }
         public static string ESICallback { get; set; }
+        public static string ClientSecret { get; set; }
         public static bool InitDb()
         {
             bool result = true;

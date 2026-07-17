@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Models.Map;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET.Models.Universe;
 using Microsoft.UI.Xaml;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas;

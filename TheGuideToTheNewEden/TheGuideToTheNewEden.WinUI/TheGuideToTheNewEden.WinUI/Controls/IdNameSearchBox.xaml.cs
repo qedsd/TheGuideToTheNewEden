@@ -18,7 +18,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using EVEStandard;
-using ESI.NET.Models.SSO;
 
 
 namespace TheGuideToTheNewEden.WinUI.Controls

@@ -17,7 +17,6 @@ using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using Microsoft.UI.Xaml;
-using ESI.NET.Models.Location;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.User32;
 using TheGuideToTheNewEden.WinUI.Services;
