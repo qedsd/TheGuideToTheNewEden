@@ -2,7 +2,6 @@
 	<Import Project="RemoveLanguageFolders.targets" />
 	<PropertyGroup>
         <OutputType>WinExe</OutputType>
-		<WindowsAppSDKBootstrapInitialize>true</WindowsAppSDKBootstrapInitialize>
         <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
         <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -10,7 +9,6 @@
         <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
         <UseWinUI>true</UseWinUI>
         <ApplicationIcon>logo.ico</ApplicationIcon>
-	    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	    <AssemblyVersion>3.0.1.0</AssemblyVersion>
 	    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
@@ -939,4 +937,15 @@
     <Folder Include="Resources\Database\Local\" />
     <Folder Include="Views\Channel\" />
   </ItemGroup>
+
+  <!-- Ensure .pri files are copied during publish (WinUI 3 unpackaged requirement) -->
+  <Target Name="AddPriFilesToPublish" BeforeTargets="PrepareForPublish">
+    <ItemGroup>
+      <_PriFiles Include="$(OutputPath)*.pri" />
+      <ResolvedFileToPublish Include="@(_PriFiles)">
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 </Project>
