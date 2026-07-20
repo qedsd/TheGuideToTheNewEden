@@ -16,8 +16,6 @@
 	    <AssemblyName>TheGuideToTheNewEden</AssemblyName>
 	    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	    <EnableMsixTooling>false</EnableMsixTooling>
-	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-	    <SelfContained>true</SelfContained>
         <WindowsPackageType>None</WindowsPackageType>
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<ExcludedLanguages>en-US;zh-CN</ExcludedLanguages>

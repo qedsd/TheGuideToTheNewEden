@@ -10,8 +10,12 @@
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
 
+; .NET 9.0 Desktop Runtime required version
+!define DOTNET_REQUIRED_VERSION "9.0"
+
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
+!include "LogicLib.nsh"
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -57,8 +61,59 @@ InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
+; Check .NET Desktop Runtime 9.0
+Function CheckDotNetRuntime
+  Push $0
+  ReadRegStr $0 HKLM "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.NETCore.App" "${DOTNET_REQUIRED_VERSION}"
+  ${If} $0 == ""
+    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.NETCore.App" "${DOTNET_REQUIRED_VERSION}"
+  ${EndIf}
+  ${If} $0 == ""
+    MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+      "$(^Name) requires .NET Desktop Runtime ${DOTNET_REQUIRED_VERSION}.$\n$\nDownload and install it now?" \
+      IDYES +2
+    Abort "Setup cancelled because .NET Runtime is missing."
+    ExecShell "open" "https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-${DOTNET_REQUIRED_VERSION}-windows-x64-installer"
+    Abort "Please re-run Setup after installing .NET Runtime."
+  ${EndIf}
+  Pop $0
+FunctionEnd
+
+; Check Windows App SDK Runtime (via WindowsAppRuntime version)
+Function CheckWindowsAppSDK
+  Push $0
+  Push $1
+  Push $2
+  StrCpy $2 "0"
+  ; Check for Windows App SDK Runtime 1.6+ (which supports WinAppSDK 2.x)
+  ReadRegStr $0 HKLM "SOFTWARE\Microsoft\WindowsAppRuntime\1.6" "Version"
+  ${If} $0 != ""
+    StrCpy $2 "1"
+  ${EndIf}
+  ${If} $2 == "0"
+    ; Fallback: check for any Windows App SDK Runtime
+    EnumRegKey $0 HKLM "SOFTWARE\Microsoft\WindowsAppRuntime" 0
+    ${If} $0 != ""
+      StrCpy $2 "1"
+    ${EndIf}
+  ${EndIf}
+  ${If} $2 == "0"
+    MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+      "$(^Name) requires Windows App SDK Runtime.$\n$\nDownload and install it now?" \
+      IDYES +2
+    Abort "Setup cancelled because Windows App SDK Runtime is missing."
+    ExecShell "open" "https://aka.ms/windowsappsdk/stable-msixinstaller-x64"
+    Abort "Please re-run Setup after installing Windows App SDK Runtime."
+  ${EndIf}
+  Pop $2
+  Pop $1
+  Pop $0
+FunctionEnd
+
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
+  Call CheckDotNetRuntime
+  Call CheckWindowsAppSDK
 FunctionEnd
 
 Section "MainSection" SEC01
@@ -94,12 +149,12 @@ SectionEnd
 
 Function un.onUninstSuccess
   HideWindow
-  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) “—≥…π¶µÿ¥”ƒ„µƒº∆À„ª˙“∆≥˝°£"
+  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) Â∑≤ÊàêÂäüÂú∞‰ªé‰Ω†ÁöÑËÆ°ÁÆóÊú∫ÁßªÈô§„ÄÇ"
 FunctionEnd
 
 Function un.onInit
 !insertmacro MUI_UNGETLANGUAGE
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "ƒ„»∑ µ“™ÕÍ»´“∆≥˝ $(^Name) £¨∆‰º∞À˘”–µƒ◊Èº˛£ø" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "‰Ω†Á°ÆÂÆûË¶ÅÂÆåÂÖ®ÁßªÈô§ $(^Name) ÔºåÂÖ∂ÂèäÊâÄÊúâÁöÑÁªÑ‰ª∂Ôºü" IDYES +2
   Abort
 FunctionEnd
 

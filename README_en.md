@@ -11,6 +11,9 @@ Some features and implementation ideas of this software are derived from the dev
 ## Runtime Environment
 - **Operating System:** Windows 10 19041.0 or higher, Windows 11 recommended. Does not support any LTSC, special edition, or slimmed-down Windows systems. Does not support Mac or Linux systems. No mobile version.
 - **.NET Desktop Runtime 9.0:** [.NET 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- **Windows App SDK Runtime:** [Windows App SDK Runtime x64](https://aka.ms/windowsappsdk/stable-msixinstaller-x64) (Extract and install the `.msix` package)
+
+> If the above components are missing at first run, the software will prompt you to install them. You can also download the full installer with bundled runtimes from the Releases page.
 
 ## Download
 [Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)
