@@ -232,14 +232,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             WindowedContentDialog dialog = new()
             {
-                Title = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Title"),
+                Header = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Title"),
                 Content = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Description"),
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Yes"),
-                CloseButtonText = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_No"),
+                PrimaryButtonContent = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_Yes"),
+                CloseButtonContent = Helpers.ResourcesHelper.GetString("Setting_UILanguage_Restart_No"),
                 IsSecondaryButtonEnabled = false,
-                OwnerWindow = Helpers.WindowHelper.MainWindow,
+                Owner = Helpers.WindowHelper.MainWindow,
             };
-            if (await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 App.Close();
             }
@@ -248,14 +248,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             WindowedContentDialog dialog = new()
             {
-                Title = Helpers.ResourcesHelper.GetString("Setting_GameServer_Restart_Title"),
+                Header = Helpers.ResourcesHelper.GetString("Setting_GameServer_Restart_Title"),
                 Content = Helpers.ResourcesHelper.GetString("Setting_GameServer_Restart_Description"),
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_Yes"),
-                CloseButtonText = Helpers.ResourcesHelper.GetString("General_No"),
+                PrimaryButtonContent = Helpers.ResourcesHelper.GetString("General_Yes"),
+                CloseButtonContent = Helpers.ResourcesHelper.GetString("General_No"),
                 IsSecondaryButtonEnabled = false,
-                OwnerWindow = Helpers.WindowHelper.MainWindow,
+                Owner = Helpers.WindowHelper.MainWindow,
             };
-            if (await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 App.Close();
             }

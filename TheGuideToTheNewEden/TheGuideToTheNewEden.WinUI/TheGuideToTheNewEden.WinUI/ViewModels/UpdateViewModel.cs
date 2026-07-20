@@ -104,14 +104,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             DevWinUI.WindowedContentDialog dialog = new()
             {
-                Title = Helpers.ResourcesHelper.GetString("Update_InstallUpdate"),
+                Header = Helpers.ResourcesHelper.GetString("Update_InstallUpdate"),
                 Content = Helpers.ResourcesHelper.GetString("Update_InstallUpdateTip"),
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
-                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+                PrimaryButtonContent = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonContent = Helpers.ResourcesHelper.GetString("General_Cancel"),
                 IsSecondaryButtonEnabled = false,
-                OwnerWindow = Helpers.WindowHelper.MainWindow,
+                Owner = Helpers.WindowHelper.MainWindow,
             };
-            if(await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            if(await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 ClientServiceHelper.GetRequiredService<AppUpdateService>().StartInstall();
                 App.Close();
