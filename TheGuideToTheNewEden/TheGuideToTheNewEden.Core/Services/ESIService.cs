@@ -14,7 +14,6 @@ using EVEStandard;
 using TheGuideToTheNewEden.Core.Models.Character;
 using System.Reflection;
 using EVEStandard.Models.SSO;
-using System.Web;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
@@ -72,7 +71,7 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public async Task<bool> Refresh(AuthorizedCharacterData authorizedCharacterData)
         {
-            var accessToken = await GetNewBasicAuthAccessAndRefreshTokenAsync(authorizedCharacterData.RefreshToken, authorizedCharacterData.Scopes.Split(',').ToList());
+            var accessToken = await GetNewBasicAuthAccessAndRefreshTokenAsync(authorizedCharacterData.RefreshToken);
             if (accessToken != null && !string.IsNullOrEmpty(accessToken.AccessToken))
             {
                 authorizedCharacterData.Update(accessToken.RefreshToken, accessToken.AccessToken, accessToken.ExpiresUtc);
@@ -89,11 +88,10 @@ namespace TheGuideToTheNewEden.Core.Services
         /// 加入失败抛出
         /// </summary>
         /// <param name="refreshToken"></param>
-        /// <param name="scopes"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<AccessTokenDetails> GetNewBasicAuthAccessAndRefreshTokenAsync(string refreshToken, List<string> scopes = null)
+        public async Task<AccessTokenDetails> GetNewBasicAuthAccessAndRefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(Config.ClientSecret))
             {
@@ -107,11 +105,6 @@ namespace TheGuideToTheNewEden.Core.Services
                     new KeyValuePair<string, string>("grant_type", "refresh_token"),
                     new KeyValuePair<string, string>("refresh_token", refreshToken)
                 };
-
-            if (scopes != null && scopes.Any())
-            {
-                urlEncodedContent.Add(new KeyValuePair<string, string>("scope", HttpUtility.UrlEncode(String.Join(" ", scopes))));
-            }
 
             var stringContent = new FormUrlEncodedContent(urlEncodedContent);
 
