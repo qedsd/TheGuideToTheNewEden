@@ -2,6 +2,7 @@
 	<Import Project="RemoveLanguageFolders.targets" />
 	<PropertyGroup>
         <OutputType>WinExe</OutputType>
+		<WindowsAppSDKBootstrapInitialize>true</WindowsAppSDKBootstrapInitialize>
         <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
         <RootNamespace>TheGuideToTheNewEden.WinUI</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
