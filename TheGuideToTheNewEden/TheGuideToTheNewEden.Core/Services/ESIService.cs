@@ -14,6 +14,7 @@ using EVEStandard;
 using TheGuideToTheNewEden.Core.Models.Character;
 using System.Reflection;
 using EVEStandard.Models.SSO;
+using EVEStandard.Enumerations;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
@@ -110,7 +111,7 @@ namespace TheGuideToTheNewEden.Core.Services
 
             var request = new HttpRequestMessage
             {
-                RequestUri = new Uri("https://login.eveonline.com/v2" + "/oauth/token"),
+                RequestUri = new Uri(GetBaseURL() + "/oauth/token"),
                 Method = HttpMethod.Post,
                 Content = stringContent
             };
@@ -124,7 +125,15 @@ namespace TheGuideToTheNewEden.Core.Services
             }
             return System.Text.Json.JsonSerializer.Deserialize<AccessTokenDetails>(json);
         }
-
+        private string GetBaseURL()
+        {
+            return Config.DefaultGameServer switch
+            {
+                Enums.GameServerType.Tranquility => "https://login.eveonline.com/v2",
+                Enums.GameServerType.Serenity => "https://login.evepc.163.com/v2",
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+        }
 
         private static EVEStandard.Enumerations.DataSource GetDataSource()
         {
