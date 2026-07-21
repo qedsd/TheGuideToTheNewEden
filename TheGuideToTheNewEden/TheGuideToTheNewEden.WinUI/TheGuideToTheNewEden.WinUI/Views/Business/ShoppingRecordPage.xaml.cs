@@ -67,13 +67,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             DevWinUI.WindowedContentDialog dialog = new()
             {
                 Content = string.Format(Helpers.ResourcesHelper.GetString("BusinessPage_ShoppingRecord_DeleteCount"), ItemsList.SelectedItems.Count),
-                Title = Helpers.ResourcesHelper.GetString("General_RemoveSelected"),
-                PrimaryButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
-                CloseButtonText = Helpers.ResourcesHelper.GetString("General_Cancel"),
+                Header = Helpers.ResourcesHelper.GetString("General_RemoveSelected"),
+                PrimaryButtonContent = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonContent = Helpers.ResourcesHelper.GetString("General_Cancel"),
                 IsSecondaryButtonEnabled = false,
-                OwnerWindow = Helpers.WindowHelper.MainWindow,
+                Owner = Helpers.WindowHelper.MainWindow,
             };
-            if (await dialog.ShowAsync(true) == ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 foreach (var item in ItemsList.SelectedItems)
                 {

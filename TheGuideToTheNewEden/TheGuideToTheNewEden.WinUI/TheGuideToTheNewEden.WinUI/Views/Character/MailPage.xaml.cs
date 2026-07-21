@@ -1,4 +1,3 @@
-using ESI.NET;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -14,18 +13,22 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET.Models.Mail;
 using System.Reflection.PortableExecutable;
 using TheGuideToTheNewEden.WinUI.Wins;
 using TheGuideToTheNewEden.WinUI.Converters;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using CoreMail = TheGuideToTheNewEden.Core.Models.Mail;
+using EVEStandard.Models.API;
+using EVEStandard;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class MailPage : Page,ICharacterPage
     {
-        private EsiClient _esiClient;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
         public MailPage()
         {
             this.InitializeComponent();
@@ -43,7 +46,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            _esiClient = e.Parameter as EsiClient;
+            var paras = e.Parameter as object[];
+            if (paras != null && paras.Length == 2)
+            {
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
+            }
         }
         private bool _isLoaded = false;
         public void Clear()
@@ -57,11 +66,12 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         public async void Refresh()
         {
             this.ShowWaiting();
-            var labelsResp = await _esiClient.Mail.Labels();
-            if(labelsResp != null && labelsResp.StatusCode == System.Net.HttpStatusCode.OK)
+            var labelsResp = await _esiClient.Mail.GetMailLabelsAndUnreadCountsAsync(_auth);
+            if(labelsResp?.Model != null)
             {
-                RenameLabel(labelsResp.Data?.Labels);
-                ListView_Label.ItemsSource = labelsResp.Data?.Labels;
+                var labelsList = labelsResp.Model?.Labels?.Select(CoreMail.MailLabel.FromESI).ToList();
+                RenameLabel(labelsList);
+                ListView_Label.ItemsSource = labelsList;
             }
             //var maillistResp = await _esiClient.Mail.MailingLists();
             //if (maillistResp != null && maillistResp.StatusCode == System.Net.HttpStatusCode.OK)
@@ -71,7 +81,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             this.HideWaiting();
         }
 
-        private void RenameLabel(List<ESI.NET.Models.Mail.Label> labels)
+        private void RenameLabel(List<CoreMail.MailLabel> labels)
         {
             if(labels.NotNullOrEmpty())
             {
@@ -86,30 +96,30 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         {
             if (ListView_Label.SelectedItem != null)
             {
-                var label = ListView_Label.SelectedItem as Label;
+                var label = ListView_Label.SelectedItem as CoreMail.MailLabel;
                 if (label != null)
                 {
                     this.ShowWaiting();
-                    var headers = await _esiClient.Mail.Headers(new long[] { label.LabelId });
+                    var headers = await _esiClient.Mail.ReturnMailHeadersAsync(_auth,new List<long> { label.LabelId }, default);
                     this.HideWaiting();
-                    if (headers != null && headers.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (headers?.Model != null)
                     {
-                        var list = headers.Data.Select(p => new Core.Models.Mail.Header(p)).ToList();
-                        var nameResp = await _esiClient.Universe.Names(headers.Data.Select(p=>p.From).Distinct().ToList());
-                        if (nameResp != null && nameResp.StatusCode == System.Net.HttpStatusCode.OK && nameResp.Data.NotNullOrEmpty())
+                        var list = headers.Model.Select(p => new Core.Models.Mail.Header(p)).ToList();
+                        var nameResp = await _esiClient.Universe.GetNamesAndCategoriesFromIdsAsync(headers.Model.Select(p=>p.From.Value).Distinct().ToList());
+                        if (nameResp ?.Model != null)
                         {
-                            var namesDic = nameResp.Data.ToDictionary(p => p.Id);
+                            var namesDic = nameResp.Model.ToDictionary(p => p.Id);
                             foreach (var item in list)
                             {
-                                if(namesDic.TryGetValue(item.From, out var value))
+                                if(namesDic.TryGetValue(item.From.Value, out var value))
                                 {
                                     item.FromName = value.Name;
-                                    item.Category = value.Category;
+                                    item.Category = Enum.Parse< EVEStandard.Enumerations.CategoryEnum>(value.Category);
                                 }
                                 else
                                 {
                                     item.FromName = item.From.ToString();
-                                    item.Category = ESI.NET.Enumerations.ResolvedInfoCategory.Character;//default
+                                    item.Category = EVEStandard.Enumerations.CategoryEnum.character;//default
                                 }
                             }
                         }
@@ -124,8 +134,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
-                        Core.Log.Error(headers?.Message);
-                        this.ShowError(headers?.Message);
+                        this.ShowError($"ReturnMailHeadersAsync Failed:{label.LabelId}");
                     }
                 }
             }
@@ -161,16 +170,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             if (header != null)
             {
                 this.ShowWaiting();
-                var msgResp = await _esiClient.Mail.Retrieve((int)header.MailId);
+                var msgResp = await _esiClient.Mail.ReturnMailAsync(_auth,header.MailId.Value);
                 this.HideWaiting();
-                if (msgResp != null && msgResp.StatusCode == System.Net.HttpStatusCode.OK)
+                if (msgResp?.Model != null)
                 {
-                    var mailDetail = new Core.Models.Mail.MailDetail(msgResp.Data);
+                    var mailDetail = new Core.Models.Mail.MailDetail(msgResp.Model);
                     mailDetail.Header = header;
                     if(mailDetail.Message.Labels.NotNullOrEmpty())
                     {
                         StringBuilder stringBuilder = new StringBuilder();
-                        var labels = ListView_Label.ItemsSource as List<ESI.NET.Models.Mail.Label>;
+                        var labels = ListView_Label.ItemsSource as List<CoreMail.MailLabel>;
                         foreach (var item in  mailDetail.Message.Labels)
                         {
                             var label = labels.FirstOrDefault(p => p.LabelId == item);
@@ -188,23 +197,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     MailWindow mailWindow = new MailWindow(_esiClient, mailDetail);
                     mailWindow.Activate();
-                    if(!header.IsRead)
+                    if(!header.IsReadForUI)
                     {
-                        var updateResp = await _esiClient.Mail.Update((int)header.MailId, true);
-                        if (updateResp == null || updateResp.StatusCode != System.Net.HttpStatusCode.OK)
-                        {
-                            Core.Log.Error(updateResp?.Message);
-                        }
-                        else
-                        {
-                            header.IsRead = true;
-                        }
+                        await _esiClient.Mail.UpdateMetadataAboutMailAsync(_auth, header.MailId.Value, new EVEStandard.Models.UpdateMailMetadata() { Read = true });
+                        header.IsReadForUI = true;
                     }
                 }
                 else
                 {
-                    Core.Log.Error(msgResp?.Message);
-                    this.ShowError(msgResp?.Message);
+                    this.ShowError($"ReturnMailAsync Failed:{header.MailId.Value}");
                 }
             }
         }

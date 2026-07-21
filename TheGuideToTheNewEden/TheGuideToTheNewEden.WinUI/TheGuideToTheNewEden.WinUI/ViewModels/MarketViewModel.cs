@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using ESI.NET;
-using ESI.NET.Models.Character;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Newtonsoft.Json;
@@ -117,14 +115,14 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             set => SetProperty(ref buyOrders, value);
         }
 
-        private List<ESI.NET.Models.Market.Statistic> statistics;
-        public List<ESI.NET.Models.Market.Statistic> Statistics
+        private List<EVEStandard.Models.MarketRegionHistory> statistics;
+        public List<EVEStandard.Models.MarketRegionHistory> Statistics
         {
             get => statistics;
             set => SetProperty(ref statistics, value);
         }
-        private List<ESI.NET.Models.Market.Statistic> statisticsForShow;
-        public List<ESI.NET.Models.Market.Statistic> StatisticsForShow
+        private List<EVEStandard.Models.MarketRegionHistory> statisticsForShow;
+        public List<EVEStandard.Models.MarketRegionHistory> StatisticsForShow
         {
             get => statisticsForShow;
             set => SetProperty(ref statisticsForShow, value);
@@ -569,7 +567,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             {
                 if (AutoSetBuyPrice)
                 {
-                    decimal totalPrice = 0;//总计算价格
+                    double totalPrice = 0;//总计算价格
                     long remainCount = (long)CalBuyAmount;//剩余计算数量
                     foreach (var sellOrder in SellOrders)
                     {
@@ -584,7 +582,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         ShowError(Helpers.ResourcesHelper.GetString("MarketPage_Cal_Buy_NoEnoughSellOrder"));
                         totalPrice += SellOrders.First().Price * remainCount;
                     }
-                    CalBuyResult = (double)totalPrice;
+                    CalBuyResult = totalPrice;
                 }
                 else
                 {

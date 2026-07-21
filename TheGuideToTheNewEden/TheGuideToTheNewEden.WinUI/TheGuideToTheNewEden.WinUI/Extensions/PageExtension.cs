@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core;
 using TheGuideToTheNewEden.WinUI.Controls;
 
 namespace TheGuideToTheNewEden.WinUI.Extensions
@@ -22,9 +23,13 @@ namespace TheGuideToTheNewEden.WinUI.Extensions
         {
             ClientServiceHelper.GetRequiredService<Services.PageNavigationService>().ShowWaiting(page, tip, cancelCallback);
         }
-        public static void ShowError(this Page page, string msg)
+        public static void ShowError(this Page page, string msg, bool log = false)
         {
             page.ShowMsg(msg, InfoBarControl.InfoType.Error, false);
+            if (log)
+            {
+                Log.Error(msg);
+            }
         }
         public static void ShowSuccess(this Page page, string msg)
         {

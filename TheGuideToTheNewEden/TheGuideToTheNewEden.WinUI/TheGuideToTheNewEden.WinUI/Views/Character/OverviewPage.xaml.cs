@@ -1,5 +1,3 @@
-using ESI.NET;
-using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -19,18 +17,21 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core;
-using ESI.NET.Models.Skills;
 using System.Text.RegularExpressions;
 using TheGuideToTheNewEden.WinUI.Converters;
-using static Vanara.PInvoke.ComCtl32;
 using Newtonsoft.Json;
+using EVEStandard;
+using EVEStandard.Models.API;
+using EVEStandard.Enumerations;
+using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class OverviewPage : Page,ICharacterPage
     {
-        private EsiClient _esiClient;
-        private AuthorizedCharacterData _characterData;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
         public OverviewPage()
         {
             this.InitializeComponent();
@@ -41,8 +42,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             var paras = e.Parameter as object[];
             if(paras != null && paras.Length == 2)
             {
-                _esiClient = paras[0] as EsiClient;
-                _characterData = paras[1] as AuthorizedCharacterData;
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
             }
         }
         private void OverviewPage_Loaded(object sender, RoutedEventArgs e)
@@ -56,43 +58,42 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         public async void Refresh()
         {
-            ESI.NET.Models.Location.Activity onlineStatus = null;
-            ESI.NET.Models.Location.Location location = null;
-            ESI.NET.Models.Location.Ship ship = null;
-            ESI.NET.Models.Corporation.Corporation corporation = null;
-            ESI.NET.Models.Alliance.Alliance alliance = null;
-            List<ESI.NET.Models.Skills.SkillQueueItem> skillQueueItems = null;
+            EVEStandard.Models.CharacterOnline onlineStatus = null;
+            EVEStandard.Models.Location location = null;
+            EVEStandard.Models.CharacterShip ship = null;
+            EVEStandard.Models.CorporationInfo corporation = null;
+            EVEStandard.Models.Alliance alliance = null;
+            List<EVEStandard.Models.SkillQueue> skillQueueItems = null;
             string locationError = string.Empty;
             var tasks = new List<Task>
             {
-                _esiClient.Location.Online().ContinueWith((p)=>
+                _esiClient.Location.GetCharacterOnlineAsync(_auth).ContinueWith((p)=>
                 {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    if(p.Result.Model != null)
                     {
-                        onlineStatus = p.Result.Data;
+                        onlineStatus = p.Result.Model;
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Log.Error("GetCharacterOnlineAsync Failed");
                     }
                 }),
-                _esiClient.Location.Location().ContinueWith((p)=>
+                _esiClient.Location.GetCharacterLocationAsync(_auth).ContinueWith((p)=>
                 {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        location = p.Result.Data;
-                    }
-                    else
-                    {
-                        locationError = p?.Result.Message;
-                        Log.Error(p?.Result.Message);
-                    }
+                    //if(p.Result.Model != null)
+                    //{
+                    //    location = p.Result.Model;
+                    //}
+                    //else
+                    //{
+                    //    Log.Error("GetCharacterLocationAsync Failed");
+                    //}
                 }),
-                _esiClient.Location.Ship().ContinueWith((p)=>
+                _esiClient.Location.GetCurrentShipAsync(_auth).ContinueWith((p)=>
                 {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    if(p.Result.Model != null)
                     {
-                        ship = p.Result.Data;
+                        ship = p.Result.Model;
                         if(ship.ShipName.StartsWith("u'"))
                         {
                             ship.ShipName = Regex.Unescape(ship.ShipName.Substring(2,ship.ShipName.Length - 3));
@@ -100,36 +101,29 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Log.Error("GetCurrentShipAsync Failed");
                     }
                 }),
-                _esiClient.Corporation.Information(_characterData.CorporationID).ContinueWith((p) =>
+                _esiClient.Corporation.GetCorporationInfoAsync(_characterData.CorporationID).ContinueWith((p) =>
                 {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (p.Result.Model != null)
                     {
-                        corporation = p.Result.Data;
+                        corporation = p.Result.Model;
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Log.Error("GetCorporationInfoAsync Failed");
                     }
                 }),
-                _esiClient.Skills.Queue().ContinueWith((p) =>
+                _esiClient.Skills.GetCharacterSkillQueueAsync(_auth).ContinueWith((p) =>
                 {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (p.Result.Model != null)
                     {
-                        if(p.Result.Data != null)
-                        {
-                            skillQueueItems = p.Result.Data;
-                        }
-                        else
-                        {
-                            skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null;
-                        }
+                        skillQueueItems = p.Result.Model;
                     }
                     else
                     {
-                        Log.Error(p?.Result.Message);
+                        Log.Error("GetCharacterSkillQueueAsync Failed");
                     }
                 }),
             };
@@ -137,15 +131,15 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 var allianceTask = new Task(() =>
                 {
-                    _esiClient.Alliance.Information(_characterData.AllianceID).ContinueWith((p) =>
+                    _esiClient.Alliance.GetAllianceInfoAsync(_characterData.AllianceID).ContinueWith((p) =>
                     {
-                        if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
+                        if (p.Result.Model != null)
                         {
-                            alliance = p.Result.Data;
+                            alliance = p.Result.Model;
                         }
                         else
                         {
-                            Log.Error(p?.Result.Message);
+                            Log.Error("GetAllianceInfoAsync Failed");
                         }
                     });
                 });
@@ -190,28 +184,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             if(location != null)
             {
                 LocationSystemInfoPanel.Visibility = Visibility.Visible;
-                var solarSystem = await Core.Services.DB.MapSolarSystemService.QueryAsync(location.SolarSystemId);
-                TextBlock_LocationSystemLevel.Text = solarSystem?.Security.ToString("N2");
-                TextBlock_LocationSystemName.Content = solarSystem?.SolarSystemName;
-                if (location.StationId > 0)
+                //var solarSystem = await Core.Services.DB.MapSolarSystemService.QueryAsync(location.);
+                //TextBlock_LocationSystemLevel.Text = solarSystem?.Security.ToString("N2");
+                //TextBlock_LocationSystemName.Content = solarSystem?.SolarSystemName;
+                if (location.LocationId > 0)
                 {
-                    var station = await Core.Services.DB.StaStationService.QueryAsync(location.StationId);
-                    if (station != null)
+                    if(location.LocationType == LocationType.station.ToString())
                     {
-                        TextBlock_LocationSataionName.Text = station.StationName;
-                    }
-                }
-                else if (location.StructureId > 0)
-                {
-                    var structureRsp = await _esiClient.Universe.Structure(location.StructureId);
-                    if (structureRsp?.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        TextBlock_LocationSataionName.Text = structureRsp.Data.Name;
+                        var station = await Core.Services.DB.StaStationService.QueryAsync(location.LocationId.Value);
+                        if (station != null)
+                        {
+                            TextBlock_LocationSataionName.Text = station.StationName;
+                        }
                     }
                     else
                     {
-                        TextBlock_LocationSataionName.Text = location.StructureId.ToString();
-                        Log.Error(structureRsp?.Message);
+                        var structureRsp = await _esiClient.Universe.GetStructureInfoAsync(_auth, location.LocationId.Value);
+                        if (structureRsp.Model != null)
+                        {
+                            TextBlock_LocationSataionName.Text = structureRsp.Model.Name;
+                        }
+                        else
+                        {
+                            TextBlock_LocationSataionName.Text = location.LocationId.ToString();
+                            Log.Error("GetStructureInfoAsync Failed");
+                        }
                     }
                 }
                 else
@@ -230,9 +227,31 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 Grid_Online.Visibility = onlineStatus.Online ? Visibility.Visible: Visibility.Collapsed;
                 Grid_Outline.Visibility = onlineStatus.Online ? Visibility.Collapsed : Visibility.Visible;
-                TextBlock_lastLogin.Text = $"{onlineStatus.LastLogin.Year}.{onlineStatus.LastLogin.Month}.{onlineStatus.LastLogin.Day} {onlineStatus.LastLogin.Hour}:{onlineStatus.LastLogin.Minute}";
+                var duration = DateTime.UtcNow - (DateTime)onlineStatus.LastLogin;
+                if (duration.TotalDays > 365)
+                {
+                    TextBlock_lastLogin.Text = $"{duration.TotalDays / 365:N0}y {duration.TotalDays % 365 / 30:N1}mo";
+                }
+                else
+                {
+                    if (duration.TotalDays > 30)
+                    {
+                        TextBlock_lastLogin.Text = $"{duration.TotalDays / 30:N0}mo {duration.TotalDays % 30:N1}d";
+                    }
+                    else
+                    {
+                        if (duration.TotalDays > 1)
+                        {
+                            TextBlock_lastLogin.Text = $"{duration.Days}d {duration.Hours + duration.Minutes / 60.0:N1}h";
+                        }
+                        else
+                        {
+                            TextBlock_lastLogin.Text = $"{duration.Hours}h {duration.Minutes:N0}min";
+                        }
+                    }
+                }
                 ToolTip toolTip = new ToolTip();
-                toolTip.Content = UTCToLocalTimeConverter.Convert(onlineStatus.LastLogin);
+                toolTip.Content = UTCToLocalTimeConverter.Convert(onlineStatus.LastLogin.Value);
                 ToolTipService.SetToolTip(TextBlock_lastLogin, toolTip);
                 TextBlock_LoginCount.Text = onlineStatus.Logins.ToString();
             }
@@ -243,7 +262,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 var types = await Core.Services.DB.InvTypeService.QueryTypesAsync(skillQueueItems.Select(p => p.SkillId).ToList());
                 if(types.NotNullOrEmpty())
                 {
-                    var dic = types.ToDictionary(p => p.TypeID);
+                    var dic = types.ToDictionary(p => (long)p.TypeID);
                     foreach (var skill in skillQueueItems)
                     {
                         if(dic.TryGetValue(skill.SkillId, out var invType))

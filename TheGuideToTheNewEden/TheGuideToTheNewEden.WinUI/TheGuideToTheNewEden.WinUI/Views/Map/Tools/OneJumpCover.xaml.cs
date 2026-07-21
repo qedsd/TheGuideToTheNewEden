@@ -27,9 +27,9 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
     public sealed partial class OneJumpCover : Page
     {
-        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
-        private Dictionary<int, int> _systemJumps;
-        private Dictionary<int, SovData> _sovDatas;
+        private Dictionary<long, EVEStandard.Models.SystemKills> _systemKills;
+        private Dictionary<long, long> _systemJumps;
+        private Dictionary<long, SovData> _sovDatas;
         private MapCanvas _mapCanvas;
         private ToolWindow _window;
         public OneJumpCover()
@@ -37,13 +37,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             this.InitializeComponent();
             Loaded += OneJumpCover_Loaded;
         }
-        public OneJumpCover(MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public OneJumpCover(MapCanvas mapCanvas, Dictionary<long, EVEStandard.Models.SystemKills> kills, Dictionary<long, long> jumps, Dictionary<long, SovData> sovDatas)
         {
             SetData(mapCanvas, kills, jumps, sovDatas);
             this.InitializeComponent();
             Loaded += OneJumpCover_Loaded;
         }
-        public void SetData(MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public void SetData(MapCanvas mapCanvas, Dictionary<long, EVEStandard.Models.SystemKills> kills, Dictionary<long, long> jumps, Dictionary<long, SovData> sovDatas)
         {
             _mapCanvas = mapCanvas;
             _systemKills = kills;

@@ -22,11 +22,11 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 {
     public sealed partial class SystemFilterControl : UserControl
     {
-        private Dictionary<int, Core.DBModels.MapSolarSystem> _mapSolarSystems;
-        private Dictionary<int, Core.DBModels.MapRegion> _mapRegions;
+        private Dictionary<long, Core.DBModels.MapSolarSystem> _mapSolarSystems;
+        private Dictionary<long, Core.DBModels.MapRegion> _mapRegions;
         private List<ToggleButton> _regionToggleButton = new List<ToggleButton>();
-        private HashSet<int> _selectedRegions = new HashSet<int>();
-        private HashSet<int> _selectedSystems = new HashSet<int>();
+        private HashSet<long> _selectedRegions = new HashSet<long>();
+        private HashSet<long> _selectedSystems = new HashSet<long>();
         public SystemFilterControl()
         {
             this.InitializeComponent();
@@ -51,7 +51,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             ListView_SOV.SelectAll();
         }
 
-        public void SetData(Dictionary<int, Core.DBModels.MapSolarSystem> systems, Dictionary<int, Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
+        public void SetData(Dictionary<long, Core.DBModels.MapSolarSystem> systems, Dictionary<long, Core.DBModels.MapRegion> regions, List<SovData> sovDatas)
         {
             _mapSolarSystems = systems;
             _mapRegions = regions;
@@ -124,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         #region SOV
         private List<SovData> _sovDatas;
-        private HashSet<int> _selectedAlliances = new HashSet<int>();
+        private HashSet<long> _selectedAlliances = new HashSet<long>();
         private void Button_SelecteAllSOV_Click(object sender, RoutedEventArgs e)
         {
             if((sender as ToggleButton).IsChecked == true)
@@ -164,11 +164,11 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             TextBlock_FilteredSystemCount.Text = ids.Count.ToString();
             FilterSystemChanged?.Invoke(ids.ToHashSet2());
         }
-        private List<int> Cal()
+        private List<long> Cal()
         {
             //计算显示的星系id
             var allSystemDic = _mapSolarSystems;
-            Dictionary<int, MapSolarSystem> filtedSystems = new Dictionary<int, MapSolarSystem>();
+            Dictionary<long, MapSolarSystem> filtedSystems = new Dictionary<long, MapSolarSystem>();
             //星域
             if (_selectedRegions.Count == 0)
             {
@@ -203,7 +203,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             //主权
             if(ContainNoneSOVCheckBox.IsChecked == false)//不包含无主权星系，先移除所有不在主权下的星系
             {
-                HashSet<int> allInSovSystems = new HashSet<int>();//所有有主权的星系id
+                HashSet<long> allInSovSystems = new HashSet<long>();//所有有主权的星系id
                 foreach (var sovData in _sovDatas)
                 {
                     foreach (var sys in sovData.SystemIds)
@@ -211,7 +211,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                         allInSovSystems.Add(sys);
                     }
                 }
-                List<int> removedIds = new List<int>();
+                List<long> removedIds = new List<long>();
                 foreach (var sys in filtedSystems)
                 {
                     if (!allInSovSystems.Contains(sys.Key))
@@ -240,7 +240,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
 
             //安全等级
-            List<int> removedIds2 = new List<int>();
+            List<long> removedIds2 = new List<long>();
             if (SecuritySlider.RangeStart != SecuritySlider.Minimum || SecuritySlider.RangeEnd != SecuritySlider.Maximum)
             {
                 //仅当选择范围不是最大范围时才需要判断一遍
@@ -345,7 +345,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             }
             return filtedSystems.Keys.ToList();
         }
-        public delegate void FilterSystemChangedEventHandel(HashSet<int> ids);
+        public delegate void FilterSystemChangedEventHandel(HashSet<long> ids);
         private FilterSystemChangedEventHandel FilterSystemChanged;
         public event FilterSystemChangedEventHandel OnFilterSystemChanged
         {

@@ -1,5 +1,3 @@
-using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
-using ESI.NET;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -21,12 +19,16 @@ using System.Collections.ObjectModel;
 using TheGuideToTheNewEden.Core.DBModels;
 using Syncfusion.UI.Xaml.DataGrid;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using EVEStandard.Models.API;
+using EVEStandard;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class WalletPage : Page, ICharacterPage
     {
-        private EsiClient _esiClient;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
         public WalletPage()
         {
             this.InitializeComponent();
@@ -45,7 +47,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            _esiClient = e.Parameter as EsiClient;
+            var paras = e.Parameter as object[];
+            if (paras != null && paras.Length == 2)
+            {
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
+            }
         }
         private bool _isLoaded = false;
         public void Clear()
@@ -72,68 +80,64 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
 
         private async Task<List<Core.Models.Wallet.JournalEntry>> GetCharacterJournalsAsync(int page)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse = await _esiClient.Wallet.CharacterJournal(page);
+            var esiResponse = await _esiClient.Wallet.GetCharacterWalletJournalAsync(_auth,page);
             return GetDatas(esiResponse);
         }
         private async Task<List<Core.Models.Wallet.JournalEntry>> GetCorpJournalsAsync(int division,int page)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse = await _esiClient.Wallet.CorporationJournal(division, page);
+            var esiResponse = await _esiClient.Wallet.GetCorporationWalletJournalAsync(_auth,_characterData.CorporationID,division, page);
             return GetDatas(esiResponse);
         }
-        private List<Core.Models.Wallet.JournalEntry> GetDatas(EsiResponse<List<ESI.NET.Models.Wallet.JournalEntry>> esiResponse)
+        private List<Core.Models.Wallet.JournalEntry> GetDatas(ESIModelDTO<List<EVEStandard.Models.CharacterWalletJournal>> esiResponse)
         {
-            if (esiResponse != null)
+            if (esiResponse?.Model != null)
             {
-                if (esiResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    return esiResponse.Data.Select(p => new Core.Models.Wallet.JournalEntry(p)).ToList();
-                }
-                else
-                {
-                    Log.Error(esiResponse.Message);
-                    this.ShowError(esiResponse.Message);
-                }
+                return esiResponse.Model.Select(p => new Core.Models.Wallet.JournalEntry(p)).ToList();
             }
             else
             {
-                this.ShowError("None");
+                this.ShowError("CharacterWalletJournal is null");
+                return null;
             }
-            return null;
+        }
+        private List<Core.Models.Wallet.JournalEntry> GetDatas(ESIModelDTO<List<EVEStandard.Models.CorporationWalletJournal>> esiResponse)
+        {
+            if (esiResponse?.Model != null)
+            {
+                return esiResponse.Model.Select(p => new Core.Models.Wallet.JournalEntry(p)).ToList();
+            }
+            else
+            {
+                this.ShowError("CorporationWalletJournal is null");
+                return null;
+            }
         }
         private async Task<List<Core.Models.Wallet.TransactionEntry>> GetCharacterTransactionsAsync(int fromId)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse = await _esiClient.Wallet.CharacterTransactions(fromId);
+            var esiResponse = await _esiClient.Wallet.GetCharacterWalletTransactionsAsync(_auth, fromId);
             return await GetDatas(esiResponse);
         }
         private async Task<List<Core.Models.Wallet.TransactionEntry>> GetCorpTransactionsAsync(int division, int fromId)
         {
-            EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse = await _esiClient.Wallet.CorporationTransactions(division, fromId);
+            var esiResponse = await _esiClient.Wallet.GetCorporationWalletTransactionsAsync(_auth, _characterData.CorporationID,division, fromId);
             return await GetDatas(esiResponse);
         }
-        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetDatas(EsiResponse<List<ESI.NET.Models.Wallet.Transaction>> esiResponse)
+        private async Task<List<Core.Models.Wallet.TransactionEntry>> GetDatas(ESIModelDTO<List<EVEStandard.Models.WalletTransaction>> esiResponse)
         {
-            if (esiResponse != null)
+            if (esiResponse?.Model != null)
             {
-                if (esiResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                var list = esiResponse.Model.Select(p => new Core.Models.Wallet.TransactionEntry(p)).ToList();
+                if (list.NotNullOrEmpty())
                 {
-                    var list = esiResponse.Data.Select(p => new Core.Models.Wallet.TransactionEntry(p)).ToList();
-                    if (list.NotNullOrEmpty())
-                    {
-                        await SetNames(list);
-                    }
-                    return list;
+                    await SetNames(list);
                 }
-                else
-                {
-                    Log.Error(esiResponse.Message);
-                    this.ShowError(esiResponse.Message);
-                }
+                return list;
             }
             else
             {
-                this.ShowError("None");
+                this.ShowError("WalletTransaction is null");
+                return null;
             }
-            return null;
         }
         private async Task SetNames(List<Core.Models.Wallet.TransactionEntry> transactions)
         {
@@ -144,7 +148,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 var invTypesDic = invTypes.ToDictionary(p => p.TypeID);
                 foreach(var transaction in transactions)
                 {
-                    if(invTypesDic.TryGetValue(transaction.Transaction.TypeId, out var invType))
+                    if(invTypesDic.TryGetValue((int)transaction.Transaction.TypeId, out var invType))
                     {
                         transaction.InvType = invType;
                     }
@@ -153,7 +157,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         transaction.InvType = new Core.DBModels.InvType()
                         {
                             TypeName = transaction.Transaction.TypeId.ToString(),
-                            TypeID = transaction.Transaction.TypeId
+                            TypeID = (int)transaction.Transaction.TypeId
                         };
                     }
                 }
@@ -162,33 +166,25 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             var clientIds = transactions.Select(p=>p.Transaction.ClientId).ToList();
             if(clientIds.NotNullOrEmpty())
             {
-                var resp = await _esiClient.Universe.Names(clientIds.Distinct().ToList());
-                if(resp != null)
+                var resp = await _esiClient.Universe.GetNamesAndCategoriesFromIdsAsync(clientIds.Distinct().ToList());
+                if(resp?.Model != null)
                 {
-                    if(resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var namesDic = resp.Model.ToDictionary(p => p.Id);
+                    foreach (var transaction in transactions)
                     {
-                        var namesDic = resp.Data.ToDictionary(p => p.Id);
-                        foreach(var transaction in transactions)
+                        if (namesDic.TryGetValue(transaction.Transaction.ClientId, out var name))
                         {
-                            if(namesDic.TryGetValue(transaction.Transaction.ClientId, out var name))
-                            {
-                                transaction.ClientName = name.Name;
-                            }
-                            else
-                            {
-                                transaction.ClientName = transaction.Transaction.ClientId.ToString();
-                            }
+                            transaction.ClientName = name.Name;
                         }
-                    }
-                    else
-                    {
-                        this.ShowError(resp.Message);
-                        Log.Error(resp.Message);
+                        else
+                        {
+                            transaction.ClientName = transaction.Transaction.ClientId.ToString();
+                        }
                     }
                 }
                 else
                 {
-                    this.ShowError("None");
+                    this.ShowError("GetNamesAndCategoriesFromIdsAsync Failed", true);
                 }
             }
 
@@ -213,18 +209,17 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
                 if(structures.NotNullOrEmpty())
                 {
-                    var structuresResp = await _esiClient.Universe.Names(structures.Select(p => (int)p).ToList());
-                    if(structuresResp != null && structuresResp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var structuresResp = await _esiClient.Universe.GetNamesAndCategoriesFromIdsAsync(structures.Select(p => p).ToList());
+                    if(structuresResp?.Model != null)
                     {
-                        foreach (var data in structuresResp.Data)
+                        foreach (var data in structuresResp.Model)
                         {
                             locationNames.Add(data.Id, data.Name);
                         }
                     }
                     else
                     {
-                        Log.Error(structuresResp?.Message);
-                        this.ShowError(structuresResp?.Message);
+                        this.ShowError("GetNamesAndCategoriesFromIdsAsync Failed", true);
                     }
                 }
                 foreach(var t in transactions)

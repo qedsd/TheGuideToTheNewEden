@@ -1,12 +1,8 @@
-﻿using ESI.NET.Enumerations;
-using ESI.NET;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using ESI.NET.Models.SSO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Http;
@@ -14,6 +10,11 @@ using System.Net;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using EVEStandard;
+using TheGuideToTheNewEden.Core.Models.Character;
+using System.Reflection;
+using EVEStandard.Models.SSO;
+using EVEStandard.Enumerations;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
@@ -31,156 +32,119 @@ namespace TheGuideToTheNewEden.Core.Services
                 return current;
             }
         }
-        public static SsoLogic SSO
-        {
-            get => Current.EsiClient.SSO;
-        }
         /// <summary>
         /// 公开ESI
         /// </summary>
-        public EsiClient EsiClient { get; private set; }
+        public EVEStandardAPI EsiClient { get; private set; }
+        public SSOv2 SSO { get; private set; }
+        private static readonly string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public ESIService()
         {
-            EsiClient = GetDefaultEsi();
+            EsiClient = GetDefaultESI();
+            SSO = new SSOv2(GetDataSource(), Config.ESICallback, Config.ClientId, Config.ClientSecret);
+            
         }
-
-        public static EsiClient GetDefaultEsi()
+        public string GetAuthorizeUrl()
         {
-            IOptions<EsiConfig> config = Options.Create(new EsiConfig()
-            {
-                EsiUrl = APIService.GetEsiUrl(),
-                DataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? DataSource.Tranquility : DataSource.Serenity,
-                ClientId = Config.ClientId,
-                SecretKey = "Unneeded",
-                CallbackUrl = Config.ESICallback,
-                UserAgent = "TheGuideToTheNewEden",
-            });
-            return new ESI.NET.EsiClient(config);
+            return SSO.AuthorizeToSSOBasicAuthUri(Version, Config.Scopes);
         }
-        public static async Task<SsoToken> GetToken(GrantType grantType, string code, string codeChallenge = null)
+        public async Task<AuthorizedCharacterData> VerifyAuthorization(string authorizationCode)
         {
-            string body = "grant_type=" + grantType.ToEsiValue();
-            switch (grantType)
+            var acessToken = await SSO.VerifyAuthorizationForBasicAuthAsync(authorizationCode);
+            if (acessToken != null)
             {
-                case GrantType.AuthorizationCode:
-                    body = body + "&code=" + code;
-                    if (codeChallenge != null)
+                var detail = await SSO.GetCharacterDetailsAsync(acessToken.AccessToken);
+                if (detail != null)
+                {
+                    return new AuthorizedCharacterData()
                     {
-                        byte[] bytes = Encoding.ASCII.GetBytes(codeChallenge);
-                        string base64 = Convert.ToBase64String(bytes).TrimEnd(new char[1] { '=' }).Replace('+', '-')
-                            .Replace('/', '_');
-                        body = body + "&code_verifier=" + base64 + "&client_id=" + Config.ClientId;
-                    }
-
-                    break;
-                case GrantType.RefreshToken:
-                    body = body + "&refresh_token=" + Uri.EscapeDataString(code);
-                    if (codeChallenge != null)
-                    {
-                        body = body + "&client_id=" + Config.ClientId;
-                    }
-
-                    break;
-            }
-
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"https://{APIService.GetSSOUrl()}/v2/oauth/token")
-            {
-                Content = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded")
-            };
-            if (codeChallenge == null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "Unneeded");
-                request.Headers.Host = APIService.GetSSOUrl();
-            }
-            HttpClient client = new HttpClient(new HttpClientHandler
-            {
-                AutomaticDecompression = (DecompressionMethods.Deflate | DecompressionMethods.GZip)
-            });
-            client.DefaultRequestHeaders.Add("X-User-Agent", "TheGuideToTheNewEden");
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            HttpResponseMessage response = await client.SendAsync(request);
-            string content = await response.Content.ReadAsStringAsync();
-            client.Dispose();
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                Core.Log.Error($"GetToken Failed: {response.StatusCode}");
-                Core.Log.Error(content);
-                throw new Exception($"GetToken Failed: {response.StatusCode}");
-            }
-
-            return JsonConvert.DeserializeObject<SsoToken>(content);
-        }
-        public static async Task<AuthorizedCharacterData> Verify(SsoToken token)
-        {
-            AuthorizedCharacterData authorizedCharacter = new AuthorizedCharacterData();
-            try
-            {
-                HttpClient client = new HttpClient(new HttpClientHandler
-                {
-                    AutomaticDecompression = (DecompressionMethods.Deflate | DecompressionMethods.GZip)
-                });
-                client.DefaultRequestHeaders.Add("X-User-Agent", "TheGuideToTheNewEden");
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-                client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-                JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-                string jwtksUrl = "https://" + APIService.GetSSOUrl() + "/oauth/jwks";
-                JsonWebKeySet jwks = new JsonWebKeySet(await client.GetAsync(jwtksUrl).Result.Content.ReadAsStringAsync());
-                client.Dispose();
-                JsonWebKey jwk = jwks.Keys.First();
-                ((SecurityTokenHandler)tokenHandler).ValidateToken(validationParameters: new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,//避免国服报错
-                    ValidIssuer = "https://" + APIService.GetSSOUrl(),
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = jwk,
-                    ClockSkew = TimeSpan.FromSeconds(2.0)
-                }, securityToken: token.AccessToken, validatedToken: out SecurityToken validatedToken);
-                JwtSecurityToken jwtValidatedToken = validatedToken as JwtSecurityToken;
-                string subjectClaim = jwtValidatedToken.Claims.SingleOrDefault((Claim c) => c.Type == "sub").Value;
-                string nameClaim = jwtValidatedToken.Claims.SingleOrDefault((Claim c) => c.Type == "name").Value;
-                string ownerClaim = jwtValidatedToken.Claims.SingleOrDefault((Claim c) => c.Type == "owner").Value;
-                IEnumerable<Claim> returnedScopes = jwtValidatedToken.Claims.Where((Claim c) => c.Type == "scp");
-                string scopesClaim = string.Join(" ", returnedScopes.Select((Claim s) => s.Value));
-                authorizedCharacter.RefreshToken = token.RefreshToken;
-                authorizedCharacter.Token = token.AccessToken;
-                authorizedCharacter.CharacterName = nameClaim;
-                authorizedCharacter.CharacterOwnerHash = ownerClaim;
-                authorizedCharacter.CharacterID = int.Parse(subjectClaim.Split(':').Last());
-                authorizedCharacter.ExpiresOn = jwtValidatedToken.ValidTo;
-                authorizedCharacter.Scopes = scopesClaim;
-                string url = APIService.GetEsiUrl() + "latest/characters/affiliation/?datasource=" + Config.DefaultGameServer.ToString().ToLower();
-                StringContent body = new StringContent(JsonConvert.SerializeObject(new int[1] { authorizedCharacter.CharacterID }), Encoding.UTF8, "application/json");
-                HttpClient client2 = new HttpClient();
-                HttpResponseMessage characterResponse = await client2.PostAsync(url, body).ConfigureAwait(continueOnCapturedContext: false);
-                client2.Dispose();
-                if (characterResponse.StatusCode == HttpStatusCode.OK)
-                {
-                    EsiResponse<List<ESI.NET.Models.Character.Affiliation>> affiliations = new EsiResponse<List<ESI.NET.Models.Character.Affiliation>>(characterResponse, "Post|/character/affiliations/");
-                    ESI.NET.Models.Character.Affiliation characterData = affiliations.Data.First();
-                    authorizedCharacter.AllianceID = characterData.AllianceId;
-                    authorizedCharacter.CorporationID = characterData.CorporationId;
-                    authorizedCharacter.FactionID = characterData.FactionId;
+                        Token = acessToken.AccessToken,
+                        RefreshToken = acessToken.RefreshToken,
+                        ExpiresOn = acessToken.ExpiresUtc,
+                        CharacterID = detail.CharacterId,
+                        CharacterName = detail.CharacterName,
+                        CharacterOwnerHash = detail.CharacterOwnerHash,
+                        Scopes = string.Join(",", detail.Scopes),
+                    };
                 }
             }
-            catch(Exception ex)
+            return null;
+        }
+        public async Task<bool> Refresh(AuthorizedCharacterData authorizedCharacterData)
+        {
+            var accessToken = await GetNewBasicAuthAccessAndRefreshTokenAsync(authorizedCharacterData.RefreshToken);
+            if (accessToken != null && !string.IsNullOrEmpty(accessToken.AccessToken))
             {
-                Core.Log.Error(ex);
-                throw ex;
+                authorizedCharacterData.Update(accessToken.RefreshToken, accessToken.AccessToken, accessToken.ExpiresUtc);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 重新实现SSO.GetNewBasicAuthAccessAndRefreshTokenAsync
+        /// 加入失败抛出
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<AccessTokenDetails> GetNewBasicAuthAccessAndRefreshTokenAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(Config.ClientSecret))
+            {
+                throw new ArgumentNullException("You didn't provide a client secret when initalizing the SSOv2 class, one is required to utilize Basic Auth methods.");
             }
 
-            return authorizedCharacter;
+            var byteArray = Encoding.ASCII.GetBytes(Config.ClientId + ":" + Config.ClientSecret);
+
+            var urlEncodedContent = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                    new KeyValuePair<string, string>("refresh_token", refreshToken)
+                };
+
+            var stringContent = new FormUrlEncodedContent(urlEncodedContent);
+
+            var request = new HttpRequestMessage
+            {
+                RequestUri = new Uri(GetBaseURL() + "/oauth/token"),
+                Method = HttpMethod.Post,
+                Content = stringContent
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            HttpClient httpClient = new HttpClient();
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            string json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to refresh access token. Status code: {response.StatusCode}, Response: {json}");
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<AccessTokenDetails>(json);
+        }
+        private string GetBaseURL()
+        {
+            return Config.DefaultGameServer switch
+            {
+                Enums.GameServerType.Tranquility => "https://login.eveonline.com/v2",
+                Enums.GameServerType.Serenity => "https://login.evepc.163.com/v2",
+                _ => throw new ArgumentOutOfRangeException(),
+            };
         }
 
-        public static EVEStandard.EVEStandardAPI GetDefaultESI2()
+        private static EVEStandard.Enumerations.DataSource GetDataSource()
         {
-            EVEStandard.Enumerations.DataSource dataSource = Config.DefaultGameServer == Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
-            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
+            return Config.DefaultGameServer == Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
         }
-        public static EVEStandard.Models.API.AuthDTO ToEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
+
+        public static EVEStandard.EVEStandardAPI GetDefaultESI()
+        {
+            return new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", GetDataSource(), EVEStandard.Enumerations.CompatibilityDate.v2025_12_16,TimeSpan.FromSeconds(30));
+        }
+        public static EVEStandard.Models.API.AuthDTO ToEVEStandardSSO(AuthorizedCharacterData character)
         {
             if (character != null)
             {

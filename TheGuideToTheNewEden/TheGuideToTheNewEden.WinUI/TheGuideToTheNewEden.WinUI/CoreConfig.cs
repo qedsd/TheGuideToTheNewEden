@@ -19,6 +19,7 @@ namespace TheGuideToTheNewEden.WinUI
         public static string Scope {set=>Core.Config.Scope = value; }
         public static List<string> Scopes { set => Core.Config.Scopes = value; }
         public static string ESICallback { set => Core.Config.ESICallback = value; }
+        public static string ClientSecret { set => Core.Config.ClientSecret = value; }
         public static string PlayerStatusApi { set=>Core.Config.PlayerStatusApi = value; }
         public static bool NeedLocalization { set => Core.Config.NeedLocalization = value; }
 

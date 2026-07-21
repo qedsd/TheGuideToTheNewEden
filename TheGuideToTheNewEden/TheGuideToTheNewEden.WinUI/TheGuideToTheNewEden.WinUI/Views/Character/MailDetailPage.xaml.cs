@@ -1,4 +1,3 @@
-using ESI.NET;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -21,15 +20,16 @@ using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media.Imaging;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Interfaces;
+using EVEStandard;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class MailDetailPage : Page
     {
-        private EsiClient _esiClient;
+        private EVEStandardAPI _esiClient;
         private Core.Models.Mail.MailDetail _mailDetail;
         private Window _window;
-        public MailDetailPage(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail)
+        public MailDetailPage(EVEStandardAPI esiClient, Core.Models.Mail.MailDetail mailDetail)
         {
             _esiClient = esiClient;
             _mailDetail = mailDetail;
@@ -51,11 +51,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             {
                 _=Task.Run(() =>
                 {
-                    var nameResp =  _esiClient.Universe.Names(_mailDetail.Message.Recipients.Select(p => p.RecipientId).ToList()).Result;
-                    if(nameResp != null && nameResp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var nameResp =  _esiClient.Universe.GetNamesAndCategoriesFromIdsAsync(_mailDetail.Message.Recipients.Select(p => p.RecipientId).ToList()).Result;
+                    if(nameResp?.Model != null)
                     {
                         StringBuilder stringBuilder = new StringBuilder();
-                        foreach(var name in nameResp.Data)
+                        foreach(var name in nameResp.Model)
                         {
                             stringBuilder.Append(name.Name);
                             stringBuilder.Append(';');
@@ -71,7 +71,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     }
                     else
                     {
-                        Core.Log.Error(nameResp?.Message);
+                        Core.Log.Error("GetNamesAndCategoriesFromIdsAsync Failed");
                     }
                 });
             }

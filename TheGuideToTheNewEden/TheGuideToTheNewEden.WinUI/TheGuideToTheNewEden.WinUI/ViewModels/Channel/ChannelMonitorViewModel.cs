@@ -9,6 +9,7 @@ using System.Windows.Input;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.WinUI.Models;
 using TheGuideToTheNewEden.WinUI.Services;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -82,7 +83,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     setting.Name = _selectedCharacter.Name;
                     _selectedCharacter.Setting = setting;
                 }
-                if(!ChatChanelInfos.IsNullOrEmpty() && !_selectedCharacter.Setting.SelectedChannels.IsNullOrEmpty())
+                if(!ChatChanelInfos.NotNullOrEmpty() && !_selectedCharacter.Setting.SelectedChannels.NotNullOrEmpty())
                 {
                     foreach (var channel in ChatChanelInfos)
                     {
@@ -241,9 +242,9 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return false;
             }
             _listenerChannelDic.TryGetValue(channelMonitorItem.Name, out var chatChanelInfos);
-            if (!chatChanelInfos.IsNullOrEmpty())
+            if (!chatChanelInfos.NotNullOrEmpty())
             {
-                if (!channelMonitorItem.Setting.SelectedChannels.IsNullOrEmpty())
+                if (!channelMonitorItem.Setting.SelectedChannels.NotNullOrEmpty())
                 {
                     foreach (var channel in chatChanelInfos)
                     {

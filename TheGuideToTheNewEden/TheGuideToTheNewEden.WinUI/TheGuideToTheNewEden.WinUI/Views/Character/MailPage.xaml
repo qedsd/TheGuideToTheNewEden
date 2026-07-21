@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:TheGuideToTheNewEden.WinUI.Views.Character"
     xmlns:mail="using:TheGuideToTheNewEden.Core.Models.Mail"
-    xmlns:mails="using:ESI.NET.Models.Mail"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
     NavigationCacheMode="Required"
@@ -29,7 +28,7 @@
                 SelectionMode="Single"
                 Style="{StaticResource StretchListView}">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="mails:Label">
+                    <DataTemplate x:DataType="mail:MailLabel">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -104,7 +103,19 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Foreground="{x:Bind IsRead, Converter={StaticResource MailSubjectForegroundConverter}, Mode=OneWay}" Text="{x:Bind Subject}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Rectangle
+                                    Fill="MediumSeaGreen"
+                                    Opacity="0.8"
+                                    RadiusX="8"
+                                    RadiusY="8"
+                                    Visibility="{x:Bind IsReadForUI, Mode=OneWay, Converter={StaticResource BoolToVisibilityReConverter}}" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind Subject}" />
+                            </Grid>
                             <TextBlock
                                 Grid.Row="1"
                                 Text="{x:Bind FromName}"

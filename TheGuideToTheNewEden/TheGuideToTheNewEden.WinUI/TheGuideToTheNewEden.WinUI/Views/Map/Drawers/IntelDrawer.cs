@@ -29,7 +29,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         private Dictionary<int, MapDataIntelInfo> _mapDataIntelInfos = new Dictionary<int, MapDataIntelInfo>();
         private bool _enable = false;
 
-        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Color mainTextColor)
+        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<long, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Color mainTextColor)
         {
             List<MapCanvas.MapGraphBase> newMapGraphs = new List<MapCanvas.MapGraphBase>();
             foreach (var mapDataIntelInfo in _mapDataIntelInfos)

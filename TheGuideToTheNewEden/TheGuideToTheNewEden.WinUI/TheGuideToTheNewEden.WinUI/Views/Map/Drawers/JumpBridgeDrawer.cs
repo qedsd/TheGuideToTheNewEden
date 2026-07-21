@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Models.Map;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET.Models.Universe;
 using Microsoft.UI.Xaml;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas;
@@ -47,7 +46,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
             RequstDraw();
         }
 
-        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
+        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<long, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
         {
             if(JumpBridgeSetting.IsShowBridge() && JumpBridgeSetting.ExistBridge())
             {

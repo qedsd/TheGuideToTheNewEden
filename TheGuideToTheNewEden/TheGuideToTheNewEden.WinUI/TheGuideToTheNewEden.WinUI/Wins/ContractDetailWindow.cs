@@ -1,4 +1,5 @@
-﻿using ESI.NET;
+﻿using EVEStandard;
+using EVEStandard.Models.API;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -17,13 +18,13 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         /// <param name="esiClient"></param>
         /// <param name="contractInfo"></param>
         /// <param name="type">0 公开 1 个人 2 军团</param>
-        public ContractDetailWindow(ESI.NET.EsiClient esiClient,Core.Models.Contract.ContractInfo contractInfo, int type)
+        public ContractDetailWindow(EVEStandardAPI esiClient, AuthDTO auth, Core.Models.Contract.ContractInfo contractInfo, int type)
         {
             Title = $"{Helpers.ResourcesHelper.GetString("ContractPage_Detail")}-{contractInfo.ContractId}";
             SetDisplayTitle(Title);
             var appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));
-            var content = new Views.ContractDetailPage(esiClient, contractInfo, type);
+            var content = new Views.ContractDetailPage(esiClient, auth, contractInfo, type);
             InitWindow(content, WindowTitleStyle.Default, true, true, true, true);
         }
     }

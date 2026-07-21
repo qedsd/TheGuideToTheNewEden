@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.Fleets;
-using Microsoft.UI.Windowing;
+﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;

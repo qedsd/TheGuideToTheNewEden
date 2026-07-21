@@ -1,8 +1,4 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
 using ABI.System;
-using ESI.NET.Models.SSO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -18,6 +14,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -28,12 +25,12 @@ namespace TheGuideToTheNewEden.WinUI.Dialogs
 {
     public sealed partial class AddSerenityAuthDialog : Page
     {
-        public ESI.NET.Models.SSO.AuthorizedCharacterData AuthorizedCharacterData { get; private set; }
+        public AuthorizedCharacterData AuthorizedCharacterData { get; private set; }
         public AddSerenityAuthDialog()
         {
             this.InitializeComponent();
         }
-        public static async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> ShowAsync(XamlRoot xamlRoot)
+        public static async Task<AuthorizedCharacterData> ShowAsync(XamlRoot xamlRoot)
         {
             ContentDialog contentDialog = new ContentDialog()
             {

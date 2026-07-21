@@ -86,6 +86,14 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             return await Task.Run(() => GetByIds(ids));
         }
+        public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<long> ids)
+        {
+            return await Task.Run(() => GetByIds(ids));
+        }
+        public static List<DBModels.IdName> GetByIds(List<long> ids)
+        {
+            return GetByIds(ids.Select(p => (long)p).ToList());
+        }
         public static List<DBModels.IdName> GetByIds(List<int> ids)
         {
             try
@@ -96,30 +104,25 @@ namespace TheGuideToTheNewEden.Core.Services
                 //4.合并返回
 
                 //1.优先查找数据库
-                List<int> noInDbs;
+                List<long> noInDbs;
                 List<DBModels.IdName> inDbResults = IDNameDBService.Query(ids);
                 if (inDbResults.NotNullOrEmpty())
                 {
-                    noInDbs = ids.Except(inDbResults.Select(p => p.Id)).ToList();
+                    noInDbs = ids.Except(inDbResults.Select(p => p.Id)).Select(p=>(long)p).ToList();
                 }
                 else
                 {
-                    noInDbs = ids;
+                    noInDbs = ids.Select(p => (long)p).ToList();
                 }
 
                 //2.查找数据库不存在的
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                var resp = ESIService.Current.EsiClient.Universe.Names(noInDbs).Result;
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs).Result;
+                if (resp.Model != null)
                 {
-                    foreach (var data in resp.Data)
+                    foreach (var data in resp.Model)
                     {
-                        noInDbResults.Add(new DBModels.IdName()
-                        {
-                            Id = data.Id,
-                            Name = data.Name,
-                            Category = (int)data.Category
-                        });
+                        noInDbResults.Add(new DBModels.IdName((int)data.Id, data.Name, data.Category));
                     }
                 }
                 //TODO:处理查找不到的
@@ -176,18 +179,13 @@ namespace TheGuideToTheNewEden.Core.Services
 
                 //2.查找数据库不存在的
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
+                void AddData(List<EVEStandard.Models.NameToId> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
                 {
                     if (resolvedInfos.NotNullOrEmpty())
                     {
                         foreach (var data in resolvedInfos)
                         {
-                            noInDbResults.Add(new DBModels.IdName()
-                            {
-                                Id = data.Id,
-                                Name = data.Name,
-                                Category = (int)category
-                            });
+                            noInDbResults.Add(new DBModels.IdName(data.Id, data.Name, (int)category));
                         }
                     }
                 }
@@ -195,19 +193,18 @@ namespace TheGuideToTheNewEden.Core.Services
                 int length = noInDbs.Count > 500 ? 500 : noInDbs.Count;
                 while(true)
                 {
-                    var resp = await ESIService.Current.EsiClient.Universe.IDs(noInDbs.Skip(start).Take(length).ToList());
-                    if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var resp = await ESIService.Current.EsiClient.Universe.BulkNamesToIdsAsync(noInDbs.Skip(start).Take(length).ToList());
+                    if (resp.Model != null)
                     {
-                        AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
-                        AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
-                        AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
-                        AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
-                        AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
-                        AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
-                        AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
-                        AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
-                        AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
-                        AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                        AddData(resp.Model.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                        AddData(resp.Model.Characters, DBModels.IdName.CategoryEnum.Character);
+                        AddData(resp.Model.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                        AddData(resp.Model.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                        AddData(resp.Model.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                        AddData(resp.Model.Regions, DBModels.IdName.CategoryEnum.Region);
+                        AddData(resp.Model.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                        AddData(resp.Model.Stations, DBModels.IdName.CategoryEnum.Station);
+                        AddData(resp.Model.Factions, DBModels.IdName.CategoryEnum.Faction);
                         int found = start + length;
                         int remain = noInDbs.Count - found;
                         if (remain > 0)
@@ -251,36 +248,30 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 List<DBModels.IdName> results = await IDNameDBService.SearchAsync(name);
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
+                void AddData(List<EVEStandard.Models.NameToId> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
                 {
                     if (resolvedInfos.NotNullOrEmpty())
                     {
                         foreach (var data in resolvedInfos)
                         {
-                            var idName = new DBModels.IdName()
-                            {
-                                Id = data.Id,
-                                Name = data.Name,
-                                Category = (int)category
-                            };
+                            var idName = new DBModels.IdName(data.Id, data.Name, category);
                             results.Add(idName);
                             noInDbResults.Add(idName);
                         }
                     }
                 }
-                var resp = await ESIService.Current.EsiClient.Universe.IDs(new List<string>() { name});
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await ESIService.Current.EsiClient.Universe.BulkNamesToIdsAsync(new List<string>() { name});
+                if (resp.Model != null)
                 {
-                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
-                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
-                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
-                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
-                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
-                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
-                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
-                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
-                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
-                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                    AddData(resp.Model.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                    AddData(resp.Model.Characters, DBModels.IdName.CategoryEnum.Character);
+                    AddData(resp.Model.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                    AddData(resp.Model.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                    AddData(resp.Model.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                    AddData(resp.Model.Regions, DBModels.IdName.CategoryEnum.Region);
+                    AddData(resp.Model.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                    AddData(resp.Model.Stations, DBModels.IdName.CategoryEnum.Station);
+                    AddData(resp.Model.Factions, DBModels.IdName.CategoryEnum.Faction);
                 }
                 if(noInDbResults.Any())
                 {
@@ -301,36 +292,30 @@ namespace TheGuideToTheNewEden.Core.Services
             {
                 List<DBModels.IdName> results = IDNameDBService.Search(name);
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                void AddData(List<ESI.NET.Models.Universe.ResolvedInfo> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
+                void AddData(List<EVEStandard.Models.NameToId> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
                 {
                     if (resolvedInfos.NotNullOrEmpty())
                     {
                         foreach (var data in resolvedInfos)
                         {
-                            var idName = new DBModels.IdName()
-                            {
-                                Id = data.Id,
-                                Name = data.Name,
-                                Category = (int)category
-                            };
+                            var idName = new DBModels.IdName(data.Id, data.Name, category);
                             results.Add(idName);
                             noInDbResults.Add(idName);
                         }
                     }
                 }
-                var resp = ESIService.Current.EsiClient.Universe.IDs(new List<string>() { name }).Result;
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = ESIService.Current.EsiClient.Universe.BulkNamesToIdsAsync(new List<string>() { name }).Result;
+                if (resp.Model != null)
                 {
-                    AddData(resp.Data.Alliances, DBModels.IdName.CategoryEnum.Alliance);
-                    AddData(resp.Data.Characters, DBModels.IdName.CategoryEnum.Character);
-                    AddData(resp.Data.Constellations, DBModels.IdName.CategoryEnum.Constellation);
-                    AddData(resp.Data.Corporations, DBModels.IdName.CategoryEnum.Corporation);
-                    AddData(resp.Data.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
-                    AddData(resp.Data.Regions, DBModels.IdName.CategoryEnum.Region);
-                    AddData(resp.Data.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
-                    AddData(resp.Data.Stations, DBModels.IdName.CategoryEnum.Station);
-                    AddData(resp.Data.Factions, DBModels.IdName.CategoryEnum.Faction);
-                    AddData(resp.Data.Structures, DBModels.IdName.CategoryEnum.Structure);
+                    AddData(resp.Model.Alliances, DBModels.IdName.CategoryEnum.Alliance);
+                    AddData(resp.Model.Characters, DBModels.IdName.CategoryEnum.Character);
+                    AddData(resp.Model.Constellations, DBModels.IdName.CategoryEnum.Constellation);
+                    AddData(resp.Model.Corporations, DBModels.IdName.CategoryEnum.Corporation);
+                    AddData(resp.Model.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
+                    AddData(resp.Model.Regions, DBModels.IdName.CategoryEnum.Region);
+                    AddData(resp.Model.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
+                    AddData(resp.Model.Stations, DBModels.IdName.CategoryEnum.Station);
+                    AddData(resp.Model.Factions, DBModels.IdName.CategoryEnum.Faction);
                 }
                 if (noInDbResults.Any())
                 {

@@ -78,7 +78,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         /// </summary>
         /// <param name="typeId"></param>
         /// <returns></returns>
-        public static int QueryRootGroupOfType(int typeId)
+        public static int QueryRootGroupOfType(long typeId)
         {
             var type = InvTypeService.QueryType(typeId, false);
             if(type != null)

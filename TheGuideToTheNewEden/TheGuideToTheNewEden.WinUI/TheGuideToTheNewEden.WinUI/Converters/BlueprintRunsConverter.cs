@@ -14,13 +14,13 @@ namespace TheGuideToTheNewEden.WinUI.Converters
             var item = value as Core.Models.Contract.ContractItem;
             if (item != null && item.IsBlueprint)
             {
-                if (!item.IsBlueprintCopy)
+                if(item.IsBlueprintCopy == true)
                 {
-                    return Helpers.ResourcesHelper.GetString("Blueprint_InfiniteRuns");
+                    return item.Runs;
                 }
                 else
                 {
-                    return item.Runs;
+                    return Helpers.ResourcesHelper.GetString("Blueprint_InfiniteRuns");
                 }
             }
             else

@@ -17,7 +17,6 @@ using TheGuideToTheNewEden.WinUI.Dialogs;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET.Models.Universe;
 using Windows.ApplicationModel.DataTransfer;
 using System.Text;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -138,11 +137,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
         }
 
 
-        private void UpdateItems(Dictionary<int, int> items)
+        private void UpdateItems(Dictionary<int, long> items)
         {
             if (items?.Count > 0)
             {
-                int updatedCount = 0;
+                long updatedCount = 0;
                 List<ScalperShoppingItem> removedItems = new List<ScalperShoppingItem>();
                 foreach (var item in ShoppingItems)
                 {
@@ -179,14 +178,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
                 try
                 {
                     var text = await data.GetTextAsync();
-                    var remainDic = await Task.Run(Dictionary<int, int> () =>
+                    var remainDic = await Task.Run(Dictionary<int, long> () =>
                     {
                         if (!string.IsNullOrEmpty(text))
                         {
                             var lines = text.Split("\r\n");
                             if (lines?.Length > 0)
                             {
-                                Dictionary<int, int> dic = new Dictionary<int, int>();
+                                Dictionary<int, long> dic = new Dictionary<int, long>();
                                 foreach (var line in lines)
                                 {
                                     try
@@ -230,7 +229,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Business
             }
         }
 
-        private void ShoppingCartPage_TypeCountChanged(List<(Core.DBModels.InvType type, int count)> types)
+        private void ShoppingCartPage_TypeCountChanged(List<(Core.DBModels.InvType type, long count)> types)
         {
             if (types.NotNullOrEmpty())
             {

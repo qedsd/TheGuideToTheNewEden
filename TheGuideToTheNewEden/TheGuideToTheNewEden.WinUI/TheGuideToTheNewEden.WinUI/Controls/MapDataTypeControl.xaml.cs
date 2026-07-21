@@ -40,13 +40,13 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 {
                     foreach (var data in sovDatas)
                     {
-                        if (dic.TryGetValue(data.AllianceId, out int groupID))
+                        if (dic.TryGetValue(data.AllianceId, out long groupID))
                         {
                             data.GroupId = groupID;
                         }
                     }
                 }
-                int maxGroup = sovDatas.Max(p => p.GroupId);
+                long maxGroup = sovDatas.Max(p => p.GroupId);
                 foreach (var data in sovDatas)
                 {
                     if (data.GroupId < 1)
@@ -87,10 +87,10 @@ namespace TheGuideToTheNewEden.WinUI.Controls
 
         public class SovData
         {
-            public int AllianceId { get; set; }
+            public long AllianceId { get; set; }
             public string AllianceName { get; set; }
-            public HashSet<int> SystemIds { get; set; }
-            public int GroupId { get; set; }
+            public HashSet<long> SystemIds { get; set; }
+            public long GroupId { get; set; }
             public int Count { get => SystemIds.Count; }
         }
 
@@ -115,7 +115,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                 File.WriteAllLines(SOVGroupPath, lines);
             }
         }
-        private Dictionary<int,int> ReadSOVGroup()
+        private Dictionary<long, long> ReadSOVGroup()
         {
             try
             {
@@ -124,7 +124,7 @@ namespace TheGuideToTheNewEden.WinUI.Controls
                     var lines = File.ReadAllLines(SOVGroupPath);
                     if (lines.NotNullOrEmpty())
                     {
-                        Dictionary<int, int> dic = new Dictionary<int, int>();
+                        Dictionary<long, long> dic = new Dictionary<long, long>();
                         foreach (var line in lines)
                         {
                             var array = line.Split(' ');

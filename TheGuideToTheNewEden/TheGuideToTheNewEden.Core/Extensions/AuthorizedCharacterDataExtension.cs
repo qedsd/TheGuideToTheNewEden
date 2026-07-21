@@ -1,6 +1,4 @@
-﻿using ESI.NET;
-using ESI.NET.Models.SSO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +13,7 @@ namespace TheGuideToTheNewEden.Core.Extensions
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static bool IsTokenValid(this AuthorizedCharacterData data)
+        public static bool IsTokenValid(this Models.Character.AuthorizedCharacterData data)
         {
             return data.ExpiresOn.ToLocalTime() > DateTime.Now;
         }
@@ -24,30 +22,11 @@ namespace TheGuideToTheNewEden.Core.Extensions
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static async Task<bool> RefreshTokenAsync(this AuthorizedCharacterData data)
+        public static async Task<bool> RefreshTokenAsync(this Models.Character.AuthorizedCharacterData data)
         {
             try
             {
-                var token = await ESIService.GetToken(ESI.NET.Enumerations.GrantType.RefreshToken, data.RefreshToken, Guid.NewGuid().ToString());
-                if (token != null)
-                {
-                    var newdata = await ESIService.Verify(token);
-                    if (newdata != null)
-                    {
-                        data.CopyFrom(newdata);
-                        return true;
-                    }
-                    else
-                    {
-                        Log.Error("刷新Token时Verify返回空值");
-                        return false;
-                    }
-                }
-                else
-                {
-                    Log.Error("刷新Token时GetToken返回空值");
-                    return false;
-                }
+                return await ESIService.Current.Refresh(data);
             }
             catch (Exception ex)
             {

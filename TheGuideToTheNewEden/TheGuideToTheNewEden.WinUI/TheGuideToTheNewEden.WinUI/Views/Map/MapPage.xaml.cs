@@ -1,3 +1,4 @@
+using EVEStandard;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -42,18 +43,18 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private const int SuperionicIceID = 81144;
         private const int MagmaticGasID = 81143;
 
-        private Dictionary<int, MapData> _systemDatas;
-        private Dictionary<int, MapSolarSystem> _mapSolarSystems;
-        private Dictionary<int, MapRegion> _mapRegions;
+        private Dictionary<long, MapData> _systemDatas;
+        private Dictionary<long, MapSolarSystem> _mapSolarSystems;
+        private Dictionary<long, MapRegion> _mapRegions;
         /// <summary>
         /// key为星系id
         /// </summary>
-        private Dictionary<int, SovData> _sovDatas;
-        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
-        private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
+        private Dictionary<long, SovData> _sovDatas;
+        private Dictionary<long, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
+        private Dictionary<long, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
         private List<Core.Models.PlanetResources.Upgrade> _upgrades;
-        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
-        private Dictionary<int, int> _systemJumps;
+        private Dictionary<long, EVEStandard.Models.SystemKills> _systemKills;
+        private Dictionary<long, long> _systemJumps;
         public MapPage()
         {
             this.InitializeComponent();
@@ -98,8 +99,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         private async Task InitData()
         {
             var posDic = SolarSystemPosHelper.PositionDic;
-            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p=>p.SolarSystemID);
-            _systemDatas = new Dictionary<int, MapData>();
+            _mapSolarSystems = (await Core.Services.DB.MapSolarSystemService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p=>(long)p.SolarSystemID);
+            _systemDatas = new Dictionary<long, MapData>();
             foreach (var mapSolarSystem in _mapSolarSystems.Values)
             {
                 if(posDic.TryGetValue(mapSolarSystem.SolarSystemID, out var pos))
@@ -108,7 +109,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                     _systemDatas.Add(mapSolarSystem.SolarSystemID, mapSystemData);
                 }
             }
-            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p => p.RegionID);
+            _mapRegions = (await Core.Services.DB.MapRegionService.QueryAllAsync()).Where(p => !p.IsSpecial()).ToDictionary(p => (long)p.RegionID);
             ResetXYToFix(_systemDatas);
         }
         private async Task<List<SovData>> InitSOV()
@@ -116,26 +117,22 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             List<SovData> sovDatas = new List<SovData>();
             try
             {
-                var resp = await Core.Services.ESIService.GetDefaultEsi().Sovereignty.Systems();
-                if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await Core.Services.ESIService.GetDefaultESI().Sovereignty.ListSovereigntyOfSystemsAsync();
+                if (resp?.Model != null)
                 {
-                    if(resp.Data == null)
-                    {
-                        resp.Data = JsonConvert.DeserializeObject<List<ESI.NET.Models.Sovereignty.SystemSovereignty>>(resp.Message);
-                    }
-                    var dic = resp.Data.GroupBy(p => p.AllianceId).ToList();
+                    var dic = resp.Model.GroupBy(p => p.AllianceId).ToList();
                     foreach (var item in dic)
                     {
                         if (item.Key > 0)
                         {
-                            HashSet<int> ints = new HashSet<int>();
+                            HashSet<long> ints = new HashSet<long>();
                             foreach (var p in item)
                             {
                                 ints.Add(p.SystemId);
                             }
                             sovDatas.Add(new SovData()
                             {
-                                AllianceId = item.Key,
+                                AllianceId = item.Key.Value,
                                 SystemIds = ints
                             });
                         }
@@ -145,7 +142,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                         var names = await Core.Services.IDNameService.GetByIdsAsync(sovDatas.Select(p => p.AllianceId).ToList());
                         if (names != null && names.Any())
                         {
-                            var nameDic = names.ToDictionary(p => p.Id);
+                            var nameDic = names.ToDictionary(p => (long)p.Id);
                             foreach (var sovData in sovDatas)
                             {
                                 if (nameDic.TryGetValue(sovData.AllianceId, out var name))
@@ -175,7 +172,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 }
                 else
                 {
-                    this.ShowMsg(resp.StatusCode.ToString(), InfoBarControl.InfoType.Error, false);
+                    this.ShowMsg("ListSovereigntyOfSystemsAsync Failed", InfoBarControl.InfoType.Error, false);
                 }
             }
             catch (Exception ex)
@@ -183,7 +180,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 Core.Log.Error(ex);
                 this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
             }
-            _sovDatas = new Dictionary<int, SovData>();
+            _sovDatas = new Dictionary<long, SovData>();
             foreach (var data in sovDatas)
             {
                 foreach (var sys in data.SystemIds)
@@ -193,7 +190,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
             }
             return sovDatas;
         }
-        private void ResetXYToFix(Dictionary<int, MapData> datas)
+        private void ResetXYToFix(Dictionary<long, MapData> datas)
         {
             //缩放xy坐标到屏幕显示范围
             //以最大的x/y为参考最大显示范围
@@ -233,37 +230,37 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         {
             try
             {
-                ESI.NET.EsiClient esiClient = Core.Services.ESIService.GetDefaultEsi();
-                var kills = await esiClient.Universe.Kills();
-                if (kills?.StatusCode == System.Net.HttpStatusCode.OK)
+                EVEStandardAPI esiClient = Core.Services.ESIService.GetDefaultESI();
+                var kills = await esiClient.Universe.GetSystemKillsAsync();
+                if (kills?.Model != null)
                 {
-                    _systemKills = kills.Data.ToDictionary(p => p.SystemId);
+                    _systemKills = kills.Model.ToDictionary(p => p.SystemId);
                 }
                 else
                 {
-                    Core.Log.Error($"Init Kills Statistics Error: {kills?.StatusCode}");
-                    _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
+                    Core.Log.Error("GetSystemKillsAsync Failed");
+                    _systemKills = new Dictionary<long, EVEStandard.Models.SystemKills>();
                 }
-                var jumps = await esiClient.Universe.Jumps();
-                _systemJumps = new Dictionary<int, int>();
-                if (jumps?.StatusCode == System.Net.HttpStatusCode.OK)
+                var jumps = await esiClient.Universe.GetSystemJumpsAsync();
+                _systemJumps = new Dictionary<long, long>();
+                if (jumps.Model != null)
                 {
-                    foreach (var p in jumps.Data)
+                    foreach (var p in jumps.Model)
                     {
                         _systemJumps.Add(p.SystemId, p.ShipJumps);
                     }
                 }
                 else
                 {
-                    Core.Log.Error($"Init Jumps Statistics Error: {jumps?.StatusCode}");
+                    Core.Log.Error("GetSystemJumpsAsync Failed");
                 }
             }
             catch(Exception ex)
             {
                 Core.Log.Error(ex);
                 this.ShowMsg(ex.Message, InfoBarControl.InfoType.Error, false);
-                _systemKills = new Dictionary<int, ESI.NET.Models.Universe.Kills>();
-                _systemJumps = new Dictionary<int, int>();
+                _systemKills = new Dictionary<long, EVEStandard.Models.SystemKills>();
+                _systemJumps = new Dictionary<long, long>();
             }
         }
         #endregion
@@ -351,7 +348,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 var planetResourcesDic = SolarSystemResourcesService.GetPlanetResourcesDetailsBySolarSystemID(_mapSolarSystems.Values.Where(p=>p.Security <= 0).Select(p=>p.SolarSystemID).ToList());
 
                 #region region
-                _regionResourcesDic = new Dictionary<int, Core.Models.PlanetResources.RegionResources>();
+                _regionResourcesDic = new Dictionary<long, Core.Models.PlanetResources.RegionResources>();
                 var groupByRegion = _systemDatas.Values.GroupBy(p => (p as MapSystemData).MapSolarSystem.RegionID);
                 foreach (var group in groupByRegion)
                 {
@@ -375,7 +372,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
                 #endregion
 
                 #region system
-                _systemResourcesDic = new Dictionary<int, Core.Models.PlanetResources.SolarSystemResources>();
+                _systemResourcesDic = new Dictionary<long, Core.Models.PlanetResources.SolarSystemResources>();
                 foreach (var resources in planetResourcesDic)
                 {
                     if (_systemDatas.TryGetValue(resources.Key, out var mapData))
@@ -639,7 +636,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map
         /// 筛选设置
         /// </summary>
         /// <param name="ids"></param>
-        private void SystemFilterControl_OnFilterSystemChanged(HashSet<int> ids)
+        private void SystemFilterControl_OnFilterSystemChanged(HashSet<long> ids)
         {
             foreach (var data in _systemDatas)
             {

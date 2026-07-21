@@ -1,4 +1,3 @@
-using ESI.NET;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -18,15 +17,17 @@ using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Models.Indusrty;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models;
-using ESI.NET.Models.Industry;
 using TheGuideToTheNewEden.WinUI.Extensions;
+using EVEStandard.Models.API;
+using EVEStandard;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class IndustryPage : Page, ICharacterPage
     {
-        private EsiClient _esiClient;
-        private int _characterId;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
         private bool _isLoaded = false;
         public IndustryPage()
         {
@@ -44,9 +45,13 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            var array = e.Parameter as dynamic[];
-            _esiClient = array[0];
-            _characterId = array[1];
+            var paras = e.Parameter as object[];
+            if (paras != null && paras.Length == 2)
+            {
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
+            }
         }
         public void Clear()
         {
@@ -56,22 +61,16 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         public async void Refresh()
         {
             this.ShowWaiting();
-            var result = await _esiClient.Industry.JobsForCharacter();
-            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            var result = await _esiClient.Industry.ListCharacterIndustryJobsAsync(_auth, true);
+            if (result?.Model != null)
             {
-                this.HideWaiting();
-                this.ShowError(result.Message);
-                Core.Log.Error(result.Message);
-            }
-            else
-            {
-                if(result.Data.NotNullOrEmpty())
+                if (result.Model.NotNullOrEmpty())
                 {
                     List<IndustryJob> jobs = new List<IndustryJob>();
-                    foreach(var item in result.Data)
+                    foreach (var item in result.Model)
                     {
                         var job = await CreateIndustryJob(item);
-                        if(job != null)
+                        if (job != null)
                         {
                             job.StatusDesc = Helpers.ResourcesHelper.GetString($"IndustryPage_Status_{job.Status.ToLower()}");
                             if (job.Status == "active" && job.EndDate <= DateTime.UtcNow)
@@ -84,10 +83,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     DataGrid.ItemsSource = jobs;
                 }
             }
+            else
+            {
+                this.ShowError("ListCharacterIndustryJobsAsync Failed", true);
+            }
             this.HideWaiting();
         }
 
-        private async Task<IndustryJob> CreateIndustryJob(ESI.NET.Models.Industry.Job job)
+        private async Task<IndustryJob> CreateIndustryJob(EVEStandard.Models.IndustryJob job)
         {
             IndustryJob industryJob = new IndustryJob(job);
             if (job.StationId < 70000000)//¿Õ¼äÕ¾
@@ -104,7 +107,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
             }
             else
             {
-                var sta = await Services.StructureService.QueryStructureAsync(job.StationId, _characterId);
+                var sta = await Services.StructureService.QueryStructureAsync(job.StationId, _characterData.CharacterID);
                 if (sta != null)
                 {
                     industryJob.Location = new IdNameLong(sta.Id, sta.Name, IdName.CategoryEnum.Structure);
@@ -115,7 +118,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                 }
             }
             industryJob.Blueprint = Core.Services.DB.InvTypeService.QueryType(job.BlueprintTypeId);
-            industryJob.Product = Core.Services.DB.InvTypeService.QueryType(job.ProductTypeId);
+            industryJob.Product = Core.Services.DB.InvTypeService.QueryType(job.ProductTypeId.Value);
             return industryJob;
         }
     }

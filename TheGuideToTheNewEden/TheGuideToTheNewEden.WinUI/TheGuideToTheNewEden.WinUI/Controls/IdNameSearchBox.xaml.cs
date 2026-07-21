@@ -18,7 +18,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using EVEStandard;
-using ESI.NET.Models.SSO;
 
 
 namespace TheGuideToTheNewEden.WinUI.Controls
@@ -177,13 +176,13 @@ namespace TheGuideToTheNewEden.WinUI.Controls
             {
                 return;
             }
-            _esi ??= Core.Services.ESIService.GetDefaultESI2();
+            _esi ??= Core.Services.ESIService.GetDefaultESI();
             ProgressBar.Visibility = Visibility.Visible;
             SearchBox.IsEnabled = false;
             try
             {
                 List<IdName> idNames = new List<IdName>();
-                var result = await _esi.Universe.BulkNamesToIdsV1Async(new List<string>() { sender.Text });
+                var result = await _esi.Universe.BulkNamesToIdsAsync(new List<string>() { sender.Text });
                 if(result?.Model != null)
                 {
                     if(result.Model.Alliances.NotNullOrEmpty() && IsTargetType(IdName.CategoryEnum.Alliance))

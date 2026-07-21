@@ -1,9 +1,4 @@
-﻿using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
-using ESI.NET.Models.Bookmarks;
-using ESI.NET.Models.Character;
-using EVEStandard;
-using EVEStandard.API;
-using EVEStandard.Models.API;
+﻿using EVEStandard.Models.API;
 using EVEStandard.Models.SSO;
 using Microsoft.UI.Xaml;
 using Newtonsoft.Json;
@@ -16,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.Core.Extensions;
+using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
 using static Vanara.PInvoke.Kernel32;
 
@@ -58,13 +54,11 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return current;
             }
         }
-        private ESI.NET.EsiClient EsiClient;
         private EVEStandard.EVEStandardAPI _esiClient;
         public MarketOrderService()
         {
-            EsiClient = Core.Services.ESIService.GetDefaultEsi();
             EVEStandard.Enumerations.DataSource dataSource = Services.GameServerSelectorService.Value == Core.Enums.GameServerType.Tranquility ? EVEStandard.Enumerations.DataSource.Tranquility : EVEStandard.Enumerations.DataSource.Serenity;
-            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, TimeSpan.FromSeconds(30));
+            _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", dataSource, EVEStandard.Enumerations.CompatibilityDate.v2025_12_16, TimeSpan.FromSeconds(30));
         }
 
         /// <summary>
@@ -87,8 +81,18 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, int invTypeId, CancellationToken cancellationToken)
         {
+            return await GetStructureOrdersAsync(structureId, (long)invTypeId, cancellationToken);
+        }
+        /// <summary>
+        /// 获取建筑指定物品订单，优先从缓存获取，缓存不存在或过期时自动刷新
+        /// </summary>
+        /// <param name="structureId"></param>
+        /// <param name="invTypeId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetStructureOrdersAsync(long structureId, long invTypeId, CancellationToken cancellationToken)
+        {
             var orders = await GetStructureOrdersAsync(structureId, cancellationToken);
-            if(orders.NotNullOrEmpty())
+            if (orders.NotNullOrEmpty())
             {
                 return orders.Where(p => p.TypeId == invTypeId).ToList();
             }
@@ -170,7 +174,6 @@ namespace TheGuideToTheNewEden.WinUI.Services
             var authData = await GetAuthByStructureId(structureId);
             var character = authData.Character;
             var structure = authData.Structure;
-            EsiClient.SetCharacterData(character);
             var auth = CreateEVEStandardSSO(character);
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
@@ -181,7 +184,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOrdersInStructureV1Async(auth, structureId, page);
+                var resp = await _esiClient.Market.ListOrdersInStructureAsync(auth, structureId, page);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return null;
@@ -261,8 +264,20 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int typeId, int regionId, CancellationToken cancellationToken)
         {
+            return await GetOnlyRegionOrdersAsync((long)typeId, (long)regionId, cancellationToken);
+        }
+
+        /// <summary>
+        /// 获取星域订单
+        /// 买单只包含空间站，卖单可包含建筑
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(long typeId, long regionId, CancellationToken cancellationToken)
+        {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
-            if(typeId == PlexTypeId)
+            if (typeId == PlexTypeId)
             {
                 regionId = GlobalMarketRegion;
             }
@@ -273,16 +288,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await Core.Services.ESIService.Current.EsiClient.Market.RegionOrders(regionId, ESI.NET.Enumerations.MarketOrderType.All, page++, typeId);
-                if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+                var resp = await _esiClient.Market.ListOrdersInRegionAsync(regionId, typeId, page);
+                if (resp.Model != null)
                 {
-                    if (resp.Data.Any())
+                    if (resp.Model.Any())
                     {
-                        orders.AddRange(resp.Data.Select(p => new Core.Models.Market.Order(p)));
-                        if (resp.Data.Count < 1000)
-                        {
-                            break;
-                        }
+                        orders.AddRange(resp.Model.Select(p => new Core.Models.Market.Order(p)));
                     }
                     else
                     {
@@ -291,15 +302,13 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
                 else
                 {
-                    if(resp?.Message == NOTPAGE)
-                    {
-                        break;//获取到末页
-                    }
-                    else
-                    {
-                        throw new Exception(resp?.Message);
-                    }
+                    throw new Exception("ListOrdersInRegionAsync Failed");
                 }
+                if (resp.MaxPages == page)
+                {
+                    break;//获取到末页
+                }
+                page++;
             }
             if (orders.Any())
             {
@@ -312,18 +321,27 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken,bool skillStructure, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(int regionId, CancellationToken cancellationToken,bool skipStructure, PageCallBackDelegate pageCallBack = null)
+        {
+            return await GetLatestOnlyRegionOrdersAsync((long)regionId, cancellationToken, skipStructure, pageCallBack);
+        }
+        /// <summary>
+        /// API获取最新星域所有订单
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetLatestOnlyRegionOrdersAsync(long regionId, CancellationToken cancellationToken, bool skipStructure, PageCallBackDelegate pageCallBack = null)
         {
             List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
             int page = 0;
             while (true)
             {
                 page++;
-                if(cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, null, page);
+                var resp = await _esiClient.Market.ListOrdersInRegionAsync(regionId, null, page);
                 if (resp != null && resp.Model != null)
                 {
                     pageCallBack?.Invoke(page, resp.MaxPages, "Region");
@@ -347,7 +365,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             if (orders.Any())
             {
-                await SetOrderInfo(orders, cancellationToken, skillStructure);
+                await SetOrderInfo(orders, cancellationToken, skipStructure);
             }
             return orders;
         }
@@ -356,7 +374,16 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skillStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(int regionId,bool skipStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
+        {
+            return await GetOnlyRegionOrdersAsync((long)regionId, skipStructure, cancellationToken, pageCallBack);
+        }
+        /// <summary>
+        /// 获取星域所有订单，优先尝试缓存
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyRegionOrdersAsync(long regionId, bool skipStructure, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             //优先从本地加载
             string filePath = GetFilePath(regionId);
@@ -375,7 +402,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                             {
                                 localOrder.Orders.ForEach(p => p.RemainTimeSpan = p.Issued.AddDays(p.Duration) - DateTime.Now);
                             });
-                            await SetOrderInfo(localOrder.Orders, cancellationToken, skillStructure);
+                            await SetOrderInfo(localOrder.Orders, cancellationToken, skipStructure);
                             return localOrder.Orders;
                         }
                     }
@@ -383,7 +410,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
 
             //本地不存在或过期或解析失败，重新获取
-            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, skillStructure, pageCallBack);
+            var orders = await GetLatestOnlyRegionOrdersAsync(regionId, cancellationToken, skipStructure, pageCallBack);
             if (orders.NotNullOrEmpty())
             {
                 var newOrder = new RegionOrder()
@@ -421,12 +448,46 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return null;
         }
+
+        /// <summary>
+        /// 获取指定星域下的建筑订单
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(long typeId, long regionId, CancellationToken cancellationToken)
+        {
+            var strutures = StructureService.GetStructuresOfRegion(regionId);
+            if (strutures.NotNullOrEmpty())
+            {
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                foreach (var s in strutures)
+                {
+                    var list = await GetStructureOrdersAsync(s.Id, typeId, cancellationToken);
+                    if (list.NotNullOrEmpty())
+                    {
+                        orders.AddRange(list);
+                    }
+                }
+                return orders.Where(p => p.TypeId == typeId).ToList();
+            }
+            return null;
+        }
         /// <summary>
         /// 获取指定星域下的建筑订单
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
         public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(int regionId,CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
+        {
+            return await GetOnlyStructureOrdersAsync((long)regionId, cancellationToken, pageCallBack);
+        }
+        /// <summary>
+        /// 获取指定星域下的建筑订单
+        /// </summary>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetOnlyStructureOrdersAsync(long regionId, CancellationToken cancellationToken, PageCallBackDelegate pageCallBack = null)
         {
             var strutures = StructureService.GetStructuresOfRegion(regionId);
             if (strutures.NotNullOrEmpty())
@@ -482,12 +543,50 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
             return null;
         }
+
+        /// <summary>
+        /// 获取星域订单，包含建筑订单
+        /// </summary>
+        /// <param name="typeId"></param>
+        /// <param name="regionId"></param>
+        /// <returns></returns>
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(long typeId, long regionId, CancellationToken cancellationToken, bool skipStructure = false)
+        {
+            var regions = await GetOnlyRegionOrdersAsync(typeId, regionId, cancellationToken);
+            List<Core.Models.Market.Order> structures = null;
+            if (!skipStructure)
+            {
+                structures = await GetOnlyStructureOrdersAsync(typeId, regionId, cancellationToken);
+            }
+            if (regions.NotNullOrEmpty() || structures.NotNullOrEmpty())
+            {
+                List<Core.Models.Market.Order> orders = new List<Core.Models.Market.Order>();
+                if (regions.NotNullOrEmpty())
+                {
+                    orders.AddRange(regions);
+                }
+                if (structures.NotNullOrEmpty())
+                {
+                    //星域订单买单是包含建筑订单的，需要过滤，优先使用星域订单，因为API刷新时间更短
+                    var regionsHashSet = regions.Select(p => p.OrderId).ToHashSet2();
+                    foreach (var structureOrder in structures)
+                    {
+                        if (!regionsHashSet.Contains(structureOrder.OrderId))
+                        {
+                            orders.Add(structureOrder);
+                        }
+                    }
+                }
+                return orders;
+            }
+            return null;
+        }
         /// <summary>
         /// 获取星域订单，包含建筑订单
         /// </summary>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(int regionId, bool skipStructure, CancellationToken cancellationToken,PageCallBackDelegate pageCallBack = null)
+        public async Task<List<Core.Models.Market.Order>> GetRegionOrdersAsync(long regionId, bool skipStructure, CancellationToken cancellationToken,PageCallBackDelegate pageCallBack = null)
         {
             var regions = await GetOnlyRegionOrdersAsync(regionId, skipStructure, cancellationToken, pageCallBack);
             List<Core.Models.Market.Order> structures = null;
@@ -546,14 +645,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     var character = authData.Character;
                     var structure = authData.Structure;
                     var auth = CreateEVEStandardSSO(character);
-                    var resp = await _esiClient.Universe.GetStructureInfoV2Async(auth, id);
+                    var resp = await _esiClient.Universe.GetStructureInfoAsync(auth, id);
                     if (resp != null && resp.Model != null)
                     {
                         return new Core.Models.Universe.Structure()
                         {
                             Id = id,
                             Name = resp.Model.Name,
-                            SolarSystemId = resp.Model.SolarSystemId
+                            SolarSystemId = (int)resp.Model.SolarSystemId
                         };
                     }
                     else
@@ -584,7 +683,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         /// <param name="typeId"></param>
         /// <param name="regionId"></param>
         /// <returns></returns>
-        public async Task<List<ESI.NET.Models.Market.Statistic>> GetHistoryAsync(int typeId, int regionId)
+        public async Task<List<EVEStandard.Models.MarketRegionHistory>> GetHistoryAsync(int typeId, int regionId)
         {
             if(typeId == PlexTypeId)
             {
@@ -599,7 +698,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     System.IO.FileInfo fileInfo = new FileInfo(localFile);
                     if ((DateTime.Now - fileInfo.LastWriteTime).TotalMinutes < HistoryDuration)
                     {
-                        return JsonConvert.DeserializeObject<List<ESI.NET.Models.Market.Statistic>>(File.ReadAllText(localFile));
+                        return JsonConvert.DeserializeObject<List<EVEStandard.Models.MarketRegionHistory>>(File.ReadAllText(localFile));
                     }
                     else
                     {
@@ -611,14 +710,14 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     return local;
                 }
             }
-            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionAsync(regionId, typeId);
             if (resp != null && resp.Model != null)
             {
                 if(!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
                 }
-                List<ESI.NET.Models.Market.Statistic> datas = resp.Model.DepthClone<List<ESI.NET.Models.Market.Statistic>>();
+                List<EVEStandard.Models.MarketRegionHistory> datas = resp.Model.DepthClone<List<EVEStandard.Models.MarketRegionHistory>>();
                 string json = JsonConvert.SerializeObject(datas);
                 File.WriteAllText(localFile, json);
                 return datas;
@@ -695,7 +794,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             object locker = new object();
             async Task<List<Core.Models.Market.Statistic>> getHistory(int typeId)
             {
-                List<ESI.NET.Models.Market.Statistic> statistics = null;
+                List<EVEStandard.Models.MarketRegionHistory> statistics = null;
                 try
                 {
                     statistics = await GetHistoryAsync(typeId, regionId);
@@ -740,7 +839,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         public class RegionOrder
         {
-            public int RegionId { get; set; }
+            public long RegionId { get; set; }
             public DateTime UpdateTime { get; set; }
             public List<Core.Models.Market.Order> Orders { get; set; }
             public string SaveFilePath
@@ -750,6 +849,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
 
         #region 个人订单
+        public async Task<List<Core.Models.Market.Order>> GetCharacterOrdersAsync(long characterId, CancellationToken cancellationToken)
+        {
+            return await GetCharacterOrdersAsync((int)characterId, cancellationToken);
+        }
         /// <summary>
         /// 获取个人订单
         /// </summary>
@@ -759,7 +862,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         {
             var character = await GetCharacter(characterId);
             var sso = CreateEVEStandardSSO(character);
-            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterV2Async(sso);
+            var resp = await _esiClient.Market.ListOpenOrdersFromCharacterAsync(sso);
             if (resp != null)
             {
                 if (resp.Model.NotNullOrEmpty())
@@ -777,6 +880,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             {
                 throw new Exception();
             }
+        }
+        public async Task<List<Core.Models.Market.Order>> GetCorpOrdersAsync(long characterId, CancellationToken cancellationToken)
+        {
+            return await GetCorpOrdersAsync(characterId, cancellationToken);
         }
         /// <summary>
         /// 获取角色的军团订单
@@ -796,7 +903,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 {
                     return null;
                 }
-                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationV3Async(sso, autoData.CorporationID, page++);
+                var resp = await _esiClient.Market.ListOpenOrdersFromCorporationAsync(sso, autoData.CorporationID, page++);
                 if (resp != null)
                 {
                     if (resp.Model.NotNullOrEmpty())
@@ -825,12 +932,12 @@ namespace TheGuideToTheNewEden.WinUI.Services
         }
         #endregion
 
-        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure = false)
+        private async Task SetOrderInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skipStructure = false)
         {
             if(orders.NotNullOrEmpty())
             {
                 await SetTypeInfo(orders);
-                await SetLocationInfo(orders, cancellationToken, skillStructure);
+                await SetLocationInfo(orders, cancellationToken, skipStructure);
                 await SetSystemInfo(orders);
             }
         }
@@ -843,7 +950,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 var typesDic = types.ToDictionary(p => p.TypeID);
                 foreach ( var order in orders)
                 {
-                    if(typesDic.TryGetValue(order.TypeId,out var type))
+                    if(typesDic.TryGetValue((int)order.TypeId,out var type))
                     {
                         order.InvType = type;
                     }
@@ -852,7 +959,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                         order.InvType = new Core.DBModels.InvType()
                         {
                             TypeName = order.TypeId.ToString(),
-                            TypeID = order.TypeId
+                            TypeID = (int)order.TypeId
                         };
                     }
                 }
@@ -885,7 +992,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 }
             }
         }
-        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skillStructure)
+        private async Task SetLocationInfo(List<Core.Models.Market.Order> orders, CancellationToken cancellationToken, bool skipStructure)
         {
             var stationOrders = orders.Where(p => p.IsStation).ToList();
             var structureOrders = orders.Where(p => !p.IsStation).ToList();
@@ -902,10 +1009,8 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                 }
             }
-            if (structureOrders.NotNullOrEmpty() && !skillStructure)
+            if (structureOrders.NotNullOrEmpty() && !skipStructure)
             {
-                var defaultCharacter = await CharacterService.GetDefaultCharacterAsync();
-                int characterID = defaultCharacter == null ? -1 : defaultCharacter.CharacterID;
                 Dictionary<long, string> structureNameCache = new Dictionary<long, string>();
                 foreach (var order in structureOrders)
                 {
@@ -919,7 +1024,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                     }
                     else
                     {
-                        var structure = await StructureService.QueryStructureAsync(order.LocationId, characterID);
+                        var structure = await StructureService.QueryStructureAsync(order.LocationId, -1);
                         if (structure != null)
                         {
                             order.LocationName = structure.Name;
@@ -935,7 +1040,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             }
         }
 
-        private async Task<(Core.Models.Universe.Structure Structure ,ESI.NET.Models.SSO.AuthorizedCharacterData Character)> GetAuthByStructureId(long structureId)
+        private async Task<(Core.Models.Universe.Structure Structure ,AuthorizedCharacterData Character)> GetAuthByStructureId(long structureId)
         {
             var structure = GetStructureSetting(structureId);
             var character = await GetCharacter(structure.CharacterId);
@@ -953,7 +1058,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return structure;
             }
         }
-        private async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> GetCharacter(int characterId)
+        private async Task<AuthorizedCharacterData> GetCharacter(int characterId)
         {
             var character = CharacterService.GetCharacter(characterId);
             if (character == null)
@@ -973,7 +1078,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
                 return character;
             }
         }
-        private EVEStandard.Models.API.AuthDTO CreateEVEStandardSSO(ESI.NET.Models.SSO.AuthorizedCharacterData character)
+        private EVEStandard.Models.API.AuthDTO CreateEVEStandardSSO(AuthorizedCharacterData character)
         {
             if(character != null)
             {
@@ -999,7 +1104,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
         public async Task<List<EVEStandard.Models.MarketRegionHistory>> GetHistoryAsync(int typeId)
         {
             int regionId = typeId == PlexTypeId ? GlobalMarketRegion : DefaultMarketRegion;
-            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionV1Async(regionId, typeId);
+            var resp = await _esiClient.Market.ListHistoricalMarketStatisticsInRegionAsync(regionId, typeId);
             return resp.Model;
         }
 
@@ -1011,7 +1116,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             while (true)
             {
                 page++;
-                var resp = await _esiClient.Market.ListOrdersInRegionV1Async(regionId, typeId, page);
+                var resp = await _esiClient.Market.ListOrdersInRegionAsync(regionId, typeId, page);
                 if (resp != null && resp.Model != null)
                 {
                     if (resp.Model.NotNullOrEmpty())

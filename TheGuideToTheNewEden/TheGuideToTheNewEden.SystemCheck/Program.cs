@@ -22,7 +22,7 @@ namespace TheGuideToTheNewEden.SystemCheck
             {
                 var systems = MapSolarSystemService.QueryAll().Where(p=>!p.IsSpecial());
                 var systemDict = systems.ToDictionary(p => p.SolarSystemID);
-                var esi = ESIService.GetDefaultEsi();
+                var esi = ESIService.GetDefaultESI();
                 var names = systems.Select(p => p.SolarSystemName).ToList();
                 for(int i=0; i<names.Count;)
                 {
@@ -42,14 +42,14 @@ namespace TheGuideToTheNewEden.SystemCheck
                     {
                         checks = names.Skip(start).ToList();
                     }
-                    var resp = esi.Universe.IDs(checks).Result;
-                    if(resp.StatusCode == System.Net.HttpStatusCode.OK)
+                    var resp = esi.Universe.BulkNamesToIdsAsync(checks).Result;
+                    if(resp.Model != null)
                     {
-                        if(resp.Data.Systems.Any())
+                        if(resp.Model.Systems.Any())
                         {
-                            foreach (var system in resp.Data.Systems)
+                            foreach (var system in resp.Model.Systems)
                             {
-                                if (!systemDict.Remove(system.Id))
+                                if (!systemDict.Remove((int)system.Id))
                                 {
 
                                 }
@@ -62,7 +62,7 @@ namespace TheGuideToTheNewEden.SystemCheck
                     }
                     else
                     {
-                        throw new Exception(resp.Message);
+                        throw new Exception();
                     }
                 }
                 if(!systemDict.Any())
@@ -79,26 +79,26 @@ namespace TheGuideToTheNewEden.SystemCheck
                         int start = i;
                         int end = i + 200;
                         i = end;
-                        List<int> checks = new List<int>();
+                        List<long> checks = new List<long>();
                         if (end < ids.Count)
                         {
-                            checks = ids.Skip(start).Take(end - start).ToList();
+                            checks = ids.Skip(start).Take(end - start).Select(p=>(long)p).ToList();
                         }
                         else
                         {
-                            checks = ids.Skip(start).ToList();
+                            checks = ids.Skip(start).Select(p => (long)p).ToList();
                         }
-                        var resp2 = esi.Universe.Names(checks).Result;
-                        if (resp2.StatusCode == System.Net.HttpStatusCode.OK)
+                        var resp2 = esi.Universe.GetNamesAndCategoriesFromIdsAsync(checks).Result;
+                        if (resp2.Model != null)
                         {
-                            foreach (var data in resp2.Data)
+                            foreach (var data in resp2.Model)
                             {
-                                esiNames.Add(data.Id, data.Name);
+                                esiNames.Add((int)data.Id, data.Name);
                             }
                         }
                         else
                         {
-                            throw new Exception(resp2.Message);
+                            throw new Exception();
                         }
                     }
                     Console.WriteLine("ID 本地名称 ESI名称");

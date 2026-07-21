@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ESI.NET.Models.Fleets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

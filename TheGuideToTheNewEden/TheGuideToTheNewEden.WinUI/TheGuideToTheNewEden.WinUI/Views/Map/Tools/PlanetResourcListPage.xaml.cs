@@ -18,11 +18,11 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
     public sealed partial class PlanetResourcListPage : Page
     {
-        private Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
-        private Dictionary<int, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
+        private Dictionary<long, Core.Models.PlanetResources.SolarSystemResources> _systemResourcesDic;
+        private Dictionary<long, Core.Models.PlanetResources.RegionResources> _regionResourcesDic;
         private List<Core.Models.PlanetResources.Upgrade> _upgrades;
-        private Dictionary<int, MapData> _systemDatas;
-        public PlanetResourcListPage(Dictionary<int, Core.Models.PlanetResources.RegionResources> regionResourcesDic, Dictionary<int, Core.Models.PlanetResources.SolarSystemResources> systemResourcesDic, List<Core.Models.PlanetResources.Upgrade> upgrades,Dictionary<int, MapData> systemDatas)
+        private Dictionary<long, MapData> _systemDatas;
+        public PlanetResourcListPage(Dictionary<long, Core.Models.PlanetResources.RegionResources> regionResourcesDic, Dictionary<long, Core.Models.PlanetResources.SolarSystemResources> systemResourcesDic, List<Core.Models.PlanetResources.Upgrade> upgrades,Dictionary<long, MapData> systemDatas)
         {
             _regionResourcesDic = regionResourcesDic;
             _systemResourcesDic = systemResourcesDic;

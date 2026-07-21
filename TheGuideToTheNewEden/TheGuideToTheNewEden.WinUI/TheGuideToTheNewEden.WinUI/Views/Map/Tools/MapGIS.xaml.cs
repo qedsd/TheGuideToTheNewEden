@@ -15,14 +15,13 @@ using Microsoft.UI.Xaml.Navigation;
 using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.Core.DBModels;
-using Vanara.PInvoke;
 using System.Threading.Tasks;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
 {
     public sealed partial class MapGIS : Page
     {
-        private Dictionary<int, ESI.NET.Models.Universe.Kills> _systemKills;
+        private Dictionary<int, EVEStandard.Models.SystemKills> _systemKills;
         private Dictionary<int, int> _systemJumps;
         private Dictionary<int, SovData> _sovDatas;
         private MapCanvas _mapCanvas;
@@ -37,7 +36,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
             Loaded -= MapGIS_Loaded;
         }
 
-        public async void SetData(List<MapSolarSystem> systems, List<MapRegion> regions, MapCanvas mapCanvas, Dictionary<int, ESI.NET.Models.Universe.Kills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
+        public async void SetData(List<MapSolarSystem> systems, List<MapRegion> regions, MapCanvas mapCanvas, Dictionary<int, EVEStandard.Models.SystemKills> kills, Dictionary<int, int> jumps, Dictionary<int, SovData> sovDatas)
         {
             _mapCanvas = mapCanvas;
             _systemKills = kills;
@@ -49,8 +48,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
                 var regionDic = regions.ToDictionary(p => p.RegionID);
                 foreach (var system in systems)
                 {
-                    int shipKills = 0;
-                    int podKills = 0;
+                    long shipKills = 0;
+                    long podKills = 0;
                     int jump = 0;
                     MapRegion mapRegion = null;
                     SovData sovData = null;

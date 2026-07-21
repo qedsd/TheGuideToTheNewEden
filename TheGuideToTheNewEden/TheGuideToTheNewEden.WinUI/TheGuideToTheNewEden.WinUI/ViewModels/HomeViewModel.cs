@@ -6,8 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using ESI.NET;
-using ESI.NET.Models.PlanetaryInteraction;
+using EVEStandard.Models.API;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -27,8 +26,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         private bool _gameServerOnline;
         public bool GameServerOnline { get => _gameServerOnline; set => SetProperty(ref _gameServerOnline, value); }
 
-        private int _players;
-        public int Players { get => _players; set => SetProperty(ref _players, value); }
+        private long _players;
+        public long Players { get => _players; set => SetProperty(ref _players, value); }
 
         private string _appVersion;
         public string AppVersion { get => _appVersion; set => SetProperty(ref _appVersion, value); }
@@ -73,22 +72,22 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
         private void GameServerStatus()
         {
-            EsiResponse<ESI.NET.Models.Status.Status> esiResponse = null;
+            ESIModelDTO<EVEStandard.Models.Status> esiResponse = null;
             Task.Run(() =>
             {
                 try
                 {
-                    esiResponse = Core.Services.ESIService.GetDefaultEsi().Status.Retrieve().Result;
+                    esiResponse = Core.Services.ESIService.GetDefaultESI().Status.GetStatusAsync().Result;
                 }
                 catch{ }
             }).ContinueWith((task) =>
             {
                 Window.DispatcherQueue.SafelyTryEnqueue(() =>
                 {
-                    if (esiResponse?.StatusCode == System.Net.HttpStatusCode.OK)
+                    if (esiResponse?.Model != null)
                     {
                         GameServerOnline = true;
-                        Players = esiResponse.Data.Players;
+                        Players = esiResponse.Model.Players;
                     }
                     else
                     {

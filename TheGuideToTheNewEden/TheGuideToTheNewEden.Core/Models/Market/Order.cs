@@ -7,36 +7,33 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.Market
 {
-    public class Order: ESI.NET.Models.Market.Order
+    public class Order: EVEStandard.Models.MarketOrder
     {
         public Order() { }  
-        public Order(ESI.NET.Models.Market.Order order) 
-        {
-            this.CopyFrom(order);
-            RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
-        }
         public Order(EVEStandard.Models.MarketOrder order)
         {
             this.CopyFrom(order);
-            Price = (decimal)order.Price;
+            Price = order.Price;
             RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
         }
         public Order(EVEStandard.Models.CharacterMarketOrder order)
         {
             this.CopyFrom(order);
-            Price = (decimal)order.Price;
+            Price = order.Price;
             RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
         }
         public Order(EVEStandard.Models.CorporationMarketOrder order)
         {
             this.CopyFrom(order);
-            Price = (decimal)order.Price;
+            Price = order.Price;
             RemainTimeSpan = Issued.AddDays(Duration) - DateTime.Now;
         }
         [JsonIgnore]
         public InvType InvType { get; set; }
         [JsonIgnore]
         public MapSolarSystem SolarSystem { get; set; }
+        public long RegionId { get; set; }
+
         [JsonIgnore]
         public bool IsStation
         {

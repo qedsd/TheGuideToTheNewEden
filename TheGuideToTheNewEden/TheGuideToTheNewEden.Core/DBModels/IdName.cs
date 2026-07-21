@@ -10,11 +10,29 @@ namespace TheGuideToTheNewEden.Core.DBModels
     public class IdName
     {
         public IdName() { }
+        public IdName(long id, string name, CategoryEnum category)
+        {
+            Id = (int)id;
+            Name = name;
+            Category = (int)category;
+        }
+        public IdName(long id, string name, int category)
+        {
+            Id = (int)id;
+            Name = name;
+            Category = category;
+        }
         public IdName(int id, string name, CategoryEnum category)
         {
             Id = id;
             Name = name;
             Category = (int)category;
+        }
+        public IdName(int id, string name, string category)
+        {
+            Id = id;
+            Name = name;
+            Category = (int)Enum.Parse<CategoryEnum>(category);
         }
         public IdName(InvType type)
         {
