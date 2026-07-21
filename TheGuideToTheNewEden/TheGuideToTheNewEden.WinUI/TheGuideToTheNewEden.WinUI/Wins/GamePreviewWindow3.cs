@@ -113,6 +113,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
         }
 
         private IPreviewIPC _previewIPC;
+        private Process _process;
         public override void PrivateStart(IntPtr sourceHWnd)
         {
             _sourceHWnd = sourceHWnd;
@@ -142,7 +143,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
                     Helpers.WindowHelper.MainWindow.GetWindowHandle().ToString(),
                  };
                     // 启动进程
-                    Process.Start(path, args);
+                    _process = Process.Start(path, args);
                     MonitorMsg();
                 }
                 catch (Exception ex)
@@ -200,10 +201,29 @@ namespace TheGuideToTheNewEden.WinUI.Wins
             if (_setting.ShowPreviewWindow)
             {
                 _ancellationTokenSource?.Cancel();
-                Task.Run(() =>
+                // 发送 IPC Close 信号通知子进程退出
+                Services.MemoryIPCService.Dispose(_previewIPC);
+                // 等待子进程优雅退出，超时后强制终止
+                if (_process != null)
                 {
-                    Services.MemoryIPCService.Dispose(_previewIPC);
-                });
+                    try
+                    {
+                        if (!_process.HasExited)
+                        {
+                            _process.WaitForExit(500);
+                            if (!_process.HasExited)
+                            {
+                                _process.Kill();
+                            }
+                        }
+                        _process.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Core.Log.Error(ex);
+                    }
+                    _process = null;
+                }
             }
         }
         public override void ChangeName(string name)
