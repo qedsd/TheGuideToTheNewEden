@@ -1024,6 +1024,7 @@
     <x:String x:Key="CharacterPage_Mail">邮件</x:String>
     <x:String x:Key="CharacterPage_Contract">合同</x:String>
     <x:String x:Key="CharacterPage_Industry">工业</x:String>
+    <x:String x:Key="CharacterPage_Planetary">行星开发</x:String>
     <x:String x:Key="CharacterPage_CorpWallet">公司钱包</x:String>
     <x:String x:Key="CharacterPage_CharacterWallet">个人钱包</x:String>
     <x:String x:Key="CharacterPage_SecurityStatus">安全等级</x:String>

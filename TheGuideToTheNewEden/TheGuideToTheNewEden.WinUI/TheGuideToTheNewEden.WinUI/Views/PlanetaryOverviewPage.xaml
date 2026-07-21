@@ -1,0 +1,112 @@
+<Page x:Class="TheGuideToTheNewEden.WinUI.Views.PlanetaryOverviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    Background="Transparent">
+    <Grid Margin="12">
+        <ScrollViewer>
+            <StackPanel Spacing="8">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
+                            <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sCol" Text="0" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="殖民地" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sEcu" Text="0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource DefaultGreen}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="采集器" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sFac" Text="0" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="设施" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sAlert" Text="0" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="警报" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sChars" Text="0" FontSize="24" FontWeight="Bold" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="角色" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="5" HorizontalAlignment="Center">
+                            <TextBlock x:Name="sUpd" Text="--" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="同步" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,8">
+                    <StackPanel>
+                        <TextBlock Text="角色总览" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <dataGrid:SfDataGrid x:Name="CharGrid" AutoGenerateColumns="False" Height="140" AllowSorting="True" HeaderRowHeight="28" RowHeight="26">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridTextColumn HeaderText="角色" MappingName="CharacterName" Width="120"/>
+                                <dataGrid:GridTextColumn HeaderText="殖民/上限" MappingName="PlanetRatio" Width="70"/>
+                                <dataGrid:GridTextColumn HeaderText="采集器" MappingName="ExtractorCount" Width="60"/>
+                                <dataGrid:GridTextColumn HeaderText="设施" MappingName="FactoryCount" Width="50"/>
+                                <dataGrid:GridTextColumn HeaderText="最近到期" MappingName="NearestExpiry" Width="80"/>
+                                <dataGrid:GridTextColumn HeaderText="状态" MappingName="StatusText" Width="70"/>
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </StackPanel>
+                </Border>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="4"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,8">
+                        <StackPanel>
+                            <TextBlock Text="资源采集" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <dataGrid:SfDataGrid x:Name="ExtractionGrid" AutoGenerateColumns="False" Height="160" AllowSorting="True" HeaderRowHeight="28" RowHeight="24">
+                                <dataGrid:SfDataGrid.Columns>
+                                    <dataGrid:GridTextColumn HeaderText="资源" MappingName="ResourceName" Width="100"/>
+                                    <dataGrid:GridTextColumn HeaderText="等级" MappingName="Tier" Width="40"/>
+                                    <dataGrid:GridTextColumn HeaderText="矿头" MappingName="HeadCount" Width="50"/>
+                                    <dataGrid:GridTextColumn HeaderText="产量" MappingName="TotalQty" Width="60"/>
+                                    <dataGrid:GridTextColumn HeaderText="活跃" MappingName="ActiveCount" Width="40"/>
+                                    <dataGrid:GridTextColumn HeaderText="到期" MappingName="ExpiredCount" Width="40"/>
+                                </dataGrid:SfDataGrid.Columns>
+                            </dataGrid:SfDataGrid>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,8">
+                        <StackPanel>
+                            <TextBlock Text="全球库存" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <dataGrid:SfDataGrid x:Name="InventoryGrid" AutoGenerateColumns="False" Height="160" AllowSorting="True" HeaderRowHeight="28" RowHeight="24">
+                                <dataGrid:SfDataGrid.Columns>
+                                    <dataGrid:GridTextColumn HeaderText="物品" MappingName="ItemName" Width="110"/>
+                                    <dataGrid:GridTextColumn HeaderText="等级" MappingName="Tier" Width="40"/>
+                                    <dataGrid:GridTextColumn HeaderText="总量" MappingName="Quantity" Width="70"/>
+                                </dataGrid:SfDataGrid.Columns>
+                            </dataGrid:SfDataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Border Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,8">
+                    <StackPanel>
+                        <TextBlock Text="警报" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <dataGrid:SfDataGrid x:Name="AlertGrid" AutoGenerateColumns="False" Height="120" AllowSorting="True" HeaderRowHeight="28" RowHeight="24">
+                            <dataGrid:SfDataGrid.Columns>
+                                <dataGrid:GridTextColumn HeaderText="角色" MappingName="CharacterName" Width="100"/>
+                                <dataGrid:GridTextColumn HeaderText="星球" MappingName="PlanetName" Width="100"/>
+                                <dataGrid:GridTextColumn HeaderText="信息" MappingName="Message" Width="250"/>
+                                <dataGrid:GridTextColumn HeaderText="等级" MappingName="SeverityName" Width="60"/>
+                            </dataGrid:SfDataGrid.Columns>
+                        </dataGrid:SfDataGrid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel x:Name="EmptyPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+            <TextBlock Text="暂无行星开发数据" FontSize="16" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center"/>
+            <TextBlock Text="请确保角色已授权 esi-planets.manage_planets.v1 作用域" FontSize="12" Foreground="{ThemeResource SecondaryForegroundBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+        </StackPanel>
+        <Grid x:Name="LoadingOverlay" Background="#CC000000" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressRing IsActive="True" Width="32" Height="32"/>
+                <TextBlock Text="加载行星数据..." Margin="0,8,0,0" Foreground="{ThemeResource SecondaryForegroundBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

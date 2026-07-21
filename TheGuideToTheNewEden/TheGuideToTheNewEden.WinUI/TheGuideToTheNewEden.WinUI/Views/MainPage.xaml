@@ -65,6 +65,11 @@
                             <ic:FluentIcon Icon="Home" />
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
+                    <NavigationViewItem Content="行星开发" Tag="PlanetaryOverviewPage">
+                        <NavigationViewItem.Icon>
+                            <ic:FluentIcon Icon="Globe" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
                     <NavigationViewItem Content="{StaticResource CharactersShellPage}" Tag="Character.CharactersShellPage">
                         <NavigationViewItem.Icon>
                             <ic:FluentIcon Icon="Person" />

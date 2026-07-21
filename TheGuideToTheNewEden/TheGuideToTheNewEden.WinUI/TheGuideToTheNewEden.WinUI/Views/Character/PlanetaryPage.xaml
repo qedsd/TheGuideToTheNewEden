@@ -1,0 +1,39 @@
+<Page x:Class="TheGuideToTheNewEden.WinUI.Views.Character.PlanetaryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dataGrid="using:Syncfusion.UI.Xaml.DataGrid"
+    Background="Transparent">
+    <Grid Margin="8">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="{ThemeResource CardBackgroundFillColorDefault}" Padding="12,6" Margin="0,0,0,6">
+            <StackPanel Orientation="Horizontal" Spacing="24">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="殖民地" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}"/>
+                    <TextBlock x:Name="StatColonies" Text="0" FontSize="16" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="提取器" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}"/>
+                    <TextBlock x:Name="StatExtractors" Text="0" FontSize="16" FontWeight="Bold" Foreground="{StaticResource DefaultGreen}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="生产设施" FontSize="11" Foreground="{ThemeResource SecondaryForegroundBrush}"/>
+                    <TextBlock x:Name="StatFactories" Text="0" FontSize="16" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        <dataGrid:SfDataGrid x:Name="PlanetGrid" Grid.Row="1"
+            AutoGenerateColumns="False" AllowSorting="True" HeaderRowHeight="30" RowHeight="34">
+            <dataGrid:SfDataGrid.Columns>
+                <dataGrid:GridTextColumn HeaderText="星球" MappingName="PlanetName" Width="120"/>
+                <dataGrid:GridTextColumn HeaderText="类型" MappingName="PlanetTypeEmoji" Width="40"/>
+                <dataGrid:GridTextColumn HeaderText="星系" MappingName="SolarSystemName" Width="110"/>
+                <dataGrid:GridTextColumn HeaderText="CC" MappingName="UpgradeLevel" Width="40"/>
+                <dataGrid:GridTextColumn HeaderText="采集器" MappingName="NumExtractors" Width="60"/>
+                <dataGrid:GridTextColumn HeaderText="活跃/总数" MappingName="NumActiveExtractors" Width="60"/>
+                <dataGrid:GridTextColumn HeaderText="生产" MappingName="ProductionSummary" Width="140"/>
+                <dataGrid:GridTextColumn HeaderText="设施数" MappingName="NumPins" Width="60"/>
+                <dataGrid:GridTextColumn HeaderText="运行" MappingName="RuntimeDisplay" Width="60"/>
+            </dataGrid:SfDataGrid.Columns>
+        </dataGrid:SfDataGrid>
+    </Grid>
+</Page>

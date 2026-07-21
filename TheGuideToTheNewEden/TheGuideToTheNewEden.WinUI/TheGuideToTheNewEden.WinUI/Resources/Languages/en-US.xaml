@@ -1024,6 +1024,7 @@
     <x:String x:Key="CharacterPage_Mail">Mail</x:String>
     <x:String x:Key="CharacterPage_Contract">Contract</x:String>
     <x:String x:Key="CharacterPage_Industry">Industry</x:String>
+    <x:String x:Key="CharacterPage_Planetary">Planetary</x:String>
     <x:String x:Key="CharacterPage_CorpWallet">Corp Wallet</x:String>
     <x:String x:Key="CharacterPage_CharacterWallet">Character Wallet</x:String>
     <x:String x:Key="CharacterPage_SecurityStatus">Security</x:String>

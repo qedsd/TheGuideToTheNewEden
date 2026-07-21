@@ -371,6 +371,7 @@
                     <NavigationViewItem Content="{StaticResource CharacterPage_Mail}" Tag="Mail" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Contract}" Tag="Contract" />
                     <NavigationViewItem Content="{StaticResource CharacterPage_Industry}" Tag="Industry" />
+                    <NavigationViewItem Content="{StaticResource CharacterPage_Planetary}" Tag="Planetary" />
                 </NavigationView.MenuItems>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView>

@@ -88,6 +88,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                     case "Mail": ContentFrame.Navigate(typeof(MailPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
                     case "Contract": ContentFrame.Navigate(typeof(Character.ContractPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
                     case "Industry": ContentFrame.Navigate(typeof(Character.IndustryPage), new dynamic[] { VM.EsiClient, VM.SelectedCharacter }); break;
+                    case "Planetary": ContentFrame.Navigate(typeof(Character.PlanetaryPage), new object[] { VM.EsiClient, VM.SelectedCharacter }); break;
                 }
                 if (_contentPages.ContainsKey(tag))
                 {
