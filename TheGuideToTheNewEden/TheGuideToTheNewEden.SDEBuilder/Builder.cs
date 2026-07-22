@@ -98,6 +98,87 @@ namespace TheGuideToTheNewEden.SDEBuilder
                             await db.Insertable(stations).ExecuteCommandAsync();
                         }
                     }
+
+                    var mapConstellations = GetMapConstellations(fileDatas, language);
+                    if (mapConstellations != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.MapConstellations));
+                        await db.Insertable(mapConstellations).ExecuteCommandAsync();
+                    }
+
+                    var blueprints = GetBlueprints(fileDatas);
+                    if (blueprints.Item1 != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.Blueprints));
+                        db.CodeFirst.InitTables(typeof(DBModels.BlueprintActivity));
+                        db.CodeFirst.InitTables(typeof(DBModels.BlueprintMaterial));
+                        db.CodeFirst.InitTables(typeof(DBModels.BlueprintProduct));
+                        db.CodeFirst.InitTables(typeof(DBModels.BlueprintSkill));
+                        await db.Insertable(blueprints.Item1).ExecuteCommandAsync();
+                        await db.Insertable(blueprints.Item2).ExecuteCommandAsync();
+                        await db.Insertable(blueprints.Item3).ExecuteCommandAsync();
+                        await db.Insertable(blueprints.Item4).ExecuteCommandAsync();
+                        await db.Insertable(blueprints.Item5).ExecuteCommandAsync();
+                    }
+
+                    var typeMaterials = GetTypeMaterials(fileDatas);
+                    if (typeMaterials != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.TypeMaterials));
+                        await db.Insertable(typeMaterials).ExecuteCommandAsync();
+                    }
+
+                    var typeBonus = GetTypeBonus(fileDatas, language);
+                    if (typeBonus != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.TypeBonus));
+                        await db.Insertable(typeBonus).ExecuteCommandAsync();
+                    }
+
+                    var dogmaAttributeCategories = GetDogmaAttributeCategories(fileDatas, language);
+                    if (dogmaAttributeCategories != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.DogmaAttributeCategories));
+                        await db.Insertable(dogmaAttributeCategories).ExecuteCommandAsync();
+                    }
+
+                    var dogmaAttributes = GetDogmaAttributes(fileDatas, language);
+                    if (dogmaAttributes != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.DogmaAttributes));
+                        await db.Insertable(dogmaAttributes).ExecuteCommandAsync();
+                    }
+
+                    var dogmaEffects = GetDogmaEffects(fileDatas, language);
+                    if (dogmaEffects != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.DogmaEffects));
+                        await db.Insertable(dogmaEffects).ExecuteCommandAsync();
+                    }
+
+                    var dogmaUnits = GetDogmaUnits(fileDatas, language);
+                    if (dogmaUnits != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.DogmaUnits));
+                        await db.Insertable(dogmaUnits).ExecuteCommandAsync();
+                    }
+
+                    var typeDogma = GetTypeDogma(fileDatas);
+                    if (typeDogma != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.TypeDogma));
+                        await db.Insertable(typeDogma).ExecuteCommandAsync();
+                    }
+
+                    var planetSchematics = GetPlanetSchematics(fileDatas, language);
+                    if (planetSchematics.Item1 != null)
+                    {
+                        db.CodeFirst.InitTables(typeof(DBModels.PlanetSchematic));
+                        db.CodeFirst.InitTables(typeof(DBModels.PlanetSchematicTypeMap));
+                        await db.Insertable(planetSchematics.Item1).ExecuteCommandAsync();
+                        await db.Insertable(planetSchematics.Item2).ExecuteCommandAsync();
+                    }
+                    db.Ado.CommitTran();
                 }
             }
             catch(Exception ex)
@@ -175,6 +256,14 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 return null;
             }
             return datas.Select(p => new DBModels.Groups(p, language)).ToList();
+        }
+        public static List<DBModels.MapConstellations> GetMapConstellations(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("mapConstellations", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.MapConstellations(p, language)).ToList();
         }
         public static List<DBModels.Categories> GetCategories(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
         {
@@ -272,6 +361,108 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 }
             }
             return types;
+        }
+        public static (List<DBModels.Blueprints>, List<DBModels.BlueprintActivity>, List<DBModels.BlueprintMaterial>, List<DBModels.BlueprintProduct>, List<DBModels.BlueprintSkill>) GetBlueprints(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("blueprints", out var datas))
+            {
+                return (null, null, null, null, null);
+            }
+            List<DBModels.Blueprints> mainList = new List<DBModels.Blueprints>();
+            List<DBModels.BlueprintActivity> activityList = new List<DBModels.BlueprintActivity>();
+            List<DBModels.BlueprintMaterial> materialList = new List<DBModels.BlueprintMaterial>();
+            List<DBModels.BlueprintProduct> productList = new List<DBModels.BlueprintProduct>();
+            List<DBModels.BlueprintSkill> skillList = new List<DBModels.BlueprintSkill>();
+
+            Dictionary<string, int> activityNameToId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "manufacturing", 1 },
+                { "research_time", 3 },
+                { "research_material", 4 },
+                { "copying", 5 },
+                { "invention", 8 },
+                { "reaction", 11 }
+            };
+
+            foreach (var item in datas)
+            {
+                var bp = item as Blueprints;
+                if (bp == null) continue;
+
+                mainList.Add(new DBModels.Blueprints()
+                {
+                    Id = bp.Id,
+                    BlueprintTypeID = bp.BlueprintTypeID,
+                    MaxProductionLimit = bp.MaxProductionLimit
+                });
+
+                var activities = bp.Activities;
+                if (activities == null) continue;
+
+                void ProcessActivity(string activityName, ActivityRequire activity)
+                {
+                    if (activity == null) return;
+                    if (!activityNameToId.TryGetValue(activityName, out var activityId)) return;
+
+                    activityList.Add(new DBModels.BlueprintActivity()
+                    {
+                        BlueprintTypeID = bp.BlueprintTypeID,
+                        ActivityID = activityId,
+                        Time = activity.Time
+                    });
+
+                    if (activity.Materials != null)
+                    {
+                        foreach (var mat in activity.Materials)
+                        {
+                            materialList.Add(new DBModels.BlueprintMaterial()
+                            {
+                                BlueprintTypeID = bp.BlueprintTypeID,
+                                ActivityID = activityId,
+                                MaterialTypeID = mat.TypeID,
+                                Quantity = mat.Quantity
+                            });
+                        }
+                    }
+
+                    if (activity.Products != null)
+                    {
+                        foreach (var prod in activity.Products)
+                        {
+                            productList.Add(new DBModels.BlueprintProduct()
+                            {
+                                BlueprintTypeID = bp.BlueprintTypeID,
+                                ActivityID = activityId,
+                                ProductTypeID = prod.TypeID,
+                                Quantity = prod.Quantity,
+                                Probability = prod.Probability != 1 ? prod.Probability : (double?)null
+                            });
+                        }
+                    }
+
+                    if (activity.Skills != null)
+                    {
+                        foreach (var skill in activity.Skills)
+                        {
+                            skillList.Add(new DBModels.BlueprintSkill()
+                            {
+                                BlueprintTypeID = bp.BlueprintTypeID,
+                                ActivityID = activityId,
+                                SkillTypeID = skill.TypeID,
+                                Level = skill.Level
+                            });
+                        }
+                    }
+                }
+
+                ProcessActivity("manufacturing", activities.Manufacturing);
+                ProcessActivity("copying", activities.Copying);
+                ProcessActivity("research_material", activities.ResearchMaterial);
+                ProcessActivity("research_time", activities.ResearchTime);
+                ProcessActivity("invention", activities.Invention);
+                ProcessActivity("reaction", activities.Reaction);
+            }
+            return (mainList, activityList, materialList, productList, skillList);
         }
         public static List<DBModels.PlanetResources> GetPlanetResources(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
         {
@@ -411,6 +602,171 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 });
             }
             return datas;
+        }
+        public static List<DBModels.TypeMaterials> GetTypeMaterials(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("typeMaterials", out var datas))
+            {
+                return null;
+            }
+            List<DBModels.TypeMaterials> result = new List<DBModels.TypeMaterials>();
+            foreach (var item in datas)
+            {
+                var data = item as TypeMaterials;
+                if (data?.Materials != null)
+                {
+                    foreach (var mat in data.Materials)
+                    {
+                        result.Add(new DBModels.TypeMaterials()
+                        {
+                            TypeID = data.Id,
+                            MaterialTypeID = mat.MaterialTypeID,
+                            Quantity = mat.Quantity
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+        public static List<DBModels.TypeBonus> GetTypeBonus(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("typeBonus", out var datas))
+            {
+                return null;
+            }
+            List<DBModels.TypeBonus> result = new List<DBModels.TypeBonus>();
+            foreach (var item in datas)
+            {
+                var data = item as DeserializeModels.TypeBonus;
+                if (data == null) continue;
+                // Process per-type bonuses
+                if (data.Types != null)
+                {
+                    foreach (var typeItem in data.Types)
+                    {
+                        if (typeItem.Bonuses != null)
+                        {
+                            foreach (var bonus in typeItem.Bonuses)
+                            {
+                                result.Add(new DBModels.TypeBonus()
+                                {
+                                    TypeID = typeItem.TypeID,
+                                    SkillTypeID = data.Id,
+                                    Bonus = bonus.Bonus,
+                                    Importance = bonus.Importance,
+                                    UnitID = bonus.UnitID,
+                                    BonusText = bonus.BonusText?.GetValue(language),
+                                    BonusTextEn = bonus.BonusText?.En
+                                });
+                            }
+                        }
+                    }
+                }
+                // Process role bonuses
+                if (data.RoleBonuses != null)
+                {
+                    foreach (var bonus in data.RoleBonuses)
+                    {
+                        result.Add(new DBModels.TypeBonus()
+                        {
+                            TypeID = data.Id,
+                            SkillTypeID = data.Id,
+                            Bonus = bonus.Bonus,
+                            Importance = bonus.Importance,
+                            UnitID = bonus.UnitID,
+                            BonusText = bonus.BonusText?.GetValue(language),
+                            BonusTextEn = bonus.BonusText?.En
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+        public static List<DBModels.DogmaAttributeCategories> GetDogmaAttributeCategories(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaAttributeCategories", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.DogmaAttributeCategories(p, language)).ToList();
+        }
+        public static List<DBModels.DogmaAttributes> GetDogmaAttributes(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaAttributes", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.DogmaAttributes(p, language)).ToList();
+        }
+        public static List<DBModels.DogmaEffects> GetDogmaEffects(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaEffects", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.DogmaEffects(p, language)).ToList();
+        }
+        public static List<DBModels.DogmaUnits> GetDogmaUnits(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("dogmaUnits", out var datas))
+            {
+                return null;
+            }
+            return datas.Select(p => new DBModels.DogmaUnits(p, language)).ToList();
+        }
+        public static List<DBModels.TypeDogma> GetTypeDogma(Dictionary<string, List<BaseModel>> fileDatas)
+        {
+            if (!fileDatas.TryGetValue("typeDogma", out var datas))
+            {
+                return null;
+            }
+            List<DBModels.TypeDogma> result = new List<DBModels.TypeDogma>();
+            foreach (var item in datas)
+            {
+                var data = item as TypeDogma;
+                if (data?.DogmaAttributes != null)
+                {
+                    foreach (var attr in data.DogmaAttributes)
+                    {
+                        result.Add(new DBModels.TypeDogma()
+                        {
+                            TypeID = data.Id,
+                            AttributeID = attr.AttributeID,
+                            Value = attr.Value
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+        public static (List<DBModels.PlanetSchematic>, List<DBModels.PlanetSchematicTypeMap>) GetPlanetSchematics(Dictionary<string, List<BaseModel>> fileDatas, LanguageEnum language)
+        {
+            if (!fileDatas.TryGetValue("planetSchematics", out var datas))
+            {
+                return (null, null);
+            }
+            List<DBModels.PlanetSchematic> schematics = new List<DBModels.PlanetSchematic>();
+            List<DBModels.PlanetSchematicTypeMap> typeMaps = new List<DBModels.PlanetSchematicTypeMap>();
+            foreach (var item in datas)
+            {
+                var data = item as PlanetSchematics;
+                if (data == null) continue;
+                schematics.Add(new DBModels.PlanetSchematic(data, language));
+                if (data.Types != null)
+                {
+                    foreach (var t in data.Types)
+                    {
+                        typeMaps.Add(new DBModels.PlanetSchematicTypeMap()
+                        {
+                            SchematicId = data.Id,
+                            TypeId = t.TypeID,
+                            Quantity = t.Quantity,
+                            IsInput = t.IsInput
+                        });
+                    }
+                }
+            }
+            return (schematics, typeMaps);
         }
     }
 }
