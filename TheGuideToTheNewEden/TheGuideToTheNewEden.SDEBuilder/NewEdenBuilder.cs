@@ -103,6 +103,86 @@ namespace TheGuideToTheNewEden.SDEBuilder
                         await db.Insertable(stations).ExecuteCommandAsync();
                     }
                 }
+
+                var mapConstellations = Builder.GetMapConstellations(fileDatas, language);
+                if (mapConstellations != null)
+                {
+                    db.CodeFirst.InitTables(typeof(DBModels.MapConstellations));
+                    await db.Insertable(mapConstellations).ExecuteCommandAsync();
+                }
+
+                var blueprints = Builder.GetBlueprints(fileDatas);
+                if (blueprints.Item1 != null)
+                {
+                    db.CodeFirst.InitTables(typeof(DBModels.Blueprints));
+                    db.CodeFirst.InitTables(typeof(DBModels.BlueprintActivity));
+                    db.CodeFirst.InitTables(typeof(DBModels.BlueprintMaterial));
+                    db.CodeFirst.InitTables(typeof(DBModels.BlueprintProduct));
+                    db.CodeFirst.InitTables(typeof(DBModels.BlueprintSkill));
+                    await db.Insertable(blueprints.Item1).ExecuteCommandAsync();
+                    await db.Insertable(blueprints.Item2).ExecuteCommandAsync();
+                    await db.Insertable(blueprints.Item3).ExecuteCommandAsync();
+                    await db.Insertable(blueprints.Item4).ExecuteCommandAsync();
+                    await db.Insertable(blueprints.Item5).ExecuteCommandAsync();
+                }
+
+                //var typeMaterials = Builder.GetTypeMaterials(fileDatas);
+                //if (typeMaterials != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.TypeMaterials));
+                //    await db.Insertable(typeMaterials).ExecuteCommandAsync();
+                //}
+
+                //var typeBonus = Builder.GetTypeBonus(fileDatas, language);
+                //if (typeBonus != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.TypeBonus));
+                //    await db.Insertable(typeBonus).ExecuteCommandAsync();
+                //}
+
+                //var dogmaAttributeCategories = Builder.GetDogmaAttributeCategories(fileDatas, language);
+                //if (dogmaAttributeCategories != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.DogmaAttributeCategories));
+                //    await db.Insertable(dogmaAttributeCategories).ExecuteCommandAsync();
+                //}
+
+                //var dogmaAttributes = Builder.GetDogmaAttributes(fileDatas, language);
+                //if (dogmaAttributes != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.DogmaAttributes));
+                //    await db.Insertable(dogmaAttributes).ExecuteCommandAsync();
+                //}
+
+                //var dogmaEffects = Builder.GetDogmaEffects(fileDatas, language);
+                //if (dogmaEffects != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.DogmaEffects));
+                //    await db.Insertable(dogmaEffects).ExecuteCommandAsync();
+                //}
+
+                //var dogmaUnits = Builder.GetDogmaUnits(fileDatas, language);
+                //if (dogmaUnits != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.DogmaUnits));
+                //    await db.Insertable(dogmaUnits).ExecuteCommandAsync();
+                //}
+
+                //var typeDogma = Builder.GetTypeDogma(fileDatas);
+                //if (typeDogma != null)
+                //{
+                //    db.CodeFirst.InitTables(typeof(DBModels.TypeDogma));
+                //    await db.Insertable(typeDogma).ExecuteCommandAsync();
+                //}
+
+                var planetSchematics = Builder.GetPlanetSchematics(fileDatas, language);
+                if (planetSchematics.Item1 != null)
+                {
+                    db.CodeFirst.InitTables(typeof(DBModels.PlanetSchematic));
+                    db.CodeFirst.InitTables(typeof(DBModels.PlanetSchematicTypeMap));
+                    await db.Insertable(planetSchematics.Item1).ExecuteCommandAsync();
+                    await db.Insertable(planetSchematics.Item2).ExecuteCommandAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -179,6 +259,20 @@ namespace TheGuideToTheNewEden.SDEBuilder
                         db.CodeFirst.InitTables(typeof(LocalDBModels.Stations));
                         await db.Insertable(stations.Select(p => new LocalDBModels.Stations(p)).ToList()).ExecuteCommandAsync();
                     }
+                }
+
+                var mapConstellations = Builder.GetMapConstellations(fileDatas, language);
+                if (mapConstellations != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.MapConstellations));
+                    await db.Insertable(mapConstellations.Select(p => new LocalDBModels.MapConstellations(p)).ToList()).ExecuteCommandAsync();
+                }
+
+                var planetSchematics = Builder.GetPlanetSchematics(fileDatas, language);
+                if (planetSchematics.Item1 != null)
+                {
+                    db.CodeFirst.InitTables(typeof(LocalDBModels.PlanetSchematic));
+                    await db.Insertable(planetSchematics.Item1.Select(p => new LocalDBModels.PlanetSchematic(p)).ToList()).ExecuteCommandAsync();
                 }
             }
             catch (Exception ex)
