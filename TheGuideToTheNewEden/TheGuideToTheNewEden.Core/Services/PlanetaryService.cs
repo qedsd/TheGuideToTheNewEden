@@ -6,112 +6,108 @@ using Newtonsoft.Json.Linq;
 using TheGuideToTheNewEden.Core.Models.PlanetColony;
 using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.Core.Services.DB;
+using EVEStandard;
+using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
     public class PlanetaryService
     {
-        private static readonly HttpClient _http = new HttpClient();
-        private const string ESI = "https://esi.evetech.net/latest";
+        private static PlanetaryService current;
+        public static PlanetaryService Current
+        {
+            get
+            {
+                if (current == null)
+                {
+                    current = new PlanetaryService();
+                }
+                return current;
+            }
+        }
 
+        private EVEStandardAPI _api;
+        public PlanetaryService()
+        {
+            _api = ESIService.GetDefaultESI();
+        }
+
+        //public async Task<List<CharacterPlanet>> GetCharacterPlanetsAsync(AuthorizedCharacterData c)
+        //{
+        //    var list = new List<CharacterPlanet>();
+        //    try
+        //    {
+        //        var req = new HttpRequestMessage(HttpMethod.Get, $"{ESI}/characters/{c.CharacterID}/planets/");
+        //        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", c.Token);
+        //        req.Headers.Add("User-Agent", "TheGuideToTheNewEden/3.0");
+        //        req.Headers.Add("Accept", "application/json");
+        //        var resp = await _http.SendAsync(req);
+        //        resp.EnsureSuccessStatusCode();
+        //        var json = await resp.Content.ReadAsStringAsync();
+        //        var arr = JArray.Parse(json);
+        //        foreach (var item in arr)
+        //        {
+        //            var p = new CharacterPlanet
+        //            {
+        //                PlanetId = (int)item["planet_id"],
+        //                OwnerId = (int)item["owner_id"],
+        //                SolarSystemId = (int)item["solar_system_id"],
+        //                PlanetType = (string)item["planet_type"],
+        //                UpgradeLevel = (int)item["upgrade_level"],
+        //                NumPins = (int)item["num_pins"],
+        //                LastUpdate = (DateTime)item["last_update"],
+        //                PlanetTypeEmoji = CharacterPlanet.GetPlanetTypeEmoji((string)item["planet_type"]),
+        //            };
+        //            await EnrichPlanetData(p);
+        //            list.Add(p);
+        //        }
+        //    }
+        //    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PlanetaryService] GetList: {ex.Message}"); }
+        //    return list;
+        //}
         public async Task<List<CharacterPlanet>> GetCharacterPlanetsAsync(AuthorizedCharacterData c)
         {
-            var list = new List<CharacterPlanet>();
-            try
+            var resp = await _api.PlanetaryInteraction.GetColoniesAsync(c.ToAuthDTO());
+            if (resp?.Model != null)
             {
-                var req = new HttpRequestMessage(HttpMethod.Get, $"{ESI}/characters/{c.CharacterID}/planets/");
-                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", c.Token);
-                req.Headers.Add("User-Agent", "TheGuideToTheNewEden/3.0");
-                req.Headers.Add("Accept", "application/json");
-                var resp = await _http.SendAsync(req);
-                resp.EnsureSuccessStatusCode();
-                var json = await resp.Content.ReadAsStringAsync();
-                var arr = JArray.Parse(json);
-                foreach (var item in arr)
+                var list = new List<CharacterPlanet>();
+                foreach (var item in resp.Model)
                 {
-                    var p = new CharacterPlanet
-                    {
-                        PlanetId = (int)item["planet_id"],
-                        OwnerId = (int)item["owner_id"],
-                        SolarSystemId = (int)item["solar_system_id"],
-                        PlanetType = (string)item["planet_type"],
-                        UpgradeLevel = (int)item["upgrade_level"],
-                        NumPins = (int)item["num_pins"],
-                        LastUpdate = (DateTime)item["last_update"],
-                        PlanetTypeEmoji = CharacterPlanet.GetPlanetTypeEmoji((string)item["planet_type"]),
-                    };
+                    var p = item.To<CharacterPlanet>();
                     await EnrichPlanetData(p);
                     list.Add(p);
                 }
+                return list;
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PlanetaryService] GetList: {ex.Message}"); }
-            return list;
+            else
+            {
+                throw new Exception($"GetColoniesAsync Failed: {c?.CharacterID}");
+            }
         }
 
-        public async Task<PlanetColonyDetail> GetPlanetColonyDetailAsync(AuthorizedCharacterData c, int planetId)
+        public async Task<PlanetColonyDetail> GetPlanetColonyDetailAsync(AuthorizedCharacterData c, long planetId)
         {
-            var detail = new PlanetColonyDetail { PlanetId = planetId };
-            try
+            var resp = await _api.PlanetaryInteraction.GetColonyLayoutAsync(c.ToAuthDTO(), planetId);
+            if (resp?.Model != null)
             {
-                var url = $"{ESI}/characters/{c.CharacterID}/planets/{planetId}/";
-                var req = new HttpRequestMessage(HttpMethod.Get, url);
-                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", c.Token);
-                req.Headers.Add("User-Agent", "TheGuideToTheNewEden/3.0");
-                req.Headers.Add("Accept", "application/json");
-                var resp = await _http.SendAsync(req);
-                resp.EnsureSuccessStatusCode();
-                var obj = JObject.Parse(await resp.Content.ReadAsStringAsync());
-                detail.UpgradeLevel = (int)obj["upgrade_level"];
-
-                foreach (var t in (JArray)obj["pins"])
+                var detail = resp.To<PlanetColonyDetail>();
+                detail.PlanetId = planetId;
+                foreach (var pin in detail.Pins)
                 {
-                    var pin = new PlanetPin
+                    var sch = PlanetSchematicService.GetSchematic(pin.Factory.SchematicId);
+                    if (sch != null)
                     {
-                        PinId = (long)t["pin_id"],
-                        TypeId = (int)t["type_id"],
-                        SchematicId = (int?)t["schematic_id"],
-                        Latitude = (double)t["latitude"],
-                        Longitude = (double)t["longitude"],
-                        StorageQuantity = (long?)t["storage_quantity"] ?? 0,
-                        ContentTypeId = (int?)t["content_type_id"],
-                        LastCycleStart = (DateTime?)t["last_cycle_start"],
-                    };
-                    if (t["extractor_details"]?.Type != JTokenType.Null)
-                    {
-                        var x = t["extractor_details"];
-                        var ed = new ExtractorDetails
-                        {
-                            ProductTypeId = (int)x["product_type_id"],
-                            CycleTime = (int)x["cycle_time"],
-                            HeadRadius = (double)x["head_radius"],
-                            QtyPerCycle = (int)x["qty_per_cycle"],
-                            InstallTime = (DateTime)x["install_time"],
-                            ExpiryTime = (DateTime)x["expiry_time"],
-                        };
-                        if (x["heads"] != null)
-                            foreach (var h in (JArray)x["heads"])
-                                ed.Heads.Add(new ExtractorHead { HeadId = (int)h["head_id"], Latitude = (double)h["latitude"], Longitude = (double)h["longitude"] });
-                        pin.Extractor = ed;
+                        pin.SchematicName = sch.SchematicName;
+                        pin.SchematicTier = sch.Tier;
                     }
-                    if (t["factory_details"]?.Type != JTokenType.Null)
-                    {
-                        pin.Factory = new FactoryDetails { SchematicId = (int)t["factory_details"]["schematic_id"] };
-                        var sch = PlanetSchematicService.GetSchematic(pin.Factory.SchematicId);
-                        if (sch != null) { pin.SchematicName = sch.SchematicName; pin.SchematicTier = sch.Tier; }
-                    }
-                    await EnrichPinData(pin);
-                    detail.Pins.Add(pin);
+                    EnrichPinData(pin);
                 }
-
-                if (obj["routes"] != null)
-                    foreach (var r in (JArray)obj["routes"])
-                        detail.Routes.Add(new PlanetRoute { RouteId = (long)r["route_id"], SourcePinId = (long)r["source_pin_id"], DestinationPinId = (long)r["destination_pin_id"], ContentTypeId = (int)r["content_type_id"], Quantity = (double)r["quantity"] });
-                if (obj["links"] != null)
-                    foreach (var l in (JArray)obj["links"])
-                        detail.Links.Add(new PlanetLink { SourcePinId = (long)l["source_pin_id"], DestinationPinId = (long)l["destination_pin_id"], LinkLevel = (int)l["link_level"] });
+                return detail;
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PlanetaryService] GetDetail: {ex.Message}"); }
-            return detail;
+            else
+            {
+                throw new Exception($"GetColonyLayoutAsync Failed: {planetId}");
+            }
         }
 
         public async Task<List<PlanetAlert>> GenerateAlertsAsync(AuthorizedCharacterData c)
@@ -139,30 +135,22 @@ namespace TheGuideToTheNewEden.Core.Services
 
         private async Task EnrichPlanetData(CharacterPlanet p)
         {
-            try
-            {
-                var ss = await MapSolarSystemService.QueryAsync(p.SolarSystemId);
-                if (ss != null) p.SolarSystemName = ss.SolarSystemName;
-                var inv = InvTypeService.QueryType(p.PlanetId);
-                if (inv != null) p.PlanetName = inv.TypeName;
-                else p.PlanetName = $"Planet {p.PlanetId}";
-            }
-            catch { }
+            var ss = await MapSolarSystemService.QueryAsync(p.SolarSystemId);
+            if (ss != null) p.SolarSystemName = ss.SolarSystemName;
+            var inv = InvTypeService.QueryType(p.PlanetId);
+            if (inv != null) p.PlanetName = inv.TypeName;
+            else p.PlanetName = $"Planet {p.PlanetId}";
         }
 
-        private async Task EnrichPinData(PlanetPin pin)
+        private void EnrichPinData(PlanetPin pin)
         {
-            try
+            var t = InvTypeService.QueryType(pin.TypeId);
+            if (t != null) pin.TypeName = t.TypeName;
+            if (pin.Extractor != null)
             {
-                var t = InvTypeService.QueryType(pin.TypeId);
-                if (t != null) pin.TypeName = t.TypeName;
-                if (pin.Extractor != null)
-                {
-                    var pr = InvTypeService.QueryType(pin.Extractor.ProductTypeId);
-                    if (pr != null) pin.Extractor.ProductName = pr.TypeName;
-                }
+                var pr = InvTypeService.QueryType(pin.Extractor.ProductTypeId);
+                if (pr != null) pin.Extractor.ProductName = pr.TypeName;
             }
-            catch { }
         }
     }
 }

@@ -5,7 +5,7 @@ namespace TheGuideToTheNewEden.Core.Models.PlanetColony
     {
         public string CharacterName { get; set; }
         public string PlanetName { get; set; }
-        public int PlanetId { get; set; }
+        public long PlanetId { get; set; }
         public AlertType Type { get; set; }
         public string Message { get; set; }
         public AlertSeverity Severity { get; set; }

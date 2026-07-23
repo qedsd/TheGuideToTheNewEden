@@ -108,5 +108,10 @@ namespace TheGuideToTheNewEden.Core.Extensions
                     targetType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
                     targetType.GetGenericArguments()[0] == sourceType);
         }
+
+        public static T To<T>(this object obj)
+        {
+            return DepthClone<T>(obj);
+        }
     }
 }

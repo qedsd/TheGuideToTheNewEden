@@ -935,7 +935,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Database\Local\" />
     <Folder Include="Views\Channel\" />
   </ItemGroup>
 

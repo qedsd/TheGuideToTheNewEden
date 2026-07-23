@@ -20,5 +20,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         {
             return DBService.MainDb.Queryable<PlanetResources>().In(ids).ToList();
         }
+        /// <summary>
+        /// 查询全部行星资源，用于本地模拟时展示资源分布
+        /// </summary>
+        public static List<PlanetResources> GetAll()
+        {
+            return DBService.MainDb.Queryable<PlanetResources>().ToList();
+        }
     }
 }
