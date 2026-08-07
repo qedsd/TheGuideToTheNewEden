@@ -136,9 +136,15 @@ namespace TheGuideToTheNewEden.Core.Services
         private async Task EnrichPlanetData(CharacterPlanet p)
         {
             var ss = await MapSolarSystemService.QueryAsync(p.SolarSystemId);
-            if (ss != null) p.SolarSystemName = ss.SolarSystemName;
+            if (ss != null)
+            {
+                p.SolarSystemName = ss.SolarSystemName;
+            }
             var inv = InvTypeService.QueryType(p.PlanetId);
-            if (inv != null) p.PlanetName = inv.TypeName;
+            if (inv != null)
+            {
+                p.PlanetName = inv.TypeName;//TODO:行星名称不在此表内
+            }
             else p.PlanetName = $"Planet {p.PlanetId}";
         }
 
