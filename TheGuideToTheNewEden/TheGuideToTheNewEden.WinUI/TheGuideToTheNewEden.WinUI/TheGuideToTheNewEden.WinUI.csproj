@@ -851,6 +851,9 @@
     <Page Update="Views\Business\OrderPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+	<Page Update="Views\Business\AppraisalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\Settings\StructuresSettingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -8,6 +8,7 @@
     <x:String x:Key="MarketPage">市场</x:String>
     <x:String x:Key="BusinessPage">商业</x:String>
     <x:String x:Key="OrderPage">订单</x:String>
+    <x:String x:Key="AppraisalPage">估价</x:String>
     <x:String x:Key="ScalperShellPage">倒货</x:String>
     <x:String x:Key="ChannelIntelPage">频道预警</x:String>
     <x:String x:Key="ContractPage">公开合同</x:String>
@@ -345,6 +346,18 @@
     <x:String x:Key="MarketPage_CancelStarFailed">取消收藏失败</x:String>
     <x:String x:Key="MarketPage_StarSuccess">已收藏</x:String>
     <x:String x:Key="MarketPage_StarFailed">添加收藏失败</x:String>
+
+    <!--  AppraisalPage  -->
+    <x:String x:Key="AppraisalPage_Appraisal">物品估价</x:String>
+    <x:String x:Key="AppraisalPage_Input">输入</x:String>
+    <x:String x:Key="AppraisalPage_PasteData">CTRL+C  CTRL+V, 黏贴合同，货柜扫描等...</x:String>
+    <x:String x:Key="AppraisalPage_Market">市场</x:String>
+    <x:String x:Key="AppraisalPage_Volume">体积</x:String>
+    <x:String x:Key="AppraisalPage_Buy">买价</x:String>
+    <x:String x:Key="AppraisalPage_Sell">卖价</x:String>
+    <x:String x:Key="AppraisalPage_Split">中间价</x:String>
+    <x:String x:Key="AppraisalPage_Item">物品</x:String>
+    <x:String x:Key="AppraisalPage_Amount">数量</x:String>
 
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_Scalper">倒货</x:String>
