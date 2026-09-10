@@ -92,7 +92,7 @@ namespace TheGuideToTheNewEden.Core.Services
         }
         public static List<DBModels.IdName> GetByIds(List<long> ids)
         {
-            return GetByIds(ids.Select(p => (long)p).ToList());
+            return GetByIds(ids.Select(p => (int)p).ToList());
         }
         public static List<DBModels.IdName> GetByIds(List<int> ids)
         {
@@ -117,12 +117,15 @@ namespace TheGuideToTheNewEden.Core.Services
 
                 //2.查找数据库不存在的
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                var resp = ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs).Result;
-                if (resp.Model != null)
+                if (noInDbs.Count > 0)
                 {
-                    foreach (var data in resp.Model)
+                    var resp = ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs).Result;
+                    if (resp.Model != null)
                     {
-                        noInDbResults.Add(new DBModels.IdName((int)data.Id, data.Name, data.Category));
+                        foreach (var data in resp.Model)
+                        {
+                            noInDbResults.Add(new DBModels.IdName((int)data.Id, data.Name, data.Category));
+                        }
                     }
                 }
                 //TODO:处理查找不到的

@@ -32,7 +32,33 @@ namespace TheGuideToTheNewEden.Core.DBModels
         {
             Id = id;
             Name = name;
-            Category = (int)Enum.Parse<CategoryEnum>(category);
+            Category = (int)ParseCategory(category);
+        }
+
+        /// <summary>
+        /// ESI 的 /universe/names 返回小写类别（如 character / station / inventory_type / solar_system），
+        /// 与枚举成员名（PascalCase）并不一致，因此按 [EnumMember] 的取值显式映射。
+        /// </summary>
+        private static CategoryEnum ParseCategory(string category)
+        {
+            switch ((category ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "alliance": return CategoryEnum.Alliance;
+                case "character": return CategoryEnum.Character;
+                case "constellation": return CategoryEnum.Constellation;
+                case "corporation": return CategoryEnum.Corporation;
+                case "inventory_type": return CategoryEnum.InventoryType;
+                case "region": return CategoryEnum.Region;
+                case "solar_system": return CategoryEnum.SolarSystem;
+                case "station": return CategoryEnum.Station;
+                case "faction": return CategoryEnum.Faction;
+                case "structure": return CategoryEnum.Structure;
+                case "group": return CategoryEnum.Group;
+                default:
+                    return Enum.TryParse<CategoryEnum>(category, ignoreCase: true, out var parsed)
+                        ? parsed
+                        : CategoryEnum.InventoryType;
+            }
         }
         public IdName(InvType type)
         {

@@ -153,6 +153,13 @@ EnableWindowsTargeting true
 - 新增页面：`ClonePage`、`MailPage`、`MailDetailWindow`、`ContractPage`、`IndustryPage`；工作区 7 个子页全部为真实页面。
 - 本地化键增至 **472**（新增 126，无重复）。
 
+### 阶段 9：未核验页面的实机核验与缺陷修复
+- 对 **克隆 / 邮件（含详情窗）/ 合同 / 工业** 做逐页实机截图核验（共 5 张：4 个页面 + 独立邮件详情窗口）。
+- 核验中发现并修复 **4 个缺陷**（3 个在 Core、1 个在 WPF 页面），逐条见 §6 的 #16~#19。
+- 修复前最严重的问题：**切换到“克隆”标签后进程无任何日志地消失**——定位为 Core 中的无限递归导致栈溢出（退出码 `0xC00000FD`）。
+- 修复后 4 个页面均正常渲染真实数据，名称（地点/发件人）解析正常。
+- 产物：截图存于 `TheGuideToTheNewEden.WPF\VerificationScreenshots\`；抓图脚本 `VerificationTools\capture_window.ps1`。
+
 ---
 
 ## 5. 角色功能分层设计
@@ -199,6 +206,10 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 13 | `TabItem` 无 `Selected` 事件 | 事件在 `TabControl.SelectionChanged` 上 | 懒加载改挂 `TabControl.SelectionChanged` |
 | 14 | 导航菜单首末各有一条线 | WPF-UI 默认开启顶/底分隔线 | 显式关闭两个分隔线属性 |
 | 15 | 钱包"金额"显示 0.00（疑似映射错误） | **拉原始 ESI 数据核对**：`player_donation` 记录本身 `Amount=0` | 无需修改，映射正确 |
+| 16 | 切到"克隆"标签后进程**无任何日志地消失**（事件日志/WER 均无记录） | `Core/Services/IDNameService.cs` 的 `GetByIds(List<long>)` 把 `List<long>` 又转成 `List<long>`（`(long)p`）**调回自己** → 无限递归 → **栈溢出**；栈溢出无法被 `catch` 或 `DispatcherUnhandledException` 捕获，进程立即以 `0xC00000FD` 退出 | `(long)p` 改为 `(int)p`，转发到真正的 `List<int>` 实现；用 `Start-Process -PassThru` 取得退出码 `-1073741571` 完成定性 |
+| 17 | 克隆的"家空间站/位置"、邮件"发件人"一律显示原始数字 ID | ESI `/universe/names` 返回**小写**类别（`station`/`character`/`inventory_type`/`solar_system`），而 `Core/DBModels/IdName.cs` 用 `Enum.Parse<CategoryEnum>(category)`（区分大小写、且不认枚举名）解析 PascalCase 枚举名 → **每次调用都抛 `ArgumentException`**，名称解析整体失败、调用方回落为 ID | 按既有的 `[EnumMember(Value=...)]` 取值显式映射 ESI 字符串（并校正了空类别与未知类别的兜底） |
+| 18 | 日志反复出现 `{"error":"too few items for 'ids', 'ids' is required"}` | `IDNameService.GetByIds` 在"本地库已全部命中、待查列表为空"时**仍调用 ESI 名称接口**，空 ids 被服务端拒绝 | 待查列表为空时跳过 ESI 调用 |
+| 19 | 邮件列表每行只显示"主题 + 发件人"，**看不到日期**，且列表底部出现横向滚动条 | `MailList` 允许横向滚动，行模板在"无限宽度"下测量 → `*` 列不再收缩，右侧 `Auto` 的日期列被推出视口 | `MailList` 显式设置 `ScrollViewer.HorizontalScrollBarVisibility="Disabled"` |
 
 ---
 
@@ -214,7 +225,12 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 角色授权 | 真实账号 | 令牌过期后**自动刷新成功**；受授权保护的 ESI 调用返回真实数据（钱包 116,284,940.8 ISK；LP 558,672） |
 | 角色数据服务与缓存 | 运行时自检 | 总览/技能（23,038,797 SP、22 技能组）/钱包流水均取到真实数据；缓存命中 0ms；磁盘缓存已生成 |
 | 角色壳 + 卡片页 + 工作区 + 总览/技能/钱包 | **实机截图（4 屏）** | 通过 |
-| 角色：克隆/邮件/合同/工业 | 仅编译通过 + 应用启动 | ⚠️ **未做截图核验**（见 §8） |
+| 角色：克隆 | **实机截图**（含展开的"当前克隆"植入体列表） | 通过（修复 #16/#17 后）：家空间站与克隆位置显示**地名**，5 个植入体名称正确 |
+| 角色：邮件列表 | **实机截图** | 通过（修复 #17/#19 后）：每行"日期 + 发件人名称 + 主题"三要素齐全，横向滚动条消失 |
+| 角色：邮件详情窗口 | **窗口枚举 + 实机截图** | 通过：`HtmlPanel` 正确渲染中文正文、**无 HTML 标签泄漏**；发件人显示名称，收件人仍为 ID（见 §8） |
+| 角色：合同 | **实机截图** | 通过：角色合同/军团合同 子页签、7 列表头、分页控件齐全；该账号无合同，列表为空态 |
+| 角色：工业 | **实机截图** | 通过：7 列表头（蓝图/产品/状态/数量/花费/地点/结束）+ 刷新按钮齐全；该账号无工业任务，列表为空态 |
+| 克隆页崩溃定性 | `Start-Process -PassThru` 取退出码 | `-1073741571` = `0xC00000FD`（栈溢出），修复后连续多轮切换页面进程存活 |
 
 构建状态：**0 错误**，剩 3 个既有警告（`NU1903`：Core 传递依赖 `SQLitePCLRaw.lib.e_sqlite3 2.1.10` 的漏洞通告，与本次改造无关）。
 
@@ -223,13 +239,15 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
-1. **邮件详情收件人**显示为原始 ID —— `MailContent.Recipients` 元素类型随 EVEStandard 版本变化，待确认后补名称解析。
+1. **邮件详情收件人**显示为原始 ID（**发件人已随 #17 修复为名称**）—— `CharacterMailService` 未对 `MailContent.Recipients` 的元素做名称解析。
 2. **打开邮件自动标已读**未实现 —— `UpdateMetadataAboutMailAsync` 第三参数类型与推测不符。
 3. **邮件正文链接不可点击** —— `HtmlPanel.LinkClicked` 委托签名与本项目用法不匹配。
-4. **合同详情窗口未实现**（仅列表 + 分页）；合同**发布人**显示为原始 ID。
+4. **合同详情窗口未实现**（仅列表 + 分页）。
 
-### 未做截图核验
-- 克隆 / 邮件（含详情窗口的 HTML 渲染）/ 合同 / 工业 四个页面**尚未逐页截图确认**。邮件详情的 HTML 渲染是本阶段核心，合并前应补验。
+### 本次核验结论（阶段 9）
+- 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
+- 抓图方式：`VerificationTools\capture_window.ps1`（`EnumWindows` + `PrintWindow`，脚本内先开启 PerMonitorV2 DPI 感知）；产物在 `TheGuideToTheNewEden.WPF\VerificationScreenshots\`（`final_*` 为修复后的最终核验图）。
+- 合同 / 工业两页在该账号下**列表为空属正常空态**（账号无对应数据），空态下不触发名称解析，因此这两页的"名称解析"路径未被覆盖。
 
 ### 计划内未做
 - 角色卡片**拖拽排序**、工作区 **ZKB 概览卡**。
@@ -240,6 +258,8 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 ### 环境/协作注意
 - 设置文件与 WinUI 版**共用** `Configs/settings.json`：两版同时运行会互相覆盖，迁移完成后建议只保留 WPF 版。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
+- **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
+- 本机显示器为 2560x1440 @125%：部分工具（如未声明 DPI 感知的 PowerShell）拿到的窗口坐标会被按 1.25 缩放，截图会"看起来右侧被裁"——抓图脚本已内置 DPI 感知修正。
 
 ---
 
@@ -255,6 +275,9 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 8. **DPI 与坐标**：跨不同缩放比例的显示器，用 WPF `Left/Top`（DIP）持久化会算错；应用 Win32 物理像素 API。
 9. **NuGet 目标框架陷阱**：包若只提供 `net10.0`/`net462` 而项目为 net9，会**静默回退到 .NET Framework**（`NU1701`，可能运行期异常）。选包前先核对包内 `lib/` 的目标框架。
 10. **第三方库的 `[NotNull]` 元数据**易触发 `CS8622` 噪音告警，可局部 `#pragma warning disable`。
+11. **`ListBox` 的横向滚动会让行模板"无限宽"测量**：一旦允许横向滚动，行内 `*` 列不再收缩，右侧 `Auto` 列（如日期）会被推出视口且看不到滚动条提示。列表类控件若要"右侧固定列"，显式 `ScrollViewer.HorizontalScrollBarVisibility="Disabled"`。
+12. **栈溢出是"静默死亡"**：`StackOverflowException` 无法被 `try/catch`、`DispatcherUnhandledException` 或 `AppDomain.UnhandledException` 捕获，进程直接退出，事件日志/WER 可能什么都留不下。遇到"进程凭空消失"时，用 `Start-Process -PassThru` + `WaitForExit()` 读 `ExitCode`（`0xC00000FD` = 栈溢出，`0xC0000005` = 访问冲突）比翻日志更快定性。
+13. **C# 重载陷阱**：`List<long>` 与 `List<int>` 两个重载并存时，`ids.Select(p => (long)p).ToList()` 会解析回**自身**（无限递归）。做"薄转发"重载时要确认目标类型真的不同。
 
 ---
 
@@ -307,4 +330,19 @@ Controls/PagerControl.xaml(.cs)                        分页
 ### 主窗口
 ```
 Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘
+```
+
+### 验证工具与产物（阶段 9）
+```
+VerificationTools/capture_window.ps1                   DPI 感知的窗口枚举 + PrintWindow 抓图脚本
+TheGuideToTheNewEden.WPF/VerificationScreenshots/      实机核验截图
+    dpi_*.png        修复名称解析前的 4 页全尺寸截图
+    fixed_mail_1_*.png  邮件列表日期列修复后的截图
+    final_*.png      最终核验图（克隆/邮件/邮件详情）
+```
+
+### 本次修改的 Core 文件（与 WinUI 共用，注意回归）
+```
+Core/Services/IDNameService.cs   GetByIds(List<long>) 无限递归 → 转发到 List<int>；空待查列表跳过 ESI
+Core/DBModels/IdName.cs          ESI 小写类别字符串 → 按 [EnumMember] 显式映射
 ```

@@ -27,11 +27,14 @@
             Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
         <!--  邮件列表  -->
+        <!--  必须禁用横向滚动：否则行模板会按“无限宽度”测量，* 列不再收缩，
+             右侧的日期列会被推到视口之外（表现为列表只剩主题+发件人、日期消失）。  -->
         <ListBox
             x:Name="MailList"
             Grid.Column="2"
             Margin="0,12,12,12"
-            BorderThickness="0">
+            BorderThickness="0"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid Margin="0,4">
