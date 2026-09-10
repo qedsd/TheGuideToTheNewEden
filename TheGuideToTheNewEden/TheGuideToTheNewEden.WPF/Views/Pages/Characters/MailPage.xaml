@@ -1,0 +1,65 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.MailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  标签  -->
+        <ListBox
+            x:Name="LabelList"
+            Grid.Column="0"
+            Margin="12,12,0,12"
+            BorderThickness="0"
+            DisplayMemberPath="Name" />
+
+        <Border
+            Grid.Column="1"
+            Width="1"
+            Margin="8,12"
+            Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+        <!--  邮件列表  -->
+        <ListBox
+            x:Name="MailList"
+            Grid.Column="2"
+            Margin="0,12,12,12"
+            BorderThickness="0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                FontWeight="SemiBold"
+                                Text="{Binding Subject}"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding FromName}" />
+                        </StackPanel>
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Top"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Date, StringFormat={}{0:MM-dd HH:mm}}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Page>

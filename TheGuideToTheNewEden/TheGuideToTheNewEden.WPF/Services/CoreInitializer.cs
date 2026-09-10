@@ -1,5 +1,8 @@
 using System.IO;
 using TheGuideToTheNewEden.Core;
+using TheGuideToTheNewEden.Core.Enums;
+using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Settings;
 
 namespace TheGuideToTheNewEden.WPF.Services;
@@ -39,6 +42,9 @@ public static class CoreInitializer
         Config.DefaultGameServer = GameServerSelectorService.Value;
         Config.PlayerStatusApi = PlayerStatusService.Value;
 
+        ApplyEsiCredentials();
+        CharacterStore.Init();
+
         Log.Init();
         DatabaseReady = Config.InitDb();
 
@@ -48,5 +54,43 @@ public static class CoreInitializer
         {
             Log.Error("数据库初始化失败，部分功能不可用。");
         }
+    }
+
+    /// <summary>
+    /// 灌入 ESI 授权所需配置：客户端凭据来自 Configs/ESILicense.txt，权限范围来自 ESI 权限设置。
+    /// 必须在首次访问 Core.Services.ESIService.Current 之前完成（SSO 实例在构造时读取 Config）。
+    /// </summary>
+    private static void ApplyEsiCredentials()
+    {
+        var licenseFile = Path.Combine(SettingsService.DataPath, "Configs", "ESILicense.txt");
+        if (File.Exists(licenseFile))
+        {
+            try
+            {
+                var lines = File.ReadAllLines(licenseFile);
+                if (lines.Length >= 3)
+                {
+                    Config.ClientId = GameServerSelectorService.Value == GameServerType.Serenity
+                        ? SerenityAuthHelper.ClientId
+                        : lines[0].Trim();
+                    Config.ESICallback = lines[1].Trim();
+                    Config.ClientSecret = lines[2].Trim();
+                }
+                else
+                {
+                    Log.Error("ESILicense.txt 内容不足 3 行，无法读取 ESI 凭据");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+        }
+        else
+        {
+            Log.Error("未找到 Configs/ESILicense.txt，无法进行新的 ESI 授权");
+        }
+
+        Config.Scopes = ESIScopeService.Current.GetSelectedScopes().ToList();
     }
 }

@@ -1,0 +1,56 @@
+<Window
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.MailDetailWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:html="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+    Title="{DynamicResource Characters.Mail.Detail}"
+    Width="820"
+    Height="640"
+    MinWidth="520"
+    MinHeight="360"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock
+                x:Name="SubjectText"
+                FontSize="18"
+                FontWeight="SemiBold"
+                TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="FromText"
+                Margin="0,8,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            <TextBlock
+                x:Name="DateText"
+                Margin="0,2,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            <TextBlock
+                x:Name="RecipientsText"
+                Margin="0,2,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="LabelsText"
+                Margin="0,2,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+            <Border
+                Height="1"
+                Margin="0,12,0,0"
+                Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        </StackPanel>
+
+        <!--  正文：HTML 原生渲染（替代 WebView2）；远程图片在代码中剥离，保证离线/隐私  -->
+        <html:HtmlPanel
+            x:Name="BodyPanel"
+            Grid.Row="1"
+            Margin="0,12,0,0" />
+    </Grid>
+</Window>

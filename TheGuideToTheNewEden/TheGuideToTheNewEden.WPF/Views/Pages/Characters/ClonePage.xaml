@@ -1,0 +1,102 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.ClonePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,16,24,24">
+
+            <Border Style="{StaticResource SettingsGroupBorder}">
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Characters.Clone.Home}" />
+                    <TextBlock
+                        x:Name="HomeText"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        TextTrimming="CharacterEllipsis" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Characters.Clone.LastStationChange}" />
+                    <TextBlock
+                        x:Name="LastStationChangeText"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="12,8,0,0" />
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Characters.Clone.JumpClones}" />
+                    <TextBlock
+                        x:Name="JumpCloneCountText"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="12,8,0,0" />
+
+                    <TextBlock
+                        Grid.Row="3"
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Characters.Clone.LastJump}" />
+                    <TextBlock
+                        x:Name="LastJumpText"
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Margin="12,8,0,0" />
+                </Grid>
+            </Border>
+
+            <!--  各克隆及其植入体  -->
+            <ItemsControl x:Name="CloneList" Margin="0,12,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Expander Margin="0,0,0,6">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding LocationName}" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Implants.Count, StringFormat=({0})}" />
+                                </StackPanel>
+                            </Expander.Header>
+                            <ItemsControl Margin="12,4,0,10" ItemsSource="{Binding Implants}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            Margin="0,3"
+                                            Text="{Binding Name}"
+                                            ToolTip="{Binding Description}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

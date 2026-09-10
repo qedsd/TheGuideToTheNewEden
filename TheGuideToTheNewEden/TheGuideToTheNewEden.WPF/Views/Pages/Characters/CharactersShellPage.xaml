@@ -1,0 +1,13 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.CharactersShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--  首个标签固定为"全部角色"，每个已登录角色一个可关闭标签  -->
+    <TabControl
+        x:Name="Tabs"
+        Padding="0"
+        Background="Transparent" />
+</Page>

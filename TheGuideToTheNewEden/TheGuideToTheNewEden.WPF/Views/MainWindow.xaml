@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages"
+    xmlns:charPages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages.Characters"
     xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{DynamicResource AppDisplayName}"
@@ -45,7 +46,7 @@
                 <ui:NavigationViewItem
                     Content="{DynamicResource Nav.Characters}"
                     NavigationCacheMode="Required"
-                    TargetPageType="{x:Type pages:CharactersPage}">
+                    TargetPageType="{x:Type charPages:CharactersShellPage}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Person24" />
                     </ui:NavigationViewItem.Icon>

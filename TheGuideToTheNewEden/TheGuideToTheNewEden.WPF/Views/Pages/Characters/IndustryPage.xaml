@@ -1,0 +1,69 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.IndustryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Grid Margin="24,16,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Button
+            x:Name="RefreshButton"
+            Grid.Row="0"
+            MinWidth="88"
+            HorizontalAlignment="Right"
+            Content="{DynamicResource Characters.Refresh}" />
+
+        <Border
+            Grid.Row="1"
+            Margin="0,10,0,0"
+            Padding="4"
+            Style="{StaticResource SettingsGroupBorder}">
+            <ui:DataGrid
+                x:Name="JobGrid"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                GridLinesVisibility="Horizontal"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                SelectionMode="Extended">
+                <ui:DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="2*"
+                        Binding="{Binding BlueprintName}"
+                        Header="{DynamicResource Characters.Industry.Blueprint}" />
+                    <DataGridTextColumn
+                        Width="2*"
+                        Binding="{Binding ProductName}"
+                        Header="{DynamicResource Characters.Industry.Product}" />
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding StatusText}"
+                        Header="{DynamicResource Characters.Industry.Status}" />
+                    <DataGridTextColumn
+                        Width="Auto"
+                        Binding="{Binding Runs, StringFormat=N0}"
+                        Header="{DynamicResource Characters.Industry.Runs}" />
+                    <DataGridTextColumn
+                        Width="Auto"
+                        Binding="{Binding Cost, StringFormat=N2}"
+                        Header="{DynamicResource Characters.Industry.Cost}" />
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding LocationName}"
+                        Header="{DynamicResource Characters.Industry.Location}" />
+                    <DataGridTextColumn
+                        Width="Auto"
+                        Binding="{Binding EndDate, StringFormat={}{0:MM-dd HH:mm}}"
+                        Header="{DynamicResource Characters.Industry.End}" />
+                </ui:DataGrid.Columns>
+            </ui:DataGrid>
+        </Border>
+    </Grid>
+</Page>

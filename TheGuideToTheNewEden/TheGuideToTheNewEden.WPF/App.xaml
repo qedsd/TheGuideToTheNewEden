@@ -2,6 +2,7 @@
     x:Class="TheGuideToTheNewEden.WPF.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     ShutdownMode="OnExplicitShutdown"
     Startup="OnStartup"
@@ -14,6 +15,8 @@
                 <ResourceDictionary Source="pack://application:,,,/Controls/SettingCardStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Resources/Languages/zh-CN.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

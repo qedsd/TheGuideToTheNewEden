@@ -21,6 +21,8 @@
 		      WPF 端在 net10 下使用 2.4.1（其目标框架为 net10.0-windows / net462）  -->
 		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<!--  邮件正文 HTML 渲染（替代 WebView2）  -->
+		<PackageReference Include="HtmlRenderer.WPF" Version="1.6.1" />
 	</ItemGroup>
 
 	<ItemGroup>
