@@ -7,6 +7,7 @@
     <x:String x:Key="CharactersShellPage">Characters</x:String>
     <x:String x:Key="MarketPage">Market</x:String>
     <x:String x:Key="BusinessPage">Business</x:String>
+    <x:String x:Key="AppraisalPage">Appraisal</x:String>
     <x:String x:Key="OrderPage">Order</x:String>
     <x:String x:Key="ScalperShellPage">Scalper</x:String>
     <x:String x:Key="ChannelIntelPage">Channel Intel</x:String>
@@ -346,6 +347,18 @@
     <x:String x:Key="MarketPage_StarSuccess">Star Success</x:String>
     <x:String x:Key="MarketPage_StarFailed">Star Failed</x:String>
 
+    <!--  AppraisalPage  -->
+    <x:String x:Key="AppraisalPage_Appraisal">Appraisal</x:String>
+    <x:String x:Key="AppraisalPage_Input">Input</x:String>
+    <x:String x:Key="AppraisalPage_PasteData">Paste data here...</x:String>
+    <x:String x:Key="AppraisalPage_Market">Market</x:String>
+    <x:String x:Key="AppraisalPage_Volume">Volume</x:String>
+    <x:String x:Key="AppraisalPage_Buy">Buy</x:String>
+    <x:String x:Key="AppraisalPage_Sell">Sell</x:String>
+    <x:String x:Key="AppraisalPage_Split">Split</x:String>
+    <x:String x:Key="AppraisalPage_Item">Item</x:String>
+    <x:String x:Key="AppraisalPage_Amount">Amount</x:String>
+
     <!--  BusinessPage  -->
     <x:String x:Key="BusinessPage_Scalper">Scalper</x:String>
     <x:String x:Key="BusinessPage_ShoppingCart">Shopping Cart</x:String>
@@ -454,7 +467,7 @@
     <x:String x:Key="BusinessPage_ShoppingRecord_All">All Record</x:String>
     <x:String x:Key="BusinessPage_ShoppingRecord_Detail">Record Detail</x:String>
     <x:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">Are you sure you want to delete {0} records?</x:String>
-
+    
     <x:String x:Key="MarketSettingPage_OrderDuration">Duration of order</x:String>
     <x:String x:Key="MarketSettingPage_HistoryDuration">Effective duration of historical records</x:String>
     <x:String x:Key="MarketSettingPage_MaxThread">ESI Thread count</x:String>

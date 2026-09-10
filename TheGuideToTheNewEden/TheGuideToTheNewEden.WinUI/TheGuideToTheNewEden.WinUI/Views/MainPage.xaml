@@ -90,6 +90,11 @@
                                     <ic:FluentIcon Icon="ArrowTrendingSparkle" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
+                            <NavigationViewItem Content="{StaticResource AppraisalPage}" Tag="Business.AppraisalPage">
+								<NavigationViewItem.Icon>
+									<ic:FluentIcon Icon="Money" />
+								</NavigationViewItem.Icon>
+							</NavigationViewItem>
                         </NavigationViewItem.MenuItems>
                     </NavigationViewItem>
                     <NavigationViewItem Content="{StaticResource GamePreviewMgrPage}" Tag="GamePreviewMgrPage">
