@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<RootNamespace>TheGuideToTheNewEden.WPF</RootNamespace>
+		<AssemblyName>TheGuideToTheNewEden.WPF</AssemblyName>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<AssemblyVersion>3.0.0.0</AssemblyVersion>
+		<Version>3.0.1</Version>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WPF-UI" Version="4.3.0" />
+		<!--  托盘与系统通知：与 WinUI 版一致使用 H.NotifyIcon（WinUI 版为 H.NotifyIcon.WinUI）
+		      WPF 端在 net10 下使用 2.4.1（其目标框架为 net10.0-windows / net462）  -->
+		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Assets\app.ico" />
+		<Resource Include="Assets\logo_32.png" />
+		<Resource Include="Assets\logo_128.png" />
+	</ItemGroup>
+
+	<!--
+	  运行时数据资源（配置与数据库）体积约 100MB，直接复制会在仓库中重复一份。
+	  这里以“链接”方式引用 WinUI 项目的资源文件：构建时仍各自拷贝到输出目录，
+	  运行时互不影响，仓库不重复存储。
+	-->
+	<ItemGroup>
+		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\**\*.*" Exclude="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\log4net.config">
+			<Link>Resources\Configs\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<!-- Core.Log.Init() 从程序根目录读取 log4net.config，需单独放到输出根。 -->
+		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\log4net.config">
+			<Link>log4net.config</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Database\**\*.*">
+			<Link>Resources\Database\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\default.mp3">
+			<Link>Resources\default.mp3</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+</Project>

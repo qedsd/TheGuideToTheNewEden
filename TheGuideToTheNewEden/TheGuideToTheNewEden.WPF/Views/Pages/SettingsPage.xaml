@@ -1,0 +1,119 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Settings"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Grid>
+        <!--  分类列表  -->
+        <ScrollViewer x:Name="CategoryView" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MaxWidth="1000" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="36,28,36,40">
+                    <TextBlock Style="{StaticResource SettingsPageTitle}" Text="{DynamicResource Settings.Title}" />
+
+                    <Border Style="{StaticResource SettingsGroupBorder}" Margin="0,24,0,0">
+                        <ItemsControl x:Name="CategoryList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Click="Category_Click"
+                                        Style="{StaticResource SettingsRowButton}"
+                                        Tag="{Binding}">
+                                        <Grid MinHeight="64">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <ui:SymbolIcon
+                                                Grid.Column="0"
+                                                Margin="16,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="20"
+                                                Symbol="{Binding Icon}" />
+
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="16,12"
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    FontSize="14"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Title}" />
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Description}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <ui:SymbolIcon
+                                                Grid.Column="2"
+                                                Margin="24,0,16,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Symbol="ChevronRight24" />
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!--  子页详情  -->
+        <Grid x:Name="DetailView" Background="Transparent" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel
+                Grid.Row="0"
+                Margin="36,24,36,4"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="BreadcrumbRootButton"
+                    Padding="0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="Back_Click"
+                    Cursor="Hand">
+                    <TextBlock
+                        FontSize="24"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource Settings.Title}" />
+                </Button>
+                <ui:SymbolIcon
+                    Margin="8,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Symbol="ChevronRight24" />
+                <TextBlock
+                    x:Name="BreadcrumbTitle"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+            </StackPanel>
+
+            <!--  子页是 Page，按 WPF 规则只能由 Window/Frame 承载，故此处用 Frame（隐藏导航栏）  -->
+            <Frame
+                x:Name="DetailFrame"
+                Grid.Row="1"
+                NavigationUIVisibility="Hidden" />
+        </Grid>
+    </Grid>
+</Page>

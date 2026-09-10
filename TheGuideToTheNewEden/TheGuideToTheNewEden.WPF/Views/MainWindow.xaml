@@ -1,0 +1,250 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages"
+    xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource AppDisplayName}"
+    Width="1200"
+    Height="800"
+    MinWidth="960"
+    MinHeight="600"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    WindowBackdropType="Mica"
+    mc:Ignorable="d">
+
+    <Grid>
+
+        <!--  NavigationView 铺满整窗：其自带的汉堡按钮位于窗口左上角，正好落在标题栏的左侧预留区  -->
+        <!--  注意：FrameMargin 不在此处设置——WPF-UI 绑定 TitleBar 后会将其覆盖为默认值，
+              改由 MainWindow.xaml.cs 的 NavigationTopInset 在加载后应用。  -->
+        <ui:NavigationView
+            x:Name="NavigationView"
+            Margin="0,4,0,0"
+            IsBackButtonVisible="Collapsed"
+            IsFooterSeparatorVisible="False"
+            IsPaneToggleVisible="True"
+            IsTopSeparatorVisible="False"
+            OpenPaneLength="220"
+            PaneDisplayMode="Left"
+            TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Home}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:HomePage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Home24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Characters}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:CharactersPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Person24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Business}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="ArrowTrending24" />
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Market}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:MarketPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Order}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:OrderPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Scalper}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ScalperPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Appraisal}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:AppraisalPage}" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.GamePreview}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:GamePreviewPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="SquareMultiple24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Channel}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Comment24" />
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelIntel}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelIntelPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelMonitor}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelMonitorPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelScan}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelScanPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelMarket}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelMarketPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelTranslation}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelTranslationPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.GameLogMonitor}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:GameLogMonitorPage}" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Translation}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:TranslationPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Translate24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.DED}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:DEDPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="DataSunburst24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Mission}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:MissionPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="DocumentOnePage24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Wormhole}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:WormholePage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Target24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Links}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:LinksPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Link24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Map}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:MapPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Map24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.ZKB}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:ZKBPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Scan24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Database}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:DatabasePage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Database24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Tools}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Toolbox24" />
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Tools_IME}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:IMEPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Tools_ServerPing}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ServerPingPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Tools_KeyboardSpan}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:KeyboardSpanPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.Tools_Taskbar}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:TaskbarPage}" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem
+                    Content="{DynamicResource Nav.Settings}"
+                    NavigationCacheMode="Required"
+                    TargetPageType="{x:Type pages:SettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Settings24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
+
+        <!--  标题栏叠加在 NavigationView 之上；其左侧留白由 NavigationView 自动为汉堡按钮预留  -->
+        <ui:TitleBar x:Name="TitleBar" Title="{DynamicResource AppDisplayName}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <!--  托盘图标：后台运行（H.NotifyIcon，与 WinUI 版所用的库对应）  -->
+        <tb:TaskbarIcon
+            x:Name="TrayIcon"
+            IconSource="pack://application:,,,/Assets/app.ico"
+            MenuActivation="RightClick"
+            ToolTipText="{DynamicResource AppDisplayName}">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="TrayMenuShow" Header="{DynamicResource Tray.Show}" />
+                    <Separator />
+                    <MenuItem x:Name="TrayMenuExit" Header="{DynamicResource Tray.Exit}" />
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+    </Grid>
+</ui:FluentWindow>

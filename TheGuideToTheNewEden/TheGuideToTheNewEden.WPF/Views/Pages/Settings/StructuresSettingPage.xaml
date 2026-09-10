@@ -1,0 +1,109 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.StructuresSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Grid Margin="36,20,36,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Structures}" />
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  已添加的结构  -->
+            <Border Style="{StaticResource SettingsGroupBorder}">
+                <DockPanel>
+                    <TextBlock
+                        DockPanel.Dock="Top"
+                        Margin="16,14,16,10"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource StructuresSettingPage_AddedStructureList}" />
+                    <Border DockPanel.Dock="Top" Style="{StaticResource SettingsDivider}" />
+
+                    <Button
+                        x:Name="RemoveButton"
+                        DockPanel.Dock="Bottom"
+                        Margin="16,10,16,14"
+                        HorizontalAlignment="Stretch"
+                        Content="{DynamicResource Settings.Structures.Remove}"
+                        Foreground="OrangeRed" />
+
+                    <ui:DataGrid
+                        x:Name="AddedGrid"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        GridLinesVisibility="Horizontal"
+                        HeadersVisibility="Column"
+                        IsReadOnly="True"
+                        SelectionMode="Extended">
+                        <ui:DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding Name}"
+                                Header="{DynamicResource General_Name}" />
+                            <DataGridTextColumn
+                                Width="Auto"
+                                Binding="{Binding Id}"
+                                Header="ID" />
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding SolarSystemName}"
+                                Header="{DynamicResource General_SolarSystemName}" />
+                        </ui:DataGrid.Columns>
+                    </ui:DataGrid>
+                </DockPanel>
+            </Border>
+
+            <!--  添加结构  -->
+            <Border Grid.Column="2" Style="{StaticResource SettingsGroupBorder}">
+                <StackPanel Margin="16">
+                    <TextBlock
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource StructuresSettingPage_AddStructureList}" />
+
+                    <TextBlock
+                        Margin="0,16,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Settings.Structures.AddById}" />
+
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        Orientation="Horizontal">
+                        <ui:TextBox
+                            x:Name="StructureIdBox"
+                            Width="220"
+                            PlaceholderText="eg: 1023456789" />
+                        <Button
+                            x:Name="AddByIdButton"
+                            Margin="8,0,0,0"
+                            MinWidth="80"
+                            Content="{DynamicResource Settings.Action.Add}" />
+                    </StackPanel>
+
+                    <TextBlock
+                        Margin="0,20,0,0"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource Settings.Structures.SearchUnavailable}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

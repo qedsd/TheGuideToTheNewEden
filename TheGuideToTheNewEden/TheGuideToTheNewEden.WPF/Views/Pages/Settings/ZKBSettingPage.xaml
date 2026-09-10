@@ -1,0 +1,167 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.ZKBSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1000" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_ZKB}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_AutoConnect_Desc}"
+                            Icon="Scan24"
+                            Title="{DynamicResource ZKBSettingPage_AutoConnect}">
+                            <ui:ToggleSwitch x:Name="AutoConnectToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_Notify_Desc}"
+                            Icon="Alert24"
+                            Title="{DynamicResource ZKBSettingPage_Notify}">
+                            <ui:ToggleSwitch x:Name="NotifyToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_MaxKBItems_Desc}"
+                            Icon="Document24"
+                            Title="{DynamicResource ZKBSettingPage_MaxKBItems}">
+                            <ui:NumberBox
+                                x:Name="MaxKBItemsBox"
+                                Width="160"
+                                HorizontalAlignment="Right"
+                                Minimum="10"
+                                SmallChange="10"
+                                SpinButtonPlacementMode="Inline" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_MinNotifyValue_Desc}"
+                            Icon="Money24"
+                            Title="{DynamicResource ZKBSettingPage_MinNotifyValue}">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <ui:NumberBox
+                                    x:Name="MinNotifyValueBox"
+                                    Width="180"
+                                    Minimum="0"
+                                    SmallChange="1000000"
+                                    SpinButtonPlacementMode="Inline" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="ISK" />
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="Shapes24"
+                            Title="{DynamicResource ZKBSettingPage_Types}">
+                            <ui:TextBox
+                                x:Name="TypesBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                PlaceholderText="eg: 28710,29984,12005" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="Globe24"
+                            Title="{DynamicResource ZKBSettingPage_Systems}">
+                            <ui:TextBox
+                                x:Name="SystemsBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                PlaceholderText="eg: 30000142,30000144" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="Map24"
+                            Title="{DynamicResource ZKBSettingPage_Regions}">
+                            <ui:TextBox
+                                x:Name="RegionsBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                PlaceholderText="eg: 10000002,10000016" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="Person24"
+                            Title="{DynamicResource ZKBSettingPage_Characters}">
+                            <ui:TextBox
+                                x:Name="CharactersBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="People24"
+                            Title="{DynamicResource ZKBSettingPage_Corps}">
+                            <ui:TextBox
+                                x:Name="CorpsBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource ZKBSettingPage_IdsDesc}"
+                            Icon="People24"
+                            Title="{DynamicResource ZKBSettingPage_Alliances}">
+                            <ui:TextBox
+                                x:Name="AlliancesBox"
+                                Width="360"
+                                HorizontalAlignment="Right"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

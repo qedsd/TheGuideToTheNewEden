@@ -1,0 +1,107 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.MarketSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1000" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Market}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard Icon="Calendar24" Title="{DynamicResource MarketSettingPage_OrderDuration}">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <ui:NumberBox
+                                    x:Name="OrderDurationBox"
+                                    Width="140"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Inline" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="m" />
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard Icon="Calendar24" Title="{DynamicResource MarketSettingPage_HistoryDuration}">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <ui:NumberBox
+                                    x:Name="HistoryDurationBox"
+                                    Width="140"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Inline" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="m" />
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource MarketSettingPage_MaxThread_Desc}"
+                            Icon="Settings24"
+                            Title="{DynamicResource MarketSettingPage_MaxThread}">
+                            <ui:NumberBox
+                                x:Name="MaxThreadBox"
+                                Width="140"
+                                HorizontalAlignment="Right"
+                                Minimum="1"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Inline" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource MarketSettingPage_ScalperSikpStructure_Desc}"
+                            Icon="DataTrending24"
+                            Title="{DynamicResource MarketSettingPage_ScalperSikpStructure}">
+                            <ui:ToggleSwitch x:Name="ScalperSkipToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource MarketSettingPage_MarketSikpStructure_Desc}"
+                            Icon="DataTrending24"
+                            Title="{DynamicResource MarketSettingPage_MarketSikpStructure}">
+                            <ui:ToggleSwitch x:Name="MarketSkipToggle" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard Icon="Delete24" Title="{DynamicResource MarketSettingPage_ClearCache}">
+                            <Button
+                                x:Name="ClearCacheButton"
+                                MinWidth="100"
+                                Content="{DynamicResource Settings.Action.Clear}" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

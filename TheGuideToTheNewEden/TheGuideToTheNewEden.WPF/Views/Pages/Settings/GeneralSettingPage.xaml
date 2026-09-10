@@ -1,0 +1,170 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.GeneralSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1000" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+
+                <!--  外观  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource Settings.Appearance}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_UILanguage_Description}"
+                            Icon="LocalLanguage24"
+                            Title="{DynamicResource Setting_UILanguage_Title}">
+                            <ComboBox
+                                x:Name="LanguageComboBox"
+                                Width="180"
+                                HorizontalAlignment="Right" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_Theme_Description}"
+                            Icon="DarkTheme24"
+                            Title="{DynamicResource Setting_Theme_Title}">
+                            <ComboBox
+                                x:Name="ThemeComboBox"
+                                Width="180"
+                                HorizontalAlignment="Right" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Settings.ThemeColor.Description}"
+                            Icon="Color24"
+                            Title="{DynamicResource Settings.ThemeColor}">
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton
+                                    x:Name="AccentToggle"
+                                    Padding="8,4">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border
+                                            x:Name="AccentSwatch"
+                                            Width="20"
+                                            Height="20"
+                                            CornerRadius="4" />
+                                        <ui:SymbolIcon
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            Symbol="ChevronDown24" />
+                                    </StackPanel>
+                                </ToggleButton>
+                                <Popup
+                                    x:Name="AccentPopup"
+                                    AllowsTransparency="True"
+                                    IsOpen="{Binding IsChecked, ElementName=AccentToggle, Mode=TwoWay}"
+                                    Placement="Bottom"
+                                    PlacementTarget="{Binding ElementName=AccentToggle}"
+                                    PopupAnimation="Fade"
+                                    StaysOpen="False">
+                                    <Border Margin="0,4,0,0" Style="{StaticResource AccentFlyoutBorder}">
+                                        <UniformGrid x:Name="AccentSwatchPanel" Columns="4" />
+                                    </Border>
+                                </Popup>
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Settings.MinimizeToTray.Description}"
+                            Icon="ArrowMinimize24"
+                            Title="{DynamicResource Settings.MinimizeToTray}">
+                            <ui:ToggleSwitch x:Name="MinimizeToTrayToggle" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+
+                <!--  数据  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource Settings.Section.Data}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_LocalDb_Description}"
+                            Icon="Database24"
+                            Title="{DynamicResource Setting_LocalDb_Title}">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <CheckBox
+                                    x:Name="NeedLocalizationCheckBox"
+                                    VerticalAlignment="Center"
+                                    Content="{DynamicResource GeneralSettingPage_NeedLocalization}" />
+                                <ComboBox
+                                    x:Name="LocalDbComboBox"
+                                    Width="200"
+                                    Margin="16,0,0,0" />
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_GameServer_Description}"
+                            Icon="Globe24"
+                            Title="{DynamicResource Setting_GameServer_Title}">
+                            <ComboBox
+                                x:Name="GameServerComboBox"
+                                Width="180"
+                                HorizontalAlignment="Right" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+
+                <!--  其他  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource Settings.Section.Other}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <controls:SettingCard Icon="ArrowSync24" Title="{DynamicResource Setting_Update_Update}">
+                            <CheckBox
+                                x:Name="AutoUpdateCheckBox"
+                                VerticalAlignment="Center"
+                                Content="{DynamicResource Setting_Update_AutoUpdate}" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_Log_Description}"
+                            Icon="Document24"
+                            Title="{DynamicResource Setting_Log_Title}">
+                            <Button
+                                x:Name="OpenLogButton"
+                                MinWidth="100"
+                                Content="{DynamicResource Setting_Log_Check}" />
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard
+                            Description="{DynamicResource Setting_Config_Description}"
+                            Icon="Folder24"
+                            Title="{DynamicResource Setting_Config_Title}">
+                            <Button
+                                x:Name="OpenConfigButton"
+                                MinWidth="100"
+                                Content="{DynamicResource Setting_Config_Check}" />
+                        </controls:SettingCard>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>
