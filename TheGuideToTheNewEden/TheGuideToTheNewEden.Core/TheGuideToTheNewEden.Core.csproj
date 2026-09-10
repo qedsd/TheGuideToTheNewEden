@@ -7,11 +7,10 @@
 
    <ItemGroup>
      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-     <PackageReference Include="ESI.NET" Version="2023.12.12" />
-     <PackageReference Include="log4net" Version="3.2.0" />
+     <PackageReference Include="log4net" Version="3.3.1" />
      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
      <PackageReference Include="Octokit" Version="14.0.0" />
-     <PackageReference Include="PointyHatGames.EVEStandard" Version="3.1.9" />
+     <PackageReference Include="PointyHatGames.EVEStandard" Version="4.1.0" />
      <PackageReference Include="SharpZipLib" Version="1.4.2" />
      <PackageReference Include="SqlSugarCore" Version="5.1.4.211" />
      <PackageReference Include="System.Data.SQLite" Version="2.0.2" />

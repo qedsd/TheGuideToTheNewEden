@@ -31,10 +31,10 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Tools
         public SovData Sov { get; set; }
         public SolarSystemResources Resources { get; set; }
         public List<MapSystemInfo> JumpTos { get; set; }
-        public int ShipKills { get; set; }
-        public int NpcKills { get; set; }
-        public int PodKills { get; set; }
-        public int Jumps { get; set; }
+        public long ShipKills { get; set; }
+        public long NpcKills { get; set; }
+        public long PodKills { get; set; }
+        public long Jumps { get; set; }
     }
     public sealed partial class MapSystemDetailPage : Page
     {

@@ -1,6 +1,4 @@
-﻿using ESI.NET.Models.Corporation;
-using ESI.NET.Models.SSO;
-using Microsoft.Graphics.Canvas;
+﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
@@ -21,38 +19,38 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
 {
     public class CharacterDrawer : MapDrawerBase
     {
-        private ObservableCollection<AuthorizedCharacterData> _characters;
+        private ObservableCollection<Core.Models.Character.AuthorizedCharacterData> _characters;
         /// <summary>
         /// key = 角色id
         /// value=星系id
         /// </summary>
-        private Dictionary<int, int> _charactersLocation = new Dictionary<int, int>();
-        private Dictionary<int, int> _charactersLocationTemp = new Dictionary<int, int>();
+        private Dictionary<long, long> _charactersLocation = new Dictionary<long, long>();
+        private Dictionary<long, long> _charactersLocationTemp = new Dictionary<long, long>();
 
         /// <summary>
         /// key = 角色id
         /// value = img
         /// </summary>
-        private Dictionary<int, CanvasBitmap> _characterImgs = new Dictionary<int, CanvasBitmap>();
+        private Dictionary<long, CanvasBitmap> _characterImgs = new Dictionary<long, CanvasBitmap>();
 
         /// <summary>
         /// key = 角色id
         /// value = img
         /// </summary>
-        private Dictionary<int, byte[]> _characterImgBytes = new Dictionary<int, byte[]>();
-        private Dictionary<int, byte[]> _characterImgBytesTemp = new Dictionary<int, byte[]>();
+        private Dictionary<long, byte[]> _characterImgBytes = new Dictionary<long, byte[]>();
+        private Dictionary<long, byte[]> _characterImgBytesTemp = new Dictionary<long, byte[]>();
 
         /// <summary>
         /// EVEStandard的授权
         /// </summary>
-        private Dictionary<int, EVEStandard.Models.API.AuthDTO> _charactersAuth = new Dictionary<int, EVEStandard.Models.API.AuthDTO>();
+        private Dictionary<long, EVEStandard.Models.API.AuthDTO> _charactersAuth = new Dictionary<long, EVEStandard.Models.API.AuthDTO>();
         private object _locker1 = new object();
         private object _locker2 = new object();
         private Timer _timer;
         private EVEStandard.EVEStandardAPI _esi;
         public CharacterDrawer()
         {
-            _esi = ESIService.GetDefaultESI2();
+            _esi = ESIService.GetDefaultESI();
             _characters = Services.CharacterService.GetCharacters();
             Services.CharacterService.OnCharacterChanged += CharacterService_OnCharacterChanged;
             _timer = new Timer()
@@ -80,7 +78,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         {
             _charactersLocationTemp.Clear();
             _characterImgBytesTemp.Clear();
-            HashSet<int> withImgs = new HashSet<int>();
+            HashSet<long> withImgs = new HashSet<long>();
             try
             {
                 lock (_locker2)
@@ -105,8 +103,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                             auth = ESIService.ToEVEStandardSSO(character);
                             _charactersAuth.Add(character.CharacterID, auth);
                         }
-                        var location = _esi.Location.GetCharacterLocationV1Async(auth).Result;
-                        if(_charactersLocationTemp.TryAdd(character.CharacterID, location.Model.SolarSystemId))
+                        var location = _esi.Location.GetCharacterLocationAsync(auth).Result;
+                        if(_charactersLocationTemp.TryAdd(character.CharacterID, (int)location.Model.SolarSystemId))
                         {
                             if (!withImgs.Contains(character.CharacterID))
                             {
@@ -148,8 +146,8 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
         /// key = 星系
         /// value = ids
         /// </summary>
-        private Dictionary<int, List<int>> _characterOfDatas = new Dictionary<int, List<int>>();
-        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<int, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
+        private Dictionary<long, List<long>> _characterOfDatas = new Dictionary<long, List<long>>();
+        public override void Draw(CanvasControl sender, CanvasDrawEventArgs args, Dictionary<long, MapData> allDatas, IEnumerable<MapData> visibleDatas, float zoom, bool drawBorder, Windows.UI.Color mainTextColor)
         {
             float foontSize = zoom > 12 ? 12 : zoom;
             CanvasTextFormat mainTextFormat = new CanvasTextFormat()
@@ -193,7 +191,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Map.Drawers
                     {
                         if (!_characterOfDatas.TryGetValue(character.Value, out var datas))
                         {
-                            datas = new List<int>();
+                            datas = new List<long>();
                             _characterOfDatas.Add(character.Value, datas);
                         }
                         datas.Add(character.Key);

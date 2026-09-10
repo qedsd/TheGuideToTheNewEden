@@ -1,6 +1,4 @@
-﻿using Azure;
-using ESI.NET.Models.PlanetaryInteraction;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
@@ -53,6 +51,10 @@ namespace TheGuideToTheNewEden.WinUI.Services
             return await ZKB.NET.ZKB.GetStatisticAsync(entityType, idName.Id);
         }
 
+        public async Task NavigationTo(long id, ZKB.NET.EntityType entityType, string header, bool newWindow = false)
+        {
+            await NavigationTo(id, entityType, header, newWindow);
+        }
         public async Task NavigationTo(int id, ZKB.NET.EntityType entityType, string header, bool newWindow = false)
         {
             if (!newWindow)

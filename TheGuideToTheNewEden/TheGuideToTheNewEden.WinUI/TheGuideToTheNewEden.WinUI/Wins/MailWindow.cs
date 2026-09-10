@@ -1,5 +1,4 @@
-﻿using ESI.NET;
-using ESI.NET.Models.Fleets;
+﻿using EVEStandard;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace TheGuideToTheNewEden.WinUI.Wins
 {
     internal class MailWindow : ToolWindow
     {
-        public MailWindow(EsiClient esiClient, Core.Models.Mail.MailDetail mailDetail) 
+        public MailWindow(EVEStandardAPI esiClient, Core.Models.Mail.MailDetail mailDetail) 
         {
             var appWindow = Helpers.WindowHelper.GetAppWindow(this);
             Helpers.WindowHelper.GetAppWindow(this).Resize(new Windows.Graphics.SizeInt32(appWindow.ClientSize.Width / 2, appWindow.ClientSize.Height));

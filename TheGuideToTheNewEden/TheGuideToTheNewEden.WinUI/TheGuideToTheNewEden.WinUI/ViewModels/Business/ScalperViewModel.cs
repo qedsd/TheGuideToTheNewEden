@@ -20,7 +20,6 @@ using TheGuideToTheNewEden.WinUI.Services;
 using System.Diagnostics;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using TheGuideToTheNewEden.WinUI.Services.Settings;
-using ESI.NET.Models.Universe;
 using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
@@ -480,7 +479,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             if(FilterTypes.NotNullOrEmpty() && orders.NotNullOrEmpty())
             {
                 List<Order> newOrders = new List<Order>();
-                var ids = FilterTypes.Select(p => p.TypeID).ToHashSet2();
+                var ids = FilterTypes.Select(p => (long)p.TypeID).ToHashSet2();
                 foreach(var o in orders)
                 {
                     if(!ids.Contains(o.TypeId))
@@ -776,7 +775,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
         {
             if (orders.NotNullOrEmpty())
             {
-                decimal price = 0;
+                double price = 0;
                 long count = 0;
                 foreach (var order in orders)
                 {
@@ -900,7 +899,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Business
             var history = statistics.Where(p => p.Date > DateTime.Now.AddDays(-day)).ToList();
             if (history.NotNullOrEmpty())
             {
-                List<decimal> decimals = history.Select(p => p.Lowest).ToList();
+                List<double> decimals = history.Select(p => p.Lowest).ToList();
                 decimals.AddRange(history.Select(p => p.Highest).ToList());
                 decimals = decimals.OrderBy(p=>p).ToList();
                 var avag = (decimals[decimals.Count / 2 - 1] + decimals[decimals.Count / 2]) / 2;

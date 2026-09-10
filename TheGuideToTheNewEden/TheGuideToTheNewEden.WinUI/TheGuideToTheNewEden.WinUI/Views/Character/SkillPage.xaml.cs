@@ -1,5 +1,3 @@
-using ESI.NET;
-using ESI.NET.Models.Skills;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,12 +16,19 @@ using Windows.Foundation.Collections;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.Core.DBModels;
 using Newtonsoft.Json.Linq;
+using EVEStandard.API;
+using EVEStandard;
+using Microsoft.UI.Xaml.Shapes;
+using EVEStandard.Models.API;
 
 namespace TheGuideToTheNewEden.WinUI.Views.Character
 {
     public sealed partial class SkillPage : Page, ICharacterPage
     {
-        private ESI.NET.Models.Skills.SkillDetails _skillDetails;
+        private EVEStandardAPI _esiClient;
+        private AuthDTO _auth;
+        private Core.Models.Character.AuthorizedCharacterData _characterData;
+        private EVEStandard.Models.CharacterSkills _skillDetails;
         public SkillPage()
         {
             this.InitializeComponent();
@@ -31,7 +36,14 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            _skillDetails = e.Parameter as ESI.NET.Models.Skills.SkillDetails;
+            var paras = e.Parameter as object[];
+            if (paras != null && paras.Length == 3)
+            {
+                _esiClient = paras[0] as EVEStandardAPI;
+                _characterData = paras[1] as Core.Models.Character.AuthorizedCharacterData;
+                _auth = _characterData.ToAuthDTO();
+                _skillDetails = paras[2] as EVEStandard.Models.CharacterSkills;
+            }
         }
         private void SkillPage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -61,7 +73,7 @@ namespace TheGuideToTheNewEden.WinUI.Views.Character
                         {
                             if (invTypesDic.TryGetValue(skill, out var invType))
                             {
-                                ESI.NET.Models.Skills.Skill cSkill = null;
+                                EVEStandard.Models.Skill cSkill = null;
                                 if (skillsDic.TryGetValue(skill, out var value))
                                 {
                                     cSkill = value;

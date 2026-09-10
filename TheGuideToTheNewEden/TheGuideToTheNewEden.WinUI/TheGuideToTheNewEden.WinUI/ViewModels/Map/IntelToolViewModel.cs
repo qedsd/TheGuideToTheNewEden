@@ -17,7 +17,6 @@ using static TheGuideToTheNewEden.WinUI.Controls.MapDataTypeControl;
 using TheGuideToTheNewEden.Core.Extensions;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using Microsoft.UI.Xaml;
-using ESI.NET.Models.Location;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.User32;
 using TheGuideToTheNewEden.WinUI.Services;
@@ -45,8 +44,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
         public List<MapIntelMsg> AllIntelMsgs { get; set; }
 
         private MapCanvas _mapCanvas;
-        private Dictionary<int, MapData> _systemDatas;
-        private Dictionary<int, SovData> _sovDatas;
+        private Dictionary<long, MapData> _systemDatas;
+        private Dictionary<long, SovData> _sovDatas;
         private DispatcherTimer _timer;
 
 
@@ -61,7 +60,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.Map
             AllIntelMsgs = new List<MapIntelMsg>();
             RefreshChannel();
         }
-        public void Init(MapCanvas mapCanvas, Dictionary<int, MapData> systemDatas, Dictionary<int, SovData> sovDatas)
+        public void Init(MapCanvas mapCanvas, Dictionary<long, MapData> systemDatas, Dictionary<long, SovData> sovDatas)
         {
             _mapCanvas = mapCanvas;
             _systemDatas = systemDatas;

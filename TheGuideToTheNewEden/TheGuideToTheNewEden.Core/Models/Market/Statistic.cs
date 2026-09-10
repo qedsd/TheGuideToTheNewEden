@@ -5,14 +5,14 @@ using TheGuideToTheNewEden.Core.Extensions;
 
 namespace TheGuideToTheNewEden.Core.Models.Market
 {
-    public class Statistic: ESI.NET.Models.Market.Statistic
+    public class Statistic: EVEStandard.Models.MarketRegionHistory
     {
         public Statistic() { }
-        public Statistic(ESI.NET.Models.Market.Statistic statistic) 
+        public Statistic(EVEStandard.Models.MarketRegionHistory statistic) 
         { 
             this.CopyFrom(statistic);
         }
-        public Statistic(ESI.NET.Models.Market.Statistic statistic, int invTypeId)
+        public Statistic(EVEStandard.Models.MarketRegionHistory statistic, int invTypeId)
         {
             this.CopyFrom(statistic);
             InvTypeId = invTypeId;

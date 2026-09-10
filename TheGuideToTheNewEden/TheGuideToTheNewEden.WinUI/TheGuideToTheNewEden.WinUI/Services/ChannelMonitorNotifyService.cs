@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.PlanetaryInteraction;
-using Microsoft.Windows.AppNotifications;
+﻿using Microsoft.Windows.AppNotifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;

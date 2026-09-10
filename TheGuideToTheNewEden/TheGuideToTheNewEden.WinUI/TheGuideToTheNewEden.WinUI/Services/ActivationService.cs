@@ -69,7 +69,7 @@ namespace TheGuideToTheNewEden.WinUI.Services
             else
             {
                 //TODO:release
-                return ["", ""];
+                return ["", "", ""];
             }
         }
         private static string GetGithubLicense()

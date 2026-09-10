@@ -15,6 +15,7 @@ using TheGuideToTheNewEden.WinUI.Converters;
 using Microsoft.UI.Xaml;
 using CommunityToolkit.Mvvm.Input;
 using System.Windows.Input;
+using Dm.util;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
 {
@@ -49,17 +50,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels.KB
                             Id = _statistic.Info.Id,
                             Name = _statistic.Info.Name
                         };
-                        var result = ESIService.Current.EsiClient.Character.Affiliation(new int[]{ _statistic.Id}).Result;
-                        if(result?.StatusCode == System.Net.HttpStatusCode.OK)
+                        var result = ESIService.Current.EsiClient.Character.AffiliationAsync(new List<long>{ _statistic.Id}).Result;
+                        if(result?.Model != null)
                         {
-                            List<int> ids = new List<int>();
-                            if (result.Data[0].CorporationId > 0)
+                            List<long> ids = new List<long>();
+                            if (result.Model[0].CorporationId > 0)
                             {
-                                ids.Add(result.Data[0].CorporationId);
+                                ids.Add(result.Model[0].CorporationId);
                             }
-                            if (result.Data[0].AllianceId > 0)
+                            if (result.Model[0].AllianceId > 0)
                             {
-                                ids.Add(result.Data[0].AllianceId);
+                                ids.Add(result.Model[0].AllianceId.Value);
                             }
                             var names = Core.Services.IDNameService.GetByIds(ids);
                             if(names.NotNullOrEmpty())

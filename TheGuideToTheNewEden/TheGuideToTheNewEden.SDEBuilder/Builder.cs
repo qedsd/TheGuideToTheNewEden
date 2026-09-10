@@ -234,7 +234,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                 {
                     if(_esiClient == null)
                     {
-                        _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", DataSource.Tranquility, TimeSpan.FromSeconds(30));
+                        _esiClient = new EVEStandard.EVEStandardAPI("TheGuideToTheNewEden", DataSource.Tranquility, CompatibilityDate.v2025_12_16, TimeSpan.FromSeconds(30));
                     }
                     foreach(var type in noPackagedVolumeTypes)
                     {
@@ -243,7 +243,7 @@ namespace TheGuideToTheNewEden.SDEBuilder
                         {
                             try
                             {
-                                result = await _esiClient.Universe.GetTypeInfoV3Async(type.Id);
+                                result = await _esiClient.Universe.GetTypeInfoAsync(type.Id);
                                 break;
                             }
                             catch (Exception ex)

@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
         public InvTypeBase Item { get; set; }
         public IEnumerable<Core.Models.Market.Order> SellOrders {  get; set; }
         public IEnumerable<Core.Models.Market.Order> BuyOrders {  get; set; }
-        public IEnumerable<ESI.NET.Models.Market.Statistic> Statistics { get; set; }
+        public IEnumerable<EVEStandard.Models.MarketRegionHistory> Statistics { get; set; }
         public double Sell5P {  get; set; }
         public double Buy5P { get; set; }
         public double SellTop { get; set; }
@@ -23,12 +23,12 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
         public long BuyAmount { get; set; }
 
         public long Volume { get; set; }
-        public decimal Highest { get; set; }
-        public decimal Average { get; set; }
-        public decimal Lowest { get; set; }
+        public double Highest { get; set; }
+        public double Average { get; set; }
+        public double Lowest { get; set; }
 
-        private IEnumerable<ESI.NET.Models.Market.Statistic> statisticsForShow;
-        public IEnumerable<ESI.NET.Models.Market.Statistic> StatisticsForShow
+        private IEnumerable<EVEStandard.Models.MarketRegionHistory> statisticsForShow;
+        public IEnumerable<EVEStandard.Models.MarketRegionHistory> StatisticsForShow
         {
             get
             {
@@ -39,7 +39,7 @@ namespace TheGuideToTheNewEden.Core.Models.ChannelMarket
                 return statisticsForShow;
             }
         }
-        public ChannelMarketResult(InvTypeBase item, IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders, IEnumerable<ESI.NET.Models.Market.Statistic> statistics)
+        public ChannelMarketResult(InvTypeBase item, IEnumerable<Core.Models.Market.Order> sellOrders, IEnumerable<Core.Models.Market.Order> buyOrders, IEnumerable<EVEStandard.Models.MarketRegionHistory> statistics)
         {
             Item = item;
             SellOrders = sellOrders;

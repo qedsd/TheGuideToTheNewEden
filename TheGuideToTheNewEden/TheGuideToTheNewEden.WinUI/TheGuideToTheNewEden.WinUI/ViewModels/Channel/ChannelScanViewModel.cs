@@ -95,23 +95,23 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if (namesAfterFiltered.NotNullOrEmpty())
                 {
                     #region 构建忽略id表
-                    HashSet<int> ignoredCharacterIds = new HashSet<int>();
-                    HashSet<int> ignoredCorpIds = new HashSet<int>();
-                    HashSet<int> ignoredAllianceIds = new HashSet<int>();
+                    HashSet<long> ignoredCharacterIds = new HashSet<long>();
+                    HashSet<long> ignoredCorpIds = new HashSet<long>();
+                    HashSet<long> ignoredAllianceIds = new HashSet<long>();
                     var ignoredCharacters = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Character);
                     var ignoredCorps = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Corporation);
                     var ignoredAlliances = Config.Ignoreds.Where(p => p.GetCategory() == IdName.CategoryEnum.Alliance);
                     if (ignoredCharacters.NotNullOrEmpty())
                     {
-                        ignoredCharacterIds = ignoredCharacters.Select(p => p.Id).ToHashSet2();
+                        ignoredCharacterIds = ignoredCharacters.Select(p => (long)p.Id).ToHashSet2();
                     }
                     if (ignoredCorps.NotNullOrEmpty())
                     {
-                        ignoredCorpIds = ignoredCorps.Select(p => p.Id).ToHashSet2();
+                        ignoredCorpIds = ignoredCorps.Select(p => (long)p.Id).ToHashSet2();
                     }
                     if (ignoredAlliances.NotNullOrEmpty())
                     {
-                        ignoredAllianceIds = ignoredAlliances.Select(p => p.Id).ToHashSet2();
+                        ignoredAllianceIds = ignoredAlliances.Select(p => (long)p.Id).ToHashSet2();
                     }
                     #endregion
 
@@ -125,19 +125,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                             int length = characterNames.Length > 1000 ? 1000 : characterNames.Length;
                             while (true)
                             {
-                                var affiliationResult = await ESIService.Current.EsiClient.Character.Affiliation(characterNames.Skip(start).Take(length).Select(p => p.Id).ToArray());
-                                if (affiliationResult?.StatusCode == System.Net.HttpStatusCode.OK)
+                                var affiliationResult = await ESIService.Current.EsiClient.Character.AffiliationAsync(characterNames.Skip(start).Take(length).Select(p => (long)p.Id).ToList());
+                                if (affiliationResult?.Model != null)
                                 {
                                     var datas = await Task.Run(() =>
                                     {
-                                        List<ESI.NET.Models.Character.Affiliation> affiliations = new List<ESI.NET.Models.Character.Affiliation>();
+                                        List<EVEStandard.Models.CharacterAffiliation> affiliations = new List<EVEStandard.Models.CharacterAffiliation>();
                                         if (!Config.ShowIgnoredInResultDetail && !Config.ShowIgnoredInResultStatistics)//统计、详细均不显示忽略后的则可不获取IdName
                                         {
-                                            foreach (var affiliation in affiliationResult.Data)
+                                            foreach (var affiliation in affiliationResult.Model)
                                             {
                                                 if (ignoredCharacterIds.Contains(affiliation.CharacterId) ||
                                                     ignoredCorpIds.Contains(affiliation.CorporationId) ||
-                                                    ignoredAllianceIds.Contains(affiliation.AllianceId))
+                                                    ignoredAllianceIds.Contains(affiliation.AllianceId.Value))
                                                 {
                                                     continue;//忽略
                                                 }
@@ -149,11 +149,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                         }
                                         else
                                         {
-                                            affiliations = affiliationResult.Data;
+                                            affiliations = affiliationResult.Model;
                                         }
                                         List<CharacterScanInfo> newInfos = Core.Helpers.ThreadHelper.Run(affiliations, (affiliation) =>
                                         {
-                                            return CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId);
+                                            return CharacterScanInfo.Create(affiliation.CharacterId, affiliation.CorporationId, affiliation.AllianceId.Value);
                                         }).Where(p=>p != null).ToList();
                                         return newInfos;
                                     });

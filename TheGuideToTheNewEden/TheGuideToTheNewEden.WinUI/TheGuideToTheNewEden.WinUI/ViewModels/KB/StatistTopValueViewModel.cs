@@ -13,7 +13,6 @@ using ZKB.NET.Models.Killmails;
 using ZKB.NET.Models.KillStream;
 using TheGuideToTheNewEden.Core.Helpers;
 using System.Collections.ObjectModel;
-using ESI.NET.Models.Killmails;
 using System.Threading;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels.KB

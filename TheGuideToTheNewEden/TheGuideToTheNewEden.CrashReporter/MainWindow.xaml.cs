@@ -20,11 +20,12 @@ namespace TheGuideToTheNewEden.CrashReporter
             Paragraph paragraph = new Paragraph();
             Run run = new Run()
             {
-                Text = App.MSG
+                Text = App.MSG ?? "No error information available."
             };
             paragraph.Inlines.Add(run);
             doc.Blocks.Add(paragraph);
             MsgTextBox.Document = doc;
+            CrasheHeader.Visibility = App.FromCrash ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

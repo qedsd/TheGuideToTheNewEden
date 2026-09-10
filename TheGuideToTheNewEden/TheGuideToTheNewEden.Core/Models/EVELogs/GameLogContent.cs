@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.PlanetaryInteraction;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using TheGuideToTheNewEden.Core.Helpers;

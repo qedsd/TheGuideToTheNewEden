@@ -18,7 +18,6 @@ using System.Text;
 using TheGuideToTheNewEden.Core.Services.DB;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI;
-using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Services;
 using DevWinUI;
 using TheGuideToTheNewEden.WinUI.Models;
@@ -54,14 +53,14 @@ namespace TheGuideToTheNewEden.WinUI.Views
             LoadWormholePortalDetail(richTextBlock, wormholePortal);
             WindowedContentDialog dialog = new()
             {
-                Title = wormholePortal.Name,
+                Header = wormholePortal.Name,
                 Content = richTextBlock,
-                CloseButtonText = Helpers.ResourcesHelper.GetString("General_OK"),
+                CloseButtonContent = Helpers.ResourcesHelper.GetString("General_OK"),
                 IsSecondaryButtonEnabled = false,
                 IsPrimaryButtonEnabled = false,
-                OwnerWindow = Helpers.WindowHelper.MainWindow,
+                Owner = Helpers.WindowHelper.MainWindow,
             };
-            await dialog.ShowAsync(true);
+            await dialog.ShowAsync();
         }
 
 

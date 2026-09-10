@@ -71,28 +71,45 @@ namespace TheGuideToTheNewEden.PreviewWindow
                 Process appProcess = null;
                 foreach (var process in allProcesses)
                 {
-                    if (process.MainWindowHandle == appHwnd)
+                    try
                     {
-                        appProcess = process;
-                        break;
+                        if (process.MainWindowHandle == appHwnd)
+                        {
+                            appProcess = process;
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+                // 通过句柄未找到时，按进程名兜底查找
+                if (appProcess == null)
+                {
+                    var processes = Process.GetProcessesByName("TheGuideToTheNewEden.WinUI");
+                    if (processes.Length > 0)
+                    {
+                        appProcess = processes[0];
                     }
                 }
                 if (appProcess != null)
                 {
                     while (true)
                     {
-                        if (appProcess.HasExited)
+                        try
                         {
-                            this.Dispatcher.Invoke(() =>
+                            if (appProcess.HasExited)
                             {
-                                this.Close();
-                            });
+                                this.Dispatcher.Invoke(() =>
+                                {
+                                    this.Close();
+                                });
+                                break;
+                            }
+                        }
+                        catch
+                        {
                             break;
                         }
-                        else
-                        {
-                            Thread.Sleep(1000);
-                        }
+                        Thread.Sleep(1000);
                     }
                 }
             });

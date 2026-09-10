@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using TheGuideToTheNewEden.Core.Models.Market;
 using TheGuideToTheNewEden.Core.DBModels;
-using ESI.NET.Models.SSO;
 using System.Threading.Tasks;
 using TheGuideToTheNewEden.WinUI.Services;
 using System.Collections.ObjectModel;

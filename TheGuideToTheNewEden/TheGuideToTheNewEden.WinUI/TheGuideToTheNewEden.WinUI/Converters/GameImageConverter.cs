@@ -1,5 +1,4 @@
-﻿using ESI.NET.Models.Character;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Data;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers.Text;
@@ -54,7 +53,18 @@ namespace TheGuideToTheNewEden.WinUI.Converters
                 default: return string.Empty;
             }
         }
-        private static string GetTranquilityImage(int id, ImgType type, int size = 128)
+        public static string GetImageUri(long id, ImgType type, int size = 128)
+        {
+            if (id <= 0)
+                return null;
+            switch (Services.GameServerSelectorService.Value)
+            {
+                case Core.Enums.GameServerType.Tranquility: return GetTranquilityImage(id, type, size);
+                case Core.Enums.GameServerType.Serenity: return $"{Serenity}/{type}/{id}_{size}.{GetImageFormat(type)}";
+                default: return string.Empty;
+            }
+        }
+        private static string GetTranquilityImage(long id, ImgType type, int size = 128)
         {
             switch (type)
             {

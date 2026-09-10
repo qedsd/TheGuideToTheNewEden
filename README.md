@@ -11,6 +11,9 @@
 ## 运行环境
 - 电脑系统：Windows 10 19041.0及以上，推荐Window 11。不支持各种LTSC、特供版、精简版Windows系统，不支持Mac系统，不支持Linux系统，无手机版本。
 - .NET 桌面运行时 9.0 ：[.NET 9.0](https://dotnet.microsoft.com/zh-cn/download/dotnet/9.0)
+- Windows App SDK 运行时：[Windows App SDK Runtime x64](https://aka.ms/windowsappsdk/stable-msixinstaller-x64)（运行时安装包，解压后运行 `.msix` 安装）
+
+> 首次运行时如缺少上述组件，软件会提示安装。你也可以在 Releases 页面下载包含运行时的完整安装包。
 
 ## 下载
 [Releases](https://github.com/qedsd/TheGuideToTheNewEden/releases)

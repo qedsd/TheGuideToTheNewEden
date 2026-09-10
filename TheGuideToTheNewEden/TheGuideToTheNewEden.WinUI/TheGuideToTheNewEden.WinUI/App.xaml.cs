@@ -213,6 +213,8 @@ namespace TheGuideToTheNewEden.WinUI
                 Core.Log.Error(ex);
             }
             Services.MemoryIPCService.Dispose();
+            // 给子进程（如 PreviewWindow）处理 IPC Close 信号的时间
+            System.Threading.Thread.Sleep(300);
             App.HandleClosedEvents = false;
             Core.Log.Info("开始Close");
             App.HandleClose();

@@ -118,10 +118,10 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 return;
             }
             ShowWaiting();
-            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.Contracts(SelectedMapRegionBase.RegionID, Page);
-            if (resp != null && resp.StatusCode == System.Net.HttpStatusCode.OK)
+            var resp = await Core.Services.ESIService.Current.EsiClient.Contracts.GetPublicContractsAsync(SelectedMapRegionBase.RegionID, Page);
+            if (resp?.Model != null)
             {
-                var datas = resp.Data.Select(p=>new Core.Models.Contract.ContractInfo(p)).ToList();
+                var datas = resp.Model.Select(p=>new Core.Models.Contract.ContractInfo(p)).ToList();
                 if(datas.NotNullOrEmpty())
                 {
                     await ContractInfoHelper.CompleteinfoAsync(datas);
@@ -131,8 +131,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             else
             {
                 AllContracts = null;
-                Core.Log.Error(resp?.Message);
-                ShowError(resp?.Message, true);
+                ShowError("GetPublicContractsAsync Failed", true);
             }
             HideWaiting();
         }
@@ -146,8 +145,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 else
                 {
-                    var type = (ESI.NET.Enumerations.ContractType)(ContractType - 1);
-                    Contracts = AllContracts.Where(p => p.Type == type).ToList();
+                    var type = ((Core.Models.Contract.ContractInfo.TypeEnum)(ContractType - 1)).ToString();
+                    Contracts = AllContracts.Where(p => p.Type.Equals(type, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
             }
             else
@@ -158,7 +157,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
 
         private void LoadDetail(Core.Models.Contract.ContractInfo contractInfo)
         {
-            new ContractDetailWindow(Core.Services.ESIService.Current.EsiClient, contractInfo, 0).Activate();
+            new ContractDetailWindow(Core.Services.ESIService.Current.EsiClient, null, contractInfo, 0).Activate();
         }
     }
 }

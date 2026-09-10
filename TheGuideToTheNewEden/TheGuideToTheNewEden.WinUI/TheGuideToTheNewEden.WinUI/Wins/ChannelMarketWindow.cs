@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using ESI.NET.Models.PlanetaryInteraction;
 using Microsoft.UI.Xaml;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
 using TheGuideToTheNewEden.WinUI.Extensions;

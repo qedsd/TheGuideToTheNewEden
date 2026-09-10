@@ -10,7 +10,7 @@ namespace TheGuideToTheNewEden.Core.Models.Market
     {
         public Order Target { get; set; }
         public List<Order> References {  get; set; }
-        public decimal Difference { get; set; }
+        public double Difference { get; set; }
         public bool? Normal { get; set; } = null;
         public StatusOrder(Order target, List<Order> references)
         {

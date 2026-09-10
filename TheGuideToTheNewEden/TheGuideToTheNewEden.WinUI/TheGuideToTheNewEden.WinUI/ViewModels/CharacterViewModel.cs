@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using ESI.NET.Logic;
-using ESI.NET.Models.SSO;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -16,18 +14,18 @@ using TheGuideToTheNewEden.Core.Models.Wallet;
 using TheGuideToTheNewEden.Core.Services;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using TheGuideToTheNewEden.Core.Extensions;
-using ESI.NET;
+using EVEStandard;
 using Newtonsoft.Json.Linq;
-using ESI.NET.Enumerations;
+using EVEStandard.Enumerations;
 using Microsoft.Extensions.Options;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Dialogs;
 using TheGuideToTheNewEden.WinUI.Converters;
 using Vanara.PInvoke;
-using ESI.NET.Models.Location;
-using ESI.NET.Models.Universe;
 using TheGuideToTheNewEden.WinUI.Extensions;
 using Newtonsoft.Json;
+using EVEStandard.Models.API;
+using EVEStandard.Models;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -44,57 +42,57 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         }
 
         #region
-        private decimal _characterWallet;
-        private int _lp;
-        private ESI.NET.Models.Character.Information _information;
-        private ESI.NET.Models.Skills.SkillDetails _skill;
-        private List<ESI.NET.Models.Loyalty.Points> _loyaltyPoints;
-        private ESI.NET.Models.Location.Activity _onlineStatus;
-        private ESI.NET.Models.Location.Location _location;
-        private ESI.NET.Models.Location.Ship _ship;
-        private List<ESI.NET.Models.Wallet.Wallet> _corpWallets;
-        private decimal _corpWallet;
+        private double _characterWallet;
+        private long _lp;
+        private EVEStandard.Models.CharacterInfo _information;
+        private EVEStandard.Models.CharacterSkills _skill;
+        private List<EVEStandard.Models.LoyaltyPoints> _loyaltyPoints;
+        private EVEStandard.Models.CharacterOnline _onlineStatus;
+        private EVEStandard.Models.CharacterLocation _location;
+        private EVEStandard.Models.CharacterShip _ship;
+        private List<EVEStandard.Models.CorporationWallet> _corpWallets;
+        private double _corpWallet;
         private string _offLineTime;
         private bool _skillQueueRunning;
         private string _skillQueueRemainRatio = "0";
         private string _skillQueueRemainTime;
         private int _skillQueueTotalCount;
         private int _skillQueueUndoneCount;
-        private ESI.NET.Models.Corporation.Corporation _corporation = null;
-        private ESI.NET.Models.Alliance.Alliance _alliance = null;
+        private EVEStandard.Models.CorporationInfo _corporation = null;
+        private EVEStandard.Models.Alliance _alliance = null;
         #endregion
 
         #region 详细页属性
         private BitmapImage _characterAvatar;
         public BitmapImage CharacterAvatar { get => _characterAvatar; set => SetProperty(ref _characterAvatar, value); }
-        public decimal CharacterWallet { get => _characterWallet; set => SetProperty(ref _characterWallet, value); }
-        public int LP { get => _lp; set => SetProperty(ref _lp, value); }
-        public ESI.NET.Models.Character.Information Information { get => _information; set => SetProperty(ref _information, value); }
-        public ESI.NET.Models.Skills.SkillDetails Skill { get => _skill; set => SetProperty(ref _skill, value); }
-        public List<ESI.NET.Models.Loyalty.Points> LoyaltyPoints { get => _loyaltyPoints; set => SetProperty(ref _loyaltyPoints, value); }
-        public ESI.NET.Models.Location.Activity OnlineStatus { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value); }
-        public ESI.NET.Models.Location.Location Location { get => _location; set => SetProperty(ref _location, value); }
-        public ESI.NET.Models.Location.Ship Ship { get => _ship; set => SetProperty(ref _ship, value); }
-        public List<ESI.NET.Models.Wallet.Wallet> CorpWallets { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
-        public decimal CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
-        public ESI.NET.Models.Corporation.Corporation Corporation { get => _corporation; set => SetProperty(ref _corporation, value); }
-        public ESI.NET.Models.Alliance.Alliance Alliance { get => _alliance; set => SetProperty(ref _alliance, value); }
+        public double CharacterWallet { get => _characterWallet; set => SetProperty(ref _characterWallet, value); }
+        public long LP { get => _lp; set => SetProperty(ref _lp, value); }
+        public EVEStandard.Models.CharacterInfo Information { get => _information; set => SetProperty(ref _information, value); }
+        public EVEStandard.Models.CharacterSkills Skill { get => _skill; set => SetProperty(ref _skill, value); }
+        public List<EVEStandard.Models.LoyaltyPoints> LoyaltyPoints { get => _loyaltyPoints; set => SetProperty(ref _loyaltyPoints, value); }
+        public EVEStandard.Models.CharacterOnline OnlineStatus { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value); }
+        public EVEStandard.Models.CharacterLocation Location { get => _location; set => SetProperty(ref _location, value); }
+        public EVEStandard.Models.CharacterShip Ship { get => _ship; set => SetProperty(ref _ship, value); }
+        public List<EVEStandard.Models.CorporationWallet> CorpWallets { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
+        public double CorpWallet { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
+        public EVEStandard.Models.CorporationInfo Corporation { get => _corporation; set => SetProperty(ref _corporation, value); }
+        public EVEStandard.Models.Alliance Alliance { get => _alliance; set => SetProperty(ref _alliance, value); }
         #endregion
 
         #region 卡片页属性
         private BitmapImage _characterAvatar_Card;
         public BitmapImage CharacterAvatar_Card { get => _characterAvatar_Card; set => SetProperty(ref _characterAvatar_Card, value); }
         public string CharacterWallet_Card { get => _characterWallet.ToString("N2"); }
-        public int LP_Card { get => _lp; set => SetProperty(ref _lp, value); }
-        public ESI.NET.Models.Character.Information Information_Card { get => _information; set => SetProperty(ref _information, value); }
+        public long LP_Card { get => _lp; set => SetProperty(ref _lp, value); }
+        public EVEStandard.Models.CharacterInfo Information_Card { get => _information; set => SetProperty(ref _information, value); }
         public string TotalSP { get => _skill?.TotalSp.ToString("N0"); }
-        public ESI.NET.Models.Skills.SkillDetails Skill_Card { get => _skill; set => SetProperty(ref _skill, value); }
-        public List<ESI.NET.Models.Loyalty.Points> LoyaltyPoints_Card { get => _loyaltyPoints; set => SetProperty(ref _loyaltyPoints, value); }
-        public ESI.NET.Models.Location.Activity OnlineStatus_Card { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value); }
-        public ESI.NET.Models.Location.Location Location_Card { get => _location; set => SetProperty(ref _location, value); }
-        public ESI.NET.Models.Location.Ship Ship_Card { get => _ship; set => SetProperty(ref _ship, value); }
-        public List<ESI.NET.Models.Wallet.Wallet> CorpWallets_Card { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
-        public decimal CorpWallet_Card { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
+        public EVEStandard.Models.CharacterSkills Skill_Card { get => _skill; set => SetProperty(ref _skill, value); }
+        public List<EVEStandard.Models.LoyaltyPoints> LoyaltyPoints_Card { get => _loyaltyPoints; set => SetProperty(ref _loyaltyPoints, value); }
+        public EVEStandard.Models.CharacterOnline OnlineStatus_Card { get => _onlineStatus; set => SetProperty(ref _onlineStatus, value); }
+        public EVEStandard.Models.CharacterLocation Location_Card { get => _location; set => SetProperty(ref _location, value); }
+        public EVEStandard.Models.CharacterShip Ship_Card { get => _ship; set => SetProperty(ref _ship, value); }
+        public List<EVEStandard.Models.CorporationWallet> CorpWallets_Card { get => _corpWallets; set => SetProperty(ref _corpWallets, value); }
+        public double CorpWallet_Card { get => _corpWallet; set => SetProperty(ref _corpWallet, value); }
         public string OffLineTime { get => _offLineTime; set => SetProperty(ref _offLineTime, value); }
         public bool SkillQueueRunning { get => _skillQueueRunning; set => SetProperty(ref _skillQueueRunning, value); }
         public string SkillQueueRemainTime { get => _skillQueueRemainTime; set => SetProperty(ref _skillQueueRemainTime, value); }
@@ -129,19 +127,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         public int GangRatio { get => gangRatio; set => SetProperty(ref gangRatio, value); }
         #endregion
 
-        public EsiClient EsiClient;
+        private EVEStandardAPI _api;
+        public EVEStandardAPI EsiClient => _api;
         public CharacterViewModel()
         {
-            
+            _api = ESIService.GetDefaultESI();
         }
         public CharacterViewModel(AuthorizedCharacterData characterData)
         {
             SelectedCharacter = characterData;
+            _api = ESIService.GetDefaultESI();
         }
         public void Init()
         {
-            EsiClient = ESIService.GetDefaultEsi();
-            EsiClient.SetCharacterData(SelectedCharacter);
             GetBaseInfoAsync().Wait();
         }
         public ICommand RefreshCommand => new RelayCommand(async() =>
@@ -153,7 +151,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         });
         public ICommand ZKBCommand => new RelayCommand(async () =>
         {
-            await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo(SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
+            await ClientServiceHelper.GetRequiredService<KBNavigationService>().NavigationTo((int)SelectedCharacter.CharacterID, ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterName);
         });
         private async Task GetBaseInfoAsync()
         {
@@ -170,149 +168,71 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     return;
                 }
             }
-            ESI.NET.Models.Character.Information information = null;
-            ESI.NET.Models.Skills.SkillDetails skill = null;
-            List<ESI.NET.Models.Loyalty.Points> loyalties = null;
+            EVEStandard.Models.CharacterInfo information = null;
+            EVEStandard.Models.CharacterSkills skill = null;
+            List<EVEStandard.Models.LoyaltyPoints> loyalties = null;
             
-            decimal characterWallet = 0;
-            List<ESI.NET.Models.Wallet.Wallet> corpWallets = null;
-            List<ESI.NET.Models.Skills.SkillQueueItem> skillQueueItems = null;
-            ESI.NET.Models.Location.Activity onlineStatus = null;
+            double characterWallet = 0;
+            List<EVEStandard.Models.CorporationWallet> corpWallets = null;
+            List<EVEStandard.Models.SkillQueue> skillQueueItems = null;
+            EVEStandard.Models.CharacterOnline onlineStatus = null;
 
-            ESI.NET.Models.Corporation.Corporation corporation = null;
-            ESI.NET.Models.Alliance.Alliance alliance = null;
-            var tasks = new List<Task>()
-            {
-                EsiClient.Character.Information(characterData.CharacterID).ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        if(p.Result.Data != null)
-                        {
-                            information = p.Result.Data;
-                        }
-                        else
-                        {
-                            information = JsonConvert.DeserializeObject<ESI.NET.Models.Character.Information>(p.Result.Message);
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Skills.List().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        if(p.Result.Data != null)
-                        {
-                            skill = p.Result.Data;
-                        }
-                        else
-                        {
-                             skill = JsonConvert.DeserializeObject<ESI.NET.Models.Skills.SkillDetails>(p.Result.Message);//BUG:p.Result.Data = null
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Loyalty.Points().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        loyalties = p.Result.Data;
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Wallet.CharacterWallet().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        if(decimal.TryParse(p.Result.Message, out var result))
-                        {
-                            characterWallet = result;
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Wallet.CorporationWallets().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        corpWallets = p.Result.Data;
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Skills.Queue().ContinueWith((p) =>
-                {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        if(p.Result.Data != null)
-                        {
-                            skillQueueItems = p.Result.Data;
-                        }
-                        else
-                        {
-                            skillQueueItems = JsonConvert.DeserializeObject<List<ESI.NET.Models.Skills.SkillQueueItem>>(p.Result.Message);//BUG:p.Result.Data = null
-                        }
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Location.Online().ContinueWith((p)=>
-                {
-                    if(p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        onlineStatus = p.Result.Data;
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }),
-                EsiClient.Corporation.Information(characterData.CorporationID).ContinueWith((p) =>
-                {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        corporation = p.Result.Data;
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                })
-            };
-            if (characterData.AllianceID > 0)
-            {
-                tasks.Add(EsiClient.Alliance.Information(characterData.AllianceID).ContinueWith((p) =>
-                {
-                    if (p?.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        alliance = p.Result.Data;
-                    }
-                    else
-                    {
-                        Core.Log.Error(p?.Result.Message);
-                    }
-                }));
-            }
+            EVEStandard.Models.CorporationInfo corporation = null;
+            EVEStandard.Models.Alliance alliance = null;
+            // 并发启动所有请求
+            var infoTask = _api.Character.GetCharacterPublicInfoAsync(characterData.CharacterID);
+            var skillsTask = _api.Skills.GetCharacterSkillsAsync(characterData.Auth);
+            var loyaltyTask = _api.Loyalty.GetLoyaltyPointsAsync(characterData.Auth);
+            var walletTask = _api.Wallet.GetCharacterWalletBalanceAsync(characterData.Auth);
+            //var corpWalletTask = _api.Wallet.ReturnCorporationWalletBalanceAsync(characterData.Auth, characterData.CorporationID);
+            var queueTask = _api.Skills.GetCharacterSkillQueueAsync(characterData.Auth);
+            var onlineTask = _api.Location.GetCharacterOnlineAsync(characterData.Auth);
+            //var corpTask = _api.Corporation.GetCorporationInfoAsync(characterData.CorporationID);
+            //Task<EVEStandard.Models.API.ESIModelDTO<EVEStandard.Models.Alliance>> allianceTask = null;
+            //if (characterData.AllianceID > 0)
+            //{
+            //    allianceTask = _api.Alliance.GetAllianceInfoAsync(characterData.AllianceID);
+            //}
             try
             {
-                await Task.WhenAll(tasks);
+                var allTasks = new List<Task> { infoTask, skillsTask, loyaltyTask, walletTask,queueTask, onlineTask};
+
+                await Task.WhenAll(allTasks);
+
+                information = (await infoTask).Model;
+                skill = (await skillsTask).Model;
+                loyalties = (await loyaltyTask).Model;
+                characterWallet = (await walletTask).Model;
+                skillQueueItems = (await queueTask).Model;
+                onlineStatus = (await onlineTask).Model;
+
+                if(information != null)
+                {
+                    allTasks.Clear();
+                    Task<ESIModelDTO<List<CorporationWallet>>> corpWalletTask = null;
+                    Task<ESIModelDTO<CorporationInfo>> corpTask = null;
+                    Task<ESIModelDTO<Alliance>> allianceTask = null;
+                    if (information.CorporationId > 0)
+                    {
+                        characterData.CorporationID = information.CorporationId;
+                        corpWalletTask = _api.Wallet.ReturnCorporationWalletBalanceAsync(characterData.Auth, characterData.CorporationID);
+                        corpTask = _api.Corporation.GetCorporationInfoAsync(characterData.CorporationID);
+                        allTasks.Add(corpWalletTask);
+                        allTasks.Add(corpTask);
+                    }
+                    if(information.AllianceId > 0)
+                    {
+                        characterData.AllianceID = information.AllianceId.Value;
+                        allianceTask = _api.Alliance.GetAllianceInfoAsync(characterData.AllianceID);
+                    }
+                    await Task.WhenAll(allTasks);
+                    if(corpWalletTask != null)
+                    {
+                        corpWallets = (await corpWalletTask).Model;
+                        corporation = (await corpTask).Model;
+                    }
+                    alliance = allianceTask == null ? null : (await allianceTask).Model;
+                }
             }
             catch (Exception ex)
             {
@@ -321,8 +241,8 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
             }
             Window.DispatcherQueue.SafelyTryEnqueue(() =>
             {
-                _characterAvatar = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 512)));
-                _characterAvatar_Card = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri(SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 128)));
+                _characterAvatar = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri((int)SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 512)));
+                _characterAvatar_Card = new BitmapImage(new System.Uri(GameImageConverter.GetImageUri((int)SelectedCharacter.CharacterID, GameImageConverter.ImgType.Character, 128)));
                 _skill = skill;
                 _loyaltyPoints = loyalties;
                 _characterWallet = characterWallet;
@@ -338,7 +258,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 }
                 if (loyalties != null && loyalties.Any())
                 {
-                    _lp = loyalties.Sum(p => p.LoyaltyPoints);
+                    _lp = loyalties.Sum(p => p.Points);
                 }
                 else
                 {
@@ -347,7 +267,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 _onlineStatus = onlineStatus;
                 if (_onlineStatus != null && !_onlineStatus.Online)
                 {
-                    var offLineDuration = DateTime.UtcNow - _onlineStatus.LastLogout;
+                    var offLineDuration = DateTime.UtcNow - (DateTime)_onlineStatus.LastLogout;
                     if (offLineDuration.TotalDays > 365)
                     {
                         _offLineTime = $"{offLineDuration.TotalDays / 365:N0}y {offLineDuration.TotalDays % 365 / 30 :N1}mo";
@@ -384,19 +304,19 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                     _skillQueueTotalCount = skillQueueItems.Count;
                     foreach (var skill in skillQueueItems)
                     {
-                        var finishDateTime = string.IsNullOrEmpty(skill.FinishDate) ? DateTime.MinValue : DateTime.Parse(skill.FinishDate);//已经是本地时间
+                        var finishDateTime = skill.FinishDate == null ? DateTime.MinValue : (DateTime)skill.FinishDate;//已经是本地时间
                         if (finishDateTime > lastFinishDateTime)
                         {
                             lastFinishDateTime = finishDateTime;
                         }
-                        var startDateTime = string.IsNullOrEmpty(skill.StartDate) ? DateTime.MinValue : DateTime.Parse(skill.StartDate);//已经是本地时间
+                        var startDateTime = skill.StartDate == null ? DateTime.MinValue : (DateTime)skill.StartDate;//已经是本地时间
                         if (startDateTime < firstStartDateTime)
                         {
                             firstStartDateTime = startDateTime;
                         }
                         var isFinished = finishDateTime != DateTime.MinValue && finishDateTime < DateTime.Now;
                         var isWaiting = startDateTime != DateTime.MinValue && finishDateTime != DateTime.MinValue && startDateTime > DateTime.Now;
-                        var isPause = string.IsNullOrEmpty(skill.FinishDate) || string.IsNullOrEmpty(skill.StartDate);
+                        var isPause = skill.FinishDate != null || skill.StartDate != null || (skill.FinishDate == null && skill.StartDate == null);
                         var isRunning = !(isFinished || isWaiting || isPause);
                         running = running || isRunning;
                         if (!isFinished)
@@ -428,7 +348,7 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
         {
             try
             {
-                var statistic = await ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, SelectedCharacter.CharacterID);
+                var statistic = await ZKB.NET.ZKB.GetStatisticAsync(ZKB.NET.EntityType.CharacterID, (int)SelectedCharacter.CharacterID);
                 if (statistic != null)
                 {
                     HasZKB = true;

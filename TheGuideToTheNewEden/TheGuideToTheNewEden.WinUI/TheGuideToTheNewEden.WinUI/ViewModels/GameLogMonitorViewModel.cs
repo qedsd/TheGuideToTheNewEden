@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using ESI.NET.Models.Character;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

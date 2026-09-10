@@ -16,6 +16,7 @@ using Octokit;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using TheGuideToTheNewEden.WinUI.Services;
+using EVEStandard.Models;
 
 namespace TheGuideToTheNewEden.WinUI.ViewModels
 {
@@ -172,12 +173,12 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                 if (killmaills.NotNullOrEmpty())
                 {
                     KmCount = killmaills.Count;
-                    ESI.NET.Models.Killmails.Information getInfo(ZKillmaill zKillmaill)
+                    EVEStandard.Models.Killmail getInfo(ZKillmaill zKillmaill)
                     {
-                        var resp = ESIService.Current.EsiClient.Killmails.Information(zKillmaill.Zkb.Hash.ToString(), zKillmaill.KillmailId).Result;
-                        if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+                        var resp = ESIService.Current.EsiClient.Killmails.GetKillmailAsync(zKillmaill.KillmailId, zKillmaill.Zkb.Hash.ToString()).Result;
+                        if (resp?.Model != null)
                         {
-                            return resp.Data;
+                            return resp.Model;
                         }
                         else
                         {
@@ -246,25 +247,25 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         WormholeActives7 = wormholeActivesItemSource[0];
 
                         //统计活跃军团联盟
-                        Dictionary<int, List<ESI.NET.Models.Killmails.Information>> corpStatistic = new Dictionary<int, List<ESI.NET.Models.Killmails.Information>>();//key = id
-                        Dictionary<int, List<ESI.NET.Models.Killmails.Information>> allianceStatistic = new Dictionary<int, List<ESI.NET.Models.Killmails.Information>>();//key = id
+                        Dictionary<long, List<Killmail>> corpStatistic = new Dictionary<long, List<Killmail>>();//key = id
+                        Dictionary<long, List<Killmail>> allianceStatistic = new Dictionary<long, List<Killmail>>();//key = id
 
-                        void corpAddOne(int id, ESI.NET.Models.Killmails.Information km)
+                        void corpAddOne(long id, Killmail km)
                         {
-                            List<ESI.NET.Models.Killmails.Information> kms;
+                            List<Killmail> kms;
                             if(!corpStatistic.TryGetValue(id, out kms))
                             {
-                                kms = new List<ESI.NET.Models.Killmails.Information>();
+                                kms = new List<Killmail>();
                                 corpStatistic[id] = kms;
                             }
                             kms.Add(km);
                         }
-                        void allianceAddOne(int id, ESI.NET.Models.Killmails.Information km)
+                        void allianceAddOne(long id, Killmail km)
                         {
-                            List<ESI.NET.Models.Killmails.Information> kms;
+                            List<Killmail> kms;
                             if (!allianceStatistic.TryGetValue(id, out kms))
                             {
-                                kms = new List<ESI.NET.Models.Killmails.Information>();
+                                kms = new List<Killmail>();
                                 allianceStatistic[id] = kms;
                             }
                             kms.Add(km);
@@ -274,11 +275,11 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                         {
                             if(km.Victim.AllianceId > 0)
                             {
-                                allianceAddOne(km.Victim.AllianceId, km);
+                                allianceAddOne(km.Victim.AllianceId.Value, km);
                             }
                             if (km.Victim.CorporationId > 0)
                             {
-                                corpAddOne(km.Victim.CorporationId, km);
+                                corpAddOne(km.Victim.CorporationId.Value, km);
                             }
 
                             if (km.Attackers.NotNullOrEmpty())
@@ -287,17 +288,17 @@ namespace TheGuideToTheNewEden.WinUI.ViewModels
                                 {
                                     if (attacker.AllianceId > 0)
                                     {
-                                        allianceAddOne(attacker.AllianceId, km);
+                                        allianceAddOne(attacker.AllianceId.Value, km);
                                     }
                                     if (attacker.CorporationId > 0)
-                                        corpAddOne(attacker.CorporationId, km);
+                                        corpAddOne(attacker.CorporationId.Value, km);
                                 }
                             }
                         }
 
                         var topCorpStatistic = corpStatistic.OrderByDescending(p => p.Value.Count).Take(3);
                         var topAllianceStatistic = allianceStatistic.OrderByDescending(p => p.Value.Count).Take(3);
-                        List<int> ids = topCorpStatistic.Select(p => p.Key).ToList();
+                        List<long> ids = topCorpStatistic.Select(p => p.Key).ToList();
                         ids.AddRange(topAllianceStatistic.Select(p=>p.Key).ToList());
                         var names = await IDNameService.GetByIdsAsync(ids);
                         names ??= new List<IdName>();

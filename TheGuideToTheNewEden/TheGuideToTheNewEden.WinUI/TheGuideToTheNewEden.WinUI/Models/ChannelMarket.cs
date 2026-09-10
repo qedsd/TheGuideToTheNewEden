@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ESI.NET.Models.Industry;
 using TheGuideToTheNewEden.Core.Models.ChannelMarket;
 using TheGuideToTheNewEden.WinUI.Services;
 using TheGuideToTheNewEden.WinUI.Services.Settings;

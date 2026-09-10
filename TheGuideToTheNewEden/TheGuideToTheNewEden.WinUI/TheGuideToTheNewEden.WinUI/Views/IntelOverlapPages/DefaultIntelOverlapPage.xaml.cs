@@ -20,7 +20,6 @@ using Windows.Foundation.Collections;
 using Windows.UI;
 using TheGuideToTheNewEden.Core.Extensions;
 using System.Threading.Channels;
-using ESI.NET.Models.PlanetaryInteraction;
 using TheGuideToTheNewEden.Core.Models.ChannelIntel;
 
 namespace TheGuideToTheNewEden.WinUI.Views.IntelOverlapPages

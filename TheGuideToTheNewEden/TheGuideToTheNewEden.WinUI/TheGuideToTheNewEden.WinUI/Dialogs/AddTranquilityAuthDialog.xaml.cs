@@ -17,18 +17,19 @@ using System.Diagnostics;
 using TheGuideToTheNewEden.WinUI.Helpers;
 using System.Threading;
 using System.Threading.Tasks;
+using TheGuideToTheNewEden.Core.Models.Character;
 
 namespace TheGuideToTheNewEden.WinUI.Dialogs
 {
     public sealed partial class AddTranquilityAuthDialog : Page
     {
-        public ESI.NET.Models.SSO.AuthorizedCharacterData AuthorizedCharacterData { get; private set; }
+        public AuthorizedCharacterData AuthorizedCharacterData { get; private set; }
         private CancellationTokenSource _cancellationTokenSource;
         public AddTranquilityAuthDialog()
         {
             this.InitializeComponent();
         }
-        public static async Task<ESI.NET.Models.SSO.AuthorizedCharacterData> ShowAsync(XamlRoot xamlRoot)
+        public static async Task<AuthorizedCharacterData> ShowAsync(XamlRoot xamlRoot)
         {
             ContentDialog contentDialog = new ContentDialog()
             {
