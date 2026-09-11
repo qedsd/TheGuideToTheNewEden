@@ -2,12 +2,26 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.CharacterCardsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--  卡片内的数值文字  -->
+        <Style x:Key="CardValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CardLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -26,7 +40,7 @@
                         x:Name="RefreshButton"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Content="{DynamicResource Characters.Refresh}" />
+                        Content="{DynamicResource General_Refresh}" />
                 </Grid>
 
                 <!--  汇总  -->
@@ -111,6 +125,7 @@
                             HorizontalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                             Text="{DynamicResource Characters.Empty.Title}" />
                         <TextBlock
                             Margin="0,8,0,0"
@@ -128,7 +143,7 @@
                     </StackPanel>
                 </Border>
 
-                <!--  角色卡片网格  -->
+                <!--  角色卡片网格（与 WinUI3 卡片同构：头像 / 名称 / SP / ISK / 技能队列）  -->
                 <ItemsControl x:Name="CardList" Margin="0,20,0,0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -137,103 +152,258 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
+                            <!--  整卡可点击打开工作区  -->
                             <Button
-                                Width="330"
-                                Height="164"
+                                Width="200"
+                                Height="305"
                                 Margin="0,0,12,12"
                                 Click="Card_Click"
                                 Style="{StaticResource SettingsRowButton}"
                                 Tag="{Binding}">
-                                <Border Padding="16" Style="{StaticResource SettingsGroupBorder}">
+                                <Border
+                                    Padding="24,16"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12">
                                     <Grid>
-                                        <!--  头像（圆形），无图时露出下方首字母；仅真实角色显示  -->
-                                        <Grid
-                                            Width="64"
-                                            Height="64"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            Visibility="{Binding IsAdd, Converter={StaticResource InverseBoolToVisibility}}">
-                                            <Border
-                                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                                CornerRadius="32" />
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  顶部：在线状态 + 移除菜单（仅真实角色）  -->
+                                        <Grid Visibility="{Binding IsAdd, Converter={StaticResource InverseBoolToVisibility}}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <!--  在线：绿色圆点图标  -->
                                             <TextBlock
-                                                HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
-                                                FontSize="24"
-                                                FontWeight="SemiBold"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="{Binding Initial}" />
-                                            <Border CornerRadius="32">
-                                                <Border.Background>
-                                                    <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
-                                                </Border.Background>
-                                            </Border>
-                                            <Ellipse
-                                                Width="12"
-                                                Height="12"
-                                                Margin="0,0,2,2"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Bottom"
-                                                Fill="MediumSeaGreen"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                FontSize="10"
+                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                Text="&#xE1F5;"
+                                                ToolTip="{DynamicResource CharacterPage_Online}"
                                                 Visibility="{Binding Online, Converter={StaticResource BoolToVisibility}}" />
+
+                                            <!--  离线：红色图标 + 离线时长  -->
+                                            <StackPanel
+                                                Orientation="Horizontal"
+                                                ToolTip="{DynamicResource CharacterPage_Offline}"
+                                                Visibility="{Binding Online, Converter={StaticResource InverseBoolToVisibility}}">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontFamily="Segoe MDL2 Assets"
+                                                    FontSize="10"
+                                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                    Text="&#xE1F5;" />
+                                                <TextBlock
+                                                    Margin="8,0,0,0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding OfflineTimeText}" />
+                                            </StackPanel>
+
+                                            <!--  移除  -->
+                                            <ui:Button
+                                                x:Name="MoreButton"
+                                                Grid.Column="1"
+                                                Width="24"
+                                                Height="24"
+                                                Padding="0"
+                                                VerticalAlignment="Top"
+                                                Appearance="Transparent"
+                                                Click="MoreCharacter_Click">
+                                                <ui:Button.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Click="RemoveCharacter_Click" Header="{DynamicResource CharacterPage_Remove}" />
+                                                    </ContextMenu>
+                                                </ui:Button.ContextMenu>
+                                                <TextBlock
+                                                    FontFamily="Segoe UI Symbol"
+                                                    FontSize="15"
+                                                    Text="&#xE10C;" />
+                                            </ui:Button>
                                         </Grid>
 
-                                        <!--  角色信息（仅真实角色显示）  -->
-                                        <StackPanel
-                                            Margin="80,2,0,0"
+                                        <!--  主体：头像 / 名称 / SP / ISK，底部技能队列（仅真实角色）  -->
+                                        <Grid
+                                            Grid.Row="1"
+                                            Margin="0,4,0,0"
                                             Visibility="{Binding IsAdd, Converter={StaticResource InverseBoolToVisibility}}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+
+                                            <!--  圆形头像，加载失败时露出首字母占位  -->
+                                            <Grid
+                                                Width="84"
+                                                Height="84"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                                <Border
+                                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                                    CornerRadius="42" />
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="28"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Initial}" />
+                                                <Border CornerRadius="42">
+                                                    <Border.Background>
+                                                        <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
+                                                    </Border.Background>
+                                                </Border>
+                                            </Grid>
+
                                             <TextBlock
-                                                FontSize="16"
-                                                FontWeight="SemiBold"
+                                                Grid.Row="1"
+                                                Margin="0,16,0,0"
+                                                FontWeight="Bold"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                 Text="{Binding Name}"
                                                 TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                Margin="0,4,0,0"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="{Binding StatusText}" />
-                                            <TextBlock
-                                                Margin="0,10,0,0"
-                                                FontSize="13"
-                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                Text="{Binding WalletText}" />
-                                            <TextBlock
-                                                Margin="0,2,0,0"
-                                                FontSize="13"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="{Binding SkillPointsText}" />
-                                        </StackPanel>
 
-                                        <!--  移除（仅真实角色显示）  -->
-                                        <ui:Button
-                                            x:Name="RemoveButton"
-                                            Width="28"
-                                            Height="28"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Top"
-                                            Appearance="Transparent"
-                                            Click="RemoveCharacter_Click"
-                                            Tag="{Binding}"
-                                            ToolTip="{DynamicResource Characters.Remove}"
-                                            Visibility="{Binding IsAdd, Converter={StaticResource InverseBoolToVisibility}}">
-                                            <ui:SymbolIcon FontSize="12" Symbol="Dismiss24" />
-                                        </ui:Button>
+                                            <StackPanel
+                                                Grid.Row="2"
+                                                Margin="0,12,0,0"
+                                                Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource CardLabelStyle}" Text="SP" />
+                                                <TextBlock
+                                                    Margin="12,0,0,0"
+                                                    Style="{StaticResource CardValueStyle}"
+                                                    Text="{Binding SkillPointsText}" />
+                                            </StackPanel>
 
-                                        <!--  添加卡片内容  -->
+                                            <StackPanel
+                                                Grid.Row="3"
+                                                Margin="0,8,0,0"
+                                                Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource CardLabelStyle}" Text="ISK" />
+                                                <TextBlock
+                                                    Margin="8,0,0,0"
+                                                    Style="{StaticResource CardValueStyle}"
+                                                    Text="{Binding WalletText}" />
+                                            </StackPanel>
+
+                                            <!--  技能队列：百分比 / 细进度条 / 剩余时间 / 剩余技能数  -->
+                                            <Grid Grid.Row="4" VerticalAlignment="Bottom">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        FontWeight="Thin"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{DynamicResource CharacterPage_SkillQueue}" />
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock
+                                                            Margin="4,0,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="{Binding QueuePercentText}" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="%" />
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <controls:RatioBar
+                                                    Grid.Row="1"
+                                                    Height="3"
+                                                    Margin="0,8,0,0"
+                                                    TrackBrush="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                                    BarBrush="{DynamicResource SystemFillColorSuccessBrush}"
+                                                    Ratio="{Binding QueuePercent}" />
+
+                                                <Grid Grid.Row="2" Margin="0,12,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal" ToolTip="{DynamicResource CharacterPage_RemainTime}">
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            FontFamily="Segoe MDL2 Assets"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="&#xE2AD;" />
+                                                        <TextBlock
+                                                            Margin="6,0,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="{Binding QueueRemainText}" />
+                                                        <TextBlock
+                                                            Margin="6,0,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                            Text="{DynamicResource CharacterPage_NotRunning}"
+                                                            Visibility="{Binding QueueRunning, Converter={StaticResource InverseBoolToVisibility}}" />
+                                                    </StackPanel>
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        Orientation="Horizontal"
+                                                        ToolTip="{DynamicResource CharacterPage_RemainSkill}">
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            FontFamily="Segoe MDL2 Assets"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="&#xF003;" />
+                                                        <TextBlock
+                                                            Margin="6,0,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="{Binding QueueUndoneCount}" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="/" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                            Text="{Binding QueueTotalCount}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+
+                                        <!--  添加角色卡片  -->
                                         <StackPanel
+                                            Grid.Row="1"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Visibility="{Binding IsAdd, Converter={StaticResource BoolToVisibility}}">
                                             <ui:SymbolIcon
                                                 HorizontalAlignment="Center"
                                                 FontSize="28"
+                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                 Symbol="Add24" />
                                             <TextBlock
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Center"
-                                                FontSize="14"
-                                                Text="{DynamicResource Characters.Add}" />
+                                                FontSize="12"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource CharacterPage_Add}" />
                                         </StackPanel>
                                     </Grid>
                                 </Border>

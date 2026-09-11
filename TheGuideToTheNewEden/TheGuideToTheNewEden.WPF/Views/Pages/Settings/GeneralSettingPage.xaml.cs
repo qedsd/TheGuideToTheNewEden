@@ -211,10 +211,11 @@ public partial class GeneralSettingPage : Page
                 return;
             }
 
-            GameServerSelectorService.Set(server);
+            // 立即生效：重灌 ESI 凭据（国服用独立客户端 ID）+ 重建 ESI 单例 + 载入该国服的已授权角色。
+            CoreInitializer.SwitchGameServer(server);
             System.Windows.MessageBox.Show(
-                FindString("Setting_GameServer_Restart_Description"),
-                FindString("Setting_GameServer_Restart_Title"),
+                string.Format(FindString("Setting_GameServer_Switched_Description"), server),
+                FindString("Setting_GameServer_Switched_Title"),
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         };

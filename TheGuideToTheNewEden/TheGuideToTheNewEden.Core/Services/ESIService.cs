@@ -33,6 +33,20 @@ namespace TheGuideToTheNewEden.Core.Services
             }
         }
         /// <summary>
+        /// 丢弃缓存的单例，下次访问 <see cref="Current"/> 时按当前 <see cref="Config"/> 重建。
+        /// </summary>
+        /// <remarks>
+        /// SSO 与 EsiClient 都是在构造时按 <c>Config.ClientId/ClientSecret/ESICallback</c> 与
+        /// <c>Config.DefaultGameServer</c> 固化的，因此**切换游戏服务器或更换凭据后必须调用本方法**，
+        /// 否则会继续用旧服务器的客户端凭据/数据源发请求（表现为"切到国服后授权一直失败"）。
+        /// 已经持有旧实例的调用方不受影响（例如已登录的国服/国际服角色各自的 API 客户端）。
+        /// </remarks>
+        public static void Reset()
+        {
+            current = null;
+        }
+
+        /// <summary>
         /// 公开ESI
         /// </summary>
         public EVEStandardAPI EsiClient { get; private set; }

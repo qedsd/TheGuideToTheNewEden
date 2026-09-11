@@ -5,90 +5,183 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--  汇总字段的标签 / 取值  -->
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <Style x:Key="FieldValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24,16,24,24">
 
+            <!--  汇总：基地 / 上一次变更 / 克隆数量 / 上一次远克（与 WinUI3 顶部两块一致）  -->
             <Border Style="{StaticResource SettingsGroupBorder}">
                 <Grid Margin="16">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock
-                        Grid.Row="0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Clone.Home}" />
-                    <TextBlock
-                        x:Name="HomeText"
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Margin="12,0,0,0"
-                        TextTrimming="CharacterEllipsis" />
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,12">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource ClonePage_HomeLocation}" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            Style="{StaticResource FieldValueStyle}"
+                            Text="{Binding HomeLocation}"
+                            ToolTip="{Binding HomeLocation}" />
+                    </StackPanel>
 
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Clone.LastStationChange}" />
-                    <TextBlock
-                        x:Name="LastStationChangeText"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,12">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource ClonePage_LastStationChangeDate}" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            Style="{StaticResource FieldValueStyle}"
+                            Text="{Binding LastStationChangeText}" />
+                    </StackPanel>
 
-                    <TextBlock
-                        Grid.Row="2"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Clone.JumpClones}" />
-                    <TextBlock
-                        x:Name="JumpCloneCountText"
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource ClonePage_JumpCloneCount}" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            Style="{StaticResource FieldValueStyle}"
+                            Text="{Binding JumpCloneCount}" />
+                    </StackPanel>
 
-                    <TextBlock
-                        Grid.Row="3"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Clone.LastJump}" />
-                    <TextBlock
-                        x:Name="LastJumpText"
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
+                    <StackPanel Grid.Row="1" Grid.Column="1">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource ClonePage_LastCloneJumpDate}" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            Style="{StaticResource FieldValueStyle}"
+                            Text="{Binding LastCloneJumpText}" />
+                    </StackPanel>
                 </Grid>
             </Border>
 
-            <!--  各克隆及其植入体  -->
-            <ItemsControl x:Name="CloneList" Margin="0,12,0,0">
+            <!--  当前激活克隆：地点 + 脑插列表（名称，悬浮显示描述）  -->
+            <Border Margin="0,12,0,0" Style="{StaticResource SettingsGroupBorder}">
+                <StackPanel Margin="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{DynamicResource ClonePage_CurrentClone}" />
+                        <StackPanel
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            ToolTip="{DynamicResource ClonePage_ImplantCount}">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ClonePage_ImplantCount}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding ActiveClone.ImplantCount}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource ClonePage_HomeLocation}" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Style="{StaticResource FieldValueStyle}"
+                            Text="{Binding ActiveClone.LocationName}"
+                            ToolTip="{Binding ActiveClone.LocationName}" />
+                    </StackPanel>
+
+                    <ItemsControl Margin="0,6,0,0" ItemsSource="{Binding ActiveClone.Implants}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Margin="0,3"
+                                    FontSize="13"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{Binding Description}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="-"
+                        Visibility="{Binding ActiveClone.NoImplants, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+            </Border>
+
+            <!--  跳跃克隆列表：每个克隆的地点 + 名称 + 脑插（与 WinUI3 ListView 的 Expander 同构）  -->
+            <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Clones}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Expander Margin="0,0,0,6">
+                        <Expander
+                            Margin="0,0,0,6"
+                            HorizontalContentAlignment="Stretch">
                             <Expander.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding LocationName}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding LocationName}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding LocationName}" />
+                                        <TextBlock
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding CloneName}"
+                                            Visibility="{Binding HasCloneName, Converter={StaticResource BoolToVisibility}}" />
+                                    </StackPanel>
+
                                     <TextBlock
-                                        Margin="8,0,0,0"
+                                        Grid.Column="1"
+                                        Margin="12,0,8,0"
+                                        VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Implants.Count, StringFormat=({0})}" />
-                                </StackPanel>
+                                        Text="{Binding ImplantCount}"
+                                        ToolTip="{DynamicResource ClonePage_ImplantCount}" />
+                                </Grid>
                             </Expander.Header>
+
                             <ItemsControl Margin="12,4,0,10" ItemsSource="{Binding Implants}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock
                                             Margin="0,3"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                             Text="{Binding Name}"
-                                            ToolTip="{Binding Description}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding Description}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

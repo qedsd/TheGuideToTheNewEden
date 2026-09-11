@@ -56,11 +56,36 @@ public static class CoreInitializer
         }
     }
 
+    /// <summary>游戏服务器已切换（凭据、ESI 单例与角色列表都已换到新服务器）。</summary>
+    public static event EventHandler? GameServerChanged;
+
+    /// <summary>
+    /// 运行时切换游戏服务器：写设置 → 重灌 ESI 凭据 → 重建 ESI 单例 → 载入该国服的已授权角色。
+    /// </summary>
+    /// <remarks>
+    /// 不做这一步的话，切服后仍沿用旧服务器的客户端凭据与数据源（国服会直接授权失败），
+    /// 且角色列表还是另一个服务器的。切换完成后会触发 <see cref="GameServerChanged"/>，
+    /// 由界面负责刷新（角色页据此清掉另一服务器的标签并重载卡片）。
+    /// </remarks>
+    public static void SwitchGameServer(GameServerType server)
+    {
+        if (GameServerSelectorService.Value == server)
+        {
+            return;
+        }
+
+        GameServerSelectorService.Set(server);
+        ApplyEsiCredentials();
+        Core.Services.ESIService.Reset();
+        CharacterStore.Init();
+        GameServerChanged?.Invoke(null, EventArgs.Empty);
+    }
+
     /// <summary>
     /// 灌入 ESI 授权所需配置：客户端凭据来自 Configs/ESILicense.txt，权限范围来自 ESI 权限设置。
     /// 必须在首次访问 Core.Services.ESIService.Current 之前完成（SSO 实例在构造时读取 Config）。
     /// </summary>
-    private static void ApplyEsiCredentials()
+    public static void ApplyEsiCredentials()
     {
         var licenseFile = Path.Combine(SettingsService.DataPath, "Configs", "ESILicense.txt");
         if (File.Exists(licenseFile))

@@ -25,11 +25,17 @@ public sealed class CharacterOverview
 
     public double WalletBalance { get; set; }
 
+    /// <summary>军团钱包余额合计（需要军团财务权限，取不到时为 null）。</summary>
+    public double? CorporationWalletBalance { get; set; }
+
     public long LoyaltyPoints { get; set; }
 
     public bool Online { get; set; }
 
     public DateTime? LastLogin { get; set; }
+
+    /// <summary>最后登出时间（离线时长显示用，与 WinUI 卡片一致）。</summary>
+    public DateTime? LastLogout { get; set; }
 
     public int LoginCount { get; set; }
 
@@ -79,6 +85,7 @@ public static class CharacterOverviewService
         {
             overview.Online = online.Online;
             overview.LastLogin = online.LastLogin;
+            overview.LastLogout = online.LastLogout;
         }
 
         var ship = await Fetch(() => context.Api.Location.GetCurrentShipAsync(auth));
@@ -117,6 +124,13 @@ public static class CharacterOverviewService
             {
                 overview.CorporationName = corp.Name;
                 overview.CorporationTicker = corp.Ticker;
+            }
+
+            // 军团钱包需要财务权限；无权限时保持 null，界面不显示该行（与 WinUI 版一致）
+            var corpWallets = await Fetch(() => context.Api.Wallet.ReturnCorporationWalletBalanceAsync(auth, overview.CorporationId));
+            if (corpWallets is not null)
+            {
+                overview.CorporationWalletBalance = corpWallets.Sum(p => p.Balance);
             }
         }
 

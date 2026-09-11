@@ -59,9 +59,23 @@ public partial class CharacterCardsPage : Page
         CharacterActivated?.Invoke(this, card);
     }
 
+    /// <summary>卡片右上角"···"按钮：弹出移除菜单（左键也能打开 ContextMenu）。</summary>
+    private void MoreCharacter_Click(object sender, RoutedEventArgs e)
+    {
+        // 阻止冒泡到整卡，避免同时触发"打开工作区"
+        e.Handled = true;
+
+        if (sender is FrameworkElement { ContextMenu: { } menu } element)
+        {
+            menu.PlacementTarget = element;
+            menu.IsOpen = true;
+        }
+    }
+
     private void RemoveCharacter_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { Tag: CharacterCardViewModel card })
+        // 菜单项的 DataContext 来自放置目标（卡片），因此这里从 DataContext 取
+        if ((sender as FrameworkElement)?.DataContext is not CharacterCardViewModel card)
         {
             return;
         }
@@ -92,14 +106,13 @@ public partial class CharacterCardsPage : Page
         {
             if (CharacterAuthService.IsSerenity)
             {
-                // 国服没有可用回调，改为手动粘贴 code
-                var code = PromptForText(FindString("Characters.Login"), FindString("Characters.SerenityPasteCode"));
-                if (string.IsNullOrWhiteSpace(code))
+                // 国服没有可用回调，走"登出 → 打开授权页 → 粘贴网址 → 校验"向导（与 WinUI 一致）
+                var wizard = new Views.Windows.SerenityAuthWindow
                 {
-                    return;
-                }
-
-                reloadNeeded = await CharacterAuthService.CompleteSerenityAsync(code) is not null;
+                    Owner = Window.GetWindow(this),
+                };
+                wizard.ShowDialog();
+                reloadNeeded = wizard.Result is not null;
             }
             else if (!CharacterAuthService.CredentialsAvailable)
             {
@@ -120,39 +133,6 @@ public partial class CharacterCardsPage : Page
         {
             await ReloadAsync(forceRefresh: true);
         }
-    }
-
-    /// <summary>简易文本输入对话框（阶段 D 会换成 Fluent 对话框）。</summary>
-    private static string? PromptForText(string title, string prompt)
-    {
-        var window = new Window
-        {
-            Title = title,
-            Width = 420,
-            Height = 170,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Owner = Application.Current.MainWindow,
-            ResizeMode = ResizeMode.NoResize,
-        };
-
-        var panel = new StackPanel { Margin = new Thickness(16) };
-        panel.Children.Add(new TextBlock { Text = prompt, TextWrapping = TextWrapping.Wrap });
-
-        var input = new TextBox { Margin = new Thickness(0, 12, 0, 0) };
-        panel.Children.Add(input);
-
-        var ok = new Button { Content = "OK", Width = 88, Margin = new Thickness(0, 16, 0, 0), HorizontalAlignment = HorizontalAlignment.Right };
-        string? result = null;
-        ok.Click += (_, _) =>
-        {
-            result = input.Text;
-            window.Close();
-        };
-        panel.Children.Add(ok);
-
-        window.Content = panel;
-        window.ShowDialog();
-        return result;
     }
 
     private static string FindString(string key) =>

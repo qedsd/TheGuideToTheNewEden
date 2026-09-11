@@ -6,63 +6,227 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <Grid Margin="24,16,24,24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Page.Resources>
 
-        <Grid Grid.Row="0" Margin="0,0,0,10">
-            <ui:TextBox
-                x:Name="SearchBox"
-                Width="260"
-                HorizontalAlignment="Left"
-                PlaceholderText="{DynamicResource Characters.Search}" />
-            <TextBlock
-                x:Name="TotalText"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-        </Grid>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1100" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="GroupList">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Expander Margin="0,0,0,6" Header="{Binding GroupName}">
-                            <ItemsControl Margin="12,4,0,10" ItemsSource="{Binding Skills}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="0,3">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                Grid.Column="0"
-                                                Text="{Binding Name}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                Margin="16,0,0,0"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="{Binding Level, StringFormat=Level {0}}" />
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                Width="110"
-                                                Margin="16,0,0,0"
-                                                TextAlignment="Right"
-                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                Text="{Binding SkillPoints, StringFormat={}{0:N0}}" />
+            <StackPanel Grid.Column="0" Margin="24,16,24,32">
+
+                <!--  技能点汇总：总技能点 / 未分配技能点  -->
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <UniformGrid Columns="2" Margin="0,16">
+                        <StackPanel>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding TotalSkillPointsText}" />
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Characters.SkillPoints}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="22"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding UnallocatedSkillPointsText}" />
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource Characters.Unallocated}"
+                                ToolTip="{DynamicResource CharacterPage_UnallocatedSp}" />
+                        </StackPanel>
+                    </UniformGrid>
+                </Border>
+
+                <!--  技能队列：状态图标 + 技能名/目标等级 + 剩余时间/起止时间  -->
+                <TextBlock
+                    Margin="0,20,0,8"
+                    Style="{StaticResource SettingsSectionHeader}"
+                    Text="{DynamicResource CharacterPage_SkillQueue}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel Margin="16,8,16,8">
+                        <ItemsControl ItemsSource="{Binding Queue}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Height="48">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="48" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  状态图标：已完成 / 进行中 / 等待中 / 已暂停  -->
+                                        <!--  颜色由主题资源给出（不要在 VM 里缓存 Brush，否则切换深浅色后不会更新）  -->
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            FontSize="14"
+                                            Text="{Binding StateGlyph}"
+                                            ToolTip="{Binding StateText}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsFinished}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsPause}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <Grid Grid.Column="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                                <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding SkillName}" />
+                                                <TextBlock
+                                                    Margin="4,0,0,0"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding FinishedLevel}" />
+                                            </StackPanel>
+
+                                            <Grid Grid.Row="1" VerticalAlignment="Center">
+                                                <!--  已暂停：只显示状态文字  -->
+                                                <TextBlock
+                                                    Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                    Text="{Binding StateText}"
+                                                    Visibility="{Binding IsPause, Converter={StaticResource BoolToVisibility}}" />
+                                                <!--  其余状态：剩余时间 + 开始-结束时间  -->
+                                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsPause, Converter={StaticResource InverseBoolToVisibility}}">
+                                                    <TextBlock
+                                                        Width="120"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding RemainTimeText}" />
+                                                    <TextBlock
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding StartText}" />
+                                                    <TextBlock
+                                                        Margin="8,0"
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="-" />
+                                                    <TextBlock
+                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding FinishText}" />
+                                                </StackPanel>
+                                            </Grid>
                                         </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Expander>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock
+                            Margin="0,8,0,8"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource Characters.NoData}"
+                            Visibility="{Binding HasQueue, Converter={StaticResource InverseBoolToVisibility}}" />
+                    </StackPanel>
+                </Border>
+
+                <!--  技能列表：搜索 + 按技能组折叠（技能名 / 已掌握等级 / 已训练技能点）  -->
+                <Grid Margin="0,20,0,8">
+                    <TextBlock
+                        Margin="0"
+                        Style="{StaticResource SettingsSectionHeader}"
+                        Text="{DynamicResource CharacterPage_Skill}" />
+                    <ui:TextBox
+                        x:Name="SearchBox"
+                        Width="260"
+                        HorizontalAlignment="Right"
+                        PlaceholderText="{DynamicResource Characters.Search}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel Margin="16,8,16,16">
+                        <ItemsControl ItemsSource="{Binding Groups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Expander
+                                        Margin="0,1"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent">
+                                        <Expander.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding GroupName}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Skills.Count}"
+                                                    ToolTip="{DynamicResource SkillPage_SkillIdsCount}" />
+                                            </Grid>
+                                        </Expander.Header>
+                                        <ItemsControl Margin="12,4,0,4" ItemsSource="{Binding Skills}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,3">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Margin="16,0,0,0"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding Level}"
+                                                            ToolTip="{DynamicResource SkillPage_TrainedSkillLevel}" />
+                                                        <TextBlock
+                                                            Grid.Column="2"
+                                                            Width="110"
+                                                            Margin="16,0,0,0"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding SkillPoints, StringFormat={}{0:N0}}"
+                                                            TextAlignment="Right"
+                                                            ToolTip="{DynamicResource SkillPage_SkillpointsInSkill}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock
+                            Margin="0,8,0,8"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource Characters.NoData}"
+                            Visibility="{Binding HasGroups, Converter={StaticResource InverseBoolToVisibility}}" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>

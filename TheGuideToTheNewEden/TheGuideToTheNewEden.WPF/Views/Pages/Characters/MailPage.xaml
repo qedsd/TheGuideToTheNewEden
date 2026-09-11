@@ -5,36 +5,59 @@
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
 
-    <Grid Margin="0">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--  列表项铺满整行，右侧日期/未读徽标才能贴边  -->
+        <!--
+            自带模板（不 BasedOn 隐式 ListBoxItem 样式：未验证 WPF-UI 是否提供标准类型的隐式样式，
+            写错会在页面构造时抛 XamlParseException）。选中/悬停用主题色底，避免退回系统默认的蓝色高亮。
+        -->
+        <Style x:Key="StretchListItem" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="Bd"
+                            Margin="2,1"
+                            Padding="{TemplateBinding Padding}"
+                            Background="Transparent"
+                            CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="16,12,16,16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="200" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  标签  -->
+        <!--  左侧：标签列表（"全部邮件" + 各标签，右侧为未读数徽标）  -->
         <ListBox
             x:Name="LabelList"
             Grid.Column="0"
-            Margin="12,12,0,12"
+            Background="Transparent"
             BorderThickness="0"
-            DisplayMemberPath="Name" />
-
-        <Border
-            Grid.Column="1"
-            Width="1"
-            Margin="8,12"
-            Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
-
-        <!--  邮件列表  -->
-        <!--  必须禁用横向滚动：否则行模板会按“无限宽度”测量，* 列不再收缩，
-             右侧的日期列会被推到视口之外（表现为列表只剩主题+发件人、日期消失）。  -->
-        <ListBox
-            x:Name="MailList"
-            Grid.Column="2"
-            Margin="0,12,12,12"
-            BorderThickness="0"
-            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            ItemContainerStyle="{StaticResource StretchListItem}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            SelectionChanged="LabelList_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid Margin="0,4">
@@ -42,27 +65,111 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock
-                                FontWeight="SemiBold"
-                                Text="{Binding Subject}"
-                                TextTrimming="CharacterEllipsis" />
-                            <TextBlock
-                                Margin="0,2,0,0"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{Binding FromName}" />
-                        </StackPanel>
                         <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Name}"
+                            TextTrimming="CharacterEllipsis" />
+                        <Border
                             Grid.Column="1"
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Top"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding Date, StringFormat={}{0:MM-dd HH:mm}}" />
+                            Width="16"
+                            Height="16"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource SystemFillColorSuccessBrush}"
+                            CornerRadius="8"
+                            ToolTip="{DynamicResource MailPage_UnreadCount}"
+                            Visibility="{Binding HasUnread, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Text="{Binding UnreadBadgeText}" />
+                        </Border>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+        <Border
+            Grid.Column="1"
+            Width="1"
+            Margin="8,0"
+            Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+        <!--  右侧：邮件列表（未读圆点 / 主题 / 发件人 / 日期）  -->
+        <Grid Grid.Column="2">
+            <ListBox
+                x:Name="MailList"
+                Background="Transparent"
+                BorderThickness="0"
+                ItemContainerStyle="{StaticResource StretchListItem}"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                SelectionChanged="MailList_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        Margin="0,0,8,0"
+                                        VerticalAlignment="Center"
+                                        Fill="{DynamicResource SystemFillColorSuccessBrush}"
+                                        ToolTip="{DynamicResource MailPage_Unread}"
+                                        Visibility="{Binding IsUnread, Converter={StaticResource BoolToVisibility}}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding Subject}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </Grid>
+
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,2,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding FromName}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTip="{DynamicResource MailPage_From}" />
+                            </Grid>
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding DateText}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!--  加载提示（仅有邮件/无邮件时由列表本身表达）  -->
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource Characters.Loading}"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
+        </Grid>
     </Grid>
 </Page>

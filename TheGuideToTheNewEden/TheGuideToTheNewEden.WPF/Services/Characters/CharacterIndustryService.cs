@@ -23,6 +23,9 @@ public sealed class IndustryJobView
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
+
+    /// <summary>项目周期（秒），对应 WinUI 版的 <c>Span</c>（TimeSpan.FromSeconds(Duration)）。</summary>
+    public double DurationSeconds { get; set; }
 }
 
 /// <summary>角色工业任务。</summary>
@@ -65,6 +68,7 @@ public static class CharacterIndustryService
                 Cost = job.Cost ?? 0,
                 StartDate = job.StartDate,
                 EndDate = job.EndDate,
+                DurationSeconds = job.Duration,
             }).ToList();
 
             CharacterCache.Set(context.CharacterId, CacheKey, views, Ttl);
@@ -91,28 +95,7 @@ public static class CharacterIndustryService
 
     private static async Task<Dictionary<long, string>> ResolveNamesAsync(List<long> ids)
     {
-        var result = new Dictionary<long, string>();
-        if (ids.Count == 0)
-        {
-            return result;
-        }
-
-        try
-        {
-            var names = await IDNameService.GetByIdsAsync(ids);
-            foreach (var item in names ?? [])
-            {
-                if (!string.IsNullOrEmpty(item.Name))
-                {
-                    result[item.Id] = item.Name;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-        }
-
-        return result;
+        // FacilityId 可能是 NPC 空间站（int 范围）或玩家结构（约 1e12），统一走分流解析。
+        return await LocationNameResolver.ResolveAsync(ids);
     }
 }

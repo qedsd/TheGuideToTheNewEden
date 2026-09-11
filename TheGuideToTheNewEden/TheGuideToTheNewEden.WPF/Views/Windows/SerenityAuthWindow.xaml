@@ -1,0 +1,107 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.SerenityAuthWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource AddSerenityAuthDialog_Title}"
+    Width="560"
+    Height="620"
+    MinWidth="440"
+    MinHeight="500"
+    ExtendsContentIntoTitleBar="True"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ScrollViewer.CanContentScroll="False"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <!--  顶部留 48px 给标题栏  -->
+        <ScrollViewer Margin="0,48,0,0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+
+            <!--  步骤 0：先登出，便于换账号  -->
+            <TextBlock Text="{DynamicResource AddSerenityAuthDialog_Step0}" TextWrapping="Wrap" />
+            <ui:Button
+                Margin="0,8,0,16"
+                HorizontalAlignment="Stretch"
+                Click="Logoff_Click"
+                Content="{DynamicResource AddSerenityAuthDialog_Step0Button}" />
+
+            <!--  步骤 1：打开国服授权页  -->
+            <TextBlock Text="{DynamicResource AddSerenityAuthDialog_Step1}" TextWrapping="Wrap" />
+            <ui:Button
+                Margin="0,8,0,16"
+                HorizontalAlignment="Stretch"
+                Click="OpenAuthPage_Click"
+                Content="{DynamicResource AddSerenityAuthDialog_Step1Button}" />
+
+            <!--  步骤 2：把授权后空白页的网址（或 code）粘进来  -->
+            <TextBlock Text="{DynamicResource AddSerenityAuthDialog_Step2}" TextWrapping="Wrap" />
+            <ui:TextBox
+                x:Name="CodeBox"
+                Margin="0,8,0,0"
+                PlaceholderText="{DynamicResource Characters.SerenityPasteCode}" />
+
+            <!--  步骤 3：校验  -->
+            <TextBlock
+                Margin="0,16,0,0"
+                Text="{DynamicResource AddSerenityAuthDialog_Step3}"
+                TextWrapping="Wrap" />
+            <ui:Button
+                x:Name="VerifyButton"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Stretch"
+                Appearance="Primary"
+                Click="Verify_Click"
+                Content="{DynamicResource AddSerenityAuthDialog_Step3Button}" />
+
+            <!--  校验状态：进行中 / 成功 / 失败（失败附错误详情，可选中复制）  -->
+            <TextBlock
+                x:Name="VerifyingText"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource AddSerenityAuthDialog_Verifying}"
+                Visibility="Collapsed" />
+            <TextBlock
+                x:Name="SuccessText"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Center"
+                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                Text="{DynamicResource AddSerenityAuthDialog_VerifySuccess}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+            <TextBlock
+                x:Name="FailedText"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Center"
+                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                Text="{DynamicResource AddSerenityAuthDialog_VerifyFailed}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+            <TextBox
+                x:Name="FailedDetail"
+                Margin="0,6,0,0"
+                Padding="0"
+                Background="Transparent"
+                BorderThickness="0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                IsReadOnly="True"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+
+            <ui:Button
+                Margin="0,20,0,0"
+                MinWidth="120"
+                HorizontalAlignment="Right"
+                Click="Close_Click"
+                Content="{DynamicResource General_Close}" />
+
+        </StackPanel>
+        </ScrollViewer>
+
+        <!--  与主窗口一致的标题栏（主题化，避免系统白色标题栏）  -->
+        <ui:TitleBar Title="{DynamicResource AddSerenityAuthDialog_Title}" />
+    </Grid>
+</ui:FluentWindow>

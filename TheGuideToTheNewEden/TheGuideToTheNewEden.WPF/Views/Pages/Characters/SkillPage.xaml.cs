@@ -1,61 +1,29 @@
-using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.WPF.Services.Characters;
+using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 
-/// <summary>技能页：按技能组折叠展示 + 名称搜索（WinUI 版没有搜索）。</summary>
-public partial class SkillPage : Page
+/// <summary>
+/// 技能页：技能点汇总 + 技能队列 + 按技能组折叠的技能列表（含搜索）。
+/// 内容项与 WinUI3 的 SkillPage 对齐，队列状态复用工作区/总览的展示约定。
+/// </summary>
+public partial class SkillPage : Page, ICharacterSubPage
 {
-    private readonly CharacterContext _context;
-    private List<SkillGroupView> _groups = [];
+    private readonly SkillPageViewModel _viewModel;
 
     public SkillPage(CharacterContext context)
     {
         InitializeComponent();
 
-        _context = context;
-        SearchBox.TextChanged += (_, _) => ApplyFilter();
+        _viewModel = new SkillPageViewModel(context);
+        DataContext = _viewModel;
+
         Loaded += async (_, _) => await LoadAsync();
     }
 
-    private async Task LoadAsync()
-    {
-        var skills = await CharacterSkillService.GetAsync(_context);
-        if (skills is null)
-        {
-            return;
-        }
+    /// <summary>工作区右上角刷新按钮调用（forceRefresh=true 时绕过缓存），不重建页面实例。</summary>
+    public async Task RefreshAsync(bool forceRefresh = true) => await LoadAsync(forceRefresh);
 
-        _groups = skills.Groups;
-        TotalText.Text =
-            $"{FindString("Characters.SkillPoints")}: {skills.TotalSkillPoints:N0}"
-            + $"   {FindString("Characters.Unallocated")}: {skills.UnallocatedSkillPoints:N0}";
-
-        ApplyFilter();
-    }
-
-    private void ApplyFilter()
-    {
-        var keyword = SearchBox.Text?.Trim();
-        if (string.IsNullOrEmpty(keyword))
-        {
-            GroupList.ItemsSource = _groups;
-            return;
-        }
-
-        GroupList.ItemsSource = _groups
-            .Select(group => new SkillGroupView
-            {
-                GroupName = group.GroupName,
-                Skills = group.Skills
-                    .Where(skill => skill.Name.Contains(keyword, StringComparison.CurrentCultureIgnoreCase))
-                    .ToList(),
-            })
-            .Where(group => group.Skills.Count > 0)
-            .ToList();
-    }
-
-    private static string FindString(string key) =>
-        Application.Current?.TryFindResource(key) as string ?? key;
+    private async Task LoadAsync(bool forceRefresh = false) => await _viewModel.LoadAsync(forceRefresh);
 }

@@ -2,139 +2,323 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Characters.OverviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="Transparent"
-    ScrollViewer.CanContentScroll="False">
+    ScrollViewer.CanContentScroll="False"
+    mc:Ignorable="d">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!--  卡片外框（与 WinUI 的 ItemContentStackPanel 卡片背景一致）  -->
+        <Style x:Key="OverviewCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <!--  卡片内的一行：图标 + 文本  -->
+        <Style x:Key="OverviewRow" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Height" Value="64" />
+            <Setter Property="Margin" Value="16,6" />
+        </Style>
+
+        <Style x:Key="OverviewPrimaryText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style x:Key="OverviewSecondaryText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <!--  技能队列状态图标  -->
+        <Style x:Key="QueueStatusIcon" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer
+        x:Name="ScrollHost"
+        VerticalScrollBarVisibility="Auto"
+        HorizontalScrollBarVisibility="Disabled">
+        <!--  不限制 MaxWidth / 左对齐：卡片要占满整个内容区宽度  -->
         <StackPanel Margin="24,16,24,24">
 
-            <!--  军团 / 联盟  -->
-            <Border Style="{StaticResource SettingsGroupBorder}">
-                <StackPanel Margin="16">
-                    <TextBlock
-                        FontSize="12"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Corporation}" />
-                    <TextBlock
-                        x:Name="CorporationText"
-                        Margin="0,4,0,0"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        TextTrimming="CharacterEllipsis" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Alliance}" />
-                    <TextBlock
-                        x:Name="AllianceText"
-                        Margin="0,4,0,0"
-                        FontSize="16"
-                        TextTrimming="CharacterEllipsis" />
+            <!--  军团：徽标 + 名称 + 代号  -->
+            <Border Style="{StaticResource OverviewCard}" Visibility="{Binding HasCorporation, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Style="{StaticResource OverviewRow}">
+                    <Border
+                        Width="48"
+                        Height="48"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="24">
+                        <Border CornerRadius="24">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding CorporationLogo}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                    </Border>
+                    <StackPanel
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource OverviewPrimaryText}" Text="{Binding CorporationName}" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="12"
+                            Style="{StaticResource OverviewSecondaryText}"
+                            Text="{Binding CorporationTicker}" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!--  舰船 / 位置 / 在线  -->
-            <Border Margin="0,12,0,0" Style="{StaticResource SettingsGroupBorder}">
-                <Grid Margin="16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock
-                        Grid.Row="0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Ship}" />
-                    <TextBlock
-                        x:Name="ShipText"
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Margin="12,0,0,0" />
-
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Location}" />
-                    <TextBlock
-                        x:Name="LocationText"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
-
-                    <TextBlock
-                        Grid.Row="2"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.Online}" />
-                    <TextBlock
-                        x:Name="OnlineText"
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
-
-                    <TextBlock
-                        Grid.Row="3"
-                        Margin="0,8,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource Characters.LastLogin}" />
-                    <TextBlock
-                        x:Name="LastLoginText"
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        Margin="12,8,0,0" />
-                </Grid>
+            <!--  联盟：徽标 + 名称 + 代号  -->
+            <Border Style="{StaticResource OverviewCard}" Visibility="{Binding HasAlliance, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Style="{StaticResource OverviewRow}">
+                    <Border
+                        Width="48"
+                        Height="48"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="24">
+                        <Border CornerRadius="24">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding AllianceLogo}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                    </Border>
+                    <StackPanel
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource OverviewPrimaryText}" Text="{Binding AllianceName}" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="12"
+                            Style="{StaticResource OverviewSecondaryText}"
+                            Text="{Binding AllianceTicker}" />
+                    </StackPanel>
+                </StackPanel>
             </Border>
 
-            <!--  技能队列  -->
-            <Border Margin="0,12,0,0" Style="{StaticResource SettingsGroupBorder}">
-                <StackPanel Margin="16">
-                    <TextBlock
-                        FontSize="14"
-                        FontWeight="SemiBold"
-                        Text="{DynamicResource Characters.SkillQueue}" />
+            <!--  舰船 + 位置：舰船图 + 地点(安全等级 星系) + 舰船名(船型)  -->
+            <Border Style="{StaticResource OverviewCard}" Visibility="{Binding HasShipOrLocation, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Style="{StaticResource OverviewRow}">
+                    <Border
+                        Width="48"
+                        Height="48"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="8">
+                        <Border CornerRadius="8">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding ShipLogo}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                    </Border>
+                    <Grid
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <ItemsControl x:Name="QueueList" Margin="0,8,0,0">
+                        <!--  所在空间站 (安全等级 星系)  -->
+                        <StackPanel
+                            Grid.Row="0"
+                            Orientation="Horizontal"
+                            Visibility="{Binding HasLocation, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource OverviewPrimaryText}" Text="{Binding LocationName}" />
+                            <StackPanel Margin="8,0,0,0" Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource OverviewSecondaryText}" Text="(" />
+                                <TextBlock Style="{StaticResource OverviewSecondaryText}" Text="{Binding SystemSecurityText}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                    Style="{StaticResource OverviewPrimaryText}"
+                                    Text="{Binding SystemName}" />
+                                <TextBlock Style="{StaticResource OverviewSecondaryText}" Text=")" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  当前舰船 (船型)  -->
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="0,2,0,0"
+                            Orientation="Horizontal"
+                            Visibility="{Binding HasShip, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource OverviewPrimaryText}" Text="{Binding ShipName}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                Style="{StaticResource OverviewSecondaryText}"
+                                Text="(" />
+                            <TextBlock Style="{StaticResource OverviewSecondaryText}" Text="{Binding ShipTypeName}" />
+                            <TextBlock Style="{StaticResource OverviewSecondaryText}" Text=")" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!--  在线状态：圆点 + 最近上线 / 上线次数  -->
+            <Border Style="{StaticResource OverviewCard}">
+                <StackPanel Style="{StaticResource OverviewRow}">
+                    <Grid
+                        Width="48"
+                        ToolTip="{Binding OnlineStatusText}">
+                        <Ellipse
+                            Width="8"
+                            Height="8"
+                            Fill="{DynamicResource SystemFillColorSuccessBrush}"
+                            Visibility="{Binding Online, Converter={StaticResource BoolToVisibility}}" />
+                        <Ellipse
+                            Width="8"
+                            Height="8"
+                            Fill="{DynamicResource SystemFillColorCriticalBrush}"
+                            Visibility="{Binding Online, Converter={StaticResource InverseBoolToVisibility}}" />
+                    </Grid>
+                    <Grid
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Style="{StaticResource OverviewSecondaryText}" Text="{DynamicResource CharacterPage_LastLogin}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="16,0,0,0"
+                            Style="{StaticResource OverviewPrimaryText}"
+                            Text="{Binding LastLoginText}"
+                            ToolTip="{Binding LastLoginTooltip}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,2,0,0"
+                            Style="{StaticResource OverviewSecondaryText}"
+                            Text="{DynamicResource CharacterPage_LoginCount}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="16,2,0,0"
+                            Style="{StaticResource OverviewPrimaryText}"
+                            Text="{Binding LoginCount}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!--  技能队列：状态图标 + 技能名/等级 + 剩余时间/起止时间  -->
+            <Border Style="{StaticResource OverviewCard}">
+                <StackPanel Margin="16,12">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource CharacterPage_SkillQueue}" />
+
+                    <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding SkillQueue}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="0,4">
+                                <Grid Height="48">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Grid.Column="0"
-                                        Text="{Binding SkillName}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Margin="12,0,0,0"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding FinishedLevel, StringFormat=Level {0}}" />
-                                    <TextBlock
-                                        Grid.Column="2"
-                                        Margin="16,0,0,0"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Finish, StringFormat={}{0:MM-dd HH:mm}}" />
+
+                                    <!--  状态图标：已完成 / 进行中 / 等待中 / 已暂停  -->
+                                    <Grid>
+                                        <TextBlock
+                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                            Style="{StaticResource QueueStatusIcon}"
+                                            Text="&#xE001;"
+                                            ToolTip="{DynamicResource CharacterPage_Skill_Finished}"
+                                            Visibility="{Binding IsFinished, Converter={StaticResource BoolToVisibility}}" />
+                                        <TextBlock
+                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                            Style="{StaticResource QueueStatusIcon}"
+                                            Text="&#xE1F5;"
+                                            ToolTip="{DynamicResource CharacterPage_Skill_Running}"
+                                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
+                                        <TextBlock
+                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                            Style="{StaticResource QueueStatusIcon}"
+                                            Text="&#xE07F;"
+                                            ToolTip="{DynamicResource CharacterPage_Skill_Waiting}"
+                                            Visibility="{Binding IsWaiting, Converter={StaticResource BoolToVisibility}}" />
+                                        <TextBlock
+                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                            Style="{StaticResource QueueStatusIcon}"
+                                            Text="&#xE004;"
+                                            ToolTip="{DynamicResource CharacterPage_Skill_Pause}"
+                                            Visibility="{Binding IsPause, Converter={StaticResource BoolToVisibility}}" />
+                                    </Grid>
+
+                                    <Grid Grid.Column="1" VerticalAlignment="Center">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Style="{StaticResource OverviewPrimaryText}" Text="{Binding SkillName}" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                Style="{StaticResource OverviewSecondaryText}"
+                                                Text="{Binding FinishedLevel}" />
+                                        </StackPanel>
+
+                                        <Grid Grid.Row="1" Margin="0,2,0,0">
+                                            <TextBlock
+                                                Style="{StaticResource OverviewSecondaryText}"
+                                                Text="{DynamicResource CharacterPage_Skill_Pause}"
+                                                Visibility="{Binding IsPause, Converter={StaticResource BoolToVisibility}}" />
+                                            <StackPanel Orientation="Horizontal" Visibility="{Binding IsPause, Converter={StaticResource InverseBoolToVisibility}}">
+                                                <TextBlock
+                                                    Width="120"
+                                                    Margin="0,0,16,0"
+                                                    Style="{StaticResource OverviewSecondaryText}"
+                                                    Text="{Binding RemainTime}" />
+                                                <TextBlock
+                                                    Style="{StaticResource OverviewSecondaryText}"
+                                                    Text="{Binding StartText}"
+                                                    ToolTip="{Binding StartTooltip}" />
+                                                <TextBlock
+                                                    Margin="8,0"
+                                                    Style="{StaticResource OverviewSecondaryText}"
+                                                    Text="-" />
+                                                <TextBlock
+                                                    Style="{StaticResource OverviewSecondaryText}"
+                                                    Text="{Binding FinishText}"
+                                                    ToolTip="{Binding FinishTooltip}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <!--  空队列提示  -->
                     <TextBlock
-                        x:Name="QueueEmptyText"
                         Margin="0,6,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource OverviewSecondaryText}"
                         Text="{DynamicResource Characters.NotTraining}"
-                        Visibility="Collapsed" />
+                        Visibility="{Binding HasSkillQueue, Converter={StaticResource InverseBoolToVisibility}}" />
                 </StackPanel>
             </Border>
 

@@ -1,39 +1,40 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Navigation;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 
 /// <summary>
-/// 角色工作区：左侧信息栏 + 右侧子页（实例常驻，切换不丢状态）。
+/// 角色工作区：左侧信息栏（身份/资产、技能队列、ZKB）+ 右侧子页（实例常驻，切换不丢状态）。
 /// </summary>
 public partial class CharacterWorkspacePage : Page
 {
-    private readonly CharacterCardViewModel _card;
-    private readonly CharacterContext _context;
+    private readonly CharacterWorkspaceViewModel _viewModel;
 
     public CharacterWorkspacePage(CharacterCardViewModel card)
     {
         InitializeComponent();
 
-        _card = card;
-        _context = new CharacterContext(card.Character);
-        DataContext = card;
+        _viewModel = new CharacterWorkspaceViewModel(card);
+        DataContext = _viewModel;
 
         BuildSubTabs();
-        Loaded += async (_, _) => await LoadAsync();
+        Loaded += async (_, _) => await _viewModel.LoadAsync();
     }
 
     private void BuildSubTabs()
     {
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Overview", new OverviewPage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Skill", new SkillPage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Clone", new ClonePage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Wallet", new WalletPage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Mail", new MailPage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Contract", new ContractPage(_context)));
-        SubTabs.Items.Add(CreateTab("Characters.Tab.Industry", new IndustryPage(_context)));
+        var context = new CharacterContext(_viewModel.Card.Character);
+
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Overview", new OverviewPage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Skill", new SkillPage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Clone", new ClonePage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Wallet", new WalletPage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Mail", new MailPage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Contract", new ContractPage(context)));
+        SubTabs.Items.Add(CreateTab("Characters.Tab.Industry", new IndustryPage(context)));
     }
 
     private static TabItem CreateTab(string headerKey, object content)
@@ -48,51 +49,34 @@ public partial class CharacterWorkspacePage : Page
     private static Frame HostInFrame(Page page) => new()
     {
         Content = page,
-        NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden,
+        NavigationUIVisibility = NavigationUIVisibility.Hidden,
     };
 
-    private static UIElement BuildNotImplemented()
+    private async void RefreshLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        return new TextBlock
-        {
-            Text = FindString("Characters.NotImplemented"),
-            Margin = new Thickness(32),
-            Opacity = 0.7,
-            TextWrapping = TextWrapping.Wrap,
-        };
+        await _viewModel.LoadAsync(forceRefresh: true);
     }
 
-    private async Task LoadAsync()
+    /// <summary>刷新当前子页：优先调用页面的 RefreshAsync（不重建实例），否则退回 Frame.Refresh()。</summary>
+    private void RefreshPageButton_Click(object sender, RoutedEventArgs e)
     {
-        StatusText.Text = _card.StatusText;
-        WalletText.Text = _card.WalletText;
-        LoyaltyText.Text = _card.Loyalty.ToString("N0");
-        SkillPointsText.Text = _card.SkillPoints.ToString("N0");
-
-        var overview = await CharacterOverviewService.GetAsync(_context);
-        if (overview is not null)
+        if (SubTabs.SelectedItem is not TabItem { Content: Frame frame })
         {
-            CorporationText.Text = overview.CorporationName ?? "-";
-            AllianceText.Text = overview.AllianceName ?? "-";
-            BirthdayText.Text = overview.Birthday?.ToLocalTime().ToString("yyyy-MM-dd") ?? "-";
-            SecurityText.Text = overview.SecurityStatus.ToString("0.##");
-            WalletText.Text = CharacterCardViewModel.FormatIsk(overview.WalletBalance);
-            LoyaltyText.Text = overview.LoyaltyPoints.ToString("N0");
-            StatusText.Text = _card.StatusText;
+            return;
         }
 
-        var skills = await CharacterSkillService.GetAsync(_context);
-        if (skills is not null)
+        if (frame.Content is ICharacterSubPage subPage)
         {
-            SkillPointsText.Text = skills.TotalSkillPoints.ToString("N0");
-            UnallocatedText.Text = skills.UnallocatedSkillPoints.ToString("N0");
-
-            var finish = skills.Queue.Select(p => p.Finish).Where(p => p is not null).DefaultIfEmpty(null).Max();
-            QueueText.Text = $"{skills.Queue.Count}";
-            QueueEndText.Text = finish is null
-                ? FindString("Characters.NotTraining")
-                : $"{FindString("Characters.QueueEnds")}: {finish.Value.ToLocalTime():yyyy-MM-dd HH:mm}";
+            _ = subPage.RefreshAsync();
+            return;
         }
+
+        frame.Refresh();
+    }
+
+    private void ZkbButton_Click(object sender, RoutedEventArgs e)
+    {
+        Services.Navigation.Navigate(typeof(Pages.ZKBPage));
     }
 
     private static string FindString(string key) =>

@@ -27,6 +27,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\TheGuideToTheNewEden.Core\TheGuideToTheNewEden.Core.csproj" />
+		<!--  角色工作区左栏的 ZKB 概览卡（与 WinUI 版同源，netstandard2.1，可直接引用）  -->
+		<ProjectReference Include="..\ZKB.NET\ZKB.NET.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

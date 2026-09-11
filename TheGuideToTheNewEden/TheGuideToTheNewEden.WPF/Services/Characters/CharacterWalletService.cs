@@ -40,9 +40,14 @@ public sealed class WalletTransactionRow
 
     public bool IsBuy { get; set; }
 
+    public long ClientId { get; set; }
+
     public string? ClientName { get; set; }
 
     public long LocationId { get; set; }
+
+    /// <summary>地点名称（空间站/结构），解析失败时回退为原始 ID 文本。</summary>
+    public string? LocationName { get; set; }
 }
 
 /// <summary>
@@ -160,9 +165,11 @@ public static class CharacterWalletService
                 Quantity = (int)p.Quantity,
                 TotalPrice = p.UnitPrice * p.Quantity,
                 IsBuy = p.IsBuy,
-                ClientName = p.ClientId > 0 ? IDNameService.GetById((int)p.ClientId)?.Name : null,
+                ClientId = p.ClientId,
                 LocationId = p.LocationId,
             }).ToList();
+
+            await EnrichNamesAsync(rows);
 
             var result = new PagedResult<WalletTransactionRow>
             {
@@ -227,7 +234,7 @@ public static class CharacterWalletService
         try
         {
             var model = (await context.Api.Wallet.GetCorporationWalletTransactionsAsync(context.Auth, corporationId, division, 0L)).Model ?? [];
-            return model.Select(p => new WalletTransactionRow
+            var rows = model.Select(p => new WalletTransactionRow
             {
                 TransactionId = p.TransactionId,
                 Date = p.Date,
@@ -237,13 +244,54 @@ public static class CharacterWalletService
                 Quantity = (int)p.Quantity,
                 TotalPrice = p.UnitPrice * p.Quantity,
                 IsBuy = p.IsBuy,
+                ClientId = p.ClientId,
                 LocationId = p.LocationId,
             }).ToList();
+
+            await EnrichNamesAsync(rows);
+            return rows;
         }
         catch (Exception ex)
         {
             Core.Log.Error(ex);
             return null;
+        }
+    }
+
+    /// <summary>
+    /// 回填交易的客户名与地点名。
+    /// 客户 ID 通常是角色/军团/联盟 ID（int 范围）；超出范围时直接显示原始 ID，
+    /// 避免被 <c>(int)</c> 静默截断后解析成别人。地点 ID 按结构域分流解析。
+    /// </summary>
+    private static async Task EnrichNamesAsync(List<WalletTransactionRow> rows)
+    {
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var row in rows)
+        {
+            row.ClientName = row.ClientId switch
+            {
+                <= 0 => null,
+                <= int.MaxValue => IDNameService.GetById((int)row.ClientId)?.Name ?? row.ClientId.ToString(),
+                _ => row.ClientId.ToString(),
+            };
+        }
+
+        var locationIds = rows.Select(p => p.LocationId).Where(p => p > 0).Distinct().ToList();
+        if (locationIds.Count == 0)
+        {
+            return;
+        }
+
+        var names = await LocationNameResolver.ResolveAsync(locationIds);
+        foreach (var row in rows)
+        {
+            row.LocationName = row.LocationId > 0
+                ? names.GetValueOrDefault(row.LocationId, row.LocationId.ToString())
+                : "-";
         }
     }
 }

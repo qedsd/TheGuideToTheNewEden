@@ -57,7 +57,7 @@
     <!--  通用  -->
     <sys:String x:Key="Placeholder.Title">页面开发中</sys:String>
     <sys:String x:Key="Placeholder.Description">该功能页面尚未实现，此处为导航占位。</sys:String>
-    <!-- 以下键移植自 WinUI 设置页，保持键名一致以便对照 -->
+    <!--  以下键移植自 WinUI 设置页，保持键名一致以便对照  -->
     <sys:String x:Key="SettingPage">设置</sys:String>
     <sys:String x:Key="Setting_AlwaysOnTop">已置顶显示</sys:String>
     <sys:String x:Key="Setting_NotAlwaysOnTop">已取消置顶显示</sys:String>
@@ -175,6 +175,7 @@
     <sys:String x:Key="MarketSettingPage_MarketSikpStructure">市场跳过公开建筑订单</sys:String>
     <sys:String x:Key="MarketSettingPage_MarketSikpStructure_Desc">市场（包括频道市场）获取星域/星系市场订单时，不获取公开的建筑订单</sys:String>
     <sys:String x:Key="SettingPage_General">一般</sys:String>
+    <sys:String x:Key="GeneralSettingPage_NeedLocalization">使用本地化数据库</sys:String>
     <sys:String x:Key="SettingPage_General_Desc">软件语言、主题颜色、服务器、数据库语言</sys:String>
     <sys:String x:Key="SettingPage_GameLog">游戏日志</sys:String>
     <sys:String x:Key="SettingPage_GameLog_Desc">日志路径、有效天数、显示数量</sys:String>
@@ -280,6 +281,20 @@
     <sys:String x:Key="Characters.LoginFailed">登录失败</sys:String>
     <sys:String x:Key="Characters.LoginSuccess">登录成功</sys:String>
     <sys:String x:Key="Characters.SerenityPasteCode">请粘贴授权页面显示的 code</sys:String>
+    <sys:String x:Key="Characters.SerenityWrongServer">当前游戏服务器不是国服（Serenity）：请先到"设置 → 一般"把服务器切换为国服，再进行国服授权。</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Title">新增国服玩家角色授权</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step0">步骤0：点击下方按钮退出浏览器已登陆的账号，无视页面错误然后开始步骤1</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step0Button">登出</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step1">步骤1：点击下方按钮打开浏览器以跳转到网易的角色授权网站并选择角色并授权</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step1Button">ali-esi.evepc.163.com</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step2">步骤2：复制第一步完成后的空白页的网址（或 code）到下面输入框</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step3">步骤3：点击下面按钮开始校验授权</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Step3Button">校验授权</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_Verifying">正在校验授权…</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_VerifySuccess">校验授权成功，请点击关闭按钮完成授权</sys:String>
+    <sys:String x:Key="AddSerenityAuthDialog_VerifyFailed">校验授权失败</sys:String>
+    <sys:String x:Key="Setting_GameServer_Switched_Title">已切换游戏服务器</sys:String>
+    <sys:String x:Key="Setting_GameServer_Switched_Description">已切换到 {0}：ESI 凭据与角色列表都已切换为该国服，无需重启。</sys:String>
     <sys:String x:Key="Characters.WorkspacePlaceholder">角色工作区（总览 / 技能 / 钱包，阶段 D 实现）</sys:String>
     <sys:String x:Key="Characters.Tab.Overview">总览</sys:String>
     <sys:String x:Key="Characters.Tab.Skill">技能</sys:String>
@@ -426,6 +441,15 @@
     <sys:String x:Key="CharacterPage_SecurityStatus">安全等级</sys:String>
     <sys:String x:Key="CharacterPage_LP">忠诚点</sys:String>
     <sys:String x:Key="CharacterPage_UnallocatedSp">未使用技能点</sys:String>
+    <sys:String x:Key="EntityStatistPage_DangerRatio">危险系数</sys:String>
+    <sys:String x:Key="EntityStatistPage_GangRatio">抱团概率</sys:String>
+    <sys:String x:Key="StatistMonthPage_ItemDestroyed">击杀舰船</sys:String>
+    <sys:String x:Key="StatistMonthPage_IskDestroyed">击杀ISK</sys:String>
+    <sys:String x:Key="StatistMonthPage_ItemLost">损失舰船</sys:String>
+    <sys:String x:Key="StatistMonthPage_IskLost">损失ISK</sys:String>
+    <sys:String x:Key="SkillPage_SkillIdsCount">组内技能个数</sys:String>
+    <sys:String x:Key="SkillPage_TrainedSkillLevel">已掌握的等级</sys:String>
+    <sys:String x:Key="SkillPage_SkillpointsInSkill">已训练的技能点</sys:String>
     <sys:String x:Key="CharacterPage_Sp">技能点</sys:String>
     <sys:String x:Key="CharacterPage_Birthday">出生</sys:String>
     <sys:String x:Key="CharacterPage_Characters">角色列表</sys:String>

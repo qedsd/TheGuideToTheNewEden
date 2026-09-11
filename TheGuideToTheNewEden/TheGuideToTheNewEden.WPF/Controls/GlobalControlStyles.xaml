@@ -1,0 +1,105 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        全局默认控件样式：这里放"整个应用统一生效"的隐式样式（不带 x:Key，按 TargetType 匹配）。
+        本字典在 App.xaml 里必须排在 ui:ControlsDictionary 之后，才能覆盖 WPF-UI 的默认样式。
+        
+        注意（历次踩坑结论，详见 REFACTORING.md §9）：
+        1. 自带 ControlTemplate 的样式会整体替换库的默认样式，模板里的颜色一律显式写主题资源
+        （{DynamicResource TextFillColor*Brush} 等），否则深浅色下会退回系统色/原生模板；
+        2. 不确定的隐式样式不要 BasedOn（如 {x:Type ListBoxItem}），找不到会在页面构造时抛 XamlParseException；
+        3. ContentPresenter 在 HeaderedContentControl 的模板里必须写 ContentSource="Header"。
+    -->
+
+    <!--  TabItem：选中态 = 圆角底色 + 主题色下划线 + 半粗字重；悬停 = 更浅底色；右侧 Margin 提供标签间距  -->
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border
+                        x:Name="Bd"
+                        Margin="2,2"
+                        Padding="14,8"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        BorderThickness="0,0,0,0"
+                        CornerRadius="6">
+                        <!--  ContentSource 必须指向 Header，否则标签文字不显示  -->
+                        <!--
+                            加粗只作用于 Header（见触发器对 HeaderPresenter 的设置）；
+                            FontWeight 是可继承属性，直接设在 TabItem 上会把整个标签内容页都变粗
+                        -->
+                        <ContentPresenter
+                            x:Name="HeaderPresenter"
+                            VerticalAlignment="Center"
+                            ContentSource="Header" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                            <Setter TargetName="HeaderPresenter" Property="TextElement.FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--
+        表格外观（Fluent 化）——供各页面在 `*GridStyle` 里引用。
+        背景：WPF-UI 的 DataGrid 模板用自定义 PassiveScrollViewer 替换了标准模板，横向滚动条不随内容溢出出现，
+        因此宽表格继续用**原生模板**（列会自动收缩铺满、滚动条原生可用），外观靠下面这三个样式对齐 Fluent 观感。
+    -->
+    <Style x:Key="FluentColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="SeparatorBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+    </Style>
+
+    <Style x:Key="FluentDataGridCellStyle" TargetType="DataGridCell">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Style.Triggers>
+            <!--  行选中时高亮由行样式负责，单元格保持透明以去掉原生蓝色块  -->
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="FluentDataGridRowStyle" TargetType="DataGridRow">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <!--  行高：默认行很矮（约 18px），抬到与表头一致，内容更高时仍会自动撑开  -->
+        <Setter Property="MinHeight" Value="36" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

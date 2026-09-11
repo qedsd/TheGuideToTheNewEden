@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Light" />
                 <ui:ControlsDictionary />
+                <ResourceDictionary Source="pack://application:,,,/Controls/GlobalControlStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Controls/SettingCardStyles.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/Resources/Languages/zh-CN.xaml" />
             </ResourceDictionary.MergedDictionaries>

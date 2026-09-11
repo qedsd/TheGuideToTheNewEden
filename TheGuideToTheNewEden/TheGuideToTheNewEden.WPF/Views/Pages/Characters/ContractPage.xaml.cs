@@ -1,131 +1,88 @@
-using System.Windows;
 using System.Windows.Controls;
-using TheGuideToTheNewEden.WPF.Controls;
 using TheGuideToTheNewEden.WPF.Services.Characters;
+using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
 
-/// <summary>合同页：角色合同与军团合同（分页表格）。</summary>
-public partial class ContractPage : Page
+/// <summary>
+/// 合同页：个人/军团两个页签（内容与 WinUI3 ContractPage 对齐），
+/// 使用标准 DataGrid 展示，合同按 ESI 分页。页面实例被 Frame 长期托管，切页签只懒加载一次。
+/// </summary>
+public partial class ContractPage : Page, ICharacterSubPage
 {
-    private readonly CharacterContext _context;
-    private long _corporationId;
+    private readonly ContractPageViewModel _viewModel;
+    private bool _loaded;
 
     public ContractPage(CharacterContext context)
     {
         InitializeComponent();
 
-        _context = context;
-        _corporationId = context.Character.CorporationID;
+        _viewModel = new ContractPageViewModel(context);
+        DataContext = _viewModel;
 
-        Tabs.Items.Add(BuildTab("Characters.Contract.Character", corporation: false));
-        Tabs.Items.Add(BuildTab("Characters.Contract.Corp", corporation: true));
-
-        Tabs.SelectionChanged += (_, _) =>
+        // 个人合同翻页
+        CharacterPager.PageChanged += async (_, page) =>
         {
-            if (Tabs.SelectedItem is TabItem { Tag: TabState { Loaded: false } } tab)
-            {
-                _ = LoadAsync(tab, 1, forceRefresh: false);
-            }
+            CharacterPager.Page = page;
+            _viewModel.CharacterContracts.Page = page;
+            await _viewModel.LoadCharacterAsync(forceRefresh: true);
         };
 
-        Loaded += async (_, _) =>
+        // 军团合同翻页
+        CorpPager.PageChanged += async (_, page) =>
         {
-            var overview = await CharacterOverviewService.GetAsync(_context);
-            if (overview is not null && overview.CorporationId > 0)
-            {
-                _corporationId = overview.CorporationId;
-            }
-
-            if (Tabs.SelectedItem is TabItem tab)
-            {
-                await LoadAsync(tab, 1, forceRefresh: false);
-            }
+            CorpPager.Page = page;
+            _viewModel.CorpContracts.Page = page;
+            await _viewModel.LoadCorpAsync(forceRefresh: true);
         };
+
+        // 页签首次选中时才加载（避免一次性打两个接口）
+        Tabs.SelectionChanged += async (_, _) => await LoadSelectedTabIfNeededAsync();
+
+        Loaded += async (_, _) => await LoadAsync();
     }
 
-    private TabItem BuildTab(string headerKey, bool corporation)
+    /// <inheritdoc />
+    public async Task RefreshAsync(bool forceRefresh = true)
     {
-        var grid = new DataGrid
+        // 重新加载当前页签：回到第一页并绕过缓存（不重建页面实例）。
+        switch (Tabs.SelectedIndex)
         {
-            AutoGenerateColumns = false,
-            CanUserAddRows = false,
-            CanUserDeleteRows = false,
-            IsReadOnly = true,
-            GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
-            HeadersVisibility = DataGridHeadersVisibility.Column,
-        };
-
-        AddColumn(grid, "Characters.Contract.Title", nameof(ContractView.Title), 2, null);
-        AddColumn(grid, "Characters.Contract.Type", nameof(ContractView.TypeText), 1, null);
-        AddColumn(grid, "Characters.Contract.Price", nameof(ContractView.Price), 0, "N2");
-        AddColumn(grid, "Characters.Contract.Status", nameof(ContractView.Status), 0, null);
-        AddColumn(grid, "Characters.Contract.StartLocation", nameof(ContractView.StartLocationName), 2, null);
-        AddColumn(grid, "Characters.Contract.EndLocation", nameof(ContractView.EndLocationName), 2, null);
-        AddColumn(grid, "Characters.Contract.Issued", nameof(ContractView.DateIssued), 0, "yyyy-MM-dd");
-
-        var pager = new PagerControl { Page = 1, Margin = new Thickness(0, 8, 0, 0) };
-
-        var panel = new DockPanel();
-        DockPanel.SetDock(pager, Dock.Bottom);
-        panel.Children.Add(pager);
-        panel.Children.Add(grid);
-
-        var tab = new TabItem
-        {
-            Header = FindString(headerKey),
-            Content = panel,
-            Tag = new TabState { IsCorporation = corporation, Pager = pager, Grid = grid },
-        };
-
-        pager.PageChanged += async (_, page) =>
-        {
-            var state = (TabState)tab.Tag;
-            state.Pager.Page = page;
-            await LoadAsync(tab, page, forceRefresh: true);
-        };
-
-        return tab;
+            case 0:
+                _viewModel.CharacterContracts.Page = 1;
+                CharacterPager.Page = 1;
+                await _viewModel.LoadCharacterAsync(forceRefresh);
+                break;
+            case 1:
+                _viewModel.CorpContracts.Page = 1;
+                CorpPager.Page = 1;
+                await _viewModel.LoadCorpAsync(forceRefresh);
+                break;
+        }
     }
 
-    private void AddColumn(DataGrid grid, string headerKey, string path, double starWidth, string? format)
+    /// <summary>首次加载：加载当前（默认第一个）页签。</summary>
+    private async Task LoadAsync()
     {
-        var column = new DataGridTextColumn
-        {
-            Header = FindString(headerKey),
-            Binding = new System.Windows.Data.Binding(path) { StringFormat = format },
-            Width = starWidth > 0
-                ? new DataGridLength(starWidth, DataGridLengthUnitType.Star)
-                : DataGridLength.Auto,
-        };
-
-        grid.Columns.Add(column);
-    }
-
-    private async Task LoadAsync(TabItem tab, int page, bool forceRefresh)
-    {
-        if (tab.Tag is not TabState state)
+        if (_loaded)
         {
             return;
         }
 
-        state.Loaded = true;
-        var result = await CharacterContractService.GetAsync(_context, state.IsCorporation, page);
-        state.Grid.ItemsSource = result?.Items;
-        state.Pager.HasNext = result?.HasNextPage ?? false;
+        _loaded = true;
+        await LoadSelectedTabIfNeededAsync();
     }
 
-    private sealed class TabState
+    private async Task LoadSelectedTabIfNeededAsync()
     {
-        public bool IsCorporation { get; init; }
-
-        public bool Loaded { get; set; }
-
-        public required PagerControl Pager { get; init; }
-
-        public required DataGrid Grid { get; init; }
+        switch (Tabs.SelectedIndex)
+        {
+            case 0 when !_viewModel.CharacterContracts.Loaded:
+                await _viewModel.LoadCharacterAsync(forceRefresh: false);
+                break;
+            case 1 when !_viewModel.CorpContracts.Loaded:
+                await _viewModel.LoadCorpAsync(forceRefresh: false);
+                break;
+        }
     }
-
-    private static string FindString(string key) =>
-        Application.Current?.TryFindResource(key) as string ?? key;
 }

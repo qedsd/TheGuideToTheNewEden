@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.ViewModels.Characters;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Characters;
@@ -20,14 +21,42 @@ public partial class CharactersShellPage : Page
 
         _cardsPage.CharacterActivated += (_, card) => OpenCharacter(card);
 
-        Tabs.Items.Add(new TabItem
-        {
-            Header = BuildTextHeader(FindString("Characters.Title")),
-            // Page 只能由 Window/Frame 承载，标签内容统一用 Frame 托管
-            Content = HostInFrame(_cardsPage),
-        });
+        // 运行时切换游戏服务器：另一个服务器的角色标签已失效，全部关掉并重载卡片。
+        CoreInitializer.GameServerChanged += OnGameServerChanged;
+
+        Tabs.Items.Add(CreateTabItem(BuildTextHeader(FindString("Characters.Title")), HostInFrame(_cardsPage)));
 
         Loaded += async (_, _) => await _cardsPage.ReloadAsync();
+    }
+
+    /// <summary>标签外观走全局隐式 TabItem 样式；标签内容统一用 Frame 承载。</summary>
+    private TabItem CreateTabItem(object header, UIElement content)
+    {
+        return new TabItem
+        {
+            Header = header,
+            // Page 只能由 Window/Frame 承载，标签内容统一用 Frame 托管
+            Content = content is Page page ? HostInFrame(page) : content,
+        };
+    }
+
+    private void OnGameServerChanged(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(() => OnGameServerChanged(sender, e));
+            return;
+        }
+
+        foreach (var tab in _characterTabs.Values.ToList())
+        {
+            Tabs.Items.Remove(tab);
+        }
+
+        _characterTabs.Clear();
+        Tabs.SelectedItem = Tabs.Items.Count > 0 ? Tabs.Items[0] : null;
+
+        _ = _cardsPage.ReloadAsync(forceRefresh: true);
     }
 
     /// <summary>打开（或切换到）指定角色的标签。</summary>
@@ -39,11 +68,7 @@ public partial class CharactersShellPage : Page
             return;
         }
 
-        var tab = new TabItem
-        {
-            Header = BuildCharacterHeader(card),
-            Content = BuildWorkspace(card),
-        };
+        var tab = CreateTabItem(BuildCharacterHeader(card), BuildWorkspace(card));
 
         _characterTabs[card.CharacterId] = tab;
         Tabs.Items.Add(tab);

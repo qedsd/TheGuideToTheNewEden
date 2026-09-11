@@ -12,6 +12,16 @@ using TheGuideToTheNewEden.Core.Services.DB;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
+    /// <summary>
+    /// 按 ID 解析名称：优先查本地库，未命中再走 ESI 的 /universe/names。
+    /// </summary>
+    /// <remarks>
+    /// 本服务的 ID 统一为 <see cref="int"/>（<see cref="DBModels.IdName.Id"/> 即为 int），
+    /// 因此只适用于军团 / 角色 / 联盟 / 星系 / 空间站 / 物品类型等**处于 int 范围内**的 ID。
+    /// 结构（structure）的 ID 约 1e12，远超 <see cref="int.MaxValue"/>，
+    /// 传入会被截断成错误的值 —— **结构的名称解析请改用各 UI 项目中的 StructureService**
+    /// （Core 内不提供结构名称解析）。
+    /// </remarks>
     public class IDNameService
     {
         #region 保存到数据库
@@ -86,10 +96,25 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             return await Task.Run(() => GetByIds(ids));
         }
+        /// <summary>
+        /// 按 ID 解析名称（long 重载，异步）。
+        /// </summary>
+        /// <remarks>
+        /// 与同步的 <see cref="GetByIds(List{long})"/> 行为一致：内部转换为 int，
+        /// 超出 <see cref="int.MaxValue"/> 的 ID 会被截断；结构 ID 请改用 StructureService。
+        /// </remarks>
         public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<long> ids)
         {
             return await Task.Run(() => GetByIds(ids));
         }
+        /// <summary>
+        /// 按 ID 解析名称（long 重载）。
+        /// </summary>
+        /// <remarks>
+        /// 内部会转换为 <see cref="int"/>，超出 <see cref="int.MaxValue"/> 的 ID 会被**截断**，
+        /// 从而静默解析出错误的名字（而不是报错）。
+        /// 结构（structure）的 ID 请改用 StructureService。
+        /// </remarks>
         public static List<DBModels.IdName> GetByIds(List<long> ids)
         {
             return GetByIds(ids.Select(p => (int)p).ToList());

@@ -6,6 +6,7 @@
     ScrollViewer.CanContentScroll="False">
 
     <!--  首个标签固定为"全部角色"，每个已登录角色一个可关闭标签  -->
+    <!--  TabItem 外观走全局默认样式（Controls/SettingCardStyles.xaml 里的隐式 TabItem 样式）  -->
     <TabControl
         x:Name="Tabs"
         Padding="0"

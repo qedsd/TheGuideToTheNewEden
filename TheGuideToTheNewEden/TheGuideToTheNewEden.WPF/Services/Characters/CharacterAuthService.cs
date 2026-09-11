@@ -30,6 +30,27 @@ public static class CharacterAuthService
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 
+    /// <summary>国服：打开网易账号登出页，便于换账号再授权（对应 WinUI 的"步骤 0"）。</summary>
+    public static void OpenSerenityLogoffPage()
+    {
+        Process.Start(new ProcessStartInfo(SerenityAuthHelper.LogoffUrl) { UseShellExecute = true });
+    }
+
+    /// <summary>
+    /// 国服：授权完成后浏览器停在空白页，用户可能粘贴**整条网址**也可能只粘贴 **code**。
+    /// 这里两种都接受（WinUI 用 <c>Split('=','&amp;')[1]</c>，粘贴纯 code 时会拿到错误的值）。
+    /// </summary>
+    public static string? ExtractAuthorizationCode(string? pasted)
+    {
+        if (string.IsNullOrWhiteSpace(pasted))
+        {
+            return null;
+        }
+
+        var text = pasted.Trim();
+        return AuthHelper.ParseAuthorizationCode(text) ?? (text.Contains('=') ? null : text);
+    }
+
     /// <summary>
     /// 国际服完整登录：打开授权页并等待自定义协议回调。
     /// </summary>
@@ -66,10 +87,10 @@ public static class CharacterAuthService
         return await VerifyAndStoreAsync(code);
     }
 
-    /// <summary>国服：用用户手动复制的 code 换取令牌并保存。</summary>
-    public static Task<AuthorizedCharacterData?> CompleteSerenityAsync(string code)
+    /// <summary>国服：用用户手动复制的 code（或整条回调网址）换取令牌并保存。</summary>
+    public static Task<AuthorizedCharacterData?> CompleteSerenityAsync(string pasted)
     {
-        return VerifyAndStoreAsync(code?.Trim());
+        return VerifyAndStoreAsync(ExtractAuthorizationCode(pasted));
     }
 
     private static async Task<AuthorizedCharacterData?> VerifyAndStoreAsync(string? code)

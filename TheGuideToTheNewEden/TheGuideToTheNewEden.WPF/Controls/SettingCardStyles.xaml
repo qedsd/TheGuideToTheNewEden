@@ -107,6 +107,12 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <!--
+            必须显式给出 Foreground：本样式替换了 WPF-UI 的隐式 Button 样式，
+            不写的话 Foreground 会退回 Button 的默认值（系统色），深色主题下内部文字会变黑；
+            内部元素若未自带 Foreground 就会继承这里的值。
+        -->
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -115,9 +121,7 @@
                         Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         CornerRadius="4">
-                        <ContentPresenter
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center" />
+                        <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">

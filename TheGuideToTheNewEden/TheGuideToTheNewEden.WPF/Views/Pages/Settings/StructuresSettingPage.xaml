@@ -39,7 +39,7 @@
                         Margin="16,10,16,14"
                         HorizontalAlignment="Stretch"
                         Content="{DynamicResource Settings.Structures.Remove}"
-                        Foreground="OrangeRed" />
+                        Foreground="{DynamicResource SystemFillColorCautionBrush}" />
 
                     <ui:DataGrid
                         x:Name="AddedGrid"
