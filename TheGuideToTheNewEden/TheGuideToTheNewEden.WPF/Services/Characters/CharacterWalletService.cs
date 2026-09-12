@@ -262,6 +262,8 @@ public static class CharacterWalletService
     /// 回填交易的客户名与地点名。
     /// 客户 ID 通常是角色/军团/联盟 ID（int 范围）；超出范围时直接显示原始 ID，
     /// 避免被 <c>(int)</c> 静默截断后解析成别人。地点 ID 按结构域分流解析。
+    /// 本方法在 UI 线程上运行：客户名解析必须走异步批量接口，
+    /// 不能用同步 <c>IDNameService.GetById</c>（内部 .Result 会在 UI 线程永久死锁，见 Core IDNameService 注释）。
     /// </summary>
     private static async Task EnrichNamesAsync(List<WalletTransactionRow> rows)
     {
@@ -270,12 +272,25 @@ public static class CharacterWalletService
             return;
         }
 
+        // 客户名批量解析（所有未缓存的 ID 合并成一次 ESI 调用）
+        var clientIds = rows.Select(p => (long)p.ClientId)
+            .Where(p => p > 0 && p <= int.MaxValue)
+            .Select(p => (int)p)
+            .Distinct()
+            .ToList();
+        var clientNames = clientIds.Count > 0
+            ? await IDNameService.GetByIdsAsync(clientIds)
+            : null;
+        var nameMap = clientNames is { Count: > 0 }
+            ? clientNames.Where(p => p.Id > 0).ToDictionary(p => p.Id, p => p.Name)
+            : [];
+
         foreach (var row in rows)
         {
             row.ClientName = row.ClientId switch
             {
                 <= 0 => null,
-                <= int.MaxValue => IDNameService.GetById((int)row.ClientId)?.Name ?? row.ClientId.ToString(),
+                <= int.MaxValue => nameMap.TryGetValue((int)row.ClientId, out var name) ? name : row.ClientId.ToString(),
                 _ => row.ClientId.ToString(),
             };
         }

@@ -8,38 +8,7 @@
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
-        <!--  列表项铺满整行，右侧日期/未读徽标才能贴边  -->
-        <!--
-            自带模板（不 BasedOn 隐式 ListBoxItem 样式：未验证 WPF-UI 是否提供标准类型的隐式样式，
-            写错会在页面构造时抛 XamlParseException）。选中/悬停用主题色底，避免退回系统默认的蓝色高亮。
-        -->
-        <Style x:Key="StretchListItem" TargetType="ListBoxItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="8,2" />
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border
-                            x:Name="Bd"
-                            Margin="2,1"
-                            Padding="{TemplateBinding Padding}"
-                            Background="Transparent"
-                            CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!--  列表项样式 StretchListItem 已提到全局（Controls/GlobalControlStyles.xaml），此处直接引用  -->
     </Page.Resources>
 
     <Grid Margin="16,12,16,16">

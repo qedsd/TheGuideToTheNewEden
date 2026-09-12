@@ -93,9 +93,8 @@ namespace TheGuideToTheNewEden.Core.Services
         }
 
         public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<int> ids)
-        {
-            return await Task.Run(() => GetByIds(ids));
-        }
+            => await Task.Run(() => GetByIdsCoreAsync(ids));
+
         /// <summary>
         /// 按 ID 解析名称（long 重载，异步）。
         /// </summary>
@@ -104,9 +103,8 @@ namespace TheGuideToTheNewEden.Core.Services
         /// 超出 <see cref="int.MaxValue"/> 的 ID 会被截断；结构 ID 请改用 StructureService。
         /// </remarks>
         public static async Task<List<DBModels.IdName>> GetByIdsAsync(List<long> ids)
-        {
-            return await Task.Run(() => GetByIds(ids));
-        }
+            => await Task.Run(() => GetByIdsCoreAsync(ids.Select(p => (int)p).ToList()));
+
         /// <summary>
         /// 按 ID 解析名称（long 重载）。
         /// </summary>
@@ -119,7 +117,17 @@ namespace TheGuideToTheNewEden.Core.Services
         {
             return GetByIds(ids.Select(p => (int)p).ToList());
         }
+
+        /// <summary>
+        /// 同步版本。<b>UI 线程也可能直接调用</b>（如钱包交易的客户名回填），
+        /// 因此异步链必须放到线程池执行：若直接 <c>.Result</c>，
+        /// EVEStandard 库内部 await 的续体会排回被阻塞的 UI 线程（其 SynchronizationContext），
+        /// 造成<b>永久死锁</b>——HTTP 请求其实早已完成，连 HttpClient 超时都不会触发。
+        /// </summary>
         public static List<DBModels.IdName> GetByIds(List<int> ids)
+            => Task.Run(() => GetByIdsCoreAsync(ids)).GetAwaiter().GetResult();
+
+        private static async Task<List<DBModels.IdName>> GetByIdsCoreAsync(List<int> ids)
         {
             try
             {
@@ -144,7 +152,7 @@ namespace TheGuideToTheNewEden.Core.Services
                 List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
                 if (noInDbs.Count > 0)
                 {
-                    var resp = ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs).Result;
+                    var resp = await ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs);
                     if (resp.Model != null)
                     {
                         foreach (var data in resp.Model)
@@ -271,6 +279,15 @@ namespace TheGuideToTheNewEden.Core.Services
         }
 
         public static async Task<List<DBModels.IdName>> SerachByNameAsync(string name)
+            => await SearchByNameCoreAsync(name);
+
+        /// <summary>
+        /// 同步版本。与 <see cref="GetByIds(List{int})"/> 同理：异步链放到线程池执行，避免 UI 线程死锁。
+        /// </summary>
+        public static List<DBModels.IdName> SerachByName(string name)
+            => Task.Run(() => SearchByNameCoreAsync(name)).GetAwaiter().GetResult();
+
+        private static async Task<List<DBModels.IdName>> SearchByNameCoreAsync(string name)
         {
             try
             {
@@ -302,50 +319,6 @@ namespace TheGuideToTheNewEden.Core.Services
                     AddData(resp.Model.Factions, DBModels.IdName.CategoryEnum.Faction);
                 }
                 if(noInDbResults.Any())
-                {
-                    SaveToDB(noInDbResults);
-                }
-                return results;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex);
-            }
-            return null;
-        }
-
-        public static List<DBModels.IdName> SerachByName(string name)
-        {
-            try
-            {
-                List<DBModels.IdName> results = IDNameDBService.Search(name);
-                List<DBModels.IdName> noInDbResults = new List<DBModels.IdName>();
-                void AddData(List<EVEStandard.Models.NameToId> resolvedInfos, Core.DBModels.IdName.CategoryEnum category)
-                {
-                    if (resolvedInfos.NotNullOrEmpty())
-                    {
-                        foreach (var data in resolvedInfos)
-                        {
-                            var idName = new DBModels.IdName(data.Id, data.Name, category);
-                            results.Add(idName);
-                            noInDbResults.Add(idName);
-                        }
-                    }
-                }
-                var resp = ESIService.Current.EsiClient.Universe.BulkNamesToIdsAsync(new List<string>() { name }).Result;
-                if (resp.Model != null)
-                {
-                    AddData(resp.Model.Alliances, DBModels.IdName.CategoryEnum.Alliance);
-                    AddData(resp.Model.Characters, DBModels.IdName.CategoryEnum.Character);
-                    AddData(resp.Model.Constellations, DBModels.IdName.CategoryEnum.Constellation);
-                    AddData(resp.Model.Corporations, DBModels.IdName.CategoryEnum.Corporation);
-                    AddData(resp.Model.InventoryTypes, DBModels.IdName.CategoryEnum.InventoryType);
-                    AddData(resp.Model.Regions, DBModels.IdName.CategoryEnum.Region);
-                    AddData(resp.Model.Systems, DBModels.IdName.CategoryEnum.SolarSystem);
-                    AddData(resp.Model.Stations, DBModels.IdName.CategoryEnum.Station);
-                    AddData(resp.Model.Factions, DBModels.IdName.CategoryEnum.Faction);
-                }
-                if (noInDbResults.Any())
                 {
                     SaveToDB(noInDbResults);
                 }

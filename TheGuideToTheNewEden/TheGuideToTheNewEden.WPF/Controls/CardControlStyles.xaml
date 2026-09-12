@@ -1,0 +1,121 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls">
+
+    <!--
+        通用卡片容器默认样式（隐式，全应用生效）。
+        布局：Header（可空）→ 分隔线 → Content（自适应）→ 分隔线 → Footer（可空）。
+        只有 Background/BorderBrush/CornerRadius/Padding 决定卡片外观，三个区域可放任意 UI。
+    -->
+    <Style TargetType="{x:Type controls:CardControl}">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:CardControl}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!--
+                                标题区：高度下限放在这个宿主 Border 上而不是 RowDefinition 上——
+                                RowDefinition 的 MinHeight 在子元素折叠后仍会占住高度（无 Header 时会留一条空带），
+                                宿主 Border 被折叠时行高自然归零。文字在 44px 的标题带内垂直居中。
+                            -->
+                            <Border
+                                x:Name="HeaderHost"
+                                Grid.Row="0"
+                                MinHeight="44"
+                                Padding="{TemplateBinding Padding}">
+                                <ContentPresenter
+                                    x:Name="HeaderPresenter"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    TextElement.FontSize="14"
+                                    TextElement.FontWeight="SemiBold"
+                                    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Border>
+
+                            <!--  标题与内容之间的分隔线  -->
+                            <Border
+                                x:Name="HeaderSeparator"
+                                Grid.Row="1"
+                                Height="1"
+                                Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+                            <!--  主内容区（任意 UI，自适应填满）  -->
+                            <ContentPresenter
+                                x:Name="MainContentPresenter"
+                                Grid.Row="2"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                            <!--  内容与底栏之间的强调色分隔线  -->
+                            <Border
+                                x:Name="FooterSeparator"
+                                Grid.Row="3"
+                                Height="1"
+                                Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                Opacity="0.5" />
+
+                            <!--  底栏（未设置 Footer 时不占空间，按钮在 40px 内垂直居中）  -->
+                            <Border
+                                x:Name="FooterHost"
+                                Grid.Row="4"
+                                MinHeight="40"
+                                Padding="{TemplateBinding Padding}">
+                                <ContentPresenter
+                                    x:Name="FooterPresenter"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding Footer}"
+                                    ContentTemplate="{TemplateBinding FooterTemplate}"
+                                    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <!--  Header 为空 → 整个标题带（含分隔线）折叠，行高归零  -->
+                        <Trigger Property="Header" Value="{x:Null}">
+                            <Setter TargetName="HeaderHost" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="HeaderSeparator" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  Footer 为空 → 整个底栏（含分隔线）折叠  -->
+                        <Trigger Property="Footer" Value="{x:Null}">
+                            <Setter TargetName="FooterHost" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="FooterSeparator" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  显式关闭标题分隔线  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="ShowHeaderSeparator" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="HeaderSeparator" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

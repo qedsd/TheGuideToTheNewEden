@@ -1,0 +1,266 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.ChannelMarketPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="MarketFieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+        <!--  角色项：名称 + 监控中指示条  -->
+        <DataTemplate x:Key="CharacterItemTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Width="3"
+                    Height="16"
+                    Margin="0,0,6,0"
+                    RadiusX="2"
+                    RadiusY="2"
+                    Fill="{DynamicResource SystemFillColorCautionBrush}"
+                    ToolTip="{DynamicResource ChannelMarket_Running}"
+                    Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="12,12,12,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!--  ============ 左：角色列表 ============  -->
+        <controls:CardControl Grid.Column="0" Header="{DynamicResource ChannelIntelPage_Characters}">
+            <ListBox
+                x:Name="CharacterList"
+                ItemTemplate="{StaticResource CharacterItemTemplate}"
+                IsSynchronizedWithCurrentItem="False"
+                ItemsSource="{Binding Characters}"
+                ScrollViewer.CanContentScroll="True"
+                SelectionChanged="OnCharacterSelectionChanged" />
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStartAllClick"
+                        Icon="{ui:SymbolIcon Play24}"
+                        ToolTip="{DynamicResource General_StartAll}"
+                        AutomationProperties.Name="{DynamicResource General_StartAll}" />
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStopAllClick"
+                        Visibility="{Binding Running, Converter={StaticResource BoolToVis}}"
+                        ToolTip="{DynamicResource General_StopAll}"
+                        AutomationProperties.Name="{DynamicResource General_StopAll}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Click="OnRefreshCharactersClick"
+                        Icon="{ui:SymbolIcon ArrowSync24}"
+                        ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}"
+                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_RefreshChannels}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ============ 中：频道列表 ============  -->
+        <controls:CardControl
+            Grid.Column="1"
+            Width="290"
+            Margin="8,0"
+            Header="{DynamicResource ChannelIntelPage_Channels}"
+            Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+            <ListBox
+                IsEnabled="{Binding SelectedNotRunning}"
+                ItemContainerStyle="{StaticResource StretchListItem}"
+                ItemsSource="{Binding ChatChanelInfos}"
+                    ScrollViewer.CanContentScroll="True"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox
+                                    MinWidth="32"
+                                    VerticalAlignment="Center"
+                                    IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                    <TextBlock
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding ChannelName}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip="{DynamicResource ChannelIntelPage_ChannelName}" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding SessionStarted}"
+                                        ToolTip="{DynamicResource ChannelIntelPage_LastUpdateTime}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+            </ListBox>
+            <controls:CardControl.Footer>
+                <ui:Button
+                    HorizontalAlignment="Center"
+                    Click="OnRefreshChannelsClick"
+                    IsEnabled="{Binding SelectedNotRunning}"
+                    Icon="{ui:SymbolIcon ArrowSync24}"
+                    ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}"
+                    AutomationProperties.Name="{DynamicResource ChannelIntelPage_RefreshChannels}" />
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ============ 右：查价设置 ============  -->
+        <controls:CardControl
+            Grid.Column="2"
+            Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+            <StackPanel IsEnabled="{Binding SelectedNotRunning}">
+                    <Expander
+                        Margin="0,2"
+                        Background="Transparent"
+                        Header="{DynamicResource ChannelMarket_Setting_General}"
+                        IsExpanded="True">
+                        <Grid Margin="12,4,0,4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="42" />
+                                <RowDefinition Height="42" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Style="{StaticResource MarketFieldLabel}"
+                                Text="{DynamicResource ChannelMarket_Setting_KeyWord}" />
+                            <ui:TextBox
+                                Grid.Column="1"
+                                PlaceholderText="{DynamicResource ChannelMarket_Setting_KeyWord_Tip}"
+                                Text="{Binding Session.Setting.KeyWord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Style="{StaticResource MarketFieldLabel}"
+                                Text="{DynamicResource ChannelMarket_Setting_ItemsSeparator}" />
+                            <ui:TextBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                PlaceholderText="{DynamicResource ChannelMarket_Setting_ItemsSeparator_Tip}"
+                                Text="{Binding Session.Setting.ItemsSeparator, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                        </Grid>
+                    </Expander>
+
+                    <Expander
+                        Margin="0,2"
+                        Background="Transparent"
+                        Header="{DynamicResource ChannelMarket_Setting_Market}"
+                        IsExpanded="True">
+                        <Grid Margin="12,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource MarketFieldLabel}" Text="{DynamicResource ChannelIntelPage_LocalSystem}" />
+                            <ToggleButton
+                                x:Name="RegionToggle"
+                                Grid.Column="1"
+                                MinHeight="32"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Content="{Binding SelectedRegionName}" />
+                            <Popup
+                                AllowsTransparency="True"
+                                IsOpen="{Binding IsChecked, ElementName=RegionToggle, Mode=TwoWay}"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding ElementName=RegionToggle}"
+                                PopupAnimation="Fade"
+                                StaysOpen="False">
+                                <Border
+                                    Width="300"
+                                    Height="420"
+                                    Style="{StaticResource AccentFlyoutBorder}">
+                                    <Grid Margin="6">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <ui:TextBox
+                                            x:Name="RegionSearchBox"
+                                            Grid.Row="0"
+                                            PlaceholderText="{DynamicResource MarketPage_SearchRegion}"
+                                            TextChanged="OnRegionSearchChanged" />
+                                        <ListBox
+                                            x:Name="RegionList"
+                                            Grid.Row="1"
+                                            Margin="0,8,0,0"
+                                            DisplayMemberPath="RegionName"
+                                            IsSynchronizedWithCurrentItem="False"
+                                            ScrollViewer.CanContentScroll="True"
+                                            SelectionChanged="OnRegionSelectionChanged" />
+                                    </Grid>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Expander>
+            </StackPanel>
+
+            <!--  操作按钮（底栏）  -->
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStartClick"
+                        Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}"
+                        Icon="{ui:SymbolIcon Play24}"
+                        ToolTip="{DynamicResource ChannelMarket_Start}"
+                        AutomationProperties.Name="{DynamicResource ChannelMarket_Start}" />
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStopClick"
+                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}"
+                        ToolTip="{DynamicResource ChannelMarket_Stop}"
+                        AutomationProperties.Name="{DynamicResource ChannelMarket_Stop}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnRestorePosClick"
+                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}"
+                        Icon="{ui:SymbolIcon ArrowReset24}"
+                        ToolTip="{DynamicResource ChannelIntelPage_RestorePos}"
+                        AutomationProperties.Name="{DynamicResource ChannelIntelPage_RestorePos}" />
+                    <ui:Button
+                        Click="OnApplySettingToAllClick"
+                        IsEnabled="{Binding SelectedNotRunning}"
+                        Icon="{ui:SymbolIcon Copy24}"
+                        ToolTip="{DynamicResource ChannelMarket_ApplySettingToAll}"
+                        AutomationProperties.Name="{DynamicResource ChannelMarket_ApplySettingToAll}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+    </Grid>
+</Page>

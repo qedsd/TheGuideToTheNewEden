@@ -1,0 +1,287 @@
+﻿<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.ChannelMonitorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="MonitorFieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+        <!--  角色项：名称 + 监控中指示条  -->
+        <DataTemplate x:Key="CharacterItemTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Width="3"
+                    Height="16"
+                    Margin="0,0,6,0"
+                    RadiusX="2"
+                    RadiusY="2"
+                    Fill="{DynamicResource SystemFillColorCautionBrush}"
+                    ToolTip="{DynamicResource GameLogMonitorPage_Running}"
+                    Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </DataTemplate>
+        <!--  关键词行：正则 + 删除  -->
+        <DataTemplate x:Key="KeyRowTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:TextBox
+                    PlaceholderText="{DynamicResource GameLogMonitorPage_Regex}"
+                    Text="{Binding Pattern, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                <ui:Button
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    Appearance="Danger"
+                    Click="OnDeleteKeyClick"
+                    Icon="{ui:SymbolIcon Dismiss24}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="12,12,12,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <!--  ============ 左：角色列表 ============  -->
+        <controls:CardControl Grid.Column="0" Header="{DynamicResource ChannelMonitorPage_TargetCharacter}">
+            <ListBox
+                x:Name="CharacterList"
+                ItemTemplate="{StaticResource CharacterItemTemplate}"
+                IsSynchronizedWithCurrentItem="False"
+                ItemsSource="{Binding Characters}"
+                ScrollViewer.CanContentScroll="True"
+                SelectionChanged="OnCharacterSelectionChanged" />
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStartAllClick"
+                        Icon="{ui:SymbolIcon Play24}"
+                        ToolTip="{DynamicResource General_StartAll}"
+                        AutomationProperties.Name="{DynamicResource General_StartAll}" />
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStopAllClick"
+                        Visibility="{Binding Running, Converter={StaticResource BoolToVis}}"
+                        ToolTip="{DynamicResource General_StopAll}"
+                        AutomationProperties.Name="{DynamicResource General_StopAll}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Click="OnRefreshListClick"
+                        Icon="{ui:SymbolIcon ArrowSync24}"
+                        ToolTip="{DynamicResource General_RefreshList}"
+                        AutomationProperties.Name="{DynamicResource General_RefreshList}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ============ 中：频道列表 ============  -->
+        <controls:CardControl
+            Grid.Column="1"
+            Width="290"
+            Margin="8,0"
+            Header="{DynamicResource ChannelMonitorPage_CharacterAndChannels}"
+            Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+            <ListBox
+                IsEnabled="{Binding SelectedNotRunning}"
+                ItemContainerStyle="{StaticResource StretchListItem}"
+                ItemsSource="{Binding ChatChanelInfos}"
+                ScrollViewer.CanContentScroll="True"
+                VirtualizingStackPanel.IsVirtualizing="True"
+                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox
+                                    MinWidth="32"
+                                    VerticalAlignment="Center"
+                                    IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                    <TextBlock
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="{Binding ChannelName}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip="{DynamicResource ChannelMonitorPage_ChannelName}" />
+                                    <TextBlock
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding SessionStarted}"
+                                        ToolTip="{DynamicResource ChannelMonitorPage_LastUpdateTime}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+            </ListBox>
+            <controls:CardControl.Footer>
+                <ui:Button
+                    HorizontalAlignment="Center"
+                    Click="OnRefreshChannelsClick"
+                    IsEnabled="{Binding SelectedNotRunning}"
+                    Icon="{ui:SymbolIcon ArrowSync24}"
+                    ToolTip="{DynamicResource ChannelIntelPage_RefreshChannels}"
+                    AutomationProperties.Name="{DynamicResource ChannelIntelPage_RefreshChannels}" />
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ============ 右：监控设置 / 频道内容 ============  -->
+        <controls:CardControl
+            Grid.Column="2"
+            Visibility="{Binding HasSession, Converter={StaticResource BoolToVis}}">
+            <TabControl>
+                <!--  监控设置  -->
+                <TabItem Header="{DynamicResource General_Setting}">
+                        <ScrollViewer
+                            Margin="0,6,0,0"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <StackPanel IsEnabled="{Binding SelectedNotRunning}">
+                                <Expander
+                                    Margin="0,2"
+                                    Background="Transparent"
+                                    Header="{DynamicResource GameLogMonitorPage_NotifyMode}"
+                                    IsExpanded="True">
+                                    <StackPanel Margin="12,4,0,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox
+                                                MinWidth="110"
+                                                Content="{DynamicResource GameLogMonitorPage_SystemNotify}"
+                                                IsChecked="{Binding SelectedCharacter.Setting.SystemNotify, Mode=TwoWay}" />
+                                            <CheckBox
+                                                MinWidth="110"
+                                                Content="{DynamicResource GameLogMonitorPage_WindowNotify}"
+                                                IsChecked="{Binding SelectedCharacter.Setting.WindowNotify, Mode=TwoWay}" />
+                                            <CheckBox
+                                                MinWidth="110"
+                                                Content="{DynamicResource GameLogMonitorPage_SoundNotify}"
+                                                IsChecked="{Binding SelectedCharacter.Setting.SoundNotify, Mode=TwoWay}" />
+                                            <CheckBox
+                                                Content="{DynamicResource GameLogMonitorPage_RepeatSound}"
+                                                IsChecked="{Binding SelectedCharacter.Setting.RepeatSound, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Style="{StaticResource MonitorFieldLabel}"
+                                                Text="{DynamicResource GameLogMonitorPage_SoundFile}" />
+                                            <ui:TextBox
+                                                Grid.Column="1"
+                                                Margin="0,0,4,0"
+                                                PlaceholderText="{DynamicResource EarlyWarningItemPage_DefaultFile}"
+                                                Text="{Binding SelectedCharacter.Setting.SoundFile, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                            <ui:Button
+                                                Grid.Column="2"
+                                                Click="OnPickSoundFileClick"
+                                                Content="{DynamicResource EarlyWarningItemPage_Pick}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Expander>
+
+                                <Expander
+                                    Margin="0,2"
+                                    Background="Transparent"
+                                    Header="{DynamicResource GameLogMonitorPage_NotifyKey}"
+                                    IsExpanded="True">
+                                    <StackPanel Margin="12,4,0,4">
+                                        <TextBlock
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{DynamicResource GameLogMonitorPage_NotifyKey_Tip}"
+                                            TextWrapping="Wrap" />
+                                        <ui:Button
+                                            Margin="0,6,0,6"
+                                            HorizontalAlignment="Left"
+                                            Click="OnAddKeyClick"
+                                            Content="{DynamicResource General_Add}"
+                                            Icon="{ui:SymbolIcon Add24}" />
+                                        <ItemsControl ItemTemplate="{StaticResource KeyRowTemplate}" ItemsSource="{Binding SelectedCharacter.Setting.Keys}" />
+                                    </StackPanel>
+                                </Expander>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!--  频道内容（仅命中消息）  -->
+                    <TabItem Header="{DynamicResource ChannelMonitorPage_ChannelLogs}">
+                        <RichTextBox
+                            x:Name="MsgContentsBox"
+                            Margin="0,6,0,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            IsReadOnly="True"
+                            VerticalScrollBarVisibility="Auto">
+                            <FlowDocument />
+                            <RichTextBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="OnClearContentsClick" Header="{DynamicResource General_Clear}" />
+                                </ContextMenu>
+                            </RichTextBox.ContextMenu>
+                        </RichTextBox>
+                    </TabItem>
+            </TabControl>
+
+            <!--  操作按钮（底栏）  -->
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStartClick"
+                        Visibility="{Binding SelectedNotRunning, Converter={StaticResource BoolToVis}}"
+                        Icon="{ui:SymbolIcon Play24}"
+                        ToolTip="{DynamicResource ChannelMonitorPage_Start}"
+                        AutomationProperties.Name="{DynamicResource ChannelMonitorPage_Start}" />
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStopClick"
+                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}"
+                        ToolTip="{DynamicResource ChannelMonitorPage_Stop}"
+                        AutomationProperties.Name="{DynamicResource ChannelMonitorPage_Stop}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Margin="0,0,6,0"
+                        Click="OnStopNotifyClick"
+                        Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}"
+                        Icon="{ui:SymbolIcon AlertOff24}"
+                        ToolTip="{DynamicResource GameLogMonitorPage_StopNotify}"
+                        AutomationProperties.Name="{DynamicResource GameLogMonitorPage_StopNotify}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+    </Grid>
+</Page>

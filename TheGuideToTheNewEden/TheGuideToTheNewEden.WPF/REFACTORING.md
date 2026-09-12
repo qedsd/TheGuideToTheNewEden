@@ -568,6 +568,153 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 38：IDNameService 同步解析在 UI 线程永久死锁（钱包交易客户名）
+
+- 现象：`IDNameService.GetByIds` 内的 `ESIService.Current.EsiClient.Universe.GetNamesAndCategoriesFromIdsAsync(noInDbs).Result` 在 `noInDbs = [2124358151]`（一个首次出现的新角色，本地 IdName 库无缓存）时**永久卡住**，页面冻结、无异常无日志。
+- 根因（**UI 线程 sync-over-async 死锁**，与该 ID 本身无关）：
+  - 唯一的 UI 线程触达链路：钱包交易页 → `CharacterWalletService.EnrichNamesAsync`（async，续体在 UI 线程上执行）→ 逐行调用**同步** `IDNameService.GetById` → `GetByIds` → `.Result` 阻塞 UI 线程。
+  - EVEStandard 库内部的 `await` 链没有全程 `ConfigureAwait(false)`：请求虽已由 HttpClient 发出并完成，但续体被排回被 `.Result` 阻塞的 UI `SynchronizationContext` → 永远执行不到 → 死锁。**HttpClient 超时不会触发**（请求其实成功了，只是续体无法运行）。
+  - 实测佐证：直接 POST ESI `/universe/names/` `[2124358151]` 秒回 `{"category":"character","id":2124358151,"name":"Aussin Preldent"}`——服务端无任何问题。
+  - 之前一直没暴露：已解析过的 ID 都命中本地 IdName 缓存（`GetByIds` 直接走缓存分支，不发 HTTP）；第一个"从未见过"的客户 ID 才会真正发起请求并触发死锁。
+- 修复：
+  - **Core `IDNameService`**：抽出不抛异常的异步核心 `GetByIdsCoreAsync(List<int>)` / `SearchByNameCoreAsync(string)`（内部 `await`）；同步入口 `GetByIds(List<int>)` / `SerachByName(string)` 改为 `Task.Run(() => 核心).GetAwaiter().GetResult()`——异步链在线程池上执行、续体不回 UI 线程，死锁消除；`GetByIdsAsync` / `SerachByNameAsync` 保持原语义（`Task.Run` 包裹）。**方法签名与返回语义全部不变**（WinUI 侧既有的同步调用方 `StatistTopAllTimeViewModel` / `StatistSuperViewModel` 无需改动）。
+  - **WPF `CharacterWalletService.EnrichNamesAsync`**：客户名回填由"逐行同步 `GetById`"改为**一次批量 `GetByIdsAsync`**（整页所有未缓存客户 ID 合并成一次 ESI 调用后按 `Id` 建映射回填）——既彻底离开 UI 线程，又把 N 次 ESI 请求降为 1 次。
+- 遗留同类模式（本轮未动）：Core `KBHelpers.cs` 115/196/231 行与 `CharacterScanInfo.cs` 222/227/372 行也是 `.Result`，但 WPF 无任何调用方（仅 WinUI 击杀榜/扫描功能在后台线程使用），暂无死锁暴露路径；日后若从 UI 线程调用需照同样方式处理。
+- 构建状态：**0 错误 0 新警告**。验证建议：重启应用后打开钱包"交易"页签，含新对手方的流水应正常显示出角色名（如 Aussin Preldent），页面不再冻结。
+
+---
+
+### 阶段 39：频道-预警迁移（Channel Intel）
+
+- 目标：把 WinUI 的「频道预警」迁到 WPF——监控 EVE 聊天日志（情报频道），按星系名语言库匹配关键词，按 N 跳星系图计算跳数，触发 预警小窗（星图）/声音（每跳可配）/系统通知，支持自动定位、自动解除/降级、ZKB 击杀预警。
+- **复用 Core（零改动）**：`GameLogHelper`（扫描 `Chatlogs` 目录与日志头解析）、`ObservableFileService`（300ms 轮询文件大小 + 增量读 UTF-16 日志 + EVE 重登换文件检测）、`ChannelIntelObserver`（关键词匹配/跳数计算/舰船名片段）、`SolarSystemPosHelper` + `IntelSolarSystemMap`（N 跳星系图 BFS）、`ChatLogHelper`（本地频道自动定位）、`MapSolarSystemNameService`（多语言星系名库）、`ShipNameCacheService`（舰船名匹配缓存）、`ZKBIntel`（zkillboard 击杀流）、全部模型（`ChannelIntelSetting`/`EarlyWarningContent`/`ChatChanelInfo` 等）。
+- **新增 WPF 代码**：
+  - `Services/Settings/IntelSettingService.cs`：每角色预警配置持久化 `%LocalAppData%\TheGuideToTheNewEden\Configs\IntelSettings.json`——**与 WinUI 同路径同格式**，两边配置互相沿用。
+  - `Services/ChannelIntel/ChannelIntelSession.cs`：每角色预警会话（对齐 WinUI `Models/ChannelIntel`）：Start（校验 → 建 N 跳星系图 → 注册预警小窗/声音 → 每个勾选频道挂 `ChannelIntelObserver` → 自动定位挂本地频道监控 → 可选 ZKB 订阅）、Stop、自动定位回写（重算星系图并更新全部观察者与小窗）、`IntelJumps` 变化自动增删每跳声音配置。Observer 事件来自后台线程，会话层统一 `Application.Current.Dispatcher` 调度。WinUI 的 `ChannelIntelManager`（为星图工具聚合"无视跳数"情报）WPF 侧尚无消费方，未移植。
+  - `Services/ChannelIntel/IntelWarningService.cs`：预警通知编排（对齐 WinUI `Services/WarningService`）——一个角色一个置顶小窗 + 一个声音播放器；`SoundNotifyItem` 用 WPF `MediaPlayer`（**循环通过 MediaEnded 重播实现**，WPF 没有 WinRT 的 `IsLoopingEnabled`），跳过自己发言的声音；系统通知走托盘气泡（`NotificationService` 新增 `NotificationClicked` 事件，**点击气泡停止全部报警声音**，对应 WinUI Toast 点击行为）。
+  - `Views/Windows/IntelWindow.xaml(.cs)`：置顶预警小窗（FluentWindow，仅最小化+关闭，`ShowInTaskbar=false`）：星图 + 底部三按钮（清除所有预警 / 最新预警信息——**点击前置 EVE 游戏窗口** / 停止声音）；透明度=`OverlapOpacity/100`；位置尺寸变化即写回设置；自动解除/降级由 10 秒 `DispatcherTimer` 驱动；"必要时显示"模式在全部预警解除后延迟 30 秒自动隐藏（隐藏即停声）；标题栏关闭 = 停止该角色预警（`StopRequested` → VM 复位）。`ShowWindow()` 用 `Show()` 不抢焦点（游戏内不被打断，视觉上同为置顶覆盖）。
+  - `Views/UserControls/IntelMapView.xaml(.cs)`：星图画布（对齐 WinUI **Default（Neweden）**样式）：星系节点按归一化坐标布点 + 星门连线（按两端 ID 去重）、家=海绿/常规=暗灰/预警中=橙红放大 1.5 倍/降级=黄、悬停显示"星系名 N 跳 + 最新预警内容"并高亮相邻星门、右键预警中的星系可单独解除。缩放用 `RenderTransformOrigin=0.5,0.5`（替代 WinUI 的手工平移补偿）。
+  - `ViewModels/Channel/ChannelIntelViewModel.cs`：角色集合/选中角色→惰性会话缓存/频道内容与 ZKB 内容集合/开始·停止·全部开始·全部停止·刷新·停止声音·重置位置·**同步全部设置**（确认框后深拷贝各字段到其他角色）；等待/成功/错误提示走 `PageNotifyService`。
+  - `Views/Pages/ChannelIntelPage.xaml(.cs)`：替换占位页（`MainWindow` 注册不变）。三栏：角色列表（预警中橙条指示，WinUI 的拖拽排序未做）/频道勾选列表（复选框+频道名+会话时间，右键打开文件/文件夹留待后续）/右侧两页签——预警设置（范围/通知方式/预警弹窗/每跳声音行（跳数+音量+循环+文件+拾取）/关键词/其他 六个 Expander，运行中整体禁用）与频道内容（只读 RichTextBox 按类型着色：预警=危险色+舰船名加粗、解除=成功色，超 `MaxShowItems` 裁剪，右键清空）。本地位置选择 = 按钮+Popup 搜索列表（含特殊星系，对齐 WinUI ShowSpecial=True）。
+  - `Helpers/GameWindowHelper.cs`：按角色名找 `exefile` 进程主窗口并 `SetForegroundWindow`（前置游戏）。
+  - `App.OnExit`：`IntelWarningService.Dispose()` + `ObservableFileService.StopAll()` + `ShipNameCacheService.Dispose()`。
+- 本地化：中英各补 63 个键（`ChannelIntelPage_*` 53 个 + `EarlyWarningPage_*` 3 个 + `EarlyWarningItemPage_*` 4 个 + 新增 `EarlyWarningItemPage_Pick`），键值沿用 WinUI 原文；键名保留 WinUI 的历史拼写（`Alwasys`/`Succes`/`Faild`）以保持两侧一致。
+- 实现中踩坑：`TextBlock.MaxLines` 是 WinUI 专有属性（WPF 没有）；`RenderTransformOrigin` 属于 `FrameworkElement` 而非 `ScaleTransform`；`BlockCollection` 没有 `RemoveFirst()`（用 `FirstBlock` + `Remove`）；`ClearAll24` 图标名不存在（改 `Eraser24`，`SpeakerMute24`/`Play24`/`RecordStop24` 已核对存在）。
+- 构建状态：**0 错误 0 新警告**（仅剩既有 `NU1903`）。按 §8 约定未做实机截图核验。
+- 未做/后续：预警小窗的 SMT/Near2 两种显示样式暂以默认星图样式呈现（设置项保留、生效均为默认样式）；频道列表右键"打开文件/打开文件夹"未接线；角色列表拖拽排序（WinUI `CanReorderItems`）未做；星图工具的"无视跳数情报"旁路（`ChannelIntelManager` + `OnIgnoreJumpsIntelUpdate`）待星图功能迁移时一并接入。
+
+---
+
+### 阶段 40：频道-监控 / 频道-统计 / 频道-查价 迁移（频道四件套收官）
+
+- 目标：把 WinUI 频道组剩余三个子页迁到 WPF。Core 侧能力（`ChatlogObservableItem` 正则监控、`ChannelMarketObserver` 查价识别、`CharacterScanInfo`/`ChannelScanConfig`、`GameLogHelper`、`ObservableFileService`、`IDNameService.GetByNames` 等）零改动复用；WPF 侧新写设置服务与 UI。
+- **频道监控（ChannelMonitorPage）**：
+  - `Services/Settings/ChannelMonitorSettingService.cs`：每角色配置持久化 `Configs/ChannelMonitorSetting.json`（与 WinUI 同路径同格式）。
+  - `Views/Windows/GameLogMsgWindow.xaml(.cs)`：置顶消息弹窗（仅关闭键、关闭即隐藏、400×300），新消息加粗/上一条恢复、自动滚底，底部"显示游戏窗口"按钮（`GameWindowHelper` 前置 EVE 客户端）。
+  - `Services/ChannelIntel/ChannelMonitorNotifyService.cs`：通知编排（对齐 WinUI `ChannelMonitorNotifyService`）——弹窗 + 提示音（`RepeatSound` 用 MediaEnded 重播实现循环）+ 托盘气泡；`Stop` 隐藏弹窗停声音、`Remove` 释放资源。
+  - `ViewModels/Channel/ChannelMonitorViewModel.cs` + `Views/Pages/ChannelMonitorPage.xaml(.cs)`：角色列表（复用 Core `ChannelMonitorItem` 直接绑定）/频道勾选/设置（通知四开关、声音文件、正则关键词增删）与命中内容页签（仅 Important 消息，格式与最后一条加粗同 WinUI，超 `MaxShowItems` 裁剪）。
+- **频道统计（ChannelScanPage）**：
+  - `Services/Settings/ChannelScanSettingService.cs`：`Configs/ChannelScanSetting.json`（单配置，属性变更即保存）。
+  - `ViewModels/Channel/ChannelScanViewModel.cs`：完整移植 WinUI `StartCommand` 流程——名单按行解析 → 忽略名单过滤 → `IDNameService.GetByNames`（本地库+ESI）→ ESI `Character.AffiliationAsync`（1000/批）→ `ThreadHelper.RunAsync` 构建 `CharacterScanInfo` → 军团/联盟人数统计（剔除忽略成员的实际数量）→ 按输入顺序重排 → 可选多线程拉 ZKB 战绩；忽略名单增删/查重/表格右键忽略、`ReloadZKBInfoAsync` 原位重取。
+  - `Views/Pages/ChannelScanPage.xaml(.cs)`：左名单输入（占位提示同 WinUI）、中设置面板（ZKB 开关/上限、忽略名单管理）、右"统计"（军团/联盟人数列表）与"详细"（14 列 `ui:DataGrid` + 右键忽略角色/军团/联盟 + 重新获取 ZKB，阶段 22 滚动方案）。表格列头/取值对齐 WinUI（威胁值/单挑占比/总击杀/总损失/抱团概率/超期/可开黑诱导/常用船与船型/常出没星系星域）。
+- **频道查价（ChannelMarketPage）**：
+  - `Services/Settings/ChannelMarketSettingService.cs`：`Configs/ChannelMarketSettings.json`（与 WinUI 同路径）。
+  - `Services/ChannelIntel/ChannelMarketSession.cs`：每角色会话（对齐 WinUI `Models/ChannelMarket`）——勾选频道建 `ChannelMarketObserver`，命中（触发关键词 + 分隔符拆分 + 本地 SDE 市场物品匹配）即交编排服务。
+  - `Services/ChannelIntel/ChannelMarketService.cs`：引用计数持有常驻置顶结果窗；`Query` 把窗口弹到前台、标题带市场星域名、更新内容。
+  - `Views/Windows/ChannelMarketWindow.xaml(.cs)` + `ViewModels/Channel/ChannelMarketResultViewModel.cs`：结果窗（多物品 = 汇总卡 + 物品卡片列表；单物品 = 卡片 + **LiveCharts 近三个月价格三线图**，配色走主题资源并随 `ThemeService.ThemeChanged` 重刷，替代 WinUI 的 Syncfusion 图表）；取价走 WPF `MarketOrderService`（星域订单/历史，TTL 缓存）；"详细"跳转商业-市场页（暂不支持带物品选中）。结果模型直接复用 Core `ChannelMarketResult`（卖/买 × 5%/最优、总量、近 7 天高低均价）。
+  - `ViewModels/Channel/ChannelMarketViewModel.cs` + `Views/Pages/ChannelMarketPage.xaml(.cs)`：角色/频道勾选/基本设置（关键词、分隔符）/市场星域选择（按钮+弹层搜索列表）+ 开始/停止/全部/重置弹窗位置/同步全部设置。
+- 本地化：中英各补 92 个键（`ChannelMonitorPage_*` 9 + `GameLogMonitorPage_*` 14 + `ChannelScanPage_*` 41 + `ChannelMarket_*` 21 + `ChannelMonitorPage` 窗口标题键等），键值沿用 WinUI 原文；复用既有 `MarketPage_Sell/Buy/Top/Amount`、`General_*`、`ChannelIntelPage_*` 系列键。
+- 构建状态：编译 **0 错误 0 新警告**（仅剩既有 `NU1903`）；最终输出复制因应用正在运行被锁（MSB3027，关闭应用重构建即可）。按 §8 约定未做实机截图核验。
+- 未做/后续：统计页"打开 KB 详情"跳转（依赖未迁移的击杀榜页）；查价"详细"暂不带物品选中；频道列表右键"打开文件/文件夹"（与预警页同）未接线；角色列表拖拽排序未做。
+- **修复（用户实机反馈）**：频道查价结果窗运行时抛 `XamlParseException`——"无法找到名为 HasResultCard 的资源"。根因：阶段 40 当轮用 PowerShell 批量替换改 `ChannelMarketWindow.xaml` 时，向 `Window.Resources` 插入 `HasResultCard` 样式的替换串因换行符不匹配**静默未生效**，而两处 Border 引用已就位——`StaticResource` 解析失败是**运行时**异常（编译与 BAML 生成都不报），属 §9 第 16 条"改了没生效"的变体（这次是"改引用了、定义没改成"）。修复：补上 `HasResultCard`（`BasedOn IntelCardBorder` + Result 为 null 时 Collapsed 的触发器）；并用脚本对全部新增 XAML 做了一次 `StaticResource` 键引用审计（引用 vs 本文件 `x:Key` 定义 + App 级全局键比对），确认无其他同类问题。
+- **修复（用户实机反馈）**：频道统计"未识别到有效角色名称"——粘贴的频道成员名单识别不出来。根因：`GetNames` 沿用 WinUI 的 `str.Split('\r')`，而**游戏中复制的成员名单是 `\n` 换行**（用户实测确认），只按 `\r` 切分时整段被当成一个名字去查 → 必然查不到。修复：改为 `Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)`（CRLF / LF / CR 通吃）。实证：用控制台程序引用 Core 跑真实链路（与 `CoreInitializer` 同参数初始化 + 用户样例 13 个名字），本地缓存库命中 10 条 → ESI `BulkNamesToIds` 返回 13 角色 + 1 军团 → `GetByNames` 共 14 条，链路完全正常；`grep` 确认全项目已无其他只按 `\r` 切分的位置。顺带修掉同流程里一个分页步进错误：ESI Affiliation 分批循环写成 `start += found`（`found = start + length` 是"已处理到的位置"），名单 >1000 时**会跳批漏人**，改为 `start += length`。
+- **新增（用户需求）**：频道统计的军团/联盟统计项**显示徽标**。新增 `ViewModels/Channel/ScanStatisticsItem.cs`（实体 + 人数 + 异步加载的徽标，规则与 WinUI `GameImageConverter` 及角色总览页一致：国际服 `images.evetech.net/{corporations|alliances}/{id}/logo`，国服 `image.evepc.163.com/..._{id}_64.png`；下载失败保持为空只显示文字）；`ChannelScanViewModel` 的统计集合由 `List<Tuple<IdName,int>>` 改为 `List<ScanStatisticsItem>` 并在构建后逐项异步取图；统计列表模板改为"徽标 + 名称 + 数量"。
+- **修复（用户实机反馈）**：频道监控/频道查价的"开始/停止"按钮**在不该显示时一直可见**。根因是**绑定到 VM 中不存在的属性会静默失败**——WPF 不会报错（编译期与运行时都不报，不同于 HasResultCard 那种 StaticResource 缺失），绑定表达式解析不到就把控件留在默认值 `Visible`：
+  - `ChannelMonitorViewModel` 只有 `SelectedNotRunning`，而停止按钮绑定 `SelectedRunning` → 停止按钮恒显；
+  - `ChannelMarketViewModel` 只有 `SelectedRunning`，而开始按钮/设置区绑定 `SelectedNotRunning` → 开始按钮恒显、设置区恒可用；
+  - `ChannelIntelViewModel` 两个属性都在（该页当轮实际未受影响，但写法同源）。
+  修复：三个 VM 统一**同时提供** `SelectedRunning` 与 `SelectedNotRunning`（后者由前者取反），并在**每一处**状态变化点（选中角色、开始成功、停止）成对 `OnPropertyChanged`；并写了脚本做"XAML 绑定路径 vs VM 属性定义"的交叉校验（仅剩项级模板绑定与 `ElementName`/`ViewportWidth` 等框架属性为正常豁免），确认频道四页无 VM 级漏绑定。
+  说明：这类"静默失败"的排查手段是核对绑定的**属性名是否存在且被通知**，不能只看 XAML 是否写对——同一症状也可能是控件模板或陈旧 BAML 造成（§9 第 16 条）。
+
+---
+
+### 阶段 41：通用卡片控件 `CardControl`（Header / Content / Footer）+ 频道页改造
+
+- 背景：频道四个页面此前各自手写"Border + Grid 三行 + TextBlock 标题 + 按钮行"，卡片样式（背景/描边/圆角/内边距）在每页复制一遍（`IntelCardBorder`/`MonitorCardBorder`/`ScanCardBorder`/`MarketCardBorder` 四个几乎相同的本地样式），新增页面还得重抄。
+- **新增控件 `Controls/CardControl.cs`**（对齐 WinUI 版 `Controls/CardControl` 的语义，但修正拼写并简化）：
+  - 继承 `ContentControl`：**Content = 主内容区**（默认内容属性，任意 UI，自适应填满剩余高度）；
+  - `Header`（object + `HeaderTemplate`）：标题行，未设置则整行与分隔线都不占空间；默认排版 14px/SemiBold/主题前景色（直接传字符串即可得到样式化标题）；
+  - `Footer`（object + `FooterTemplate`）：底栏（放操作按钮），未设置则整行不占空间；上方带一条半透明强调色分隔线（对应 WinUI 的 FonterLine）；
+  - 另有 `CornerRadius`、`ShowHeaderSeparator` 两个可选 DP。
+  - **外观只由 Background/BorderBrush/BorderThickness/CornerRadius/Padding 决定**，模板里再无页面级布局假设——真正只统一"整体布局与背景"。
+- **默认样式 `Controls/CardControlStyles.xaml`**（隐式样式，随 App.xaml 合并，与项目既有 `SettingCard`/`GlobalControlStyles` 的做法一致：ContentControl + App 级隐式样式，不引入 `Themes/Generic.xaml`）：圆角卡片背景 + 描边，行结构 Header → 分隔线 → Content → 强调色分隔线 → Footer，Header/Footer 为空时用 `Trigger` 自动折叠（含各自分隔线）。
+- **频道四页改造**：`ChannelIntelPage` / `ChannelMonitorPage` / `ChannelScanPage` / `ChannelMarketPage` 的所有卡片区域改为 `controls:CardControl`——
+  - 标题由 `Header`（资源字符串）承担，省掉每页的 TextBlock 样板；
+  - 操作按钮统一移入 `Footer`（对齐 WinUI 的 Fonter 位置：此前在右栏顶部的按钮现在在卡片底部；左栏的"开始全部/刷新"等原本就在底部，位置不变）；
+  - 统计页的两个内层"军团/联盟"小卡也改为 `CardControl`（Header = 军团/联盟），结果条数移入右卡 `Footer`；
+  - 删除四个页面各自的 `*CardBorder` 样式（已无引用）。`ChannelMarketWindow` 与 `MarketPage` 另有同名本地样式，属各自独立用途，未动。
+- 踩坑：WPF 的 `ContentPresenter` **没有 `Padding` 属性**（WinUI 有），模板里对三个区域改用 `Margin`（主内容区 `Margin="{TemplateBinding Padding}"`）；模板绑定 `Padding` 与显式 `Margin` 同时写会报重复属性。
+- **追加改造（用户要求"其余手写卡片也切过来"）**：`MarketPage`（物品头卡片）、`AppraisalPage`（汇总条 + 两条警告条，改为仅内容区的 CardControl）、`ChannelMarketWindow`（多物品汇总卡 / 物品卡片 / 价格曲线卡；"有结果才显示"的触发器改为 `Style BasedOn="{StaticResource {x:Type controls:CardControl}}"`——显式样式必须 `BasedOn` 隐式样式，否则会顶掉卡片外观，见 §9 第 18 条）、`ScalperShoppingCartView`（统计面板）、`ScalperShoppingRecordView`（文件列表 / 明细两个面板）也全部改用 `CardControl`。至此项目内已无 `*CardBorder` 之类的重复卡片样式，共 9 个文件 36 处使用。
+- **有意未改的两处**：`CharacterCardsPage` 的角色卡片是"Button 包内层 Border"的**可点击卡片**（含悬停/选中态，radius 12），改造需要让 CardControl 支持点击交互，超出一轮范围；`OverviewPage` 的 `OverviewCard` 是**页面内单处定义**的局部样式（radius 4、无内边距，6 处使用），不存在跨页面重复，保持原样。
+- **修复（用户实机反馈）**：卡片 Header 文字**贴左上角、未垂直居中**，且**未设置 Header 时仍留一条空带**。上一轮把高度下限写在 `RowDefinition` 上是错的——**`RowDefinition.MinHeight` 在子元素被折叠后仍会占住该高度**（截图里右侧"无 Header"卡片顶部的空带即由此而来），而 30px 的行即使文字居中视觉上仍然贴顶。正确做法：行高保持 `Auto`，把高度下限放到**可折叠的宿主 Border** 上——`HeaderHost`（`MinHeight=44`）内放 `VerticalAlignment=Center` 的 ContentPresenter；Header 为 null 时触发器折叠整个宿主 Border，行高随之为 0。底栏同理（`FooterHost`、`MinHeight=40`，按钮在其中垂直居中）；两个宿主的 `Padding` 绑定卡片的 `Padding`，使标题/底栏与内容区左边缘精确对齐。
+- 同时把**所有使用处的 Footer 内容改为居中**（原先按钮行靠左、频道刷新类单按钮显式 `HorizontalAlignment="Left"`）：按"footer 区间内"批量调整 11 处（频道四页），并把统计页设置卡里的"关闭"按钮从 Expander 内容移入该卡 Footer（居中），与"操作按钮放底栏"的约定一致。
+- 另修复：`CardControlStyles.xaml` 的默认 `Padding` 在本轮此前的 PowerShell 批量替换中被误改成 `4`，已恢复 `10,8`（批量替换脚本不宜用于含相似片段的属性值，改完需回读核对）。
+- **追加（用户要求）**：频道四页 footer 里的按钮全部改为**纯图标按钮 + 鼠标悬浮提示**（27 个）。图标按动作选取并已核对存在：开始/分析=`Play24`、停止=`RecordStop24`、刷新=`ArrowSync24`、清除声音=`SpeakerMute24`、重置位置=`ArrowReset24`、同步全部设置=`Copy24`、清除通知=`AlertOff24`、设置=`Settings24`、关闭=`Dismiss24`；`ToolTip` 与 `AutomationProperties.Name` 都直接沿用按钮原文案的本地化键（一处文案两用，无需新增键）。内容区里的功能性按钮（选音频文件、添加/确定/取消忽略名单、添加关键词、删除关键词等）保持文字不变。
+- **追加（用户要求）**：6 个"停止"按钮（预警/监控/查价各 2 个）**去掉 `Appearance="Danger"` 的红色背景**，恢复主题色按钮，只把**图标染成红色**。做法：不用 `Icon="{ui:SymbolIcon …}"` 内联写法（无法给图标单独设色），改用**属性元素**写法 `<ui:Button.Icon><ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24"/></ui:Button.Icon>`——`ui:SymbolIcon` 继承自 FontIcon/Control，有 `Foreground`（估价页的警告图标已在用），因此图标可单独着色，按钮背景仍是主题色。两处内容区的"删除"按钮（删除监控关键词、删除忽略名单项）保留 `Appearance="Danger"`，属破坏性操作、红色背景恰当。
+- 踩坑（本轮实际踩到，值得记）：用 PowerShell 脚本批量改 XAML **属性行**时连续出错——① 把 `Content="…" />` 整行替换成多行时**丢掉了行尾的 `/>`**（标签未闭合，MC3000）；② 已有 `Icon` 的按钮被插入第二个 `Icon`（重复属性，MC3000）；③ 用"原地 `RemoveAt/Insert` 后按旧索引推进"的方式修补，**索引偏移导致漏改与错位**（一个按钮的属性被贴到了下一个按钮上）。教训：**这类结构化改动不要用行内原地增删的脚本**——要么用"重建行列表"的幂等规范化（本轮最终采用的写法：解析每个 `ui:Button` 块，剔除受管属性后按固定顺序重排，把 `/>` 统一放到最后一行），要么直接手工编辑；改完必须跑一次"每个按钮恰好一个 Icon/ToolTip/无 Content"的结构校验（本轮已加）。
+- **追加（用户反馈）**：预警小窗标题栏**没有 logo**。根因：这些自绘标题栏的窗口只设了 `Window.Icon`（任务栏/Alt-Tab 图标）或什么都没设，**`ui:TitleBar.Icon` 必须显式给**（`Window.Icon` 不会画到标题栏上）。修复：给全部 7 个自绘标题栏的窗口补上 `<ui:TitleBar.Icon><ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png"/></ui:TitleBar.Icon>`——预警小窗（`IntelWindow`）、频道监控消息弹窗（`GameLogMsgWindow`）、频道查价结果窗（`ChannelMarketWindow`）、邮件详情、国服授权向导、倒货物品详情、购物车条目编辑；与主窗口/`ToolWindow` 用的是同一个 `Assets/logo_32.png`。至此项目内 8 个窗口的标题栏图标一致。
+- **改造（用户反馈"预警小窗文字发灰"）**：把"不透明度"从**整窗 alpha** 改为**只作用于背景**，文字与星图始终实色。
+  - 原因：原实现 `Window.Opacity = OverlapOpacity/100`（与 WinUI 的 `SetLayeredWindowAttributes(LWA_ALPHA)` 同机制）会让**整个窗口一起变淡**——用户把不透明度设为 53% 后，黑字混成中灰、星图节点也同比例变浅。用户要求只淡背景。
+  - 方案：**逐像素透明**——窗口 `Background=Transparent` + `AllowsTransparency=True`，另放一层背板 `Border`（`BackdropPlate`），其背景色取主题背景色、**alpha 由设置决定**（`ApplyBackdrop()`，颜色取自 `ApplicationBackgroundBrush`，主题切换时经 `ThemeService.ThemeChanged` 重算）；文字/星图在背板之上保持不透明。顺带修掉了底部"最新预警信息"靠继承取色的隐患（Run 显式用 `TextFillColorPrimaryBrush`）。
+  - **关键限制（探针实测）**：`ui:FluentWindow` **不能**用于 `AllowsTransparency`——它会把 `WindowStyle` 重置为单边框，`Show()` 时抛 `InvalidOperationException`（"当 AllowsTransparency 为 true 时，WindowStyle.None 是唯一有效值"）。因此 `IntelWindow` 改为**普通 `Window`** + `WindowChrome`：
+    - 标题区用 `CaptionHeight=40` 提供**原生拖动**（实测：模拟鼠标拖动后窗口从 (900,260) 移到 (1100,380)）；
+    - 缩放由 `ResizeBorderThickness=6` 提供；
+    - 标题栏改为自绘（logo + 标题 + 最小化/关闭两个 `ui:Button`），按钮加 `WindowChrome.IsHitTestVisibleInChrome="True"` 才不会被标题区吞掉（实测：模拟点击后按钮回调触发，日志出现 `CHROME-BUTTON-CLICKED`）；
+    - 因 `ui:TitleBar` 的按钮不带该附加属性、且其背景透明导致挂在其上的拖动处理器收不到事件（实测拖动失败），故不再用它。
+  - 已知代价：`AllowsTransparency=True` 会使该窗口回退到**软件渲染**（WPF 限制）；窗口内是几百个画布节点，可接受。
+  - **修复（用户实机反馈的崩溃）**：点预警小窗的 X 抛 `InvalidOperationException`（"在窗口关闭期间，无法…调用 Close"）。调用链：`WmClose → OnClosing → StopRequested → 会话 Stop → IntelWarningService.Remove → IntelWindow.Dispose → Close()`——**在窗口关闭过程中又调了 `Close()`**。修法：`OnClosing` 里置 `_closing = true`，`Dispose()` 在 `_closing` 时**不再重复 `Close()`**（只做退订与定时器停止，窗口本来就在关闭中）；程序化 Stop 的路径（Dispose 先置 `_disposed` 再 `Close()`）不受影响、也不会再触发 `StopRequested`。
+  - **同类隐患一并修掉（本次自查发现）**：`GameLogMsgWindow`（频道监控消息弹窗）与 `ChannelMarketWindow`（频道查价结果窗）都是"创建一次、长期复用"的窗口，用户点 X 直接关闭后，下次 `Show()` 会抛"窗口已关闭"异常。两者改为**关闭即隐藏**（`OnClosing` 里 `e.Cancel = true` + `HideWindow()`，对齐 WinUI 的 `SetCloseToHide`），并各自提供 `CloseWindow()` 供真正销毁用（监控通知的 `Remove` 已改用它）。`IntelWindow` 不走这条——点 X 的语义就是"停止该角色预警"，窗口随之销毁。
+  - 新增语言键 `ToolWindow.Minimize`（中英），关闭复用 `General_Close`。
+  - 验证方式：用独立探针程序（引用 WPF-UI 4.3.0）实测了"窗口能否创建、拖动是否生效、标题区按钮是否可点"三项；**真实预警小窗的外观仍需实机目视**（只有触发预警才会出现该窗口）。
+- **修复（用户反馈"Paragraph 的默认字体与其他 UI 不一样"）**：`FlowDocument`（RichTextBox 内的文字）**不继承控件树的字体**，用的是 WPF 自己的默认值——探针实测为 **`Georgia` / 16**，而界面其余部分是 `Microsoft YaHei UI` / 14，所以中文看起来明显不对（衬线且偏大）。修法：在 `Controls/GlobalControlStyles.xaml` 增加**应用级隐式 `FlowDocument` 样式**，`FontFamily` 取系统消息字体（`{x:Static SystemFonts.MessageFontFamily}`，随系统语言变化、不写死字体名），`FontSize=14`（与 WPF-UI 基础字号一致）。已用探针验证"应用级隐式样式确实能纠正 FlowDocument 字体"（改后为 `Microsoft YaHei UI / 14`）；受影响的是 4 处 `RichTextBox`：频道预警/频道监控的频道内容、监控消息弹窗、预警小窗的"最新预警信息"。
+- **修复（用户反馈"频道列表选中项变成 WPF 默认样式"）**：这三个页面的频道 `ListBox` 各自写了一个**只设 `HorizontalContentAlignment=Stretch` 的局部 `ItemContainerStyle`**——按 §9 第 18 条，**显式/局部样式会整体顶掉 WPF-UI 的隐式 `ListBoxItem` 样式**，选中高亮于是退回系统默认蓝。修法：把邮件页里已有的正确样式 `StretchListItem`（自带 `ControlTemplate` + 主题色悬停/选中底，且不 `BasedOn` 未验证的隐式样式）**提升为全局键控样式**（`Controls/GlobalControlStyles.xaml`），三个频道列表改为 `ItemContainerStyle="{StaticResource StretchListItem}"`，并删掉邮件页的重复定义（其两处引用照旧、解析到全局）。至此项目内已无只设属性的局部 `ListBoxItem` 样式；未设 `ItemContainerStyle` 的列表（角色列表、星域/物品列表等）走库的隐式样式，观感本就正常，未动。
+- **修复（用户反馈"频道查价查阅多个物品时报错"）**：报错为 `在"System.Windows.Baml2006.TypeConverterMarkupExtension"上提供值时引发了异常`（行号指向 `ChannelMarketWindow.xaml` 的 `Appearance="Link"`）。根因：`Appearance` 是枚举属性，靠 TypeConverter 转换，而 **WPF-UI 的 `ControlAppearance` 枚举里没有 `Link`**（实测成员仅 Primary/Secondary/Info/Dark/Light/Danger/Success/Caution/Transparent）——非法枚举值**不在编译期报错**（模板内的取值要到实例化时才转换），于是**只在多物品模板被实例化时抛异常**，正好对应"查单个物品正常、查多个物品报错"；又因每次刷新都会重建模板，异常反复触发，`AppDispatcherUnhandledException` 逐个弹框，于是出现一叠"未处理的错误"窗口。修法：`Appearance="Link"` → `Appearance="Transparent"`（扁平链接观感且为合法成员）。顺带用探针**把项目内全部 `Appearance` 取值（Primary/Danger/Transparent）与全部 31 个 `SymbolRegular` 图标名逐一校验**，确认无其它同类非法枚举值。
+- **追加（用户反馈"频道查价的『详细』只切页不加载物品，且不把主窗口置前"）**：
+  - **带物品跳转**：`Services/Navigation.cs` 新增 `NavigateToMarket(long typeId)` 与请求通道 `MarketTypeSelectionRequested` 事件 + `TakePendingMarketType()`。`MarketPageViewModel` 构造时订阅该事件（页面已就绪→立即选中），`LoadAsync` 建完市场树后再消费一次待选 ID（覆盖"市场页尚未创建/树未建好时点击"的首次导航路径）；选中即走既有的 `SelectedInvTypeItem` → 拉取订单/历史。频道查价结果窗的"详细"按钮从 `DataContext`（多物品卡片）或 VM（单物品）取出 `TypeID` 后调用它；传 0/无效则忽略。
+  - **主窗口置前**：`Navigation.Activate()` 在原有"还原最小化 + `Activate()`"之后补一次 Win32 `SetForegroundWindow`——仅 `Activate()` 在调用方不是前台进程时可能只闪烁任务栏，`SetForegroundWindow` 才能可靠置前（与游戏窗口置前用的是同一思路）。`NavigateToMarket` 里按"导航 → 触发选中 → 置前"顺序执行。
+  - 已知小差异：跳转后只选中**右侧物品**（订单/历史随之加载），左侧市场树不显示高亮（树的选中未做双向绑定，与 WinUI 的 `SelecteTypeTreeControl` 行为差异），如需一并高亮可后续补。
+- **追加（用户要求"频道查价窗口的物品名字左侧加图片"）**：新增 `Helpers/GameImageHelper.cs`（物品图片地址，规则与 WinUI `GameImageConverter` 一致：国际服舰船/无人机 `types/{id}/render`、其余 `types/{id}/icon`，国服 `image.evepc.163.com/types/{id}_{size}.png`）与 `Converters/TypeImageConverter.cs`（`TypeID → BitmapImage`，**用 `UriSource` 默认按需下载**——不设 `CacheOption=OnLoad`，否则会在绑定时同步下载、列表长时卡 UI；WIC 进程内按 URI 缓存，重复物品不重复下载；失败返回 null、不影响布局）。结果窗的**多物品卡片**与**单物品卡片**在物品名前各加 32px 图标（多物品卡片改为两列布局，名称列右侧留 80px 给"详细"按钮，避免文字与按钮重叠）。
+- 构建状态：**0 错误 0 新警告**（仅剩既有 `NU1903`）。按 §8 约定未做实机截图核验；后续新页面直接 `<controls:CardControl Header="…"><controls:CardControl.Footer>…</controls:CardControl.Footer>内容</controls:CardControl>` 即可，不必再手写卡片布局。
+
+---
+
+### 阶段 42：日志监控（GameLogMonitorPage）迁移
+
+- 目标：把 WinUI 频道组最后一个子页（日志监控）迁到 WPF。Core 侧 `GameLogItem` / `GameLogInfo` / `GameLogSetting` / `GameLogItemConfig` / `GameLogMonityKey` / `GameLogHelper` / `ObservableFileService` 零改动复用（配置 `Configs/GameLogInfoSettings.json` 与 WinUI 同文件同格式），WPF 侧新写会话服务、VM、页面。
+- **Core 修复**：`GameLogItem.IsMatch` 原实现 `foreach (var key in _keyTimes) { return Regex.IsMatch(...); }` **在第一个关键词上就 return**，其余关键词全部失效（等于只有一个关键词能命中）。改为逐个匹配、命中任意一个即 true，并用 try/catch 隔离单个非法正则。该缺陷 WinUI 侧同样存在，属净收益修复。
+- 新增 `Services/ChannelIntel/GameLogMonitorSession.cs`：一个"角色 + 一个日志配置"对应一个会话。把 Core `GameLogItem` 注册进 `ObservableFileService`；模式 0 命中即通知，模式 1 用 1 秒 `System.Timers.Timer` 轮询、超过"判定时间间隔"未再命中才通知一次；通知三通道 = 弹窗（复用 `GameLogMsgWindow`，标题为"日志监控 - 角色 - 配置名"）/ 声音（复用频道预警的 `SoundNotifyItem`——WPF 无 `IsLoopingEnabled`，靠 MediaEnded 重播实现循环）/ 托盘气泡；`StopNotify` 只停提醒，`Stop` 彻底退订并销毁窗口。
+- 新增 `ViewModels/Channel/GameLogMonitorViewModel.cs`：角色列表（`GameLogHelper.GetLatestGameLogInfos` 取每人最新一天日志）/ 每角色配置集合 / 选中配置。`LogType=1`（异常日志）的配置在启动时由文件名解析出日期与线程号（`GameLogHelper.GetGameLogDateAndThreadId`），改监控同目录的 `{date}_{thread}.txt`，文件不存在给出明确提示；配置增删与属性修改**立即持久化**（有意优于 WinUI 的"仅开始监控时落盘"，避免新增配置后直接关窗丢失）。
+- 新增 `Views/Pages/GameLogMonitorPage.xaml(.cs)`：三列卡片（角色列表 / 监控设置 / 实时日志），全部走阶段 41 的 `CardControl`；设置卡为 `TabControl` + 可关闭页签头（配置名 + ×），四个 `Expander`（配置信息 / 监控模式 / 通知方式 / 监控关键词），footer = 添加配置（`ContextMenu` 选游戏/异常日志）+ 开始 + 停止 + 清除通知；日志区 `RichTextBox` 命中行标红（`SystemFillColorCriticalBrush`）、最新一条加粗、超 `MaxShowItems` 裁剪并自动滚底；角色项右键打开日志文件/文件夹。
+- 新增 `Converters/EqualsToVisibilityConverter.cs`：`value == ConverterParameter` 才显示，用于"仅模式 1 显示判定时间间隔"。用转换器而非 `Style`/`DataTrigger` 是为了避开 §9 第 18 条——给元素加显式/局部 `Style` 会整体顶掉 WPF-UI 的隐式样式。
+- `GameLogMsgWindow` 增加可选 `displayTitle` 构造参数（频道监控与日志监控共用同一窗口，标题各自不同）；`Services/Settings/GameLogInfoSettingService` 沿用阶段 4 已有实现。
+- 本地化：中英各补 26 个 `GameLogMonitorPage_*` 键（角色列表 / 监控设置 / 配置信息 / 监控模式 / 判定间隔 / 实时日志等），键值沿用 WinUI 原文。
+- **修复（本轮自查发现，与阶段 40 的"静默失败"同源）**：`SelectedRunning` 是只读计算属性且**从未发通知**——开始监控后 footer 的"开始/停止"不互换。修法：在首次求值的两个入口（选中角色、`RefreshRunningState`）补 `OnPropertyChanged(nameof(SelectedRunning))`。
+- **修复（本轮自查发现）**：`LogContents` 无人累积，且后台日志线程直接追加会与切换角色重绘并发读写。`Session_OnContentUpdate` 改为在 UI `Dispatcher` 上 `AddRange` 到 `item.Info.LogContents`（按 `MaxShowItems` 裁剪）后再通知页面。另：`InitAsync` 刷新时**复用仍在监控的 `GameLogInfo` 实例**（对齐 WinUI），否则会话持有的旧对象与新列表脱节、切换角色时历史日志丢失。
+- **修复（本轮自查发现）**：本页 footer 的停止按钮初版为 `Icon="{ui:SymbolIcon RecordStop24}"`、没有红图标，与阶段 41 确立的约定不一致；改为属性元素写法 + `Foreground="{DynamicResource SystemFillColorCriticalBrush}"`，footer 按钮一并补 `AutomationProperties.Name`。
+- 验证：实机启动应用 → 导航到"频道-日志监控" → 选中角色（设置卡出现）→ 点开始（底部提示"开始监控：游戏日志"、footer 开始→红色停止、左卡"停止全部"出现）→ 点停止（两者恢复）均正常。
+- **追加（用户反馈"异常日志现在不能用，先隐藏、不要删除"）**：异常日志整套逻辑（`CreateErrorLogConfig` / `ReadErrorRegex` / `AddConfig(1)` / 启动时按文件名解析线程日志文件）与已有配置数据**全部保留**，只做 UI 隐藏：
+  - VM 新增常量 `ErrorLogVisible = false` 作为唯一开关；
+  - 页面可见集合改为独立的 `ItemConfigs`（由 `Setting.ItemConfigs` 过滤 `LogType != 1` **重建**而来），不修改 `Setting.ItemConfigs` 本身——隐藏的配置仍会原样落盘，`SaveSetting()` 不会把它们写掉；
+  - `AddConfig` 仍会写入 `Setting.ItemConfigs`（保留数据），但隐藏期间只把可见的类型加入 `ItemConfigs` 并选中；
+  - `StartAll` 改为遍历可见集合，避免启动看不到的配置；
+  - 新建角色默认配置只建"游戏日志"（`ErrorLogVisible` 为 true 时恢复同时建两个）；
+  - "添加配置"菜单里的"异常日志"项加 `Visibility="Collapsed"`（代码与其 Click 处理器保留）。
+  - 恢复方式：VM 的 `ErrorLogVisible` 置 `true` + 菜单项 `Visibility` 去掉/改回 Visible。
+- **追加（用户要求"添加日志时不用再选游戏日志"）**：异常日志隐藏后菜单只剩一项，遂把"添加配置"按钮的 `ContextMenu` 整个去掉，点击直接 `AddConfig(0)`（新建"游戏日志"配置）；`OnAddGameLogConfigClick` / `OnAddErrorLogConfigClick` 两个转发处理器一并删除（`AddConfig(1)`、`CreateErrorLogConfig`、`ReadErrorRegex` 与 `LogType==1` 启动分支均保留，恢复异常日志时重新接一个入口即可）。
+- 构建状态：**0 错误**（仅剩既有 `NU1903` 与 `IntelWindow` / `ChannelIntelSession` 的既有可空性警告，另有 Core `GameLogItem._threadErrorGameLogItem` 未被使用的既有 CS0169）。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```

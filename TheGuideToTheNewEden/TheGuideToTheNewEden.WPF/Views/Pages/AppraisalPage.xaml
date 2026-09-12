@@ -2,6 +2,7 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.AppraisalPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:uc="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
@@ -14,14 +15,6 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
             <Setter Property="Margin" Value="0,8,0,2" />
-        </Style>
-
-        <Style x:Key="AppraisalCardBorder" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="14,10" />
         </Style>
 
         <Style x:Key="AppraisalSummaryValue" TargetType="TextBlock">
@@ -172,7 +165,7 @@
             </Grid.RowDefinitions>
 
             <!--  汇总条  -->
-            <Border Grid.Row="0" Style="{StaticResource AppraisalCardBorder}">
+            <controls:CardControl Grid.Row="0" Padding="14,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.6*" />
@@ -202,14 +195,13 @@
                         <TextBlock Style="{StaticResource AppraisalSummaryValue}" Text="{Binding ResultSell}" />
                     </StackPanel>
                 </Grid>
-            </Border>
+            </controls:CardControl>
 
             <!--  警告提示（未识别 / 无报价）  -->
-            <Border
+            <controls:CardControl
                 Grid.Row="1"
                 Margin="0,8,0,0"
                 Padding="10,6"
-                Style="{StaticResource AppraisalCardBorder}"
                 Visibility="{Binding HasUnresolved, Converter={StaticResource BoolToVis}}">
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Warning24" />
@@ -220,12 +212,11 @@
                         Text="{Binding UnresolvedText}"
                         TextWrapping="Wrap" />
                 </StackPanel>
-            </Border>
-            <Border
+            </controls:CardControl>
+            <controls:CardControl
                 Grid.Row="2"
                 Margin="0,6,0,0"
                 Padding="10,6"
-                Style="{StaticResource AppraisalCardBorder}"
                 Visibility="{Binding HasNoPrice, Converter={StaticResource BoolToVis}}">
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Warning24" />
@@ -236,7 +227,7 @@
                         Text="{Binding NoPriceText}"
                         TextWrapping="Wrap" />
                 </StackPanel>
-            </Border>
+            </controls:CardControl>
 
             <!--  明细表  -->
             <ScrollViewer

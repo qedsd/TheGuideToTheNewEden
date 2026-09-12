@@ -1,0 +1,511 @@
+﻿<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.ChannelMarketWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:conv="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="420"
+    Height="620"
+    ExtendsContentIntoTitleBar="True"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowBackdropType="None">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <!--  物品类型 ID → 图片（舰船/无人机 render，其余 icon；国服域名自动切换）  -->
+        <conv:TypeImageConverter x:Key="TypeImage" Size="32" />
+        <!--  有结果才显示的卡片（基于通用卡片控件的隐式样式 + Result 触发器）  -->
+        <Style
+            x:Key="ResultCard"
+            BasedOn="{StaticResource {x:Type controls:CardControl}}"
+            TargetType="{x:Type controls:CardControl}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Result}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Grid.Row="0"
+            ShowMaximize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Grid.Row="1" Margin="8,0,8,8">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <!--  多物品汇总  -->
+                    <controls:CardControl
+                        Grid.Row="0"
+                        Padding="12,8"
+                        Visibility="{Binding MultiItem, Converter={StaticResource BoolToVis}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <TextBlock
+                                    FontWeight="ExtraBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding ItemCount}" />
+                                <TextBlock
+                                    Margin="4,0,0,0"
+                                    FontWeight="ExtraBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{DynamicResource ChannelMarket_Items}" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="5%" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource MarketPage_Top}" />
+
+                            <TextBlock
+                                Grid.Row="2"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MarketPage_Sell}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Sell5P, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding SellTop, StringFormat={}{0:N2}}" />
+
+                            <TextBlock
+                                Grid.Row="3"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MarketPage_Buy}" />
+                            <TextBlock
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Buy5P, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="3"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding BuyTop, StringFormat={}{0:N2}}" />
+                        </Grid>
+                    </controls:CardControl>
+
+                    <!--  多物品：物品卡片列表  -->
+                    <ItemsControl
+                        Grid.Row="1"
+                        Margin="0,6,0,0"
+                        ItemsSource="{Binding Results}"
+                        Visibility="{Binding MultiItem, Converter={StaticResource BoolToVis}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                            <controls:CardControl Margin="0,0,0,6" Padding="12,8">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Image
+                                            Width="32"
+                                            Height="32"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Source="{Binding Item.TypeID, Converter={StaticResource TypeImage}}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="0,0,80,0"
+                                            FontWeight="ExtraBold"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Item.TypeName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <ui:Button
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Appearance="Transparent"
+                                            Click="OnDetailClick"
+                                            Content="{DynamicResource General_Detail}" />
+                                    </Grid>
+                                        <Grid Margin="0,6,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="24" />
+                                                <RowDefinition Height="24" />
+                                                <RowDefinition Height="24" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="48" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="5%" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource MarketPage_Top}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource MarketPage_Amount}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource MarketPage_Sell}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Sell5P, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding SellTop, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="3"
+                                                HorizontalAlignment="Right"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding SellAmount, StringFormat={}{0:N0}}" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{DynamicResource MarketPage_Buy}" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Buy5P, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding BuyTop, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="3"
+                                                HorizontalAlignment="Right"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding BuyAmount, StringFormat={}{0:N0}}" />
+                                        </Grid>
+                                        <Grid Margin="0,6,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Height="1" Fill="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Margin="8,0"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource ChannelMarket_Last7Days}" />
+                                            <Rectangle
+                                                Grid.Column="2"
+                                                Height="1"
+                                                Fill="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                                        </Grid>
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="24" />
+                                                <RowDefinition Height="24" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource ChannelMarket_Highest}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource ChannelMarket_Average}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource ChannelMarket_Lowest}" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{DynamicResource ChannelMarket_Volume}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Highest, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Average, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Lowest, StringFormat={}{0:N2}}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="3"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Volume, StringFormat={}{0:N0}}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </controls:CardControl>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ScrollViewer>
+            <!--  单物品：卡片 + 三个月价格曲线  -->
+            <Grid Grid.Row="0" Visibility="{Binding MultiItem, Converter={StaticResource InverseBoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <controls:CardControl Padding="12,8" Style="{StaticResource ResultCard}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Image
+                                    Width="32"
+                                    Height="32"
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Result.Item.TypeID, Converter={StaticResource TypeImage}}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontWeight="ExtraBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Result.Item.TypeName}" />
+                            </StackPanel>
+                            <Grid Margin="0,6,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="48" />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="5%" />
+                            <TextBlock
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource MarketPage_Top}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource MarketPage_Amount}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MarketPage_Sell}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Sell5P, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.SellTop, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.SellAmount, StringFormat={}{0:N0}}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MarketPage_Buy}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Buy5P, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.BuyTop, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="3"
+                                HorizontalAlignment="Right"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.BuyAmount, StringFormat={}{0:N0}}" />
+                        </Grid>
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle Height="1" Fill="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="8,0"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ChannelMarket_Last7Days}" />
+                            <Rectangle
+                                Grid.Column="2"
+                                Height="1"
+                                Fill="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                        </Grid>
+                        <Grid Margin="0,4,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24" />
+                                <RowDefinition Height="24" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ChannelMarket_Highest}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ChannelMarket_Average}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ChannelMarket_Lowest}" />
+                            <TextBlock
+                                Grid.Column="3"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ChannelMarket_Volume}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Highest, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Average, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Lowest, StringFormat={}{0:N2}}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Result.Volume, StringFormat={}{0:N0}}" />
+                        </Grid>
+                    </StackPanel>
+                </controls:CardControl>
+
+                <controls:CardControl
+                    Grid.Row="1"
+                    Margin="0,6,0,0"
+                    Padding="8"
+                    Style="{StaticResource ResultCard}">
+                    <lvc:CartesianChart
+                        LegendPosition="Top"
+                        Series="{Binding PriceSeries}"
+                        TooltipPosition="Auto"
+                        XAxes="{Binding XAxes}"
+                        YAxes="{Binding YAxes}"
+                        ZoomMode="X" />
+                </controls:CardControl>
+            </Grid>
+            <!--  刷新  -->
+            <ui:Button
+                Grid.Row="0"
+                Margin="0,4,4,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Click="OnRefreshClick"
+                Icon="{ui:SymbolIcon ArrowSync24}"
+                ToolTip="{DynamicResource General_Refresh}" />
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

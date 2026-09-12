@@ -61,7 +61,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public void Dispose()
         {
-            _shipsDict.Clear();
+            _shipsDict?.Clear();
             _shipsDict = null;
         }
     }

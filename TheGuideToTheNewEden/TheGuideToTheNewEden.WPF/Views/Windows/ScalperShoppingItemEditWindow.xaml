@@ -122,6 +122,10 @@
             </StackPanel>
         </Grid>
 
-        <ui:TitleBar x:Name="TitleBar" />
+        <ui:TitleBar x:Name="TitleBar">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
     </Grid>
 </ui:FluentWindow>

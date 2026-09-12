@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Threading;
 using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
+using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 
 namespace TheGuideToTheNewEden.WPF;
 
@@ -61,6 +62,10 @@ public partial class App : Application
 
     private void OnExit(object sender, ExitEventArgs e)
     {
+        // 频道预警：释放预警小窗/声音播放器/舰船名缓存，并停掉全部文件监控
+        IntelWarningService.Current.Dispose();
+        Core.Services.ObservableFileService.StopAll();
+        Core.Services.DB.ShipNameCacheService.Current.Dispose();
         SettingsService.Save();
     }
 }

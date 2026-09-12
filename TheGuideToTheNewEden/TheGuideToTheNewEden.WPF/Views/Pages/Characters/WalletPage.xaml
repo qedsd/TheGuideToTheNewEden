@@ -44,7 +44,10 @@
         </Style>
 
         <!--  数值单元格：右对齐  -->
-        <Style x:Key="WalletNumberCellStyle" TargetType="TextBlock" BasedOn="{StaticResource WalletCellStyle}">
+        <Style
+            x:Key="WalletNumberCellStyle"
+            BasedOn="{StaticResource WalletCellStyle}"
+            TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="TextAlignment" Value="Right" />
         </Style>
@@ -65,57 +68,57 @@
                 </Grid.RowDefinitions>
 
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <DataGrid
-                    x:Name="CharacterJournalGrid"
-                    ItemsSource="{Binding CharacterJournal.Items}"
-                    Style="{StaticResource WalletGridStyle}"
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalDate}" />
-                        <DataGridTextColumn
-                            Width="140"
-                            Binding="{Binding Amount, StringFormat=N2}"
-                            Header="{DynamicResource WalletPage_JournalAmount}">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
+                    <DataGrid
+                        x:Name="CharacterJournalGrid"
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        ItemsSource="{Binding CharacterJournal.Items}"
+                        Style="{StaticResource WalletGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalDate}" />
+                            <DataGridTextColumn
+                                Width="140"
+                                Binding="{Binding Amount, StringFormat=N2}"
+                                Header="{DynamicResource WalletPage_JournalAmount}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
 
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsAmountNegative}" Value="True">
-                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn
-                            Width="160"
-                            Binding="{Binding Balance, StringFormat=N2}"
-                            ElementStyle="{StaticResource WalletNumberCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalBalance}" />
-                        <DataGridTextColumn
-                            MinWidth="160"
-                            Binding="{Binding Description}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalDescription}"
-                            Width="260" />
-                        <DataGridTextColumn
-                            Width="160"
-                            Binding="{Binding RefType}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalRefType}" />
-                        <DataGridTextColumn
-                            MinWidth="120"
-                            Binding="{Binding Reason}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalReason}"
-                            Width="180" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAmountNegative}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Balance, StringFormat=N2}"
+                                ElementStyle="{StaticResource WalletNumberCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalBalance}" />
+                            <DataGridTextColumn
+                                Width="260"
+                                MinWidth="160"
+                                Binding="{Binding Description}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalDescription}" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding RefType}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalRefType}" />
+                            <DataGridTextColumn
+                                Width="180"
+                                MinWidth="120"
+                                Binding="{Binding Reason}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalReason}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </ScrollViewer>
 
                 <controls:PagerControl
@@ -129,67 +132,67 @@
         <!--  个人-交易  -->
         <TabItem Header="{DynamicResource WalletPage_CharacterTransaction}">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <DataGrid
-                x:Name="CharacterTransactionGrid"
-                ItemsSource="{Binding CharacterTransactions.Items}"
-                Style="{StaticResource WalletGridStyle}"
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn
-                        Width="170"
-                        Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                        ElementStyle="{StaticResource WalletCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionDate}" />
-                    <DataGridTextColumn
-                        MinWidth="160"
-                        Binding="{Binding TypeName}"
-                        ElementStyle="{StaticResource WalletCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionType}"
-                        Width="220" />
-                    <DataGridTextColumn
-                        Width="130"
-                        Binding="{Binding UnitPrice, StringFormat=N2}"
-                        ElementStyle="{StaticResource WalletNumberCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionUnitPrice}" />
-                    <DataGridTextColumn
-                        Width="90"
-                        Binding="{Binding Quantity, StringFormat=N0}"
-                        ElementStyle="{StaticResource WalletNumberCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionQuantity}" />
-                    <DataGridTextColumn
-                        Width="140"
-                        Binding="{Binding TotalPrice, StringFormat=N2}"
-                        Header="{DynamicResource WalletPage_TransactionTotalPrice}">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
+                <DataGrid
+                    x:Name="CharacterTransactionGrid"
+                    MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                    ItemsSource="{Binding CharacterTransactions.Items}"
+                    Style="{StaticResource WalletGridStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="170"
+                            Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                            ElementStyle="{StaticResource WalletCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionDate}" />
+                        <DataGridTextColumn
+                            Width="220"
+                            MinWidth="160"
+                            Binding="{Binding TypeName}"
+                            ElementStyle="{StaticResource WalletCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionType}" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding UnitPrice, StringFormat=N2}"
+                            ElementStyle="{StaticResource WalletNumberCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionUnitPrice}" />
+                        <DataGridTextColumn
+                            Width="90"
+                            Binding="{Binding Quantity, StringFormat=N0}"
+                            ElementStyle="{StaticResource WalletNumberCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionQuantity}" />
+                        <DataGridTextColumn
+                            Width="140"
+                            Binding="{Binding TotalPrice, StringFormat=N2}"
+                            Header="{DynamicResource WalletPage_TransactionTotalPrice}">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
 
-                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsBuy}" Value="False">
-                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn
-                        Width="170"
-                        Binding="{Binding ClientName}"
-                        ElementStyle="{StaticResource WalletCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionClient}" />
-                    <DataGridTextColumn
-                        MinWidth="180"
-                        Binding="{Binding LocationName}"
-                        ElementStyle="{StaticResource WalletCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionLocation}"
-                        Width="220" />
-                    <DataGridTextColumn
-                        Width="100"
-                        Binding="{Binding IsBuyText}"
-                        ElementStyle="{StaticResource WalletCellStyle}"
-                        Header="{DynamicResource WalletPage_TransactionIsBuy}" />
-                </DataGrid.Columns>
-            </DataGrid>
+                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBuy}" Value="False">
+                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn
+                            Width="170"
+                            Binding="{Binding ClientName}"
+                            ElementStyle="{StaticResource WalletCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionClient}" />
+                        <DataGridTextColumn
+                            Width="220"
+                            MinWidth="180"
+                            Binding="{Binding LocationName}"
+                            ElementStyle="{StaticResource WalletCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionLocation}" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding IsBuyText}"
+                            ElementStyle="{StaticResource WalletCellStyle}"
+                            Header="{DynamicResource WalletPage_TransactionIsBuy}" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </ScrollViewer>
         </TabItem>
 
@@ -221,59 +224,61 @@
                         Value="1" />
                 </StackPanel>
 
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <DataGrid
-                    x:Name="CorpJournalGrid"
+                <ScrollViewer
                     Grid.Row="1"
-                    ItemsSource="{Binding CorpJournal.Items}"
-                    Style="{StaticResource WalletGridStyle}"
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalDate}" />
-                        <DataGridTextColumn
-                            Width="140"
-                            Binding="{Binding Amount, StringFormat=N2}"
-                            Header="{DynamicResource WalletPage_JournalAmount}">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+                    <DataGrid
+                        x:Name="CorpJournalGrid"
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        ItemsSource="{Binding CorpJournal.Items}"
+                        Style="{StaticResource WalletGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalDate}" />
+                            <DataGridTextColumn
+                                Width="140"
+                                Binding="{Binding Amount, StringFormat=N2}"
+                                Header="{DynamicResource WalletPage_JournalAmount}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
 
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsAmountNegative}" Value="True">
-                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn
-                            Width="160"
-                            Binding="{Binding Balance, StringFormat=N2}"
-                            ElementStyle="{StaticResource WalletNumberCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalBalance}" />
-                        <DataGridTextColumn
-                            MinWidth="160"
-                            Binding="{Binding Description}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalDescription}"
-                            Width="260" />
-                        <DataGridTextColumn
-                            Width="160"
-                            Binding="{Binding RefType}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalRefType}" />
-                        <DataGridTextColumn
-                            MinWidth="120"
-                            Binding="{Binding Reason}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_JournalReason}"
-                            Width="180" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAmountNegative}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Balance, StringFormat=N2}"
+                                ElementStyle="{StaticResource WalletNumberCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalBalance}" />
+                            <DataGridTextColumn
+                                Width="260"
+                                MinWidth="160"
+                                Binding="{Binding Description}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalDescription}" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding RefType}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalRefType}" />
+                            <DataGridTextColumn
+                                Width="180"
+                                MinWidth="120"
+                                Binding="{Binding Reason}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_JournalReason}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </ScrollViewer>
 
                 <controls:PagerControl
@@ -311,69 +316,71 @@
                         Value="1" />
                 </StackPanel>
 
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <DataGrid
-                    x:Name="CorpTransactionGrid"
+                <ScrollViewer
                     Grid.Row="1"
-                    ItemsSource="{Binding CorpTransactions.Items}"
-                    Style="{StaticResource WalletGridStyle}"
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionDate}" />
-                        <DataGridTextColumn
-                            MinWidth="160"
-                            Binding="{Binding TypeName}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionType}"
-                            Width="220" />
-                        <DataGridTextColumn
-                            Width="130"
-                            Binding="{Binding UnitPrice, StringFormat=N2}"
-                            ElementStyle="{StaticResource WalletNumberCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionUnitPrice}" />
-                        <DataGridTextColumn
-                            Width="90"
-                            Binding="{Binding Quantity, StringFormat=N0}"
-                            ElementStyle="{StaticResource WalletNumberCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionQuantity}" />
-                        <DataGridTextColumn
-                            Width="140"
-                            Binding="{Binding TotalPrice, StringFormat=N2}"
-                            Header="{DynamicResource WalletPage_TransactionTotalPrice}">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+                    <DataGrid
+                        x:Name="CorpTransactionGrid"
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        ItemsSource="{Binding CorpTransactions.Items}"
+                        Style="{StaticResource WalletGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding Date, StringFormat='yyyy-MM-dd HH:mm:ss'}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionDate}" />
+                            <DataGridTextColumn
+                                Width="220"
+                                MinWidth="160"
+                                Binding="{Binding TypeName}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionType}" />
+                            <DataGridTextColumn
+                                Width="130"
+                                Binding="{Binding UnitPrice, StringFormat=N2}"
+                                ElementStyle="{StaticResource WalletNumberCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionUnitPrice}" />
+                            <DataGridTextColumn
+                                Width="90"
+                                Binding="{Binding Quantity, StringFormat=N0}"
+                                ElementStyle="{StaticResource WalletNumberCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionQuantity}" />
+                            <DataGridTextColumn
+                                Width="140"
+                                Binding="{Binding TotalPrice, StringFormat=N2}"
+                                Header="{DynamicResource WalletPage_TransactionTotalPrice}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style BasedOn="{StaticResource WalletNumberCellStyle}" TargetType="TextBlock">
 
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBuy}" Value="False">
-                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding ClientName}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionClient}" />
-                        <DataGridTextColumn
-                            MinWidth="180"
-                            Binding="{Binding LocationName}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionLocation}"
-                            Width="220" />
-                        <DataGridTextColumn
-                            Width="100"
-                            Binding="{Binding IsBuyText}"
-                            ElementStyle="{StaticResource WalletCellStyle}"
-                            Header="{DynamicResource WalletPage_TransactionIsBuy}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBuy}" Value="False">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding ClientName}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionClient}" />
+                            <DataGridTextColumn
+                                Width="220"
+                                MinWidth="180"
+                                Binding="{Binding LocationName}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionLocation}" />
+                            <DataGridTextColumn
+                                Width="100"
+                                Binding="{Binding IsBuyText}"
+                                ElementStyle="{StaticResource WalletCellStyle}"
+                                Header="{DynamicResource WalletPage_TransactionIsBuy}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </ScrollViewer>
             </Grid>
         </TabItem>

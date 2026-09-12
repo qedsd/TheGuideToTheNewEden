@@ -246,7 +246,35 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         // LiveCharts 的 Paint 是 SkiaSharp 对象，无法用 DynamicResource 跟随主题，
         // 因此订阅应用的主题切换事件重新着色（见 ThemeService.ThemeChanged）。
         ThemeService.ThemeChanged += ApplyThemeColors;
+
+        // 其他界面（频道查价结果窗等）请求“跳到市场页并选中某物品”
+        Navigation.MarketTypeSelectionRequested += ApplyMarketTypeSelection;
     }
+
+    /// <summary>
+    /// 选中指定物品（跨页面跳转用）。市场树还没建好时先记下，等 <see cref="LoadAsync"/> 建完树再应用。
+    /// </summary>
+    public void ApplyMarketTypeSelection(long typeId)
+    {
+        if (typeId <= 0)
+        {
+            return;
+        }
+
+        if (_allTypeItems.Count == 0)
+        {
+            _pendingMarketTypeId = typeId;
+            return;
+        }
+
+        var item = _allTypeItems.FirstOrDefault(p => p.InvType?.TypeID == typeId);
+        if (item is not null)
+        {
+            SelectedInvTypeItem = item;
+        }
+    }
+
+    private long? _pendingMarketTypeId;
 
     /// <summary>图表/坐标轴配色，全部取自主题资源；主题切换后重新调用。</summary>
     public void ApplyThemeColors()
@@ -333,6 +361,14 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
                     RegionId = defaultRegion.RegionID,
                     SolarSystemId = Core.Services.DB.MapSolarSystemService.QueryByRegionID(defaultRegion.RegionID).FirstOrDefault()?.SolarSystemID ?? 0,
                 };
+            }
+
+            // 树已就绪：应用"从其他界面跳转过来时待选中的物品"（市场页首次创建时事件已错过，这里兜底）
+            var pending = _pendingMarketTypeId ?? Navigation.TakePendingMarketType();
+            if (pending is > 0)
+            {
+                _pendingMarketTypeId = null;
+                ApplyMarketTypeSelection(pending.Value);
             }
         }
         catch (Exception ex)

@@ -84,10 +84,24 @@ namespace TheGuideToTheNewEden.Core.Models
 
         private bool IsMatch(string content)
         {
-            foreach(var key in _keyTimes)
+            // 逐个关键词匹配，命中任意一个即为命中。
+            // 原实现 foreach 第一轮就 return，导致**只有第一个关键词生效**（其余全部失效）。
+            foreach (var key in _keyTimes)
             {
-                return Regex.Match(content, key.Key.Pattern).Success;
+                try
+                {
+                    if (Regex.IsMatch(content, key.Key.Pattern))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 单个关键词的正则非法不应中断整条日志的匹配
+                    Console.WriteLine(ex.Message);
+                }
             }
+
             return false;
         }
 

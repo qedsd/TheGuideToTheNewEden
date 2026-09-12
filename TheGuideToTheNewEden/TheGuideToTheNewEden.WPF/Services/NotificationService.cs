@@ -1,3 +1,4 @@
+using System.Windows;
 using H.NotifyIcon;
 
 namespace TheGuideToTheNewEden.WPF.Services;
@@ -10,11 +11,23 @@ public static class NotificationService
 {
     private static TaskbarIcon? _trayIcon;
 
+    /// <summary>气泡通知被点击（频道预警用它停止报警声音）。</summary>
+    public static event EventHandler? NotificationClicked;
+
     /// <summary>由主窗口在初始化托盘后注册。</summary>
     public static void Register(TaskbarIcon trayIcon)
     {
+        if (_trayIcon is not null)
+        {
+            _trayIcon.TrayBalloonTipClicked -= OnTrayBalloonTipClicked;
+        }
+
         _trayIcon = trayIcon;
+        _trayIcon.TrayBalloonTipClicked += OnTrayBalloonTipClicked;
     }
+
+    private static void OnTrayBalloonTipClicked(object sender, RoutedEventArgs e)
+        => NotificationClicked?.Invoke(sender, e);
 
     public static bool IsAvailable => _trayIcon is not null;
 

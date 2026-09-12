@@ -1,0 +1,137 @@
+<Window
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.IntelWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uc="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="IntelWindow"
+    Width="500"
+    Height="500"
+    AllowsTransparency="True"
+    Background="Transparent"
+    ResizeMode="CanResize"
+    ShowInTaskbar="False"
+    Topmost="True"
+    WindowStartupLocation="Manual"
+    WindowStyle="None">
+
+    <!--
+        为什么是普通 Window 而不是 ui:FluentWindow：
+        FluentWindow 会把 WindowStyle 重置为单边框，导致 AllowsTransparency 在 Show() 时抛异常（已实测）。
+        这里要"只让背景半透明、内容保持实色"，必须用逐像素透明：WindowStyle=None + AllowsTransparency=True +
+        WindowChrome 提供标题区拖动（CaptionHeight）与缩放（ResizeBorderThickness）；标题区内的按钮需
+        WindowChrome.IsHitTestVisibleInChrome=True 才不会被标题区吞掉（已用模拟鼠标实测拖动与按钮点击均有效）。
+    -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome
+            CaptionHeight="40"
+            CornerRadius="0"
+            GlassFrameThickness="0"
+            ResizeBorderThickness="6"
+            UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <!--  背板：不透明度只作用于这一层（颜色与透明度在代码里按设置生成）  -->
+    <Border x:Name="BackdropPlate" CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  标题区：logo + 标题（落在 caption 内，可拖动窗口）  -->
+            <Grid Grid.Row="0" Margin="10,0,6,0">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Image
+                        Width="20"
+                        Height="20"
+                        Source="pack://application:,,,/Assets/logo_32.png" />
+                    <TextBlock
+                        x:Name="TitleText"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <ui:Button
+                        x:Name="MinimizeButton"
+                        Width="36"
+                        Height="30"
+                        Appearance="Transparent"
+                        Click="OnMinimizeClick"
+                        Icon="{ui:SymbolIcon Subtract24}"
+                        ToolTip="{DynamicResource ToolWindow.Minimize}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+                    <ui:Button
+                        x:Name="CloseButton"
+                        Width="36"
+                        Height="30"
+                        Appearance="Transparent"
+                        Click="OnCloseClick"
+                        Icon="{ui:SymbolIcon Dismiss24}"
+                        ToolTip="{DynamicResource General_Close}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="8,0,8,8">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <uc:IntelMapView x:Name="MapView" Grid.Row="0" />
+
+                <Grid Grid.Row="1" Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:Button
+                        Height="32"
+                        Click="OnClearClick"
+                        Icon="{ui:SymbolIcon Eraser24}"
+                        ToolTip="{DynamicResource ChannelIntelPage_ClearAllIntel}" />
+
+                    <ui:Button
+                        Grid.Column="1"
+                        Height="32"
+                        Margin="2,0"
+                        HorizontalContentAlignment="Left"
+                        Click="OnIntelInfoClick"
+                        ToolTip="{DynamicResource ChannelIntelPage_LatestIntelInfo}">
+                        <RichTextBox
+                            x:Name="IntelInfoBox"
+                            Margin="0"
+                            Padding="0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Focusable="False"
+                            IsDocumentEnabled="False"
+                            IsHitTestVisible="False"
+                            IsReadOnly="True">
+                            <FlowDocument>
+                                <Paragraph x:Name="IntelInfoParagraph" />
+                            </FlowDocument>
+                        </RichTextBox>
+                    </ui:Button>
+
+                    <ui:Button
+                        Grid.Column="2"
+                        Height="32"
+                        Click="OnStopSoundClick"
+                        Icon="{ui:SymbolIcon SpeakerMute24}"
+                        ToolTip="{DynamicResource ChannelIntelPage_StopSound}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

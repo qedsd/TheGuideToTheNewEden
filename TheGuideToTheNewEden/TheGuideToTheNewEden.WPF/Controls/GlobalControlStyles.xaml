@@ -102,4 +102,49 @@
         </Style.Triggers>
     </Style>
 
+    <!--
+        FlowDocument：RichTextBox 里的文字用它自己的字体，**不继承**控件树的字体，
+        WPF 的默认值是 Georgia / 16（实测），与界面其余部分（Microsoft YaHei UI / 14）明显不一致。
+        这里显式对齐：字体取系统消息字体（随系统/语言变化），字号取与 WPF-UI 基础字号一致的 14。
+    -->
+    <Style TargetType="FlowDocument">
+        <Setter Property="FontFamily" Value="{x:Static SystemFonts.MessageFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <!--
+        列表项铺满整行 + Fluent 选中/悬停观感。
+        自带模板、显式给主题色（不 BasedOn 隐式 ListBoxItem 样式：无法确认 WPF-UI 是否为标准类型提供
+        可 StaticResource 到的隐式样式，找不到会在页面构造时抛 XamlParseException）。
+        关键用途：**局部 ItemContainerStyle 只为设 Stretch 会整体顶掉隐式样式**，选中态退回系统蓝
+        （REFACTORING.md §9 第 18 条）——需要 Stretch 的列表一律引用本样式。
+    -->
+    <Style x:Key="StretchListItem" TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border
+                        x:Name="Bd"
+                        Margin="2,1"
+                        Padding="{TemplateBinding Padding}"
+                        Background="Transparent"
+                        CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
