@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.Market;
@@ -27,23 +27,6 @@ public partial class MarketPage : Page
         Loaded += async (_, _) => await _viewModel.LoadAsync();
     }
 
-    private void OnRegionSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is ListBox { SelectedItem: MapRegion region })
-        {
-            _viewModel.SelectRegion(region);
-            MarketToggle.IsChecked = false; // 选完收起下拉
-        }
-    }
-
-    private void OnStructureSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is ListBox { SelectedItem: Structure structure })
-        {
-            _viewModel.SelectStructure(structure);
-            MarketToggle.IsChecked = false;
-        }
-    }
 
     private void OnTypeTreeSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {

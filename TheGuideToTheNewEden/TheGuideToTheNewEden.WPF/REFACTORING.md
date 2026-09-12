@@ -502,6 +502,72 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 34：商业-估价迁移（ESI 直接取价 + 可配置估价方式）
+
+- 目标（§8「计划内未做」最后一项商业子项）：把 WinUI 的「估价」页迁到 WPF。**与 WinUI 版的有意差异**：WinUI 版把粘贴文本整体 POST 给第三方 API（Janice，硬编码 API Key 与 `pricePercentage=100`，无任何估价设置）；WPF 版改为**本地解析输入 + ESI 公开市场接口直接取价**，并按用户要求把**估价方式做成可配置**（口径沿用倒货的 `ScalperSetting.PriceType`，另加买卖两侧的百分比）。
+- **新增代码**（全部为新文件，页面占位 `AppraisalPage.cs` 已删除替换，类名/命名空间不变，`MainWindow.xaml` 的导航注册无需改动）：
+  - `Services/Business/AppraisalTextParser.cs`：把游戏复制的多行文本解析成「物品名 + 数量」。按行支持 5 种格式（优先级递减）：① Tab 分隔（货柜/机库全选复制 `名称\t数量\t体积\t分组`，数量带千分位逗号）；② 合同物品列表 `名称 x数量`；③ `数量x 名称`；④ 行尾独立数字 `名称 数量`；⑤ 兜底整行为名称、数量 1。
+  - `Services/Business/AppraisalService.cs`：估价服务 + 结果模型（`AppraisalResult`/`AppraisalItem`）。
+    - 名称 → 类型：先主库精确匹配（英文 SDE 原名）→ 本地化库精确匹配（`Config.NeedLocalization` 时走 `LocalDbService.QueryInvTypes`，支持中文客户端复制的中文名）→ 模糊兜底（**唯一命中才采用**，多命中时只接受忽略大小写恰好相等者，避免张冠李戴）。同一类型的多行输入按 TypeID 聚合数量（与 Janice 同口径）。
+    - 行情取数复用 `MarketOrderService`：订单口径（`Sell*`/`Buy*`）按唯一 TypeId 并发调 `GetRegionOrdersAsync`（匿名 ESI、`ThreadHelper` 按 `MarketOrderSettingService.ThreadValue` 并发、实时无缓存）；历史口径走 `GetHistoryBatchAsync`（带 TTL 磁盘缓存）。只要任一侧是订单口径就会一并拉历史（作为"市场无订单"时的兜底价）。
+    - 单价口径计算（与 `ScalperCalculator.CalPrice*` 逐条同公式）：卖单升序/买单降序后取 **Top**（最低卖价/最高买价）、**Top5**（前 5% 均价，不足 2 条取首条）、**Available**（按估价数量逐档吃单的加权均价）；历史 **Highest/Average/Lowest/Median**（近 N 天、去极值=去掉一个最值后求均值，并补了倒货没有的"只剩 1 天不去极值"保护）。订单口径算不出（该星域无订单）回落最近历史均价，仍无则该物品按 0 计入并列入"无报价"提示。
+    - **单价 = 口径价 × 百分比/100**（买、卖两侧独立配置）；中间价 =（总买价+总卖价）/2；体积按 `PackagedVolume`（缺省回落 `Volume`）。
+  - `Services/Business/AppraisalSettingService.cs`：估价设置持久化 `Configs/AppraisalSetting.json`（WPF 版专有）。设置项：`RegionId`（默认 10000002 伏尔戈）、`SellPriceType`/`SellPercent`（默认 卖单最低价 × 100%）、`BuyPriceType`/`BuyPercent`（默认 买单最高价 × 100%）、`HistoryDay`（默认 7）、`RemoveExtremum`（默认 true）。
+  - `ViewModels/Business/AppraisalPageViewModel.cs`：输入/设置/结果三块属性、`EstimateAsync`（`PageNotifyService` 全屏等待 + 实时进度 `估价中（done/total）` + 取消支持 + 成功/失败通知）、结果复制为文本（汇总 + 制表符分隔明细）、星域 `ICollectionView` 过滤。
+  - `Views/Pages/AppraisalPage.xaml(.cs)`：左右两栏（对齐 WinUI 的布局与 WPF 市场页的控件风格）——左栏输入多行 `ui:TextBox` + 市场（星域）`ToggleButton`+`Popup` 选择器 + 卖/买估价方式 ComboBox（10 个口径项，复用 `BusinessPage_*` 本地化键）+ 买卖百分比与历史天数 `ui:NumberBox` + 去极值 CheckBox + 估价/复制按钮；右栏 5 项汇总条（市场/总体积/总买价/中间价/总卖价）+ 两条警告条（未识别物品 / 所选市场无报价，`SystemFillColorCautionBrush` 图标，不用 InfoBar 以免引入未验证控件）+ `ui:DataGrid` 明细（图标模板列 + 物品/数量/体积/买单价/买价/卖单价/卖价，外层 ScrollViewer + `MinWidth` 绑 `ViewportWidth` 的阶段 22 方案）。物品图标异步加载（`images.evetech.net`，同市场页模式）。
+- 本地化：中英各补 24 个 `AppraisalPage_*` 键（键值对齐 WinUI 原有 11 键的语义 + 新增设置/提示项）；口径显示复用倒货既有 `BusinessPage_*` 键。
+- 实现中自查修正的两处：①同一物品的中英文名混用时两个输入名会解析到同一 TypeID，聚合字典的 `ToDictionary` 会抛重复键 → 改为手动去重构建；②进度回调来自线程池线程，本地化文本改为**取数前在 UI 线程取好**再进回调。
+- 构建状态：**0 错误 0 警告**（仅剩既有 `NU1903`）。按 §8 约定未做截图核验，界面效果由使用者自查。
+- 与 WinUI 版的其他差异：输入解析由 Janice 的多格式解析改为本地解析器（覆盖合同/货柜/资产/击杀报告常见格式，未识别的行会明示而不是被服务端忽略）；数量千分位逗号兼容；结果多了"单价"列与复制功能；WinUI 版数值 `/100` 的疑似 Janice 单位修正不再需要。
+- 未做/后续：估价不拉建筑订单（星域接口已含空间站与建筑卖单，与 WinUI 星域口径一致）；`Available` 口径的数量基准是**该物品的粘贴总量**（WinUI/倒货里该口径的基准是日销量，此处按估价语义取清单数量）。
+
+---
+
+### 阶段 35：市场位置选择器抽为独立控件（市场 / 估价支持 星域 / 星系 / 建筑）
+
+- 目标：把倒货的市场选择器（`MarketLocationSelectorView`）做成**自包含独立控件**，市场、估价两页统一接入，并让两页的价格来源从"星域 / 建筑（市场页）"与"仅星域（估价页）"扩展为**星域 / 星系 / 建筑**三选一（与倒货一致）。
+- **`MarketLocationSelectorView` 重写为独立控件**（对外只剩一个 TwoWay 绑定 + 一个可选事件）：
+  - 原版只是"三页签内容"（星域 / 星系 / 建筑列表），ToggleButton + Popup 包装散在每个宿主页面里（倒货页两份、市场页一份自制的两页签版本）。现在**按钮 + 弹层 + 三页签全部收进控件**：宿主写 `<uc:MarketLocationSelectorView SelectedItem="{Binding Xxx, Mode=TwoWay}" />` 即可；选完自动收起弹层（原先靠各宿主代码后置收起，已删）。
+  - 按钮：未选择时显示 `MarketPage_UnSelectedMarket` 占位文案（只读 DP `HasSelection` 切换），已选择显示位置名；弹层尺寸可调（`PopupWidth`/`PopupHeight` DP，默认 320×420）。
+  - 外部 `SelectedItem`（含初始绑定回填）会把选中项在对应列表里高亮（先清三处搜索框避免过滤藏掉目标行；`_suppress` 期间不会反向回写）。
+  - **建筑列表每次展开弹层都重新读取**（`StructureService.GetMarketStrutures()`）：设置页增删建筑后无需重建页面；建筑列表为空时在页签内显示 `StructuresSettingPage_EmptyTip` 引导（只读 DP `HasNoStructure`）。
+  - 控件仍不自设 DataContext（§9 第 21 条）；内部按钮/占位/弹层尺寸全部用 `ElementName` 绑定自身 DP，外部绑定沿用页面上下文。
+- **倒货页接入**：`ScalperAnalyseView.xaml` 的两处 `ToggleButton`+`Popup` 包装替换为两个控件实例，代码后置删掉 `OnSourceMarketSelected`/`OnDestinationMarketSelected`（自动收起已内置）；`Setting.SourceMarketLocation/DestinationMarketLocation` 绑定路径不变。
+- **市场页接入 + 星系来源**：
+  - `MarketPageViewModel` 删掉 `SelectedRegion`/`SelectedStructure`/`SelectedMarketTypeIndex` 与两组过滤集合（星域、建筑列表及其搜索框全在控件内），统一为 `SelectedMarketLocation`（`MarketLocation`，TwoWay）；变更且已选物品时自动重取订单与历史。默认市场仍为伏尔戈（`LoadAsync` 里以不抛异常的方式构造 `MarketLocation`——原 `MarketLocation(MapRegion)` 构造对无星系星域会抛异常）。
+  - 取数三分支：星域 = `GetRegionOrdersAsync(typeId, regionId)`；**星系 = 星域订单按 `SystemId` 过滤**（每物品仍只拉该物品的星域页，不必整星域全量）；建筑 = `GetStructureTypeOrdersAsync`（整建筑全量 + TTL 缓存）。历史统计统一用 `location.RegionId`（星系/建筑的"历史"实为所在星域历史，与 WinUI 一致）。
+  - `MarketPage.xaml` 选择器区块替换为控件实例；`MarketPage.xaml.cs` 删掉 `OnRegionSelectionChanged`/`OnStructureSelectionChanged`。
+- **估价页接入 + 星系/建筑来源**：
+  - `AppraisalSetting` 增加 `MarketLocation? Location`（原 `RegionId` 保留为旧字段，`Load()` 时把仅有星域的旧配置迁移为星域位置，新装默认也是伏尔戈）。
+  - `AppraisalService` 取数拆出 `FetchOrdersAsync`，按来源三分支：星域 / 星系同市场页口径；**建筑整建筑全量拉一次**（并发按类型逐个调用会同时击穿缓存、重复拉取 7 MB 级数据）后按估价清单里的类型分组。取数前补齐旧缓存位置缺失的 `RegionId`（历史统计与星系过滤依赖它）。历史统计用 `location.RegionId`。
+  - `AppraisalResult` 新增 `StructureOrdersFailed`：建筑来源取订单失败（角色无该建筑市场访问权）时与"该建筑没有这些物品的订单"区分开，估价页以右下角警告提示（复用 `MarketPage_StructureOrdersFailed` 文案）。
+  - `AppraisalPageViewModel` 删掉星域列表/过滤/选中名一组属性，改为 `SelectedMarketLocation` TwoWay（**换来源不自动重新估价**，按"估价"按钮才取数）；未选来源时点估价给明确提示。
+- 构建状态：**0 错误 0 警告**（仅剩既有 `NU1903`）。按 §8 约定未做截图核验。
+- 未做/后续：估价换来源后不会自动重算（市场页会自动重取当前物品）；建筑来源首次估价仍受"整建筑全量（7 MB 级、首次较慢）"限制（见 §8 第 9 条）。
+
+---
+
+### 阶段 36：估价的价格参数改为"变更即持久化"
+
+- 现象：估价的价格参数（买卖估价方式、买卖百分比、历史天数、去极值、价格来源）此前**只在点"估价"时才写盘**（`EstimateAsync` 开头的 `SaveSetting()`）。用户改了参数没点估价就切走（页面 `Loaded` 会重新 `Load()` 覆盖内存态）或重启程序，改动全部丢失。
+- 修复：`AppraisalPageViewModel` 的全部参数 setter（`SellPriceTypeIndex`/`BuyPriceTypeIndex`/`SellPercent`/`BuyPercent`/`HistoryDay`/`RemoveExtremum`/`SelectedMarketLocation`）改为**值有变化才赋值并立即 `SaveSetting()`**（写 `Configs/AppraisalSetting.json`，每次仅几百字节）。`Init()` 的重载保留——因文件与内存态已一致，重载语义为空操作；`EstimateAsync` 里原有的保存保留（保证估价所用参数已落盘）。
+- 持久化范围不含左侧粘贴的物品清单文本（属工作内容而非价格参数，避免设置文件膨胀）。
+- 构建状态：**0 错误 0 新警告**。
+
+---
+
+### 阶段 37：估价输入解析不了"物品名\*＋Tab＋数量"格式
+
+- 现象：形如下面的物品清单（部分扫描/导出格式，物品名末尾带 `*` 标记）整页识别不了，全部落入"未识别"提示：
+  `导弹精确打击脚本*	2` / `鞭挞轻型导弹*\t100` / `核心扫描探针 I*	1` / `核心扫描探针 I*	9` / `缎光级增强薄荷 - 限量*\t2`
+- 根因：Tab 分隔路径把 `*` 留在了物品名里（`导弹精确打击脚本*`），而 SDE 物品名本身不含 `*`——主库精确、本地化库精确、两级模糊全部匹配失败。
+- 修复（`AppraisalTextParser`）：解析产物统一过 `CleanName`——去掉名称里的全部 `*`（EVE 物品名不含该字符，位置不限）再 trim；清完为空的行（如整行只有 `*`）直接跳过。用户样例 5 行全部解析正确（同名两行 `核心扫描探针 I` 的 1+9 由服务的按类型聚合合并为 10）。
+- 顺带补强名称解析第 4 级兜底（`AppraisalService.ResolveTypes`）：中文输入查主库"英文名 Contains"恒为空，新增**本地化库模糊搜索**（`LocalDbService.SearchInvType`，仅 `NeedLocalization` 时；只接受唯一命中或忽略大小写恰好相等者，与主库模糊同级保护）。解析链现为：主库精确 → 本地化库精确 → 主库模糊 → 本地化库模糊。
+- 验证：用独立控制台工程直引 `AppraisalTextParser.cs` 跑用户样例——5 行全部解析为 `名称 × 数量` 且 `*` 已剥离；tab/`x数量`/`数量x`/行尾数字/纯名称等既有格式回归无误；并确认 `zh.db` 里含全部 5 个物品的本地化名（去掉 `*` 后可被本地化库精确匹配）。`dotnet build` 0 错误 0 新警告。
+- 未覆盖：`缎光级增强薄荷 - 限量` 这类国服限量物品若在 ESI 星域订单/历史里无报价，估价结果按 0 计并出现在"所选市场无报价"提示里（属数据可用性，非解析问题）。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
@@ -658,7 +724,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 ### 计划内未做
 - 角色卡片**拖拽排序**（WinUI 用 `GridView` 的 `CanReorderItems`；WPF 的 `ItemsControl`+`WrapPanel` 需自行实现拖放）——排序数据层 `CharacterStore.Move` 已具备。
 - 合同**详情窗口**；钱包 `SfDataGrid` 的分组/筛选/分组合计（见上「功能降级」3）。
-- **商业其余子项**：~~倒货~~（阶段 28 已完成：多选市场树 + 购物车 + 记录）、估价。
+- **商业其余子项**：~~倒货~~（阶段 28 已完成）、~~估价~~（阶段 34 已完成：本地解析 + ESI 取价 + 可配置估价口径与百分比）。
 - **星域市场里合并结构卖单**（WinUI 的 `MarketSkipStructure=false` 路径：遍历该星域的建筑逐个拉订单再按 `OrderId` 去重合并）：WPF 目前恒按"跳过结构"处理——每个建筑要全量拉一次（7 MB 级），开启后首次会非常慢，需要时再做。
 - 结构详情窗口、"按角色搜索建筑"（`esi-search.search_structures.v1`）。
 - 国服授权的**自动化**：国服没有回调地址，只能手动粘贴 code（与 WinUI 一致）；若日后拿到可用的回调/内部协议，可把 `SerenityAuthWindow` 退化为"打开授权页 + 等待回调"。
@@ -790,7 +856,7 @@ Controls/MessageHost.xaml(.cs)       右下角通知栈：淡入滑入、超时�
 ```
 （两者由 `MainWindow` 托管、经 `PageNotifyService` 全局调用；`MessageHost` 必须按 Bottom/Right 对齐，否则会铺满窗口挡住点击。）
 
-### 商业模块（阶段 25 起：市场 / 订单；阶段 28：倒货）
+### 商业模块（阶段 25 起：市场 / 订单；阶段 28：倒货；阶段 34：估价）
 ```
 Services/Business/MarketOrderService.cs        星域订单（按物品/整星域/星系）+ **建筑订单** + 历史统计 + **批量历史** + 订单富化；分页与缓存统一走 `FetchOrderPagesAsync` / `ReadJsonFileAsync` / `WriteJsonFileAsync`（阶段 29 整理、阶段 30 并发翻页）
 Services/Business/MarketStarService.cs         市场物品收藏（Configs/StaredMarketInvType.json，与 WinUI 共用）
@@ -799,18 +865,23 @@ Services/Business/BusinessService.cs           倒货排除清单 + 物品数量
 Services/Business/ShoppingRecordService.cs     购物记录（Configs/ShoppingRecords/*.json）
 Services/Business/ScalperSettingService.cs     倒货设置（Configs/ScalperSetting.json，与 WinUI 同文件）
 Services/Business/ScalperCalculator.cs         倒货计算引擎（Cal* 全套公式）
+Services/Business/AppraisalTextParser.cs       估价输入解析（合同/货柜/资产等复制文本 → 物品名 + 数量，阶段 34）
+Services/Business/AppraisalService.cs          估价服务（ESI 取价 + PriceType 口径 + 百分比；结果模型 AppraisalResult/AppraisalItem，阶段 34）
+Services/Business/AppraisalSettingService.cs   估价设置（Configs/AppraisalSetting.json，阶段 34）
 ViewModels/Business/MarketPageViewModel.cs     市场页 VM（选择/统计/计算器/LiveCharts 系列与配色）
 ViewModels/Business/OrderPageViewModel.cs      订单页 VM（角色/订单类型/来源过滤器、状态、剪贴板文本）
 ViewModels/Business/ScalperPageViewModel.cs    倒货页 VM（设置/取数编排/进度与提示/取消）
 ViewModels/Business/ScalperShoppingCartViewModel.cs   购物车 VM（合计/复制/粘贴/保存）
 ViewModels/Business/ScalperShoppingRecordViewModel.cs 购物记录 VM（列表/载入/删除/加回购物车）
+ViewModels/Business/AppraisalPageViewModel.cs  估价页 VM（输入/设置/结果、等待与进度、复制结果，阶段 34）
 Views/Pages/MarketPage.xaml(.cs)               市场页（占位页已替换；MainWindow 注册不变）
 Views/Pages/OrderPage.xaml(.cs)                订单页（占位页已替换；MainWindow 注册不变）
 Views/Pages/ScalperPage.xaml(.cs)              倒货壳页（倒货/购物车/记录三页签；原占位页已替换）
+Views/Pages/AppraisalPage.xaml(.cs)            估价页（原占位页已替换；MainWindow 注册不变，阶段 34）
 Views/UserControls/MarketTypeInfoView.xaml(.cs)       物品简介内容（ToolWindow 承载；后续扩展 SDE 属性）
 Views/UserControls/MarketCalculatorView.xaml(.cs)     买入/卖出计算内容（含"计算明细"）
 Views/UserControls/MarketSelecteTreeView.xaml(.cs)    三态物品多选树（SelectedItems/SelectedItemsCount DP）
-Views/UserControls/MarketLocationSelectorView.xaml(.cs) 星域/星系/建筑位置选择器（SelectedItem DP；默认列出全部、搜索就地过滤）
+Views/UserControls/MarketLocationSelectorView.xaml(.cs) 市场位置选择器（独立控件：按钮+弹层+星域/星系/建筑三页签；SelectedItem DP；倒货/市场/估价共用，阶段 35 自包含化）
 Views/UserControls/ScalperAnalyseView.xaml(.cs)       倒货：设置三页签 + 18 列结果表
 Views/UserControls/ScalperShoppingCartView.xaml(.cs)  倒货：购物车
 Views/UserControls/ScalperShoppingRecordView.xaml(.cs) 倒货：购物记录

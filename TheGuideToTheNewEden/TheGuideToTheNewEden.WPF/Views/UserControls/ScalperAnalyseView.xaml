@@ -66,65 +66,21 @@
                                 Grid.Row="0"
                                 Style="{StaticResource ScalperFieldLabel}"
                                 Text="{DynamicResource BusinessPage_SourceMarket}" />
-                            <ToggleButton
-                                x:Name="SourceMarketToggle"
+                            <uc:MarketLocationSelectorView
                                 Grid.Row="0"
                                 Grid.Column="1"
-                                MinHeight="32"
                                 Margin="8,2,0,2"
-                                Padding="10,4"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Content="{Binding Setting.SourceMarketLocation.Name}" />
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding IsChecked, ElementName=SourceMarketToggle, Mode=TwoWay}"
-                                Placement="Bottom"
-                                PlacementTarget="{Binding ElementName=SourceMarketToggle}"
-                                PopupAnimation="Fade"
-                                StaysOpen="False">
-                                <Border
-                                    Width="320"
-                                    Height="420"
-                                    Margin="0,4,0,0"
-                                    Style="{StaticResource AccentFlyoutBorder}">
-                                    <uc:MarketLocationSelectorView
-                                        SelectedItem="{Binding Setting.SourceMarketLocation, Mode=TwoWay}"
-                                        SelectedItemChanged="OnSourceMarketSelected" />
-                                </Border>
-                            </Popup>
+                                SelectedItem="{Binding Setting.SourceMarketLocation, Mode=TwoWay}" />
 
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource ScalperFieldLabel}"
                                 Text="{DynamicResource BusinessPage_DestinationMarket}" />
-                            <ToggleButton
-                                x:Name="DestinationMarketToggle"
+                            <uc:MarketLocationSelectorView
                                 Grid.Row="1"
                                 Grid.Column="1"
-                                MinHeight="32"
                                 Margin="8,2,0,2"
-                                Padding="10,4"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Content="{Binding Setting.DestinationMarketLocation.Name}" />
-                            <Popup
-                                AllowsTransparency="True"
-                                IsOpen="{Binding IsChecked, ElementName=DestinationMarketToggle, Mode=TwoWay}"
-                                Placement="Bottom"
-                                PlacementTarget="{Binding ElementName=DestinationMarketToggle}"
-                                PopupAnimation="Fade"
-                                StaysOpen="False">
-                                <Border
-                                    Width="320"
-                                    Height="420"
-                                    Margin="0,4,0,0"
-                                    Style="{StaticResource AccentFlyoutBorder}">
-                                    <uc:MarketLocationSelectorView
-                                        SelectedItem="{Binding Setting.DestinationMarketLocation, Mode=TwoWay}"
-                                        SelectedItemChanged="OnDestinationMarketSelected" />
-                                </Border>
-                            </Popup>
+                                SelectedItem="{Binding Setting.DestinationMarketLocation, Mode=TwoWay}" />
                         </Grid>
 
                         <Grid Grid.Row="1" Margin="0,8">

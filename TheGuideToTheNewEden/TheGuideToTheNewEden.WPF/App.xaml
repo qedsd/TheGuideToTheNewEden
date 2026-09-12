@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Exit="OnExit"
     ShutdownMode="OnExplicitShutdown"
-    Startup="OnStartup"
-    Exit="OnExit">
+    Startup="OnStartup">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

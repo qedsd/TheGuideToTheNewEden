@@ -31,78 +31,24 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
     private const int DefaultHistoryRangeIndex = 1; // 默认最近 3 个月（与 WinUI 一致）
 
-    // ---------- 市场（星域） ----------
+    // ---------- 市场位置（星域 / 星系 / 建筑） ----------
 
-    private readonly List<MapRegion> _allRegions = [];
+    private MarketLocation? _selectedMarketLocation;
 
-    public ObservableCollection<MapRegion> FilteredRegions { get; } = [];
-
-    public string RegionFilterText
+    /// <summary>
+    /// 当前价格来源（由 <see cref="Views.UserControls.MarketLocationSelectorView"/> TwoWay 回写；
+    /// 变更后自动重取当前物品的订单与历史）。
+    /// </summary>
+    public MarketLocation? SelectedMarketLocation
     {
-        get => _regionFilterText;
+        get => _selectedMarketLocation;
         set
         {
-            if (Set(ref _regionFilterText, value))
+            if (Set(ref _selectedMarketLocation, value) && value is not null && SelectedInvType is not null)
             {
-                ApplyRegionFilter();
+                _ = SelectInvTypeAsync(SelectedInvType);
             }
         }
-    }
-
-    private MapRegion? _selectedRegion;
-
-    public MapRegion? SelectedRegion
-    {
-        get => _selectedRegion;
-        private set => Set(ref _selectedRegion, value);
-    }
-
-    /// <summary>市场选择器里的页签：0 = 星域，1 = 建筑。</summary>
-    private int _selectedMarketTypeIndex;
-
-    public int SelectedMarketTypeIndex
-    {
-        get => _selectedMarketTypeIndex;
-        set => Set(ref _selectedMarketTypeIndex, value);
-    }
-
-    // ---------- 市场（建筑） ----------
-
-    /// <summary>用户添加的市场建筑（设置 → 玩家建筑）。</summary>
-    public ObservableCollection<Structure> Structures => StructureService.GetMarketStrutures();
-
-    public ObservableCollection<Structure> FilteredStructures { get; } = [];
-
-    public string StructureFilterText
-    {
-        get => _structureFilterText;
-        set
-        {
-            if (Set(ref _structureFilterText, value))
-            {
-                ApplyStructureFilter();
-            }
-        }
-    }
-
-    /// <summary>建筑列表为空（用于显示"请前往设置添加建筑"的引导）。</summary>
-    public bool HasNoStructure => FilteredStructures.Count == 0;
-
-    private Structure? _selectedStructure;
-
-    public Structure? SelectedStructure
-    {
-        get => _selectedStructure;
-        private set => Set(ref _selectedStructure, value);
-    }
-
-    private string _selectedMarketName = string.Empty;
-
-    /// <summary>市场选择按钮上显示的市场名。</summary>
-    public string SelectedMarketName
-    {
-        get => _selectedMarketName;
-        private set => Set(ref _selectedMarketName, value);
     }
 
     // ---------- 物品选择 ----------
@@ -300,9 +246,6 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         // LiveCharts 的 Paint 是 SkiaSharp 对象，无法用 DynamicResource 跟随主题，
         // 因此订阅应用的主题切换事件重新着色（见 ThemeService.ThemeChanged）。
         ThemeService.ThemeChanged += ApplyThemeColors;
-
-        // 设置页新增/删除市场建筑后，市场选择器的建筑列表随之刷新
-        Structures.CollectionChanged += (_, _) => ApplyStructureFilter();
     }
 
     /// <summary>图表/坐标轴配色，全部取自主题资源；主题切换后重新调用。</summary>
@@ -365,11 +308,6 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         StatusText = "加载市场分类…";
         try
         {
-            _allRegions.Clear();
-            _allRegions.AddRange(await Core.Services.DB.MapRegionService.QueryAllAsync());
-            ApplyRegionFilter();
-            ApplyStructureFilter();
-
             var (roots, types) = await Task.Run(BuildTreeAsync);
             _allTypeItems.Clear();
             _allTypeItems.AddRange(types);
@@ -381,10 +319,20 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
             RefreshStaredItems();
 
-            var defaultRegion = _allRegions.FirstOrDefault(p => p.RegionID == MarketOrderService.DefaultMarketRegion);
+            // 默认市场：伏尔戈（The Forge，吉他所在星域）。不用 MarketLocation(MapRegion) 构造，
+            // 它对无星系星域会抛异常
+            var defaultRegion = await Core.Services.DB.MapRegionService.QueryAsync(MarketOrderService.DefaultMarketRegion);
             if (defaultRegion is not null)
             {
-                SelectRegion(defaultRegion);
+                SelectedMarketLocation = new MarketLocation
+                {
+                    Type = MarketLocationType.Region,
+                    Id = defaultRegion.RegionID,
+                    MarketObj = defaultRegion,
+                    Name = defaultRegion.RegionName,
+                    RegionId = defaultRegion.RegionID,
+                    SolarSystemId = Core.Services.DB.MapSolarSystemService.QueryByRegionID(defaultRegion.RegionID).FirstOrDefault()?.SolarSystemID ?? 0,
+                };
             }
         }
         catch (Exception ex)
@@ -467,68 +415,6 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
     // ---------- 选择 ----------
 
-    private void ApplyRegionFilter()
-    {
-        var filter = RegionFilterText?.Trim();
-        FilteredRegions.Clear();
-        foreach (var region in _allRegions)
-        {
-            if (string.IsNullOrEmpty(filter) || region.RegionName.Contains(filter, StringComparison.OrdinalIgnoreCase))
-            {
-                FilteredRegions.Add(region);
-            }
-        }
-    }
-
-    /// <summary>选择市场星域（建筑会被清空，两者互斥）。</summary>
-    public void SelectRegion(MapRegion region)
-    {
-        if (SelectedRegion?.RegionID == region.RegionID && SelectedStructure is null)
-        {
-            return;
-        }
-
-        SelectedStructure = null;
-        SelectedRegion = region;
-        SelectedMarketName = region.RegionName;
-        if (SelectedInvType is not null)
-        {
-            _ = SelectInvTypeAsync(SelectedInvType);
-        }
-    }
-
-    /// <summary>选择市场建筑（星域会被清空，两者互斥）。</summary>
-    public void SelectStructure(Structure structure)
-    {
-        if (SelectedStructure?.Id == structure.Id && SelectedRegion is null)
-        {
-            return;
-        }
-
-        SelectedRegion = null;
-        SelectedStructure = structure;
-        SelectedMarketName = structure.Name;
-        if (SelectedInvType is not null)
-        {
-            _ = SelectInvTypeAsync(SelectedInvType);
-        }
-    }
-
-    private void ApplyStructureFilter()
-    {
-        var filter = StructureFilterText?.Trim();
-        FilteredStructures.Clear();
-        foreach (var structure in Structures)
-        {
-            if (string.IsNullOrEmpty(filter) || (structure.Name ?? string.Empty).Contains(filter, StringComparison.OrdinalIgnoreCase))
-            {
-                FilteredStructures.Add(structure);
-            }
-        }
-
-        OnPropertyChanged(nameof(HasNoStructure));
-    }
-
     private void ApplySearch()
     {
         SearchResults.Clear();
@@ -592,7 +478,7 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         Stared = MarketStarService.Current.IsStared(type.TypeID);
         SelectedInvTypeIcon = null;
 
-        if (SelectedRegion is null && SelectedStructure is null)
+        if (SelectedMarketLocation is null)
         {
             ErrorMessage = FindString("MarketPage_UnSelectedMarket");
             return;
@@ -604,9 +490,24 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
         try
         {
             StatusText = FindString("MarketPage_GettingOrder");
-            var orders = SelectedStructure is not null
-                ? await MarketOrderService.Current.GetStructureTypeOrdersAsync(SelectedStructure.Id, type.TypeID)
-                : await MarketOrderService.Current.GetRegionOrdersAsync(type.TypeID, SelectedRegion!.RegionID);
+            List<MarketOrder>? orders;
+            switch (SelectedMarketLocation.Type)
+            {
+                case MarketLocationType.Structure:
+                    orders = await MarketOrderService.Current.GetStructureTypeOrdersAsync(SelectedMarketLocation.Id, type.TypeID);
+                    break;
+                case MarketLocationType.SolarSystem:
+                    // 星系 = 星域订单按星系过滤（每物品仍只需该物品的星域页）
+                    {
+                        var regionOrders = await MarketOrderService.Current.GetRegionOrdersAsync(type.TypeID, SelectedMarketLocation.RegionId);
+                        orders = regionOrders?.Where(p => p.SystemId == SelectedMarketLocation.SolarSystemId).ToList();
+                    }
+
+                    break;
+                default:
+                    orders = await MarketOrderService.Current.GetRegionOrdersAsync(type.TypeID, SelectedMarketLocation.RegionId);
+                    break;
+            }
 
             SellOrders.Clear();
             BuyOrders.Clear();
@@ -622,7 +523,7 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
                     BuyOrders.Add(order);
                 }
             }
-            else if (SelectedStructure is not null)
+            else if (SelectedMarketLocation.Type == MarketLocationType.Structure)
             {
                 // 建筑订单需要角色授权与该建筑的市场访问权
                 ErrorMessage = FindString("MarketPage_StructureOrdersFailed");
@@ -630,8 +531,8 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
 
             SetOrderStatisticalInfo();
 
-            // 历史统计是"星域级"的（与 WinUI 一致）：建筑市场用该建筑所在星域
-            var regionId = SelectedStructure?.RegionId ?? SelectedRegion?.RegionID ?? 0;
+            // 历史统计是"星域级"的（与 WinUI 一致）：星系/建筑市场用各自所在星域
+            var regionId = SelectedMarketLocation.RegionId;
             if (regionId > 0)
             {
                 StatusText = FindString("MarketPage_GettingHistroy");
@@ -816,10 +717,6 @@ public sealed class MarketPageViewModel : INotifyPropertyChanged
     // ---------- INotifyPropertyChanged ----------
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    private string _regionFilterText = string.Empty;
-
-    private string _structureFilterText = string.Empty;
 
     private string _searchText = string.Empty;
 

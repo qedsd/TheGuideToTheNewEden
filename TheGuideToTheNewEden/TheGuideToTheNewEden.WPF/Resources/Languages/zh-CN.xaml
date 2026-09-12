@@ -697,4 +697,30 @@
     <sys:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">是否确认删除{0}个记录？</sys:String>
     <sys:String x:Key="MarketSelecteTreeControl_SearchType">搜索市场物品</sys:String>
     <sys:String x:Key="MarketPage_SearchSolarSystem">搜索星系</sys:String>
+    <!--  商业-估价  -->
+    <sys:String x:Key="AppraisalPage_Appraisal">物品估价</sys:String>
+    <sys:String x:Key="AppraisalPage_Input">输入</sys:String>
+    <sys:String x:Key="AppraisalPage_PasteData">CTRL+V黏贴仓库、合同、货柜等...</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimate">估价</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimating">估价中</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimated">估价完成：{0}个物品</sys:String>
+    <sys:String x:Key="AppraisalPage_EstimateFailed">估价失败</sys:String>
+    <sys:String x:Key="AppraisalPage_EmptyInput">请先粘贴物品清单</sys:String>
+    <sys:String x:Key="AppraisalPage_Market">市场</sys:String>
+    <sys:String x:Key="AppraisalPage_Volume">体积</sys:String>
+    <sys:String x:Key="AppraisalPage_Buy">买价</sys:String>
+    <sys:String x:Key="AppraisalPage_Sell">卖价</sys:String>
+    <sys:String x:Key="AppraisalPage_Split">中间价</sys:String>
+    <sys:String x:Key="AppraisalPage_Item">物品</sys:String>
+    <sys:String x:Key="AppraisalPage_Amount">数量</sys:String>
+    <sys:String x:Key="AppraisalPage_UnitBuy">买单价</sys:String>
+    <sys:String x:Key="AppraisalPage_UnitSell">卖单价</sys:String>
+    <sys:String x:Key="AppraisalPage_SellValuation">卖出估价方式</sys:String>
+    <sys:String x:Key="AppraisalPage_BuyValuation">买入估价方式</sys:String>
+    <sys:String x:Key="AppraisalPage_SellPercent">卖出百分比（%）</sys:String>
+    <sys:String x:Key="AppraisalPage_BuyPercent">买入百分比（%）</sys:String>
+    <sys:String x:Key="AppraisalPage_CopyResult">复制结果</sys:String>
+    <sys:String x:Key="AppraisalPage_Copied">已复制估价结果</sys:String>
+    <sys:String x:Key="AppraisalPage_UnresolvedLines">未识别到物品：{0}</sys:String>
+    <sys:String x:Key="AppraisalPage_NoPriceItems">所选市场无报价：{0}</sys:String>
 </ResourceDictionary>

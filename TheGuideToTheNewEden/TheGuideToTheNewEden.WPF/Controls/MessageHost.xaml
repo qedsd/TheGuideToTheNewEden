@@ -9,7 +9,10 @@
         右下角通知栈（对应 WinUI 版的 InfoBar 消息）：新消息在上，可手动关闭，超时自动消失。
         宿主在 MainWindow 里按 Bottom/Right 对齐，因此本控件只占自身内容大小，不会挡住页面点击。
     -->
-    <ItemsControl x:Name="ItemsHost" Width="380" Margin="0,0,20,20">
+    <ItemsControl
+        x:Name="ItemsHost"
+        Width="380"
+        Margin="0,0,20,20">
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <Border

@@ -697,4 +697,30 @@
     <sys:String x:Key="BusinessPage_ShoppingRecord_DeleteCount">Are you sure you want to delete {0} records?</sys:String>
     <sys:String x:Key="MarketSelecteTreeControl_SearchType">Search for items in the market</sys:String>
     <sys:String x:Key="MarketPage_SearchSolarSystem">Search solar system</sys:String>
+    <!--  Business - Appraisal  -->
+    <sys:String x:Key="AppraisalPage_Appraisal">Appraisal</sys:String>
+    <sys:String x:Key="AppraisalPage_Input">Input</sys:String>
+    <sys:String x:Key="AppraisalPage_PasteData">CTRL+C CTRL+V, paste contract, cargo scan or other item list here...</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimate">Estimate</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimating">Appraising</sys:String>
+    <sys:String x:Key="AppraisalPage_Estimated">Appraised: {0} items</sys:String>
+    <sys:String x:Key="AppraisalPage_EstimateFailed">Appraisal failed</sys:String>
+    <sys:String x:Key="AppraisalPage_EmptyInput">Paste an item list first</sys:String>
+    <sys:String x:Key="AppraisalPage_Market">Market</sys:String>
+    <sys:String x:Key="AppraisalPage_Volume">Volume</sys:String>
+    <sys:String x:Key="AppraisalPage_Buy">Buy</sys:String>
+    <sys:String x:Key="AppraisalPage_Sell">Sell</sys:String>
+    <sys:String x:Key="AppraisalPage_Split">Split</sys:String>
+    <sys:String x:Key="AppraisalPage_Item">Item</sys:String>
+    <sys:String x:Key="AppraisalPage_Amount">Amount</sys:String>
+    <sys:String x:Key="AppraisalPage_UnitBuy">Buy unit</sys:String>
+    <sys:String x:Key="AppraisalPage_UnitSell">Sell unit</sys:String>
+    <sys:String x:Key="AppraisalPage_SellValuation">Sell valuation method</sys:String>
+    <sys:String x:Key="AppraisalPage_BuyValuation">Buy valuation method</sys:String>
+    <sys:String x:Key="AppraisalPage_SellPercent">Sell percentage (%)</sys:String>
+    <sys:String x:Key="AppraisalPage_BuyPercent">Buy percentage (%)</sys:String>
+    <sys:String x:Key="AppraisalPage_CopyResult">Copy result</sys:String>
+    <sys:String x:Key="AppraisalPage_Copied">Appraisal result copied</sys:String>
+    <sys:String x:Key="AppraisalPage_UnresolvedLines">Unrecognized items: {0}</sys:String>
+    <sys:String x:Key="AppraisalPage_NoPriceItems">No price in the selected market: {0}</sys:String>
 </ResourceDictionary>

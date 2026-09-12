@@ -10,10 +10,16 @@ using TheGuideToTheNewEden.WPF.Services;
 namespace TheGuideToTheNewEden.WPF.Views.UserControls;
 
 /// <summary>
-/// 市场位置选择器：星域 / 星系 / 建筑三个页签（各带搜索），选中的位置以 <see cref="SelectedItem"/> 暴露。
+/// 市场位置选择器（独立控件）：按钮 + 下拉弹层，弹层内是 星域 / 星系 / 建筑三个页签（各带搜索），
+/// 选中的位置经 <see cref="SelectedItem"/>（TwoWay）回写给调用方，选择后弹层自动收起。
 /// 移植自 WinUI 版 <c>MarketLocationSelectorControl</c>（WinUI 由三个独立选择控件组合，这里内联实现）：
 /// 三个列表都**直接列出全部可选项**（星系排除虫洞/希拉等特殊星系，与 WinUI 的 <c>ShowSpecial=False</c> 一致），
 /// 搜索框只做就地过滤。星系有 8000+ 条，所以过滤用 <see cref="ICollectionView"/> 而不是重建集合。
+/// <para>
+/// 使用方式：<c>&lt;uc:MarketLocationSelectorView SelectedItem="{Binding Xxx, Mode=TwoWay}" /&gt;</c>，
+/// 控件不得自设 DataContext（见 REFACTORING.md §9 第 21 条），弹层内列表就地绑定、外部 DP 绑定沿用页面上下文。
+/// 建筑列表每次展开弹层都会重新读取（设置页增删建筑后无需重建页面）。
+/// </para>
 /// </summary>
 public partial class MarketLocationSelectorView : UserControl
 {
@@ -50,7 +56,7 @@ public partial class MarketLocationSelectorView : UserControl
             var systems = await Core.Services.DB.MapSolarSystemService.QueryAllAsync();
             _allSystems.AddRange(systems.Where(p => !p.IsSpecial()).OrderBy(p => p.SolarSystemID));
 
-            _allStructures.AddRange(StructureService.GetMarketStrutures());
+            ReloadStructures();
 
             _regionsView = CreateView(_allRegions, o => o is MapRegion region && Matches(region.RegionName, RegionSearch.Text));
             _systemsView = CreateView(_allSystems, o => o is MapSolarSystem system && Matches(system.SolarSystemName, SystemSearch.Text));
@@ -83,29 +89,37 @@ public partial class MarketLocationSelectorView : UserControl
             || (name ?? string.Empty).Contains(text, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>把外部已选位置在列表中高亮（不触发 SelectedItem 回写）。</summary>
+    /// <summary>重新读取市场建筑列表（设置 → 玩家建筑可随时增删；列表就地刷新保持搜索与选中）。</summary>
+    private void ReloadStructures()
+    {
+        _allStructures.Clear();
+        _allStructures.AddRange(StructureService.GetMarketStrutures());
+        _structuresView?.Refresh();
+        SetValue(HasNoStructurePropertyKey, _allStructures.Count == 0);
+    }
+
+    /// <summary>把外部已选位置在对应列表里选中/高亮（_suppress 期间不会回写 SelectedItem）。</summary>
     private void PushSelectedIntoLists()
     {
         var selected = SelectedItem;
-        if (selected is null)
-        {
-            return;
-        }
-
         _suppress = true;
         try
         {
-            switch (selected.Type)
+            // 先清搜索，避免过滤把要高亮的项藏起来
+            RegionSearch.Text = string.Empty;
+            SystemSearch.Text = string.Empty;
+            StructureSearch.Text = string.Empty;
+
+            switch (selected?.Type)
             {
                 case MarketLocationType.Region:
-                    _regionsView?.Refresh();
+                    RegionList.SelectedItem = _allRegions.FirstOrDefault(p => p.RegionID == selected.Id);
                     break;
                 case MarketLocationType.SolarSystem:
-                    SystemSearch.Text = selected.Name;
-                    _systemsView?.Refresh();
+                    SystemList.SelectedItem = _allSystems.FirstOrDefault(p => p.SolarSystemID == selected.Id);
                     break;
                 case MarketLocationType.Structure:
-                    _structuresView?.Refresh();
+                    StructureList.SelectedItem = _allStructures.FirstOrDefault(p => p.Id == selected.Id);
                     break;
             }
         }
@@ -123,6 +137,7 @@ public partial class MarketLocationSelectorView : UserControl
         }
 
         SelectedItem = location;
+        LocationToggle.IsChecked = false; // 选完自动收起弹层
     }
 
     private void OnRegionSearchChanged(object sender, TextChangedEventArgs e) => _regionsView?.Refresh();
@@ -164,6 +179,15 @@ public partial class MarketLocationSelectorView : UserControl
         }
     }
 
+    private void OnLocationToggleClick(object sender, RoutedEventArgs e)
+    {
+        // 每次展开弹层都重读建筑列表（设置页可能刚增删过建筑）
+        if (LocationToggle.IsChecked == true)
+        {
+            ReloadStructures();
+        }
+    }
+
     // ---------- 依赖属性 ----------
 
     public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
@@ -180,8 +204,51 @@ public partial class MarketLocationSelectorView : UserControl
     }
 
     private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        => ((MarketLocationSelectorView)d).SelectedItemChanged?.Invoke(e.NewValue as MarketLocation);
+    {
+        var control = (MarketLocationSelectorView)d;
+        control.SetValue(HasSelectionPropertyKey, e.NewValue is MarketLocation);
+        control.PushSelectedIntoLists();
+        control.SelectedItemChanged?.Invoke(e.NewValue as MarketLocation);
+    }
 
-    /// <summary>选中位置变化（供外部收起弹层）。</summary>
+    private static readonly DependencyPropertyKey HasSelectionPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasSelection),
+        typeof(bool),
+        typeof(MarketLocationSelectorView),
+        new PropertyMetadata(false));
+
+    /// <summary>是否已选择市场（按钮占位文案与所选名称按它切换）。</summary>
+    public bool HasSelection => (bool)GetValue(HasSelectionPropertyKey.DependencyProperty);
+
+    private static readonly DependencyPropertyKey HasNoStructurePropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasNoStructure),
+        typeof(bool),
+        typeof(MarketLocationSelectorView),
+        new PropertyMetadata(false));
+
+    /// <summary>建筑列表为空（显示"请前往设置添加建筑"的引导）。</summary>
+    public bool HasNoStructure => (bool)GetValue(HasNoStructurePropertyKey.DependencyProperty);
+
+    private static readonly DependencyProperty PopupWidthProperty = DependencyProperty.Register(
+        nameof(PopupWidth), typeof(double), typeof(MarketLocationSelectorView), new PropertyMetadata(320d));
+
+    /// <summary>弹层宽度。</summary>
+    public double PopupWidth
+    {
+        get => (double)GetValue(PopupWidthProperty);
+        set => SetValue(PopupWidthProperty, value);
+    }
+
+    private static readonly DependencyProperty PopupHeightProperty = DependencyProperty.Register(
+        nameof(PopupHeight), typeof(double), typeof(MarketLocationSelectorView), new PropertyMetadata(420d));
+
+    /// <summary>弹层高度。</summary>
+    public double PopupHeight
+    {
+        get => (double)GetValue(PopupHeightProperty);
+        set => SetValue(PopupHeightProperty, value);
+    }
+
+    /// <summary>选中位置变化（TwoWay 绑定已足够回写，此事件供调用方做联动刷新）。</summary>
     public event Action<MarketLocation?>? SelectedItemChanged;
 }

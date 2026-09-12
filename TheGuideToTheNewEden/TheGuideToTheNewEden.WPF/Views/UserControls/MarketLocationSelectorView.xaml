@@ -2,81 +2,135 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.MarketLocationSelectorView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="RootSelector"
     Background="Transparent">
 
-    <TabControl Margin="6">
-        <TabItem Header="{DynamicResource General_Region}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <ui:TextBox
-                    x:Name="RegionSearch"
-                    Margin="0,6,0,0"
-                    PlaceholderText="{DynamicResource MarketPage_SearchRegion}"
-                    TextChanged="OnRegionSearchChanged" />
-                <ListBox
-                    x:Name="RegionList"
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    DisplayMemberPath="RegionName"
-                    IsSynchronizedWithCurrentItem="False"
-                    ScrollViewer.CanContentScroll="True"
-                    SelectionChanged="OnRegionSelectionChanged"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
-            </Grid>
-        </TabItem>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+    </UserControl.Resources>
 
-        <TabItem Header="{DynamicResource General_SolarSystem}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <ui:TextBox
-                    x:Name="SystemSearch"
-                    Margin="0,6,0,0"
-                    PlaceholderText="{DynamicResource MarketPage_SearchSolarSystem}"
-                    TextChanged="OnSystemSearchChanged" />
-                <!--  星系 8000+ 条，必须开虚拟化（页面根节点把 CanContentScroll 设成了 False，这里显式改回 True）  -->
-                <ListBox
-                    x:Name="SystemList"
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    DisplayMemberPath="SolarSystemName"
-                    IsSynchronizedWithCurrentItem="False"
-                    ScrollViewer.CanContentScroll="True"
-                    SelectionChanged="OnSystemSelectionChanged"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
-            </Grid>
-        </TabItem>
+    <Grid>
+        <!--  选择按钮：显示当前市场名，未选择时显示占位文案  -->
+        <ToggleButton
+            x:Name="LocationToggle"
+            MinHeight="32"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Left"
+            Click="OnLocationToggleClick">
+            <ToggleButton.Content>
+                <Grid>
+                    <TextBlock
+                        Text="{DynamicResource MarketPage_UnSelectedMarket}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding HasSelection, ElementName=RootSelector, Converter={StaticResource InverseBoolToVis}}" />
+                    <TextBlock
+                        Text="{Binding SelectedItem.Name, ElementName=RootSelector}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{Binding HasSelection, ElementName=RootSelector, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </ToggleButton.Content>
+        </ToggleButton>
 
-        <TabItem Header="{DynamicResource General_Structure}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <ui:TextBox
-                    x:Name="StructureSearch"
-                    Margin="0,6,0,0"
-                    PlaceholderText="{DynamicResource MarketPage_SearchStructure}"
-                    TextChanged="OnStructureSearchChanged" />
-                <ListBox
-                    x:Name="StructureList"
-                    Grid.Row="1"
-                    Margin="0,8,0,0"
-                    DisplayMemberPath="Name"
-                    IsSynchronizedWithCurrentItem="False"
-                    ScrollViewer.CanContentScroll="True"
-                    SelectionChanged="OnStructureSelectionChanged"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
-            </Grid>
-        </TabItem>
-    </TabControl>
+        <Popup
+            AllowsTransparency="True"
+            IsOpen="{Binding IsChecked, ElementName=LocationToggle, Mode=TwoWay}"
+            Placement="Bottom"
+            PlacementTarget="{Binding ElementName=LocationToggle}"
+            PopupAnimation="Fade"
+            StaysOpen="False">
+            <Border
+                Width="{Binding PopupWidth, ElementName=RootSelector}"
+                Height="{Binding PopupHeight, ElementName=RootSelector}"
+                Margin="0,4,0,0"
+                Style="{StaticResource AccentFlyoutBorder}">
+                <TabControl Margin="6">
+                    <!--  星域  -->
+                    <TabItem Header="{DynamicResource General_Region}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <ui:TextBox
+                                x:Name="RegionSearch"
+                                Margin="0,6,0,0"
+                                PlaceholderText="{DynamicResource MarketPage_SearchRegion}"
+                                TextChanged="OnRegionSearchChanged" />
+                            <ListBox
+                                x:Name="RegionList"
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                DisplayMemberPath="RegionName"
+                                IsSynchronizedWithCurrentItem="False"
+                                ScrollViewer.CanContentScroll="True"
+                                SelectionChanged="OnRegionSelectionChanged"
+                                VirtualizingStackPanel.IsVirtualizing="True"
+                                VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                        </Grid>
+                    </TabItem>
+
+                    <!--  星系  -->
+                    <TabItem Header="{DynamicResource General_SolarSystem}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <ui:TextBox
+                                x:Name="SystemSearch"
+                                Margin="0,6,0,0"
+                                PlaceholderText="{DynamicResource MarketPage_SearchSolarSystem}"
+                                TextChanged="OnSystemSearchChanged" />
+                            <!--  星系 8000+ 条，必须开虚拟化（页面根节点把 CanContentScroll 设成了 False，这里显式改回 True）  -->
+                            <ListBox
+                                x:Name="SystemList"
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                DisplayMemberPath="SolarSystemName"
+                                IsSynchronizedWithCurrentItem="False"
+                                ScrollViewer.CanContentScroll="True"
+                                SelectionChanged="OnSystemSelectionChanged"
+                                VirtualizingStackPanel.IsVirtualizing="True"
+                                VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                        </Grid>
+                    </TabItem>
+
+                    <!--  建筑  -->
+                    <TabItem Header="{DynamicResource General_Structure}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <ui:TextBox
+                                x:Name="StructureSearch"
+                                Margin="0,6,0,0"
+                                PlaceholderText="{DynamicResource MarketPage_SearchStructure}"
+                                TextChanged="OnStructureSearchChanged" />
+                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                <ListBox
+                                    x:Name="StructureList"
+                                    DisplayMemberPath="Name"
+                                    IsSynchronizedWithCurrentItem="False"
+                                    ScrollViewer.CanContentScroll="True"
+                                    SelectionChanged="OnStructureSelectionChanged"
+                                    VirtualizingStackPanel.IsVirtualizing="True"
+                                    VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                                <TextBlock
+                                    Margin="4,8,4,0"
+                                    VerticalAlignment="Top"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource StructuresSettingPage_EmptyTip}"
+                                    TextWrapping="Wrap"
+                                    Visibility="{Binding HasNoStructure, ElementName=RootSelector, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Popup>
+    </Grid>
 </UserControl>

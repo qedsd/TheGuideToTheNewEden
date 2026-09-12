@@ -35,26 +35,11 @@ public partial class ScalperAnalyseView : UserControl
         }
     }
 
-    private void OnRemoveFilterTypesClick(object sender, RoutedEventArgs e)    {
+    private void OnRemoveFilterTypesClick(object sender, RoutedEventArgs e)
+    {
         if (Vm is { } vm)
         {
             vm.RemoveFilterTypes(FilterTypeList.SelectedItems.Cast<InvType>().ToList());
-        }
-    }
-
-    private void OnSourceMarketSelected(MarketLocation? location)
-    {
-        if (location is not null)
-        {
-            SourceMarketToggle.IsChecked = false;
-        }
-    }
-
-    private void OnDestinationMarketSelected(MarketLocation? location)
-    {
-        if (location is not null)
-        {
-            DestinationMarketToggle.IsChecked = false;
         }
     }
 

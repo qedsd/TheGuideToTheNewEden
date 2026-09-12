@@ -2,11 +2,11 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:charPages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages.Characters"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages"
-    xmlns:charPages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages.Characters"
-    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{DynamicResource AppDisplayName}"
@@ -22,8 +22,10 @@
     <Grid>
 
         <!--  NavigationView 铺满整窗：其自带的汉堡按钮位于窗口左上角，正好落在标题栏的左侧预留区  -->
-        <!--  注意：FrameMargin 不在此处设置——WPF-UI 绑定 TitleBar 后会将其覆盖为默认值，
-              改由 MainWindow.xaml.cs 的 NavigationTopInset 在加载后应用。  -->
+        <!--
+            注意：FrameMargin 不在此处设置——WPF-UI 绑定 TitleBar 后会将其覆盖为默认值，
+            改由 MainWindow.xaml.cs 的 NavigationTopInset 在加载后应用。
+        -->
         <ui:NavigationView
             x:Name="NavigationView"
             Margin="0,4,0,0"
