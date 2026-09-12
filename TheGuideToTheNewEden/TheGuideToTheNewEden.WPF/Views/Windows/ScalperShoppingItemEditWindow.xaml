@@ -1,0 +1,127 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.ScalperShoppingItemEditWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Width="400"
+    Height="360"
+    MinWidth="360"
+    MinHeight="320"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <ui:FluentWindow.Resources>
+        <Style x:Key="EditFieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid Margin="16,48,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="90" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Style="{StaticResource EditFieldLabel}"
+                Text="{DynamicResource BusinessPage_BuyPrice}" />
+            <ui:NumberBox
+                x:Name="BuyPriceBox"
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="8,4"
+                ClearButtonEnabled="False"
+                Minimum="0"
+                SpinButtonPlacementMode="Compact" />
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                Style="{StaticResource EditFieldLabel}"
+                Text="{DynamicResource BusinessPage_SellPrice}" />
+            <ui:NumberBox
+                x:Name="SellPriceBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="8,4"
+                ClearButtonEnabled="False"
+                Minimum="0"
+                SpinButtonPlacementMode="Compact" />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                Style="{StaticResource EditFieldLabel}"
+                Text="{DynamicResource General_Quantity}" />
+            <ui:NumberBox
+                x:Name="QuantityBox"
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="8,4"
+                ClearButtonEnabled="False"
+                Minimum="0"
+                SpinButtonPlacementMode="Compact" />
+
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="0"
+                Style="{StaticResource EditFieldLabel}"
+                Text="{DynamicResource BusinessPage_ROIPercent}" />
+            <TextBlock
+                x:Name="RoiText"
+                Grid.Row="3"
+                Grid.Column="1"
+                Margin="8,4"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                Style="{StaticResource EditFieldLabel}"
+                Text="{DynamicResource BusinessPage_NetProfit}" />
+            <TextBlock
+                x:Name="NetProfitText"
+                Grid.Row="4"
+                Grid.Column="1"
+                Margin="8,4"
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+            <StackPanel
+                Grid.Row="6"
+                Grid.ColumnSpan="2"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <ui:Button
+                    Margin="0,0,8,0"
+                    Click="OnOkClick"
+                    Content="{DynamicResource General_OK}"
+                    IsDefault="True" />
+                <ui:Button
+                    Click="OnCancelClick"
+                    Content="{DynamicResource General_Cancel}"
+                    IsCancel="True" />
+            </StackPanel>
+        </Grid>
+
+        <ui:TitleBar x:Name="TitleBar" />
+    </Grid>
+</ui:FluentWindow>

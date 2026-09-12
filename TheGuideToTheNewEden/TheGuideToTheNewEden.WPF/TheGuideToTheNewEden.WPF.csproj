@@ -2,7 +2,10 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net10.0-windows</TargetFramework>
+		<!--  平台版本必须显式写 10.0.19041：LiveCharts 传递依赖的 SkiaSharp.Views.WPF 3.119.0
+		      只提供 net462 / net8.0-windows10.0.19041 资产，写成 net10.0-windows（隐含 TPV=7.0）
+		      会回退到 .NET Framework 资产（NU1701）或直接报 NU1202。  -->
+		<TargetFramework>net10.0-windows10.0.19041</TargetFramework>
 		<RootNamespace>TheGuideToTheNewEden.WPF</RootNamespace>
 		<AssemblyName>TheGuideToTheNewEden.WPF</AssemblyName>
 		<UseWPF>true</UseWPF>
@@ -23,6 +26,8 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<!--  邮件正文 HTML 渲染（替代 WebView2）  -->
 		<PackageReference Include="HtmlRenderer.WPF" Version="1.6.1" />
+		<!--  市场历史图表（替代 Syncfusion 图表）；SkiaSharp/HarfBuzz 由它传递  -->
+		<PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>

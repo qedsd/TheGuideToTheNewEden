@@ -1,0 +1,55 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.ToolWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{DynamicResource AppDisplayName}"
+    Width="800"
+    Height="600"
+    MinWidth="260"
+    MinHeight="180"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/app.ico"
+    ScrollViewer.CanContentScroll="False"
+    WindowBackdropType="Mica"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  统一标题栏：左侧 logo + 窗口名称，右侧置顶按钮与系统标题按钮（可分别控制显隐）  -->
+        <ui:TitleBar
+            x:Name="TitleBarHost"
+            Grid.Row="0"
+            Title="{DynamicResource AppDisplayName}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+            <ui:TitleBar.TrailingContent>
+                <ui:Button
+                    x:Name="TopmostButton"
+                    Margin="0,0,8,0"
+                    Appearance="Transparent"
+                    Click="OnTopmostClick"
+                    Visibility="Collapsed">
+                    <ui:SymbolIcon
+                        x:Name="TopmostIcon"
+                        FontSize="14"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Symbol="Pin24" />
+                </ui:Button>
+            </ui:TitleBar.TrailingContent>
+        </ui:TitleBar>
+
+        <!--  内容宿主：用 Frame 承载，Page / UserControl / 任意 UIElement 都能放入
+              （Page 只能由 Window/Frame 承载，放 ContentControl 会抛异常）  -->
+        <Frame
+            x:Name="ContentFrame"
+            Grid.Row="1"
+            Background="Transparent"
+            NavigationUIVisibility="Hidden" />
+    </Grid>
+</ui:FluentWindow>

@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages"
     xmlns:charPages="clr-namespace:TheGuideToTheNewEden.WPF.Views.Pages.Characters"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:tb="clr-namespace:H.NotifyIcon;assembly=H.NotifyIcon.Wpf"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{DynamicResource AppDisplayName}"
@@ -247,5 +248,16 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
+
+        <!--
+            全局等待遮罩与右下角通知栈（对应 WinUI 版 ShowWaiting / InfoBar）。
+            声明在最后 → 覆盖在导航内容之上；遮罩留出标题栏高度，等待期间仍可最小化/关闭窗口。
+        -->
+        <controls:WaitingOverlay x:Name="WaitingOverlay" Margin="0,36,0,0" />
+        <!--  只占右下角自身内容大小，否则这个 UserControl 会铺满窗口吃掉所有点击  -->
+        <controls:MessageHost
+            x:Name="MessageHost"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom" />
     </Grid>
 </ui:FluentWindow>

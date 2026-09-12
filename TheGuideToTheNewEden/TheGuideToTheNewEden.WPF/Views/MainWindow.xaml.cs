@@ -77,6 +77,9 @@ public partial class MainWindow : FluentWindow
         TrayMenuShow.Click += OnTrayShowClick;
         TrayMenuExit.Click += OnTrayExitClick;
         NotificationService.Register(TrayIcon);
+
+        // 页面级等待遮罩 / 右下角即时通知（ShowWaiting、ShowSuccess 等）
+        PageNotifyService.Register(WaitingOverlay, MessageHost);
     }
 
     private void ApplyFrameMargin()

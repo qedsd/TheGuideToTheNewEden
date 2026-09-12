@@ -29,6 +29,12 @@ public static class ThemeService
     /// <summary>当前实际生效的强调色。</summary>
     public static Color AccentColor => CurrentAccent ?? ApplicationAccentColorManager.SystemAccent;
 
+    /// <summary>
+    /// 主题或强调色已变化。界面颜色走 <c>DynamicResource</c> 会自动更新，
+    /// 但自绘/第三方渲染器（如 LiveCharts 的 SkiaSharp 画刷）拿不到主题资源，需要监听此事件重新着色。
+    /// </summary>
+    public static event Action? ThemeChanged;
+
     public static void Initialize()
     {
         var saved = SettingsService.GetValue(SettingsService.ThemeKey);
@@ -53,6 +59,7 @@ public static class ThemeService
 
         SettingsService.SetValue(SettingsService.ThemeKey, theme == ApplicationTheme.Dark ? "Dark" : "Light");
         SettingsService.Save();
+        ThemeChanged?.Invoke();
     }
 
     private static void ApplySavedAccentColor()
@@ -76,5 +83,6 @@ public static class ThemeService
         ApplicationAccentColorManager.Apply(color, Theme);
         SettingsService.SetColor(SettingsService.AccentColorKey, color);
         SettingsService.Save();
+        ThemeChanged?.Invoke();
     }
 }

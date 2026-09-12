@@ -1,0 +1,66 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.MarketSelecteTreeView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TextBox
+            x:Name="SearchBox"
+            Margin="4,0"
+            PlaceholderText="{DynamicResource MarketSelecteTreeControl_SearchType}"
+            TextChanged="OnSearchTextChanged" />
+
+        <TreeView
+            x:Name="TypeTree"
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            IsThreeState="{Binding IsGroup}" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Name}"
+                            ToolTip="{Binding RealId}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+        <ListBox
+            x:Name="SearchList"
+            Grid.Row="1"
+            Margin="0,8,0,0"
+            IsSynchronizedWithCurrentItem="False"
+            SelectionChanged="OnSearchSelectionChanged"
+            Visibility="Collapsed">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Name}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

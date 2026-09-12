@@ -44,6 +44,9 @@ public static class CoreInitializer
 
         ApplyEsiCredentials();
         CharacterStore.Init();
+        // 结构列表（用户的市场建筑 + 结构名称缓存）必须在任何按 ID 查询之前载入：
+        // 否则 GetMarketStrutures() 是空集合，一次保存就会把 MarketStructures.json 覆盖成空。
+        StructureService.Init();
 
         Log.Init();
         DatabaseReady = Config.InitDb();

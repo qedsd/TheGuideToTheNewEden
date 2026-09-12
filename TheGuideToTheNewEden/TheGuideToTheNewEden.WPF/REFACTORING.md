@@ -37,6 +37,8 @@
 |---|---|---|
 | UI 框架 | .NET 10 + WPF + **WPF-UI 4.3.0** | 默认样式/主题/导航控件开箱即用，避免自写控件模板 |
 | 表格控件 | **WPF-UI `DataGrid`**（不用 Syncfusion） | 用户明确不再使用 Syncfusion；行为可控 |
+| 图表控件 | **LiveCharts2**（`LiveChartsCore.SkiaSharpView.WPF`，不用 Syncfusion 图表） | 市场历史价格/销量图；开源、SkiaSharp 渲染、支持日期轴与缩放 |
+| 工具窗口 | 统一外壳 **`Views/Windows/ToolWindow`**（`ui:FluentWindow` + `ui:TitleBar`） | 标题栏样式统一（左上角 logo + 窗口名称）；标题按钮组合、置顶按钮、是否显示在任务栏均可配置；内容支持 Page/UserControl |
 | 页面承载 | 主内容用 `NavigationView` 内置 Frame；**壳页内的子页统一用 `Frame` 承载** | WPF 规定 `Page` 只能由 `Window`/`Frame` 承载（见 §9） |
 | 页面状态保留 | 页面实例常驻（缓存字典 / Tab 标签常驻） | 满足"后台运行、切回不受影响" |
 | 依赖项目 | WPF 直接引用 **Core**（netstandard2.1，UI 无关） | 复用 ESI/DB/模型，不重复实现 |
@@ -53,7 +55,7 @@
 ### 最终 csproj 要点（`TheGuideToTheNewEden.WPF/TheGuideToTheNewEden.WPF.csproj`）
 
 ```
-TargetFramework      net10.0-windows
+TargetFramework      net10.0-windows10.0.19041   （阶段 25 起带平台版本：LiveCharts 的 SkiaSharp 资产要求 TPV ≥ 10.0.19041）
 UseWPF               true
 ApplicationIcon      Assets\app.ico
 ApplicationManifest  app.manifest (PerMonitorV2 DPI)
@@ -68,6 +70,7 @@ EnableWindowsTargeting true
 | H.NotifyIcon.Wpf | 2.4.1 | 托盘图标 + 系统通知（net10 目标） |
 | Newtonsoft.Json | 13.0.4 | 设置/令牌/缓存序列化 |
 | HtmlRenderer.WPF | 1.6.1 | 邮件正文 HTML 渲染（替代 WebView2） |
+| LiveChartsCore.SkiaSharpView.WPF | 2.0.5 | 市场历史图表（替代 Syncfusion 图表）；传递带入 SkiaSharp 3.119.0 |
 
 项目引用：`TheGuideToTheNewEden.Core`（其再传递引用 `ZKB.NET`）。
 
@@ -158,7 +161,7 @@ EnableWindowsTargeting true
 - 核验中发现并修复 **4 个缺陷**（3 个在 Core、1 个在 WPF 页面），逐条见 §6 的 #16~#19。
 - 修复前最严重的问题：**切换到“克隆”标签后进程无任何日志地消失**——定位为 Core 中的无限递归导致栈溢出（退出码 `0xC00000FD`）。
 - 修复后 4 个页面均正常渲染真实数据，名称（地点/发件人）解析正常。
-- 产物：截图存于 `TheGuideToTheNewEden.WPF\VerificationScreenshots\`；抓图脚本 `VerificationTools\capture_window.ps1`。
+- 核验方式：实机点击逐页截图目检（截图与抓图脚本属一次性产物，核对后已清理，仓库不再保留）。
 
 ### 阶段 10：结构 ID 解析约定落地（文档 + 代码）
 - 明确并落实约定：**structure id 请走 `StructureService`**（`IDNameService` 的 ID 是 `int`，结构 ID 约 1e12 会被静默截断）。
@@ -300,20 +303,211 @@ EnableWindowsTargeting true
 
 ---
 
-## 5. 角色功能分层设计
-
-```
-授权层   CharacterAuthService ── CharacterStore ── AuthHelper / SerenityAuthHelper
-              │                        │
-              │                        └─ Auth.json / Auth_Serenity.json（按服务器分文件）
 ### 阶段 24：邮件详情弹窗白色背景、不跟随主题
 - 现象：邮件详情弹窗背景是白色的，与主窗口（深色/主题色）不一致。
 - 根因：`MailDetailWindow` 是**普通 `Window`**——普通窗口用的是系统原生标题栏与背景，不跟随应用主题（Windows 不会为该进程自动套用深色标题栏）；主窗口用的是 `ui:FluentWindow` + Mica 背景 + 自绘 `ui:TitleBar`，两者观感自然不一致。
 - 修复：把两个弹窗（`MailDetailWindow` 与 `SerenityAuthWindow`）都改成 `ui:FluentWindow`：`ExtendsContentIntoTitleBar="True"` + `WindowBackdropType="Mica"` + 自绘 `ui:TitleBar`（与 MainWindow 完全同一套），内容顶部留 48px 避开标题栏；代码后置的基类同步改为 `Wpf.Ui.Controls.FluentWindow`。另外把正文 `HtmlPanel` 的 `Background` 显式设为 `Transparent`，避免 HTML 渲染器自身涂白底。
 - 核验：编译通过（应用在运行，主输出目录被占用，改用重定向输出路径校验）；全项目已无普通 `Window`（仅剩 `ui:FluentWindow`）。
 
+### 阶段 25：商业-市场迁移（WPF + LiveCharts）
+- 目标：把 WinUI 的市场页迁到 WPF，历史图表由 **Syncfusion 换成 LiveCharts2**。**本期只做星域市场**——建筑（结构）市场依赖尚未移植的 `StructureService` ESI 结构解析与角色授权，按既有设置 `MarketSkipStructure`（默认 true）跳过。
+- 依赖与工程：
+  - 新增 `LiveChartsCore.SkiaSharpView.WPF 2.0.5`（SkiaSharp/HarfBuzz 由它传递）。
+  - **`TargetFramework` 由 `net10.0-windows` 改为 `net10.0-windows10.0.19041`**：LiveCharts 传递依赖的 `SkiaSharp.Views.WPF 3.119.0` 只提供 `net462` / `net8.0-windows10.0.19041` 资产，不写平台版本（隐含 TPV=7.0）会触发 NU1701/NU1202；改后 restore/build 干净，`runtimes/win-{x64,x86,arm64}/native/libSkiaSharp.dll` 正常随包复制。
+- 新增代码：
+  - `Services/Business/MarketOrderService.cs`：星域订单分页（匿名 ESI，无需授权）+ 历史统计（缓存 `Configs/HistoryOrders/{region}/{type}.json`，TTL 取设置）+ 订单富化（物品类型 / 空间站名 / 星系与所属星域，均来自本地 SDE）；PLEX（44992）自动切全球星域（19000001）；公开方法统一 `try/catch` + `Log.Error` 后返回 null（WPF 服务层约定）。**不拉取建筑订单**，结构位置名只从本地结构列表兜底。
+  - `Services/Business/MarketStarService.cs`：物品收藏，读写与 WinUI **共用**的 `Configs/StaredMarketInvType.json`。
+  - `ViewModels/Business/MarketPageViewModel.cs`：市场/物品选择、卖单（价升序）与买单（价降序）、5%/均价/数量统计（沿用 WinUI 公式）、计算器（逐档吃单、税后总收入、立即卖出）、历史时间范围（1/3/6/12 月/全部，默认 3 月）、**LiveCharts 系列**（价格 Highest/Average/Lowest 三条线 + 销量一条线；`DateTimeAxis` 按天、`ZoomMode=X`、tooltip 开启）、可绑定的加载/错误状态。
+  - `Views/Pages/MarketPage.xaml(.cs)`：替换原占位页（类名/命名空间不变，`MainWindow.xaml` 的导航注册无需改动）。左侧 = 市场下拉（星域搜索）+ **"列表 / 收藏"两个 TabItem**（列表内含物品搜索框与分组树，收藏独立成页）；右侧 = 物品头 + 卖单/买单/历史三页签；表格用 `ui:DataGrid` + 阶段 22 的"外层 ScrollViewer + 固定列宽 + `MinWidth` 绑 `ViewportWidth`"方案。
+  - 物品头布局（按使用反馈细化）：**第一行 = 图标 | 物品名称 | 买单/卖单统计（5% / 平均 / 数量），三者同排**；**第二行 = 操作按钮（收藏、简介、买入、刷新）右对齐**。这样统计与名称同行（对齐 WinUI），同时给名称留出宽度——实测：名称列曾因四个文字按钮占位被压到 21px 逐字换行，改两行后为 267px 单行。
+  - **新增可复用的工具窗口外壳 `Views/Windows/ToolWindow.xaml(.cs)`**（对齐 WinUI 版 `Wins/ToolWindow`），并据此把 `简介` / `买入` 改为它的实例（不再是各自一个窗口类）：
+    - **统一标题栏样式**：`ui:TitleBar` 提供——左上角 logo（`ui:ImageIcon` → `Assets/logo_32.png`，与主窗口同一资源），logo 右侧是窗口名称（`DisplayTitle`）；系统标题（任务栏/Alt+Tab 文本）用 `SystemTitle`，未设置时跟随 `DisplayTitle`。
+    - **内容可传入**：构造函数 / `SetContent(object)`，Page、UserControl 或任意 UIElement 均可——内部用 **`Frame`** 承载（`Page` 只能由 Window/Frame 承载，放 `ContentControl` 会抛异常）。
+    - **标题按钮可配置**：`ShowMinimizeButton` / `ShowMaximizeButton` / `ShowCloseButton` / `ShowTitleBar` 四个依赖属性，外加 `TitleStyle` 枚举（对齐 WinUI 的 `WindowTitleStyle`：Default / OnlyClose / OnlyMini / OnlyMax / NoButton / Empty / MiniAndClose）；`ShowMaximizeButton=false` 同时置 `TitleBar.CanMaximize=false`，双击标题栏也不会最大化。
+    - **置顶**：`ShowTopmostButton` 在标题栏右侧显示图钉按钮（`Pin24`/`PinOff24` 切换、ToolTip 与 AutomationName 同步为「置顶显示 / 取消置顶」）；也可直接用继承自 `Window` 的 `Topmost` 或 `SetAlwaysOnTop()`。
+    - **任务栏**：直接用继承自 `Window` 的 `ShowInTaskbar`（构造参数 `showInTaskbar`）。
+    - 置顶按钮的提示/无障碍名称用新增语言键 `ToolWindow.Topmost` / `ToolWindow.TopmostOff`（中英同步）。
+    - 另有 `SetCloseToHide()`（关窗改为隐藏，配合 `AllowClose()`）与 `Owner`/`WindowStartupLocation=CenterOwner` 的常规用法。
+    - `简介` / `买入` 的内容相应改为 UserControl：`Views/UserControls/MarketTypeInfoView.xaml(.cs)`、`MarketCalculatorView.xaml(.cs)`，`DataContext` 复用市场页 VM（与选中物品实时联动）；`MarketPage` 里按单实例打开（重复点击只激活）。
+  - `Services/ThemeService.cs` 新增 `ThemeChanged` 事件：LiveCharts 的画笔是 SkiaSharp 对象、**无法用 `DynamicResource` 跟随主题**，因此图表的 Series/坐标轴 Paint 监听该事件重新着色（`SolidColorPaint` 由主题 Brush 转换而来）。
+  - 语言文件补 **52 个 `MarketPage_*` 键**（46 个沿用 WinUI 原文 + 星域搜索 / 搜索物品 / 体积 / 刷新 / 简介 / 计算明细 6 个新增），中英同步。
+- 布局细化的实机核验（`dotnet build` 0 错误后逐项确认）：
+  - 左侧"列表 / 收藏"确为两个 TabItem（列表页内含搜索框与分组树）；
+  - 市场按钮宽度 = 左栏整宽（390px）；
+  - 物品头第一行：物品名 `因卡萨斯级` 宽 267px、与统计（`5%` / `平均` / `数量`）**同为 y=291 一行**，操作按钮在第二行 y≈372 右对齐；
+  - `简介` / `买入` 均为**独立窗口**（枚举该进程顶层窗口可见：标题「简介」440×520、标题「买入」400×620，各自有标题栏，可 Alt+Tab 切换）；重复点击按钮不产生第二个窗口；
+  - 两个窗口都由 `ToolWindow` 承载：标题栏文字分别为「简介」「买入」，内容用 UserControl 传入；
+  - **置顶按钮实测**：用 UIA 调用「买入」窗口标题栏上的图钉按钮 → 该窗口扩展样式由 `[APPWINDOW]` 变为 `[TOPMOST,APPWINDOW]`、按钮名自动变为「取消置顶」；再调用一次 → 恢复 `[APPWINDOW]`、按钮名回到「置顶显示」；期间主窗口与「简介」窗口均不受影响；
+  - `简介` 窗口内容：`因卡萨斯级` / 体积 `29,500.00 m3` / 完整中文简介（与主界面同一物品数据）；
+  - `买入` 窗口内容："计算明细"逐档行 `1 × 170,100.00 = 170,100.00`、总花费 `170,100.00`、总收入 `162,275.40`（3.6% 销售税 + 1% 中介税，算式核对无误）。
+- 实机核验（`dotnet build` 0 错误）：
+  - 进入"商业 → 市场"：市场按钮显示"伏尔戈"；19 个市场根分组由本地 DB 建树（制造和研究/舰船/技能…）；搜索"级"返回巨神兵级/裂谷级等；收藏区、计算器、刷新按钮齐全。
+  - 选中"巨神兵级"后：物品头显示完整中文描述与体积 `24,398.00 m³`；卖单表加载真实订单（价格升序 1,300,000 → 1,290,000 → 1,276,000 …，位置解析为"吉他 VI - 顶峰集团 运营中心"、星系"吉他"、安全等级 0.9、过期时间 `00.14:43:33`）；汇总统计 卖单 5%=299,350.00 / 均价 521,497.96 / 数量 1,414，买单 5%=212,800.00 / 均价 186,100.06 / 数量 100,573；历史缓存落地 `HistoryOrders/10000002/591.json`（46 KB）。
+  - 切到"历史"页签（价格/销量两图 + 时间范围下拉）无异常；全程进程存活、应用日志无错误。
+  - 收藏按钮写入 `StaredMarketInvType.json` = `[591]`。
+- 未做/后续：建筑市场（结构解析与授权）、外部页面"跳市场看物品"（WPF 侧暂无调用方）、表格安全等级按值着色、TreeView 选中态仍是 WPF 默认样式（ListBox 未显式设 `ItemContainerStyle`，走 WPF-UI 隐式样式）。
+
+### 阶段 26：商业-订单迁移（个人 / 军团未结订单 + 市场参考价差）
+- 目标：把 WinUI「商业 → 订单」页迁到 WPF。WinUI 版该页**没有 VM**（逻辑全在代码后置）、表格是 Syncfusion `SfDataGrid`、角色靠 WinUI 专有的 `SelecteCharacterControl`；WPF 侧按本项目既有分层重写（服务 + VM + Page），表格用 `DataGrid`，角色下拉直接绑 `CharacterStore.Characters`。
+- 新增代码：
+  - `Services/Business/CharacterOrderService.cs`：
+    - `GetCharacterOrdersAsync(ctx)` → `Market.ListOpenOrdersFromCharacterAsync(auth)`（单次、无分页、无缓存）；
+    - `GetCorpOrdersAsync(ctx)` → `ListOpenOrdersFromCorporationAsync(auth, corpId, page)` 分页。**修正 WinUI 的 off-by-one**：WinUI 写成 `ListOpenOrders...(page++)` 后又拿自增后的 `page` 与 `MaxPages` 比较，会多请求一页（可能触发 "Requested page does not exist!"），这里改为 `if (resp.MaxPages <= page) break;`；
+    - `BuildStatusAsync(orders)` → 逐单算与市场参考价的差；**参考价按 `(TypeId, RegionId)` 分组只拉一次星域订单**（WinUI 是逐单拉取，订单多时非常慢）；规则与 WinUI 一致——只对空间站订单取参考（结构订单在 WPF 侧解析不到星系，恒「未知」），买单比**最高买价**、卖单比**最低卖价**，`Difference`/`Normal` 交给 Core 的 `StatusOrder` 计算；
+    - `OpenMarketDetailsAsync(ctx, typeId)` → `UserInterface.OpenMarketDetailsAsync`（在游戏内打开市场详情，需 `esi-ui.open_window.v1`）。
+  - `MarketOrderService`：新增公开的 `EnrichOrdersAsync`——原富化链（物品类型 / 位置名 / 星系与星域）是 `private`，而个人/军团订单同样需要补这些字段。
+  - `ViewModels/Business/OrderPageViewModel.cs`：角色集合（直接暴露 `CharacterStore.Characters`，角色被移除时清空选中）、订单类型（卖/买）与来源（个人/军团）两个过滤器、`ObservableCollection<StatusOrder> Orders`、加载/错误状态、`BuildGameOrderText`（生成剪贴板文本）、`EnsureDefaultCharacter`（首次进入自动选中第一个角色）。
+  - `Views/Pages/OrderPage.xaml(.cs)`：替换占位页（类名不变，`MainWindow.xaml` 的注册无需改动）。工具栏 = 角色 / 订单类型 / 来源 / 刷新（**后两者与 WinUI 一样是 ComboBox 过滤器**，没有改成 Tab）；表格 10 列（物品 / 数量 / 价格 / 订单状态 / 与市场价差 / 位置 / 星系 / 范围 / 过期时间 / LocationId，与 WinUI 同序）；**订单状态列用模板列 + `DataTrigger`**（未知=次要色、正常=成功色、被压单=危险色，文字与颜色都随语言/主题变化——若直接给 `DataGridTextColumn` 的 ElementStyle 设 `Text`，会被列自身的 Binding 以"本地值优先于样式"覆盖，所以必须用模板列）；右键菜单保留 **复制为游戏批量购买订单**（只复制被压单/未知的行，每行 `物品名 1`）与 **在游戏中查看**。
+  - 语言键：新增 **`BusinessPage_Type` + 22 个 `OrderPage_*`**（中英同步；英文沿用 WinUI 原文，仅修正上游两个键值里的拼写 `Succcess`/`Falied` → `Success`/`Failed`）；复用 `StructuresSettingPage_Character`、`General_Refresh`、`MarketPage_Amount/Price/Location/Range/Duration`、`General_SolarSystemName`、`MarketPage_GettingOrder`、`General_CharacterUnselected`。
+- 与 WinUI 的有意差异：参考价按 `(TypeId, RegionId)` 去重取数；军团订单失败时给出**明确提示**（WinUI 用空 `catch` 静默清空表格）；首次进入自动选中第一个角色（WinUI 要求手选）；右键菜单**去掉**「添加到倒货排除列表」「从购物车减去数量」两项（依赖 WinUI 的 `BusinessService` 与倒货页，WPF 侧尚未迁移）；过期时间直接显示 `Order.RemainTime`（`dd.hh:mm:ss`），未做 WinUI 那种本地化"天/小时/分钟/秒"拼接。
+- 实机核验（`dotnet build` 0 错误）：
+  - 进入「商业 → 订单」：工具栏三个下拉与刷新按钮齐全；10 列表头与 WinUI 同序；自动选中第一个角色并取数；
+  - 个人来源：ESI 调用成功、返回空表 → 显示「该角色没有未结订单」；
+  - 切「来源 = 军团」再刷新：同样调用成功并返回空表（说明军团订单的授权与分页路径正常，走的不是权限失败分支）；应用日志无错误；
+  - ⚠️ **该账号当前没有任何个人/军团未结订单**，因此「订单状态」「与市场价差」两列**没有真实数据可核验**（算法本身是 Core 的 `StatusOrder`，与 WinUI 共用、未改动）。
+- 未做/后续：倒货相关的两个右键动作（依赖倒货模块）；`SfDataGrid` 的分组/列过滤/分组合计（WPF 无对应实现，与合同/钱包页一致）。
+
+### 阶段 27：结构（建筑）服务补齐 + 市场支持建筑
+- 目标（即文档原 §8「计划内未做」项）：把 WinUI 的 `StructureService.QueryStructureAsync`（结构名称的 ESI 解析）移植到 WPF，并让市场页支持选择"建筑"市场。
+- **结构服务**：
+  - 新增 `QueryStructureAsync(long id)`（用**默认角色**解析）与 `QueryStructureAsync(long id, long characterId)`（指定角色；`characterId <= 0` = 只查本地缓存、不发 ESI，与 WinUI `-1` 的语义一致）：命中 `Structures.json` / `MarketStructures.json` 直接返回；否则用该角色的 `AuthDTO` 调 `Universe.GetStructureInfoAsync`，再用本地 SDE 补 `SolarSystemName` / `RegionId` / `RegionName`，最后回写 `Configs/Structures.json`（新增 `SaveAutoStructures`）。需要 `esi-universe.read_structures.v1`。
+  - `Add(Structure)` 重载：把**已解析的完整结构**（含星系/星域）加入市场建筑列表；原 `Add(long, string?)` 保留。
+  - **修复既有缺陷**：`StructureService.Init()` 在 WPF 里**从未被任何代码调用** → `GetMarketStrutures()` 返回的是临时空集合，用户已有的 `MarketStructures.json` 根本不会加载，且任何一次保存都会把该文件覆盖成空。已在 `CoreInitializer.Init()`（`CharacterStore.Init()` 之后）补上调用。
+  - 设置 → 玩家建筑：按结构 ID 添加改为**先解析再入库**（`QueryStructureAsync`），解析失败给明确提示（新增键 `Settings.Structures.ResolveFailed`）；因此市场建筑列表里显示的是名称/星系，而不是原始 ID。
+- **市场页支持建筑**：
+- `MarketOrderService.GetStructureTypeOrdersAsync(structureId, invTypeId)`（阶段 29 前的名字是 `GetStructureOrdersAsync(structureId, invTypeId)`）：`Market.ListOrdersInStructureAsync` 分页（`MaxPages <= page` 停），鉴权**优先用登记该建筑的角色、否则用默认角色**；建筑订单不含星系，按 WinUI 做法统一 `order.SystemId = structure.SolarSystemId` 再走富化链（从而映射到星域）；结果按 `Configs/StructureOrders/{id}.json` 缓存（TTL 同订单设置，按文件内 `UpdateTime` 判定）。
+- `MarketPageViewModel`：新增 `SelectedMarketTypeIndex`（0 星域 / 1 建筑）、`SelectedStructure`（与 `SelectedRegion` **互斥**）、`Structures` / `FilteredStructures` / `StructureFilterText` / `HasNoStructure`；取数分支——选了建筑走 `GetStructureTypeOrdersAsync`，历史仍用**该建筑所在星域**（与 WinUI 一致：建筑"历史"实为星域历史，共用 `HistoryOrders/{regionId}/`）；建筑订单失败时给明确提示（新增键 `MarketPage_StructureOrdersFailed`）。
+  - `MarketPage.xaml`：市场选择器弹层改成 `TabControl`（**星域 / 建筑** 两个页签），建筑页签含搜索框 + 建筑列表（列表为空时显示 `StructuresSettingPage_EmptyTip` 引导）。
+  - **顺带修复一个静默的取数副作用**：市场页的几个 `ListBox` 未设 `IsSynchronizedWithCurrentItem`，WPF 会把列表选中项同步到 CollectionView 的 CurrentItem——**搜索框一输入、结果列表重建就会自动选中首项并触发取数**（实测证据：仅输入搜索词，就有两条"我没点过"的物品的历史缓存被写入）。已给星域 / 建筑 / 搜索结果 / 收藏四个列表显式设 `IsSynchronizedWithCurrentItem="False"`。
+- 实机核验（`dotnet build` 0 错误）：
+  - 设置 → 玩家建筑，按 ID `1044752365771` 添加 → `MarketStructures.json` 写入**解析后的完整结构**（名称 `Perimeter - 0.0% Neutral States Market HQ`、星系 皮尔米特、星域 伏尔戈、RegionId 10000002），设置页表格显示 名称/ID/星系；
+  - 市场页 → 市场选择器出现 **星域 / 建筑** 两个页签 → 建筑页签列出该建筑 → 选中后市场名变为建筑名、弹层自动收起；
+  - 选中物品"因卡萨斯级"：**建筑订单取数成功**（生成 `Configs/StructureOrders/1044752365771.json` ≈ 7 MB，该建筑订单量很大），页面统计 卖单 5%=90,080.00 / 均价 89,430.00 / 数量 161（买入侧 0，即该建筑内无买单）；历史统计走该建筑所在星域（命中已缓存的 `HistoryOrders/10000002/594.json`）；
+  - 自动加载修复验证：仅输入搜索词"多米尼克斯" → 历史缓存文件数不变（12，无自动加载）；手动点选"多米尼克斯级" → 新增 `HistoryOrders/10000002/645.json`（13，手动路径正常）；应用日志无错误。
+- 未做/后续：`LocationNameResolver`（无角色上下文）与订单富化里的**结构位置名仍只查本地列表**，解析不到回退原始 ID；建筑订单是**整建筑全量**拉取（7 MB 级，按 TTL 缓存，首次较慢）；结构详情窗口 / "按角色搜索建筑"未做。
+
 ---
 
+### 阶段 28：商业-倒货迁移（分析 / 购物车 / 记录）
+- 目标（§8「计划内未做」项）：把 WinUI 的倒货（Scalper）整套迁移到 WPF：源/目的市场选择、目标物品多选树、取订单、分析推荐、物品详情窗、购物车、购物记录。
+- **服务层扩展**（`Services/Business/`，全部为新增文件）：
+  - `MarketOrderService`：
+- 新增 `GetStructureOrdersAsync(long structureId, ct)`（**整建筑全量**）并把原按物品的 `GetStructureOrdersAsync(structureId, invTypeId)` 改为"拉全量再按 TypeId 过滤"（阶段 29 改名为 `GetStructureTypeOrdersAsync`）。
+- 新增星域级接口 `GetAllRegionOrdersAsync(long regionId, bool skipStructure, ct, Action<int,int>? pageCallback)`（阶段 29 前的名字是 `GetRegionOrdersAsync`）：先 `GetCachedRegionOrdersAsync`（`ListOrdersInRegionAsync(regionId, null, page)` 分页 + `Configs/RegionOrders/{regionId}.json` 缓存，按文件 `LastWriteTime` 判 TTL），`skipStructure=false` 时再合并该星域下**本地已知建筑**的订单（`GetStructureOrdersOfRegionAsync`），按 `OrderId` 去重（星域接口优先，因其刷新更快）。
+    - 新增 `GetSolarSystemOrdersAsync(systemId, skipStructure, ct, cb)`（拉星域后按 `SystemId` 过滤）。
+    - 新增 `GetHistoryBatchAsync(typeIds, regionId, ct, Action<int,int>? progress)`：`ThreadHelper.RunAsync(ids, MaxThread, …)` 多线程批量拉历史（`MaxThread` = `MarketOrderSettingService.ThreadValue`），返回 `Dictionary<int, List<Statistic>>`；单个失败仅记日志不影响整体。
+    - 富化链 `SetOrderInfoAsync` 增加 `skipStructure` 开关：倒货整星域查询时跳过建筑名解析（建筑数量大、本地也多数解析不到）；建筑名仍只查本地列表（与阶段 27 的限制一致）。
+  - `BusinessService`：倒货排除清单（`AddToFilter` / `RemoveFromFilter` / `GetFilterTypes` + `FilterChanged` 事件，供市场/订单页右键与倒货页联动）与物品数量变化通知（`NotifyTypeCountChanged` / `TypeCountChanged`）；另加**共享购物车** `ShoppingCart`（WPF 把三个子页收进同一个壳页，用服务层共享比 WinUI 的页面事件转发更直接）。
+  - `ShoppingRecordService`：购物记录读写（`Configs/ShoppingRecords/yyyy.MM.dd_n.json`）。
+  - `ScalperSettingService`：`Configs/ScalperSetting.json` 读写（与 WinUI 同文件，可互相读取），并补齐旧配置缺失的 `SolarSystemId`（跳数计算依赖）。
+  - `ScalperCalculator`：倒货计算引擎，逐条对应 WinUI `ScalperViewModel.Cal*`（销量 / 买卖价 10 种口径 / 目标销量 / 净利润 / 回报率 / 本金 / 历史与当前价格波动 / 饱和度 / 热力值 / ISK-跳 / ISK-体积 / 推荐度排名加权），**保留原实现的取舍**（买单取价沿用目的市场历史与销量、历史极值按"去掉一个最值后求均值"、"实际数量价格"按日销量逐档吃单等）。
+- **VM 层**（`ViewModels/Business/`）：`ScalperPageViewModel`（设置读写、非 UI 线程回调用 `Dispatcher` 归位、取消支持、`Message`+`IsMessageError` 统一提示）、`ScalperShoppingCartViewModel`（合计、复制为游戏批量购买订单文本、从剪贴板回填剩余数量、保存记录）、`ScalperShoppingRecordViewModel`（记录列表 / 载入 / 删除 / 加回购物车）。
+- **控件与视图**：
+  - `Views/UserControls/MarketSelecteTreeView`：三态物品多选树（分组三态 → 物品），`SelectedItems`（`List<int>`）与 `SelectedItemsCount` 两个 DP 与 VM **TwoWay** 绑定（与 WinUI 的 `MarketSelecteTreeControl` 同机制：控件就地增删列表 + 回写数量）；带搜索列表。
+  - `Views/UserControls/MarketLocationSelectorView`：星域 / 星系 / 建筑三页签位置选择器（各带搜索；星系列表**输入才显示**以避免一次性铺 8000 条），`SelectedItem`（`MarketLocation`）DP + `SelectedItemChanged` 事件。
+  - `Views/UserControls/ScalperAnalyseView`：左"基本设置 / 进阶设置 / 排除列表"三页签 + 右 18 列结果表（右键加入购物车、双击开详情窗）；市场用 `ToggleButton` + `Popup` 选择器。
+  - `Views/UserControls/ScalperShoppingCartView`、`ScalperShoppingRecordView`：购物车（统计 + 明细 + 复制/粘贴/保存 + 编辑/删除）与记录（文件列表 + 明细 + 删除/加回购物车）。
+  - `Views/Pages/ScalperPage`（替换原占位 `ScalperPage.cs`）：倒货 / 购物车 / 记录三个页签的壳页，三个子视图各挂自己的 VM。
+  - `Views/Windows/ScalperItemDetailWindow`：物品详情窗（左指标、右源/目的市场的卖单/买单表 + 历史价格/销量图，LiveCharts，时间范围 1/3/6/12 月/全部）。
+  - `Views/Windows/ScalperShoppingItemEditWindow`：购物车条目买价/卖价/数量编辑对话框（对应 WinUI 的 `AddToShoppingCartDialog`），实时回显回报率与净利润。
+- 本地化：补齐 `BusinessPage_*` 共约 100 个键（`zh-CN.xaml` / `en-US.xaml`，取值沿用 WinUI 英文/中文原文），新增 `MarketSelecteTreeControl_SearchType`、`MarketPage_SearchSolarSystem`、`BusinessPage_ShoppingCartEmpty`。
+- 构建：`dotnet build` **0 错误 0 新警告**（仅剩既有的 `NU1903`）。
+- 实机 smoke 核验（应用日志无错误、未写 `ScalperSetting.json`）：
+  - 商业 → 倒货：壳页三页签（倒货/购物车/记录）与三个子视图均正常渲染；物品树**根分组已建**、搜索框与"目标物品"数量（沿用存档 `ScalperSetting.json` 的 937）正确；源/目的市场名从存档读出（源=伏尔戈、目的=多美）；
+  - 物品树勾选联动：勾选一个根分组 → "目标物品"由 **937 → 2,816**（三态传播 + `SelectedItems`/`SelectedItemsCount` TwoWay 回写均生效）；
+  - 市场位置选择器：打开 `Popup`（窗口枚举到 `TOPMOST,TOOLWINDOW` 的 320x424 宿主，含 星域/星系/建筑 三页签与星域列表）→ 选中"伏尔戈" → 弹层自动关闭、按钮文本更新（`SelectedItem` TwoWay 生效）；
+  - "分析推荐"在未取订单时给出红色提示"请先获取订单"（`Message` + `DataTrigger` 配色生效）。
+- 未做/后续：`获取订单`+`分析推荐`的**完整数据链路未实机跑通**（源=伏尔戈整星域全量订单 + 全物品历史，属分钟级、大量 ESI 调用，未在本轮触发）；物品详情窗未实机打开（需先有分析结果）；订单页的两个倒货右键动作（"添加到倒货排除列表"、"从购物车减去数量"）本轮未接线（`BusinessService` 已具备接口）。
+
+---
+
+### 阶段 29：`MarketOrderService` 整体优化（去重 / 命名 / 健壮性）
+倒货接入后该服务从"星域 + 建筑"长成了"星域 / 整星域 / 星系 / 建筑 / 单个历史 / 批量历史"六个入口，累计的分页与缓存样板明显重复，且出现了一对易误用的重载。本轮只做内部整理与新名，**不改动对外行为语义**（除下面标注的两处修正）。
+
+- **分页样板收敛为一个 helper**：原先 4 段几乎相同的 `while + MaxPages` 循环（星域指定物品 / 整星域 / 建筑 / 带缓存星域）合并为 `FetchOrderPagesAsync(Func<int, Task<(订单列表, 总页数)>>, ct, pageCallback)`；各来源只提供"取第 N 页"的投影（`ListRegionOrdersPageAsync` / `ListStructureOrdersPageAsync`）。停页条件统一为 `空页 || 总页数 <= 当前页`。
+  - **修正（1）**：某页响应异常（`Model == null`）时统一返回 `null`（失败）而不是把已取到的前几页当作完整结果返回。旧实现里整星域/建筑路径会 `break` 并把**残缺结果写进缓存**，会让后续分析静默基于不完整数据。
+  - **修正（2）**：建筑订单取到空结果时**不再写缓存文件**（旧实现总是写，会留下一个空缓存文件，虽然下次会因 `Count > 0` 判定而重取，但浪费且易误判）。连带地，建筑取数失败（响应异常）现在返回 `null` 而不是空列表 → 市场页会显示 `MarketPage_StructureOrdersFailed` 提示，而不是静默空表（这正是该提示文案的原本意图）。
+- **缓存读写收敛为基础设施**：`IsFileRecent`（按文件 `LastWriteTime`）/ `IsRecent`（按缓存文件内 `UpdateTime`）/ `ReadJsonFileAsync<T>` / `WriteJsonFileAsync<T>`（自动建目录）/ `RefreshRemainTime`。星域与历史缓存先判新鲜度再读文件（整星域缓存可达百 MB，过期文件不必读进内存）；建筑缓存沿用文件内 `UpdateTime`（与 WinUI 写入的字段兼容）。
+- **历史接口合并**：原 `GetHistoryAsync(typeId, regionId, forceRefresh)` 与私有的 `GetHistoryRawAsync` 是两份几乎相同的取数逻辑，合并为 `GetHistoryInternalAsync(typeId, regionId, forceRefresh, logErrors)`；公开版 `logErrors: true`，批量版 `logErrors: false`（避免倒货批量拉几千个物品时把"无历史"刷满日志）。原公开版里那句 `throw new Exception(...)` 实际上会被自己的 `catch` 立即吞掉并返回 null，属于死代码，一并删除。
+- **批量历史的小改进**：改为在并发 Lambda 内按 `Interlocked.Increment` 报进度，并用**闭包里的 typeId 作为字典键**（原实现从 `list[0].InvTypeId` 反推键，依赖模型字段正确）；顺带过滤 `typeId <= 0` 与 `regionId <= 0`。
+- **消除易误用的重载**：`GetRegionOrdersAsync(long regionId, bool skipStructure, …)` 与 `GetRegionOrdersAsync(long typeId, long regionId, …)` 形参类型只差 `bool`/`long`，写 `GetRegionOrdersAsync(regionId, 0, ct)` 会**静默绑定到按物品的重载**并取到错误数据。已改名为：
+  - `GetAllRegionOrdersAsync(regionId, skipStructure, ct, pageCallback)`（倒货用）；
+  - `GetStructureTypeOrdersAsync(structureId, invTypeId, ct)`（市场页按物品查建筑用），保留 `GetStructureOrdersAsync(structureId, ct)` 为"整建筑全量"。
+  同步更新了 `ScalperPageViewModel` / `MarketPageViewModel` 两处调用。
+- **小优化**：`OrderDuration`/`HistoryDuration`/`MaxThread` 取值统一 `Math.Max(1, …)`（设置被改成 0 时不再出现 `TotalMinutes < 0` 恒过期、并发数为 0 等退化）；`SetSystemInfoAsync` 在 `SystemId` 全为 0 时跳过 DB 查询；`SetTypeInfoAsync`/`SetLocationInfoAsync` 的重复 `Where` 提出为局部列表；类头文档重写（原文还停留在"本期只做星域市场、不拉建筑订单"的旧状态）。
+- 构建：**0 错误 0 新警告**（仅剩既有 `NU1903`）。改后做了实机 smoke 核验（应用日志无新增错误）：市场页搜索"多米尼克斯"→ 选中"多米尼克斯级"，**卖单表出数据**（`TypeId 645`，价格 158.7M–197.8M，位置名/星系/安全等级均正确解析）→ 说明重写后的 `FetchOrderPagesAsync` 分页与富化链正常；切"历史"页签**价格三线图正常渲染**（坐标轴到 2026.09.02），说明合并后的 `GetHistoryInternalAsync` 缓存/取数路径正常。倒货页的整星域入口（`GetAllRegionOrdersAsync`）本轮仍未跑真实数据。
+
+---
+
+### 阶段 30：订单分页改为并发拉取（倒货整星域提速）
+`MarketOrderService.FetchOrderPagesAsync` 原本逐页串行（一页一往返），而 ESI 的总页数（`X-Pages`）在第一页的响应里就有，其余页彼此独立，因此可以并发。
+
+- **实现**：第 1 页先串行取（拿 `X-Pages`），其余页用 `ThreadHelper.RunAsync` 按线程数**并发**取，结果按页序写回 `pages[page-1]`，最后顺序展平——保持与串行版相同的顺序与内容。
+- **并发度**：`PageConcurrency = Math.Clamp(ThreadValue, 1, 16)`（默认设置值是 4）。上限 16 是因为同一路由并发过高容易被 ESI/Cloudflare 限流，反而更慢；需要更激进可调大设置值，但不会超过 16（已在 XML 注释写明）。
+- **失败与取消**：单页请求失败（异常）**重试一次**（间隔 500ms），仍失败则整体返回 `null`，继续保持"不把残缺结果写进缓存"；单页返回空响应（抓取期间 `X-Pages` 变小、该页已不存在）按空页跳过，不算失败；取消返回 `null`（并发的 `Func<T,Task>` 重载没有 token，改在每页开工前与收尾各查一次 `IsCancellationRequested`）。
+- **进度回调语义变化**：`pageCallback` 从"当前第几页"变成"已完成页数/总页数"，因为并发下页号会乱序；倒货页显示形如 `获取源市场订单中:217/411`。
+
+**实机核验**（真实账号，日志无异常）：
+- **整星域（倒货路径，411 页）**：实测 `X-Pages=411`（`GET /markets/10000002/orders/?page=1`）。点击"获取订单"后进度在约 1 分钟内从 `49/411` 推进到 `217/411`（≈3.7–5 页/秒）；对照实测的单页串行延迟 **3.2–5.1 秒/页**（同机 `Invoke-WebRequest` 连续 6 页），串行最多约 0.25 页/秒——**实测速率是串行上限的约 15 倍**，并发生效无疑。随后点"取消"：状态显示"已取消"，`Configs/RegionOrders/` **没有产生任何文件**（不在取消时写残缺缓存）。
+- **多页组装正确性（建筑路径，26 页）**：删掉建筑订单缓存强制重新拉取，选中"多米尼克斯级"后 **约 14 秒**完成整建筑抓取并落盘（7,037,074 字节）。用 `ConvertFrom-Json` 校验落盘结果：**25,443 条订单、25,443 个不同 `OrderId`、0 重复**，`LocationId` 全为该建筑、`SystemId` 全为该建筑所在星系（8,761 种物品，24,898 买单 / 545 卖单）——页序组装无重复、无错位、无缺失。
+  - 过程小结：核验中我先用一个正则数出"某物品有 9 条订单"，与页面显示的 2 条不符，一度怀疑丢数据；改用 `ConvertFrom-Json` 逐条解析后确认该物品确实只有 2 条（那个正则的 `"TypeId":645` 把 `64500` 这类类型号也匹配了），**页面显示与缓存数据完全一致，无缺陷**。教训：核对 JSON 用解析器，别用前缀不锚定的正则。
+- 附带确认：本次触发"获取订单"会先 `SaveSetting()`，核对 `ScalperSetting.json` 内容与改动前**语义一致**（源=伏尔戈 10000002、目的=多美 10000043、目标物品 937、两边 `SolarSystemId` 保留）。
+
+---
+
+### 阶段 31：倒货两处 UI 缺陷修复（Expander 掉样式 / 记录详情不加载）
+1. **进阶设置的 `Expander` 变成 WPF 原生外观**：我在 `ScalperAnalyseView.xaml` 的 `UserControl.Resources` 里放了三个**不带 `x:Key` 的本地隐式样式**（`Expander` / `ComboBox` / `ui:NumberBox`，只为设 `Margin`、`HorizontalContentAlignment`），而**无 key 的本地隐式样式同样会整体替换 WPF-UI 的库样式**（不只是显式 `Style=` 会；§9 #18 已补上这条），于是这三个控件退回原生模板。修法照技能页 `Expander` 的既有做法：**删掉本地隐式样式，把布局属性直接写在元素上**（`HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent"`；`ComboBox`/`ui:NumberBox` 只加 `Margin`、`ComboBox` 另加 `HorizontalAlignment`）。全文件现在只剩带 `x:Key` 的样式。
+2. **记录页选中已保存的记录，右侧"记录详细"始终为空**：`ScalperShoppingRecordView.xaml` 的记录 `ListBox` 只绑了 `ItemsSource`，**漏了 `SelectedItem`**，而加载明细的逻辑挂在 VM 的 `SelectedFile` setter 上（`SelectedFile` 变了才 `LoadSelected()`），所以选中项从未回写到 VM。补上 `SelectedItem="{Binding SelectedFile, Mode=TwoWay}"` 即可（`SelectionMode="Extended"` 不影响 `SelectedItem`）。
+
+**实机核验**（构建 0 错误 0 新警告）：
+- 进阶设置：九个折叠项均为 Fluent 外观（圆角标题栏 + 右侧 chevron），不再是原生 WPF `Expander` 的样子。
+- 记录页：左列显示用户此前保存的 `2026.09.11_1`，选中后右侧明细表**加载出 16 行**（物品 / 回报率(%) / 净利润 / 源市场买入价格 / 目的市场卖出价格 / 数量 / 体积 均有值）。
+- 期间还踩到一次构建失败：输出 `exe` 被正在运行的应用实例锁定（`MSB3021/MSB3027`），与 §8「构建前必须先退出应用」一致——先 `taskkill` 再构建即恢复。
+
+---
+
+### 阶段 32：全屏等待态 + 右下角通知（对齐 WinUI 的 ShowWaiting / InfoBar）
+倒货"获取订单"此前只有页面底部一行小字进度与提示；WinUI 版是**全屏等待遮罩（可取消）+ 右下角堆叠通知**。WPF 侧此前只有托盘气泡（`NotificationService`），没有应用内通知，因此本轮补齐基础设施。
+
+- **新增控件**：
+  - `Controls/WaitingOverlay.xaml(.cs)`：半透明遮罩（`SmokeFillColorDefaultBrush`）铺满内容区并拦截点击，居中卡片 = 旋转指示 + 文案 + 可选"取消"按钮；`Show/UpdateText/Hide` 三个方法，取消按钮点击后先禁用避免重复触发。
+    - 指示器用**旋转的 `ui:SymbolIcon`（`ArrowSync24`）+ `RotateTransform` 动画**，不用 `ProgressBar`/`ProgressRing`——延续 §9 #17 的结论（WPF-UI 的 `ProgressBar` 隐式样式曾导致栈溢出），旋转字形是纯 WPF 动画、无库模板风险。
+  - `Controls/MessageHost.xaml(.cs)`：右下角通知栈，新消息在上（最多 5 条），淡入 + 右侧滑入（纯 XAML `EventTrigger` 动画），`DispatcherTimer` 到点自动移除，每张卡带 ✕ 手动关闭；`MessageItem` 携带文案/图标/图标色。
+- **新增服务** `Services/PageNotifyService.cs`：`ShowWaiting / UpdateWaiting / HideWaiting / Success / Error / Info / Warning / ClearMessages`，由 `MainWindow` 在构造函数里 `Register(WaitingOverlay, MessageHost)`；内部统一 `Dispatcher` 归位，因此**线程池来的分页/历史进度回调可以直接调用**（VM 里原来的 `Post` 帮助方法随之删除）。
+- **接入倒货**：`ScalperPageViewModel` 去掉 `StatusText`/`Message`/`IsMessageError` 与页内"取消"按钮，改为 `ShowWaiting(文案, Cancel)` → 进度回调 `UpdateWaiting("获取源市场订单中:217/411")` → 完成 `Success(汇总)` / 失败 `Error(...)` / 取消 `Info("已取消")`，`finally` 里 `HideWaiting()`；`ScalperAnalyseView` 相应只留两个动作按钮。
+- **布局要点**：`MessageHost` 在 MainWindow 里显式 `HorizontalAlignment=Right VerticalAlignment=Bottom`（只占自身内容大小）——否则这个 `UserControl` 会铺满窗口、吃掉所有页面的点击；`WaitingOverlay` 留 `Margin="0,36,0,0"` 让标题栏（最小化/关闭）在等待期间仍可用。
+
+**实机核验**（构建 0 错误 0 新警告；应用日志无异常）：
+| 场景 | 结果 |
+|---|---|
+| 点"获取订单" | 全屏遮罩出现：左上标题栏仍可见，中央卡片含旋转指示、实时文案、取消按钮（截图确认；文案从"获取源市场订单中:x/411"推进到"获取目的市场订单历史中:377/930"） |
+| 遮罩内点"取消" | 遮罩关闭、取数中止；右下角出现 **info 通知"已取消"**，且实测在 ~4s 后自动消失（`InfoDuration`） |
+| 分析完成 | 右下角出现 **success 通知"分析完成: 528"**（528 条推荐结果） |
+| 未取订单时点"分析推荐" | 右下角出现 **error 通知"请先获取订单"**（截图确认：图标 + 文案 + ✕，位于窗口右下角） |
+| 通知栈 | 宿主的 UIA 子树可枚举到 `MessageItem` + 文案 + ✕，确认是独立于页面的全局层 |
+
+**顺带完成**：本轮把"取订单 → 分析推荐"整条链路在真实账号上跑通了（源=伏尔戈 411 页并发抓取 + 全物品历史 + 计算引擎 → 528 条推荐，推荐度/回报率/净利润等列均有合理值），§8 原先"倒货完整数据链路未端到端跑通"的限制可以去掉。
+
+---
+
+### 阶段 33：市场选择器"星系"页签列表为空
+- **现象**：倒货页打开源/目的市场选择器，"星系"页签里什么都没有。
+- **根因（自己移植时改坏了行为）**：WinUI 的 `MapSystemSelectorControl` 是**直接把全部星系铺进虚拟化列表**（`QueryAllAsync().OrderBy(SolarSystemID)`，并按 `ShowSpecial=False` 排除虫洞/希拉等特殊星系），搜索框只做建议；我在 WPF 里为了"避免一次铺 8000 条"，把 `ApplySystemFilter` 写成**搜索词为空就返回空集**，于是不输入任何关键字时列表恒为空。这属于擅自"优化"了参照实现的行为，用户按 WinUI 的习惯点开自然以为是空的。
+- **修法**：
+  - 加载时用 `!IsSpecial()`（`SolarSystemID >= 31000000`）过滤后按 `SolarSystemID` 排序，**默认列出全部**；搜索词为空视为全部命中。
+  - 三个列表（星域 / 星系 / 建筑）的过滤改用 **`ICollectionView`**（`new CollectionViewSource{Source=list}.View` + `Filter` + `Refresh()`）而不是"清空 `ObservableCollection` 再逐条 Add"——星系 8000+ 条时，每敲一个字符重建集合会发上万次 `CollectionChanged`。
+  - 三个 `ListBox` 显式写 `ScrollViewer.CanContentScroll="True"` + `VirtualizingStackPanel.IsVirtualizing/VirtualizationMode=Recycling`（防御性写法；经查 `ScrollViewer.CanContentScroll` 的元数据 `Inherits=False`，页面根节点那句 `CanContentScroll="False"` 并不会传给内层列表，内层本来就默认虚拟化）。
+- **实机核验**：星系页签默认列出 坦欧 / 拉什希亚 / 埃克葡温姆 / 加尔克 / … （UIA 只枚举到 8 个 ListItem = 可见行，说明 8000+ 条确实在虚拟化渲染）；搜索框输入"吉他"后列表收敛为 1 条"吉他"；选中后弹层关闭、市场按钮更新。
+- 附带确认：本次只在界面上试选，未点"获取订单/分析推荐"，因此没有触发 `SaveSetting()`——`ScalperSetting.json` 仍是源=伏尔戈(10000002)、目的=多美(10000043)。
+
+---
+
+## 5. 角色功能分层设计
+
+```
+授权层   CharacterAuthService ── CharacterStore ── AuthHelper / SerenityAuthHelper
+              │                        │
+              │                        └─ Auth.json / Auth_Serenity.json（按服务器分文件）
               └─ Core.Services.ESIService（授权 URL / 换码 / 刷新）
 数据层   CharacterContext（令牌 + EVEStandardAPI）
          CharacterCache（内存 + 磁盘 + TTL）
@@ -367,6 +561,12 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 26 | 深色主题下角色卡片里**"技能队列"、`0%`、`2/2` 等小字发黑** | 卡片外层是 `Style="{StaticResource SettingsRowButton}"`——**显式样式替换了 WPF-UI 的隐式 Button 样式，`Foreground` 随之退回控件默认值（系统色）**；卡片内未显式写 Foreground 的 TextBlock 继承了这个系统色 | `SettingsRowButton` 补 `Foreground="{DynamicResource TextFillColorPrimaryBrush}"`（治本），并把卡片/工作区技能队列块的标签与数值逐项补上主题色。见阶段 15 |
 | 27 | 钱包 / 合同 / 工业的表格**变回 WPF 原生外观**（不跟主题） | 三个页面用本地 `*GridStyle`（`TargetType="DataGrid"`）通过 `Style=` 应用 —— **显式样式整体顶掉了 WPF-UI 的隐式 DataGrid 样式**，Fluent 模板（列头/选中/配色）全丢；元素虽已改成 `ui:DataGrid` 也不起作用 | 本地样式改为 `TargetType="{x:Type ui:DataGrid}"` + `BasedOn="{StaticResource {x:Type ui:DataGrid}}"`；`*CellStyle` 补主题色 Foreground。见阶段 16 |
 | 28 | 邮件"全部邮件"切走再切回后**列表为空** | "全部邮件"是 `LabelId=0` 的伪标签：首次加载走 `SelectedLabelId`（0 → null=不过滤）所以正常；标签 `SelectionChanged` 却直接传 `label.LabelId`=0 → `HasValue=true` → ESI 按"标签 0"过滤 → 恒为空 | `SelectionChanged` 改传 `SelectedLabelId`；`LoadHeadersAsync` 内部再把 `<=0` 归一化为 `null`。见阶段 19 |
+| 29 | 倒货页 XAML 编译失败：`MC3072 ... 命名空间中不存在属性"Header"` | WPF 的 `ComboBox` 与 WPF-UI 的 `ui:NumberBox` **都没有 `Header` 属性**（WinUI 版有），照搬 WinUI 标记即编译不过；且报错只指向第一个，逐条改才会依次暴露 | 每个控件前加 `TextBlock` 标签（沿用设置页的"标签 + 控件"风格） |
+| 30 | `NumberBox` 由 `Header` 改前置标签后报 `MC3089 ... 已具有子级，无法添加...` | WPF `Expander` **只接受一个子元素**；原先是单个 `NumberBox`，加了标签就变成两个 | 标签与控件用 `StackPanel` 包起来 |
+| 31 | `ScalperShoppingItemEditWindow` / `ScalperItemDetailWindow` 编译失败（`CS1501` / `CS0266` / `CS0246`） | ① WPF-UI `NumberBox.Value` 是 **`double?`**，而 `ScalperShoppingItem` 的价格/数量是 `double`，`ToString("N2")` 也不接受可空；② 详情窗文件缺 `using System.IO`（`MemoryStream`） | 取值处统一 `?? 0`；补 `using` |
+| 32 | 倒货"进阶设置"里的 `Expander`（连带 `ComboBox`/`NumberBox`）变成 WPF 原生外观 | 页面 `UserControl.Resources` 里放了三个**不带 `x:Key` 的本地隐式样式**（只为设 `Margin` 等布局属性）——**无 key 的本地隐式样式也会整体替换 WPF-UI 的库样式**，控件连模板一起退回原生 | 删掉本地隐式样式，布局属性直接写元素上（照技能页 `Expander` 的做法）。见阶段 31 |
+| 33 | 记录页选中已保存的记录后，右侧"记录详细"始终空白 | 记录 `ListBox` 只绑了 `ItemsSource`，**漏绑 `SelectedItem`**；加载逻辑挂在 VM `SelectedFile` 的 setter 上，选中项从未回写 VM | 补 `SelectedItem="{Binding SelectedFile, Mode=TwoWay}"`。见阶段 31 |
+| 34 | 市场选择器"星系"页签列表为空 | 移植时擅自"优化"了参照实现：WinUI 直接列出全部星系，而 WPF 版写成**搜索词为空就返回空集**，不输入关键字时恒空 | 默认列出全部（`!IsSpecial()`、按 ID 排序），过滤改用 `ICollectionView.Filter + Refresh()`。见阶段 33 |
 
 ---
 
@@ -406,6 +606,19 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 核验全程进程未再出现 `0xC00000FD`；验证后已关闭应用进程。
 
+**阶段 28（倒货）实机 smoke 核验**（应用目录 `Log/20260911.txt` 无新增内容 = 无异常；`ScalperSetting.json` 未被写 = 未污染用户配置）：
+
+| 核验点 | 方式 | 结果 |
+|---|---|---|
+| 壳页三页签 + 三个子视图渲染 | 实机截图 | 通过：倒货 / 购物车 / 记录；购物车统计（回报率/净利润/本金/体积/ISK-跳/ISK-体积/数量）与记录页（所有记录 / 记录详细）均在 |
+| 物品多选树构建 + 存档目标物品数量 | 实机截图 | 通过：根分组树已建（个性化 / 建筑改装件 / 舰船涂装 / … / 蓝图和反应），搜索框与目标物品数量 = 937（沿用存档） |
+| 树勾选联动（三态 + TwoWay） | UIA `TogglePattern` 勾选根分组 | 通过：目标物品 **937 → 2,816**，根结点复选框显示已选 |
+| 源/目的市场从存档读出 | 实机截图 | 通过：源=伏尔戈、目的=多美 |
+| 市场位置选择器弹层 | 窗口枚举 + UIA | 通过：`Popup` 宿主为 `TOPMOST,TOOLWINDOW` 320x424，内含 **星域 / 星系 / 建筑** 三页签与星域列表；选中"伏尔戈"后弹层自动关闭、按钮文本更新 |
+| 未取订单时点"分析推荐" | 实机截图 | 通过：显示红色"请先获取订单"（`Message` + `IsMessageError` 配色生效） |
+
+未覆盖：`获取订单` → `分析推荐` 的完整数据链路（源=伏尔戈整星域全量订单 + 全物品历史，分钟级、大量 ESI 调用，本轮未触发）；物品详情窗（需先有分析结果）；购物车复制/粘贴/保存与编辑对话框的实际交互。
+
 构建状态：**0 错误**，剩 3 个既有警告（`NU1903`：Core 传递依赖 `SQLitePCLRaw.lib.e_sqlite3 2.1.10` 的漏洞通告，与本次改造无关）。
 
 ---
@@ -416,20 +629,38 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 1. **邮件正文链接不可点击** —— `HtmlPanel.LinkClicked` 委托签名与本项目用法不匹配（阶段 8 起遗留）。
 2. **合同详情窗口未实现**（WinUI 点击合同行会打开详情；WPF 侧只有列表 + 分页）。
 3. **Syncfusion 的表格能力未平替**：WinUI 的 `SfDataGrid` 支持分组拖放区、列筛选、**分组合计行**（钱包"分组合计 ISK"），WPF 标准 `DataGrid` 只保留排序/列宽/列重排。
-4. **等待遮罩未复刻**：WinUI 的 `ShowWaiting()` 全屏等待态在 WPF 侧一律是静默异步加载（各页首次进入可能短暂空列表）。
-5. **结构名称的 ESI 路径**：地点名走 `LocationNameResolver`，结构 ID 只查本地 `StructureService` 列表，解析不到时回退显示原始 ID（见 §8 计划内未做）。
+4. **等待遮罩/应用内通知只接入了倒货页**：全局的 `WaitingOverlay` + 右下角通知栈（`PageNotifyService`，阶段 32）已可用，倒货的取订单/分析已接入；市场/订单/角色等页面仍是静默异步加载 + 页内文字提示，可按需逐步换成 `ShowWaiting` / `Success` / `Error`。
+5. **结构位置名的解析范围**：结构名称的 ESI 解析已可用（`StructureService.QueryStructureAsync`，阶段 27），但**订单/合同富化里的结构位置名仍只查本地列表**（`LocationNameResolver` 没有角色上下文），解析不到时回退显示原始 ID。
 6. **ZKB 卡数据可能为 0**：ZKB 是第三方服务，同一角色两次启动取到的统计会不同（服务端按周期归零/波动），非本地缺陷。
 7. 技能组"组内技能个数"口径略窄：WinUI 显示该组**全部**技能数，WPF 显示的是本地库+账号都命中的技能数（服务 DTO 限制）。
 8. 技能名 ToolTip（WinUI 用 `InvType.Description`）未实现，等级/技能点提示已有。
+9. **建筑（结构）市场的限制**：建筑订单需要角色授权（`esi-markets.structure_markets.v1`，且该角色对该建筑有市场访问权），失败时页面给提示；"建筑历史"实为**该建筑所在星域**的历史（与 WinUI 一致）；建筑订单是**整建筑全量**拉取（实测某公共市场建筑 ≈ 7 MB），按 TTL 缓存，首次较慢。
+10. **市场表格未按安全等级着色**：WinUI 用 `SystemSecurityCellStyleSelector` 给 `Security` 单元格上色，WPF 侧是普通数字。
+11. **市场树的选中态是 WPF 默认样式**（未写 `TreeViewItem` 自定义模板）；左侧三个 `ListBox` 未显式设 `ItemContainerStyle`，走 WPF-UI 隐式样式。
+12. **市场物品树为一次性全量构建**：`InvTypeService.QueryMarketTypesAsync()` 加载全部市场物品（与 WinUI 相同），首次进入市场页有短暂耗时；树节点已按名称排序。
+13. **市场刷新语义**：星域订单走 ESI 实时（无缓存），历史统计按设置 TTL 走磁盘缓存；页面"刷新"按钮对历史传 `forceRefresh`（WinUI 版没有刷新按钮，只能清缓存）。
+14. **订单页两列缺真实数据核验**：核验账号当前没有任何个人/军团未结订单，因此「订单状态」「与市场价差」两列只走通了空态（算法是 Core `StatusOrder`，与 WinUI 共用未改）。
+15. **订单页无分组 / 列过滤 / 分组合计**：WinUI 的这些能力来自 `SfDataGrid`，WPF `DataGrid` 只保留排序/列宽/列重排（与合同/钱包页一致）。
+16. **订单页两个倒货右键动作未接线**（"添加到倒货排除列表"、"从购物车减去数量"）：依赖的服务层已就绪（`BusinessService.AddToFilter` / `NotifyTypeCountChanged` / `ShoppingCart`），但订单页的右键菜单尚未挂上（阶段 28 遗留）。
+17. **订单页过期时间格式**：直接显示 `Order.RemainTime`（`dd.hh:mm:ss`），未做 WinUI 那种本地化"天/小时/分钟/秒"拼接。
+18. **倒货链路已端到端跑通**（阶段 32 补测）：源=伏尔戈（411 页并发抓取）→ 全物品历史 → 计算引擎，得到 528 条推荐结果，推荐度/回报率/净利润等列数值合理；取数期间有全屏等待遮罩与实时进度、完成后右下角成功通知，取消则中止并提示。计算引擎为 WinUI `Cal*` 的逐条移植，数值口径仍以 WinUI 为准（未做逐项对拍）。
+19. **倒货物品详情窗未实机打开**（需先有分析结果）；窗内图表/Git 表格沿用市场页同一套 LiveCharts 用法。
+20. **倒货购物车的复制/粘贴/保存与编辑对话框未实机验证**：粘贴解析假定剪贴板每行逗号分隔且 ≥24 列（第 1 列物品 ID、第 14 列剩余数量），与 WinUI 相同。
+21. **倒货排除清单的入口**目前只有倒货页自身的"排除列表"页签（手动移除）；市场/订单页的"加入排除列表"右键尚未接线（见 16）。
+22. **倒货切换"星系"市场仍会先拉整星域**（`GetSolarSystemOrdersAsync` 内部复用 `GetAllRegionOrdersAsync`，与 WinUI 一致），因此星系口径并不比星域便宜。
+23. **倒货市场树分组的复选框语义**：WPF 三态复选框点击循环 `Off → On → Indeterminate`，与 Core `SelectableMarketItem`（WinUI 共用）的联动逻辑一致——分组停在 `Indeterminate` 时不再回写子项；该行为在 WinUI 侧同样存在，未改 Core。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
-- 抓图方式：`VerificationTools\capture_window.ps1`（`EnumWindows` + `PrintWindow`，脚本内先开启 PerMonitorV2 DPI 感知）；产物在 `TheGuideToTheNewEden.WPF\VerificationScreenshots\`（`final_*` 为修复后的最终核验图）。
+- 核验方式：实机点击逐页截图目检（`EnumWindows` + `PrintWindow` 抓取窗口，截图需先开启 PerMonitorV2 DPI 感知）；截图与抓图脚本为一次性产物，已清理。
 - 合同 / 工业两页在该账号下**列表为空属正常空态**（账号无对应数据），空态下不触发名称解析，因此这两页的"名称解析"路径未被覆盖。
 
 ### 计划内未做
 - 角色卡片**拖拽排序**（WinUI 用 `GridView` 的 `CanReorderItems`；WPF 的 `ItemsControl`+`WrapPanel` 需自行实现拖放）——排序数据层 `CharacterStore.Move` 已具备。
 - 合同**详情窗口**；钱包 `SfDataGrid` 的分组/筛选/分组合计（见上「功能降级」3）。
+- **商业其余子项**：~~倒货~~（阶段 28 已完成：多选市场树 + 购物车 + 记录）、估价。
+- **星域市场里合并结构卖单**（WinUI 的 `MarketSkipStructure=false` 路径：遍历该星域的建筑逐个拉订单再按 `OrderId` 去重合并）：WPF 目前恒按"跳过结构"处理——每个建筑要全量拉一次（7 MB 级），开启后首次会非常慢，需要时再做。
+- 结构详情窗口、"按角色搜索建筑"（`esi-search.search_structures.v1`）。
 - 国服授权的**自动化**：国服没有回调地址，只能手动粘贴 code（与 WinUI 一致）；若日后拿到可用的回调/内部协议，可把 `SerenityAuthWindow` 退化为"打开授权页 + 等待回调"。
 - 玩家建筑页的"按角色搜索"（依赖 OAuth 授权链路打通后的 ESI 结构查询）。
 - **结构名称解析**：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
@@ -441,7 +672,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - 设置文件与 WinUI 版**共用** `Configs/settings.json`：两版同时运行会互相覆盖，迁移完成后建议只保留 WPF 版。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
 - **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
-- 本机显示器为 2560x1440 @125%：部分工具（如未声明 DPI 感知的 PowerShell）拿到的窗口坐标会被按 1.25 缩放，截图会"看起来右侧被裁"——抓图脚本已内置 DPI 感知修正。
+- 本机显示器为 2560x1440 @125%：未声明 DPI 感知的进程（如默认的 PowerShell）拿到的窗口坐标是按 1.25 缩放后的 **DIP**，直接当物理像素用会抓错区域或"看起来右侧被裁"；需要截图时先开启 PerMonitorV2 DPI 感知。
 - **structure id 请走 `StructureService`**：`Core/Services/IDNameService` 的 ID 是 `int`，结构（structure）ID 约 1e12 会被**静默截断**并解析出错误名称。详见文末「结构（structure）ID 解析约定」。
 - **改完 XAML 界面没变 → 先怀疑 BAML 陈旧**：并行构建/中断过的构建会让 `obj` 里的 `.baml` 落后于 `.xaml`，程序集里嵌旧标记。删 `obj` 重建即可（详见 §9 第 16 条）。
 - **不要使用 `ProgressBar`**：WPF-UI 隐式样式下会栈溢出，用 `Controls/RatioBar.cs`（详见 §9 第 17 条）。
@@ -452,6 +683,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 1. **`Page` 的父级限制**：`Page` 只能由 `Window` / `Frame`（或 `NavigationWindow`）承载。放进 `ContentControl` / `TabItem.Content` 会抛"Page 只能具有 window 或 frame 父级"。→ 统一用 `Frame` 托管（`NavigationUIVisibility=Hidden`）。
 2. **`ScrollViewer.CanContentScroll` 决定页面能否自滚**：WPF-UI 导航完成后按该附加属性决定是否给页面套 `DynamicScrollViewer`；**默认 true** 会让页面被无限高度测量、内部滚动条失效。自管滚动的页面必须显式设为 `False`。
+   - 该属性的元数据是 `Inherits=False`（已实测），**不会**从页面传给内层列表；因此内层 `ListBox`/`DataGrid` 的虚拟化不受页面根节点这句影响（长列表若担心受外层影响，可显式 `CanContentScroll="True"` + `VirtualizingStackPanel.IsVirtualizing="True"` 兜底）。
 3. **`FrameMargin` 会被库覆盖**：绑定 `TitleBar` 后库会重设 `FrameMargin`；需在 `Loaded`/属性变更后重新应用。
 4. **`Appearance` 属于 `ui:Button`**：标准 `Button` 没有该属性。
 5. **`TabItem` 没有 `Selected` 事件**：用 `TabControl.SelectionChanged`。
@@ -466,14 +698,32 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 14. **`long` → `int` 截断是静默的**：EVE 的结构（structure）ID 约 1e12，`(int)` 转换既不报错也不溢出异常，只会解析出**另一个 ID 的名称**。凡 ID 可能 ≥ `int.MaxValue` 的场合都要用 `long` 通路（结构名称走 `StructureService`，见文末约定小节）。
 15. **`Freezable` 的线程亲缘性**：`BitmapImage`/`ImageSource` 等在 `Freeze()` 之前归属创建它的线程，`Freeze()` 必须与创建同线程，否则访问内部状态（`IsDownloading` 等）会抛「调用线程无法访问此对象」。要跨线程使用图片：**在同一工作线程上创建 + 冻结**（或用 `HttpClient` 取字节后在池线程解码），冻结后即可安全绑定；不要"UI 线程创建、后台线程 `Freeze`"。这类异常常被 `catch` 吞掉，表现为"图/头像永远不显示"。
 16. **并发构建会让 XAML 的 `.baml` 变陈旧**：若在同一项目上并行跑多个 `dotnet build`，`obj/**/<Page>.baml` 可能停留在旧时间戳（本次实测：`.xaml` 已是 09:43，`.baml` 仍是 09:30，MSBuild 没重编该标记，程序集里嵌的是**旧 BAML**），现象是"代码明明改了、界面纹丝不动"。排查手段：比对 `Views/**/*.xaml` 与 `obj/**/*.baml` 的时间戳；确认手段：在生成的 `.dll` 里用字符串探针找新/旧 XAML 里独有的名字（如新加的 `x:Key`/样式名对旧 `x:Name`）。修复：删掉 `obj`（必要时连 `bin`）全量重建。**多任务并行改同一项目时，收尾务必做一次干净重建。**
-17. **`ProgressBar` 在 WPF-UI 隐式样式下会栈溢出**：本项目实测——卡片模板里出现标准 `ProgressBar`（带 `Height`/`Background`/`Foreground`/`Value` 绑定），切到该页进程即以 `0xC00000FD` 退出，故障模块是 `dwrite.dll`（栈耗尽发生在文本/渲染栈里），移除后立即恢复。WPF-UI 会为 `ProgressBar` 提供隐式样式，本项目此前从未用过该控件，属首次暴露。**细进度条建议自绘**（见 `Controls/RatioBar.cs`：`OnRender` 画两条圆角矩形，无模板无样式，行为可控）。
+17. **`ProgressBar` 在 WPF-UI 隐式样式下会栈溢出**：本项目实测——卡片模板里出现标准 `ProgressBar`（带 `Height`/`Background`/`Foreground`/`Value` 绑定），切到该页进程即以 `0xC00000FD` 退出，故障模块是 `dwrite.dll`（栈耗尽发生在文本/渲染栈里），移除后立即恢复。WPF-UI 会为 `ProgressBar` 提供隐式样式，本项目此前从未用过该控件，属首次暴露。**细进度条建议自绘**（见 `Controls/RatioBar.cs`：`OnRender` 画两条圆角矩形，无模板无样式，行为可控）。**需要"转圈"这种不确定进度指示时，用旋转的 `ui:SymbolIcon` + `RotateTransform` 动画**（见 `Controls/WaitingOverlay.xaml`：`ArrowSync24` 字形 + `DoubleAnimation` 转 `Angle`），同样绕开 `ProgressBar`/`ProgressRing` 的库模板风险。
 18. **"颜色不跟随主题"有五种来源**，改动界面时对照排查：
     - 用**标准控件**而非 WPF-UI 版本：WPF-UI 的主题样式只作用于自己的子类（`ui:DataGrid`、`ui:Button`…）。标准 `DataGrid`/`ComboBox` 取的是**系统主题色**，与应用主题无关。
     - **在代码里抓资源**：`TryFindResource("...Brush") as Brush` 拿到的是当前主题的**实例**，主题切换后 WPF-UI 会换掉资源字典里的对象，缓存的实例不会更新。要么在 XAML 里用 `{DynamicResource}`，要么用 `DataTrigger` + `DynamicResource` 组合。
     - **字面量颜色**（`#RRGGBB`、`OrangeRed`、`White`…）在两种主题下恒定；语义色请用 `SystemFillColorSuccessBrush` / `SystemFillColorCautionBrush` / `SystemFillColorCriticalBrush` / `TextOnAccentFillColorPrimaryBrush`。
     - **`static readonly Brush` 字段**（如 VM 里的 `Brushes.SeaGreen`）同样是恒定色；改用布尔语义标记，把颜色交给 XAML 的 `DataTrigger`。
     - **显式 `Style` 会整体替换隐式样式**：给控件套自定义样式（带自己的 `Template`，如 `SettingsRowButton`，或只是覆盖几个属性，如三个表格页的 `*GridStyle`）时，WPF-UI 隐式样式里的 `Foreground`、模板一并失效 → 文字退回**控件默认的系统色**（深色下变黑）、控件退回**原生模板**（表格变原生外观）。两条出路：样式里自己补 `Foreground`/模板，或 `BasedOn` 隐式样式。`BasedOn` 的写法要求 **`TargetType` 必须与基样式一致**：WPF-UI 的子类控件（`ui:DataGrid`）用 `TargetType="{x:Type ui:DataGrid}" BasedOn="{StaticResource {x:Type ui:DataGrid}}"`；而 `{x:Type ListBoxItem}` 这类**未验证存在**的隐式样式不要写（找不到会在页面构造时抛 `XamlParseException`），改为在行/单元格模板里显式给颜色。
+      **同样适用于"不带 `x:Key` 的本地隐式样式"**：在页面/控件的 `Resources` 里写 `<Style TargetType="Expander">`（哪怕只是为了设一个 `Margin`），也会把库的隐式样式整体顶掉（阶段 31 实测：倒货进阶设置的 `Expander`/`ComboBox`/`NumberBox` 一起退回原生外观）。**只想加布局属性就直接写在元素上**（技能页 `Expander` 就是这么做的：`HorizontalAlignment`/`HorizontalContentAlignment`/`Margin`/`Background` 逐项内联），本地 `Resources` 里只放带 `x:Key` 的样式。
     另：VM 里**缓存本地化字符串**（`TryFindResource(key) as string`）有同类问题——切语言后不会更新，页面需在 `LanguageChanged` 后重建/刷新这些文本。
+
+19. **LiveCharts / SkiaSharp 要求 TFM 带平台版本，且图表配色不会自动跟随主题**：`LiveChartsCore.SkiaSharpView.WPF 2.0.5` 依赖 `SkiaSharp.Views.WPF 3.119.0`，后者的资产只有 `net462` / `net8.0-windows10.0.19041`；项目若写 `net10.0-windows`（隐含 `TargetPlatformVersion=7.0`）就会回退到 .NET Framework 资产（`NU1701`）或报 `NU1202`，把 TFM 写成 **`net10.0-windows10.0.19041`** 即可（阶段 25 已改）。另外两点：
+    - LiveCharts 的 WPF 实现里 `IChartView.IsDarkMode` **恒为 `false`**，默认主题不感知应用深浅色；
+    - `Paint`/`SolidColorPaint` 只接受 `SkiaSharp.SKColor`（XAML 里的 `Stroke="#RRGGBB"` 靠内置转换器，**接不了 `DynamicResource` 的 Brush**）。
+    因此图表颜色必须在代码里从主题 Brush 转成 `SKColor`，并在主题切换时重新赋值——本项目做法见 `ThemeService.ThemeChanged` 与 `MarketPageViewModel.ApplyThemeColors()`。
+
+20. **封装的工具窗口不要再自绘标题栏**：WPF-UI 的 `ui:TitleBar` 已经提供 `Title` / `Icon` / `ShowMinimize` / `ShowMaximize` / `ShowClose` / `CanMaximize` / `TrailingContent`（右侧自定义内容，本项目用来放"置顶"图钉按钮）以及拖拽、双击最大化等行为；`ToolWindow` 只做"属性 → 标题栏"的转发即可（见 `Views/Windows/ToolWindow.xaml.cs`）。两点细节：
+    - 窗口内容用 **`Frame`** 承载：`Page` 只能由 `Window`/`Frame` 承载（§9 第 1 条），传 Page 时若用 `ContentPresenter`/`ContentControl` 会抛异常；Frame 同时也能放 UserControl。
+    - `SymbolRegular` 的枚举名写错会导致 **XAML 解析失败（整个窗口都打不开）**；新增图标前先确认名字存在（可用一个引用 WPF-UI 的临时控制台工程 `Enum.GetNames(typeof(SymbolRegular))` 反射核对，本项目已确认 `Pin24`/`PinOff24`、`ControlAppearance.Transparent` 可用）。
+
+21. **从 WinUI 照搬标记时的三处结构性差异**（阶段 28 踩完）：
+    - **`Header` 不是通用属性**：WinUI 的 `ComboBox` / `NumberBox` 有 `Header`，WPF 的 `ComboBox` 与 WPF-UI 的 `ui:NumberBox` **都没有**。照搬会得到 `MC3072 ... 命名空间中不存在属性"Header"`，且 XAML 编译器一次只报第一个。改为控件前放 `TextBlock` 标签。
+    - **`Expander` 只接受一个子元素**：WinUI 的 `Expander` 可放多个子元素，WPF 的不能（`MC3089 已具有子级，无法添加`）。多子元素要自己包一层 `StackPanel`。
+    - **WPF-UI `NumberBox.Value` 是可空 `double?`**：与领域模型的 `double` 交互处要么 `?? 0`，要么先把值取出再做运算；`double?` 上没有 `ToString("N2")` 重载。
+    另：需要 `DataContext` 的自定义 `UserControl`（如树/选择器）**不要在构造函数里 `DataContext = this`** —— 那会切断外部对它自身 DP 的绑定（`{Binding TargetMarketTypes}` 会去控件上找属性）。正确做法是把内部列表直接赋给内部控件的 `ItemsSource`，让外部绑定继续沿用页面 DataContext。
+
+22. **核对 JSON 缓存要用解析器，别用正则**：阶段 30 核验时用 `\"TypeId\":645` 数某物品的订单条数得到 9，与页面显示的 2 不符，一度怀疑并发翻页丢数据；改用 `ConvertFrom-Json` 逐条解析后确认只有 2 条——那个正则没有锚定结尾，把 `\"TypeId\":64500` 之类的类型号也算进去了。**凡是"数字是否相等/包含"的比对，正则里的数字后面要补边界（`\"TypeId\":645,` 或 `[^0-9]`），或者干脆解析**。
 
 ---
 
@@ -489,7 +739,8 @@ Services/SettingsService.cs            统一设置存储（共用 settings.json
 Services/ThemeService.cs               浅/深主题 + 强调色
 Services/LanguageService.cs            运行时语言切换
 Services/NotificationService.cs        托盘通知
-Services/StructureService.cs           市场结构列表
+Services/PageNotifyService.cs          页面级等待遮罩 + 右下角通知的统一入口（ShowWaiting/Success/Error…，阶段 32）
+Services/StructureService.cs           市场结构列表 + 结构名称 ESI 解析（QueryStructureAsync）
 Helpers/AuthHelper.cs                  协议注册/回调等待/回调解析
 Helpers/SerenityAuthHelper.cs          国服授权地址
 Helpers/WindowPlacementHelper.cs       Win32 窗口位置（物理像素）
@@ -531,18 +782,52 @@ Controls/RatioBar.cs                                   自绘细进度条（替�
 Services/Navigation.cs                                 主窗口 NavigationView 跳转（供子页调用）
 ```
 
+### 通用窗口外壳（阶段 25 起）与全局 UI 层（阶段 32 起）
+```
+Views/Windows/ToolWindow.xaml(.cs)   工具窗口：统一标题栏（logo + 名称）、标题按钮/置顶/任务栏可配置，内容可传 Page/UserControl
+Controls/WaitingOverlay.xaml(.cs)    全屏等待遮罩：半透明背景 + 旋转指示 + 文案 + 可选取消（对齐 WinUI ShowWaiting）
+Controls/MessageHost.xaml(.cs)       右下角通知栈：淡入滑入、超时自动消失、可手动关闭（对齐 WinUI InfoBar）
+```
+（两者由 `MainWindow` 托管、经 `PageNotifyService` 全局调用；`MessageHost` 必须按 Bottom/Right 对齐，否则会铺满窗口挡住点击。）
+
+### 商业模块（阶段 25 起：市场 / 订单；阶段 28：倒货）
+```
+Services/Business/MarketOrderService.cs        星域订单（按物品/整星域/星系）+ **建筑订单** + 历史统计 + **批量历史** + 订单富化；分页与缓存统一走 `FetchOrderPagesAsync` / `ReadJsonFileAsync` / `WriteJsonFileAsync`（阶段 29 整理、阶段 30 并发翻页）
+Services/Business/MarketStarService.cs         市场物品收藏（Configs/StaredMarketInvType.json，与 WinUI 共用）
+Services/Business/CharacterOrderService.cs     个人/军团未结订单 + 与市场参考价的差值 + 游戏内查看
+Services/Business/BusinessService.cs           倒货排除清单 + 物品数量变化通知 + **共享购物车**（单例）
+Services/Business/ShoppingRecordService.cs     购物记录（Configs/ShoppingRecords/*.json）
+Services/Business/ScalperSettingService.cs     倒货设置（Configs/ScalperSetting.json，与 WinUI 同文件）
+Services/Business/ScalperCalculator.cs         倒货计算引擎（Cal* 全套公式）
+ViewModels/Business/MarketPageViewModel.cs     市场页 VM（选择/统计/计算器/LiveCharts 系列与配色）
+ViewModels/Business/OrderPageViewModel.cs      订单页 VM（角色/订单类型/来源过滤器、状态、剪贴板文本）
+ViewModels/Business/ScalperPageViewModel.cs    倒货页 VM（设置/取数编排/进度与提示/取消）
+ViewModels/Business/ScalperShoppingCartViewModel.cs   购物车 VM（合计/复制/粘贴/保存）
+ViewModels/Business/ScalperShoppingRecordViewModel.cs 购物记录 VM（列表/载入/删除/加回购物车）
+Views/Pages/MarketPage.xaml(.cs)               市场页（占位页已替换；MainWindow 注册不变）
+Views/Pages/OrderPage.xaml(.cs)                订单页（占位页已替换；MainWindow 注册不变）
+Views/Pages/ScalperPage.xaml(.cs)              倒货壳页（倒货/购物车/记录三页签；原占位页已替换）
+Views/UserControls/MarketTypeInfoView.xaml(.cs)       物品简介内容（ToolWindow 承载；后续扩展 SDE 属性）
+Views/UserControls/MarketCalculatorView.xaml(.cs)     买入/卖出计算内容（含"计算明细"）
+Views/UserControls/MarketSelecteTreeView.xaml(.cs)    三态物品多选树（SelectedItems/SelectedItemsCount DP）
+Views/UserControls/MarketLocationSelectorView.xaml(.cs) 星域/星系/建筑位置选择器（SelectedItem DP；默认列出全部、搜索就地过滤）
+Views/UserControls/ScalperAnalyseView.xaml(.cs)       倒货：设置三页签 + 18 列结果表
+Views/UserControls/ScalperShoppingCartView.xaml(.cs)  倒货：购物车
+Views/UserControls/ScalperShoppingRecordView.xaml(.cs) 倒货：购物记录
+Views/Windows/ScalperItemDetailWindow.xaml(.cs)      倒货物品详情（指标 + 源/目的市场订单与历史图）
+Views/Windows/ScalperShoppingItemEditWindow.xaml(.cs) 购物车条目编辑对话框
+Converters/FileNameConverter.cs                       文件路径 → 文件名（购物记录列表）
+```
+
 ### 主窗口
 ```
 Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘
 ```
 
-### 验证工具与产物（阶段 9）
+### 验证产物说明
 ```
-VerificationTools/capture_window.ps1                   DPI 感知的窗口枚举 + PrintWindow 抓图脚本
-TheGuideToTheNewEden.WPF/VerificationScreenshots/      实机核验截图
-    dpi_*.png        修复名称解析前的 4 页全尺寸截图
-    fixed_mail_1_*.png  邮件列表日期列修复后的截图
-    final_*.png      最终核验图（克隆/邮件/邮件详情）
+核验截图与抓图脚本（capture_window.ps1）均为一次性产物，核对后已清理，不随仓库保留。
+需要再次抓图时的要点：EnumWindows + PrintWindow，且抓图进程必须先开启 PerMonitorV2 DPI 感知。
 ```
 
 ### 本次修改的 Core 文件（与 WinUI 共用，注意回归）
@@ -561,6 +846,6 @@ Core/DBModels/IdName.cs          ESI 小写类别字符串 → 按 [EnumMember] 
 - 结构（structure）的 ID 约 **1e12**，远超 `int.MaxValue`（2,147,483,647）。`IDNameService` 没有任何 `long` 通路能安全承载它：
   - `GetByIds(List<long>)` / `GetByIdsAsync(List<long>)` 内部是 `ids.Select(p => (int)p)`，**超出部分被截断**；
   - 截断后既不抛异常也不报错，而是**静默解析出另一个（错误）名称**，是最难发现的一类 bug。
-- 因此 **结构名称一律走 `StructureService`，不要用 `IDNameService`**：WinUI 版 `Services/StructureService.cs` 已具备该职责 —— `QueryStructureAsync(long id, long characterID)` 先查本地 `Configs/Structures.json` 缓存，未命中再用该角色的授权调 `Universe.GetStructureInfoAsync` 并回写缓存；WPF 版 `Services/StructureService.cs` 目前只有本地列表与 `GetStructure(long)`（`Configs/MarketStructures.json` / `Structures.json`），**按 ID 查询结构的 ESI 路径还没移植**（见 §8「计划内未做」），需要时把 WinUI 的 `QueryStructureAsync` 按 `CharacterContext` 风格补进来即可（授权层已在阶段 7 打通，只差这一步）。
+- 因此 **结构名称一律走 `StructureService`，不要用 `IDNameService`**：`QueryStructureAsync(long id)` / `QueryStructureAsync(long id, long characterId)` 先查本地 `Configs/Structures.json`（ESI 解析缓存）与 `MarketStructures.json`（用户自建市场建筑），未命中再用该角色的授权调 `Universe.GetStructureInfoAsync` 并回写缓存（`characterId <= 0` 只查本地、不发 ESI，与 WinUI `-1` 同义）。**WPF 侧已于阶段 27 补齐**（同时修掉了 `Init()` 从未被调用、市场建筑列表不加载反被覆盖空的既有缺陷）。
 - 同理，任何"可能是建筑/结构 ID"的字段（如 `IndustryJob.FacilityId`、合同 `StartLocationId/EndLocationId`、`LocationId` 等）在解析成名称前，都要先判断是否落在地点/结构域，是则走 `StructureService` 而非 `IDNameService`。
 - 新增调用点时自查：这一列 ID 有可能 ≥ 1e12 吗？会 → `StructureService`；不会 → `IDNameService`。

@@ -1,0 +1,211 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.OrderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  表格外观：只读、按行选中（同合同页；列与 WinUI3 OrderPage 一致）  -->
+        <Style x:Key="OrderGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="CanUserSortColumns" Value="True" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource FluentColumnHeaderStyle}" />
+            <Setter Property="CellStyle" Value="{StaticResource FluentDataGridCellStyle}" />
+            <Setter Property="RowStyle" Value="{StaticResource FluentDataGridRowStyle}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Visible" />
+            <!--  页面根节点的 CanContentScroll=False 会被继承，导致表格自身滚动失效；这里改回默认  -->
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        </Style>
+
+        <Style x:Key="OrderCellStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Margin" Value="8,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style
+            x:Key="OrderNumberCellStyle"
+            BasedOn="{StaticResource OrderCellStyle}"
+            TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+
+        <!--  订单状态：未知（无参考价）/ 正常 / 被压单——文字与颜色都随主题与语言变化
+              （模板列里没有本地 Text 值，样式触发器才能生效）  -->
+        <Style x:Key="OrderStatusCellStyle" TargetType="TextBlock">
+            <Setter Property="Text" Value="{DynamicResource OrderPage_Difference_Status_Unknown}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="8,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Normal}" Value="True">
+                    <Setter Property="Text" Value="{DynamicResource OrderPage_Difference_Status_Normal}" />
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Normal}" Value="False">
+                    <Setter Property="Text" Value="{DynamicResource OrderPage_Difference_Status_Backward}" />
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="OrderFieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24,16,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  工具栏：角色 / 订单类型 / 来源 / 刷新  -->
+        <StackPanel
+            Grid.Row="0"
+            Orientation="Horizontal">
+            <TextBlock Style="{StaticResource OrderFieldLabel}" Text="{DynamicResource StructuresSettingPage_Character}" />
+            <ComboBox
+                Width="180"
+                Margin="8,0,16,0"
+                DisplayMemberPath="CharacterName"
+                ItemsSource="{Binding Characters}"
+                SelectedItem="{Binding SelectedCharacter, Mode=TwoWay}"
+                SelectionChanged="OnCharacterChanged" />
+
+            <TextBlock Style="{StaticResource OrderFieldLabel}" Text="{DynamicResource OrderPage_OrderType}" />
+            <ComboBox
+                Width="120"
+                Margin="8,0,16,0"
+                SelectedIndex="{Binding OrderTypeIndex, Mode=TwoWay}">
+                <ComboBoxItem Content="{DynamicResource OrderPage_SellOrder}" />
+                <ComboBoxItem Content="{DynamicResource OrderPage_BuyOrder}" />
+            </ComboBox>
+
+            <TextBlock Style="{StaticResource OrderFieldLabel}" Text="{DynamicResource OrderPage_OrderFrom}" />
+            <ComboBox
+                Width="120"
+                Margin="8,0,16,0"
+                SelectedIndex="{Binding OrderFromIndex, Mode=TwoWay}"
+                SelectionChanged="OnOrderFromChanged">
+                <ComboBoxItem Content="{DynamicResource OrderPage_Character}" />
+                <ComboBoxItem Content="{DynamicResource OrderPage_Corp}" />
+            </ComboBox>
+
+            <ui:Button Click="OnRefreshClick" Content="{DynamicResource General_Refresh}" />
+            <TextBlock
+                Margin="12,0,0,0"
+                Style="{StaticResource OrderFieldLabel}"
+                Text="{Binding StatusText}" />
+        </StackPanel>
+
+        <!--  错误 / 提示  -->
+        <TextBlock
+            Grid.Row="1"
+            Margin="0,10,0,0"
+            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+            Text="{Binding ErrorMessage}"
+            TextWrapping="Wrap"
+            Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}" />
+
+        <!--  订单表  -->
+        <ScrollViewer
+            Grid.Row="2"
+            Margin="0,10,0,0"
+            HorizontalScrollBarVisibility="Auto"
+            VerticalScrollBarVisibility="Auto">
+            <DataGrid
+                x:Name="OrdersGrid"
+                ItemsSource="{Binding Orders}"
+                MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                Style="{StaticResource OrderGridStyle}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Click="OnAddToGameOrderClick" Header="{DynamicResource OrderPage_AddToGameOrder}" />
+                        <MenuItem Click="OnShowInGameClick" Header="{DynamicResource OrderPage_ShowInGame}" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="220"
+                        Binding="{Binding Target.InvType.TypeName}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="{DynamicResource BusinessPage_Type}" />
+                    <DataGridTextColumn
+                        Width="90"
+                        Binding="{Binding Target.VolumeRemain, StringFormat={}{0:N0}}"
+                        ElementStyle="{StaticResource OrderNumberCellStyle}"
+                        Header="{DynamicResource MarketPage_Amount}" />
+                    <DataGridTextColumn
+                        Width="120"
+                        Binding="{Binding Target.Price, StringFormat={}{0:N2}}"
+                        ElementStyle="{StaticResource OrderNumberCellStyle}"
+                        Header="{DynamicResource MarketPage_Price}" />
+                    <DataGridTemplateColumn
+                        Width="110"
+                        Header="{DynamicResource OrderPage_Difference_Status}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Style="{StaticResource OrderStatusCellStyle}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn
+                        Width="130"
+                        Binding="{Binding Difference, StringFormat={}{0:N2}}"
+                        ElementStyle="{StaticResource OrderNumberCellStyle}"
+                        Header="{DynamicResource OrderPage_Difference_Detail}" />
+                    <DataGridTextColumn
+                        Width="240"
+                        Binding="{Binding Target.LocationName}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="{DynamicResource MarketPage_Location}" />
+                    <DataGridTextColumn
+                        Width="140"
+                        Binding="{Binding Target.SolarSystem.SolarSystemName}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="{DynamicResource General_SolarSystemName}" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding Target.Range}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="{DynamicResource MarketPage_Range}" />
+                    <DataGridTextColumn
+                        Width="150"
+                        Binding="{Binding Target.RemainTime}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="{DynamicResource MarketPage_Duration}" />
+                    <DataGridTextColumn
+                        Width="120"
+                        Binding="{Binding Target.LocationId}"
+                        ElementStyle="{StaticResource OrderCellStyle}"
+                        Header="LocationId" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
+    </Grid>
+</Page>

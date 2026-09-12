@@ -1,0 +1,193 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.ScalperShoppingCartView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+
+        <Style x:Key="CartCellStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="10,0" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style
+            x:Key="CartNumberCellStyle"
+            BasedOn="{StaticResource CartCellStyle}"
+            TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+        <Style x:Key="CartFieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,6,12,0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="CartFieldValue" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="260" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  左：统计  -->
+        <Border
+            Grid.Column="0"
+            Margin="12,12,6,12"
+            Padding="14,10"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{DynamicResource BusinessPage_Statistics}" />
+
+                <Grid Grid.Row="1" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_ROIPercent}" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding ROI, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_NetProfit}" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding NetProfit, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_Principal}" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding Principal, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_Volume}" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding Volume, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_IskPerJump}" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding IskPerJump, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_IskPerVolume}" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding IskPerVolume, StringFormat={}{0:N2}}" />
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource CartFieldLabel}" Text="{DynamicResource BusinessPage_TypeVolume}" />
+                    <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource CartFieldValue}" Text="{Binding TypeCount, StringFormat={}{0:N0}}" />
+                </Grid>
+
+                <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <ui:Button
+                            Margin="0,0,8,0"
+                            Click="OnCopyClick"
+                            Icon="{ui:SymbolIcon Copy24}"
+                            ToolTip="{DynamicResource BusinessPage_CopyToGameOrder}" />
+                        <ui:Button
+                            Margin="0,0,8,0"
+                            Click="OnPasteClick"
+                            Icon="{ui:SymbolIcon ClipboardPaste24}"
+                            ToolTip="{DynamicResource BusinessPage_PasteFromGameOrder}" />
+                        <ui:Button
+                            Click="OnSaveClick"
+                            Icon="{ui:SymbolIcon Save24}"
+                            ToolTip="{DynamicResource BusinessPage_SaveOrder}" />
+                    </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding Message}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasMessage, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  右：明细  -->
+        <Grid Grid.Column="1" Margin="6,12,12,12">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <ui:DataGrid
+                    x:Name="ItemsGrid"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    GridLinesVisibility="Horizontal"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Items}"
+                    MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                    MouseDoubleClick="OnItemsGridDoubleClick"
+                    ScrollViewer.CanContentScroll="True"
+                    SelectionMode="Extended"
+                    SelectionUnit="FullRow">
+                    <ui:DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Click="OnEditClick" Header="{DynamicResource BusinessPage_Edit}" />
+                            <MenuItem Click="OnRemoveClick" Header="{DynamicResource General_Remove}" />
+                        </ContextMenu>
+                    </ui:DataGrid.ContextMenu>
+                    <ui:DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="180"
+                            Binding="{Binding InvType.TypeName}"
+                            ElementStyle="{StaticResource CartCellStyle}"
+                            Header="{DynamicResource BusinessPage_Type}" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding ROI, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_ROIPercent}" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding NetProfit, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_NetProfit}" />
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding BuyPrice, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_SourceBuyPrice}" />
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding SellPrice, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_DestinationSellPrice}" />
+                        <DataGridTextColumn
+                            Width="110"
+                            Binding="{Binding Quantity, StringFormat={}{0:N0}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource General_Quantity}" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding Volume, StringFormat={}{0:N2}}"
+                            ElementStyle="{StaticResource CartNumberCellStyle}"
+                            Header="{DynamicResource BusinessPage_Volume}" />
+                    </ui:DataGrid.Columns>
+                </ui:DataGrid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

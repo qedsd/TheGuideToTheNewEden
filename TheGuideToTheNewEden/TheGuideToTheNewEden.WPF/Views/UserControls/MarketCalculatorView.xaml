@@ -1,0 +1,178 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.MarketCalculatorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <Style x:Key="CalcFieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="CalcValueText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer
+        Padding="16"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!--  物品名，便于对照  -->
+            <TextBlock
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{Binding SelectedInvTypeName}"
+                TextWrapping="Wrap" />
+
+            <!--  买入  -->
+            <TextBlock
+                Margin="0,12,0,0"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MarketPage_Cal_Buy}" />
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_Amount}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        Minimum="0"
+                        SmallChange="1"
+                        Value="{Binding CalBuyAmount, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_BuyPrice}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        IsEnabled="False"
+                        Value="{Binding CalBuyPrice, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+            <CheckBox
+                Margin="0,8,0,0"
+                Content="{DynamicResource MarketPage_Cal_AutoSetBuyPrice}"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                IsChecked="{Binding AutoSetBuyPrice, Mode=TwoWay}" />
+            <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_TotalBuyPrice}" />
+                <TextBlock
+                    Margin="6,0,0,0"
+                    Style="{StaticResource CalcValueText}"
+                    Text="{Binding CalBuyResult, StringFormat={}{0:N2}}" />
+            </StackPanel>
+
+            <!--  计算明细：逐档吃单  -->
+            <TextBlock
+                Margin="0,12,0,0"
+                Style="{StaticResource CalcFieldLabel}"
+                Text="{DynamicResource MarketPage_Calc_Detail}" />
+            <Border
+                MinHeight="40"
+                MaxHeight="150"
+                Margin="0,4,0,0"
+                Padding="8,6"
+                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                CornerRadius="4">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding BuyCalcDetails}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <TextBlock
+                Margin="0,6,0,0"
+                FontSize="12"
+                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                Text="{DynamicResource MarketPage_Cal_Buy_NoEnoughSellOrder}"
+                TextWrapping="Wrap"
+                Visibility="{Binding BuyCalcShortOfOrders, Converter={StaticResource BoolToVis}}" />
+
+            <Border
+                Height="1"
+                Margin="0,14"
+                Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+            <!--  卖出  -->
+            <TextBlock
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Text="{DynamicResource MarketPage_Cal_Sell}" />
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_Amount}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        Minimum="0"
+                        SmallChange="1"
+                        Value="{Binding CalSellAmount, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_SellPrice}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        IsEnabled="False"
+                        Value="{Binding CalSellPrice, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_SalesTax}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        Maximum="100"
+                        Minimum="0"
+                        SmallChange="0.1"
+                        Value="{Binding CalSalesTax, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_AgentTax}" />
+                    <ui:NumberBox
+                        Margin="0,2,0,0"
+                        Maximum="100"
+                        Minimum="0"
+                        SmallChange="0.1"
+                        Value="{Binding CalAgentTax, Mode=TwoWay}" />
+                </StackPanel>
+            </Grid>
+            <CheckBox
+                Margin="0,8,0,0"
+                Content="{DynamicResource MarketPage_Cal_Sell_Immediately}"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                IsChecked="{Binding CalSellImmediately, Mode=TwoWay}" />
+            <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                <TextBlock Style="{StaticResource CalcFieldLabel}" Text="{DynamicResource MarketPage_Cal_TotalSellPrice}" />
+                <TextBlock
+                    Margin="6,0,0,0"
+                    Style="{StaticResource CalcValueText}"
+                    Text="{Binding CalSellResult, StringFormat={}{0:N2}}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

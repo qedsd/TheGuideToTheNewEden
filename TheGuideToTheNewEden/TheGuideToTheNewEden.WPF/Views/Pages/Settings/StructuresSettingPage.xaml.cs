@@ -7,7 +7,8 @@ namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
 /// <summary>
 /// 玩家建筑（市场结构）管理：本地列表的增删。
-/// 通过 ESI 按 ID / 按角色查询结构需要账号授权，授权流程尚未移植，故此处给出提示。
+/// 按结构 ID 添加时会用默认角色的授权经 ESI 解析名称与所在星系/星域（需
+/// <c>esi-universe.read_structures.v1</c> 权限）；已缓存过的结构直接命中本地缓存。
 /// </summary>
 public partial class StructuresSettingPage : Page
 {
@@ -17,7 +18,7 @@ public partial class StructuresSettingPage : Page
 
         AddedGrid.ItemsSource = StructureService.GetMarketStrutures();
         RemoveButton.Click += (_, _) => RemoveSelected();
-        AddByIdButton.Click += (_, _) => AddById();
+        AddByIdButton.Click += async (_, _) => await AddByIdAsync();
     }
 
     private void RemoveSelected()
@@ -32,26 +33,49 @@ public partial class StructuresSettingPage : Page
         AddedGrid.Items.Refresh();
     }
 
-    private void AddById()
+    private async Task AddByIdAsync()
     {
         if (!long.TryParse(StructureIdBox.Text?.Trim(), out var id) || id <= 0)
         {
-            ShowNotice(Application.Current.TryFindResource("Settings.Structures.AddById") as string ?? "ID");
+            ShowNotice(FindString("Settings.Structures.AddById"));
             return;
         }
 
-        // 结构名称等信息需经 ESI 查询（需授权），此处仅登记 ID。
-        StructureService.Add(id, null);
-        AddedGrid.Items.Refresh();
-        StructureIdBox.Text = string.Empty;
+        if (StructureService.GetMarketStrutures().Any(p => p.Id == id))
+        {
+            return;
+        }
+
+        AddByIdButton.IsEnabled = false;
+        try
+        {
+            // 先命中本地缓存（Structures.json），未命中则用默认角色经 ESI 解析
+            var structure = await StructureService.QueryStructureAsync(id);
+            if (structure is null)
+            {
+                ShowNotice(FindString("Settings.Structures.ResolveFailed"));
+                return;
+            }
+
+            StructureService.Add(structure);
+            AddedGrid.Items.Refresh();
+            StructureIdBox.Text = string.Empty;
+        }
+        finally
+        {
+            AddByIdButton.IsEnabled = true;
+        }
     }
 
     private void ShowNotice(string title)
     {
-        System.Windows.MessageBox.Show(
-            Application.Current.TryFindResource("Settings.Structures.SearchUnavailable") as string ?? string.Empty,
+        MessageBox.Show(
+            FindString("Settings.Structures.SearchUnavailable"),
             title,
-            System.Windows.MessageBoxButton.OK,
-            System.Windows.MessageBoxImage.Information);
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
+
+    private static string FindString(string key) =>
+        Application.Current?.TryFindResource(key) as string ?? key;
 }

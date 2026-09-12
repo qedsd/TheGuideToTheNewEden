@@ -1,0 +1,91 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Controls.MessageHost"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <!--
+        右下角通知栈（对应 WinUI 版的 InfoBar 消息）：新消息在上，可手动关闭，超时自动消失。
+        宿主在 MainWindow 里按 Bottom/Right 对齐，因此本控件只占自身内容大小，不会挡住页面点击。
+    -->
+    <ItemsControl x:Name="ItemsHost" Width="380" Margin="0,0,20,20">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border
+                    x:Name="Card"
+                    Margin="0,8,0,0"
+                    Padding="12,10"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Opacity="0">
+                    <Border.RenderTransform>
+                        <TranslateTransform X="24" />
+                    </Border.RenderTransform>
+                    <Border.Triggers>
+                        <!--  淡入 + 从右侧滑入（纯 XAML 动画，不依赖库模板）  -->
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation
+                                        Storyboard.TargetProperty="Opacity"
+                                        To="1"
+                                        Duration="0:0:0.18" />
+                                    <DoubleAnimation
+                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                        To="0"
+                                        Duration="0:0:0.2">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut" />
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon
+                            Grid.Column="0"
+                            Margin="0,1,10,0"
+                            VerticalAlignment="Top"
+                            FontSize="18"
+                            Foreground="{Binding Foreground}"
+                            Symbol="{Binding Symbol}" />
+
+                        <TextBlock
+                            Grid.Column="1"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Text}"
+                            TextWrapping="Wrap" />
+
+                        <Button
+                            Grid.Column="2"
+                            Width="28"
+                            Height="28"
+                            Margin="8,0,0,0"
+                            Padding="0"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="OnDismissClick"
+                            ToolTip="{DynamicResource General_Close}">
+                            <ui:SymbolIcon
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Dismiss24" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>
