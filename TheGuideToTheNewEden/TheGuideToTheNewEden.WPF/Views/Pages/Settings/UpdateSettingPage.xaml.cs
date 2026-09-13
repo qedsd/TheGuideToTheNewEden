@@ -25,13 +25,7 @@ public partial class UpdateSettingPage : Page
         InstallButton.Click += (_, _) => Install();
     }
 
-    private static string GetCurrentVersion()
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        return assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? assembly.GetName().Version?.ToString()
-            ?? "Unknown";
-    }
+    private static string GetCurrentVersion() => Helpers.AppVersion.Current;
 
     private static string FindString(string key)
     {

@@ -874,6 +874,38 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 45：发布（`dotnet publish`）失败修复 —— `log4net.config` 重复输出（NETSDK1152）
+
+- **现象**：`dotnet publish` WPF 项目**必定失败**（与配置、RID 无关；RID 无关是因为冲突文件是框架相关的内容项）：
+  ```
+  error NETSDK1152: 找到了多个具有相同相对路径的发布输出文件:
+    ...\TheGuideToTheNewEden.Core\log4net.config,
+    ...\TheGuideToTheNewEden.WinUI\TheGuideToTheNewEden.WinUI\Resources\Configs\log4net.config
+  ```
+  报错来自 SDK 的 `Microsoft.NET.ConflictResolution.targets:_HandleFileConflictsForPublish`（按 `ResolvedFileToPublish` 的 `RelativePath` 查重）。`dotnet build` 正常，所以此前只跑 build 的开发流程没暴露。
+- **根因**：本项目**同时**存在两份会落到输出根的 `log4net.config`：
+  1. Core 工程的 `log4net.config`（`None` + `CopyToOutputDirectory=PreserveNewest`）随**项目引用传递**进本项目；
+  2. 本项目 csproj 里**显式链接**的 WinUI `Resources\Configs\log4net.config`（`<Link>log4net.config</Link>`）。
+  两者的目标相对路径都是 `log4net.config`。`dotnet build` 不校验重复输出（两份都拷、只按复制顺序留下一份，内容实际不确定），`dotnet publish` 会显式查重并报错。
+- **修复（`TheGuideToTheNewEden.WPF.csproj`，两个 target）**：摘掉**来自 Core 目录**的那一份，显式链接的 WinUI 版保持不动。
+  - `ExcludeCoreLog4NetConfigFromOutput`（`BeforeTargets="GetCopyToOutputDirectoryItems"`）：让 `bin` 输出也不再有两份、内容不再取决于复制顺序；
+  - `ExcludeCoreLog4NetConfigFromPublish`（`AfterTargets="ComputeResolvedFilesToPublishList"`）：从 `ResolvedFileToPublish` 中移除，赶在其后的冲突检查之前。
+  - 判定一律用**完整路径相等**锚定 Core 那份，避免误伤同名文件。
+  - **保留 Core 版的理由**：`Core.Log.Init()` 从程序根目录读 `log4net.config`，本项目既有的基准是 WinUI `Resources\Configs` 版（`<file value="Log\" />`，对应文档里 `Log\yyyyMMdd.txt` 的路径），Core 版写的是 `%LocalAppData%\...\Logs\`。所以摘 Core 的那份、留显式链接的那份。
+- **踩坑（本轮卡了三次的关键）**：
+  1. **`AfterTargets="GetCopyToPublishDirectoryItems"` 不会在 `dotnet publish` 里触发**——`dotnet publish` 把 Build 与 Publish 分成**两次 MSBuild 调用**，build 那次算完这些列表，publish 那次会**重新**算一遍，build 期间的清理对发布不生效。发布侧的钩子必须挂在**发布链**上（`ComputeResolvedFilesToPublishList` 之后、`_HandleFileConflictsForPublish` 之前）。
+  2. **`ContentWithTargetPath` 里只有本项目自己的内容**，项目引用传递来的 `log4net.config` **不在其中**（实测 dump 为空）——它是在 `GetCopyToPublishDirectoryItems` 内部经子工程 MSBuild 调用直接进了 `ResolvedFileToPublish`。所以"从本项目内容项里删"这条思路对发布侧无效。
+  3. **路径比较必须两边都规范化**：`$(MSBuildThisFileDirectory)..\X` 里是**字面量 `..\`**，而项元数据 `FullPath` 是规范化过的绝对路径，直接 `==` 恒为 false（表现为"target 明明跑了、项却没被删掉"）。改用 `$([System.IO.Path]::GetFullPath(...))` 归一化后即匹配。
+- **验证**（本机 .NET 10 SDK 10.0.401）：
+  - `dotnet publish -c Release -r win-x64 --self-contained false -o <dir>`：**发布成功**，末尾输出 `TheGuideToTheNewEden.WPF -> <dir>\`；
+  - 发布目录与 `bin` 目录的**文件数一致（110）**、均只剩**一份** `log4net.config`，且内容为 WinUI 版（`<file value="Log\" />`）；`Resources\Configs`、`Resources\Database`（含 `Local\zh.db`）、`Resources\default.mp3`、`libSkiaSharp.dll` 等改前输出内容齐备；
+  - `dotnet build -c Release -r win-x64 --self-contained false -t:Rebuild`：**0 错误**（35 个既有警告）；
+  - `dotnet publish -c Debug`（不带 RID）：**发布成功**（exit 0），说明修复与 RID/配置无关；
+  - 发布产物**冒烟**：启动 `_pubtest\TheGuideToTheNewEden.WPF.exe` → 进程存活、主窗口标题「新伊甸漫游指南」，并在**应用目录**下生成 `Log\20260913.txt`——同时证明发布版的 `log4net.config` 是有效的、且用的是「相对 `Log\`」那一份（若是 Core 版则会写到 `%LocalAppData%`）；核验后已正常关闭进程并删除临时发布目录。
+- 说明：本次只改 csproj，未动任何源码；`_pubtest` 等临时发布目录为一次性产物，已清理。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
@@ -1049,6 +1081,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - **structure id 请走 `StructureService`**：`Core/Services/IDNameService` 的 ID 是 `int`，结构（structure）ID 约 1e12 会被**静默截断**并解析出错误名称。详见文末「结构（structure）ID 解析约定」。
 - **改完 XAML 界面没变 → 先怀疑 BAML 陈旧**：并行构建/中断过的构建会让 `obj` 里的 `.baml` 落后于 `.xaml`，程序集里嵌旧标记。删 `obj` 重建即可（详见 §9 第 16 条）。
 - **不要使用 `ProgressBar`**：WPF-UI 隐式样式下会栈溢出，用 `Controls/RatioBar.cs`（详见 §9 第 17 条）。
+- **发布必须走 `dotnet publish` 才能验出来**：`dotnet build` **不校验**重复的发布输出文件，`dotnet publish` 会（`NETSDK1152`）。改动了"链接/复制到输出"的内容项后，除 build 外请至少跑一次 publish（详见 §9 第 25 条与阶段 45）。
 
 ---
 
@@ -1104,6 +1137,12 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 24. **WPF-UI 的 `FluentWindow` 把标题栏画在客户区内部**：`GetClientRect` 返回的**就是整个窗口**，`窗口高 − 客户区高` **恒为 0**（实测 `窗口=1595x842 客户区=1595x842 非客户区高=0`）。任何"客户区里再扣掉标题栏"的计算都会漏扣约 40px；本次因此把预览窗口算宽约 77px，表现为**恒定的左右黑边**（与窗口大小无关，只由标题栏高度决定，最难察觉）。
     - 正确口径：**客户区尺寸用 Win32 `GetClientRect`**（布局值带 DIP↔像素取整误差，反算尺寸会每轮累积），**标题栏高度用元素的渲染高度**（`ui:TitleBar` / `StripBorder` 的 `ActualHeight × DPI`）。
     - 另：WPF-UI 用 `WindowChrome` 提供 `ResizeBorderThickness`，**`ResizeMode="NoResize"` 拦不住边框的调节箭头**（实测"设了 NoResize 仍能拖"）；要禁拖只能从 `WindowChrome` 下手。
+
+25. **`dotnet publish` 的 `NETSDK1152`（重复输出文件）与"发布链"上的清理钩子**（阶段 45 实测）：
+    - **`build` 与 `publish` 的校验不同**：`dotnet build` 允许两个内容项落到同一个目标相对路径（两份都拷，留下哪一份取决于复制顺序，**内容不确定**），只有 `dotnet publish` 会按 `ResolvedFileToPublish` 的 `RelativePath` 查重并报 `NETSDK1152`。**只跑 build 的开发流程发现不了这类问题。**
+    - **`dotnet publish` 是两次 MSBuild 调用**（Build + Publish），publish 那次会**重新**计算 `ResolvedFileToPublish` 等列表。因此挂在 build 链上的 `AfterTargets`（如 `GetCopyToPublishDirectoryItems`、`GetCopyToOutputDirectoryItems`）**对发布不生效**；发布侧的清理必须挂在发布链上——在 `AfterTargets="ComputeResolvedFilesToPublishList"` 里改 `ResolvedFileToPublish`（该 target 之后、`_HandleFileConflictsForPublish` 之前），实测有效。
+    - **项目引用传递来的内容项不在 `ContentWithTargetPath` 里**：它是 `GetCopyToPublishDirectoryItems` 内部经子工程 MSBuild 调用直接并进 `ResolvedFileToPublish` 的；想"从本项目内容项里删掉"对发布侧无效。
+    - **MSBuild 路径比较要先规范化**：`$(MSBuildThisFileDirectory)..\X` 含**字面量 `..\`**，与项元数据 `FullPath`（规范化过的绝对路径）直接 `==` 恒为 false，症状是"target 确实执行了、项却没被删"。用 `$([System.IO.Path]::GetFullPath('...'))` 归一化后再比。
 
 ---
 
@@ -1226,7 +1265,15 @@ Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多
 ### 主窗口
 ```
 Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位置持久化、托盘
+Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更新页共用）
 ```
+
+**主窗口标题带版本号**（阶段 44 附带）：
+- 标题 = `AppDisplayName` + 版本号，同时写 `Window.Title`（任务栏/Alt+Tab）与自绘 `ui:TitleBar.Title`。
+- 版本号取 `AssemblyInformationalVersion`（csproj 的 `<Version>3.0.1</Version>` 会生成 `3.0.1+<commit>`），
+  **只保留 `+` 之前的部分**；`AppVersion` 同时被"软件更新"页复用（原来那段反射逻辑重复写在页面里）。
+- 语言切换后会重新套用一次标题：XAML 里标题绑的是 `{DynamicResource AppDisplayName}`，切语言会把它刷回"只有名称"。
+- 实测（探针读程序集）：`InformationalVersion = 3.0.1+2cf7896…` → 标题显示 `新伊甸漫游指南 3.0.1`。
 
 ### 验证产物说明
 ```

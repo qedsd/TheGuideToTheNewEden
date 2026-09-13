@@ -6,15 +6,15 @@
 		      只提供 net462 / net8.0-windows10.0.19041 资产，写成 net10.0-windows（隐含 TPV=7.0）
 		      会回退到 .NET Framework 资产（NU1701）或直接报 NU1202。  -->
 		<TargetFramework>net10.0-windows10.0.19041</TargetFramework>
-		<RootNamespace>TheGuideToTheNewEden.WPF</RootNamespace>
-		<AssemblyName>TheGuideToTheNewEden.WPF</AssemblyName>
+		<RootNamespace>TheGuideToTheNewEden</RootNamespace>
+		<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 		<UseWPF>true</UseWPF>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyVersion>3.0.0.0</AssemblyVersion>
-		<Version>3.0.1</Version>
+		<AssemblyVersion>4.0.0.0</AssemblyVersion>
+		<Version>4.0.0</Version>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 	</PropertyGroup>
 
@@ -66,5 +66,43 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+
+	<!--
+	  发布（dotnet publish）时 NETSDK1152：Core 项目自带的 log4net.config 会随项目引用被
+	  “传递复制”到发布根目录，与上面显式链接的 WinUI Resources\Configs\log4net.config 相对路径相同
+	  （两者都落到发布根 log4net.config），发布因此直接失败；而 dotnet build 不校验重复输出，
+	  两份同样落到输出根、只按复制顺序留下一份，所以该冲突只在发布路径上暴露。
+
+	  Core.Log.Init() 从程序根目录读 log4net.config，本项目的基准是「WinUI Resources\Configs 版」
+	  （<file value="Log\" />，与文档中 Log\yyyyMMdd.txt 的路径一致），Core 版写的是
+	  %LocalAppData%\...\Logs\，不应作为本项目的配置。因此这里把来自 Core 目录的那一份从传参列表里摘掉
+	  （上面显式链接的那份不受影响），让 build 与 publish 都只留一份、且是同一份。
+	-->
+	<PropertyGroup>
+		<!-- 锚定 Core 那份的完整路径（必须归一化掉 "..\"，项元数据 FullPath 是规范化的绝对路径）。 -->
+		<_CoreProjectLog4NetConfigFullPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TheGuideToTheNewEden.Core\log4net.config'))</_CoreProjectLog4NetConfigFullPath>
+	</PropertyGroup>
+
+	<!-- 列表合并进 AllItemsFullPathWithTargetPath 之前先摘掉，保证 bin 输出也只有一份。 -->
+	<Target Name="ExcludeCoreLog4NetConfigFromOutput"
+	        BeforeTargets="GetCopyToOutputDirectoryItems">
+		<ItemGroup>
+			<ContentWithTargetPath Remove="@(ContentWithTargetPath)"
+			                       Condition="'%(ContentWithTargetPath.FullPath)' == '$(_CoreProjectLog4NetConfigFullPath)'" />
+			<_AllChildProjectItemsWithTargetPath Remove="@(_AllChildProjectItemsWithTargetPath)"
+			                                     Condition="'%(FullPath)' == '$(_CoreProjectLog4NetConfigFullPath)'" />
+			<AllItemsFullPathWithTargetPath Remove="@(AllItemsFullPathWithTargetPath)"
+			                                Condition="'%(FullPath)' == '$(_CoreProjectLog4NetConfigFullPath)'" />
+		</ItemGroup>
+	</Target>
+
+	<!-- 发布：ComputeResolvedFilesToPublishList 已把两份都放进 ResolvedFileToPublish，在其后、冲突检查之前移除。 -->
+	<Target Name="ExcludeCoreLog4NetConfigFromPublish"
+	        AfterTargets="ComputeResolvedFilesToPublishList">
+		<ItemGroup>
+			<ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+			                       Condition="'%(ResolvedFileToPublish.FullPath)' == '$(_CoreProjectLog4NetConfigFullPath)'" />
+		</ItemGroup>
+	</Target>
 
 </Project>

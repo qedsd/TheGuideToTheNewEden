@@ -62,6 +62,10 @@ public partial class MainWindow : FluentWindow
             .FromProperty(NavigationView.TitleBarProperty, typeof(NavigationView))
             ?.AddValueChanged(NavigationView, (_, _) => ApplyFrameMargin());
 
+        // 标题栏/系统标题都带上版本号；语言切换后名称要重新取，故两种时机各刷一次
+        ApplyTitle();
+        LanguageService.LanguageChanged += (_, _) => ApplyTitle();
+
         Loaded += (_, _) =>
         {
             ApplyFrameMargin();
@@ -85,6 +89,19 @@ public partial class MainWindow : FluentWindow
     private void ApplyFrameMargin()
     {
         NavigationView.FrameMargin = new Thickness(0, NavigationTopInset, 0, 0);
+    }
+
+    /// <summary>
+    /// 主窗口标题 = "应用名 版本号"。窗口自身的 Title（任务栏/Alt+Tab）与自绘标题栏的
+    /// Title 都指向 XAML 里的 <c>{DynamicResource AppDisplayName}</c>，切语言时会回到"只有名称"，
+    /// 所以在语言变化后也要重新套用一次。
+    /// </summary>
+    private void ApplyTitle()
+    {
+        var name = Application.Current?.TryFindResource("AppDisplayName") as string;
+        var title = AppVersion.Format(name);
+        Title = title;
+        TitleBar.Title = title;
     }
 
     private void SchedulePlacementSave()
