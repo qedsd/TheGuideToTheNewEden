@@ -22,6 +22,8 @@
     <sys:String x:Key="Nav.ChannelTranslation">频道翻译</sys:String>
     <sys:String x:Key="Nav.GameLogMonitor">日志监控</sys:String>
     <sys:String x:Key="Nav.Translation">翻译</sys:String>
+    <sys:String x:Key="Nav.TranslationAi">AI 翻译</sys:String>
+    <sys:String x:Key="Nav.TranslationLocal">本地词库</sys:String>
     <sys:String x:Key="Nav.DED">死亡远征</sys:String>
     <sys:String x:Key="Nav.Mission">任务攻略</sys:String>
     <sys:String x:Key="Nav.Wormhole">虫洞</sys:String>
@@ -1012,18 +1014,194 @@
     <sys:String x:Key="TranslationPage_CopySuccess">已复制</sys:String>
     <sys:String x:Key="TranslationPage_ResultCount">匹配 {0} 条</sys:String>
     <sys:String x:Key="TranslationPage_Failed">翻译失败</sys:String>
-    <sys:String x:Key="TranslationPage_Source">来源</sys:String>
-    <sys:String x:Key="TranslationPage_Source_Tip">翻译数据的来源；目前只有离线的本地数据库</sys:String>
     <sys:String x:Key="TranslationPage_Source_LocalDb">本地数据库</sys:String>
     <sys:String x:Key="TranslationPage_LocalDbUnavailable">本地化数据库不可用：请在「设置 → 一般」勾选“使用本地化数据库”，并确认已选择本地化数据库文件（Resources/Database/Local/zh.db）。</sys:String>
     <sys:String x:Key="TranslationPage_Direction">方向</sys:String>
+    <sys:String x:Key="TranslationPage_SourceLanguage">源语言</sys:String>
+    <sys:String x:Key="TranslationPage_TargetLanguage">目标语言</sys:String>
+    <sys:String x:Key="TranslationPage_Pair">互译语言对</sys:String>
+    <sys:String x:Key="TranslationPage_SwapPair">对调互译语言对</sys:String>
+    <sys:String x:Key="TranslationPage_Pair_Tip">目标语言选「自动检测」时按这一对判断方向：文本是第二种语言就译成第一种、是第一种就译成第二种，其它语言统一译成第一种（建议把第一种设成你的母语）。</sys:String>
+    <sys:String x:Key="TranslationPage_SwapLanguages">对调源语言与目标语言</sys:String>
+    <sys:String x:Key="TranslationPage_Language_auto">自动检测</sys:String>
+    <sys:String x:Key="TranslationPage_Language_AutoTarget">自动检测</sys:String>
+    <sys:String x:Key="TranslationPage_Language_zh">中文</sys:String>
+    <sys:String x:Key="TranslationPage_Language_en">英语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ja">日语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ko">韩语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ru">俄语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_de">德语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_fr">法语</sys:String>
+    <sys:String x:Key="TranslationPage_Language_es">西班牙语</sys:String>
+    <sys:String x:Key="TranslationPage_Local_OnlyChineseEnglish">本地词库只能做中英互译（它查的是 SDE 的中英对照）；其他语言请用「AI 翻译」页。</sys:String>
     <sys:String x:Key="TranslationPage_Direction_Auto">自动</sys:String>
     <sys:String x:Key="TranslationPage_Direction_EnToZh">英文 → 中文</sys:String>
     <sys:String x:Key="TranslationPage_Direction_ZhToEn">中文 → 英文</sys:String>
-    <sys:String x:Key="TranslationPage_EN">英文</sys:String>
-    <sys:String x:Key="TranslationPage_Chinese">中文</sys:String>
     <sys:String x:Key="TranslationPage_Type_InvType">物品</sys:String>
     <sys:String x:Key="TranslationPage_Type_MapRegion">星域</sys:String>
     <sys:String x:Key="TranslationPage_Type_MapSolarSystem">星系</sys:String>
     <sys:String x:Key="TranslationPage_Type_StaStation">空间站</sys:String>
+
+    <!--  翻译：AI（大模型）源  -->
+    <sys:String x:Key="TranslationPage_Source_Ai">AI 翻译（大模型）</sys:String>
+    <sys:String x:Key="TranslationPage_GlossaryHits">术语命中（已注入提示词）</sys:String>
+    <sys:String x:Key="TranslationPage_AiManualHint">按回车或「翻译」才会发送请求</sys:String>
+    <sys:String x:Key="TranslationPage_AiManualHint_Tip">AI 源按次计费，因此输入时不自动查询；改完内容请按回车或点「翻译」。</sys:String>
+    <sys:String x:Key="TranslationPage_NoResultTip_Ai">未返回译文：AI 源按回车或点「翻译」才会请求，失败原因见右下角提示</sys:String>
+    <sys:String x:Key="TranslationPage_AiUnavailable">AI 翻译未配置：请在「设置 → AI 翻译」里选择协议并填写服务地址、API Key 与模型名。</sys:String>
+    <sys:String x:Key="TranslationPage_Timeout">请求已中断或超时</sys:String>
+
+    <!--  翻译：协议名（设置页下拉）  -->
+    <sys:String x:Key="TranslationPage_Protocol_OpenAi">OpenAI 兼容（DeepSeek / 通义 / GLM / Kimi / OpenRouter / 本地 vLLM 等）</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_AzureOpenAi">Azure OpenAI</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_Anthropic">Anthropic（Claude）</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_Gemini">Google Gemini</sys:String>
+
+    <!--  翻译：AI 页（对话式）的界面文字；本地页签的提示  -->
+    <sys:String x:Key="TranslationPage_Local_AutoHint">输入即查（本地离线，不计费）</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Input_Tip">要翻译的内容；回车=翻译，Shift+回车=换行</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NotConfigured_Title">尚未配置 AI 翻译</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NotConfigured_Support">支持 OpenAI 兼容（DeepSeek / 通义 / GLM / Kimi / 本地 vLLM 等）、Azure OpenAI、Anthropic、Google Gemini；配置只保存在本机。</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_GoConfigure">去配置</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Recheck">重新检测</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Stop">停止</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Stopped">已停止</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NoInput">请先输入要翻译的内容</sys:String>
+
+    <!--  翻译：AI 页的"对话记录"界面  -->
+    <sys:String x:Key="AiTranslation_Chat_Sessions">对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_New">新建对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Rename">重命名对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Rename_Tip">双击可重命名这个对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Delete">删除对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Clear">清空当前对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_NoSessions">还没有对话，点下面「新建对话」开始</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Untitled">未命名对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_NewSession">新对话</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_EmptySession">还没有翻译记录</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Input">输入</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_EmptyTip">输入内容后点「翻译」，每一次原文与译文都会按顺序记录在这个对话里（文字都能像网页一样拖选复制）</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Original">原文</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Translation">译文</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Generating">正在翻译…</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_PendingCount">正在翻译 {0} 条…</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext">带上上下文（本对话）</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">勾上后，本对话**每次**翻译都会把此前所有成功的原文/译文一起发给模型（不限条数）；取消勾选则每次只翻当前这一条。</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextOn">已开启：每次带上此前 {0} 条记录</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextOff">未开启：每次只翻当前这一条</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Expand">展开</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Collapse">收起</sys:String>
+
+    <!--  设置：AI 翻译  -->
+    <sys:String x:Key="SettingPage_AiTranslation">AI 翻译</sys:String>
+    <sys:String x:Key="SettingPage_AiTranslation_Desc">接入大模型做整句/上下文翻译；用本地数据库的中英词库约束专有名词</sys:String>
+    <sys:String x:Key="AiSettingPage_Protocol">协议</sys:String>
+    <sys:String x:Key="AiSettingPage_Protocol_Desc">选择服务商的接口协议。国内服务商多数直接选「OpenAI 兼容」；Bedrock / Vertex 建议前面挂一层网关转成 OpenAI 协议。</sys:String>
+    <sys:String x:Key="AiSettingPage_BaseUrl">服务地址</sys:String>
+    <sys:String x:Key="AiSettingPage_BaseUrl_Desc">可填裸域名（自动补 /v1/chat/completions）或带版本路径的地址；也可直接粘贴完整的 chat/completions 地址。</sys:String>
+    <sys:String x:Key="AiSettingPage_RestoreDefault">恢复默认</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiKey">API Key</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiKey_Desc">仅保存在本机 settings.json 里，不会上传到除你配置的服务商以外的任何地方。</sys:String>
+    <sys:String x:Key="AiSettingPage_Model">模型名</sys:String>
+    <sys:String x:Key="AiSettingPage_Model_Desc">例如 deepseek-chat / qwen-plus / glm-4-flash / gpt-4o-mini / claude-3-5-haiku-latest；Azure OpenAI 填部署名。</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiVersion">api-version</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiVersion_Desc">仅 Azure OpenAI 需要；留空用默认值。</sys:String>
+    <sys:String x:Key="AiSettingPage_Test">测试连接</sys:String>
+    <sys:String x:Key="AiSettingPage_Test_Desc">保存当前设置后真实发一次极短请求，回报模型、耗时与 token 用量。</sys:String>
+    <sys:String x:Key="AiSettingPage_Testing">正在测试…</sys:String>
+    <sys:String x:Key="AiSettingPage_TestOk">测试成功：{0}</sys:String>
+    <sys:String x:Key="AiSettingPage_TestFailed">测试失败：{0}</sys:String>
+    <sys:String x:Key="AiSettingPage_NotConfigured">请先填写服务地址、API Key 与模型名</sys:String>
+    <sys:String x:Key="AiSettingPage_PromptRestored">已恢复内置提示词（保存生效）</sys:String>
+    <sys:String x:Key="AiSettingPage_Glossary">术语库（本地数据库中英词库）</sys:String>
+    <sys:String x:Key="AiSettingPage_UseGlossary">注入术语表</sys:String>
+    <sys:String x:Key="AiSettingPage_UseGlossary_Desc">翻译前把命中的专有名词（物品/舰船/星系/星域/空间站）作为术语表放进提示词，保证译名与游戏内一致。</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLimit">单次注入条数上限</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLimit_Desc">只注入与当前句子相关的术语；30 条约等于 300–600 token。设 0 表示不注入。</sys:String>
+    <sys:String x:Key="AiSettingPage_ChunkSize">单次请求最大字符数</sys:String>
+    <sys:String x:Key="AiSettingPage_ChunkSize_Desc">超过这个长度就切成多片分别翻译再拼回（在段落/句末断开）。设 0 = 不分片、整段一次发。默认 12000 字符对现代模型（上下文动辄 128K–1M token）很小；调小可以让首段结果更快出现、单次失败损失更小，调大则请求数更少。</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking">思考模式</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_Desc">仅对 DeepSeek 系端点生效（其它服务商不认识该参数，会自动不下发）。DeepSeek 默认"开启 + high"，翻一句话也要先写一大段思维链，又慢又贵、还会让温度失效；翻译场景建议保持关闭。</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_auto">跟随服务端默认</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_off">关闭（推荐）</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_low">开启 · 低强度</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_high">开启 · 高强度</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryStatus">术语库状态</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryStatus_Desc">术语对由主数据库（英文）与本地化数据库（中文）按 ID 配对而来；每次启动首次使用时载入一次。</sys:String>
+    <sys:String x:Key="AiSettingPage_ReloadGlossary">重新载入</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryReady">已载入 {0} 条 · {1}</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryNotLoaded">尚未载入</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLoading">正在载入…</sys:String>
+    <sys:String x:Key="AiSettingPage_Generation">生成与缓存</sys:String>
+    <sys:String x:Key="AiSettingPage_Temperature">温度</sys:String>
+    <sys:String x:Key="AiSettingPage_Temperature_Desc">翻译建议 0–0.3；设 0 表示不下发该参数（部分推理模型不接受）。</sys:String>
+    <sys:String x:Key="AiSettingPage_MaxTokens">最大输出 token</sys:String>
+    <sys:String x:Key="AiSettingPage_MaxTokens_Desc">设 0 表示不下发，交给服务端默认（推理模型推荐 0）。</sys:String>
+    <sys:String x:Key="AiSettingPage_Timeout">超时（秒）</sys:String>
+    <sys:String x:Key="AiSettingPage_Timeout_Desc">单次请求从发出到读完的最长耗时；超时会自动重试一次。</sys:String>
+    <sys:String x:Key="AiSettingPage_Stream">流式输出</sys:String>
+    <sys:String x:Key="AiSettingPage_Stream_Desc">开启后生成过程中就能在等待遮罩上看到进度（推荐）。</sys:String>
+    <sys:String x:Key="AiSettingPage_Cache">结果缓存</sys:String>
+    <sys:String x:Key="AiSettingPage_Cache_Desc">同模型、同提示词、同术语库、同原文直接复用，避免重复计费；换模型或更新术语库后自动失效。</sys:String>
+    <sys:String x:Key="AiSettingPage_CacheStatus">当前 {0} 条 · {1}</sys:String>
+    <sys:String x:Key="AiSettingPage_ClearCache">清空缓存</sys:String>
+    <sys:String x:Key="AiSettingPage_CacheCleared">已清空 {0} 条缓存</sys:String>
+    <sys:String x:Key="AiSettingPage_SystemPrompt">系统提示词</sys:String>
+    <sys:String x:Key="AiSettingPage_SystemPrompt_Desc">留空使用内置提示词。其中的 {glossary} 会被替换成术语表，{from}/{to} 替换成语言名。</sys:String>
+    <sys:String x:Key="AiSettingPage_RestorePrompt">恢复内置提示词</sys:String>
+
+    <!--  频道翻译  -->
+    <sys:String x:Key="ChannelTranslationPage_TargetCharacter">目标角色</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_ChannelsAndSettings">频道与参数</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Running">翻译中</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_SkipMyself">跳过自己的发言</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_OnlyNonChinese">只翻译非中文消息</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_MinLength">最短长度</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Keyword">触发关键词</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Keyword_Tip">留空则翻译全部消息</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_NoChannel">未选择需要翻译的频道</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Started">已开始频道翻译</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Stopped">已停止频道翻译</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Result">实时译文</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_UseContext">带上上下文</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_UseContext_Tip">把同一频道里此前已翻译的几条一起发给模型，译文更连贯（默认开）；条数越多越准也越费 token。</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_ContextLimit">上下文条数</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Direction">翻译方向</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Direction_Tip">方向跟着「AI 翻译」页的源语言/目标语言设置走：在那边配一次，这里与频道翻译同时生效。</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_DirectionAuto">{0} ⇄ {1} 自动互译（原文是哪种就译成另一种）</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_RemovedMarkup">已去除游戏内标记 {0} 个</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Empty">在左侧选择角色、勾选频道并点「开始」后，这里会实时显示译文（外文→中文，专有名词按本地数据库术语约束）</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Status">已翻译 {0} 条 · 列表 {1} 条</sys:String>
+
+    <!--  术语表（S5）  -->
+    <sys:String x:Key="SettingPage_Glossary">术语表</sys:String>
+    <sys:String x:Key="SettingPage_Glossary_Desc">维护用户自定义术语与 AI 发现的新词（用户术语优先级高于 SDE 术语库）</sys:String>
+    <sys:String x:Key="GlossarySettingPage_UserTerms">用户术语表</sys:String>
+    <sys:String x:Key="GlossarySettingPage_UserTerms_Desc">这里的译名优先级最高：注入提示词、术语后校验、本地数据库源都会用它覆盖 SDE 的译名；变更后 AI 结果缓存自动失效。</sys:String>
+    <sys:String x:Key="GlossarySettingPage_English">英文名</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Chinese">中文名</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Chinese_Tip">裂谷级</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Add">添加</sys:String>
+    <sys:String x:Key="GlossarySettingPage_AddFailed">添加失败：英文名与中文名都需要填写</sys:String>
+    <sys:String x:Key="GlossarySettingPage_NeedEnglish">请先填写英文名（可点候选行的「加入术语表」自动填入）</sys:String>
+    <sys:String x:Key="GlossarySettingPage_NeedChinese">请填写中文译名</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Added">已保存术语：{0} = {1}</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Removed">已删除术语：{0}</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Remove">删除</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Empty">还没有用户术语。SDE 术语库覆盖不到的玩家/军团/建筑名可以在这里固定译名。</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates">AI 新词候选</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates_Desc">翻译时遇到的、术语库没覆盖的专有名词（按出现次数排序）。点「加入术语表」会把它填进上面的输入框，等你补中文译名后保存；点「忽略」则不再记录。候选不会自动写入术语表。</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates_Empty">还没有候选：翻译几次之后，AI 遇到术语库没有的专有名词就会记在这里。</sys:String>
+    <sys:String x:Key="GlossarySettingPage_CandidateCount">共 {0} 条候选</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Use">加入术语表</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Ignore">忽略</sys:String>
+    <sys:String x:Key="GlossarySettingPage_FillChinese">已填入「{0}」，请补上中文译名后点「添加」</sys:String>
+    <sys:String x:Key="GlossarySettingPage_ClearCandidates">清空候选</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Cleared">已清空 AI 新词候选</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Status">术语库状态</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Status_Desc">SDE 术语来自主数据库（英文）与本地化数据库（中文）按 ID 配对；用户术语单独存放在 Configs/UserGlossary.json。</sys:String>
+    <sys:String x:Key="GlossarySettingPage_StatusValue">SDE {0} 条 · 用户 {1} 条</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reload">重新载入</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reloading">正在载入…</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reloaded">SDE {0} 条 · 用户 {1} 条 · {2}</sys:String>
 </ResourceDictionary>

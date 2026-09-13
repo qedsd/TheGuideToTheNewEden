@@ -1,0 +1,253 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.Settings.GlossarySettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="1000" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="36,20,36,40">
+                <TextBlock Style="{StaticResource SettingsSectionHeader}" Text="{DynamicResource SettingPage_Glossary}" />
+
+                <!--  ============ 用户术语表 ============  -->
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <StackPanel Margin="16,12,16,4">
+                            <TextBlock
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource GlossarySettingPage_UserTerms}" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource GlossarySettingPage_UserTerms_Desc}"
+                                TextWrapping="Wrap" />
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource GlossarySettingPage_English}" />
+                                    <ui:TextBox x:Name="EnglishBox" PlaceholderText="Rifter" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource GlossarySettingPage_Chinese}" />
+                                    <ui:TextBox x:Name="ChineseBox" PlaceholderText="{DynamicResource GlossarySettingPage_Chinese_Tip}" />
+                                </StackPanel>
+                                <ui:Button
+                                    Grid.Column="3"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Bottom"
+                                    Appearance="Primary"
+                                    Click="OnAddTermClick"
+                                    Content="{DynamicResource GlossarySettingPage_Add}"
+                                    Icon="{ui:SymbolIcon Add24}" />
+                            </Grid>
+                            <TextBlock
+                                x:Name="TermStatusText"
+                                Margin="0,6,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <Grid MinHeight="200" MaxHeight="320">
+                            <ListBox
+                                x:Name="TermList"
+                                ItemContainerStyle="{StaticResource StretchListItem}"
+                                ScrollViewer.CanContentScroll="True"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                VirtualizingStackPanel.IsVirtualizing="True"
+                                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding English}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Margin="8,0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Chinese}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <ui:Button
+                                                Grid.Column="2"
+                                                Appearance="Danger"
+                                                Click="OnRemoveTermClick"
+                                                Icon="{ui:SymbolIcon Delete24}"
+                                                ToolTip="{DynamicResource GlossarySettingPage_Remove}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock
+                                x:Name="EmptyTermsText"
+                                Margin="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource GlossarySettingPage_Empty}"
+                                Visibility="Collapsed" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--  ============ AI 新词候选 ============  -->
+                <TextBlock
+                    Margin="0,24,0,0"
+                    Style="{StaticResource SettingsSectionHeader}"
+                    Text="{DynamicResource GlossarySettingPage_Candidates}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <StackPanel>
+                        <TextBlock
+                            Margin="16,12,16,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource GlossarySettingPage_Candidates_Desc}"
+                            TextWrapping="Wrap" />
+
+                        <Grid MinHeight="200" MaxHeight="360">
+                            <ListBox
+                                x:Name="CandidateList"
+                                ItemContainerStyle="{StaticResource StretchListItem}"
+                                ScrollViewer.CanContentScroll="True"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                VirtualizingStackPanel.IsVirtualizing="True"
+                                VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding English}" />
+                                                <TextBlock
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                    Text="{Binding Count, StringFormat={}{0}}" />
+                                            </StackPanel>
+                                            <ui:Button
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="8,0,0,0"
+                                                Click="OnUseCandidateClick"
+                                                Content="{DynamicResource GlossarySettingPage_Use}"
+                                                Icon="{ui:SymbolIcon Checkmark24}" />
+                                            <ui:Button
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Margin="6,0,0,0"
+                                                Click="OnIgnoreCandidateClick"
+                                                Content="{DynamicResource GlossarySettingPage_Ignore}"
+                                                Icon="{ui:SymbolIcon Dismiss24}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Grid.ColumnSpan="3"
+                                                Margin="0,3,0,0"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                Text="{Binding Sample}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock
+                                x:Name="EmptyCandidatesText"
+                                Margin="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource GlossarySettingPage_Candidates_Empty}"
+                                Visibility="Collapsed" />
+                        </Grid>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <StackPanel
+                            Margin="16,10"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                x:Name="CandidateStatusText"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <ui:Button
+                                Click="OnClearCandidatesClick"
+                                Content="{DynamicResource GlossarySettingPage_ClearCandidates}"
+                                Icon="{ui:SymbolIcon Eraser24}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!--  ============ 状态 ============  -->
+                <TextBlock
+                    Margin="0,24,0,0"
+                    Style="{StaticResource SettingsSectionHeader}"
+                    Text="{DynamicResource GlossarySettingPage_Status}" />
+                <Border Style="{StaticResource SettingsGroupBorder}">
+                    <controls:SettingCard
+                        Description="{DynamicResource GlossarySettingPage_Status_Desc}"
+                        Icon="LocalLanguage24"
+                        Title="{DynamicResource GlossarySettingPage_Status}">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <TextBlock
+                                x:Name="StatusText"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <ui:Button
+                                x:Name="ReloadButton"
+                                Click="OnReloadClick"
+                                Content="{DynamicResource GlossarySettingPage_Reload}" />
+                        </StackPanel>
+                    </controls:SettingCard>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

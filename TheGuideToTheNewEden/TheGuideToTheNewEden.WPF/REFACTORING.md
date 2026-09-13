@@ -913,7 +913,7 @@ EnableWindowsTargeting true
   - `Services/Translation/ITranslationProvider.cs`：`ITranslationProvider`（`Key` / 显示名键 / `IsAvailable` / 不可用原因键 / `TranslateAsync`）+ `TranslationDirection`（自动 / 英→中 / 中→英）+ `TranslationRequest` / `TranslationOutcome`（结果条目**直接复用 Core 的 `TranslationItem`**，靠 `IsFromDataBase` 区分数据源）。
   - `Services/Translation/LocalDbTranslationProvider.cs`：本地数据库源（当前唯一实现）。**自动方向**先按原文是否含中文判定，若该方向一条都没命中就**再试另一方向**（中英混排 / 输入缩写时更不容易"查不到"）。
   - `Services/Translation/TranslationService.cs`：已注册源列表 + 按 `Key` 取源（找不到退回第一个）。**接入在线翻译只需在这里多注册一个实现**，页面上的来源下拉会自动多出选项、不再是禁用态。
-  - `Services/Translation/TranslationLanguageHelper.cs`：CJK 判定、方向解析、方向/语言代码 → 本地化键。
+  - `Services/Translation/TranslationLanguageHelper.cs`：按正文脚本判定源语言（汉字/假名/谚文/西里尔）、(源,目标) 方向解析、语言代码 → 本地化键。
   - `Services/Settings/TranslationSettingService.cs`：`TranslationPage.Provider` / `TranslationPage.Direction` 写进共用的 `settings.json`（由 `CoreInitializer` 初始化）。WinUI 的 `TranslationSetting.FromLanguage/ToLanguage` 是**给有道用的语言代码**，不再沿用。
 - **Core 新增/改动**（两侧共用，注意回归）：
   - 新增 `Services/DB/TranslationDbService.cs`：按名称在**原文语言**的库里模糊匹配（每类名词 `Take(100)` 封顶），再用这批 ID 去**译文语言**的库**批量**取对照行——每类名词固定 2 次查询，不做逐条查询；结果按「完全匹配优先、其次名称升序」排序；译文库里没有该 ID 时 `Translation` 为 null，界面显示「无译文」。`IsAvailable` 要求主库与本地化库都已载入。
@@ -949,6 +949,183 @@ EnableWindowsTargeting true
   - **"置顶没生效"**：置顶开关本身没坏——探针实测点击后 `Topmost` 与 Win32 的 `WS_EX_TOPMOST` 位确实翻转；真正的原因是**弹窗设了 `Owner`**：被拥有的窗口按 Windows 规则**恒在宿主窗口之上**，于是"未置顶"在应用内看起来与"置顶"完全一样。翻译弹窗因此**不再设 `Owner`**，改为 `WindowStartupLocation=Manual` + 手动居中到宿主窗口（并夹进工作区）：未置顶时是普通窗口（可被主窗口盖住），置顶时才浮在最前。（市场页的"简介/买入"窗口仍保留 `Owner`，未动。）
   - **状态更易读**：置顶时按钮切到 `Appearance="Secondary"`（填充底色）、图标 `PinOff24`、提示"取消置顶"；未置顶切回 `Transparent`/`Pin24`/"置顶"。只切 `Appearance`，配色交给主题（不缓存 Brush，见 §9 第 18 条）。另在 `ToolWindow` 里补 `WindowChrome.SetIsHitTestVisibleInChrome(TopmostButton, true)` 作双保险（探针显示本就不需要，见 §9 第 26 条）。
   - **核验**（独立探针直接实例化主程序集里**真实的** `ToolWindow`；构建走重定向输出目录，仍不碰被调试会话锁住的 `bin`）：置顶按钮 44×30.4 / `VerticalAlignment=Top` / 与关闭按钮 centerY 高度差 **0.0**（修正前 11.0）；按钮处 `WM_NCHITTEST=HTCLIENT(1)`、命中测试落在按钮 Border 与图标的 TextBlock 上；连点两次依次 `Topmost=True→False`、`WS_EX_TOPMOST=True→False`、图标 `PinOff24→Pin24`、外观 `Secondary→Transparent`、提示 `取消置顶→置顶`。主程序集编译 **0 错误**（重定向输出）。
+
+---
+
+### 阶段 47：翻译接入大模型 AI（OpenAI 兼容 / Azure / Anthropic / Gemini；**不做 Ollama**）
+
+- 目标（用户要求）：把大模型接进翻译功能——**走 OpenAI 协议**，把本地数据库的中英词库喂给 AI，让 AI 输出**句子/上下文翻译**；协议要可扩展（不只 OpenAI）；**明确不做 Ollama 原生协议**（本地模型用 Ollama / LM Studio / vLLM 的 OpenAI 兼容端点即可）。
+- **分层**（照阶段 46 留的"可插拔翻译源"接口往下长）：
+  ```
+  协议层  Services/Translation/Llm/IChatProtocol + 4 个适配器 + ChatClient（重试/超时/流式/错误归一化）
+  术语层  Services/Translation/GlossaryService（命中式术语库）+ Core TranslationDbService.ExtractGlossary
+  语义层  Services/Translation/AiTranslationProvider（提示词 + 术语注入 + 后校验 + 缓存）
+  设置/UI Services/Settings/TranslationSettingService + 设置子页「AI 翻译」+ 翻译页来源下拉
+  ```
+- **协议层（`Services/Translation/Llm/`）**：
+  - `ChatModels.cs`（与协议无关的消息/端点/选项/结果/用量/流式状态/异常）、`IChatProtocol.cs`（`BuildRequest` / `ParseResponse` / `ParseStreamLine` / `DescribeError`）、`ChatProtocolFactory`（注册表）、`ChatClient`（发送、重试、超时、流式、连通性自检）。
+  - 四个适配器与差异（**只在四处不同，都收敛在适配器里**）：
+    | 协议 | 认证 | 路径 | system 位置 | 输出上限 | 流式帧 |
+    |---|---|---|---|---|---|
+    | OpenAI 兼容 | `Authorization: Bearer` | `{base}/v1/chat/completions` | `messages[0].role=system` | `max_tokens` | SSE `data:` + `[DONE]` |
+    | Azure OpenAI | `api-key` | `/openai/deployments/{部署名}/chat/completions?api-version=` | 同上 | 同上（新模型可置 0 表示不下发） | 同 SSE |
+    | Anthropic | `x-api-key` + `anthropic-version` | `/v1/messages` | **顶层 `system`** | `max_tokens` **必填** | `content_block_delta` / `message_stop` |
+    | Gemini | `x-goog-api-key` | `/v1beta/models/{model}:generateContent`（流式 `?alt=sse`） | `systemInstruction` | `generationConfig.maxOutputTokens` | SSE `data:`（数组分块） |
+  - **地址归一化**（手输地址最常见的坑）：已是 `…/chat/completions` 原样用；**裸域名**才补 `/v1`；**已有路径**只补 `/chat/completions`——这样 Ark 的 `/api/v3`、DashScope 的 `/compatible-mode/v1`、OpenRouter 的 `/api/v1` 都不会被写坏。
+  - **健壮性**：429/5xx/超时/网络异常重试 2 次（0.6s、1.8s 退避，尊重 `Retry-After`），4xx（除 429）不重试；超时由每次请求自己的 CTS 控制（`Timeout=Infinite` + 每请求 `CancelAfter`）；流式只在建立连接前失败才算失败（已开始输出不再重试，避免重复计费）；错误统一成"HTTP 401：API Key 无效（Invalid API key provided）"这种可直接展示的一句话；流里混入心跳/注释行一律忽略。
+  - **不做 Bedrock / Vertex**：前者要 SigV4、后者要 OAuth2 服务账号签名，建议在应用前面挂 one-api / new-api / LiteLLM 网关转成 OpenAI 协议，而不是在客户端实现签名。
+- **术语层（命中式注入，这是本阶段的重点）**：
+  - Core 新增 `TranslationDbService.ExtractGlossary()`：主库（英文）与本地化库（中文）按 `Id` 配对，丢弃"中英相同"的未翻译行；**实测 57,010 条 / 241ms**（types 49,750（全部为市场物品）+ 星系 + 空间站 + 星域）。物品额外带 `IsMarketItem`，用于把"某某人的某船"这类代理人船名降权。
+  - `GlossaryService`：进程内建索引（英文小写字典 + 中文精确字典），`Match(text, limit)` 采样 **英文按"词起点 + 1..6 个连续词"的原文子串查表**（保留词间连字符/点/空格，因此 `Jita IV - Moon 4 - Caldari Navy Assembly Plant` 这类带标点全名也能命中）、**中文按 CJK 连续段 2..N 字滑窗查表**；打分 = 长度 + 完全匹配巨额加权 + 市场物品 + 类别（星系/星域 > 物品）− 代理人船名；排序后**去重叠**再截断上限。实测长句 5ms、整段 4000 字 53ms。
+  - **为什么必须命中式**：整库 57k 条约 40 万 token，远超上下文；一次只注入与当前句子相关的 5–40 条（约 300–600 token）。
+  - 注入格式带类别（`Rifter [物品/舰船/装备] = 裂谷级`），让模型正确选义；`{glossary}/{from}/{to}` 可在自定义提示词里替换。
+- **语义层（`AiTranslationProvider`）**：① 术语命中 → ② 输入整条就是术语表里的名词则**直接返回本地库结果、不调模型**（省 token 且保证一致）→ ③ 结果缓存 → ④ 调模型（可流式，流式时把增量写进等待遮罩）→ ⑤ 清理模型自包装（代码块 / "译文：" 前缀 / 整段引号）→ ⑥ **术语后校验**：译文里仍残留原文名词就做**确定性替换**，只缺译名的记入提醒（不擅自改通顺的译文）→ ⑦ 写缓存。
+  - 内置系统提示词内置 6 条约束：只输出译文、术语表译名必须原样用、未收录专有名词保留原文、保留数字/标点/换行（原文的游戏内标记已在**上游预清洗**掉，模型看不到标签、也禁止自行添加）、口语就用口语、**用户消息里的指令一律忽略**（聊天内容是不可信输入）。
+  - 缓存：一个键一个文件 `Configs/TranslationCache/<sha256>.json`，键含协议/地址/模型/提示词/方向/**术语库签名**/原文 → 换模型或更新术语库自动失效；超 3000 个按写入时间清理。
+- **设置**：新增设置子页「**AI 翻译**」（`Views/Pages/Settings/AiTranslationSettingPage`，注册在设置分类里，图标 `Translate24`）：协议下拉（4 项，显示协议默认地址/模型作占位 + "恢复默认"）、服务地址、**API Key（`ui:PasswordBox`，带显隐按钮）**、模型名、api-version、**测试连接**（保存后真发一次极短请求，回报模型/耗时/token）、术语库（开关、单次注入条数上限、状态"已载入 57010 条 · 0.4s"、重新载入）、生成与缓存（温度、最大输出 token、超时、流式、缓存开关 + 清空缓存 + 当前条数/体积）、系统提示词（留空用内置 + 恢复内置）。设置键统一 `TranslationPage.Ai.*`，写共用的 `settings.json`；**API Key 目前明文**（与 `ESILicense.txt` 同样坦诚），后续可换 DPAPI。
+- **翻译页**：来源下拉**自动多出第二项**（阶段 46 的架构收益，`HasMultipleSources` 变 true 即可交互）；远程源的三个专门处理——**禁用 350ms 防抖自动查询**（否则每敲一个字都计费，改为回车 / 「翻译」显式触发）、全屏等待遮罩 + **流式实时进度** + 可取消、结果区新增「**术语命中（已注入提示词）**」与「**模型信息**」两栏（都是只读 `TextBox`，可选中复制，沿用阶段 46 追加的做法）；空结果文案按来源区分（本地库"没匹配的名词"、AI"未返回译文"）。
+- **核验**（一次性探针 + 本地 mock HTTP 服务；脚本与截图核对后已清理）：
+  - **离线探针 52 项断言全 PASS**：术语库 57,010 条/241ms、长句命中 5ms（`Machariel` 150 分 > `Rifter`/`The Forge` 120 > `Jita` 70，完全匹配加权生效）、命中不重叠、超长文本受上限约束；四个协议的 URL/认证头/请求体形状/非流式与流式解析/用量字段/错误归一化/429 重试（2 次后成功）全部符合预期；端到端在 mock 后端上跑通"术语注入 → 生成 → 残留英文被替换成 `裂谷级` → 缓存命中不再请求 → 单个名词短路不调模型 → 流式进度回调 3 次"。
+  - **实机 UIA + 截图**：设置页「AI 翻译」正常渲染（协议下拉 4 项、密码框、术语库状态"已载入 57010 条 · 0.4s"、当前 0 条缓存）；把来源设为 AI 后——**未配置黄色横幅**（两行完整显示）、**"按回车或「翻译」才会发送请求"提示**、**输入一句英文不产生任何结果行**（确认没有自动请求）、**按回车后右下角弹出警告通知**；切回本地库源输入 `Rifter` 仍正常出 `裂谷级`；运行期间应用日志无新增错误。
+- **实现中修掉的两个 UI 缺陷**（都是实测才发现）：
+  1. **警告横幅文字被裁**：横幅内层是**横向 `StackPanel`**，它给子元素**无限可用宽度** → `TextWrapping` 不生效、长文案被裁。改成两列 `Grid`（`Auto` + `*`）后正常换行（与阶段 41 标题行同一个坑）。
+  2. **来源下拉选到第 2 项时显示空白**：`RefreshSourceNames()` 先 `Sources.Clear()` 再逐项 Add，`Selector` 在集合被清空时会把 `SelectedIndex` 重置为 **-1**，之后 VM 虽发了通知仍可能被这次重置盖掉 → 下拉框空白（但 VM 里来源是对的，功能正常、只是显示不出来）。修法：**内容没变就不清空集合**（`SequenceEqual` 判断），并在集合确实变动后用 `Dispatcher.BeginInvoke(Background)` **再落一次选中项**兜底。
+- 构建状态：`dotnet build` **0 错误**（仅剩既有警告）。
+- 未做/后续：① **按行批量翻译**（一次请求多行，编号输入 + JSON 输出）；② 术语库**落盘缓存**（当前每进程重新抽取 ~0.5s，够快但可以更快）；③ **API Key 加密**（DPAPI）；④ **并发/限流**（当前一次一个请求，频道场景可加令牌桶）；⑤ 结构化输出（`response_format=json_object` 已在协议层支持，语义层未用）；⑥ 频道翻译的**按行批量**（S4 已做预清洗，批量未做）。
+- **追加（S4 完成）：频道翻译接入**（原占位页 `ChannelTranslationPage.cs` 已替换，类名/命名空间不变）：
+  - **设置**：`Services/Settings/ChannelTranslationSettingService.cs` 按角色持久化 `Configs/ChannelTranslationSettings.json`，**与 WinUI 同路径同格式**（JSON 数组），两边配置互通；`CoreInitializer` 里初始化。Core 的 `ChannelTranslationSetting` 补两个字段（`AutoTranslateToZhOnly`、`MinLength`，WPF 新增、WinUI 不使用，JSON 向后兼容）。
+  - **聊天标记预清洗** `Services/Translation/ChatMarkupProtector.cs`：`<br>` 先换成换行，**其余 `<...>` 标签整体删掉**（`<font size= color=>`、`<b>/<i>/<u>/<loc>`、`<a href="joinChannel:…">`…），再解 HTML 实体、压缩空行与多空格；对外只有 `ToPlainText(text, out removedTags)`（送模型用）与 `ToSingleLine(text, max)`（列表单行预览用）。**不再有 `{{n}}` 占位符保护/还原**——颜色/字号/链接对翻译没有价值，先删掉更稳、prompt 更短、译文直接可读（见下方"用户反馈：标签必须先剔除"）。
+  - **翻译引擎** `Services/Translation/ChatTranslationEngine.cs`：多角色多频道的消息进**同一条队列串行翻译**（AI 按次计费且易限流，串行最省心）；单条流程 = **预清洗**（`<br>`→换行、其余标记删除，`RemovedMarkup` 记录删了几个）→ 跳过规则（空/过短/自己的发言/以中文为主/无字母，**按清洗后的纯文本判断**）→ 调翻译源（默认 AI，构造参数可注入替身）→ 发布 `Translated`（后台线程回调，订阅方自行切 UI 线程）；`ChatTranslationItem` 额外提供 `OriginalPreview`（160 字单行预览）与 `OriginalFull`（完整清洗文本），列表与悬停提示都用清洗后的文字；**"AI 未配置"只提示一次并清空队列**，不刷屏。
+  - **会话** `Services/ChannelIntel/ChannelTranslationSession.cs`：每角色按勾选频道创建 Core 的 `ChannelTranslationObserver`（增量读聊天日志 + 触发关键词过滤），命中 `Important` 的消息入队。
+  - **界面** `Views/Pages/ChannelTranslationPage.xaml(.cs)`（替换占位页）+ `ViewModels/Channel/ChannelTranslationViewModel.cs` + `Views/UserControls/ChannelTranslationResultView.xaml(.cs)`：三卡片（目标角色 / 频道与参数 / 实时译文），参数 = 跳过自己、只翻译非中文消息、最短长度、触发关键词（**改动即落盘**，运行中禁用）；工具栏为图标按钮（开始/停止/开始全部/停止全部/刷新/清除/弹窗，停止按钮只把图标染红）；译文列表新→旧、上限 300 条，**原文与译文都可拖选复制**，右键可单独复制原文/译文；「弹窗」用 `ToolWindow` 承载**同一个结果视图**并共享同一个 ViewModel（两边内容实时一致；不设 `Owner`，与翻译页弹窗同一策略）。
+  - **核验**（离线探针 20 项断言全 PASS + 实机页面核验）：预清洗把 4 个标签全删掉、无标记文本原样通过；引擎只翻译 2 条合规消息（自己、纯中文、过短、无字母各被跳过）、**送翻译的文本不含标签**（`<font>/<loc>` 都没了）、清单带频道/发言人、计数正确、失败路径带 Error 且未配置只发一条、停止后不再处理新消息；设置落盘读回（含两个新字段）+ 深拷贝 + 与 WinUI 同格式（探针结束时**还原了用户的设置文件**）。实机：频道 → 频道翻译页正常渲染（目标角色列出本机两个角色、AI 未配置黄条、空状态引导、未选角色时"频道与参数"卡片按设计隐藏），运行期间日志无异常。
+  - **本轮踩到并修掉的严重缺陷（值得单独记）**：追加语言键的脚本把已有的 `AiSettingPage_RestorePrompt` **重复追加**了一次，导致 `zh-CN.xaml`/`en-US.xaml` 出现**同名键**——`ResourceDictionary` 加载时抛 `ArgumentException: Item has already been added`，**应用直接启动崩溃**（`0xE0434352`），而 `dotnet build` **0 错误**、应用日志**一个字节都不写**（异常发生在启动的字典加载阶段）。定位手段：写了一个"加载应用级资源字典 + 直接构造各页面"的探针（`PageProbe`），它把 `XamlParseException → ArgumentException: Item has already been added` 的完整链条打了出来；修复后同一探针 6 个页面全部构造成功。**结论：改语言文件后必须查重键**（脚本或探针皆可），参见 §9 第 33 条。
+- **追加（S5 完成）：术语管理 UI + AI 新词回流**（设置 → 术语表）：
+  - **用户术语表** `Services/Translation/UserGlossaryService.cs`：持久化 `Configs/UserGlossary.json`（英文名唯一、忽略大小写，重复添加=更新；增删改查 + 深拷贝快照 + 内容签名）。用户术语参与**三条路径**：① **注入提示词**——术语库匹配里 `Id<0` 的用户条目 **+2000 分**，同名词条必然压过 SDE（实测 `Rifter` 命中用户译名而不是"裂谷级"）；② **术语后校验**——命中列表里就已经是用户译名，残留替换随之生效；③ **本地数据库源**——`LocalDbTranslationProvider` 用 `ApplyOverrides` 直接覆盖 SDE 译名（离线源也认用户术语）。`Pinned` 字段保留（当前所有用户术语都按"必须原样使用"处理），UI 未提供开关以免出现无效选项。
+  - **AI 新词候选** `Services/Translation/GlossaryCandidateService.cs`：翻译成功后从原文里挑"像专有名词（大写开头、可含数字/连字符/撇号，1–3 词）、术语库（SDE+用户）没有、**且没有原样出现在译文里**"的片段记成候选（计数 + 原文/译文样例 + 忽略名单，上限 300，停用词表挡掉 The/Hello 这类）。**刻意不自动写入术语表**：模型输出无法可靠反推"哪个英文词对应哪个中文词"，自动写入会把错译固化下来（比不写更糟），因此只排队、由人在设置页确认。开关 `TranslationPage.Ai.CollectCandidates`（默认开）。
+  - **设置子页** `Views/Pages/Settings/GlossarySettingPage.xaml(.cs)`（分类已注册，图标 `LocalLanguage24`）：用户术语表（英文名/中文名输入 + 添加 + 列表内逐条删除 + 状态提示）、AI 新词候选（列表 + 「加入术语表」把英文填进输入框并聚焦中文框 + 「忽略」+ 「清空候选」）、术语库状态（SDE 条数 / 用户条数 / 重新载入）。
+  - **核验**（离线探针 **24/24 PASS** + 实机设置页）：用户术语增删改查/大小写唯一/落盘/签名变化（AI 缓存自动失效）；用户术语**压过 SDE**、用户独有术语（含撇号与空格 `QEDSD's Fortizar`）能命中、中文侧命中、`IsKnownEnglish` 认得用户术语、删除后回落 SDE；本地库源被用户译名覆盖；候选四类规则（未知名词记、SDE 已有不记、原样保留不记、停用词不记）+ 重复计数 + 忽略后不再记 + 清空。实机：设置 → 术语表正常渲染（四个分区、空状态引导），**通过界面添加术语确实落到 `UserGlossary.json` 且列表与右下角提示同步**，日志无异常；探针/核验脚本结束时都**还原了用户的术语文件**。
+  - **本轮修掉的两个真实缺陷（都是"看起来能用、其实不生效"）**：① **用户术语只在 SDE 术语库构建时并入索引** → 在设置页新加的术语要等下次重建（或重启）才生效；改为按**签名比对的懒刷新** `EnsureUserTermsFresh()`，在 `Match` 与 `IsKnownEnglish` 入口各调一次（签名没变时零成本）。② **中文匹配只扫纯 CJK 连续段** → `小裂谷2`、`10MN加力燃烧器` 这类**中英/数字混排**的译名（SDE 与用户术语里都常见）永远查不到；改为"词字符段（汉字/字母/数字）里只要含汉字就做 2..N 字滑窗"，并跳过不含汉字的候选。
+- **追加（用户反馈"频道置顶信息（MOTD）没有译文输出"）**：用用户给的真实 MOTD（2134 字符、92 个 `<...>` 标签）写了一个复现探针（`MotdProbe`，含本地 mock 模型），定位到**两个独立问题**（外加两处与该场景直接相关的短板）：
+  1. **模型返回空 `content` 被当成"成功"**（用户症状的直接原因）：provider 只看 HTTP 是否成功，不看正文——服务端因 `finish_reason=length`（撞上输出 token 上限）或**推理模型只返回 `reasoning_content`** 时 `content` 是空串，于是返回"成功 + 空译文"：**翻译页什么都不显示**（频道页至少会说"没有返回译文"，但不说原因）。修法：正文为空即**明确失败**，并把原因与处置写进消息——`length → 调大「最大输出 token」（或设为 0 交给服务端默认）`；响应里只有 `reasoning_content → 提示换用普通对话模型`。翻译页与频道页都会看到这句。
+  2. **长文本没有分片**：MOTD 这类 2000+ 字符的文本原先只发一次请求，很容易撞输出上限。现在按"配置的输出上限 × 2 字符"分片（夹在 400–4000），在段落/句末/换行处断开，逐片翻译后合并（切的是**清洗后的纯文本**，不存在标签跨片问题），meta 里标注"3 片"。
+  3. **provider 不做预清洗**：此前只有频道引擎处理 `<font>/<url>/<loc>`，**翻译页直接粘贴的原文**会把标签原样丢给模型。现在 provider 自己也先 `ToPlainText`（引擎已清洗过时再洗一次是 no-op，两条入口安全共用），原文只剩标记时直接失败"原文里没有可翻译的正文（只有游戏内标记）"。
+  4. **翻译页输入框是单行的**：粘贴多行 MOTD 会被折平。改为多行（`AcceptsReturn`、最大高 140）并换用 `PreviewKeyDown`：**回车=查询、Shift+回车=换行**——多行 `TextBox` 会在 `KeyDown` 的类处理器里把回车当换行吞掉，所以必须用 Preview 事件。
+  5. **频道启动时不再漏掉 MOTD**：Core 观察者只读"启动之后"新增的内容，而「频道置顶信息」是**加入频道时**就写进日志的 → 之前永远翻不到。新增 `Services/ChannelIntel/ChannelChatLogReader.cs`：会话 `Start()` 时补翻**日志尾部 20 行**（含 MOTD 与最近几句；同一段文本第二次会命中 AI 结果缓存，不会重复计费）。
+  - **核验**（`MotdProbe` 7 组，全部通过）：① 日志行解析——国际服 `EVE System > Channel MOTD:` 与国服 `EVE系统 > 频道置顶信息：` 两种前缀都能解析出 2134 字符正文；② 预清洗 92 个标签全删、`<br>` 换成换行；③ 真实 provider + mock 模型：译文含中文、**prompt 里不含任何 `<...>` 标签**；③b 分片：`MaxTokens=300` → 3 片，合并后译文完整、meta 标注片数；④⑤ 空 content → provider 与频道引擎都给出可诊断的原因；⑥ 补翻日志尾部能读到 MOTD（2134 字符那条）且关键词过滤生效；⑦ 回归：术语注入 2 条且提示词含类别、后校验把残留 `Rifter` 换成"裂谷级"、缓存命中后不再请求、单个名词短路不调模型。实机：翻译页回车仍出结果（本地库 `Rifter` → `裂谷级`）、**Shift+回车确实插入换行**；设置文件与探针临时文件都已还原，应用日志无异常。
+- **追加（用户反馈"应该提前把 html 类型的标签去掉"）**：把 S4/MOTD 那一版的"**占位符保护 + 容错还原**"整体换成"**送模型前预清洗**"——用户给的例子正是 `<a href="joinChannel:player_a81a8acf334211e88b999abe94f5b483">` 与 `<br></font><font size="12" color="#bfffffff">` 这种"标签夹着正文"的写法，占位符方案在这类文本上必然要跟模型博弈（实测 92 个标签的 MOTD 就丢过占位符）。
+  - **改动**：`ChatMarkupProtector` 重写为 `ToPlainText`/`ToSingleLine`/`HasMarkup`/`ExtractTags`，删除 `Protect`/`Restore`；`<br>` 先换行，其余标签整体删掉，再解实体（`&amp; &lt; &gt; &quot; &#39; &nbsp;`）、逐行去尾空白、连续空行压到一个、整体 Trim；单条正文里的换行**保留**（MOTD 的段落结构还在，译文也能按行读）。
+  - **两条入口都预清洗**：频道引擎（`TranslateOneAsync` 先洗再判跳过规则，`RemovedMarkup` 记下删了几个）与 AI provider（翻译页直接粘贴的原文）各洗一次；内置提示词第 4 条同步改成"标记已在上游删除，译文里不要再出现任何标记"——**提示词里刻意不再出现 `<font>`/`<color>` 这类字面写法**（举例反而可能诱导模型去写标签，而且探针用"请求体里是否出现 font/size="判断有没有漏标签时也会被提示词本身误伤）。
+  - **界面不再显示标签，且结果文字都能选中复制**：`ChatTranslationItem` 新增 `OriginalPreview`（160 字单行预览）与 `OriginalFull`（完整清洗文本，悬停 `ToolTip` 显示、右键复制原文复制的也是它）；列表里的原文/译文**改用只读 `TextBox`**（`TextBlock` 选不中文本，而用户明确要求"结果显示的所有文字都要能方便地复制"），外观与普通文本一致（无边框/透明底/无内边距）——之前 MOTD 那种多行原文会把行高撑得很大，右键复制出来的还是带标签的天书。
+  - **核验 ①（`StripProbe`，用户真实 MOTD 原文：2134 字符 / 82 个 `<...>` 标签）15/15 PASS**：清洗后 724 字符、10 个换行；链接文字与 `&`/`!` 等正文一字不少；引擎交给翻译器的文本无标签；provider 发出的 prompt 无标签；译文原样返回；meta 含"去标记 82"；术语后校验与名词短路回归正常；纯标记文本 → 明确失败；无标记文本 → 原样通过。
+  - **核验 ②（`ViewProbe`，12/12 PASS）**：把 `ChannelTranslationResultView` 挂到离屏窗口渲染，断言 XAML 绑定确实解析——原文行取到 `OriginalPreview`（值等于代码侧计算结果、`NoWrap`）、译文行取到 `Translation`、两者都是 `IsReadOnly=True` 的 `TextBox`、悬停 `ToolTip` 里取到 `OriginalFull`、截图落盘（`view_probe.png`，肉眼确认标题行 + 单行原文 + 译文三行，无 `<font>` 残留）。**这条探针当场抓到一个构建期查不出的崩溃**：`TextBox.Text` 默认 `TwoWay`，绑只读的 `OriginalPreview` 会抛 `XamlParseException`（详见 §9 第 27 条），补 `Mode=OneWay` 后转绿。
+  - **核验 ③**：`dotnet build` **0 错误**（WPF + Core）。三个探针（`MotdProbe`/`StripProbe`/`ViewProbe`）与截图、`_buildcheck` 都是一次性产物，核验后已清理（探针源码不再留在仓库里）；运行中的旧进程已退出，语言文件未改动（未引入重复键）。
+- **追加（用户要求"把 AI 翻译与本地数据库拆开，首个是 AI；AI 的界面按实际需要重新设计；两种结果都用富文本、方便像网页那样任选一段复制；AI 未配置时先提示去配置"）**：
+  - **中间版本（已被下一轮取代，保留结论）**：先做成"同一页 `TabControl` 两个页签（AI 在前 / 本地在后）"。这一版确立了 `Controls/RichTextPresenter.cs`（只读富文本，可任意拖选复制）、`LocalTranslationViewModel`（由 `TranslationPageViewModel` 改名瘦身：删掉"来源下拉"与远程源分支，只认 `TranslationService.LocalDatabase`）与 AI 页的"未配置整页引导 + 「去配置」直达设置页"三件事；页签位置曾用设置 `TranslationPage.ActiveTab` 记住，**下一轮改成导航子菜单后该设置与页签一起删掉**（连同 `TranslationPage.Provider` 一起成为"旧值留在 settings.json 里但不再读写"的历史键）。
+  - **核验（当时的 `PanelProbe`，33/33 PASS）**：TabControl 结构/默认页签、两视图 DataContext、未配置门控、富文本只读与局部选中、非流式与流式（SSE）端到端、失败路径、页签持久化、本地词库防抖回归（`Rifter` → `裂谷级`）。
+- **追加（用户要求"把 AI 翻译与本地翻译拆成翻译下的两个子菜单（像频道下的频道预警/监控那样）；AI 翻译 UI 改成 AI 桌面端那样的对话记录，显示全部翻译内容、可开多个对话；每条翻译带一个开关决定后续翻译要不要带上它当上下文，上下文长度可设置"）**：
+  - **导航改成两个子项**：`MainWindow.xaml` 里「翻译」由"单页导航项"改为**带 `MenuItems` 的分组**，子项 `Nav.TranslationAi`（AI 翻译 → `AiTranslationPage`）与 `Nav.TranslationLocal`（本地词库 → `LocalTranslationPage`），两者都 `NavigationCacheMode="Required"`，与「频道」下的子项写法完全一致。相应地删掉了原来的 `TranslationPage`/`TranslationPanelView`（宿主页 + 页签宿主）与设置里的 `TranslationPage.ActiveTab`。
+  - **AI 页 = 对话式记录**（`AiTranslationChatView` + `AiChatTranslationViewModel`）：
+    - 左侧**对话列表**（`AiChatSessionViewModel`）：`新建对话`、右键 `删除对话`/`清空当前对话`，每项显示标题（取第一条原文，可自动截断）、最后一条预览、更新时间；最近的排在最上面（产生新记录时把该对话 `Move` 到列表首位）。
+    - 右侧**完整记录**：每次翻译渲染成"原文气泡 + 译文气泡"（都用 `RichTextPresenter`，可任意拖选复制），译文气泡里带 `复制译文/复制原文` 与**「加入上下文」勾选框**、以及模型/耗时/token 与本次命中的术语；生成中显示"生成中…"（流式时增量直接长在气泡里），失败时气泡里显示红色原因。
+    - 底部**输入区**：方向下拉 + 端点摘要 + 多行输入（回车=翻译、Shift+回车=换行）+ `翻译/停止/清空/弹窗`；输入区上方一行显示"本次带上 N 条上下文"与**上下文条数下拉**（0/2/4/6/10/20）。
+    - 记录区用 `ItemsControl` + `ScrollViewer`（不是 `ListBox`）：列表项的选中语义会跟"在气泡里拖选文字"打架；新记录与翻译完成时由 VM 的 `ScrollToEndRequested` 事件驱动滚到底部。
+  - **上下文机制（用户要的"选择按钮 + 长度设置"）**：每条形如 `原文：… / 译文：…` 的一段文本，取自**同一对话里更早的、勾了「加入上下文」的、成功的**记录，按设置里的条数上限取**最近 N 条**（`AiTranslationSettings.ContextLimit`，设置键 `TranslationPage.Ai.ContextLimit`，0 = 完全不带；单侧文本超过 400 字符会截断，避免整段 MOTD 撑爆上下文）。这些行走 `TranslationRequest.Context`，由 `AiTranslationProvider.BuildMessages` 拼成"以下是同一对话里已经翻译过的前文（仅供理解上下文，不要翻译它们）"，**另一条对话的记录永远不会混进来**。设置页「AI 翻译 → 上下文条数上限」与 AI 页底部下拉改的是同一个键（页里快捷改会立刻写盘）。
+  - **历史落盘** `Services/Translation/AiTranslationHistoryService.cs`：`Configs/AiTranslationHistory.json`，**按对话整体 upsert**（不是整份覆盖，所以页面与弹窗同时开着不会互相抹掉），上限 40 个对话 / 每对话 200 条记录，空对话不落盘（点了「新建对话」没翻译不会留垃圾）；文件损坏时退回空表并记日志。
+  - **核验（`ChatProbe`，39/39 PASS）**：探针按真实启动顺序跑 `CoreInitializer.Init()`（真 SDE 数据库）+ 原始 `TcpListener` 的 mock 大模型服务（**记录每一次请求体**，按 `"stream":true` 返回 JSON 或 SSE），把 `AiTranslationChatView` 挂进离屏窗口后断言：
+    - 初始：无对话、未配置时整页引导且对话列表隐藏；配置后 `IsConfigured=true`。
+    - 记录：第 1 次翻译产生一条记录、译文与 meta 落位、会话标题取自第一条原文。
+    - **上下文真的进了请求体**：第 2 次翻译的请求体里出现第 1 条原文；把第 1 条的「加入上下文」关掉后，第 3 次请求体里**不再出现**它、而仍勾选的第 2 条还在；上下文设为 0 时第 4 次请求体里既没有第 1 条也没有第 3 条；设为 2 时第 5 次请求体只带最近两条（含 `Gamma three.`/`Delta four.`、不含更早的 `Alpha one.`）——同时校验了"逐条开关"和"长度上限"两件事。
+    - **对话隔离**：新建第二个对话后翻译，请求体里没有任何第一个对话的内容。
+    - **持久化**：历史文件已落盘；新 VM 重新载入后两个对话与逐条的上下文开关都保留；删除对话后文件里也只剩一个。
+    - 流式：SSE 三段增量拼成译文、meta 带流式用量；失败：连接被拒时该条记录 `ShowError=true` 且**不会被当作上下文**（`CanUseAsContext=false`）；清空当前对话后记录为零；富文本气泡 `IsReadOnly` 且能只选中一段。
+    - 本地词库页回归：输入 `Rifter` 不点按钮、350ms 防抖自动查到 100 条，`Rifter → 裂谷级`。
+    - 实机：`dotnet build` 0 错误；启动真实应用后用 UIA 展开左侧「翻译」→ 出现「AI 翻译 / 本地词库」两个子项，点开 AI 翻译后页面元素为"对话 / 新建对话 / 上下文 / 输入 / 空状态引导"，端点显示为用户配置的 `deepseek-flash`；点「本地词库」也正常渲染。探针、截图、临时日志目录与临时历史文件核验后全部清理（探针跑前先备份、跑完按原始字节还原 `settings.json` 与 `AiTranslationHistory.json`）。
+- **追加（用户对上一轮的四点修正要求）**：①"上下文开关不该每条翻译一个，应该**一个对话一个**，勾上后这个对话每次翻译都带上下文，**也不对上下文数量限制**"；②"发送的原文靠右显示，返回的译文保持靠左"；③"原文超过三行显示省略、末尾带展开按钮，点击才显示全部"；④"等待过程中不要用全局等待效果，改成**针对当前对话/当前这条**的加载效果显示在译文位置，等待期间还能继续发原文，下一条也在自己的译文位置显示等待"。
+  - **上下文改成对话级、且不限条数**：开关从"每条译文一个"移到**记录区底栏**（`CheckBox` 绑 `SelectedSession.UseContext`，`AiTranslationSession.UseContext` 落盘），一条对话只有一个。打开后 `BuildContext` 把此前**所有**"翻译成功"的记录按 `原文：… / 译文：…` 顺序全部带上（**不再有条数上限、也不再截断单条文本**；上一版的 `TranslationPage.Ai.ContextLimit` 设置项、设置页的「上下文条数上限」卡片、页底的条数下拉与相关语言键已全部删除）。底栏右侧仍显示状态文字："已开启：每次带上此前 N 条记录" / "未开启：每次只翻当前这一条"。
+  - **气泡对齐与三行折叠**：原文气泡 `HorizontalAlignment="Right"`、译文气泡靠左（实测 RichTextBox 在非拉伸时按内容宽度收窄，所以短消息的气泡会自然贴合文字）。原文超过三行时只渲染"前三行 + …"，末尾一个 `透明外观的「展开/收起」按钮`切换全文；三行是按**气泡宽度 + 字号折算的行数预算**（半角 74 单位/行、CJK 算 2 单位，`AiChatTurnViewModel` 里的 `CountLines`/`BuildPreview`），折叠态另外用 `MaxHeight=58` 兜底防止估算偏差时溢出。
+  - **每条译文自己的加载效果 + 并发翻译**：新增 `Controls/SpinnerIcon`（`ui:SymbolIcon` 旋转动画，`IsActive=false` 时**自身隐藏**；仍然不用 `ProgressBar`/`ProgressRing`，见 §9 第 17 条），放在译文标题行；没有增量时在译文位置再显示"正在翻译…"。**AI 翻译页不再调用 `PageNotifyService.ShowWaiting/HideWaiting`**（全项目现在只有其他页面还在用全局遮罩），`IsBusy` 门闩也去掉了：每次翻译各自持有一个 `CancellationTokenSource` 与自己的气泡，`_pending` 列表驱动"正在翻译 N 条…"与「停止」（停止 = 取消全部），输入框在发送时立刻清空，所以等待期间可以连着发下一条，第二、第三条的等待效果各自出现在自己的译文位置。并发时"带上下文"只统计**已经成功**的更早记录（还没出译文的并发条目自然被排除）。
+  - **核验（`ChatProbe2`，36/36 PASS）**：mock 服务支持按 `ResponseDelayMs` 延迟响应，用来制造真正的并发窗口。断言覆盖：长/短原文的折叠判定（长文预览以 `…` 结尾且 ≤3 行、展开后等于原文、按钮文字切换）、对话级开关默认关 + 关时请求体无历史、开时第 2 条请求带上第 1 条、**不限条数**（第 4 条请求把此前三条全带上）、关闭后又不带、**并发**（延迟 700ms 时连发两条 → `pending=2`、状态文字"正在翻译 2 条…"、输入框已清空、可视树里两个转圈都 `IsActive && Visible`、两条各自拿到自己的译文、完成后转圈全部停下、请求数正确）、**停止**（延迟中取消 → 该条标记"已停止"且不再 pending）、**原文气泡 `Right` / 译文气泡 `Left`**（直接从可视树读 `Border.HorizontalAlignment`）、历史落盘保留对话级开关、流式 SSE、失败记录在气泡里、富文本只读与局部选中、本地词库页防抖回归。截图（折叠态与"两条同时等待"的并发态）都人工看过：转圈只出现在等待中的那两条、失败气泡上没有残留图标。
+  - **小改（用户追加）**：气泡底部的操作条收成"一行两端"——左边是模型/耗时/token 与术语命中，**最右侧只留一个「复制译文」图标按钮**（`ui:Button` 只给 `Icon`、`Appearance=Transparent`，配 `ToolTip` + `AutomationProperties.Name`，与 token 信息同一水平线）；**「复制原文」按钮删掉了**（原文仍可在气泡里直接拖选复制，或用右键/快捷键）。实机复核：UIA 按钮集合里 `复制译文` 存在、`复制原文` 已消失，截图确认复制图标在 token 行最右侧。
+  - **小改 ②（用户追加："把气泡展示改成走 `ChatMarkupProtector.ToPlainText`"）**：**存盘保留原始文本，展示/复制/上下文一律用纯文本**——`AiChatTurnViewModel` 新增 `OriginalPlain`（构造时洗一次）与 `TranslationPlain`（译文每次赋值时洗）：
+    - 原文气泡的显示、**三行折叠判定与预览**都基于 `OriginalPlain`（所以 MOTD 的标签不再占行数，折叠出的三行是真内容）；
+    - 译文气泡显示 `TranslationPlain`（模型偶尔把标记照抄回来也挡掉），「复制译文」复制的也是它；
+    - 对话列表的**标题与预览**同样取纯文本（之前预览里会出现 `<font si…`）；
+    - **作为上下文发出去的也是纯文本**（`原文：{OriginalPlain} / 译文：{TranslationPlain}`）——否则第一条翻过的 MOTD 一旦被当上下文，标签又会从上下文里回到提示词，与"送模型前预清洗"自相矛盾。
+  - **核验（`CleanProbe`，17/17 PASS）**：带标签的真实形态 MOTD（`<font>`/`<br>`/`<a href>`/`&gt;`/`&amp;`）走一遍：纯文本里标签全无、`<br>` 变 2 个换行、实体解码正确（`EVE系统 > …`、`RMT & 刷屏`）、**存盘仍保留 236 字符的带标签原文**；折叠预览无标签且正好 3 行、展开后等于纯文本全文；模型返回里带 `<font>/<br>` 时 `TranslationPlain` 同样干净且 `<br>` 转换行；会话标题/预览无标签；**渲染后的可视树里两个气泡的富文本都不含 `<`**；开上下文翻译第二句时，请求体里出现纯文本正文（`Welcome to the EVE Help Channel`）且**不含任何标签属性**（`font`/`size=` 都不出现，连提示词里也不再出现字面标签）；另外写了一份**旧格式历史**（每条带已废弃的 `UseAsContext` 字段）验证仍能载入并按纯文本显示。截图已人工确认两个气泡里都是干净文字。
+- **追加（用户反馈"翻译这段内容会显示**已停止**"）——本轮抓到两个真 bug，先用探针复现、再修**：
+  - **现象**：把一整段频道置顶信息（带 82 个标记，5KB 上下）+ 聊天记录粘进 AI 页翻译，气泡上出现"已停止"（有时译文只写了一半）。
+  - **根因 ①（主因）**：`AiChatTranslationView.Unloaded → ViewModel.Dispose() → StopAll()`。**离开页面（切导航、页面被重新承载等）会把正在跑的请求全部掐掉**，而气泡里留下的文案就是"已停止"。实测复现（探针场景 6）：翻译途中把视图从窗口里摘掉一次 → `Unloaded=1`，该条立刻变成"已停止"、译文只落了 80 字。
+  - **根因 ②**：`ChatClient.StreamAsync` 的超时**根本没生效**——`StreamReader.ReadLineAsync(token)` 在 .NET 10 + HttpClient 响应流上"服务端卡住不出字"时不会因为令牌取消而返回，所以一个中途卡死的流会一直挂着（探针场景 2 修前：8 秒卡顿 + 2 秒超时设置 → 14.2 秒后**成功**返回，等于没超时）。
+  - **修法**：
+    1. `AiChatTranslationViewModel.Dispose()` 只退订语言事件、**不再取消请求**（页面是缓存的，切走再回来结果还在）；真正中止只由界面上的「停止」触发，并在日志里记一行"用户点了停止，取消 N 条"。
+    2. `ChatClient.StreamAsync` 改成**空闲超时**并用 `WaitAsync(TimeSpan, token)` 强制生效：每收到一段增量就把计时器往后推（`timeout.CancelAfter`），所以"生成很久但一直在出字"不会被砍，只有"连续 N 秒一个字都没有"才判超时（抛 `ChatException("请求超时（超过 N 秒没有收到新的内容）")`）。
+    3. VM 的 `catch (OperationCanceledException)` 区分来源：自己的令牌被取消 → "已停止"；否则 → "请求已中断或超时"（不再把超时说成"已停止"），并写日志。
+  - **核验（`TimeoutProbe`，10/10 PASS，修前 3 项 FAIL / 修后全 PASS）**：
+    - 场景 6（切页面）：修前 `错误=已停止`、修后 `错误=(无)`（请求照常跑完）；
+    - 场景 2（服务端卡住）：修前 14.2 秒后"成功"（假成功）、修后 5.3 秒给出"请求超时（超过 5 秒没有收到新的内容）"；
+    - 场景 1（**总时长 24.5 秒 > 超时设置 5 秒**、但每 200ms 都在出字）：两片都翻完、译文 341 字 —— 这条专门盯着"空闲超时"语义，若忘了在每片之后重置计时器就会在第 5 秒断掉；
+    - 场景 3（用户点停止）仍然是"已停止"；场景 5（正常翻译过程中 `Unloaded` 计数 = 0）；场景 4（非流式短文本）正常。
+- **追加（用户追问"最大输出 token=0 也只能 4000 字符？其他 AI 客户端几万字是怎么做到的？"）——按模型真实能力重做分片与思考模式**：
+  - **先把事实查清楚**（DeepSeek 官方文档，[Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing)、[Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode)）：用户配的 `deepseek-flash`（DeepSeek-V4.1-Flash）**上下文 1M token、最大输出 384K token**，而且**思考模式默认开启、effort = high**。也就是说：
+    - 原来的 `MaxChunkChars = MaxTokens × 2`（夹 400–4000，`MaxTokens=0` 时按 4000）**纯属自我设限**——4000 字符 ≈ 1000–2000 token，只占这个模型窗口的 0.1%；用户那段 5.7KB 的置顶信息本来一次就能发完。
+    - 长文本翻译真正的瓶颈是**输出上限**（模型一次能写多少 token），而不是输入；各家客户端无非两种做法：装得下就整段一次发，装不下就分片-合并（map-reduce，就是本项目的分片逻辑），输出被截断就**从断点续写**。输入与输出是两个独立上限——这也是"AI 客户端能一次吃下几万字"的原因（几万字 ≈ 几万 token，远小于 1M 的输入窗口）。
+    - 顺带解释了"为什么这么慢"：DeepSeek 默认的思考模式会在翻译前先写一大段思维链，而且**思考模式下 `temperature` 失效**（官方明确说明）。
+  - **改法（用户确认后实施）**：
+    1. **分片阈值改成显式设置** `TranslationPage.Ai.MaxChunkChars`（`AiTranslationSettings.MaxChunkChars`，设置页「单次请求最大字符数」），**默认 12000 字符**，**0 = 不分片**（整段一次发）；`MaxChunkChars()` 直接用它的值（不再从 `MaxTokens` 推算，也不再夹到 4000）。
+    2. **思考模式** `TranslationPage.Ai.ThinkingMode`（`ThinkingModes`：`auto`/`off`/`low`/`high`，设置页「思考模式」下拉），**默认 `off`**；`OpenAiChatProtocol.ApplyThinking` 写成 `{"thinking":{"type":"disabled"}}`（低/高强度则 `enabled` + `reasoning_effort`）。**安全阀**：`AiTranslationSettings.ResolveThinkingMode()` 只在"模型名或地址里含 deepseek"时才真的下发——OpenAI/Azure/Anthropic/Gemini 与各类网关不认识这个字段，硬发可能 400，所以它们一律退回 `auto`（不下发）。
+    3. **输出被截断自动续写**：`finish_reason == "length"` 时，用"原文 + 已译出的结尾 800 字符"再发一次，提示词要求"从断点继续、不要重复、不要解释"，最多续 3 次；仍没写完则在术语提醒栏显示"译文可能不完整：模型的输出上限把这一片截断了（已自动续写，仍未写完）…"。meta 里会标注 `续写 N 次` 与 `思考关闭`。
+  - **核验（`ChunkProbe`，15/15 PASS）**：默认值（阈值 12000 / 思考 off）；思考模式判定（DeepSeek 端点 → `off`、`gpt-4o-mini` → `auto`）；**请求体**（DeepSeek 的 body 里确实有 `"thinking":{"type":"disabled"}` 而 OpenAI 的 body 里连 `thinking` 字段都没有）；分片（20000 字符 + 阈值 12000 → 2 次请求；阈值 0 → **1 次请求**）；**续写**（mock 先返回 `PART1` + `finish_reason=length` → 自动再发一次、续写请求体里带着已译出的 `PART1` → 译文 `PART1PART2`；meta 含"续写 1 次 · 思考关闭"）；**续写用尽**（一直返回 length → 共 4 次请求即 1+3 次续写，并给出"译文可能不完整"的提示）。
+- **追加（用户要求"对话 header 应该可以重命名、翻译方向不应该只有中英文互译"）**：
+  - **方向改成"源语言 → 目标语言"两个代码**（新增 `TranslationLanguages`）：源语言 9 项（`auto` + 中/英/日/韩/俄/德/法/西），目标语言 8 项；`TranslationRequest(Text, From, To)` 与 `TranslationOutcome.From/To` 取代原来的 `TranslationDirection` 枚举（枚举整个删掉）。自动方向按**正文脚本**判定：汉字 → 中文、假名 → 日文、谚文 → 韩文、西里尔 → 俄文，其余按英文；目标语言缺失/与源相同（例如原文是中文却要求译成中文）时自动改成"源是中文就译英、否则译中"，**与原来的自动方向行为完全一致**。Core 的 `zh-CHS` 归一成 `zh`，两边可直接互转。
+  - **提示词与术语库**：方向写进**用户消息**（"请把下面的内容从英语 → 日语翻译，只输出译文："），系统提示词保持稳定（对 DeepSeek 的上下文缓存更友好），只在用户自定义提示词里出现 `{from}`/`{to}` 时才替换；**SDE 术语库只在中英这一对时注入**（翻日/俄/德…时注中英术语反而是错的）；续写请求也带上目标语言。缓存键里加了 `from->to`（换目标语言必须重新翻译，不能命中旧语言的缓存）。
+  - **本地词库仍然只做中英**：请求非中英组合时**明确失败**并给出原因（不静默返回空）；本地页的下拉也仍然只有"自动 / 英→中 / 中→英"三项，AI 页才是"源语言 + 目标语言 + ⇄ 对调"两个下拉。设置分两套：`TranslationPage.Ai.From/To` 与 `TranslationPage.Local.From/To`；旧的 `TranslationPage.Direction`（0/1/2）只在初始化时读一次用于**升级迁移**，之后不再写。
+  - **对话重命名**：`AiChatSessionViewModel` 增加 `BeginRename`/`CommitRename`/`CancelRename` + `TitleDraft`（草稿），标题栏双击、右侧铅笔按钮、会话列表右键「重命名对话」三种入口；回车确认、Esc 取消、失焦即确认；确认后写进 `AiTranslationSession.Title` 并立即落盘（清空标题则恢复成"按第一条原文自动取名"）。
+  - **核验（`LangProbe`，26/26 PASS）**：语言归一化（`zh-CHS` → `zh`）与 8 种目标语言；自动方向四种脚本（英→中、中→英、**日→中**、指定 en→ja）；**请求体实证**——从 JSON 里取出 user 消息，英译日时是"请把下面的内容从**英语 → 日语**翻译，只输出译文："，英译中时是"英语 → 中文"；**英译日不注入 SDE 中英术语库**（system 消息里是"本次没有命中术语"）；结果方向回传正确；**同一段文本换目标语言会重新请求**（缓存键含方向）；本地词库英译中正常（`Rifter → 裂谷级`）而 en→ja 明确失败；重命名全流程（自动标题 → 进入编辑态草稿=当前标题 → 确认后标题与模型都更新 → 取消不改 → **重新载入 VM 后自定义标题还在**）；界面（两个语言下拉分别是 9/8 项且是本地化语言名、⇄ 对调把 en→ja 变成 ja→en、未编辑时看不到标题输入框、点重命名后出现可见输入框）。截图人工确认：标题栏显示自定义名字 + 铅笔按钮、输入行是「源语言 ⇄ 目标语言」。
+  - **小改 ②（用户反馈："改名后左侧列表更新了但头部还是旧名字"、"语言选项应该提供自动两种语言互译，这样发中文还是英文都自动译成另一种"）**：
+    - **改名不同步的根因**：头部标题绑的是**主 VM 的 `SessionTitle`**（`SelectedSession?.Title` 的快照），而左侧列表绑的是**会话自己的 `Title`**。改名只让会话发了 `PropertyChanged`，主 VM 没转发，所以列表更新、头部不动。修法：主 VM 在 `SelectedSession` 变化时**订阅/退订该会话的 `PropertyChanged`**，把 `Title` 的变化转发成 `SessionTitle` 通知（头部随改名立即刷新）。
+    - **"自动检测"**（目标位置上的 `auto`，语义是"译成另一种语言"；**界面文案按用户要求就叫「自动检测」**，源/目标两处同名，靠位置区分）：`TranslationLanguages.TargetOptions` 在目标语言下拉**最前面**加了一项 `auto`（本地化键 `TranslationPage_Language_AutoTarget`，与源语言的"自动检测"分开一个键，方便以后改文案）。解析规则：目标为 auto / 为空 / 与源语言相同时，**源是中文就译成英文、否则译成中文**——于是「自动 → 自动」= **中英双向自动互译**：发中文自动译英、发英文自动译中、发日/俄等则译成中文；**新装默认就是 (auto, auto)**（旧的 `Direction=0` 迁移过来也是它），不用再改设置。本地词库页仍固定中英三项（它的"自动"本来就双向）。
+    - **核验（`AutoProbe`，15/15 PASS）**：四种解析（中→英、英→中、日→中、指定源+目标自动）；清掉四个方向键模拟"全新安装"后默认是 `auto/auto`；**端到端**——同一份设置下发中文时请求体里是"中文 → 英语"、发英文时是"英语 → 中文"（从 JSON 的 user 消息里取出来断言）；目标语言下拉第一项是「自动检测」（共 9 项）；**改名后头部立即显示新名字**（同时断言旧名字不再可见、VM 的 `SessionTitle` 同步、左侧列表也是新名字）。
+  - **小改 ③（用户追问："如果使用者是俄语，就不能自动俄语跟中文或者跟英文互译了"）——自动互译的语言对可配置**：
+    - **问题**：上一版把「自动检测」（目标位置）的翻转规则**写死成中↔英**（源是中文就译英、否则译中），所以俄语使用者拿不到"俄语 ⇄ 英语"或"俄语 ⇄ 中文"。
+    - **改法**：新增设置 `TranslationPage.Ai.PairA` / `TranslationPage.Ai.PairB`（**默认 中/英**，保持老行为），界面上在**目标语言选「自动检测」时**才显示一行「互译语言对：[A] ⇄ [B]」（带对调按钮；选具体目标语言时整行隐藏）。解析规则（`TranslationLanguageHelper.Resolve` 的 5 参重载）：
+      - 原文是 **B** → 译成 **A**；原文是 **A** → 译成 **B**；**其它语言 → 一律译成 A**（所以把 A 设成自己的母语即可：俄语使用者设成"俄语 ⇄ 英语"就是俄英双向 + 中/日等翻成俄语）。
+      - 目标语言是具体语言时按目标走（语言对不参与）；A/B 相同时自动把 B 换成另一种语言。
+    - **核验（`PairProbe`，18/18 PASS）**：六种解析组合（俄⇄英：俄→英 / 英→俄 / 中→俄；俄⇄中：俄→中 / 中→俄；默认 中⇄英 三条回归含"日文→中文"）；指定目标语言时语言对不参与；语言对落盘且**两种语言不允许相同**（`ru/ru` 自动变成 `ru/zh`）；**端到端**——设成俄⇄英后发俄文时请求体是"俄语 → 英语"、发英文时是"英语 → 俄语"；界面（目标=自动时两个语言对下拉都在、都是 8 种具体语言不含"自动"、对调按钮把俄⇄英变成英⇄俄、**切成具体目标语言后整行隐藏、切回自动又出现**）。截图人工确认输入行是「源语言 自动检测 ⇄ 目标语言 自动检测 互译语言对 俄语 ⇄ 英语」。
+  - **小改 ④（用户要求："译文超过 5 行后提供收起按钮，跟原文一样；输入下一条原文后自动把上一次译文收起来，只自动收一次；手动展开过的不再自动收"）**：
+    - `AiChatTurnViewModel` 的折叠逻辑抽成**带参数的** `CountLines(text, unitsPerLine)` / `BuildPreview(text, maxLines, unitsPerLine)`，于是原文（3 行、气泡宽 560 → 74 半角单位/行）与译文（**5 行**、整行宽度 → 100 半角单位/行）共用同一套估算；译文侧新增 `CanExpandTranslation` / `IsTranslationExpanded` / `TranslationDisplay` / `TranslationExpandLabel` / `ToggleTranslationExpansion()`，界面在译文文本下方右对齐放「展开/收起」按钮，收起态 `MaxHeight=96`（约 5 行）并隐藏内部滚动条。
+    - **自动收起（只收一次）**：`TranslationExpandTouched` 记录"使用者亲手点过展开/收起"；`AiChatTranslationViewModel` 在**新的一条原文入队后**调用 `session.AutoCollapsePreviousTranslations(newTurn)`，只对"没被干预过且确实超行"的更早记录收起。新来的那条默认**展开**（能看着译文流式长出来），重新载入历史时只有最后一条展开、其余收起（长对话不会一打开就铺满屏幕）。
+    - **核验（`CollapseProbe`，17/17 PASS）**：长译文出现收起按钮、新来的默认展开且按钮是「收起」、短译文没有按钮；自动收起后**正好 5 行 + 省略号**、按钮变「展开」、重复自动收起幂等；**人工展开过之后再自动收起不动它**；流式增量里"长过五行"时按钮才出现；**端到端**三条消息——发第 2 条后第 1 条被自动收起（`t1=False, t2=True`），人工展开第 1 条后再发第 3 条 → **第 1 条保持展开**、第 2 条被自动收起（`t1=True, t2=False, t3=True`）；界面（可见的展开/收起按钮 3 个、最新译文气泡是全文、被收起的气泡 `MaxHeight=96`）。截图人工确认：上一条译文显示 5 行 + 「展开」，最新一条显示全文 + 「收起」。
+- **追加（用户要求"把频道翻译移到翻译子菜单下面，然后根据 AI 翻译把频道翻译功能重构"）**：
+  - **导航**：频道翻译从「频道」组移到「**翻译**」组，现在是 `AI 翻译 / 频道翻译 / 本地词库` 三项（`MainWindow.xaml` 里只搬了 `NavigationViewItem`，「频道」下留 5 项）。
+  - **按 AI 翻译页那一套重构**（用户选的是"保留三卡片，只把渲染/交互升级"+"加上下文、默认开"）：
+    1. **抽公共实现**：行数预算抽成 `Services/Translation/TextCollapse.cs`（`CountLines` / `BuildPreview` / `IsWide`），AI 页气泡与频道列表共用——原来 `AiChatTurnViewModel` 里那份私有实现已删除。
+    2. **渲染与交互**：频道结果列表换成 `RichTextPresenter`（可任意拖选复制）——原文保持**单行预览**（频道刷屏，列表要紧凑）+ 悬停看全文；译文**超过五行折叠**并提供「展开 / 收起」（`ChannelTranslationItemViewModel` 包一层，与 AI 页同一套 96px 收起高度）；每条的 **meta**（模型·耗时·token）与**术语命中/术语提醒**、`去标记 N` 提示都按 AI 页的样式显示，**复制译文图标放在 meta 行最右侧**；右键菜单里的复制原文/译文保留。
+    3. **meta/术语真正落进条目**：引擎把 `TranslationOutcome.Meta` / `GlossaryHits` / `GlossaryWarning` 写进 `ChatTranslationItem`（以前只有译文和错误）。
+    4. **带上上下文（默认开、条数可设）**：`ChatTranslationEngine` 维护"每个 **角色+频道** 最近若干条已译记录"（形如 `原文：… / 译文：…`，内存上限 20 条），按 `ContextLimit`（默认 4）取最近几条作为下一条的上下文发给模型；参数卡里多了「带上上下文」开关与「上下文条数」。**不同频道互不串**，关掉就逐条独立。
+    5. **方向跟共享设置**：不再写死"外文→中文"，改用「AI 翻译」页的源/目标语言与互译语言对（引擎的默认翻译委托读 `TranslationSettingService.AiFrom/AiTo`，provider 自己解析语言对），频道页只读显示当前方向（改一处两处生效）。
+    6. **按角色的开关随消息入队**（`ChatTranslationOptions.FromSetting`）：跳过自己/只译非中文/最短长度/上下文这些**原来是挂在共享引擎上的**，多开两个角色时后启动的会覆盖前一个；现在每条消息带自己的开关快照，顺带修掉这个老问题。
+    7. **未配置整页引导**：AI 未配置时整页只显示引导（与 AI 翻译页同一套文案/按钮：「去配置」直达设置页、「重新检测」），不再只是顶部一条黄条。
+- **追加（用户报的崩溃："首次打开/Configs 里没有 ESILicense.txt 时 System.NullReferenceException，栈顶在 Core.Log.Error 第 39 行"）**：
+  - **根因**：`CoreInitializer.Init()` 里 `Log.Init()` 原来排在**很后面**（数据库初始化之前才调），而它前面的 `ApplyEsiCredentials()` 在找不到 `Configs/ESILicense.txt` 时会 `Log.Error("未找到 …")`；此时 log4net 的 `log` 字段还是 **null** → `log.Error(...)` 抛 NRE。**真正的信息被 NRE 盖掉，App.OnStartup 直接崩**（首次运行必然复现：Configs 是新建的，里面当然没有 ESILicense.txt）。
+  - **修法**：
+    1. `Log` 全面加固：**懒初始化**（任何一次写日志发现没初始化就先 `Init()`）、所有级别（Info/Error/Warn/Debug/Fatal）**全程 try/catch、绝不抛异常**（写不进去就退到 `Debug/Console` + `Logs/fallback.log` 兜底）、事件订阅者抛异常也吞掉、`Init()` **幂等**、`log4net.config` 缺失时自动挂一个最小 `RollingFileAppender` 兜底、`GetLogFile()` 空安全。
+    2. `GetLogPath()` 兜底：`Config.AppDataPath` 在 `CoreInitializer` 里是**晚于**日志初始化才赋值的（null 会让 `Path.Combine` 抛异常、日志就没了），现在为空时退回 `%LocalAppData%\TheGuideToTheNewEden`；`Init()` 会先确保日志目录存在。
+    3. `CoreInitializer.Init()` 把 `Log.Init()` 提到**第一行**（在设置/凭据/角色/结构/数据库之前），后面的那次 `Log.Init()` 删掉。
+    4. 首次运行"没有 ESILicense.txt"是**正常状态**（要等用户授权），那条日志由 `Log.Error` 降为 `Log.Warn`，不再污染错误计数（`ScalperPage` 会读 `Log.GetErrorCount()`）。
+  - **核验（`LogProbe` 两个模式，8/8 + 6/6 PASS）**：
+    - `lazy` 模式（复现旧崩溃点）：进程刚起来 `Log.GetInstance()==null` → **在 `Log.Init()` 之前调 `Log.Error` 不再抛异常**、`GetLastError()` 记得住、错误计数 +1、Info/Warn/Debug/Fatal/`Error(Exception)` 全部安全、`Init()` 可重复调用、`GetLogFile()` 能拿到路径且那条提示**确实写进了日志文件**。
+    - `firstrun` 模式（用户的真实场景：Configs 里没有 `ESILicense.txt`）：直接 `CoreInitializer.Init()` **不抛异常**、Logger 就绪、日志里能看到「未找到 Configs/ESILicense.txt」这条 WARN、Configs 自动创建、`settings.json` 生成、`DatabaseReady=True`。
+    - 实机日志佐证（`%LocalAppData%\TheGuideToTheNewEden\Logs\20260913.txt`）：`2026-09-13 23:49:53,793 [1] WARN : 未找到 Configs/ESILicense.txt，无法进行新的 ESI 授权` —— 以前就是这一行把界面写崩的。  - **核验（`ChannelProbe`，19/19 PASS）**：开关快照五项映射；**上下文**——第 1 条无上下文、第 2 条带上第 1 条的原文+译文、**第 4 条只带最近 2 条**（上限生效、最早那条被丢掉）、换频道不带另一频道的、关掉开关后每条都不带；meta 与术语命中确实进了条目；条目包装（原文单行去标记、长译文默认收起 5 行 + 省略号、展开变全文且按钮变「收起」、复制的是纯文本、meta/术语/去标记的显隐标记正确）；界面（有「展开」按钮、有复制译文图标、译文富文本收起态 `MaxHeight=96`）；方向——频道页显示的方向来自共享设置（俄语 ⇄ 英语 自动互译），且**用本地 mock 收请求体验证**：频道翻译走 provider 时 user 消息是"请把下面的内容从俄语 → 英语翻译"。
+
+
+
+
+
+
+
+
+
 
 ---
 
@@ -1103,6 +1280,22 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 25. **翻译没有批量模式**（阶段 46 遗留）：一次只查一个名词；"粘贴一份物品清单逐行出译文"未做。
 26. **频道翻译（ChannelTranslationPage）仍是导航占位**：它对聊天正文做通用文本翻译，需要与第 24 条同一套能力，届时可复用 `ITranslationProvider` 与语言判定，并复用频道日志观察者（`ChannelIntelObserver` 那一套）。
 27. **`Converters/TypeImageConverter` 在受限环境下会抛异常**（阶段 46 核验时暴露）：它走 `BitmapImage.UriSource` 的 WPF URI 下载路径，会经 `MS.Win32.WinInet.get_InternetCacheFolder()`；该调用失败时抛 `COMException 0x80072EE4` 并记一条 ERROR（图标空白，功能不受影响）。翻译页已改走 `HttpClient` + 同线程解码 + `Freeze()`（估价页同一做法）绕开该路径；**共用转换器本身未改**，使用它的 `ChannelMarketWindow` 若在同类环境出现该日志，可照同一方式替换。
+28. **AI 翻译（阶段 47）的边界**：只在**本地 mock 服务**上做过完整核验——真实服务商（OpenAI/DeepSeek/通义/GLM/Kimi/Azure/Claude/Gemini）需要用户自己的 Key，本轮未实测任何一家；协议层的请求形状与响应/流式解析已按各家文档逐字段核对并有断言覆盖，但**首次接入请先用设置页的「测试连接」**。
+29. **术语库只覆盖 SDE 里的名词**（阶段 47）：物品/舰船/装备/星系/星域/空间站可约束（实测 57,010 条）；**结构（建筑）名不在 SDE 里**（要走 `StructureService` 的 ESI 解析），玩家/军团/联盟名也不在——这些只能靠模型自己或后续的"用户术语表"。
+30. **AI 翻译的 Key 是明文**（阶段 47）：存在共用 `settings.json` 的 `TranslationPage.Ai.ApiKey`，与 `ESILicense.txt` 同一坦诚程度；要更强保护可后续换 DPAPI（`ProtectedData`）。日志里不会输出 Key（异常信息只带 HTTP 状态与服务端 message）。
+31. **AI 翻译暂无并发与批处理**（阶段 47）：一次只发一个请求，没有按行批量、没有速率限制器；频道翻译（S4）已把多角色多频道的消息收敛到**一条队列串行翻译**（按次计费 + 易限流下最稳），但"一次请求翻多行"的批量还没做，频道刷屏时 token 消耗与延迟仍然线性增长。
+32. **术语库每进程重新抽取**（阶段 47）：实测 57,010 条 241ms、索引 234ms，约 0.5s 一次，只在首次使用 AI 源或打开设置页时发生；未做落盘缓存（避免与 SDE 更新脱节），如嫌慢可加"版本 + 数据库时间戳"校验的缓存文件。
+33. **语言字典重复键 = 应用启动即崩，且没有任何日志**（阶段 47 实测踩到）：`Resources/Languages/*.xaml` 里同名键会让 `ResourceDictionary` 加载抛 `ArgumentException: Item has already been added`；异常发生在 `App.xaml` 合并字典阶段，**`dotnet build` 0 错误、应用日志 0 字节**，进程以 `0xE0434352` 退出，现场只剩"窗口没出现"。**改语言文件后请查重键**：`(Select-String -Path zh-CN.xaml -Pattern 'x:Key="([^"]+)"' -AllMatches)` 分组看 count>1；或用本项目那次用的 `PageProbe` 思路（加载应用级资源字典并直接构造页面），它能把完整异常链打出来。
+34. **频道翻译（S4）的验证边界**：预清洗/跳过规则/队列/失败去重/设置落盘都是**离线探针**（20/20 断言，注入替身翻译器；追加的 `StripProbe` 15/15 用用户真实 MOTD 覆盖清洗链路，`ViewProbe` 12/12 覆盖列表渲染与可选中复制）验证的；实机只验证到"页面渲染 + 未配置提示"（真实聊天日志 + 真实模型未跑，需要用户 Key 与游戏内频道）。另外频道翻译的**触发关键词依赖 Core 观察者的 `Important` 语义**（不填关键词 = 全部消息都翻译）。
+35. **"AI 新词候选"是启发式，会有误报**（阶段 47 S5）：规则是"大写开头 + 术语库没有 + 译文里没原样出现"，因此句子里的普通英文词（如 `Warp`、`Hold`）也可能进候选——所以候选**只排队、由人确认**，并提供"忽略"（持久化到忽略名单）。若误报过多，可把规则收紧成"多词短语"或"含数字/连字符"，或只对 ≥2 次出现的词入队。
+36. **用户术语表的生效时机**（阶段 47 S5）：改动会立即反映到术语匹配与 AI 缓存键（签名变化 → 缓存不命中），**不需要重启**；但已经在跑的那条频道翻译请求不受影响（下一条生效）。若发现新术语"没生效"，先确认 `Configs/UserGlossary.json` 里确实写入了（设置页列表与文件都会显示）。
+37. **"没有译文输出"先看这两条**（阶段 47 追加）：① 若提示"模型没有返回译文（输出被「最大输出 token」截断）"→ 去设置页把**最大输出 token** 调大（或设 0 交给服务端默认）；如果用的是**推理模型**（响应里只有思维链），请换普通对话模型。② MOTD/长文本请确认已在渠道页点过「开始」——「频道置顶信息」是加入频道时写进日志的，应用只会在**会话启动时补翻日志尾部 20 行**，更早的历史消息不会被翻（这是有意的成本控制）。
+38. **翻译页输入框已改为多行**（阶段 47 追加）：回车=查询、**Shift+回车=换行**（`PreviewKeyDown` 实现，因为多行 `TextBox` 会在 `KeyDown` 类处理器里吞掉回车）。粘贴整段 MOTD/邮件正文不会再被折平。
+39. **AI 翻译的对话历史是本地明文**（阶段 47 追加）：存在 `Configs/AiTranslationHistory.json`，上限 40 个对话 / 每对话 200 条记录（超出丢最久未更新的），**没有加密**（与 `settings.json`/`UserGlossary.json` 同等坦诚）；内容就是用户翻过的原文与译文，介意的话可以直接删这个文件（不会影响设置）。另外落盘粒度是"按对话整体 upsert"：页面与弹窗各开一个实例没问题，但在两个实例里同时编辑**同一个**对话属于异常用法（没有逐条合并）。
+40. **上下文只作用于 AI 翻译页，而且是"对话级、不限条数"**（阶段 47 追加）：频道翻译是逐条独立翻译（每条消息自成一句，混入前一条反而容易串味），不消费对话上下文；`TranslationRequest.Context` 这条通路目前只有 AI 翻译页在用。对话级开关打开后会把此前**所有**成功记录都带上，**没有条数或 token 上限**——长对话（几十条、每条又是整段 MOTD）会让提示词迅速膨胀，遇到"上下文超限"一类的报错时，新建一个对话即可重置。另外"并发翻译同一对话"时，上下文只包含**已经成功**的更早记录。
+41. **AI 翻译页可以并发请求**（阶段 47 追加）：等待期间允许继续发送，每条一个请求、各自一个取消令牌，没有队列与并发上限（点「停止」会取消**全部**在跑的请求）。代价是"连发 5 条"会同时产生 5 个请求——按次计费的服务商请自行留意；相册式的顺序由本地记录顺序保证，与返回先后无关。
+42. **长文本翻译的两个真实上限**（阶段 47 追加，已按 DeepSeek 官方参数重做）：**输入上限（上下文窗口）与输出上限是两件事**。以 `deepseek-flash` 为例，上下文 1M token、最大输出 384K token —— 所以"几万字的原文"本身根本不是问题，瓶颈在**输出**（一次能写多少 token）。本项目的处理：分片阈值由设置决定（`TranslationPage.Ai.MaxChunkChars`，默认 12000 字符，0 = 不分片），`finish_reason=length` 时**自动从断点续写**（最多 3 次），续不完会明确提示"译文可能不完整"。默认 12000 字符的意义是"首段结果更快出现、单次失败损失更小"，并不是模型限制；真嫌慢/嫌请求多都可以在设置页调。
+43. **思考模式默认关闭（仅 DeepSeek 系生效）**（阶段 47 追加）：`deepseek-flash` 的思考模式默认开启且 effort=high，翻译前会先写一大段思维链——又慢又贵，而且**思考模式下 `temperature` 无效**。所以设置页新增「思考模式」，默认 `off`；由于 `thinking`/`reasoning_effort` 是 DeepSeek 专有字段，本项目只在"模型名或地址含 deepseek"时才下发（`AiTranslationSettings.ResolveThinkingMode`），别的服务商保持 `auto`（不下发），避免它们不认识该参数直接 400。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -1199,6 +1392,24 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     - **`TrailingContent` 会拉伸到整条标题栏**：`TitleBarButton`（最小化/最大化/关闭）固定 **44×30 且 `VerticalAlignment=Top`**，而 `TrailingContent` 的 `ContentPresenter` 没设垂直对齐（默认 `Stretch`）→ 塞进去的自定义按钮被撑到标题栏高度（默认 48），图标居中后比三个系统按钮**低约 11 DIP**（探针实测 11.0，用户一眼就能看出"错位"）。修法：自定义按钮显式 `Width="44" Height="30" VerticalAlignment="Top"`（实测高度差 0.0）。
     - **标题栏里的自定义按钮本来就能收到点击**：`TitleBar` 自带 `WM_NCHITTEST` 钩子——鼠标落在 `Header` / `CenterContent` / `TrailingContent`（按元素矩形判断 `IsMouseOverElement`）范围内时**不返回 `HTCAPTION`**，交给正常命中测试（探针实测：置顶按钮处 `HTCLIENT(1)`、关闭按钮处 `HTCLOSE(20)`）。所以 `WindowChrome.IsHitTestVisibleInChrome` 对它是多余的；本项目仍补上作双保险，不影响行为。
     - **"被拥有的窗口"看起来永远置顶**：`Owner = 主窗口` 的窗口按 Windows 规则**恒在宿主之上**，于是"取消置顶"和"置顶"在应用内看起来一模一样（用户实测反馈："置顶按钮没有生效，一直都是置顶"——而 `Topmost` 与 `WS_EX_TOPMOST` 其实都正常翻转）。需要真正的置顶语义时**不要设 `Owner`**（本项目翻译弹窗改为不拥有 + 手动居中到宿主），或明确把"置顶"解释为"压在其他程序之上"。
+
+27. **`TextBox.Text` 默认是 `TwoWay` 绑定，绑到只读属性会在渲染时抛异常**（阶段 47 追加）：为了让"结果显示的所有文字都能选中复制"（WPF 的 `TextBlock` 不能选文本），把频道译文列表的原文/译文换成了只读 `TextBox`，其中的 `OriginalPreview` 是**只读计算属性**（`=> …`）——`TextBox.Text` 的 `BindsTwoWayByDefault` 为 true，于是行模板一被实例化就抛 `XamlParseException: 无法对"…OriginalPreview"类型的只读属性进行 TwoWay 或 OneWayToSource 绑定`，列表直接渲染不出来。**`dotnet build` 依旧 0 错误**（绑定模式是运行时解析的），只有把控件真正渲染出来才会暴露——本次能抓到它，靠的正是那个把结果视图挂进离屏窗口渲染的 `ViewProbe`。
+    - 修法：这类只读文本一律写 **`Text="{Binding X, Mode=OneWay}"`**（本项目 `TranslationPanelView` 早就这么写，新加的频道结果行漏了）。
+    - 排查手段：全文扫"`TextBox` 的 `Text` 绑定里没写 `Mode=`"的地方——本项目实测 54 处 `TextBox.Text` 绑定里只有 4 处没写，而那 4 处（`InputText`/`SearchText` 这类输入框）绑的都是可写属性、属正常；**只读属性必须显式声明 `Mode=OneWay`**。
+
+28. **`TabControl` 只把"当前页签"的内容放进可视树**（阶段 47 拆页签时踩到，两条后果都要记住）：
+    - **子控件找不到不等于没写对**：探针第一次跑就在 `FindFirst<LocalTranslationPanelView>(view)` 上返回 `null`（那是没被选中的页签），必须先 `SelectedIndex = 1` 再查——排查界面结构时别被这一点误导。**`x:Name` 的元素实例是存在的**（XAML 里已构造），只是不在可视树里。
+    - **`Loaded`/`Unloaded` 正好等价于"进入/离开这个页签"**：本项目据此把两个页签的 VM 生命周期挂在自己的 `Loaded → Init()` / `Unloaded → Deactivate()` 上，面板整体离开页面时再由宿主统一 `Dispose()`——**`Deactivate` 只退订语言事件、不取消在跑的请求**（切走再切回来还能看到结果），只有整页离开才取消（`Unloaded` 早于宿主 `Unloaded`，两者是"先轻后重"的关系）。
+    - （该页签方案后来改成了左侧导航的两个子菜单，页签本身没有了；但上面两条结论对任何 `TabControl` 都成立。现在两个翻译页各自把 VM 的生命周期挂在 `Loaded → Init()` / `Unloaded → Dispose()` 上：它们是独立页面，离开即收尾、不需要"轻/重"两档。）
+
+29. **`StreamReader.ReadLineAsync(token)` 在 HTTP 响应流上不会因为令牌取消而返回**（阶段 47 追加，实测于 .NET 10 + `HttpClient`）：流式读取里哪怕超时令牌已经触发，只要服务端"卡住不出字"，`ReadLineAsync(timeout.Token)` 就一直挂着——**超时设置形同虚设**（探针实测：2 秒超时 + 8 秒卡顿，最后 14.2 秒后"成功"返回）。正确写法是把读取包一层托管等待：
+    ```csharp
+    line = await reader.ReadLineAsync(CancellationToken.None).AsTask()
+        .WaitAsync(TimeSpan.FromSeconds(idleSeconds), timeout.Token);
+    ```
+    `WaitAsync` 立刻响应超时/取消（超时抛 `TimeoutException`，取消抛 `OperationCanceledException`），被放弃的那次读在随后释放 response/stream 时自然作废。另一个配套结论：**流式超时应该是"空闲超时"**（每收到一段增量就 `CancelAfter` 重置），否则长文本生成（几分钟）会被"总时长超时"砍掉。
+30. **视图 `Unloaded` 里不要取消在跑的请求**（阶段 47 追加，用户反馈"翻译显示已停止"的根因）：`UserControl.Unloaded` 在**切换导航、页面被 Frame 重新承载**等场景都会触发，而本项目的页面是 `NavigationCacheMode="Required"` 常驻缓存的——在 `Unloaded → VM.Dispose()` 里 `Cancel()` 会让"用户只是切了个页面"变成"正在跑的请求被静默取消"，界面上留下的就是一句"已停止"。**只退订事件、别动请求**；要中止请走界面上的显式「停止」，并在日志里记一行原因，避免下次还要靠猜。
+
 
 ---
 
@@ -1328,15 +1539,53 @@ Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更
 ```
 Core/Services/DB/TranslationDbService.cs        本地库翻译：原文库模糊匹配 + 译文库批量为对照（每类名词 2 次查询，完全匹配优先，译文缺失返回 null）
 Core/Services/DB/DBService.cs                  新增 MainDbReady / LocalDbReady（外部判断数据库是否载入，避免 NullReferenceException）
-Services/Translation/ITranslationProvider.cs   翻译源契约 + 方向/请求/结果模型（结果复用 Core TranslationItem）
+Services/Translation/ITranslationProvider.cs   翻译源契约 + 方向(源/目标语言)/请求/结果模型（结果复用 Core TranslationItem）
+Services/Translation/TextCollapse.cs          文本行数预算与"前 N 行预览"（AI 气泡与频道列表共用）
+Services/Translation/ChatTranslationOptions.cs 频道翻译的按角色开关快照（随消息入队，避免多角色互相覆盖）
+Services/Translation/TranslationLanguages.cs    语言代码表（auto + 中英日韩俄德法西）与中英成对判定
+Services/Translation/TranslationLanguageHelper.cs  按正文脚本判定源语言 / 方向解析 / 语言代码→本地化键
 Services/Translation/LocalDbTranslationProvider.cs  本地数据库源（自动方向，查不到再试另一侧）
 Services/Translation/TranslationService.cs     已注册翻译源 + 按 Key 取源（接入在线翻译只需在此多注册一个）
-Services/Translation/TranslationLanguageHelper.cs  CJK 判定 / 方向解析 / 语言代码→本地化键
-Services/Settings/TranslationSettingService.cs TranslationPage.Provider / TranslationPage.Direction（共用 settings.json）
-ViewModels/Translation/TranslationPageViewModel.cs   翻译页 VM（防抖查询/方向/来源/复制/语言切换重建）
-ViewModels/Translation/TranslationMatchViewModel.cs  一条结果（本地化类型与语言标签 + 描述 + 异步物品图标）
-Views/UserControls/TranslationPanelView.xaml(.cs)    翻译面板（页面与"弹窗"共用同一份标记；弹窗按钮可关）
-Views/Pages/TranslationPage.xaml(.cs)                翻译页（原占位页 TranslationPage.cs 已删除；MainWindow 注册不变）
+Services/Settings/TranslationSettingService.cs     翻译设置（AI/本地各一套 From-To + AI 全套参数，共用 settings.json）
+ViewModels/Translation/LocalTranslationViewModel.cs  「本地词库」页 VM：输入即查（350ms 防抖）/方向/结果/复制/语言切换重建
+ViewModels/Translation/AiChatTranslationViewModel.cs 「AI 翻译」页 VM：配置门控 / 多对话 / 对话记录 / 对话级上下文 / 并发翻译与逐条取消
+ViewModels/Translation/AiChatSessionViewModel.cs     一个翻译对话（标题/预览/记录集合/新建与清空/**对话级上下文开关**）
+ViewModels/Translation/AiChatTurnViewModel.cs        对话里的一条记录（原文气泡三行折叠+展开、译文状态、模型信息）
+ViewModels/Translation/TranslationMatchViewModel.cs  本地库一条结果（本地化类型与语言标签 + 描述 + 异步物品图标）
+Services/Translation/AiTranslationHistoryService.cs  AI 对话历史落盘（Configs/AiTranslationHistory.json，按对话 upsert，40×200 上限）
+Controls/RichTextPresenter.cs                        只读富文本展示（Text → FlowDocument，可任意拖选复制；对话气泡与本地库详情共用）
+Controls/SpinnerIcon.xaml(.cs)                       行内加载指示（旋转图标，IsActive=false 时自身隐藏；供"某条译文正在翻"用）
+Views/UserControls/AiTranslationChatView.xaml(.cs)   AI 页：左对话列表 + 右对话记录（原文/译文气泡 + 每条"加入上下文"）+ 底部输入
+Views/UserControls/LocalTranslationPanelView.xaml(.cs) 本地词库页：左匹配列表右译文详情
+Views/UserControls/TranslationPopup.cs               两个翻译页的「弹窗」宿主（各一个单例 ToolWindow，弹窗内视图独立实例）
+Views/Pages/AiTranslationPage.xaml(.cs)              AI 翻译页（导航「翻译 → AI 翻译」，只承载对话视图）
+Views/Pages/LocalTranslationPage.xaml(.cs)           本地词库页（导航「翻译 → 本地词库」，只承载面板）
+Core/Services/DB/TranslationDbService.cs            阶段 47 追加 ExtractGlossary()：抽全量中英术语对（57,010 条 / 241ms）
+Services/Translation/Llm/ChatModels.cs              协议层模型：消息/端点/请求/结果/用量/流式状态/ChatException
+Services/Translation/Llm/IChatProtocol.cs           协议适配契约（BuildRequest/ParseResponse/ParseStreamLine/DescribeError）
+Services/Translation/Llm/OpenAiChatProtocol.cs      OpenAI 兼容（含地址归一化）+ AzureOpenAiChatProtocol（部署名/api-key/api-version）
+Services/Translation/Llm/AnthropicChatProtocol.cs   Anthropic Messages（顶层 system / max_tokens 必填 / 事件流）
+Services/Translation/Llm/GeminiChatProtocol.cs      Google Gemini（systemInstruction / contents / alt=sse）
+Services/Translation/Llm/ChatProtocolFactory.cs     协议注册表（openai / azure-openai / anthropic / gemini）
+Services/Translation/Llm/ThinkingModes.cs           思考模式取值（auto/off/low/high；DeepSeek 专有，默认关闭）
+Services/Translation/Llm/ChatClient.cs              HTTP 调用：重试退避、每请求超时、流式读取、错误归一化、测试连接
+Services/Translation/GlossaryService.cs             术语库：抽取+索引+命中（英文词起点子串 / 中文 CJK 滑窗）+打分去重+注入块
+Services/Translation/AiTranslationProvider.cs       语义层：提示词+术语注入+精确短路+缓存+清理+术语后校验
+Services/Translation/TranslationCache.cs            结果缓存（一键一文件，键含术语库签名与提示词）
+Services/Translation/AiTranslationSettings.cs       AI 设置模型（协议/地址/Key/模型/温度/token/超时/术语/上下文条数/流式/缓存/提示词）
+Views/Pages/Settings/AiTranslationSettingPage.xaml(.cs)  设置子页「AI 翻译」（含测试连接、重新载入术语库、清空缓存）
+Services/Translation/ChatMarkupProtector.cs         聊天标记预清洗（<br>→换行、其余 <...> 标签删除；ToPlainText/ToSingleLine）
+Services/Translation/ChatTranslationEngine.cs        频道翻译引擎：单条队列串行、预清洗、跳过规则、失败去重（可注入替身）
+Services/Settings/ChannelTranslationSettingService.cs 每角色的频道翻译设置（Configs/ChannelTranslationSettings.json，与 WinUI 同格式）
+Services/ChannelIntel/ChannelTranslationSession.cs   每角色会话：勾选频道 → Core 观察者 → 入队翻译
+ViewModels/Channel/ChannelTranslationViewModel.cs    频道翻译页 VM（角色/频道/参数/上下文/方向/未配置门控/实时译文集合）
+ViewModels/Channel/ChannelTranslationItemViewModel.cs 频道译文一条（纯文本预览、译文 5 行折叠、meta 与术语展示）
+Views/UserControls/ChannelTranslationResultView.xaml(.cs) 实时译文视图（页面与弹窗共用；右键复制原文/译文）
+Views/Pages/ChannelTranslationPage.xaml(.cs)         频道翻译页（原占位页 ChannelTranslationPage.cs 已删除；MainWindow 注册不变）
+Services/Translation/UserGlossaryService.cs         用户术语表（Configs/UserGlossary.json）：注入提示词优先级最高 / 覆盖本地库源 / 参与缓存签名
+Services/Translation/GlossaryCandidateService.cs    AI 新词候选（Configs/GlossaryCandidates.json）：启发式排队 + 人工确认 + 忽略名单
+Views/Pages/Settings/GlossarySettingPage.xaml(.cs)  设置子页「术语表」：用户术语增删 + 候选确认 + 术语库状态
+Services/ChannelIntel/ChannelChatLogReader.cs       聊天日志尾部补翻（会话启动时把 MOTD 与最近 20 行一起翻译）
 ```
 
 **主窗口标题带版本号**（阶段 44 附带）：

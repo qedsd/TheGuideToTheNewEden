@@ -146,5 +146,21 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!--
+        翻译相关页面共用的"字段标签 / 详情标签"（阶段 46 起先在翻译面板里定义，阶段 47 频道翻译页也要用，
+        因此提升为**全局键控样式**——与 StretchListItem 同样的处理：跨页面复用的样式必须放全局，
+        StaticResource 找不到会在页面构造时抛 XamlParseException）。
+    -->
+    <Style x:Key="TranslationFieldLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Margin" Value="0,6,0,2" />
+    </Style>
+
+    <Style x:Key="TranslationDetailLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Margin" Value="0,12,0,2" />
+    </Style>
 
 </ResourceDictionary>

@@ -438,7 +438,13 @@ public sealed class ChannelIntelViewModel : INotifyPropertyChanged
 
     /// <summary>切换语言库选择（页面多选列表回调）。</summary>
     public void SetSelectedNameDbs(IEnumerable<string> dbs)
-        => Session?.SelectedNameDbs = dbs.ToList();
+    {
+        // net8 的语言版本是 C# 12，不支持 null 条件赋值（Session?.X = v）
+        if (Session is not null)
+        {
+            Session.SelectedNameDbs = dbs.ToList();
+        }
+    }
 
     // ---------- INotifyPropertyChanged ----------
 

@@ -110,23 +110,31 @@
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:ChannelMarketPage}" />
                         <ui:NavigationViewItem
-                            Content="{DynamicResource Nav.ChannelTranslation}"
-                            NavigationCacheMode="Required"
-                            TargetPageType="{x:Type pages:ChannelTranslationPage}" />
-                        <ui:NavigationViewItem
                             Content="{DynamicResource Nav.GameLogMonitor}"
                             NavigationCacheMode="Required"
                             TargetPageType="{x:Type pages:GameLogMonitorPage}" />
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
-                <ui:NavigationViewItem
-                    Content="{DynamicResource Nav.Translation}"
-                    NavigationCacheMode="Required"
-                    TargetPageType="{x:Type pages:TranslationPage}">
+                <!--  翻译：AI 翻译（对话式）/ 频道翻译（实时）/ 本地词库，三个子项  -->
+                <ui:NavigationViewItem Content="{DynamicResource Nav.Translation}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Translate24" />
                     </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.TranslationAi}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:AiTranslationPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.ChannelTranslation}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:ChannelTranslationPage}" />
+                        <ui:NavigationViewItem
+                            Content="{DynamicResource Nav.TranslationLocal}"
+                            NavigationCacheMode="Required"
+                            TargetPageType="{x:Type pages:LocalTranslationPage}" />
+                    </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem

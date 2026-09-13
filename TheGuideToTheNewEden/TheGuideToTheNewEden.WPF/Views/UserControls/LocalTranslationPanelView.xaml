@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.TranslationPanelView"
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.LocalTranslationPanelView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
@@ -10,21 +10,35 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
         <!--  只放带 x:Key 的样式：不带 Key 的本地隐式样式会顶掉 WPF-UI 的库样式（REFACTORING.md §9 第 18 条）  -->
-        <Style x:Key="TranslationFieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,6,0,2" />
-        </Style>
-        <Style x:Key="TranslationDetailLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-            <Setter Property="Margin" Value="0,12,0,2" />
-        </Style>
+        <!--  字段标签/详情标签两个样式已提升到 Controls/GlobalControlStyles.xaml  -->
 
         <!--
-            结果区的文字一律用**只读 TextBox**（WPF 的 TextBlock 不能选中文本）：
-            外观与普通文本一致（无边框/透明底/无内边距），但可拖选、Ctrl+A/Ctrl+C、右键复制。
+            结果区的文字用**只读富文本**（RichTextPresenter = RichTextBox，只读 + 无边框）：
+            可以像网页一样任意拖选其中一段复制（WPF 的 TextBlock 选不中文本）。
         -->
+        <Style x:Key="TranslationRichText" TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+        </Style>
+        <!--  译文：标题级；译文库没有该名词时用警示色显示「无译文」  -->
+        <Style
+            x:Key="TranslationRichResult"
+            BasedOn="{StaticResource TranslationRichText}"
+            TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="FontSize" Value="18" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasTranslation}" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!--  类型 / 方向 / 描述：正文级  -->
+        <Style
+            x:Key="TranslationRichValue"
+            BasedOn="{StaticResource TranslationRichText}"
+            TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="FontSize" Value="14" />
+        </Style>
         <Style x:Key="TranslationSelectableText" TargetType="TextBox">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -39,32 +53,13 @@
             <Setter Property="SelectionOpacity" Value="0.4" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
-        <!--  原文：标题级  -->
+        <!--  原文标题：标题级  -->
         <Style
             x:Key="TranslationSelectableTitle"
             BasedOn="{StaticResource TranslationSelectableText}"
             TargetType="TextBox">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-        <!--  译文：标题级；译文库没有该名词时用警示色显示「无译文」，不让人误以为是译名  -->
-        <Style
-            x:Key="TranslationSelectableResult"
-            BasedOn="{StaticResource TranslationSelectableText}"
-            TargetType="TextBox">
-            <Setter Property="FontSize" Value="18" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding HasTranslation}" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <!--  类型 / 方向 / 描述：正文级  -->
-        <Style
-            x:Key="TranslationSelectableValue"
-            BasedOn="{StaticResource TranslationSelectableText}"
-            TargetType="TextBox">
-            <Setter Property="FontSize" Value="14" />
         </Style>
         <Style
             x:Key="TranslationSelectableSecondary"
@@ -109,46 +104,45 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!--  来源不可用提示（本地化数据库缺失/未载入）  -->
+                <!--  本地化数据库不可用提示  -->
                 <Border
                     Grid.Row="0"
                     Margin="0,0,0,8"
                     Padding="8,6"
                     Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
                     CornerRadius="4"
-                    Visibility="{Binding IsSourceUnavailable, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Warning24" />
+                    Visibility="{Binding IsUnavailable, Converter={StaticResource BoolToVis}}">
+                    <!--  两列网格（不是横向 StackPanel）：横向 StackPanel 给子元素的宽度无限，长文案不会换行而被裁掉  -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ui:SymbolIcon
+                            Grid.Column="0"
+                            VerticalAlignment="Top"
+                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                            Symbol="Warning24" />
                         <TextBlock
+                            Grid.Column="1"
                             Margin="6,0,0,0"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                            Text="{Binding SourceUnavailableText}"
+                            Text="{Binding UnavailableText}"
                             TextWrapping="Wrap" />
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
-                <!--  翻译来源 / 方向  -->
+                <!--  方向 + 输入提示  -->
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="140" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource TranslationPage_Source}" />
-                        <ComboBox
-                            HorizontalAlignment="Stretch"
-                            IsEnabled="{Binding HasMultipleSources}"
-                            ItemsSource="{Binding Sources}"
-                            SelectedIndex="{Binding SelectedSourceIndex, Mode=TwoWay}"
-                            ToolTip="{DynamicResource TranslationPage_Source_Tip}" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="2">
                         <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource TranslationPage_Direction}" />
                         <ComboBox HorizontalAlignment="Stretch" SelectedIndex="{Binding DirectionIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="{DynamicResource TranslationPage_Direction_Auto}" />
@@ -156,27 +150,31 @@
                             <ComboBoxItem Content="{DynamicResource TranslationPage_Direction_ZhToEn}" />
                         </ComboBox>
                     </StackPanel>
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Bottom"
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Text="{DynamicResource TranslationPage_Local_AutoHint}"
+                        TextWrapping="Wrap" />
                 </Grid>
 
-                <!--  输入框（回车立即查询）  -->
+                <!--  输入框（回车立即查询；Shift+回车换行，便于粘贴整段文本）  -->
                 <ui:TextBox
                     Grid.Row="2"
                     Margin="0,8,0,0"
-                    KeyDown="OnInputKeyDown"
+                    MaxHeight="140"
+                    MinHeight="38"
+                    AcceptsReturn="True"
                     PlaceholderText="{DynamicResource TranslationPage_Input_Tip}"
-                    Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
-
-                <!--  结果条数 / 方向  -->
-                <TextBlock
-                    Grid.Row="3"
-                    Margin="0,8,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="{Binding StatusText}"
-                    Visibility="{Binding HasStatus, Converter={StaticResource BoolToVis}}" />
+                    PreviewKeyDown="OnInputPreviewKeyDown"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap" />
 
                 <!--  匹配列表（每条已带译文） + 空结果提示  -->
-                <Grid Grid.Row="4" Margin="0,6,0,0">
+                <Grid Grid.Row="3" Margin="0,6,0,0">
                     <ListBox
                         HorizontalContentAlignment="Stretch"
                         ItemsSource="{Binding Matches}"
@@ -225,7 +223,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{DynamicResource TranslationPage_NoResultTip}"
+                        Text="{Binding EmptyTipText}"
                         TextAlignment="Center"
                         TextWrapping="Wrap"
                         Visibility="{Binding ShowEmptyTip, Converter={StaticResource BoolToVis}}" />
@@ -233,25 +231,33 @@
             </Grid>
 
             <controls:CardControl.Footer>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <ui:Button
-                        Margin="4,0"
-                        Appearance="Primary"
-                        Click="OnTranslateClick"
-                        Content="{DynamicResource TranslationPage_Translate}"
-                        Icon="{ui:SymbolIcon Search24}" />
-                    <ui:Button
-                        Margin="4,0"
-                        Click="OnClearClick"
-                        Content="{DynamicResource TranslationPage_Clear}"
-                        Icon="{ui:SymbolIcon Eraser24}" />
-                    <ui:Button
-                        Margin="4,0"
-                        Click="OnPopWindowClick"
-                        Content="{DynamicResource TranslationPage_PopWindow}"
-                        Icon="{ui:SymbolIcon WindowNew24}"
-                        Visibility="{Binding CanPopWindow, Converter={StaticResource BoolToVis}}" />
-                </StackPanel>
+                <Grid>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding StatusText}"
+                        Visibility="{Binding HasStatus, Converter={StaticResource BoolToVis}}" />
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <ui:Button
+                            Margin="4,0"
+                            Appearance="Primary"
+                            Click="OnTranslateClick"
+                            Content="{DynamicResource TranslationPage_Translate}"
+                            Icon="{ui:SymbolIcon Search24}" />
+                        <ui:Button
+                            Margin="4,0"
+                            Click="OnClearClick"
+                            Content="{DynamicResource TranslationPage_Clear}"
+                            Icon="{ui:SymbolIcon Eraser24}" />
+                        <ui:Button
+                            Margin="4,0"
+                            Click="OnPopWindowClick"
+                            Content="{DynamicResource TranslationPage_PopWindow}"
+                            Icon="{ui:SymbolIcon WindowNew24}"
+                            Visibility="{Binding CanPopWindow, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </Grid>
             </controls:CardControl.Footer>
         </controls:CardControl>
 
@@ -309,19 +315,19 @@
                         </Grid>
 
                         <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_Translation}" />
-                        <TextBox
-                            Style="{StaticResource TranslationSelectableResult}"
+                        <controls:RichTextPresenter
+                            Style="{StaticResource TranslationRichResult}"
                             Text="{Binding Translation, Mode=OneWay}" />
 
                         <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_QueryDescription}" />
-                        <TextBox
-                            Style="{StaticResource TranslationSelectableValue}"
+                        <controls:RichTextPresenter
+                            Style="{StaticResource TranslationRichValue}"
                             Text="{Binding QueryDescription, Mode=OneWay}"
                             Visibility="{Binding HasQueryDescription, Converter={StaticResource BoolToVis}}" />
 
                         <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_TranslationDescription}" />
-                        <TextBox
-                            Style="{StaticResource TranslationSelectableValue}"
+                        <controls:RichTextPresenter
+                            Style="{StaticResource TranslationRichValue}"
                             Text="{Binding TranslationDescription, Mode=OneWay}"
                             Visibility="{Binding HasTranslationDescription, Converter={StaticResource BoolToVis}}" />
                     </StackPanel>

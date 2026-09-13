@@ -11,39 +11,36 @@ using TheGuideToTheNewEden.WPF.Services.Translation;
 namespace TheGuideToTheNewEden.WPF.ViewModels.Translation;
 
 /// <summary>
-/// 翻译页 VM：输入 → 防抖查询 → 左侧匹配列表 → 右侧译文详情。
+/// 「本地词库」页签的 VM：输入 → 本地 SDE 中英词库查询 → 左侧匹配列表 → 右侧译文详情。
 /// <para>
-/// 查询本身交给可插拔的翻译源（<see cref="TranslationService"/>）；当前只有「本地数据库」源
-/// （离线、SDE 中英对照），因此界面上的来源下拉暂时只有一项，接入在线翻译后会自动多出选项。
-/// 输入变化只做防抖查询（本地库查询在 UI 线程外执行），回车/按钮则立即查询。
+/// 与 AI 页签（<see cref="AiTranslationViewModel"/>）**完全分开**：这里只认离线的
+/// <see cref="LocalDbTranslationProvider"/>，所以没有"来源下拉"，也不会有计费问题——
+/// 输入停顿 350ms 自动查询（<b>实时</b>反馈），回车只是"立刻查"。
 /// </para>
 /// </summary>
-public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposable
+public sealed class LocalTranslationViewModel : INotifyPropertyChanged, IDisposable
 {
     /// <summary>输入停顿多久后才查询（避免每敲一个字符就打一遍数据库）。</summary>
     private const int DebounceMilliseconds = 350;
 
     private readonly DispatcherTimer _debounceTimer;
     private readonly List<TranslationItem> _lastItems = [];
+    private readonly ITranslationProvider _provider = TranslationService.LocalDatabase;
 
-    private ITranslationProvider _provider;
     private CancellationTokenSource? _cancellationTokenSource;
 
-    public TranslationPageViewModel()
+    public LocalTranslationViewModel()
     {
         _debounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(DebounceMilliseconds) };
         _debounceTimer.Tick += OnDebounceTick;
-
-        _provider = TranslationService.GetProvider(TranslationSettingService.Provider);
-        _directionIndex = (int)TranslationSettingService.Direction;
-        RefreshSourceNames();
+        _directionIndex = ToIndex(TranslationSettingService.LocalFrom, TranslationSettingService.LocalTo);
     }
 
     // ---------- 输入与设置 ----------
 
     private string _inputText = string.Empty;
 
-    /// <summary>输入的名词。变化后 350ms 自动查询（清空则直接清结果）。</summary>
+    /// <summary>输入的名词；变化后 350ms 自动查询（清空则直接清结果）。</summary>
     public string InputText
     {
         get => _inputText;
@@ -68,13 +65,16 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
 
     private int _directionIndex;
 
-    /// <summary>翻译方向下拉索引（0 自动 / 1 英→中 / 2 中→英）。变更即持久化并重新查询。</summary>
+    /// <summary>
+    /// 翻译方向下拉索引（0 自动 / 1 英→中 / 2 中→英）。本地词库只有 SDE 的中英对照，
+    /// 所以这里的选项就是"中英三选一"；别的语言请用「AI 翻译」页。
+    /// </summary>
     public int DirectionIndex
     {
         get => _directionIndex;
         set
         {
-            if (!Enum.IsDefined(typeof(TranslationDirection), value))
+            if (value is < 0 or > 2)
             {
                 return;
             }
@@ -84,51 +84,46 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
                 return;
             }
 
-            TranslationSettingService.SetDirection((TranslationDirection)value);
+            var (from, to) = FromIndex(value);
+            TranslationSettingService.SetLocalDirection(from, to);
             RestartDebounce();
         }
     }
 
-    private int _selectedSourceIndex;
-
-    /// <summary>翻译来源下拉索引。变更即持久化并重新查询。</summary>
-    public int SelectedSourceIndex
+    /// <summary>下拉索引 → (源语言, 目标语言)。</summary>
+    private static (string From, string To) FromIndex(int index) => index switch
     {
-        get => _selectedSourceIndex;
-        set
+        1 => (TranslationLanguages.English, TranslationLanguages.Chinese),
+        2 => (TranslationLanguages.Chinese, TranslationLanguages.English),
+        _ => (TranslationLanguages.Auto, TranslationLanguages.Chinese),
+    };
+
+    /// <summary>(源语言, 目标语言) → 下拉索引。</summary>
+    private static int ToIndex(string from, string to)
+    {
+        var source = TranslationLanguages.Normalize(from);
+        var target = TranslationLanguages.Normalize(to);
+        if (source == TranslationLanguages.English && target == TranslationLanguages.Chinese)
         {
-            // 重新填充 ItemsSource 时 ComboBox 会回写 -1，忽略它（由 RefreshSourceNames 统一校正）
-            if (value < 0 || value >= TranslationService.Providers.Count)
-            {
-                return;
-            }
-
-            if (!Set(ref _selectedSourceIndex, value))
-            {
-                return;
-            }
-
-            _provider = TranslationService.Providers[value];
-            TranslationSettingService.SetProvider(_provider.Key);
-            RefreshSourceState();
-            RestartDebounce();
+            return 1;
         }
+
+        if (source == TranslationLanguages.Chinese && target == TranslationLanguages.English)
+        {
+            return 2;
+        }
+
+        return 0;
     }
 
-    /// <summary>来源显示名（目前只有「本地数据库」一项，超过一项时下拉才可交互）。</summary>
-    public ObservableCollection<string> Sources { get; } = [];
+    /// <summary>本地化数据库不可用时的原因（可用时为空）。</summary>
+    public string UnavailableText { get; private set; } = string.Empty;
 
-    /// <summary>可选来源多于一个时才允许展开下拉（只有一项时当只读标签用）。</summary>
-    public bool HasMultipleSources => Sources.Count > 1;
-
-    /// <summary>当前来源不可用的原因（本地化数据库缺失等），可用时为空。</summary>
-    public string SourceUnavailableText { get; private set; } = string.Empty;
-
-    public bool IsSourceUnavailable => !string.IsNullOrEmpty(SourceUnavailableText);
+    public bool IsUnavailable => !string.IsNullOrEmpty(UnavailableText);
 
     // ---------- 结果 ----------
 
-    /// <summary>匹配到的名词（每条自带另一语言的译名）。</summary>
+    /// <summary>结果条目（本地源是若干名词对照）。</summary>
     public ObservableCollection<TranslationMatchViewModel> Matches { get; } = [];
 
     private TranslationMatchViewModel? _selectedMatch;
@@ -194,8 +189,11 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         set => Set(ref _canPopWindow, value);
     }
 
-    /// <summary>输入了内容但一条都没匹配到（且不在查询中）。</summary>
+    /// <summary>输入了内容但一条都没结果（且不在查询中）。</summary>
     public bool ShowEmptyTip => !IsBusy && !string.IsNullOrWhiteSpace(InputText) && Matches.Count == 0;
+
+    /// <summary>空结果提示文案。</summary>
+    public string EmptyTipText => FindString("TranslationPage_NoResultTip");
 
     // ---------- 生命周期 ----------
 
@@ -208,10 +206,14 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         LanguageService.LanguageChanged -= OnLanguageChanged;
         LanguageService.LanguageChanged += OnLanguageChanged;
 
-        _provider = TranslationService.GetProvider(TranslationSettingService.Provider);
-        _directionIndex = (int)TranslationSettingService.Direction;
-        OnPropertyChanged(nameof(DirectionIndex));
-        RefreshSourceNames();
+        var direction = ToIndex(TranslationSettingService.LocalFrom, TranslationSettingService.LocalTo);
+        if (_directionIndex != direction)
+        {
+            _directionIndex = direction;
+            OnPropertyChanged(nameof(DirectionIndex));
+        }
+
+        RefreshUnavailableState();
 
         if (!string.IsNullOrWhiteSpace(InputText))
         {
@@ -219,7 +221,7 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         }
     }
 
-    /// <summary>页面切走时调用（页面实例仍常驻，再次进入会 <see cref="Init"/>）。</summary>
+    /// <summary>离开页面时调用（页面实例仍常驻，再次进入会 <see cref="Init"/>）：停查询、退订语言事件。</summary>
     public void Dispose()
     {
         LanguageService.LanguageChanged -= OnLanguageChanged;
@@ -227,6 +229,7 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+        PageNotifyService.HideWaiting();
         IsBusy = false;
     }
 
@@ -238,7 +241,6 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         _ = SearchAsync();
     }
 
-    /// <summary>重新开始防抖计时（输入/设置变化时调用）。</summary>
     private void RestartDebounce()
     {
         _debounceTimer.Stop();
@@ -256,12 +258,12 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
             return;
         }
 
-        // 来源不可用（本地化数据库缺失）时直接提示，不去打一遍注定失败的查询
-        RefreshSourceState();
+        // 本地化库缺失时直接提示，不去打一遍注定失败的查询
+        RefreshUnavailableState();
         if (!_provider.IsAvailable)
         {
             ClearResults();
-            PageNotifyService.Warning(SourceUnavailableText);
+            PageNotifyService.Warning(UnavailableText);
             return;
         }
 
@@ -273,8 +275,9 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         IsBusy = true;
         try
         {
+            var (from, to) = FromIndex(DirectionIndex);
             var outcome = await _provider.TranslateAsync(
-                new TranslationRequest(text.Trim(), (TranslationDirection)DirectionIndex),
+                new TranslationRequest(text.Trim(), from, to),
                 cancellationTokenSource.Token);
 
             if (cancellationTokenSource.IsCancellationRequested)
@@ -285,17 +288,19 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
             if (!outcome.Success)
             {
                 ClearResults();
-                // 来源不可用时优先给出本地化的原因（服务层的失败文案是给日志看的）
-                var reason = IsSourceUnavailable ? SourceUnavailableText : outcome.ErrorMessage;
+                var reason = IsUnavailable ? UnavailableText : outcome.ErrorMessage;
                 PageNotifyService.Error($"{FindString("TranslationPage_Failed")}：{reason}");
                 return;
             }
 
-            ShowItems(outcome.Items, outcome.Direction);
+            ShowItems(outcome);
         }
         catch (OperationCanceledException)
         {
-            // 新的查询已开始，丢弃本次结果
+            if (!cancellationTokenSource.IsCancellationRequested)
+            {
+                PageNotifyService.Error(FindString("TranslationPage_Timeout"));
+            }
         }
         catch (Exception ex)
         {
@@ -305,27 +310,29 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         }
         finally
         {
-            if (!cancellationTokenSource.IsCancellationRequested)
+            if (ReferenceEquals(_cancellationTokenSource, cancellationTokenSource))
             {
                 IsBusy = false;
             }
         }
     }
 
-    private void ShowItems(IReadOnlyList<TranslationItem> items, TranslationDirection direction)
+    public void Cancel() => _cancellationTokenSource?.Cancel();
+
+    private void ShowItems(TranslationOutcome outcome)
     {
         _lastItems.Clear();
-        _lastItems.AddRange(items);
+        _lastItems.AddRange(outcome.Items);
 
         BuildMatches();
 
-        StatusText = items.Count == 0
+        StatusText = outcome.Items.Count == 0
             ? string.Empty
-            : $"{string.Format(FindString("TranslationPage_ResultCount"), items.Count)} · {FindString(TranslationLanguageHelper.DirectionKey(direction))}";
+            : $"{string.Format(FindString("TranslationPage_ResultCount"), outcome.Items.Count)} · {Describe(outcome.From, outcome.To)}";
         NotifyState();
     }
 
-    /// <summary>按当前语言（重新）构建匹配项包装。</summary>
+    /// <summary>按当前语言（重新）构建结果包装。</summary>
     private void BuildMatches()
     {
         var selectedId = SelectedMatch?.Id;
@@ -358,7 +365,7 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         ClearResults();
     }
 
-    /// <summary>复制当前条目的译名（该条无译文时复制原文；无选中时给出提示）。</summary>
+    /// <summary>复制当前条目的译名/译文（该条无译文时复制原文；无选中时给出提示）。</summary>
     public void CopyTranslation()
     {
         var match = SelectedMatch;
@@ -397,49 +404,42 @@ public sealed class TranslationPageViewModel : INotifyPropertyChanged, IDisposab
         }
     }
 
-    // ---------- 语言与来源 ----------
+    // ---------- 语言状态 ----------
 
     private void OnLanguageChanged(object? sender, string language)
     {
-        RefreshSourceNames();
         // 名称/类型标签在包装项里已本地化，切语言后重建一次
         BuildMatches();
+        RefreshUnavailableState();
         NotifyState();
     }
 
-    private void RefreshSourceNames()
+    private void RefreshUnavailableState()
     {
-        Sources.Clear();
-        foreach (var provider in TranslationService.Providers)
-        {
-            Sources.Add(FindString(provider.DisplayNameKey));
-        }
-
-        var index = TranslationService.Providers
-            .Select((provider, i) => (provider, i))
-            .FirstOrDefault(p => string.Equals(p.provider.Key, _provider.Key, StringComparison.Ordinal))
-            .i;
-        // SelectedSourceIndex 的 setter 会写设置并触发重新查询，这里直接改字段避免多余动作
-        _selectedSourceIndex = index;
-        OnPropertyChanged(nameof(SelectedSourceIndex));
-        OnPropertyChanged(nameof(HasMultipleSources));
-        RefreshSourceState();
-    }
-
-    private void RefreshSourceState()
-    {
-        SourceUnavailableText = _provider.IsAvailable || _provider.UnavailableReasonKey is null
+        var text = _provider.IsAvailable || _provider.UnavailableReasonKey is null
             ? string.Empty
             : FindString(_provider.UnavailableReasonKey);
-        OnPropertyChanged(nameof(SourceUnavailableText));
-        OnPropertyChanged(nameof(IsSourceUnavailable));
+
+        if (UnavailableText == text)
+        {
+            return;
+        }
+
+        UnavailableText = text;
+        OnPropertyChanged(nameof(UnavailableText));
+        OnPropertyChanged(nameof(IsUnavailable));
     }
 
     private void NotifyState()
     {
         OnPropertyChanged(nameof(ShowEmptyTip));
         OnPropertyChanged(nameof(HasSelection));
+        OnPropertyChanged(nameof(EmptyTipText));
     }
+
+    /// <summary>形如「英语 → 中文」（语言名走本地化键）。</summary>
+    private static string Describe(string from, string to)
+        => $"{FindString(TranslationLanguageHelper.LanguageKey(from))} → {FindString(TranslationLanguageHelper.LanguageKey(to))}";
 
     // ---------- INotifyPropertyChanged ----------
 

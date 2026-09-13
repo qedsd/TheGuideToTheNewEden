@@ -17,6 +17,9 @@ public partial class SettingsPage : Page
     private readonly Dictionary<Type, Page> _pageCache = [];
     private Type? _currentPageType;
 
+    /// <summary>待打开的分类（由别的页面"去配置"这类按钮设置，进入本页时消费一次）。</summary>
+    private static Type? _pendingCategory;
+
     public SettingsPage()
     {
         InitializeComponent();
@@ -24,6 +27,28 @@ public partial class SettingsPage : Page
 
         LanguageService.LanguageChanged += OnLanguageChanged;
         Unloaded += (_, _) => LanguageService.LanguageChanged -= OnLanguageChanged;
+        Loaded += (_, _) => ApplyPendingCategory();
+    }
+
+    /// <summary>
+    /// 请求"下次进入设置页时直接打开某个分类"（如翻译页 AI 页签的「去配置」）。
+    /// 只记一个待办，进入页面时消费一次，避免影响用户之后正常进入设置页的默认视图。
+    /// </summary>
+    public static void RequestCategory(Type pageType) => _pendingCategory = pageType;
+
+    private void ApplyPendingCategory()
+    {
+        var pending = _pendingCategory;
+        if (pending is null)
+        {
+            return;
+        }
+
+        _pendingCategory = null;
+        if (FindCategory(pending) is { } category)
+        {
+            OpenCategory(category);
+        }
     }
 
     private void BuildCategories()
@@ -36,6 +61,8 @@ public partial class SettingsPage : Page
         Add(SymbolRegular.Building24, "SettingPage_Structures", "SettingPage_Structures_Desc", typeof(StructuresSettingPage), () => new StructuresSettingPage());
         Add(SymbolRegular.Shield24, "SettingPage_ESIScope", "SettingPage_ESIScope_Desc", typeof(ESIScopeSettingPage), () => new ESIScopeSettingPage());
         Add(SymbolRegular.Scan24, "SettingPage_ZKB", "SettingPage_ZKB_Desc", typeof(ZKBSettingPage), () => new ZKBSettingPage());
+        Add(SymbolRegular.Translate24, "SettingPage_AiTranslation", "SettingPage_AiTranslation_Desc", typeof(AiTranslationSettingPage), () => new AiTranslationSettingPage());
+        Add(SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "SettingPage_Glossary_Desc", typeof(GlossarySettingPage), () => new GlossarySettingPage());
         Add(SymbolRegular.Keyboard24, "SettingPage_KeyboardList", "SettingPage_KeyboardList_Desc", typeof(KeyboardListPage), () => new KeyboardListPage());
         Add(SymbolRegular.Bug24, "SettingPage_Test", "SettingPage_Test_Desc", typeof(TestSettingPage), () => new TestSettingPage());
         Add(SymbolRegular.ArrowSync24, "SettingPage_Update", "SettingPage_Update_Desc", typeof(UpdateSettingPage), () => new UpdateSettingPage());
@@ -70,11 +97,15 @@ public partial class SettingsPage : Page
 
     private void Category_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { Tag: SettingsCategory category })
+        if (sender is FrameworkElement { Tag: SettingsCategory category })
         {
-            return;
+            OpenCategory(category);
         }
+    }
 
+    /// <summary>打开某个分类的子页（分类列表 → 详情，并写好面包屑）。</summary>
+    private void OpenCategory(SettingsCategory category)
+    {
         if (!_pageCache.TryGetValue(category.PageType, out var page))
         {
             page = category.CreatePage();

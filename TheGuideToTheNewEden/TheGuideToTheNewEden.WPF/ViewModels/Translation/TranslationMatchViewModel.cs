@@ -15,7 +15,11 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Translation;
 /// <summary>
 /// 一条翻译结果的展示包装（<see cref="TranslationItem"/> 是 Core 的纯数据模型，
 /// 这里补上界面需要的本地化文本、布尔标记与物品图标，避免在 XAML 里堆转换器）。
+/// <para>
+/// 只服务于**本地词库页签**（名词对照：有类别与描述）；AI 页签的整段译文不走本类
+/// （它只有一条文本结果，界面直接绑 <c>AiTranslationViewModel.ResultText</c>）。
 /// 本地化文本在构造时取好，因此切换语言后需要重建（由页面 VM 负责）。
+/// </para>
 /// </summary>
 public sealed class TranslationMatchViewModel : INotifyPropertyChanged
 {
@@ -30,6 +34,7 @@ public sealed class TranslationMatchViewModel : INotifyPropertyChanged
     {
         Item = item;
         _noTranslation = FindString("TranslationPage_NoTranslation");
+
         if (IsInvType && IconCache.TryGetValue(Item.ID, out var cached))
         {
             _icon = cached;
@@ -51,10 +56,13 @@ public sealed class TranslationMatchViewModel : INotifyPropertyChanged
     /// <summary>名词类型（物品 / 星域 / 星系 / 空间站）。</summary>
     public string TypeName => FindString(TypeKey(Item.DataBaseItemType));
 
-    /// <summary>只有物品有图标。</summary>
+    /// <summary>只有物品才有图标。</summary>
     public bool IsInvType => Item.DataBaseItemType == DataBaseItemType.InvType;
 
-    /// <summary>形如「英文 → 中文」。</summary>
+    /// <summary>取图标的类型 ID（非物品为 0 → 转换器直接返回空，不会去请求无关图片）。</summary>
+    public int IconTypeId => IsInvType ? Item.ID : 0;
+
+    /// <summary>形如「英语 → 中文」（语言代码 → 本地化语言名）。</summary>
     public string DirectionText
         => $"{FindString(TranslationLanguageHelper.LanguageKey(Item.From))} → {FindString(TranslationLanguageHelper.LanguageKey(Item.To))}";
 

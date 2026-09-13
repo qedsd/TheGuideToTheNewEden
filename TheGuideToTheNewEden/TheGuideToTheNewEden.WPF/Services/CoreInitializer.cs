@@ -4,6 +4,7 @@ using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Settings;
+using TheGuideToTheNewEden.WPF.Services.Translation;
 
 namespace TheGuideToTheNewEden.WPF.Services;
 
@@ -19,6 +20,10 @@ public static class CoreInitializer
     {
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
+        // 日志必须**最先**装起来：下面任何一步（设置读取、ESI 凭据检查、角色/结构载入）都可能写日志，
+        // 而"首次运行 Configs 不存在"时正是凭据检查那条提示触发了 Log 未初始化 → NRE、界面直接崩
+        Log.Init();
+
         SettingsService.Initialize();
 
         // 各设置子服务先加载，以便把值同步给 Core.Config。
@@ -26,6 +31,9 @@ public static class CoreInitializer
         LocalDbSelectorService.Initialize();
         DBLocalizationSettingService.Initialize();
         TranslationSettingService.Initialize();
+        ChannelTranslationSettingService.Initialize();
+        UserGlossaryService.Initialize();
+        GlossaryCandidateService.Initialize();
         PlayerStatusService.Initialize();
         AutoUpdateService.Initialize();
         GameLogsSettingService.Initialize();
@@ -49,7 +57,6 @@ public static class CoreInitializer
         // 否则 GetMarketStrutures() 是空集合，一次保存就会把 MarketStructures.json 覆盖成空。
         StructureService.Init();
 
-        Log.Init();
         DatabaseReady = Config.InitDb();
 
         ZKB.NET.Config.UserAgent = "TheGuideToTheNewEden";
@@ -117,7 +124,9 @@ public static class CoreInitializer
         }
         else
         {
-            Log.Error("未找到 Configs/ESILicense.txt，无法进行新的 ESI 授权");
+            // 首次运行本来就没有这个文件（要等用户在界面上填/授权），不是错误：
+            // 记 Warn 以免污染错误计数（ScalperPage 之类的"本次错误数"会读它）
+            Log.Warn("未找到 Configs/ESILicense.txt，无法进行新的 ESI 授权");
         }
 
         Config.Scopes = ESIScopeService.Current.GetSelectedScopes().ToList();

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Models;
+using TheGuideToTheNewEden.Core.Models.Translation;
 
 namespace TheGuideToTheNewEden.Core.Services.DB
 {
@@ -250,6 +252,153 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             }
 
             return OrderByName(results);
+        }
+
+        #endregion
+
+        #region 术语表抽取（供 AI 翻译注入与后校验）
+
+        /// <summary>
+        /// 抽取全量中英术语对（物品 / 星域 / 星系 / 空间站）：
+        /// 主库取 <c>Id + 名称</c>（物品另取 MarketGroupID 用于排序），本地化库取 <c>Id + 名称</c>，
+        /// 双方按 Id 配对，**丢弃中英相同的"未翻译"行**。
+        /// <para>实测规模：types 约 5.2 万 + 星系 8500 + 空间站 5200 + 星域 114，整表读入约 0.5–1 秒。</para>
+        /// </summary>
+        /// <param name="progress">进度回调（已完成类别数 / 总类别数）。</param>
+        public static List<GlossaryEntry> ExtractGlossary(Action<int, int>? progress = null, CancellationToken cancellationToken = default)
+        {
+            var entries = new List<GlossaryEntry>();
+            if (!IsAvailable)
+            {
+                return entries;
+            }
+
+            const int totalSteps = 4;
+            var step = 0;
+            try
+            {
+                ExtractInvTypes(entries, cancellationToken);
+                progress?.Invoke(++step, totalSteps);
+
+                ExtractNamed(entries, DBService.MainDb.Queryable<MapRegionBase>().Select(p => new NamedRow { Id = p.RegionID, Name = p.RegionName }).ToList(),
+                    DBService.LocalDb.Queryable<MapRegionBase>().Select(p => new NamedRow { Id = p.RegionID, Name = p.RegionName }).ToList(),
+                    DataBaseItemType.MapRegion);
+                progress?.Invoke(++step, totalSteps);
+
+                ExtractNamed(entries, DBService.MainDb.Queryable<MapSolarSystemBase>().Select(p => new NamedRow { Id = p.SolarSystemID, Name = p.SolarSystemName }).ToList(),
+                    DBService.LocalDb.Queryable<MapSolarSystemBase>().Select(p => new NamedRow { Id = p.SolarSystemID, Name = p.SolarSystemName }).ToList(),
+                    DataBaseItemType.MapSolarSystem);
+                progress?.Invoke(++step, totalSteps);
+
+                ExtractNamed(entries, DBService.MainDb.Queryable<StaStationBase>().Select(p => new NamedRow { Id = p.StationID, Name = p.StationName }).ToList(),
+                    DBService.LocalDb.Queryable<StaStationBase>().Select(p => new NamedRow { Id = p.StationID, Name = p.StationName }).ToList(),
+                    DataBaseItemType.StaStation);
+                progress?.Invoke(++step, totalSteps);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex);
+            }
+
+            return entries;
+        }
+
+        private static void ExtractInvTypes(List<GlossaryEntry> entries, CancellationToken cancellationToken)
+        {
+            var mainRows = DBService.MainDb.Queryable<InvType>()
+                .Select(p => new InvTypeRow { Id = p.TypeID, Name = p.TypeName, MarketGroupId = p.MarketGroupID })
+                .ToList();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var localNames = ToNameMap(DBService.LocalDb.Queryable<InvTypeBase>()
+                .Select(p => new NamedRow { Id = p.TypeID, Name = p.TypeName })
+                .ToList());
+
+            foreach (var row in mainRows)
+            {
+                if (!TryPair(row.Id, row.Name, localNames, out var chinese))
+                {
+                    continue;
+                }
+
+                entries.Add(new GlossaryEntry
+                {
+                    Id = row.Id,
+                    Kind = DataBaseItemType.InvType,
+                    English = row.Name.Trim(),
+                    Chinese = chinese,
+                    IsMarketItem = row.MarketGroupId != null,
+                });
+            }
+        }
+
+        private static void ExtractNamed(List<GlossaryEntry> entries, List<NamedRow> mainRows, List<NamedRow> localRows, DataBaseItemType kind)
+        {
+            var localNames = ToNameMap(localRows);
+            foreach (var row in mainRows)
+            {
+                if (!TryPair(row.Id, row.Name, localNames, out var chinese))
+                {
+                    continue;
+                }
+
+                entries.Add(new GlossaryEntry
+                {
+                    Id = row.Id,
+                    Kind = kind,
+                    English = row.Name.Trim(),
+                    Chinese = chinese,
+                });
+            }
+        }
+
+        private static Dictionary<int, string> ToNameMap(List<NamedRow> rows)
+        {
+            var map = new Dictionary<int, string>(rows.Count);
+            foreach (var row in rows)
+            {
+                if (!string.IsNullOrWhiteSpace(row.Name))
+                {
+                    map[row.Id] = row.Name.Trim();
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>配对成功条件：两侧都非空且不相等（相等说明本地化库那一行没翻译）。</summary>
+        private static bool TryPair(int id, string english, Dictionary<int, string> localNames, out string chinese)
+        {
+            chinese = null;
+            if (string.IsNullOrWhiteSpace(english) || !localNames.TryGetValue(id, out var local) || string.IsNullOrWhiteSpace(local))
+            {
+                return false;
+            }
+
+            if (string.Equals(english.Trim(), local, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            chinese = local;
+            return true;
+        }
+
+        /// <summary>SqlSugar 投影用的轻量行（避免把 Description 这些大字段读进来）。</summary>
+        private sealed class NamedRow
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private sealed class InvTypeRow
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public int? MarketGroupId { get; set; }
         }
 
         #endregion

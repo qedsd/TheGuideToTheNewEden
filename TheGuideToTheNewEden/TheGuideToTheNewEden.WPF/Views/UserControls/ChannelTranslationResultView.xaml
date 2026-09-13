@@ -1,0 +1,209 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.ChannelTranslationResultView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="TranslationMatchItem" BasedOn="{StaticResource StretchListItem}" TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.Name" Value="{Binding OriginalPreview}" />
+        </Style>
+
+        <!--
+            原文/译文一律用**只读富文本**（RichTextPresenter = 只读 RichTextBox）：
+            可以像网页一样任意拖选其中一段复制；原文只占一行（列表很长，保持紧凑），
+            译文超过五行折叠起来并提供「展开 / 收起」——与 AI 翻译页那套折叠逻辑同一个实现。
+        -->
+        <Style x:Key="ChannelRichText" TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style x:Key="ChannelRichOriginal" TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MaxHeight" Value="20" />
+        </Style>
+        <Style x:Key="ChannelRichSecondary" TargetType="{x:Type controls:RichTextPresenter}">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style x:Key="ChannelLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!--  实时译文（新→旧）；每条都可拖选复制，右键可单独复制原文/译文  -->
+        <ListBox
+            x:Name="ResultList"
+            IsSynchronizedWithCurrentItem="False"
+            ItemContainerStyle="{StaticResource TranslationMatchItem}"
+            ItemsSource="{Binding Items}"
+            PreviewMouseRightButtonDown="OnResultPreviewMouseRightButtonDown"
+            ScrollViewer.CanContentScroll="True"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            VirtualizingStackPanel.IsVirtualizing="True"
+            VirtualizingStackPanel.VirtualizationMode="Recycling">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Click="OnCopyOriginalClick" Header="{DynamicResource TranslationPage_CopyQuery}" />
+                    <MenuItem Click="OnCopyTranslationClick" Header="{DynamicResource TranslationPage_CopyTranslation}" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="4,5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  时间 + 发言人 + 频道 + 监听角色  -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding LocalTime, StringFormat={}{0:HH:mm:ss}}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Speaker}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding ChannelName}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding Listener}" />
+                        </StackPanel>
+
+                        <!--  原文：单行预览（悬停看完整清洗文本）  -->
+                        <controls:RichTextPresenter
+                            Grid.Row="1"
+                            Margin="0,3,0,0"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            Style="{StaticResource ChannelRichOriginal}"
+                            Text="{Binding OriginalPreview, Mode=OneWay}"
+                            ToolTipService.ShowDuration="60000">
+                            <controls:RichTextPresenter.ToolTip>
+                                <ToolTip MaxWidth="520">
+                                    <TextBlock
+                                        FontSize="12"
+                                        Text="{Binding OriginalFull, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </ToolTip>
+                            </controls:RichTextPresenter.ToolTip>
+                        </controls:RichTextPresenter>
+
+                        <!--  译文：超过五行折叠 + 「展开 / 收起」；失败时显示原因  -->
+                        <StackPanel
+                            Grid.Row="2"
+                            Visibility="{Binding Success, Converter={StaticResource BoolToVis}}">
+                            <controls:RichTextPresenter
+                                Margin="0,3,0,0"
+                                ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                Text="{Binding TranslationDisplay, Mode=OneWay}">
+                                <controls:RichTextPresenter.Style>
+                                    <Style BasedOn="{StaticResource ChannelRichText}" TargetType="{x:Type controls:RichTextPresenter}">
+                                        <!--  收起：五行高度（约 5 × 19px）；展开：不限高  -->
+                                        <Setter Property="MaxHeight" Value="96" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsTranslationExpanded}" Value="True">
+                                                <Setter Property="MaxHeight" Value="100000" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </controls:RichTextPresenter.Style>
+                            </controls:RichTextPresenter>
+
+                            <ui:Button
+                                Margin="0,2,0,0"
+                                Padding="0"
+                                HorizontalAlignment="Right"
+                                Appearance="Transparent"
+                                Click="OnToggleTranslationClick"
+                                Content="{Binding TranslationExpandLabel}"
+                                FontSize="12"
+                                Visibility="{Binding CanExpandTranslation, Converter={StaticResource BoolToVis}}" />
+
+                            <!--  底部一行：左边 meta（模型·耗时·token）+ 术语命中 + 去标记提示，最右侧是复制译文图标  -->
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding MetaText}"
+                                        Visibility="{Binding HasMeta, Converter={StaticResource BoolToVis}}" />
+                                    <StackPanel
+                                        Margin="0,2,0,0"
+                                        Visibility="{Binding HasGlossary, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            Text="{DynamicResource TranslationPage_GlossaryHits}" />
+                                        <controls:RichTextPresenter
+                                            Style="{StaticResource ChannelRichSecondary}"
+                                            Text="{Binding GlossaryText, Mode=OneWay}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="0,2,0,0"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Text="{Binding RemovedMarkupText}"
+                                        Visibility="{Binding HasRemovedMarkup, Converter={StaticResource BoolToVis}}" />
+                                </StackPanel>
+
+                                <ui:Button
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Top"
+                                    Appearance="Transparent"
+                                    AutomationProperties.Name="{DynamicResource TranslationPage_CopyTranslation}"
+                                    Click="OnCopyItemTranslationClick"
+                                    Icon="{ui:SymbolIcon Copy24}"
+                                    ToolTip="{DynamicResource TranslationPage_CopyTranslation}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <controls:RichTextPresenter
+                            Grid.Row="3"
+                            Margin="0,3,0,0"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                            FontSize="12"
+                            Text="{Binding Error, Mode=OneWay}"
+                            Visibility="{Binding Success, Converter={StaticResource InverseBoolToVisibility}}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBlock
+            Margin="16"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            Text="{DynamicResource ChannelTranslationPage_Empty}"
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+    </Grid>
+</UserControl>

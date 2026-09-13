@@ -22,6 +22,8 @@
     <sys:String x:Key="Nav.ChannelTranslation">Channel Translation</sys:String>
     <sys:String x:Key="Nav.GameLogMonitor">Game Log Monitor</sys:String>
     <sys:String x:Key="Nav.Translation">Translation</sys:String>
+    <sys:String x:Key="Nav.TranslationAi">AI translation</sys:String>
+    <sys:String x:Key="Nav.TranslationLocal">Local glossary</sys:String>
     <sys:String x:Key="Nav.DED">DED</sys:String>
     <sys:String x:Key="Nav.Mission">Mission</sys:String>
     <sys:String x:Key="Nav.Wormhole">Wormhole</sys:String>
@@ -1012,18 +1014,194 @@
     <sys:String x:Key="TranslationPage_CopySuccess">Copied</sys:String>
     <sys:String x:Key="TranslationPage_ResultCount">{0} match(es)</sys:String>
     <sys:String x:Key="TranslationPage_Failed">Translation failed</sys:String>
-    <sys:String x:Key="TranslationPage_Source">Source</sys:String>
-    <sys:String x:Key="TranslationPage_Source_Tip">Where translations come from; currently only the offline local database</sys:String>
     <sys:String x:Key="TranslationPage_Source_LocalDb">Local database</sys:String>
     <sys:String x:Key="TranslationPage_LocalDbUnavailable">Localized database unavailable: enable "Using a localized database" in Settings → General and make sure a localized database file is selected (Resources/Database/Local/zh.db).</sys:String>
     <sys:String x:Key="TranslationPage_Direction">Direction</sys:String>
+    <sys:String x:Key="TranslationPage_SourceLanguage">Source</sys:String>
+    <sys:String x:Key="TranslationPage_TargetLanguage">Target</sys:String>
+    <sys:String x:Key="TranslationPage_Pair">Translation pair</sys:String>
+    <sys:String x:Key="TranslationPage_SwapPair">Swap the translation pair</sys:String>
+    <sys:String x:Key="TranslationPage_Pair_Tip">Used when the target language is "Auto-detect": text in the second language is translated into the first and vice versa; any other language goes to the first one (put your native language first).</sys:String>
+    <sys:String x:Key="TranslationPage_SwapLanguages">Swap source and target language</sys:String>
+    <sys:String x:Key="TranslationPage_Language_auto">Auto-detect</sys:String>
+    <sys:String x:Key="TranslationPage_Language_AutoTarget">Auto-detect</sys:String>
+    <sys:String x:Key="TranslationPage_Language_zh">Chinese</sys:String>
+    <sys:String x:Key="TranslationPage_Language_en">English</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ja">Japanese</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ko">Korean</sys:String>
+    <sys:String x:Key="TranslationPage_Language_ru">Russian</sys:String>
+    <sys:String x:Key="TranslationPage_Language_de">German</sys:String>
+    <sys:String x:Key="TranslationPage_Language_fr">French</sys:String>
+    <sys:String x:Key="TranslationPage_Language_es">Spanish</sys:String>
+    <sys:String x:Key="TranslationPage_Local_OnlyChineseEnglish">The local database only translates between Chinese and English (it is an SDE name lookup). Use the AI translation page for other languages.</sys:String>
     <sys:String x:Key="TranslationPage_Direction_Auto">Auto</sys:String>
     <sys:String x:Key="TranslationPage_Direction_EnToZh">English → Chinese</sys:String>
     <sys:String x:Key="TranslationPage_Direction_ZhToEn">Chinese → English</sys:String>
-    <sys:String x:Key="TranslationPage_EN">English</sys:String>
-    <sys:String x:Key="TranslationPage_Chinese">Chinese</sys:String>
     <sys:String x:Key="TranslationPage_Type_InvType">Item</sys:String>
     <sys:String x:Key="TranslationPage_Type_MapRegion">Region</sys:String>
     <sys:String x:Key="TranslationPage_Type_MapSolarSystem">Solar System</sys:String>
     <sys:String x:Key="TranslationPage_Type_StaStation">Station</sys:String>
+
+    <!--  Translation: AI (LLM) source  -->
+    <sys:String x:Key="TranslationPage_Source_Ai">AI translation (LLM)</sys:String>
+    <sys:String x:Key="TranslationPage_GlossaryHits">Glossary injected into the prompt</sys:String>
+    <sys:String x:Key="TranslationPage_AiManualHint">Press Enter or Translate to send</sys:String>
+    <sys:String x:Key="TranslationPage_AiManualHint_Tip">The AI source is billed per request, so typing does not auto-query; press Enter or click Translate when ready.</sys:String>
+    <sys:String x:Key="TranslationPage_NoResultTip_Ai">No translation returned: press Enter or Translate to send a request; see the notification for details</sys:String>
+    <sys:String x:Key="TranslationPage_AiUnavailable">AI translation is not configured: choose a protocol and fill in the base URL, API key and model in Settings → AI translation.</sys:String>
+    <sys:String x:Key="TranslationPage_Timeout">Request cancelled or timed out</sys:String>
+
+    <!--  Translation: protocol names (settings dropdown)  -->
+    <sys:String x:Key="TranslationPage_Protocol_OpenAi">OpenAI compatible (DeepSeek / Qwen / GLM / Kimi / OpenRouter / local vLLM…)</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_AzureOpenAi">Azure OpenAI</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_Anthropic">Anthropic (Claude)</sys:String>
+    <sys:String x:Key="TranslationPage_Protocol_Gemini">Google Gemini</sys:String>
+
+    <!--  Translation: the AI page (conversation UI); hint on the local page  -->
+    <sys:String x:Key="TranslationPage_Local_AutoHint">Queries as you type (offline, free)</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Input_Tip">Text to translate; Enter = translate, Shift+Enter = new line</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NotConfigured_Title">AI translation is not configured yet</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NotConfigured_Support">Supports OpenAI-compatible endpoints (DeepSeek / Qwen / GLM / Kimi / local vLLM …), Azure OpenAI, Anthropic and Google Gemini; the settings stay on this machine.</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_GoConfigure">Configure</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Recheck">Re-check</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Stop">Stop</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_Stopped">Stopped</sys:String>
+    <sys:String x:Key="TranslationPage_Ai_NoInput">Enter something to translate first</sys:String>
+
+    <!--  Translation: the AI page's conversation UI  -->
+    <sys:String x:Key="AiTranslation_Chat_Sessions">Conversations</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_New">New conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Rename">Rename conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Rename_Tip">Double-click to rename this conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Delete">Delete conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Clear">Clear this conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_NoSessions">No conversations yet — click "New conversation" below to start</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Untitled">Untitled conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_NewSession">New conversation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_EmptySession">No translations yet</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Input">Input</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_EmptyTip">Type something and click Translate; every source text and translation is recorded here in order (all text can be selected and copied like a web page)</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Original">Source</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Translation">Translation</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Generating">Translating…</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_PendingCount">Translating {0}…</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext">Use context (this conversation)</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_UseContext_Tip">When checked, every translation in this conversation is sent together with all earlier successful source/translation pairs (no count limit); when unchecked, each request only contains the current text.</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextOn">On: each request carries the previous {0} entries</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_ContextOff">Off: each request only translates the current text</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Expand">Expand</sys:String>
+    <sys:String x:Key="AiTranslation_Chat_Collapse">Collapse</sys:String>
+
+    <!--  Settings: AI translation  -->
+    <sys:String x:Key="SettingPage_AiTranslation">AI translation</sys:String>
+    <sys:String x:Key="SettingPage_AiTranslation_Desc">Use an LLM for sentence/context translation, constrained by the local SDE Chinese-English glossary</sys:String>
+    <sys:String x:Key="AiSettingPage_Protocol">Protocol</sys:String>
+    <sys:String x:Key="AiSettingPage_Protocol_Desc">Pick the provider protocol. Most Chinese providers use "OpenAI compatible"; for Bedrock/Vertex put a gateway in front and speak OpenAI.</sys:String>
+    <sys:String x:Key="AiSettingPage_BaseUrl">Base URL</sys:String>
+    <sys:String x:Key="AiSettingPage_BaseUrl_Desc">A bare host (auto-appends /v1/chat/completions) or a versioned path; you can also paste the full chat/completions URL.</sys:String>
+    <sys:String x:Key="AiSettingPage_RestoreDefault">Restore default</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiKey">API key</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiKey_Desc">Stored only in your local settings.json; sent nowhere except the provider you configured.</sys:String>
+    <sys:String x:Key="AiSettingPage_Model">Model</sys:String>
+    <sys:String x:Key="AiSettingPage_Model_Desc">e.g. deepseek-chat / qwen-plus / glm-4-flash / gpt-4o-mini / claude-3-5-haiku-latest; for Azure OpenAI this is the deployment name.</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiVersion">api-version</sys:String>
+    <sys:String x:Key="AiSettingPage_ApiVersion_Desc">Azure OpenAI only; leave empty for the default.</sys:String>
+    <sys:String x:Key="AiSettingPage_Test">Test connection</sys:String>
+    <sys:String x:Key="AiSettingPage_Test_Desc">Saves the settings and sends one very short request, reporting model, latency and token usage.</sys:String>
+    <sys:String x:Key="AiSettingPage_Testing">Testing…</sys:String>
+    <sys:String x:Key="AiSettingPage_TestOk">Connected: {0}</sys:String>
+    <sys:String x:Key="AiSettingPage_TestFailed">Failed: {0}</sys:String>
+    <sys:String x:Key="AiSettingPage_NotConfigured">Fill in the base URL, API key and model first</sys:String>
+    <sys:String x:Key="AiSettingPage_PromptRestored">Built-in prompt restored (saved)</sys:String>
+    <sys:String x:Key="AiSettingPage_Glossary">Glossary (local SDE Chinese-English terms)</sys:String>
+    <sys:String x:Key="AiSettingPage_UseGlossary">Inject glossary</sys:String>
+    <sys:String x:Key="AiSettingPage_UseGlossary_Desc">Before translating, matched proper nouns (items/ships/systems/regions/stations) are injected as a term list so names match the game.</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLimit">Max terms per request</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLimit_Desc">Only terms related to the current sentence are injected; 30 terms is roughly 300–600 tokens. 0 disables injection.</sys:String>
+    <sys:String x:Key="AiSettingPage_ChunkSize">Max characters per request</sys:String>
+    <sys:String x:Key="AiSettingPage_ChunkSize_Desc">Longer text is split into several chunks (cut at paragraph/sentence ends) and merged back. 0 = never split, send everything in one request. The default 12000 is tiny for modern models (128K–1M token context); smaller chunks surface the first result sooner and lose less on a failure, larger chunks mean fewer requests.</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking">Thinking mode</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_Desc">Only sent to DeepSeek endpoints (other providers do not know the parameter, so it is skipped automatically). DeepSeek defaults to "enabled + high", which writes a long chain of thought before every translation — slow, expensive and it also disables temperature. Keep it off for translation.</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_auto">Server default</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_off">Disabled (recommended)</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_low">Enabled · low</sys:String>
+    <sys:String x:Key="AiSettingPage_Thinking_high">Enabled · high</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryStatus">Glossary status</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryStatus_Desc">Term pairs are built by joining the main (English) and localized (Chinese) databases on ID; loaded once per session on first use.</sys:String>
+    <sys:String x:Key="AiSettingPage_ReloadGlossary">Reload</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryReady">{0} terms · {1}</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryNotLoaded">Not loaded yet</sys:String>
+    <sys:String x:Key="AiSettingPage_GlossaryLoading">Loading…</sys:String>
+    <sys:String x:Key="AiSettingPage_Generation">Generation and caching</sys:String>
+    <sys:String x:Key="AiSettingPage_Temperature">Temperature</sys:String>
+    <sys:String x:Key="AiSettingPage_Temperature_Desc">0–0.3 is recommended for translation; 0 means the parameter is not sent (some reasoning models reject it).</sys:String>
+    <sys:String x:Key="AiSettingPage_MaxTokens">Max output tokens</sys:String>
+    <sys:String x:Key="AiSettingPage_MaxTokens_Desc">0 means the parameter is not sent and the server default applies (recommended for reasoning models).</sys:String>
+    <sys:String x:Key="AiSettingPage_Timeout">Timeout (s)</sys:String>
+    <sys:String x:Key="AiSettingPage_Timeout_Desc">Longest time from request to last byte; timeouts are retried once.</sys:String>
+    <sys:String x:Key="AiSettingPage_Stream">Streaming</sys:String>
+    <sys:String x:Key="AiSettingPage_Stream_Desc">Shows generation progress on the waiting overlay while the answer is produced (recommended).</sys:String>
+    <sys:String x:Key="AiSettingPage_Cache">Result cache</sys:String>
+    <sys:String x:Key="AiSettingPage_Cache_Desc">Reuses results for the same model, prompt, glossary and source text; invalidated automatically when any of them change.</sys:String>
+    <sys:String x:Key="AiSettingPage_CacheStatus">{0} entries · {1}</sys:String>
+    <sys:String x:Key="AiSettingPage_ClearCache">Clear cache</sys:String>
+    <sys:String x:Key="AiSettingPage_CacheCleared">Cleared {0} cached entries</sys:String>
+    <sys:String x:Key="AiSettingPage_SystemPrompt">System prompt</sys:String>
+    <sys:String x:Key="AiSettingPage_SystemPrompt_Desc">Leave empty to use the built-in prompt. {glossary} is replaced with the term list, {from}/{to} with language names.</sys:String>
+    <sys:String x:Key="AiSettingPage_RestorePrompt">Restore built-in prompt</sys:String>
+
+    <!--  Channel translation  -->
+    <sys:String x:Key="ChannelTranslationPage_TargetCharacter">Target character</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_ChannelsAndSettings">Channels and options</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Running">Translating</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_SkipMyself">Skip my own messages</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_OnlyNonChinese">Only translate non-Chinese messages</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_MinLength">Minimum length</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Keyword">Trigger keyword</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Keyword_Tip">Empty translates every message</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_NoChannel">No channel selected for translation</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Started">Channel translation started</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Stopped">Channel translation stopped</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Result">Live translation</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_UseContext">Use context</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_UseContext_Tip">Send the earlier translated messages of the same channel as context — smoother translations (on by default); more entries cost more tokens.</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_ContextLimit">Context entries</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Direction">Direction</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Direction_Tip">Follows the source/target language configured on the AI translation page (one place for both).</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_DirectionAuto">{0} ⇄ {1} auto (translate into the other one)</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_RemovedMarkup">{0} in-game markup removed</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Empty">Pick a character, tick channels and press Start; translations (foreign → Chinese, proper nouns constrained by the local database) will appear here live</sys:String>
+    <sys:String x:Key="ChannelTranslationPage_Status">{0} translated · {1} in list</sys:String>
+
+    <!--  术语表（S5）  -->
+    <sys:String x:Key="SettingPage_Glossary">Glossary</sys:String>
+    <sys:String x:Key="SettingPage_Glossary_Desc">Manage custom terms and AI-discovered new words (user terms override the SDE glossary)</sys:String>
+    <sys:String x:Key="GlossarySettingPage_UserTerms">User terms</sys:String>
+    <sys:String x:Key="GlossarySettingPage_UserTerms_Desc">These win over everything: prompt injection, post-checks and the local database source all use them instead of the SDE translation. Changing them invalidates the AI result cache.</sys:String>
+    <sys:String x:Key="GlossarySettingPage_English">English</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Chinese">Chinese</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Chinese_Tip">Rifter</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Add">Add</sys:String>
+    <sys:String x:Key="GlossarySettingPage_AddFailed">Add failed: both English and Chinese are required</sys:String>
+    <sys:String x:Key="GlossarySettingPage_NeedEnglish">Fill in the English term first (or use "Add to glossary" on a candidate)</sys:String>
+    <sys:String x:Key="GlossarySettingPage_NeedChinese">Fill in the Chinese translation</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Added">Term saved: {0} = {1}</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Removed">Term removed: {0}</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Remove">Remove</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Empty">No user terms yet. Pin translations for player/corp/structure names the SDE glossary cannot cover.</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates">AI new-word candidates</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates_Desc">Proper nouns the model met that the glossary does not cover (sorted by occurrences). "Add to glossary" fills the form above so you can type the Chinese name; "Ignore" stops recording it. Candidates are never written automatically.</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Candidates_Empty">No candidates yet: after a few translations, unknown proper nouns will show up here.</sys:String>
+    <sys:String x:Key="GlossarySettingPage_CandidateCount">{0} candidates</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Use">Add to glossary</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Ignore">Ignore</sys:String>
+    <sys:String x:Key="GlossarySettingPage_FillChinese">Filled in "{0}" - type the Chinese name and press Add</sys:String>
+    <sys:String x:Key="GlossarySettingPage_ClearCandidates">Clear candidates</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Cleared">AI new-word candidates cleared</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Status">Glossary status</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Status_Desc">SDE terms are paired by ID between the main (English) and localized (Chinese) databases; user terms live in Configs/UserGlossary.json.</sys:String>
+    <sys:String x:Key="GlossarySettingPage_StatusValue">SDE {0} · user {1}</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reload">Reload</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reloading">Loading…</sys:String>
+    <sys:String x:Key="GlossarySettingPage_Reloaded">SDE {0} · user {1} · {2}</sys:String>
 </ResourceDictionary>

@@ -5,7 +5,11 @@
 		<!--  平台版本必须显式写 10.0.19041：LiveCharts 传递依赖的 SkiaSharp.Views.WPF 3.119.0
 		      只提供 net462 / net8.0-windows10.0.19041 资产，写成 net10.0-windows（隐含 TPV=7.0）
 		      会回退到 .NET Framework 资产（NU1701）或直接报 NU1202。  -->
-		<TargetFramework>net10.0-windows10.0.19041</TargetFramework>
+		<!--  目标框架定在 net8（LTS）而不是 net10：实测在未更新的 Windows 10 21H1（19043.985）上，
+		      .NET 9/10 的 WPF 一启动就崩（0x80131506，KERNELBASE 里的运行时 fail-fast），
+		      而同一台机器上 .NET Framework / .NET 6 / .NET 8 的 WPF 都正常，控制台程序也正常。
+		      即 .NET 9 起的 WPF 与该系统补丁级别不兼容，用 net8 可覆盖这些老系统。  -->
+		<TargetFramework>net8.0-windows10.0.19041</TargetFramework>
 		<RootNamespace>TheGuideToTheNewEden</RootNamespace>
 		<AssemblyName>TheGuideToTheNewEden</AssemblyName>
 		<UseWPF>true</UseWPF>
@@ -21,8 +25,9 @@
 	<ItemGroup>
 		<PackageReference Include="WPF-UI" Version="4.3.0" />
 		<!--  托盘与系统通知：与 WinUI 版一致使用 H.NotifyIcon（WinUI 版为 H.NotifyIcon.WinUI）
-		      WPF 端在 net10 下使用 2.4.1（其目标框架为 net10.0-windows / net462）  -->
-		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+		      2.4.1 只带 net10.0-windows / net462 资产，net8 下会回退到 .NET Framework 资产（NU1701）；
+		      2.3.0 是最后一个带 net8.0-windows 资产的版本，故锁在这个版本。  -->
+		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.3.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<!--  邮件正文 HTML 渲染（替代 WebView2）  -->
 		<PackageReference Include="HtmlRenderer.WPF" Version="1.6.1" />
