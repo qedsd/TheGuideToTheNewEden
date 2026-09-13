@@ -1,0 +1,340 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.TranslationPanelView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  只放带 x:Key 的样式：不带 Key 的本地隐式样式会顶掉 WPF-UI 的库样式（REFACTORING.md §9 第 18 条）  -->
+        <Style x:Key="TranslationFieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="0,6,0,2" />
+        </Style>
+        <Style x:Key="TranslationDetailLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Margin" Value="0,12,0,2" />
+        </Style>
+
+        <!--
+            结果区的文字一律用**只读 TextBox**（WPF 的 TextBlock 不能选中文本）：
+            外观与普通文本一致（无边框/透明底/无内边距），但可拖选、Ctrl+A/Ctrl+C、右键复制。
+        -->
+        <Style x:Key="TranslationSelectableText" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="IsInactiveSelectionHighlightEnabled" Value="True" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+            <Setter Property="SelectionOpacity" Value="0.4" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!--  原文：标题级  -->
+        <Style
+            x:Key="TranslationSelectableTitle"
+            BasedOn="{StaticResource TranslationSelectableText}"
+            TargetType="TextBox">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <!--  译文：标题级；译文库没有该名词时用警示色显示「无译文」，不让人误以为是译名  -->
+        <Style
+            x:Key="TranslationSelectableResult"
+            BasedOn="{StaticResource TranslationSelectableText}"
+            TargetType="TextBox">
+            <Setter Property="FontSize" Value="18" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasTranslation}" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!--  类型 / 方向 / 描述：正文级  -->
+        <Style
+            x:Key="TranslationSelectableValue"
+            BasedOn="{StaticResource TranslationSelectableText}"
+            TargetType="TextBox">
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style
+            x:Key="TranslationSelectableSecondary"
+            BasedOn="{StaticResource TranslationSelectableText}"
+            TargetType="TextBox">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="TranslationMatchTranslation" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="TranslationMatchType" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <!--  列表项的 UIA 名称取名词本身（默认是条目对象的 ToString，读屏时没有意义）  -->
+        <Style
+            x:Key="TranslationMatchItem"
+            BasedOn="{StaticResource StretchListItem}"
+            TargetType="ListBoxItem">
+            <Setter Property="AutomationProperties.Name" Value="{Binding Query}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  ============ 左：输入与匹配列表 ============  -->
+        <controls:CardControl
+            Grid.Column="0"
+            Margin="0,0,6,0"
+            Header="{DynamicResource TranslationPage_Input}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  来源不可用提示（本地化数据库缺失/未载入）  -->
+                <Border
+                    Grid.Row="0"
+                    Margin="0,0,0,8"
+                    Padding="8,6"
+                    Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                    CornerRadius="4"
+                    Visibility="{Binding IsSourceUnavailable, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCautionBrush}" Symbol="Warning24" />
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding SourceUnavailableText}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!--  翻译来源 / 方向  -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource TranslationPage_Source}" />
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding HasMultipleSources}"
+                            ItemsSource="{Binding Sources}"
+                            SelectedIndex="{Binding SelectedSourceIndex, Mode=TwoWay}"
+                            ToolTip="{DynamicResource TranslationPage_Source_Tip}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource TranslationFieldLabel}" Text="{DynamicResource TranslationPage_Direction}" />
+                        <ComboBox HorizontalAlignment="Stretch" SelectedIndex="{Binding DirectionIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="{DynamicResource TranslationPage_Direction_Auto}" />
+                            <ComboBoxItem Content="{DynamicResource TranslationPage_Direction_EnToZh}" />
+                            <ComboBoxItem Content="{DynamicResource TranslationPage_Direction_ZhToEn}" />
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <!--  输入框（回车立即查询）  -->
+                <ui:TextBox
+                    Grid.Row="2"
+                    Margin="0,8,0,0"
+                    KeyDown="OnInputKeyDown"
+                    PlaceholderText="{DynamicResource TranslationPage_Input_Tip}"
+                    Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!--  结果条数 / 方向  -->
+                <TextBlock
+                    Grid.Row="3"
+                    Margin="0,8,0,0"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding StatusText}"
+                    Visibility="{Binding HasStatus, Converter={StaticResource BoolToVis}}" />
+
+                <!--  匹配列表（每条已带译文） + 空结果提示  -->
+                <Grid Grid.Row="4" Margin="0,6,0,0">
+                    <ListBox
+                        HorizontalContentAlignment="Stretch"
+                        ItemsSource="{Binding Matches}"
+                        ItemContainerStyle="{StaticResource TranslationMatchItem}"
+                        PreviewMouseRightButtonDown="OnMatchesPreviewMouseRightButtonDown"
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        SelectedItem="{Binding SelectedMatch, Mode=TwoWay}"
+                        VirtualizingStackPanel.IsVirtualizing="True"
+                        VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Click="OnCopyQueryClick" Header="{DynamicResource TranslationPage_CopyQuery}" />
+                                <MenuItem Click="OnCopyTranslationClick" Header="{DynamicResource TranslationPage_CopyTranslation}" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,6" AutomationProperties.Name="{Binding Query}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Query}"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Margin="0,2,0,0"
+                                            Style="{StaticResource TranslationMatchTranslation}"
+                                            Text="{Binding Translation}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="8,0,0,0"
+                                        Style="{StaticResource TranslationMatchType}"
+                                        Text="{Binding TypeName}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock
+                        Margin="16,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{DynamicResource TranslationPage_NoResultTip}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding ShowEmptyTip, Converter={StaticResource BoolToVis}}" />
+                </Grid>
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Button
+                        Margin="4,0"
+                        Appearance="Primary"
+                        Click="OnTranslateClick"
+                        Content="{DynamicResource TranslationPage_Translate}"
+                        Icon="{ui:SymbolIcon Search24}" />
+                    <ui:Button
+                        Margin="4,0"
+                        Click="OnClearClick"
+                        Content="{DynamicResource TranslationPage_Clear}"
+                        Icon="{ui:SymbolIcon Eraser24}" />
+                    <ui:Button
+                        Margin="4,0"
+                        Click="OnPopWindowClick"
+                        Content="{DynamicResource TranslationPage_PopWindow}"
+                        Icon="{ui:SymbolIcon WindowNew24}"
+                        Visibility="{Binding CanPopWindow, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+
+        <!--  ============ 右：译文详情 ============  -->
+        <controls:CardControl
+            Grid.Column="1"
+            Margin="6,0,0,0"
+            Header="{DynamicResource TranslationPage_Result}">
+            <Grid>
+                <!--  未选中：引导  -->
+                <TextBlock
+                    Margin="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{DynamicResource TranslationPage_NoSelection}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                <!--  选中：原文 / 译文 / 描述  -->
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto"
+                    Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Margin="4" DataContext="{Binding SelectedMatch}">
+                        <!--  两列网格（而不是横向 StackPanel）：标题列拿到受限宽度，长名称才会换行而不是溢出  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Image
+                                Grid.Column="0"
+                                Width="64"
+                                Height="64"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Top"
+                                Source="{Binding Icon}"
+                                Visibility="{Binding IsInvType, Converter={StaticResource BoolToVis}}" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBox
+                                    Style="{StaticResource TranslationSelectableTitle}"
+                                    Text="{Binding Query, Mode=OneWay}" />
+                                <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                    <TextBox
+                                        Style="{StaticResource TranslationSelectableSecondary}"
+                                        Text="{Binding TypeName, Mode=OneWay}" />
+                                    <TextBox
+                                        Margin="10,0,0,0"
+                                        Style="{StaticResource TranslationSelectableSecondary}"
+                                        Text="{Binding DirectionText, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_Translation}" />
+                        <TextBox
+                            Style="{StaticResource TranslationSelectableResult}"
+                            Text="{Binding Translation, Mode=OneWay}" />
+
+                        <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_QueryDescription}" />
+                        <TextBox
+                            Style="{StaticResource TranslationSelectableValue}"
+                            Text="{Binding QueryDescription, Mode=OneWay}"
+                            Visibility="{Binding HasQueryDescription, Converter={StaticResource BoolToVis}}" />
+
+                        <TextBlock Style="{StaticResource TranslationDetailLabel}" Text="{DynamicResource TranslationPage_TranslationDescription}" />
+                        <TextBox
+                            Style="{StaticResource TranslationSelectableValue}"
+                            Text="{Binding TranslationDescription, Mode=OneWay}"
+                            Visibility="{Binding HasTranslationDescription, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <controls:CardControl.Footer>
+                <ui:Button
+                    HorizontalAlignment="Center"
+                    Click="OnCopyClick"
+                    Content="{DynamicResource TranslationPage_CopyTranslation}"
+                    Icon="{ui:SymbolIcon Copy24}" />
+            </controls:CardControl.Footer>
+        </controls:CardControl>
+    </Grid>
+</UserControl>

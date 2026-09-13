@@ -23,16 +23,26 @@
         <!--  统一标题栏：左侧 logo + 窗口名称，右侧置顶按钮与系统标题按钮（可分别控制显隐）  -->
         <ui:TitleBar
             x:Name="TitleBarHost"
-            Grid.Row="0"
-            Title="{DynamicResource AppDisplayName}">
+            Title="{DynamicResource AppDisplayName}"
+            Grid.Row="0">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
             </ui:TitleBar.Icon>
             <ui:TitleBar.TrailingContent>
+                <!--
+                    与右侧的最小化/最大化/关闭按钮对齐：
+                    WPF-UI 的 TitleBarButton 固定 44×30 且 VerticalAlignment=Top，
+                    而 TrailingContent 的 ContentPresenter 默认拉伸到整条标题栏（48）——
+                    不显式给 44×30 + Top 的话，图钉会比三个系统按钮低约 11 DIP（实测 11.0）。
+                -->
                 <ui:Button
                     x:Name="TopmostButton"
-                    Margin="0,0,8,0"
+                    Width="44"
+                    Height="30"
+                    Margin="0,0,6,0"
+                    VerticalAlignment="Top"
                     Appearance="Transparent"
+                    BorderThickness="0"
                     Click="OnTopmostClick"
                     Visibility="Collapsed">
                     <ui:SymbolIcon
@@ -44,8 +54,10 @@
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
-        <!--  内容宿主：用 Frame 承载，Page / UserControl / 任意 UIElement 都能放入
-              （Page 只能由 Window/Frame 承载，放 ContentControl 会抛异常）  -->
+        <!--
+            内容宿主：用 Frame 承载，Page / UserControl / 任意 UIElement 都能放入
+            （Page 只能由 Window/Frame 承载，放 ContentControl 会抛异常）
+        -->
         <Frame
             x:Name="ContentFrame"
             Grid.Row="1"

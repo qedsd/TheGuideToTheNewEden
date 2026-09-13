@@ -992,4 +992,38 @@
     <sys:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">Empty means single item</sys:String>
     <sys:String x:Key="ChannelMarket_Last3MonthPrice">Last 3 Months Price</sys:String>
     <sys:String x:Key="ChannelMarket_Running">Running</sys:String>
+
+    <!--  Translation (local database)  -->
+    <sys:String x:Key="TranslationPage">Translation</sys:String>
+    <sys:String x:Key="TranslationPage_Input">Translation</sys:String>
+    <sys:String x:Key="TranslationPage_Result">Result</sys:String>
+    <sys:String x:Key="TranslationPage_Input_Tip">Enter an EVE proper noun (item / region / solar system / station), Chinese and English are supported</sys:String>
+    <sys:String x:Key="TranslationPage_NoResultTip">No matching noun found in the local database</sys:String>
+    <sys:String x:Key="TranslationPage_NoSelection">Select a noun on the left to see its translation and description</sys:String>
+    <sys:String x:Key="TranslationPage_Translation">Translation</sys:String>
+    <sys:String x:Key="TranslationPage_QueryDescription">Query Description</sys:String>
+    <sys:String x:Key="TranslationPage_TranslationDescription">Translation Description</sys:String>
+    <sys:String x:Key="TranslationPage_NoTranslation">No translation</sys:String>
+    <sys:String x:Key="TranslationPage_Translate">Translate</sys:String>
+    <sys:String x:Key="TranslationPage_Clear">Clear</sys:String>
+    <sys:String x:Key="TranslationPage_PopWindow">Pop Window</sys:String>
+    <sys:String x:Key="TranslationPage_CopyTranslation">Copy Translation</sys:String>
+    <sys:String x:Key="TranslationPage_CopyQuery">Copy Query</sys:String>
+    <sys:String x:Key="TranslationPage_CopySuccess">Copied</sys:String>
+    <sys:String x:Key="TranslationPage_ResultCount">{0} match(es)</sys:String>
+    <sys:String x:Key="TranslationPage_Failed">Translation failed</sys:String>
+    <sys:String x:Key="TranslationPage_Source">Source</sys:String>
+    <sys:String x:Key="TranslationPage_Source_Tip">Where translations come from; currently only the offline local database</sys:String>
+    <sys:String x:Key="TranslationPage_Source_LocalDb">Local database</sys:String>
+    <sys:String x:Key="TranslationPage_LocalDbUnavailable">Localized database unavailable: enable "Using a localized database" in Settings → General and make sure a localized database file is selected (Resources/Database/Local/zh.db).</sys:String>
+    <sys:String x:Key="TranslationPage_Direction">Direction</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_Auto">Auto</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_EnToZh">English → Chinese</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_ZhToEn">Chinese → English</sys:String>
+    <sys:String x:Key="TranslationPage_EN">English</sys:String>
+    <sys:String x:Key="TranslationPage_Chinese">Chinese</sys:String>
+    <sys:String x:Key="TranslationPage_Type_InvType">Item</sys:String>
+    <sys:String x:Key="TranslationPage_Type_MapRegion">Region</sys:String>
+    <sys:String x:Key="TranslationPage_Type_MapSolarSystem">Solar System</sys:String>
+    <sys:String x:Key="TranslationPage_Type_StaStation">Station</sys:String>
 </ResourceDictionary>

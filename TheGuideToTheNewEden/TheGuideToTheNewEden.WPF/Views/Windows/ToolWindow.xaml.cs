@@ -245,6 +245,9 @@ public partial class ToolWindow : FluentWindow
         }
 
         TopmostButton.Visibility = ShowTopmostButton ? Visibility.Visible : Visibility.Collapsed;
+        // 置顶按钮位于 WindowChrome 的标题区，显式声明为"可交互"，避免被当作标题栏拖动吞掉点击
+        // （实测 WPF-UI 的 TitleBar 已通过 WM_NCHITTEST 返回 HTCLIENT，这里是双保险）
+        System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(TopmostButton, true);
         UpdateTopmostVisual();
     }
 
@@ -256,12 +259,15 @@ public partial class ToolWindow : FluentWindow
 
     private void UpdateTopmostVisual()
     {
-        if (TopmostIcon is null)
+        if (TopmostIcon is null || TopmostButton is null)
         {
             return;
         }
 
         TopmostIcon.Symbol = Topmost ? SymbolRegular.PinOff24 : SymbolRegular.Pin24;
+        // 已置顶时按钮用填充底色：状态一眼可辨（只切 Appearance，颜色交给主题，不缓存 Brush）
+        TopmostButton.Appearance = Topmost ? ControlAppearance.Secondary : ControlAppearance.Transparent;
+
         var text = Topmost
             ? Application.Current?.TryFindResource("ToolWindow.TopmostOff") as string ?? "取消置顶"
             : Application.Current?.TryFindResource("ToolWindow.Topmost") as string ?? "置顶";

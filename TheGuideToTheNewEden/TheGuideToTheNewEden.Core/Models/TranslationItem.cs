@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TheGuideToTheNewEden.Core.Enums;
@@ -6,7 +6,9 @@ using TheGuideToTheNewEden.Core.Enums;
 namespace TheGuideToTheNewEden.Core.Models
 {
     /// <summary>
-    /// 兼容数据库、有道翻译两种结果
+    /// 一条翻译结果：既承载「本地数据库」（EVE 专有名词的中英对照，见
+    /// <c>Services.DB.TranslationDbService</c>）的结果，也兼容在线翻译接口的结果，
+    /// 由 <see cref="IsFromDataBase"/> 区分。
     /// </summary>
     public class TranslationItem
     {

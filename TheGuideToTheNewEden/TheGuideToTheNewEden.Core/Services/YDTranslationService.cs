@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -12,6 +12,15 @@ using TheGuideToTheNewEden.Core.Models.Translation;
 
 namespace TheGuideToTheNewEden.Core.Services
 {
+    /// <summary>
+    /// 有道翻译（在线 API，需要 <c>Configs/YoudaoLicense.txt</c> 里的 appKey/appSecret）。
+    /// <para>
+    /// <b>WPF 版不再使用</b>：WPF 的翻译改为「本地 SDE 数据库专有名词互译」
+    /// （见 <see cref="DB.TranslationDbService"/> 与 WPF 侧 <c>Services/Translation/*</c>），
+    /// 完全离线、不依赖任何第三方 API。本类仅为 WinUI 版保留，待 WinUI 退役后连同
+    /// <see cref="Interfaces.ITranslationService"/> 一并删除。
+    /// </para>
+    /// </summary>
     public class YDTranslationService : ITranslationService
     {
         internal class YDResultModel

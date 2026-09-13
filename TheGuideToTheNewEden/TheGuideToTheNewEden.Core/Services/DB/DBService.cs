@@ -1,4 +1,4 @@
-﻿using SqlSugar;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,6 +38,18 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         internal static SqlSugarScope StaticDb;
 
         internal static bool NeedLocalization => Config.NeedLocalization;
+
+        /// <summary>
+        /// 主数据库是否已成功载入。未载入时任何按库查询都不可用
+        /// （<see cref="MainDb"/> 为 null，直接查询会抛 NullReferenceException）。
+        /// </summary>
+        public static bool MainDbReady => MainDb != null;
+
+        /// <summary>
+        /// 本地化数据库（zh.db 等）是否已成功载入。
+        /// 未启用本地化或本地化数据库文件缺失时为 false。
+        /// </summary>
+        public static bool LocalDbReady => LocalDb != null;
 
         internal static bool ValidFile(string path)
         {

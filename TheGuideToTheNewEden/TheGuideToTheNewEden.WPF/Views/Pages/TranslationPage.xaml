@@ -1,0 +1,11 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.TranslationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uc="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--  页面只承载面板：同一份面板也被"弹窗"（ToolWindow）复用  -->
+    <uc:TranslationPanelView />
+</Page>

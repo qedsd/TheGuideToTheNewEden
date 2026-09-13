@@ -992,4 +992,38 @@
     <sys:String x:Key="ChannelMarket_Setting_ItemsSeparator_Tip">留空则查询单个物品</sys:String>
     <sys:String x:Key="ChannelMarket_Last3MonthPrice">过去三个月价格</sys:String>
     <sys:String x:Key="ChannelMarket_Running">监控中</sys:String>
+
+    <!--  翻译（本地数据库）  -->
+    <sys:String x:Key="TranslationPage">翻译</sys:String>
+    <sys:String x:Key="TranslationPage_Input">翻译</sys:String>
+    <sys:String x:Key="TranslationPage_Result">结果</sys:String>
+    <sys:String x:Key="TranslationPage_Input_Tip">输入游戏专有名词（物品 / 星域 / 星系 / 空间站），支持中英互译</sys:String>
+    <sys:String x:Key="TranslationPage_NoResultTip">本地数据库中没有匹配的名词</sys:String>
+    <sys:String x:Key="TranslationPage_NoSelection">从左侧列表选择一个名词查看译文与描述</sys:String>
+    <sys:String x:Key="TranslationPage_Translation">译文</sys:String>
+    <sys:String x:Key="TranslationPage_QueryDescription">原文描述</sys:String>
+    <sys:String x:Key="TranslationPage_TranslationDescription">译文描述</sys:String>
+    <sys:String x:Key="TranslationPage_NoTranslation">无译文</sys:String>
+    <sys:String x:Key="TranslationPage_Translate">翻译</sys:String>
+    <sys:String x:Key="TranslationPage_Clear">清空</sys:String>
+    <sys:String x:Key="TranslationPage_PopWindow">弹窗</sys:String>
+    <sys:String x:Key="TranslationPage_CopyTranslation">复制译文</sys:String>
+    <sys:String x:Key="TranslationPage_CopyQuery">复制原文</sys:String>
+    <sys:String x:Key="TranslationPage_CopySuccess">已复制</sys:String>
+    <sys:String x:Key="TranslationPage_ResultCount">匹配 {0} 条</sys:String>
+    <sys:String x:Key="TranslationPage_Failed">翻译失败</sys:String>
+    <sys:String x:Key="TranslationPage_Source">来源</sys:String>
+    <sys:String x:Key="TranslationPage_Source_Tip">翻译数据的来源；目前只有离线的本地数据库</sys:String>
+    <sys:String x:Key="TranslationPage_Source_LocalDb">本地数据库</sys:String>
+    <sys:String x:Key="TranslationPage_LocalDbUnavailable">本地化数据库不可用：请在「设置 → 一般」勾选“使用本地化数据库”，并确认已选择本地化数据库文件（Resources/Database/Local/zh.db）。</sys:String>
+    <sys:String x:Key="TranslationPage_Direction">方向</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_Auto">自动</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_EnToZh">英文 → 中文</sys:String>
+    <sys:String x:Key="TranslationPage_Direction_ZhToEn">中文 → 英文</sys:String>
+    <sys:String x:Key="TranslationPage_EN">英文</sys:String>
+    <sys:String x:Key="TranslationPage_Chinese">中文</sys:String>
+    <sys:String x:Key="TranslationPage_Type_InvType">物品</sys:String>
+    <sys:String x:Key="TranslationPage_Type_MapRegion">星域</sys:String>
+    <sys:String x:Key="TranslationPage_Type_MapSolarSystem">星系</sys:String>
+    <sys:String x:Key="TranslationPage_Type_StaStation">空间站</sys:String>
 </ResourceDictionary>

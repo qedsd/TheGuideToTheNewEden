@@ -25,6 +25,7 @@ public static class CoreInitializer
         GameServerSelectorService.Initialize();
         LocalDbSelectorService.Initialize();
         DBLocalizationSettingService.Initialize();
+        TranslationSettingService.Initialize();
         PlayerStatusService.Initialize();
         AutoUpdateService.Initialize();
         GameLogsSettingService.Initialize();

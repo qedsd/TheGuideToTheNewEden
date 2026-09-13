@@ -906,6 +906,52 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 46：翻译迁移（本地 SDE 数据库专有名词互译，**废弃有道 API**）
+
+- 目标（用户要求）：把「翻译」页迁到 WPF，**不使用旧的有道 API**（原实现把文本 POST 到 `openapi.youdao.com`，依赖 `Configs/YoudaoLicense.txt` 里的 appKey/appSecret → `AppKey`/`AppSerct` 与两个词典 id），**先把本地数据库翻译做完整**：用 SDE 主库（英文）与本地化库（中文 `Local/zh.db`）互译 EVE 专有名词（物品 / 星域 / 星系 / 空间站），完全离线。
+- **架构：可插拔的「翻译源」**（页面不关心译文从哪来，将来加在线/本地模型翻译只加一个实现）：
+  - `Services/Translation/ITranslationProvider.cs`：`ITranslationProvider`（`Key` / 显示名键 / `IsAvailable` / 不可用原因键 / `TranslateAsync`）+ `TranslationDirection`（自动 / 英→中 / 中→英）+ `TranslationRequest` / `TranslationOutcome`（结果条目**直接复用 Core 的 `TranslationItem`**，靠 `IsFromDataBase` 区分数据源）。
+  - `Services/Translation/LocalDbTranslationProvider.cs`：本地数据库源（当前唯一实现）。**自动方向**先按原文是否含中文判定，若该方向一条都没命中就**再试另一方向**（中英混排 / 输入缩写时更不容易"查不到"）。
+  - `Services/Translation/TranslationService.cs`：已注册源列表 + 按 `Key` 取源（找不到退回第一个）。**接入在线翻译只需在这里多注册一个实现**，页面上的来源下拉会自动多出选项、不再是禁用态。
+  - `Services/Translation/TranslationLanguageHelper.cs`：CJK 判定、方向解析、方向/语言代码 → 本地化键。
+  - `Services/Settings/TranslationSettingService.cs`：`TranslationPage.Provider` / `TranslationPage.Direction` 写进共用的 `settings.json`（由 `CoreInitializer` 初始化）。WinUI 的 `TranslationSetting.FromLanguage/ToLanguage` 是**给有道用的语言代码**，不再沿用。
+- **Core 新增/改动**（两侧共用，注意回归）：
+  - 新增 `Services/DB/TranslationDbService.cs`：按名称在**原文语言**的库里模糊匹配（每类名词 `Take(100)` 封顶），再用这批 ID 去**译文语言**的库**批量**取对照行——每类名词固定 2 次查询，不做逐条查询；结果按「完全匹配优先、其次名称升序」排序；译文库里没有该 ID 时 `Translation` 为 null，界面显示「无译文」。`IsAvailable` 要求主库与本地化库都已载入。
+  - `Services/DB/DBService.cs`：新增公开只读属性 `MainDbReady` / `LocalDbReady`。`MainDb`/`LocalDb` 是 `internal`，外部（含 WPF）无法判断数据库是否真的载入，而未载入时任何按库查询都抛 `NullReferenceException`；有了这两个属性，翻译源才能给出「本地化数据库不可用」的明确提示而不是异常。
+  - `Models/TranslationItem.cs`：类注释更新（不再是"兼容数据库、有道翻译两种结果"）。
+  - `Services/YDTranslationService.cs`：加类注释说明**WPF 不再使用**、仅为 WinUI 保留（待 WinUI 退役后连同 `ITranslationService` 删除）。**文件本身未改**，WinUI 侧编译不受影响。
+- **界面**（新增 `Views/UserControls/TranslationPanelView.xaml(.cs)` + `Views/Pages/TranslationPage.xaml(.cs)`，删除占位页 `Views/Pages/TranslationPage.cs`；页面类名/命名空间不变，`MainWindow.xaml` 的导航注册无需改动）：
+  - 左卡片「翻译」= **来源**（下拉；只有一项时禁用、当只读标签用，将来多源时自动可交互）+ **方向**（自动 / 英→中 / 中→英）+ 输入框 + 匹配列表。列表每行直接显示「原文 + 译文 + 类型」，**不用点选就能看到译名**。
+  - 输入停顿 **350ms 防抖**自动查询；回车、`翻译` 按钮立即查询；`清空` 清空输入与结果；底栏另有 `弹窗`。
+  - 右卡片「结果」= 物品图标 + 原文 + 类型/方向 + **译文** + 原文描述 + 译文描述；底栏 `复制译文` 复制**译名**（该条无译文时复制原文，并提示已复制）。未选中时显示引导文案。
+  - 来源不可用时左上角显示黄色警告条（文案指向「设置 → 一般」的本地化数据库项），并在查询前**短路**，不去打注定失败的查询。
+  - 切语言时 VM 会**重建匹配项包装**（`TranslationMatchViewModel` 里的类型/语言标签是构造时取好的本地化文本，见 §9 第 18 条末句的同类问题）。
+  - `弹窗` 用既有 `ToolWindow` 承载**同一面板**的另一个实例（`ShowPopWindowButton=false`，避免层层弹窗；单实例、重复点击仅激活）。
+- **与 WinUI 版的有意差异**：① 「原文语言 / 译文语言」两个下拉换成**一个方向选择**（那是给在线 API 的语言代码，本地库只分中/英）；② 不再有"回车联网翻译通用文本"，本地库只认 SDE 里的专有名词，查不到就明确提示；③ 列表行直接给译文、右侧详情补物品图标与描述（WinUI 需先点选才看得到译文）。
+- **实现中自查修掉的一处**：物品图标最初用共用的 `Converters/TypeImageConverter`（`BitmapImage.UriSource` 走 WPF 的 URI 下载路径），核验时它**每次都抛 `COMException 0x80072EE4`（没有注册类）于 `MS.Win32.WinInet.get_InternetCacheFolder()` 并记一条 ERROR**。翻译页改用估价页同一套做法（`HttpClient` 取字节 → **同一线程池线程**解码 + `Freeze()`，并按类型 ID 进程内缓存）：既绕开 WinINet 缓存路径，也避开 `Freezable` 的线程亲缘性（§9 第 15 条）。共用转换器本身未改（其他页面的行为不受影响）。
+- 本地化：中英各补 **31 个 `TranslationPage_*` 键**（键值沿用 WinUI 原文的 `TranslationPage_Input/Result/Input_Tip/Query*/Translation*/NoResultTip/PopWindow/Copy*/EN`，新增 来源/方向/类型标签/无译文/无选中/清空/翻译/匹配条数/失败/本地库不可用 等），两文件键数均为 **998**。
+- 构建状态：`dotnet build` **0 错误**（仅剩既有警告）。
+- **核验**（实机运行 + UIA 自动化；一次性脚本与探针在核对后已清理，不随仓库保留）：
+  | 核验点 | 结果 |
+  |---|---|
+  | 导航到「翻译」页 | 页面正常渲染出 来源 / 方向 / 结果 / 翻译 / 清空 / 弹窗 / 复制译文 等元素，**无 XamlParseException** |
+  | 输入 `Rifter`（方向=自动） | 列表 100 条匹配（受每类上限），首条为 `Rifter`；详情区显示译文「裂谷级」+ 英文原文描述 + 中文译文描述；状态行「匹配 100 条 · 英文 → 中文」 |
+  | `复制译文` | 剪贴板 = `裂谷级` |
+  | `清空` | 输入框与列表清空 |
+  | `弹窗` | 进程内新增**可见顶层窗口**（标题「翻译」），窗口内是同一面板（有 来源/方向/结果，**无**「弹窗」按钮）；在其输入框输入 `Jita` → 显示「吉他」 |
+  | 运行期间应用日志 | **0 字节新增**（无 ERROR / 无异常） |
+  | Core 独立探针（12 项断言全 PASS） | 双向命中：`Rifter`↔`裂谷级`（物品）、`Jita`↔`吉他`（星系）、`The Forge`↔`伏尔戈`（星域）、`Jita IV - Moon 4 - Caldari Navy Assembly Plant`↔`吉他 IV - 卫星 4 - 加达里海军 组装车间`（空间站），且完全匹配排首位；物品描述双向对照非空；`Search("级")` 24 条、27ms；空输入与无匹配返回空 |
+- 未做/后续：① **通用文本翻译**（非专有名词）本地库做不到，需要接入在线 / 本地模型翻译源（`ITranslationProvider` 已为此预留）；② **按行批量翻译**（粘贴一份物品清单逐行出译文）未做；③ **频道翻译**页仍是导航占位（同样依赖通用文本翻译能力）。
+- **追加（用户要求"结果显示的所有文字需要可以容易选择复制"）**：WPF 的 `TextBlock` **不能选中文本**，因此结果卡片的内容全部改用**只读 `TextBox`**（新增 `TranslationSelectableText` / `…Title` / `…Result` / `…Value` / `…Secondary` 一组样式：透明底、`BorderThickness=0`、无内边距、`TextWrapping=Wrap`、`FocusVisualStyle=null`、`IsInactiveSelectionHighlightEnabled=True`，选中色取主题强调色 + 0.4 透明）——外观与普通文本完全一致，但可**拖选、Ctrl+A/Ctrl+C、右键复制**；「无译文」的警示色由该系列的 `DataTrigger` 负责（原来挂在 `TextBlock` 上）。同时把标题行从"横向 `StackPanel`"改为**两列 `Grid`（`Auto` + `*`）**：横向 `StackPanel` 给子元素的可用宽度是**无限**的，长名词不会换行而会溢出卡片。左侧匹配列表加**右键菜单「复制原文 / 复制译文」**（新增键 `TranslationPage_CopyQuery`，两语言各 1 个；`CopyQuery`/`CopyTranslation` 收敛到 VM 的 `CopyToClipboard`），并在 `PreviewMouseRightButtonDown` 里先选中鼠标下的那一行——否则会出现"右键 A 行、复制到的是 B 行"。
+- 该追加的构建校验：应用正在运行（VS 调试会话）锁住 `bin`，`dotnet build` 报 `MSB3027/MSB3021`；改用 **`-p:OutDir=<临时目录>\`** 重定向输出校验，**0 错误**，并做了一次 `StaticResource` 键引用审计（13 处引用全部命中本地或全局定义，无"MISSING"）。**实机核验未做**（需先停止调试会话）——按用户选择，由其自行重新生成后查看效果。
+- **追加（用户反馈"翻译弹窗的置顶按钮没有生效、一直都是置顶，且与最大最小关闭按钮错位"）**：
+  - **错位**：WPF-UI 的 `TitleBarButton`（最小化/最大化/关闭）固定 **44×30 + `VerticalAlignment=Top`**，而 `TrailingContent` 的 `ContentPresenter` 没设垂直对齐（默认拉伸到整条标题栏 48）→ 放在里面的图钉被撑高、图标居中后比三个系统按钮**低 11 DIP**（探针实测 11.0）。`ToolWindow.xaml` 的置顶按钮改为 `Width="44" Height="30" VerticalAlignment="Top" Margin="0,0,6,0"`，与系统按钮同高同顶（实测高度差 0.0）。
+  - **"置顶没生效"**：置顶开关本身没坏——探针实测点击后 `Topmost` 与 Win32 的 `WS_EX_TOPMOST` 位确实翻转；真正的原因是**弹窗设了 `Owner`**：被拥有的窗口按 Windows 规则**恒在宿主窗口之上**，于是"未置顶"在应用内看起来与"置顶"完全一样。翻译弹窗因此**不再设 `Owner`**，改为 `WindowStartupLocation=Manual` + 手动居中到宿主窗口（并夹进工作区）：未置顶时是普通窗口（可被主窗口盖住），置顶时才浮在最前。（市场页的"简介/买入"窗口仍保留 `Owner`，未动。）
+  - **状态更易读**：置顶时按钮切到 `Appearance="Secondary"`（填充底色）、图标 `PinOff24`、提示"取消置顶"；未置顶切回 `Transparent`/`Pin24`/"置顶"。只切 `Appearance`，配色交给主题（不缓存 Brush，见 §9 第 18 条）。另在 `ToolWindow` 里补 `WindowChrome.SetIsHitTestVisibleInChrome(TopmostButton, true)` 作双保险（探针显示本就不需要，见 §9 第 26 条）。
+  - **核验**（独立探针直接实例化主程序集里**真实的** `ToolWindow`；构建走重定向输出目录，仍不碰被调试会话锁住的 `bin`）：置顶按钮 44×30.4 / `VerticalAlignment=Top` / 与关闭按钮 centerY 高度差 **0.0**（修正前 11.0）；按钮处 `WM_NCHITTEST=HTCLIENT(1)`、命中测试落在按钮 Border 与图标的 TextBlock 上；连点两次依次 `Topmost=True→False`、`WS_EX_TOPMOST=True→False`、图标 `PinOff24→Pin24`、外观 `Secondary→Transparent`、提示 `取消置顶→置顶`。主程序集编译 **0 错误**（重定向输出）。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
@@ -1053,6 +1099,10 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 21. **倒货排除清单的入口**目前只有倒货页自身的"排除列表"页签（手动移除）；市场/订单页的"加入排除列表"右键尚未接线（见 16）。
 22. **倒货切换"星系"市场仍会先拉整星域**（`GetSolarSystemOrdersAsync` 内部复用 `GetAllRegionOrdersAsync`，与 WinUI 一致），因此星系口径并不比星域便宜。
 23. **倒货市场树分组的复选框语义**：WPF 三态复选框点击循环 `Off → On → Indeterminate`，与 Core `SelectableMarketItem`（WinUI 共用）的联动逻辑一致——分组停在 `Indeterminate` 时不再回写子项；该行为在 WinUI 侧同样存在，未改 Core。
+24. **翻译只覆盖"本地数据库里有的专有名词"**（阶段 46）：物品 / 星域 / 星系 / 空间站可中英互译；**通用文本**（句子、军团/角色名）与**结构（建筑）名**（不在 SDE 里）都译不了——后者要靠 `StructureService` 的 ESI 解析，前者要等在线/本地模型翻译源接入（`ITranslationProvider` 已预留）。
+25. **翻译没有批量模式**（阶段 46 遗留）：一次只查一个名词；"粘贴一份物品清单逐行出译文"未做。
+26. **频道翻译（ChannelTranslationPage）仍是导航占位**：它对聊天正文做通用文本翻译，需要与第 24 条同一套能力，届时可复用 `ITranslationProvider` 与语言判定，并复用频道日志观察者（`ChannelIntelObserver` 那一套）。
+27. **`Converters/TypeImageConverter` 在受限环境下会抛异常**（阶段 46 核验时暴露）：它走 `BitmapImage.UriSource` 的 WPF URI 下载路径，会经 `MS.Win32.WinInet.get_InternetCacheFolder()`；该调用失败时抛 `COMException 0x80072EE4` 并记一条 ERROR（图标空白，功能不受影响）。翻译页已改走 `HttpClient` + 同线程解码 + `Freeze()`（估价页同一做法）绕开该路径；**共用转换器本身未改**，使用它的 `ChannelMarketWindow` 若在同类环境出现该日志，可照同一方式替换。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -1077,6 +1127,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - 设置文件与 WinUI 版**共用** `Configs/settings.json`：两版同时运行会互相覆盖，迁移完成后建议只保留 WPF 版。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
 - **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
+- **应用正在运行时想校验"能不能编译"**：用 `dotnet build … -p:OutDir=<临时目录>\` 把输出重定向出去即可（被锁的 `bin` 不参与），核验完删掉临时目录；**正式出包仍必须先退出应用**（阶段 46 追加改动实测：VS 调试会话在跑时普通 `build` 报 `MSB3027/MSB3021`）。
 - 本机显示器为 2560x1440 @125%：未声明 DPI 感知的进程（如默认的 PowerShell）拿到的窗口坐标是按 1.25 缩放后的 **DIP**，直接当物理像素用会抓错区域或"看起来右侧被裁"；需要截图时先开启 PerMonitorV2 DPI 感知。
 - **structure id 请走 `StructureService`**：`Core/Services/IDNameService` 的 ID 是 `int`，结构（structure）ID 约 1e12 会被**静默截断**并解析出错误名称。详见文末「结构（structure）ID 解析约定」。
 - **改完 XAML 界面没变 → 先怀疑 BAML 陈旧**：并行构建/中断过的构建会让 `obj` 里的 `.baml` 落后于 `.xaml`，程序集里嵌旧标记。删 `obj` 重建即可（详见 §9 第 16 条）。
@@ -1143,6 +1194,11 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     - **`dotnet publish` 是两次 MSBuild 调用**（Build + Publish），publish 那次会**重新**计算 `ResolvedFileToPublish` 等列表。因此挂在 build 链上的 `AfterTargets`（如 `GetCopyToPublishDirectoryItems`、`GetCopyToOutputDirectoryItems`）**对发布不生效**；发布侧的清理必须挂在发布链上——在 `AfterTargets="ComputeResolvedFilesToPublishList"` 里改 `ResolvedFileToPublish`（该 target 之后、`_HandleFileConflictsForPublish` 之前），实测有效。
     - **项目引用传递来的内容项不在 `ContentWithTargetPath` 里**：它是 `GetCopyToPublishDirectoryItems` 内部经子工程 MSBuild 调用直接并进 `ResolvedFileToPublish` 的；想"从本项目内容项里删掉"对发布侧无效。
     - **MSBuild 路径比较要先规范化**：`$(MSBuildThisFileDirectory)..\X` 含**字面量 `..\`**，与项元数据 `FullPath`（规范化过的绝对路径）直接 `==` 恒为 false，症状是"target 确实执行了、项却没被删"。用 `$([System.IO.Path]::GetFullPath('...'))` 归一化后再比。
+
+26. **WPF-UI `TitleBar` 的三个坑**（阶段 46 追加；数据来自一个直接实例化真实 `ToolWindow` 的独立探针）：
+    - **`TrailingContent` 会拉伸到整条标题栏**：`TitleBarButton`（最小化/最大化/关闭）固定 **44×30 且 `VerticalAlignment=Top`**，而 `TrailingContent` 的 `ContentPresenter` 没设垂直对齐（默认 `Stretch`）→ 塞进去的自定义按钮被撑到标题栏高度（默认 48），图标居中后比三个系统按钮**低约 11 DIP**（探针实测 11.0，用户一眼就能看出"错位"）。修法：自定义按钮显式 `Width="44" Height="30" VerticalAlignment="Top"`（实测高度差 0.0）。
+    - **标题栏里的自定义按钮本来就能收到点击**：`TitleBar` 自带 `WM_NCHITTEST` 钩子——鼠标落在 `Header` / `CenterContent` / `TrailingContent`（按元素矩形判断 `IsMouseOverElement`）范围内时**不返回 `HTCAPTION`**，交给正常命中测试（探针实测：置顶按钮处 `HTCLIENT(1)`、关闭按钮处 `HTCLOSE(20)`）。所以 `WindowChrome.IsHitTestVisibleInChrome` 对它是多余的；本项目仍补上作双保险，不影响行为。
+    - **"被拥有的窗口"看起来永远置顶**：`Owner = 主窗口` 的窗口按 Windows 规则**恒在宿主之上**，于是"取消置顶"和"置顶"在应用内看起来一模一样（用户实测反馈："置顶按钮没有生效，一直都是置顶"——而 `Topmost` 与 `WS_EX_TOPMOST` 其实都正常翻转）。需要真正的置顶语义时**不要设 `Owner`**（本项目翻译弹窗改为不拥有 + 手动居中到宿主），或明确把"置顶"解释为"压在其他程序之上"。
 
 ---
 
@@ -1268,6 +1324,21 @@ Views/MainWindow.xaml(.cs)   左菜单 + 内容区、标题栏图标、窗口位
 Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更新页共用）
 ```
 
+### 翻译模块（阶段 46：本地 SDE 数据库专有名词互译，**不用有道 API**）
+```
+Core/Services/DB/TranslationDbService.cs        本地库翻译：原文库模糊匹配 + 译文库批量为对照（每类名词 2 次查询，完全匹配优先，译文缺失返回 null）
+Core/Services/DB/DBService.cs                  新增 MainDbReady / LocalDbReady（外部判断数据库是否载入，避免 NullReferenceException）
+Services/Translation/ITranslationProvider.cs   翻译源契约 + 方向/请求/结果模型（结果复用 Core TranslationItem）
+Services/Translation/LocalDbTranslationProvider.cs  本地数据库源（自动方向，查不到再试另一侧）
+Services/Translation/TranslationService.cs     已注册翻译源 + 按 Key 取源（接入在线翻译只需在此多注册一个）
+Services/Translation/TranslationLanguageHelper.cs  CJK 判定 / 方向解析 / 语言代码→本地化键
+Services/Settings/TranslationSettingService.cs TranslationPage.Provider / TranslationPage.Direction（共用 settings.json）
+ViewModels/Translation/TranslationPageViewModel.cs   翻译页 VM（防抖查询/方向/来源/复制/语言切换重建）
+ViewModels/Translation/TranslationMatchViewModel.cs  一条结果（本地化类型与语言标签 + 描述 + 异步物品图标）
+Views/UserControls/TranslationPanelView.xaml(.cs)    翻译面板（页面与"弹窗"共用同一份标记；弹窗按钮可关）
+Views/Pages/TranslationPage.xaml(.cs)                翻译页（原占位页 TranslationPage.cs 已删除；MainWindow 注册不变）
+```
+
 **主窗口标题带版本号**（阶段 44 附带）：
 - 标题 = `AppDisplayName` + 版本号，同时写 `Window.Title`（任务栏/Alt+Tab）与自绘 `ui:TitleBar.Title`。
 - 版本号取 `AssemblyInformationalVersion`（csproj 的 `<Version>3.0.1</Version>` 会生成 `3.0.1+<commit>`），
@@ -1285,6 +1356,10 @@ Helpers/AppVersion.cs        版本号单一来源（主窗口标题 + 软件更
 ```
 Core/Services/IDNameService.cs   GetByIds(List<long>) 无限递归 → 转发到 List<int>；空待查列表跳过 ESI
 Core/DBModels/IdName.cs          ESI 小写类别字符串 → 按 [EnumMember] 显式映射
+Core/Services/DB/TranslationDbService.cs  新增：本地库专有名词翻译（阶段 46）
+Core/Services/DB/DBService.cs    新增公开只读属性 MainDbReady / LocalDbReady（阶段 46）
+Core/Models/TranslationItem.cs   仅类注释更新（阶段 46）
+Core/Services/YDTranslationService.cs  仅类注释标注"WPF 不再使用，为 WinUI 保留"（阶段 46，代码未动）
 ```
 
 回归核验：改动后 `dotnet build` 整个 WinUI 项目 **0 错误**（Core 为共享代码，WinUI 编译通过即无接口级回归）；且该递归缺陷在 WinUI 侧同样会被触发（`ViewModels/KB/StatistTopAllTimeViewModel.cs:82`、`ViewModels/KB/StatistSuperViewModel.cs:57` 调用的正是 `GetByIds(List<long>)`），因此上述修复对 WinUI 也是净收益。
