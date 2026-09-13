@@ -1,0 +1,25 @@
+<Window
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.PreviewNameOverlayWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PreviewName"
+    AllowsTransparency="True"
+    Background="Transparent"
+    ResizeMode="NoResize"
+    ShowActivated="False"
+    ShowInTaskbar="False"
+    SizeToContent="WidthAndHeight"
+    SnapsToDevicePixels="True"
+    WindowStartupLocation="Manual"
+    WindowStyle="None">
+
+    <Border
+        x:Name="Badge"
+        Margin="6"
+        Padding="6,2"
+        CornerRadius="4">
+        <TextBlock
+            x:Name="NameText"
+            TextTrimming="CharacterEllipsis" />
+    </Border>
+</Window>

@@ -92,8 +92,7 @@
             </Grid>
         </DataTemplate>
     </Page.Resources>
-
-    <Grid Margin="12,12,12,12">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260" />
             <ColumnDefinition Width="Auto" />

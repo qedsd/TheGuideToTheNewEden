@@ -1,0 +1,78 @@
+<ui:FluentWindow
+    x:Class="TheGuideToTheNewEden.WPF.Views.Windows.GamePreviewWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="GamePreview"
+    Width="480"
+    Height="270"
+    ExtendsContentIntoTitleBar="True"
+    MinHeight="120"
+    MinWidth="200"
+    ResizeMode="CanResize"
+    ShowInTaskbar="False"
+    SnapsToDevicePixels="True"
+    Topmost="True"
+    UseLayoutRounding="True"
+    WindowBackdropType="None"
+    WindowStartupLocation="Manual">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <!--  样式 0 的标题栏占第 0 行；样式 1 时该行高度为 0，名称条改为叠加在画面上（见下）  -->
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--
+            样式0（带标题栏）：用与主窗口 / 频道预警小窗一致的标准 WPF-UI 标题栏，
+            游戏画面只占据下面的内容区；高度比默认略小。
+        -->
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Grid.Row="0"
+            Height="28"
+            MinHeight="28"
+            ShowMaximize="False"
+            ShowMinimize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+            </ui:TitleBar.Icon>
+            <!--  标题栏要矮于常规尺寸，标题栏按钮也得跟着缩小，否则内容会把高度顶回去  -->
+            <ui:TitleBar.Resources>
+                <Style TargetType="{x:Type ui:Button}">
+                    <Setter Property="Width" Value="24" />
+                    <Setter Property="Height" Value="24" />
+                </Style>
+            </ui:TitleBar.Resources>
+        </ui:TitleBar>
+
+        <!--
+            游戏画面：DWM 缩略图合成到这里；高亮时由 Padding 露出 HighlightColor 作为边框。
+            注意：DWM 缩略图由系统在本窗口自身内容之上合成，所以**画在这里的任何 WPF 元素都会被盖住**——
+            角色名因此放在独立的叠加窗 PreviewNameOverlayWindow 里，本文件不再有叠加层。
+        -->
+        <Border
+            x:Name="ThumbnailFrame"
+            Grid.Row="1"
+            Background="Transparent">
+            <!--
+                底色是黑：缩略图按源比例居中摆放（letterbox/pillarbox）时，留边露出的就该是黑边。
+                没有画面可显示时（源窗口已最小化/已退出）由代码改成主题底色或高亮色，并叠上提示文字，
+                避免留下一块莫名其妙的黑色。
+            -->
+            <Border x:Name="ThumbnailArea" Background="Black">
+                <!--  提示文字与"设置界面右侧的选中预览"一致（同一个本地化键）  -->
+                <TextBlock
+                    x:Name="PreviewHint"
+                    Margin="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
+            </Border>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

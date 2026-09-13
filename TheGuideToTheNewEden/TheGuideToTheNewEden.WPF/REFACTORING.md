@@ -715,6 +715,165 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 43：多开（GamePreview）重构 —— 拆服务 + 废弃 IPC 预览模式
+
+- 目标（用户要求）：重构多开功能；**废弃 IPC 版本的预览窗口模式**（不需要该功能）；旧架构（WinUI 侧是一个 ~1600 行的上帝 VM + 三套预览窗口 + 独立的 IPC/子进程工程）问题多，本次一并优化架构。
+- **废弃范围（明确）**：
+  - WPF 侧**完全不引入** IPC 预览：不引用 `TheGuideToTheNewEden.PreviewIPC` / `TheGuideToTheNewEden.PreviewWindow`，不启动任何子进程，不做内存映射文件通信。
+  - 预览窗口样式只保留两种：`ShowPreviewWindowMode` **0 带标题栏 / 1 无标题栏**；历史配置里的 `2`（IPC 无标题栏）在加载时并入 1（`NormalizeSettings`），UI 只提供 0/1 两项。
+  - 旧工程 `PreviewIPC` / `PreviewWindow` **未删除**（WinUI 工程仍引用它们），仅 WPF 不再涉及；`PreviewWindow.exe` 不再需要随 WPF 发布。
+  - 附带收益：去掉了旧实现里 `PreviewWindow.exe` 未随构建复制、MemoryIPC 标志位不清零、无超时忙等、`ChangeName` 是 TODO 等一整类问题。
+- **新架构（WPF，按职责拆分）**：
+  ```
+  Services/GamePreview/GameClientService.cs        客户端发现（进程关键词→ProcessInfo）+ 3 种前台激活策略
+  Services/GamePreview/ForegroundWatcher.cs        前台窗口轮询（UI 线程 DispatcherTimer，120ms）
+  Services/GamePreview/GlobalHotkeyService.cs      RegisterHotKey + HwndSource 钩子（WM_HOTKEY）+ 组合键解析
+  Services/GamePreview/PreviewWindowManager.cs     预览窗口的创建/销毁/批量操作（尺寸·排列·显隐·高亮）+ 每项快捷键
+  Services/GamePreview/PreviewLayoutCalculator.cs  自动排列的纯计算（可单测，无窗口依赖）
+  Services/GamePreview/SelectionPreview.cs         页面内"选中进程"实时画面（DWM 缩略图直接画到主窗口）
+  Services/GamePreview/PreviewColorHelper.cs       System.Drawing.Color ↔ WPF 画刷 / #RRGGBB
+  Services/Settings/GamePreviewSettingService.cs   Configs/GamePreviewSetting.json（与 WinUI 同结构）
+  ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发（只管业务编排）
+  Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（DWM 缩略图，两种样式共用一个窗口类）
+  Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / 设置 / 预览）
+  ```
+  Core 的 `PreviewSetting` / `PreviewItem` / `ProcessInfo` **原样复用**，所以 WinUI 时代的 `GamePreviewSetting.json`（含用户已保存的角色名、颜色、位置、快捷键）可直接沿用——实测本机旧配置被正确加载（自定义颜色 #008000 / #80572F / #421A80 与自定义快捷键 Tab / Tab+Ctrl 均原样出现）。
+- **IPC 模式的替代方案（关键架构决策）**：预览窗口一律用 **DWM 缩略图**（`DwmRegisterThumbnail`）把客户端画面实时合成进预览窗口。
+  - 只用 `DWM_TNP_SOURCECLIENTAREAONLY` 让系统裁掉源窗口非客户区，**不再手工计算标题栏高度/边框宽度**——旧实现按 DIP 与物理像素混算，是"不同 DPI 下画面错位/尺寸对不上"的根源。
+  - 不使用透明窗口（`AllowsTransparency`）：由 **DWM 缩略图自身的 opacity** 表示"不透明度"，只有游戏画面变淡，名称条与高亮边框始终实色（旧实现是整窗 alpha，名称一起变灰）。
+  - **画面按源比例居中留边（letterbox / pillarbox）**，不把游戏画面拉伸到窗口比例：源比例取源窗口**客户区**尺寸（`GetClientRect`，与 `SOURCECLIENTAREAONLY` 显示的正是客户区一致），超出部分留黑边；滚轮缩放也按同一比例（`PreviewGeometry.ScalePreservingAspect`），避免窗口比例跑偏后一直留边。留边计算集中在 `PreviewGeometry.FitAspect`，浮层预览与页面内预览共用。
+  - 页面内的选中预览同理：DWM 缩略图的**目标窗口就是主窗口**，离开页面时注销（否则会留下残影）。
+- 窗口几何一律以**物理像素**经 Win32 读写（`GetWindowRect`/`SetWindowPos`），保存值与实际显示一致；预览窗口加 `WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE`，显示/点击都不抢游戏焦点，也不进 Alt+Tab。
+- **本轮修掉的旧架构问题（均为设计层面修正，非逐条打补丁）**：
+  1. 上帝 VM 拆分为 5 个服务 + 1 个纯计算类，页面只做展示与转发。
+  2. 进程扫描**重入竞态**：旧实现是 `async void` 的 1 秒定时器且无重入保护，扫描超过 1 秒时两轮刷新会互相踩踏列表与配置；现在用 `_refreshing` 门闩，并且**只有顺序真的变化才落盘**（旧实现每轮刷新都写一次整份 JSON）。
+  3. 关键词解析：Trim + 丢弃空项（旧实现空关键词会 `Contains("")` 匹配到所有进程）。
+  4. 重复句柄不再 `ToDictionary` 抛异常（改用 `TryAdd`）。
+  5. 切换角色的配置继承统一：无论"原配置无名"还是"*Untitled"，都按新角色名**先查已保存配置、没有则复制外观**，并**先解绑旧配置的 ProcessInfo**（旧实现不解绑，导致这些配置再也匹配不到、列表越积越多）。
+  6. `ChangeSetting` 只是字段赋值：旧实现改设置后不重新注册快捷键、不重建画刷/不透明度/缩略图源；现在 `ApplySettings`/`Rebind` 是完整的重套用，且**每个窗口的缩略图源可重新绑定**（旧实现 `UpdateSourceHwnd` 从未被调用）。
+  7. "应用到全部"旧实现会 `StopAll` 后**从不重启**，等于改了个寂寞；现在改为：显示方式变了才重建窗口，其余直接 `ApplySettings` 立即生效。
+  8. 自动排列重写为"先切行、再逐行定位、最后夹进工作区"：修掉旧实现换行后从锚点自身边缘起排（第二行压住锚点）、两处把宽高写反、单点判断导致窗口跑出屏幕等问题。
+  9. 排序：上移/下移与"用当前列表填充"都会**同步写入 ProcessOrder 并保存**（旧实现 `Move` 不触发保存，拖动排序会丢）。
+  10. 前台监测用 UI 线程定时器（旧实现线程池定时器 + 跨线程派发，且 `Stop()` 后 `_isDisposing` 永不复位，重启后不再上报）。
+  11. 快捷键：不再依赖 Vanara，注册结果即真实结果（旧实现子类化失败会在注册成功的情况下返回 false）；`UnregisterHotkeys` 在无运行时短路，分组失败不再留下陈旧 id。
+  12. 每项 `HotKey` 在编辑后会**重新注册**（旧实现只在窗口构造时注册一次）。
+  13. 停止预览后设置面板不再是空白：`process.Setting` 会重新挂上"该角色的已保存配置"（用户反馈"以为设置丢了"）。
+  14. 设置落盘改为"写临时文件再替换"，避免写坏；拖动窗口等高频变更统一走 500ms 节流。
+  15. 死设置清理：`StartAllWithNoneSetting` **真正实现**（关闭时跳过没有已保存配置的进程）；含义含糊的 `StartAllDefaultLoadType` 不再暴露在 UI 上（模型字段保留以兼容旧 JSON）。
+  16. 激活策略由 5 种脆弱的实现收敛为 3 种并写清语义（标准 / AttachThreadInput / SwitchToThisWindow），且 `AttachThreadInput` 必然成对 detach。
+- 本地化：中英各补 82 个 `GamePreviewPage_*` 键（进程列表 / 设置分栏 / 显示样式 / 颜色 / 高亮边距 / 激活模式 / 自动排列 / 分组快捷键 / 顺序 / 各类提示），复用 `General_StartAll|StopAll|RefreshList`。
+- 验证（实机，进程为真实 EVE 客户端 `exefile.exe`，窗口标题 `EVE - QEDSD`）：
+  - 进入多开页 → 自动发现客户端，列表显示 `QEDSD / EVE - QEDSD`；
+  - 选中进程 → 右侧"预览"卡内**实时显示该客户端画面**（DWM 缩略图画到主窗口），设置面板加载出该角色已保存的配置；
+  - 自动开始 / "开始全部" → 生成浮层预览窗口：无标题栏样式 + 棕色名称条（取自保存的 `#80572F`）+ 实时游戏画面，浮在其它窗口之上；`停止全部` → 窗口销毁、设置面板保留配置；
+  - Alt+F4 正常退出应用（走 `Application.Exit` → VM/管理器 Dispose 路径）无异常。
+  - 探针/核对：所有 `SymbolRegular` 图标名与主题画刷键在写入 XAML 前已确认存在（`Resize24`/`Grid24`/`SlideSettings24`/`Delete24` 等），避免重演 `Appearance="Link"` 那类"编译通过、运行时抛异常"。
+- 构建状态：**0 错误**（仅剩既有警告）。
+- **修复（用户反馈"设置界面为什么有整个多开功能的垂直滚动条"）**：现象是滚轮在**右侧预览卡**上滚动时，三张卡片整体上移——即滚动条不属于设置卡，而是**承载页面的外层 ScrollViewer**。
+  - 根因：页面被外层以**无限高度**测量。WPF 的 `ScrollViewer` 在高度不受限时不会滚动，而是把内容完整撑开，于是设置卡里那个 `ScrollViewer` 永远拿不到受限高度、不滚动，反过来把页面撑得比视口高 → 滚动条落到整个页面上（"整个多开功能的滚动条"）。
+  - 修法（即用户指出的方向：让滚动发生在卡片内容里）：页面根元素加一层 `MaxHeight`，绑到 `RelativeSource AncestorType=ScrollViewer` 的 `ViewportHeight`（新增 `Converters/ViewportMaxHeightConverter.cs`，减去 24 的内边距；视口未测量为 0 时返回 `PositiveInfinity`，避免首帧被压成 0）。页面不再被撑高，滚动自然回到设置卡/进程列表各自的 `ScrollViewer`。
+  - 验证（实机）：滚轮在右侧预览卡上 → 页面纹丝不动；滚轮在设置卡上 → 只有设置内容滚动，卡片位置与卡片 footers 不变。
+  - 注意：**不要**把这条全局加到所有 Page 上——依赖"整页滚动"的页面（内容超长且没有内部滚动区）会被夹住导致内容被裁掉。只对"卡片内自带滚动区"的页面逐页加。
+- **修复（用户反馈"设置界面的窗口内容预览背景一片黑色"）**：两层原因，均已处理。
+  - ① **黑边**：页面预览卡是竖长的（约 670×780），而客户端画面是 16:9；"按源比例居中留边"之后画面只横向占四成高度，其余全是留边。改法：**预览区自己跟源画面同比例**——宽度占满卡片，高度 = 宽度 ÷ 源比例（`PreviewArea.SizeChanged` 时重算，并夹在卡片可用高度内；源比例未知时用 16:9 兜底）。这样画面与区域严丝合缝、不再有黑边，剩余空间是普通卡片背景。
+  - ② **写死的黑底 + 空状态文字不可读**：预览宿主原来硬编码 `Background="#FF101010"`，且空状态提示用的是主题次要文字色——浅色主题下深灰字画在近黑底上等于看不见，于是"一片纯黑"。改法：宿主底色换成主题画刷 `CardBackgroundFillColorSecondaryBrush`，占位提示移入宿主内部并保留主题文字色（同主题配色，必然可读）。
+  - 顺带让空状态更准确：`SelectionPreview` 新增 `SourceAspect` / `IsSourceAvailable` / `StateChanged`，页面据此判断。未选中时提示"选择左侧进程后，这里显示它的实时画面"，**选中但取不到画面时**（客户端已退出）提示新增键 `GamePreviewPage_PreviewUnavailable`。
+  - 验证（实机）：未选中/选中两种状态都看过——画面填满 16:9 面板、无黑边、面板下方是卡片背景；窗口宽度变化时面板按比例跟随。**未实测**的是"选中后客户端退出"这条分支（需要关掉正在运行的游戏），该分支只按逻辑走通。
+- **追加（用户澄清："要跟主窗口、频道预警小窗那样的标题栏，相当于把游戏画面放进一个普通 WPF-UI 窗口的 content 里"）**：预览窗口由"普通 `Window` + 自绘细条"改为 **`ui:FluentWindow` + 标准 `ui:TitleBar`**（与主窗口 / 频道预警小窗同款）。
+  - **样式 0（带标题栏）**：`ExtendsContentIntoTitleBar="True"`，Grid 第一行放 `ui:TitleBar`（app logo 图标 + 标题=角色名 + 关闭键），**游戏画面只占第二行内容区**。
+  - **高度**：`Height/MinHeight=28`（常规约 40）。踩坑：只设 `Height` 无效——标题栏按钮是 32×32，会把高度顶回去；在 `ui:TitleBar.Resources` 里加一条 Button 隐式样式把按钮缩到 24×24 之后，实测条高从约 26 图像像素（≈40 DIP）降到约 16（≈28 DIP）。
+  - **样式 1（无标题栏）**：保持彩色细名称条（高 20，颜色仍取"名称条颜色 / 名称条高亮颜色"，只作用于这个样式）。因为它落在 WindowChrome 的标题区，必须加 `WindowChrome.IsHitTestVisibleInChrome="True"` 才能收到鼠标，否则被系统拖动逻辑吞掉。
+  - **窗口样式**：`WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE` 改到 `OnSourceInitialized`（base 之后）施加——WPF-UI 在该阶段设置窗口外观，原先在构造函数里设会被覆盖；另补 `OnStateChanged` 兜底，双击标题栏被系统最大化/最小化时立即还原（预览窗口不在任务栏，最小化后找不回来）。
+  - **关闭**：改为 `TitleBar.CloseClicked → StopRequested`（与其他窗口一致），删掉自绘条上的关闭键。
+  - 验证（实机）：放大截图确认标准标题栏（logo + 角色名 + ×）与降高效果；点 × 能正常关闭预览；页面上的"停止预览/停止全部"路径关闭后设置面板仍保留配置。
+  - **遗留（本轮发现，未解决）**：**从预览窗口自己的 × 关闭后，进程列表的选中项会丢失**，设置面板因此变空白（页面按钮停止的路径不受影响）。已在 `RunningChanged` 里"重新挂回已保存配置"做了缓解但**没解决**——根因是选中项本身丢了，疑似预览窗口关闭导致页面被重新创建/重置，需要单独排查。
+- 未做/后续：**"从预览窗口的 × 关闭会让进程列表丢失选中项、设置面板变空白"**（见上，根因待查，优先）；窗口拖拽排序（当前用右键上移/下移 + 顺序编辑框）；预览窗口的多显示器 DPI 混用场景未实测；`PreviewIPC` / `PreviewWindow` 两个旧工程是否从解决方案删除待定（删了会破坏 WinUI 构建）。另：预览窗口**启动时按 `Setting.Highlight` 直接高亮**，而前台状态要等下一次前台变化才应用，所以刚启动的预览会先显示高亮色（名称条变高亮色）直到切换一次前台——修法是在启动成功后立刻用当前前台状态同步一次（`manager.ApplyForeground(watcher.Current)`）。
+
+---
+
+### 阶段 44：预览浮窗按游戏画面比例显示（可自由拖动，另一条边实时联动）
+
+- **现象**（用户反馈）：多开预览浮窗画面**上下（或左右）有黑边**——窗口比例与游戏画面比例不一致时，`PreviewGeometry.FitAspect` 按比例居中留边（letterbox/pillarbox），留边露出的就是 `ThumbnailArea` 的黑底。
+- **要求（演进）**：① 把窗口尺寸比例与游戏窗口比例**固定**为同一个比例；② 后来明确"**保留拖动改尺寸**，拖完 X 或 Y 后自动调整另一条边，让画面区域的比例永远跟游戏一致"。
+- **最终行为**：窗口可自由拖拽边框，**画面区域**（客户区 − 标题栏/名称条 − 高亮留白）**恒等于游戏客户区比例**，因此画面永远铺满、没有黑边。
+  - **注意**：窗口**外框**比例不可能等于游戏比例——标题栏/名称条是固定高度外加的。要锁的是画面区域。
+  - 拖动时以用户正在拖的那条边为准：**左右边**固定宽度、反算高度；**上下边**固定高度、反算宽度；**角**固定宽度、反算高度。锚点在被拖边的对侧（拖左边则右边缘不动），所以鼠标始终控制他正在拖的那条边。
+  - 高亮边框的 `Highlight*Margin` 是画面外的固定留白，一并计入。**带标题栏的样式 0 不画上边**（用户要求）：高亮区紧挨标题栏，再留上边会像多余空隙，故该样式下"上边距"设置不生效，只画左/右/下三边、画面从标题栏正下方开始；无标题栏的样式 1 四条边照旧。
+    - 实现上把"实际留白"收敛成单一来源 `GetHighlightThickness()`（`ApplyVisuals` 设 `ThumbnailFrame.Padding` 与比例校正用的 `GetHighlightPadding()` 都由它导出），避免"界面留白"与"校正算的画面区域"各算一套而对不上。
+- **实现**（`Views/Windows/GamePreviewWindow`）：
+  - `WM_SIZING` 钩子（`OnSourceInitialized` 里 `HwndSource.AddHook`）→ `LockClientAspect`：拖动中把消息里的矩形改写成同比例。**只改消息载荷、不调用 `SetWindowPos`**（这是与下面那次卡死的关键区别）。
+  - `CorrectWindowSizeToAspect` + 80ms 防抖定时器：兜住启动、`ApplySettings`（改高亮边距会改变画面区域比例）、`Rebind`、`ShowWindow` 等非拖动路径；带 `_applyingAspectCorrection` 重入保护与 `_lastCorrectedSize`（同尺寸不重复下发）。
+  - `XAML`：`ResizeMode="CanResize"` + `MinWidth/MinHeight`（WPF-UI 的 `WindowChrome` 本来就会给边框出调节箭头，`NoResize` 拦不住它——这也解释了用户"设了 NoResize 仍能拖"的现象）。
+  - 尺寸一律夹进当前显示器工作区，拖大不会跑出屏幕。
+- **踩坑 ①：不要用布局值反算尺寸，也不要"在尺寸消息里改尺寸"**
+  - 校正基准量取 WPF 布局的 `ActualWidth/ActualHeight` 时，**误差每轮累积**（DIP 经 `UseLayoutRounding` 取整后再乘 DPI，与物理像素差 1~2px，被反算放大）：数值探针实测 533×300 在 7 轮内被缩到 200×120 最小尺寸。客户区尺寸必须用 **Win32 `GetClientRect`**。
+  - **首版把校正挂在 `WM_WINDOWPOSCHANGING` 里**（想让窗口"一开始就是正确比例"）：`SetWindowPos` 会**同步重入同一条消息**，钩子又改一次 → **UI 完全卡死**，且因为卡死在尺寸事务里，缩略图更新停在 `DwmUpdateThumbnailProperties` 上，看起来像 DWM 调用挂了。**教训：数值探针只能证明算术收敛，证明不了 Win32 消息层的可重入性**；"在尺寸/位置消息里改尺寸"要先假定它会自循环（改用 `WM_SIZING` + 不调 `SetWindowPos` 即可）。
+- **踩坑 ②（本节真正的元凶，用户实测日志定位）**：**WPF-UI 的 `FluentWindow` 把标题栏画在客户区内部**，`GetClientRect` 返回的就是整个窗口，于是 `窗口高 − 客户区高` **恒为 0**，标题栏那 ~40px 从没被扣掉 → 算出的画面区域虚高 → 窗口被算宽约 77px → **恒定的左右黑边**（与窗口大小、拖动无关，只由标题栏高度决定）。
+  - 实测日志：`窗口=1595x842 客户区=1595x842 非客户区高=0`、`Area原点=4.0,32.0(DIP) DPI=1.25`。
+  - 修法：标题栏/名称条高度改为**直接量元素**（`GetChromeHeight()`：`ui:TitleBar` 或 `StripBorder` 的 `ActualHeight × DPI`），两条路径（`WM_SIZING` 与 `CorrectSizeToAspect`）统一使用。改后同一窗口的**画面区域 1500×792 = 1.8939 ≈ 游戏 2560×1351 = 1.8949**，`FitAspect` 走"铺满"分支。
+  - 一句话口径：**客户区尺寸用 Win32，标题栏高度用元素渲染高度**。
+- **配套调整**：`FitAspect` 增加"比例一致（取整差 ≤1px）则直接铺满"的短路——比例已锁定时不必再按比例收缩，否则边缘会留 1px 缝（缩略图背后是黑底，看起来就是细黑边）。该短路对页面内的选中预览同样生效。
+- **顺带修掉的既有缺陷**：`PreviewGeometry.ScalePreservingAspect` 在宽高**同时**超过上限时，会以宽度为准收缩后返回一个仍大于 `maxHeight` 的高度；已补"再以高度为准收缩一次"。
+- **源窗口最小化时隐藏缩略图**（用户反馈"游戏最小化后会显示一个压缩的画面残留"）：源窗口最小化后没有实时画面，DWM 会退化成一张被压缩的残留快照。现在最小化期间直接 `_thumbnail.Hide()`，只留预览窗口自身背景，还原后自动重新画上（用户确认）。
+  - **踩坑（用户反馈"游戏最小化后启动预览，高度明显变小"）**：最小化时源窗口的 `GetClientRect` 返回的是**任务栏缩略图**那种又宽又扁的小矩形（比例可达 5:1 以上）。`CorrectSizeToAspect` 拿它当比例依据，就会把预览窗按那个扁比例重算——高度被压掉大半、宽度几乎不变（实测 533×300 会被算成约 533×93），于是"保存的尺寸没被沿用"。
+    - 修法：**最小化期间一律不做比例校正**（`CorrectSizeToAspect` 与 `LockClientAspect` 开头直接返回），保持调用方给的尺寸；游戏还原后下一次校正自然按真实比例修正。
+    - 同类隐患一并收口：把"源画面宽高比"提成 `IPreviewWindow.SourceAspect`（**最小化/取不到时返回 0**），"统一尺寸"与"恢复位置"都改用它，比例未知时**保留原有高度**而不是拿坏比例去压扁；`ResolveStartBounds` 在无存档尺寸时用 16:9 兜底。
+  - 检测方式为**轮询**（专用 `_minimizeWatchTimer`，300ms，`IsIconic`）：最小化**不会**改变本窗口尺寸，`OnRenderSizeChanged` 不会触发；而监听源窗口的 `WM_SIZE` 需要跨进程子类化（项目已移除 Vanara）。
+  - 为不留"闪一下快照"的窗口：`ScheduleThumbnailUpdate` 在**排队前**刷新 `_sourceMinimized`，因此最小化后的第一次绘制就直接是"隐藏"，不必等下一次轮询。
+  - 该定时器随窗口隐藏停止（`HideWindow`）、显示时重启（`ShowWindow` 里立即对齐一次），不常驻空转。
+  - **同一问题在"设置界面右侧的选中预览"也要修**（用户反馈）：那是另一套渲染路径 `Services/GamePreview/SelectionPreview`（把同一源窗口用 DWM 缩略图直接合成到**主窗口**上）。它自带 150ms 刷新定时器，因此不需要新增轮询：`UpdateState` 里把"已最小化"并入"没有画面"（新增只读属性 `IsSourceMinimized`，并计入状态变化判定），`Refresh` 在最小化时 `_thumbnail.Hide()`，页面据此显示既有的占位提示（`GamePreviewPage_PreviewUnavailable` 原文已含"已最小化"，无需新增语言键）。
+  - **无画面时的呈现**（用户要求"最小化后不要留黑底，改成高亮同色并加上与设置预览一致的提示文字"）：`ThumbnailArea` 的黑色底只在**有画面**时保留（缩略图按源比例居中摆放，留边露出的本就该是黑边）；没有画面时改为 **高亮色（`Setting.HighlightColor`）/无高亮时主题底色**，并叠上居中的提示文字。
+    - 提示文字复用**同一个本地化键** `GamePreviewPage_PreviewUnavailable`，与设置界面右侧预览完全一致；文字颜色按底色取黑/白（`PreviewColorHelper.ContrastForeground`），无高亮时用主题次要文字色，保证任何高亮色下都可读。
+    - 判定收敛在一处 `ApplyPreviewPlaceholder()`，由 `ApplyVisuals` / `Start` / `ShowWindow` / 最小化状态翻转时调用；源窗口退出（`TryGetSourceSize` 失败）同样走这条"不显示黑底"的分支。
+  - **样式 1：画面占满整个窗口；角色名改为独立叠加窗**（用户要求"无标题模式下顶部还有一个纯色标题，内容应完全显示游戏画面"+"左上角叠加显示角色名"）：
+    - 原来彩色名称条占第 0 行（20px），画面只能占下面。现已**删除名称条**；`GetChromeHeight()` 在样式 1 下**返回 0**，于是"画面区域 = 整个客户区"，窗口外框本身就与游戏同比例（拖动联动与防抖校正自动跟随，无需另写逻辑）。这一条与前面踩坑 ② 是同一类错误的两面："画面之外还有什么固定消费高度的东西"必须与实际布局一致。
+    - **踩坑 ③（关键）：DWM 缩略图会盖住本窗口自己画的任何元素。** 用户实测"文字看不见"——我先把名称条改为叠加层（画面之上），结果名称条与角标**都**不可见：DWM 缩略图由系统在窗口自身内容**之上**合成，同一个窗口里的 WPF 元素无论 Z 序都盖不过它。凡是要显示在画面之上的内容（角色名、水印、提示），都必须放到**独立的窗口**里。
+    - 修法：新增 `Views/Windows/PreviewNameOverlayWindow.xaml(.cs)` —— 预览窗口左上角的角色名叠加窗。要点：
+      - 无边框、背景透明（`WindowStyle=None` + `AllowsTransparency=True`）、`ShowActivated=False`，并加 `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT`：**点击穿透**到下面的预览窗口，拖动与滚轮缩放不受影响，也不进 Alt+Tab/任务栏、不抢游戏焦点。
+      - 位置尺寸由 `GamePreviewWindow` 用**物理像素**同步（`SetBounds`），跟随窗口移动（拖动中每次 `MouseMove` 跟随）、缩放、高亮留白（角标内缩到高亮边框内侧）与隐藏/显示；`Owner` 指向预览窗口，因此始终压在它之上。
+      - 刻意用普通 `Window` 而非 `ui:FluentWindow`：`AllowsTransparency` 与 FluentWindow 冲突（阶段 43 实测会抛 `InvalidOperationException`），而这个窗口完全透明、无标题栏，不需要 WPF-UI 外观。
+      - 两种样式都显示（样式 1 已无名称条，角色名全靠它）。
+      - **只在无标题栏样式显示**（用户要求）：带标题栏时名字已经写在标题栏里，再叠一个角标是重复信息。
+        判定收敛在 `ShowNameOverlayIfNeeded()`（`HasTitleBar || !_isShowing` 即隐藏），由 `ApplyVisuals` /
+        `Start` / `ShowWindow` 调用；叠加窗本身不销毁，切回无标题栏样式要能立刻用上。
+      - **点 X 关闭预览窗口时崩溃**（用户实机反馈 `InvalidOperationException`："在窗口关闭期间，无法……调用 Close"）：调用链是 `WmClose → OnClosing → StopRequested → Manager.Stop → Stop() → Close()` —— **在窗口关闭过程中又调了一次 `Close()`**。这与阶段 43 给 `IntelWindow` 修的是同一个坑，做法同样：`OnClosing` 里置 `_closing = true`，`Stop()` 与 `DestroyNameOverlay()` 在 `_closing` 时**不再调用 `Close()`**（窗口本来就在关闭中；叠加窗是从属窗口，随所有者销毁）。
+  - **角色名叠加的样式可设置**（用户要求）：新增 7 个设置项，落在 `Core` 的 `PreviewItem` 上（与既有字段同风格，WinUI 侧不用也不受影响）：
+    | 设置 | 字段 | 默认值 | 说明 |
+    |---|---|---|---|
+    | 字体 | `NameOverlayFontFamily` | `Microsoft YaHei UI` | 下拉框选系统已装字体（`Fonts.SystemFontFamilies`）；名字无效时回退默认字体、不抛异常 |
+    | 字号 | `NameOverlayFontSize` | `11` | DIP，基准字号 |
+    | 跟随窗口缩放 | `NameOverlayFollowScale` | `false` | 开：字号 = 基准 × (窗口宽 / 960) × 倍率（上限 4×）；关：固定视觉大小 |
+    | 缩放倍率 | `NameOverlayScaleFactor` | `1` | 仅"跟随"开启时生效 |
+    | 背景色 | `NameOverlayBackgroundColor` | `#99000000` | **带透明度**，一直显示 |
+    | 背景色（高亮时） | `NameOverlayBackgroundColorHighlight` | `#CC0078D7` | **带透明度**；该客户端在**前台**时顶上来取代基础底色 |
+    | 文字颜色 | `NameOverlayForegroundColor` | `#FFFFFFFF` | **带透明度**；不做自动反差（用户明确指定） |
+    - **两段式底色，且与"高亮"开关解耦**（用户要求）：`_isSourceForeground ? 高亮背景色 : 基础背景色`。
+      这里**刻意不复用 `_isHighlighted`**：后者是"边框高亮"且被用户的 `Highlight` 开关过滤过，
+      用它会导致"关掉边框高亮 → 文字底色高亮也一起失效"（用户实测反馈）。
+      因此 `IPreviewWindow` 新增 `SetForegroundState(bool)`，由 `PreviewWindowManager.ApplyForeground` 传入**未过滤的真实前台状态**（三处实现：`GamePreviewWindow` 记录并只刷新叠加窗、`HeadlessPreviewWindow` 空实现）。
+      `Start()` 里也用 `GetForegroundWindow()` 现量一次，避免刚开的预览窗沿用上一次的前台状态。
+    - 字段名沿用 WinUI 版"名称条颜色 / 名称条高亮颜色"那一对的命名习惯（`Title*Color` / `Title*HighlightColor`）。
+    - **背景色的透明度必须能往返**：新增 Core 侧 `Helpers/ArgbColorJsonConverter.cs` 让它落盘成 `#AARRGGBB`（不透明时 `#RRGGBB`，并兼容 `#RRGGBB`/`{A,R,G,B}` 两种历史写法）；同时把 `PreviewColorHelper.ToHex` 改为"带透明度时输出 8 位"，否则设置界面的"显示→回写"会把半透明色静默变成全不透明。
+    - **踩坑（用户反馈"新增的配置都保存不了"）**：我一开始给颜色属性写的是 `[JsonConverter(typeof(ColorConverter))]` —— **`System.Drawing.ColorConverter` 是 `TypeConverter`，不是 `Newtonsoft.Json.JsonConverter`**。于是每次 `Save()` 在序列化阶段就抛 `InvalidCastException`（日志里可见 `JsonTypeReflector.GetJsonConverter` 的调用栈），**整个配置文件一个字节都不再更新**（不只是新字段）。
+      - 更糟的是它**静默**：`Save()` 把 `_dirty = false` 放在 try 之前，异常被 catch 记日志后脏标记已清掉，界面看起来一切正常。
+      - 修法：① 自写 `ArgbColorJsonConverter`（`CanConvert`/`WriteJson`/`ReadJson` 齐全）；② `Save()` 改为**写盘成功后**才清 `_dirty`、失败保留脏标记以便节流重试，并且只记日志不再假装成功。
+      - 验证：用独立探针直接对 `PreviewSetting` 做序列化→反序列化往返，输出 `PASS 全部字段往返一致（含透明度）`，并确认 6 位色值与对象形式都能读回。
+    - 设置界面新增"角色名叠加"分组（字体/字号/跟随/倍率/背景色/背景色 2/文字颜色 + 说明），改动立即生效（`ApplySettings` 里同步套用一次外观）。
+  - **设置区改为两个并列页签**（用户要求）：中间卡片从"一个按钮在 选中项/全局 间来回切"改成 `TabControl`，
+    两个 `TabItem`；**未选中进程时"选中项设置"页签隐藏**，只剩全局设置（`Visibility` 绑 `HasSelection`）。
+  - **踩坑（用户反馈"未选中进程时改不了全局配置"）**：最初把 `SelectedIndex` 双向绑到"是否全局"这个 bool，
+    未选中进程时 `SelectedIndex=0`，而 0 号页签已 `Collapsed` —— **WPF 允许选中隐藏的 `TabItem`**
+    （写了个独立 WPF 探针实测确认：`SelectedIndex=0`、`SelectedItem` 就是那个隐藏项、`TabControl` 显示的也是它的内容），
+    于是页面停在隐藏页上，全局设置既看不到也改不了。
+    - 修法：索引改由 VM 的 `SettingsTabIndex` 提供（**未选中进程时恒为 1**），双向绑定；VM 在 `HasSelection`
+      与 `IsGlobalSetting` 变化时都发通知，保证"索引永远指向一个可见页签"。随之无用的 `BoolToTabIndexConverter` 已删除。
+    - 另一处对称修正：`SelectedProcess` 由"选中→`IsGlobalSetting=false`"改为 `IsGlobalSetting = value is null`，
+      否则取消选中后会停在一个已被隐藏的页签上。
+- 验证：`dotnet build` **0 错误 0 新警告**；收敛性与口径先用独立数值探针验证，再用**用户实机日志**定位到踩坑 ②，修后用户确认"没问题了"（按 §8 约定未做截图核验）。
+- 未做/后续：游戏窗口本身改变宽高比（切全屏/改分辨率）后，窗口要到下一次尺寸变化才跟着走——当前没有监听源窗口的 `WM_SIZE`。**滚轮缩放保留**（按比例缩放，不产生黑边）。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
@@ -879,6 +1038,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - **结构名称解析**：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
 - ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）。
 - 软件更新页"安装"仍交外部 Updater。
+- **预览浮窗不跟随源窗口实时改变宽高比**（阶段 44）：窗口尺寸被锁定为游戏客户区比例，但只在启动/缩放/统一尺寸/恢复位置/布局变化时校正；游戏侧切全屏或改分辨率后，要等下一次这类时机才跟着变（未监听源窗口 `WM_SIZE`）。
 
 ### 环境/协作注意
 - **代码调整不需要截图验证**：改动完成、构建通过后直接说明结果即可，由使用者自行查看界面效果。
@@ -937,6 +1097,13 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     另：需要 `DataContext` 的自定义 `UserControl`（如树/选择器）**不要在构造函数里 `DataContext = this`** —— 那会切断外部对它自身 DP 的绑定（`{Binding TargetMarketTypes}` 会去控件上找属性）。正确做法是把内部列表直接赋给内部控件的 `ItemsSource`，让外部绑定继续沿用页面 DataContext。
 
 22. **核对 JSON 缓存要用解析器，别用正则**：阶段 30 核验时用 `\"TypeId\":645` 数某物品的订单条数得到 9，与页面显示的 2 不符，一度怀疑并发翻页丢数据；改用 `ConvertFrom-Json` 逐条解析后确认只有 2 条——那个正则没有锚定结尾，把 `\"TypeId\":64500` 之类的类型号也算进去了。**凡是"数字是否相等/包含"的比对，正则里的数字后面要补边界（`\"TypeId\":645,` 或 `[^0-9]`），或者干脆解析**。
+
+23. **`WM_SIZING` 可以改尺寸，`WM_WINDOWPOSCHANGING` 不行**：阶段 44 实测——在 `WM_WINDOWPOSCHANGING` 钩子里改写 `cx/cy`，`SetWindowPos` 会**同步**再发一次同样的消息，钩子又改一次，消息泵永远回不到上层，UI 表现为**完全卡死**（因为卡在尺寸事务里，连缩略图更新都会停住，看起来像是在 DWM 调用上挂掉，容易误判）。正确做法是改用 **`WM_SIZING`**：它只在用户拖边框时由系统发出，**只改写消息载荷、不调用 `SetWindowPos`**，因此没有重入路径。程序化改尺寸（启动、统一尺寸、恢复位置）则用**布局回调之后的一次性防抖定时器**，并加两道保护：① 重入标志挡住"校正 → 布局回调 → 再校正"的同栈重入；② 记录最近下发过的尺寸，**同一个尺寸绝不重复下发**。
+    - 配套教训：**数值探针只能证明算术收敛，证明不了消息层可重入**。本次先用探针验证了"比例校正一轮到位"，仍然在真实窗口上死循环——算得对 ≠ 改得对。
+
+24. **WPF-UI 的 `FluentWindow` 把标题栏画在客户区内部**：`GetClientRect` 返回的**就是整个窗口**，`窗口高 − 客户区高` **恒为 0**（实测 `窗口=1595x842 客户区=1595x842 非客户区高=0`）。任何"客户区里再扣掉标题栏"的计算都会漏扣约 40px；本次因此把预览窗口算宽约 77px，表现为**恒定的左右黑边**（与窗口大小无关，只由标题栏高度决定，最难察觉）。
+    - 正确口径：**客户区尺寸用 Win32 `GetClientRect`**（布局值带 DIP↔像素取整误差，反算尺寸会每轮累积），**标题栏高度用元素的渲染高度**（`ui:TitleBar` / `StripBorder` 的 `ActualHeight × DPI`）。
+    - 另：WPF-UI 用 `WindowChrome` 提供 `ResizeBorderThickness`，**`ResizeMode="NoResize"` 拦不住边框的调节箭头**（实测"设了 NoResize 仍能拖"）；要禁拖只能从 `WindowChrome` 下手。
 
 ---
 
@@ -1035,6 +1202,25 @@ Views/UserControls/ScalperShoppingRecordView.xaml(.cs) 倒货：购物记录
 Views/Windows/ScalperItemDetailWindow.xaml(.cs)      倒货物品详情（指标 + 源/目的市场订单与历史图）
 Views/Windows/ScalperShoppingItemEditWindow.xaml(.cs) 购物车条目编辑对话框
 Converters/FileNameConverter.cs                       文件路径 → 文件名（购物记录列表）
+```
+
+### 多开模块（阶段 43；预览窗口用 DWM 缩略图，无 IPC）
+```
+Services/GamePreview/GameClientService.cs        客户端发现 + 前台激活（3 种策略）
+Services/GamePreview/ForegroundWatcher.cs        前台窗口轮询（UI 线程）
+Services/GamePreview/GlobalHotkeyService.cs      全局快捷键（RegisterHotKey + WM_HOTKEY）
+Services/GamePreview/PreviewWindowManager.cs     预览窗口创建/销毁/批量操作 + 每项快捷键（统一尺寸按首个窗口的源比例定高度）
+Services/GamePreview/PreviewLayoutCalculator.cs  自动排列纯计算
+Services/GamePreview/PreviewGeometry.cs          画面几何：FitAspect（按源比例居中留边，比例一致则铺满）/ TryGetSourceSize / 缩放尺寸
+Services/GamePreview/SelectionPreview.cs         页面内选中进程实时画面（DWM）
+Services/GamePreview/PreviewColorHelper.cs       Color ↔ 画刷 / #RRGGBB
+Services/GamePreview/IPreviewWindow.cs           预览载体契约（窗口型 / 无窗口型）
+Services/GamePreview/HeadlessPreviewWindow.cs    不显示窗口时的空实现（仅热键激活）
+Services/Settings/GamePreviewSettingService.cs   Configs/GamePreviewSetting.json
+ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发
+Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共用一个窗口类；尺寸锁定游戏客户区比例，阶段 44）
+Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / 设置 / 预览）
+Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
 ```
 
 ### 主窗口

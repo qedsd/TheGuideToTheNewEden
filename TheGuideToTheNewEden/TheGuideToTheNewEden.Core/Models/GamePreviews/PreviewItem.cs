@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using System.Drawing;
 
@@ -74,7 +74,7 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
             get => processInfo; set => SetProperty(ref processInfo, value);
         }
 
-        private bool hideOnForeground = true;
+        private bool hideOnForeground = false;
         public bool HideOnForeground
         {
             get => hideOnForeground;
@@ -137,6 +137,83 @@ namespace TheGuideToTheNewEden.Core.Models.GamePreviews
         {
             get => highlightMarginBottom;
             set => SetProperty(ref highlightMarginBottom, value);
+        }
+
+        private string nameOverlayFontFamily = "Microsoft YaHei UI";
+        /// <summary>
+        /// 预览窗口左上角"角色名"叠加的字体
+        /// </summary>
+        public string NameOverlayFontFamily
+        {
+            get => nameOverlayFontFamily;
+            set => SetProperty(ref nameOverlayFontFamily, value);
+        }
+
+        private double nameOverlayFontSize = 46;
+        /// <summary>
+        /// 预览窗口左上角"角色名"叠加的字号（DIP，基准值；开启跟随时按缩放比例放大）
+        /// </summary>
+        public double NameOverlayFontSize
+        {
+            get => nameOverlayFontSize;
+            set => SetProperty(ref nameOverlayFontSize, value);
+        }
+
+        private bool nameOverlayFollowScale = true;
+        /// <summary>
+        /// 角色名叠加是否跟随预览窗口缩放（拖动/滚轮放大时字号同比放大）
+        /// </summary>
+        public bool NameOverlayFollowScale
+        {
+            get => nameOverlayFollowScale;
+            set => SetProperty(ref nameOverlayFollowScale, value);
+        }
+
+        private double nameOverlayScaleFactor = 1;
+        /// <summary>
+        /// 角色名跟随缩放的倍率（仅在 <see cref="NameOverlayFollowScale"/> 为 true 时生效）
+        /// 实际字号 = <see cref="NameOverlayFontSize"/> × (窗口宽 / 基准宽) × 本倍率
+        /// </summary>
+        public double NameOverlayScaleFactor
+        {
+            get => nameOverlayScaleFactor;
+            set => SetProperty(ref nameOverlayScaleFactor, value);
+        }
+
+        private Color nameOverlayBackgroundColor = Color.FromArgb(153, 0, 0, 0);
+        /// <summary>
+        /// 角色名叠加的背景色（正常状态，含透明度，用 <see cref="ArgbColorJsonConverter"/> 序列化成 #AARRGGBB）
+        /// </summary>
+        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
+        public Color NameOverlayBackgroundColor
+        {
+            get => nameOverlayBackgroundColor;
+            set => SetProperty(ref nameOverlayBackgroundColor, value);
+        }
+
+        private Color nameOverlayBackgroundColorHighlight = Color.Green;
+        /// <summary>
+        /// 角色名叠加的"第二种背景色"（含透明度）。
+        /// <b>与是否高亮无关、一直按用户选择生效</b>：高亮边框另有独立的颜色设置，
+        /// 这里只是把背景色也做成两项可选，便于用户为某些窗口配不同底色。
+        /// 名字里的 Highlight 是沿用 WinUI 版"名称条高亮颜色"那一对的叫法。
+        /// </summary>
+        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
+        public Color NameOverlayBackgroundColorHighlight
+        {
+            get => nameOverlayBackgroundColorHighlight;
+            set => SetProperty(ref nameOverlayBackgroundColorHighlight, value);
+        }
+
+        private Color nameOverlayForegroundColor = Color.White;
+        /// <summary>
+        /// 角色名叠加的文字颜色（含透明度；默认白色）
+        /// </summary>
+        [JsonConverter(typeof(Helpers.ArgbColorJsonConverter))]
+        public Color NameOverlayForegroundColor
+        {
+            get => nameOverlayForegroundColor;
+            set => SetProperty(ref nameOverlayForegroundColor, value);
         }
 
         private bool respondGlobalHotKey = true;

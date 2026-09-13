@@ -1,0 +1,760 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.GamePreviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:conv="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <conv:InverseBooleanConverter x:Key="InverseBool" />
+        <conv:ColorHexConverter x:Key="ColorHex" />
+        <conv:ColorToBrushConverter x:Key="ColorBrush" />
+        <conv:ProcessDisplayNameConverter x:Key="ProcessName" />
+        <conv:StringSetConverter x:Key="StringSet" />
+        <conv:ViewportMaxHeightConverter x:Key="ViewportMaxHeight" />
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,10,0,4" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+
+        <!--  进程项：运行指示 + 角色名 + 窗口标题  -->
+        <DataTemplate x:Key="ProcessItemTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Width="3"
+                    Height="28"
+                    Margin="0,0,6,0"
+                    Fill="{DynamicResource SystemFillColorCautionBrush}"
+                    RadiusX="2"
+                    RadiusY="2"
+                    ToolTip="{DynamicResource GamePreviewPage_Running}"
+                    Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
+                <StackPanel Grid.Column="1">
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Converter={StaticResource ProcessName}}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding WindowTitle}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Click="OnStartProcessClick" Header="{DynamicResource GamePreviewPage_Start}" />
+                        <MenuItem Click="OnStopProcessClick" Header="{DynamicResource GamePreviewPage_Stop}" />
+                        <Separator />
+                        <MenuItem Click="OnMoveUpClick" Header="{DynamicResource GamePreviewPage_MoveUp}" />
+                        <MenuItem Click="OnMoveDownClick" Header="{DynamicResource GamePreviewPage_MoveDown}" />
+                        <MenuItem Click="OnRestorePositionClick" Header="{DynamicResource GamePreviewPage_RestorePosition}" />
+                        <Separator />
+                        <MenuItem Click="OnActivateSourceClick" Header="{DynamicResource GamePreviewPage_OpenSourceWindow}" />
+                    </ContextMenu>
+                </Grid.ContextMenu>
+            </Grid>
+        </DataTemplate>
+
+        <!--  分组快捷键编辑行  -->
+        <DataTemplate x:Key="HotKeyGroupTemplate">
+            <Border
+                Padding="0,6"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox PlaceholderText="{DynamicResource GamePreviewPage_GroupHotkey_Name}" Text="{Binding GroupName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                        <ui:Button
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            Appearance="Danger"
+                            Click="OnRemoveGroupClick"
+                            Icon="{ui:SymbolIcon Delete24}"
+                            ToolTip="{DynamicResource GamePreviewPage_GroupHotkey_Remove}" />
+                    </Grid>
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox
+                            Margin="0,0,2,0"
+                            PlaceholderText="{DynamicResource GamePreviewPage_Forward}"
+                            Text="{Binding SwitchHotkey_Forward, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                        <ui:TextBox
+                            Grid.Column="1"
+                            Margin="2,0,0,0"
+                            PlaceholderText="{DynamicResource GamePreviewPage_Backward}"
+                            Text="{Binding SwitchHotkey_Backward, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </Grid>
+                    <ui:TextBox
+                        Margin="0,4,0,0"
+                        PlaceholderText="{DynamicResource GamePreviewPage_GroupHotkey_Names}"
+                        Text="{Binding GameNames, Converter={StaticResource StringSet}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    <Grid Margin="0,4,0,0">
+                        <CheckBox Content="{DynamicResource GamePreviewPage_GroupHotkey_Restart}" IsChecked="{Binding Restart, Mode=TwoWay}" />
+                        <ui:Button
+                            HorizontalAlignment="Right"
+                            Click="OnApplyGroupClick"
+                            Content="{DynamicResource GamePreviewPage_Apply}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!--
+        外层 Grid 只做一件事：把页面高度夹在承载页面的 ScrollViewer 视口内。
+        不做这一步的话，页面会被设置卡的内容撑高，滚轮滚的是整个页面；
+        夹住之后，滚动才落回各卡片内容自己的 ScrollViewer（设置卡 / 进程列表）。
+
+        这里的 ConverterParameter 是**从视口高度里再扣掉的余量**，原来写 24，等于在内容上下
+        各留 12px 空白带（页签上方那条空带就是它）。用户要求多开页内容顶满，故改为 0。
+    -->
+    <Grid MaxHeight="{Binding ViewportHeight, RelativeSource={RelativeSource AncestorType={x:Type ScrollViewer}}, Converter={StaticResource ViewportMaxHeight}, ConverterParameter=0}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="*" MinWidth="260" />
+            </Grid.ColumnDefinitions>
+
+            <!--  ============ 左：进程列表 ============  -->
+            <controls:CardControl Grid.Column="0" Header="{DynamicResource GamePreviewPage_ProcessList}">
+                <ListBox
+                    x:Name="ProcessList"
+                    ItemContainerStyle="{StaticResource StretchListItem}"
+                    ItemTemplate="{StaticResource ProcessItemTemplate}"
+                    ItemsSource="{Binding Processes}"
+                    ScrollViewer.CanContentScroll="True"
+                    SelectedItem="{Binding SelectedProcess, Mode=TwoWay}" />
+                <controls:CardControl.Footer>
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            AutomationProperties.Name="{DynamicResource General_StartAll}"
+                            Click="OnStartAllClick"
+                            Icon="{ui:SymbolIcon Play24}"
+                            ToolTip="{DynamicResource General_StartAll}" />
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            AutomationProperties.Name="{DynamicResource General_StopAll}"
+                            Click="OnStopAllClick"
+                            ToolTip="{DynamicResource General_StopAll}"
+                            Visibility="{Binding Running, Converter={StaticResource BoolToVis}}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            AutomationProperties.Name="{DynamicResource General_RefreshList}"
+                            Click="OnRefreshClick"
+                            Icon="{ui:SymbolIcon ArrowSync24}"
+                            ToolTip="{DynamicResource General_RefreshList}" />
+                    </StackPanel>
+                </controls:CardControl.Footer>
+            </controls:CardControl>
+
+            <!--  ============ 中：设置（选中项 / 全局，两个并列页签） ============  -->
+            <controls:CardControl Grid.Column="1" Margin="8,0">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <!--
+                        用 TabControl 取代原来的"用一个按钮在两种模式间切换"：
+                        两个设置面板现在是并列页签，一眼能看到有哪些设置、也少一层隐藏状态。
+                        SelectedIndex 与 VM 的 IsGlobalSetting 双向绑定，所以"选中进程自动回到选中项设置"
+                        仍然生效；页签切换等价于原来的按钮点击。
+                    -->
+                    <!--
+                        索引由 VM 的 SettingsTabIndex 给出（未选中进程时恒为 1 = 全局设置），
+                        双向绑定：点页签即回写 IsGlobalSetting，交互与原来的按钮一致。
+                        不能反过来只绑"是否全局"：WPF 允许选中一个已隐藏的 TabItem，
+                        启动时索引 0 而该项隐藏，就会停在隐藏页上、全局设置点不到。
+                    -->
+                    <TabControl SelectedIndex="{Binding SettingsTabIndex, Mode=TwoWay}">
+                        <!--
+                        未选中进程时"选中项设置"没有意义，整页签隐藏（只剩全局设置）；
+                        隐藏 TabItem 不会改变索引，所以 SelectedIndex 与 IsGlobalSetting 的绑定照旧成立。
+                    -->
+                    <TabItem Header="{DynamicResource GamePreviewPage_ItemSetting}" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource GamePreviewPage_SelectionTip}"
+                                    TextWrapping="Wrap" />
+
+                                <CheckBox
+                                    Content="{DynamicResource GamePreviewPage_ShowPreviewWindow}"
+                                    IsChecked="{Binding SelectedSetting.ShowPreviewWindow, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelection}" />
+                                <Grid Margin="0,6,0,0" IsEnabled="{Binding HasSelection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_PreviewMode}" />
+                                    <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedSetting.ShowPreviewWindowMode, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_PreviewMode_0}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_PreviewMode_1}" />
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Margin="0,6,0,0" IsEnabled="{Binding HasSelection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="40" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_Opacity}" />
+                                    <Slider
+                                        Grid.Column="1"
+                                        IsSnapToTickEnabled="True"
+                                        Maximum="100"
+                                        Minimum="10"
+                                        TickFrequency="5"
+                                        Value="{Binding SelectedSetting.OverlapOpacity, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{Binding SelectedSetting.OverlapOpacity}" />
+                                </Grid>
+
+                                <CheckBox
+                                    Margin="0,6,0,0"
+                                    Content="{DynamicResource GamePreviewPage_HideOnForeground}"
+                                    IsChecked="{Binding SelectedSetting.HideOnForeground, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelection}" />
+                                <CheckBox
+                                    Margin="0,6,0,0"
+                                    Content="{DynamicResource GamePreviewPage_Highlight}"
+                                    IsChecked="{Binding SelectedSetting.Highlight, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelection}" />
+                                <CheckBox
+                                    Margin="0,6,0,0"
+                                    Content="{DynamicResource GamePreviewPage_RespondGlobalHotKey}"
+                                    IsChecked="{Binding SelectedSetting.RespondGlobalHotKey, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelection}" />
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_Colors}" />
+                                <Grid IsEnabled="{Binding HasSelection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_HighlightColor}" />
+                                    <ui:TextBox Grid.Column="1" Text="{Binding SelectedSetting.HighlightColor, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,0,0,0"
+                                        Background="{Binding SelectedSetting.HighlightColor, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_TitleColor}" />
+                                    <ui:TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.TitleNormalColor, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,4,0,0"
+                                        Background="{Binding SelectedSetting.TitleNormalColor, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_TitleHighlightColor}" />
+                                    <ui:TextBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.TitleHighlightColor, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,4,0,0"
+                                        Background="{Binding SelectedSetting.TitleHighlightColor, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_HighlightMargin}" />
+                                <Grid IsEnabled="{Binding HasSelection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_Margin_Left}" />
+                                    <ui:TextBox Grid.Column="1" Text="{Binding SelectedSetting.HighlightMarginLeft, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_Margin_Top}" />
+                                    <ui:TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.HighlightMarginTop, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_Margin_Right}" />
+                                    <ui:TextBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.HighlightMarginRight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_Margin_Bottom}" />
+                                    <ui:TextBox
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.HighlightMarginBottom, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_NameOverlay}" />
+                                <Grid IsEnabled="{Binding HasSelection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_NameOverlayFont}" />
+                                    <ComboBox
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        ItemsSource="{Binding FontFamilies}"
+                                        SelectedItem="{Binding SelectedSetting.NameOverlayFontFamily, Mode=TwoWay}" />
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayFontSize}" />
+                                    <ui:TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.NameOverlayFontSize, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                                    <CheckBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,6,0,0"
+                                        Content="{DynamicResource GamePreviewPage_NameOverlayFollowScale}"
+                                        IsChecked="{Binding SelectedSetting.NameOverlayFollowScale, Mode=TwoWay}" />
+
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayScaleFactor}" />
+                                    <ui:TextBox
+                                        Grid.Row="3"
+                                        Grid.Column="2"
+                                        MinWidth="80"
+                                        Margin="6,4,0,0"
+                                        Text="{Binding SelectedSetting.NameOverlayScaleFactor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                                    <TextBlock
+                                        Grid.Row="4"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayBackground}" />
+                                    <ui:TextBox
+                                        Grid.Row="4"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.NameOverlayBackgroundColor, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Row="4"
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,4,0,0"
+                                        Background="{Binding SelectedSetting.NameOverlayBackgroundColor, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+
+                                    <TextBlock
+                                        Grid.Row="5"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayBackgroundHighlight}" />
+                                    <ui:TextBox
+                                        Grid.Row="5"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.NameOverlayBackgroundColorHighlight, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Row="5"
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,4,0,0"
+                                        Background="{Binding SelectedSetting.NameOverlayBackgroundColorHighlight, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+
+                                    <TextBlock
+                                        Grid.Row="6"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayForeground}" />
+                                    <ui:TextBox
+                                        Grid.Row="6"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding SelectedSetting.NameOverlayForegroundColor, Converter={StaticResource ColorHex}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <Border
+                                        Grid.Row="6"
+                                        Grid.Column="2"
+                                        Width="22"
+                                        Height="22"
+                                        Margin="6,4,0,0"
+                                        Background="{Binding SelectedSetting.NameOverlayForegroundColor, Converter={StaticResource ColorBrush}}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3" />
+
+                                    <TextBlock
+                                        Grid.Row="7"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,4,0,0"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{DynamicResource GamePreviewPage_NameOverlayTip}"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_ItemHotKey}" />
+                                <ui:TextBox
+                                    IsEnabled="{Binding HasSelection}"
+                                    LostFocus="OnItemHotkeyLostFocus"
+                                    PlaceholderText="{DynamicResource GamePreviewPage_HotkeyPlaceholder}"
+                                    Text="{Binding SelectedSetting.HotKey, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource GamePreviewPage_HotkeyTip}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </TabItem>
+
+                        <TabItem Header="{DynamicResource GamePreviewPage_GlobalSetting}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_ProcessKeywords}" />
+                                <ui:TextBox
+                                    Margin="0,4,0,0"
+                                    PlaceholderText="{DynamicResource GamePreviewPage_ProcessKeywordsPlaceholder}"
+                                    Text="{Binding ProcessKeywords, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource GamePreviewPage_ProcessKeywordsTip}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_SwitchHotkey}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_Forward}" />
+                                    <ui:TextBox Grid.Column="1" Text="{Binding ForwardHotkey, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_Backward}" />
+                                    <ui:TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding BackwardHotkey, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource GamePreviewPage_SwitchHotkeyTip}"
+                                    TextWrapping="Wrap" />
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_ActivationMode}" />
+                                <ComboBox SelectedIndex="{Binding Setting.SetForegroundWindowMode, Mode=TwoWay}">
+                                    <ComboBoxItem Content="{DynamicResource GamePreviewPage_ActivationMode_0}" />
+                                    <ComboBoxItem Content="{DynamicResource GamePreviewPage_ActivationMode_1}" />
+                                    <ComboBoxItem Content="{DynamicResource GamePreviewPage_ActivationMode_2}" />
+                                </ComboBox>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_UniformSize}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_UniformWidth}" />
+                                    <ui:TextBox Grid.Column="1" Text="{Binding Setting.UniformWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_UniformHeight}" />
+                                    <ui:TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding Setting.UniformHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_AutoLayout}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{DynamicResource GamePreviewPage_AutoLayout_Mode}" />
+                                    <ComboBox Grid.Column="1" SelectedIndex="{Binding Setting.AutoLayout, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Mode_0}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Mode_1}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Mode_2}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Mode_3}" />
+                                    </ComboBox>
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_AutoLayout_Anchor}" />
+                                    <ComboBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        SelectedIndex="{Binding Setting.AutoLayoutAnchor, Mode=TwoWay}">
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Anchor_0}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Anchor_1}" />
+                                        <ComboBoxItem Content="{DynamicResource GamePreviewPage_AutoLayout_Anchor_2}" />
+                                    </ComboBox>
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_AutoLayout_Span}" />
+                                    <ui:TextBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding Setting.AutoLayoutSpan, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource FieldLabel}"
+                                        Text="{DynamicResource GamePreviewPage_AutoLayout_Count}" />
+                                    <ui:TextBox
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Margin="0,4,0,0"
+                                        Text="{Binding Setting.AutoLayoutCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_Behavior}" />
+                                <CheckBox Content="{DynamicResource GamePreviewPage_StartAllWithNoneSetting}" IsChecked="{Binding Setting.StartAllWithNoneSetting, Mode=TwoWay}" />
+                                <CheckBox
+                                    Margin="0,6,0,0"
+                                    Content="{DynamicResource GamePreviewPage_AutoStartNewProcess}"
+                                    IsChecked="{Binding Setting.AutoStartNewProcess, Mode=TwoWay}" />
+                                <CheckBox
+                                    Margin="0,6,0,0"
+                                    Content="{DynamicResource GamePreviewPage_SwitchCharacterKeepSetting}"
+                                    IsChecked="{Binding Setting.SwitchCharacterKeepSetting, Mode=TwoWay}" />
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_Order}" />
+                                <ui:TextBox
+                                    Height="70"
+                                    AcceptsReturn="True"
+                                    Text="{Binding OrderText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                    TextWrapping="NoWrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                                <StackPanel
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Left"
+                                    Orientation="Horizontal">
+                                    <ui:Button
+                                        Margin="0,0,6,0"
+                                        Click="OnFillOrderClick"
+                                        Content="{DynamicResource GamePreviewPage_Order_FromList}" />
+                                    <ui:Button Click="OnApplyOrderClick" Content="{DynamicResource GamePreviewPage_Apply}" />
+                                </StackPanel>
+
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="{DynamicResource GamePreviewPage_GroupHotkey}" />
+                                <ui:Button
+                                    Margin="0,0,0,4"
+                                    HorizontalAlignment="Left"
+                                    Click="OnAddGroupClick"
+                                    Content="{DynamicResource GamePreviewPage_GroupHotkey_Add}"
+                                    Icon="{ui:SymbolIcon Add24}" />
+                                <ItemsControl ItemTemplate="{StaticResource HotKeyGroupTemplate}" ItemsSource="{Binding HotKeyGroups}" />
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </ScrollViewer>
+
+                <controls:CardControl.Footer>
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            Click="OnApplyUniformSizeClick"
+                            Icon="{ui:SymbolIcon Resize24}"
+                            ToolTip="{DynamicResource GamePreviewPage_UniformSize}"
+                            Visibility="{Binding IsGlobalSetting, Converter={StaticResource BoolToVis}}" />
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            Click="OnApplyAutoLayoutClick"
+                            Icon="{ui:SymbolIcon Grid24}"
+                            ToolTip="{DynamicResource GamePreviewPage_AutoLayout}"
+                            Visibility="{Binding IsGlobalSetting, Converter={StaticResource BoolToVis}}" />
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            Click="OnStartClick"
+                            Icon="{ui:SymbolIcon Play24}"
+                            ToolTip="{DynamicResource GamePreviewPage_Start}"
+                            Visibility="{Binding SelectedRunning, Converter={StaticResource InverseBoolToVis}}" />
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            Click="OnStopClick"
+                            ToolTip="{DynamicResource GamePreviewPage_Stop}"
+                            Visibility="{Binding SelectedRunning, Converter={StaticResource BoolToVis}}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Foreground="{DynamicResource SystemFillColorCriticalBrush}" Symbol="RecordStop24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            Margin="0,0,6,0"
+                            Click="OnRestorePositionClick"
+                            Icon="{ui:SymbolIcon ArrowReset24}"
+                            ToolTip="{DynamicResource GamePreviewPage_RestorePosition}"
+                            Visibility="{Binding IsGlobalSetting, Converter={StaticResource InverseBoolToVis}}" />
+                        <ui:Button
+                            Click="OnApplyToAllClick"
+                            Icon="{ui:SymbolIcon Copy24}"
+                            ToolTip="{DynamicResource GamePreviewPage_ApplyToAll}"
+                            Visibility="{Binding IsGlobalSetting, Converter={StaticResource InverseBoolToVis}}" />
+                    </StackPanel>
+                </controls:CardControl.Footer>
+            </controls:CardControl>
+
+            <!--  ============ 右：选中进程实时预览 ============  -->
+            <controls:CardControl Grid.Column="2" Header="{DynamicResource GamePreviewPage_Preview}">
+                <!--
+                    预览区宽度占满卡片，高度按源画面比例在 code-behind 里算出来（并夹在可用高度内），
+                    所以画面与区域严丝合缝、不会留黑边；剩余空间是普通卡片背景。
+                -->
+                <Grid x:Name="PreviewArea">
+                    <Border
+                        x:Name="PreviewHost"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <TextBlock
+                            x:Name="PreviewHint"
+                            Margin="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            IsHitTestVisible="False"
+                            Text="{DynamicResource GamePreviewPage_PreviewTip}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
+            </controls:CardControl>
+        </Grid>
+    </Grid>
+</Page>

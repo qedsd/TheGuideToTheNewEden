@@ -53,7 +53,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="12,12,12,12">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="260" />
             <ColumnDefinition Width="Auto" />
@@ -63,8 +63,8 @@
         <!--  ============ 左：名单输入 ============  -->
         <controls:CardControl Grid.Column="0" Header="{DynamicResource ChannelScanPage_NameList}">
             <ui:TextBox
-                AcceptsReturn="True"
                 MinHeight="220"
+                AcceptsReturn="True"
                 PlaceholderText="{DynamicResource ChannelScanPage_NamesTip}"
                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                 Text="{Binding NamesStr, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
@@ -74,15 +74,15 @@
                     <ui:Button
                         Margin="0,0,6,0"
                         Appearance="Primary"
+                        AutomationProperties.Name="{DynamicResource ChannelScanPage_Start}"
                         Click="OnStartClick"
                         Icon="{ui:SymbolIcon Play24}"
-                        ToolTip="{DynamicResource ChannelScanPage_Start}"
-                        AutomationProperties.Name="{DynamicResource ChannelScanPage_Start}" />
+                        ToolTip="{DynamicResource ChannelScanPage_Start}" />
                     <ui:Button
+                        AutomationProperties.Name="{DynamicResource General_Setting}"
                         Click="OnSettingClick"
                         Icon="{ui:SymbolIcon Settings24}"
-                        ToolTip="{DynamicResource General_Setting}"
-                        AutomationProperties.Name="{DynamicResource General_Setting}" />
+                        ToolTip="{DynamicResource General_Setting}" />
                 </StackPanel>
             </controls:CardControl.Footer>
         </controls:CardControl>
@@ -110,9 +110,7 @@
                                 <ColumnDefinition Width="150" />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Style="{StaticResource ScanCellStyle}"
-                                Text="{DynamicResource ChannelScanPage_Setting_GetZKB}" />
+                            <TextBlock Style="{StaticResource ScanCellStyle}" Text="{DynamicResource ChannelScanPage_Setting_GetZKB}" />
                             <CheckBox
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
@@ -137,15 +135,9 @@
                         Header="{DynamicResource ChannelScanPage_Setting_IgnoredEntities}"
                         IsExpanded="True">
                         <StackPanel Margin="12,4,0,4">
-                            <CheckBox
-                                Content="{DynamicResource ChannelScanPage_Setting_ActiveIgnoreList}"
-                                IsChecked="{Binding Config.ActiveIgnoreList, Mode=TwoWay}" />
-                            <CheckBox
-                                Content="{DynamicResource ChannelScanPage_Setting_ShowIgnoredInResultDetail}"
-                                IsChecked="{Binding Config.ShowIgnoredInResultDetail, Mode=TwoWay}" />
-                            <CheckBox
-                                Content="{DynamicResource ChannelScanPage_Setting_ShowIgnoredInResultStatistics}"
-                                IsChecked="{Binding Config.ShowIgnoredInResultStatistics, Mode=TwoWay}" />
+                            <CheckBox Content="{DynamicResource ChannelScanPage_Setting_ActiveIgnoreList}" IsChecked="{Binding Config.ActiveIgnoreList, Mode=TwoWay}" />
+                            <CheckBox Content="{DynamicResource ChannelScanPage_Setting_ShowIgnoredInResultDetail}" IsChecked="{Binding Config.ShowIgnoredInResultDetail, Mode=TwoWay}" />
+                            <CheckBox Content="{DynamicResource ChannelScanPage_Setting_ShowIgnoredInResultStatistics}" IsChecked="{Binding Config.ShowIgnoredInResultStatistics, Mode=TwoWay}" />
 
                             <ListBox
                                 MinHeight="120"
@@ -193,12 +185,8 @@
                                     <ColumnDefinition Width="110" />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock
-                                    Style="{StaticResource ScanCellStyle}"
-                                    Text="{DynamicResource ChannelScanPage_Setting_AddIgnored_IDTip}" />
-                                <ui:TextBox
-                                    Grid.Column="1"
-                                    Text="{Binding AddingIgnoreId, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <TextBlock Style="{StaticResource ScanCellStyle}" Text="{DynamicResource ChannelScanPage_Setting_AddIgnored_IDTip}" />
+                                <ui:TextBox Grid.Column="1" Text="{Binding AddingIgnoreId, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                                 <TextBlock
                                     Grid.Row="1"
                                     Style="{StaticResource ScanCellStyle}"
@@ -249,10 +237,10 @@
             <controls:CardControl.Footer>
                 <ui:Button
                     HorizontalAlignment="Center"
+                    AutomationProperties.Name="{DynamicResource ChannelScanPage_Hide}"
                     Click="OnHideSettingClick"
                     Icon="{ui:SymbolIcon Dismiss24}"
-                    ToolTip="{DynamicResource ChannelScanPage_Hide}"
-                    AutomationProperties.Name="{DynamicResource ChannelScanPage_Hide}" />
+                    ToolTip="{DynamicResource ChannelScanPage_Hide}" />
             </controls:CardControl.Footer>
         </controls:CardControl>
 
@@ -273,9 +261,7 @@
                                 ItemsSource="{Binding StatisticsCorporation}"
                                 ScrollViewer.CanContentScroll="True" />
                         </controls:CardControl>
-                        <controls:CardControl
-                            Grid.Column="2"
-                            Header="{DynamicResource ChannelScanPage_Result_Statistics_Alliance}">
+                        <controls:CardControl Grid.Column="2" Header="{DynamicResource ChannelScanPage_Result_Statistics_Alliance}">
                             <ListBox
                                 ItemTemplate="{StaticResource StatisticsItemTemplate}"
                                 ItemsSource="{Binding StatisticsAlliance}"
@@ -284,106 +270,106 @@
                     </Grid>
                 </TabItem>
 
-                    <!--  详细  -->
-                    <TabItem Header="{DynamicResource ChannelScanPage_Result_Detail}">
-                        <ScrollViewer
-                            Margin="0,6,0,0"
-                            HorizontalScrollBarVisibility="Auto"
-                            VerticalScrollBarVisibility="Auto">
-                            <ui:DataGrid
-                                x:Name="ResultDataGrid"
-                                AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                CanUserDeleteRows="False"
-                                GridLinesVisibility="Horizontal"
-                                HeadersVisibility="Column"
-                                IsReadOnly="True"
-                                ItemsSource="{Binding ScanInfos}"
-                                MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
-                                ScrollViewer.CanContentScroll="True"
-                                SelectionMode="Extended"
-                                SelectionUnit="FullRow">
-                                <ui:DataGrid.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Click="OnAddIgnoreCharacterClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Character}" />
-                                        <MenuItem Click="OnAddIgnoreCorporationClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Corporation}" />
-                                        <MenuItem Click="OnAddIgnoreAllianceClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Alliance}" />
-                                        <MenuItem Click="OnReloadZKBClick" Header="{DynamicResource ChannelScanPage_ReloadResultZKB}" />
-                                    </ContextMenu>
-                                </ui:DataGrid.ContextMenu>
-                                <ui:DataGrid.Columns>
-                                    <DataGridTextColumn
-                                        Width="140"
-                                        Binding="{Binding Name}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_Character}" />
-                                    <DataGridTextColumn
-                                        Width="160"
-                                        Binding="{Binding Corporation.Name}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_Corporation}" />
-                                    <DataGridTextColumn
-                                        Width="160"
-                                        Binding="{Binding Alliance.Name}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_Alliance}" />
-                                    <DataGridTextColumn
-                                        Width="70"
-                                        Binding="{Binding DangerRatio}"
-                                        ElementStyle="{StaticResource ScanNumberCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_DangerRatio}" />
-                                    <DataGridTextColumn
-                                        Width="110"
-                                        Binding="{Binding SoloStr}"
-                                        ElementStyle="{StaticResource ScanNumberCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_SoloKills}" />
-                                    <DataGridTextColumn
-                                        Width="90"
-                                        Binding="{Binding ItemDestroyed}"
-                                        ElementStyle="{StaticResource ScanNumberCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_Kills}" />
-                                    <DataGridTextColumn
-                                        Width="90"
-                                        Binding="{Binding ItemLost}"
-                                        ElementStyle="{StaticResource ScanNumberCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_Losses}" />
-                                    <DataGridTextColumn
-                                        Width="80"
-                                        Binding="{Binding GangRatio}"
-                                        ElementStyle="{StaticResource ScanNumberCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_GangRatio}" />
-                                    <DataGridCheckBoxColumn
-                                        Width="80"
-                                        Binding="{Binding HasSupers}"
-                                        Header="{DynamicResource ChannelScanPage_Result_HasSupers}" />
-                                    <DataGridCheckBoxColumn
-                                        Width="100"
-                                        Binding="{Binding CovertCyno}"
-                                        Header="{DynamicResource ChannelScanPage_Result_CanCovertCyno}" />
-                                    <DataGridTextColumn
-                                        Width="180"
-                                        Binding="{Binding TopShipsStr}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_TopShips}" />
-                                    <DataGridTextColumn
-                                        Width="160"
-                                        Binding="{Binding TopGroupsStr}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_TopGroups}" />
-                                    <DataGridTextColumn
-                                        Width="180"
-                                        Binding="{Binding TopSystemsStr}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_TopSystems}" />
-                                    <DataGridTextColumn
-                                        Width="180"
-                                        Binding="{Binding TopRegionsStr}"
-                                        ElementStyle="{StaticResource ScanCellStyle}"
-                                        Header="{DynamicResource ChannelScanPage_Result_TopRegions}" />
-                                </ui:DataGrid.Columns>
-                            </ui:DataGrid>
-                        </ScrollViewer>
-                    </TabItem>
+                <!--  详细  -->
+                <TabItem Header="{DynamicResource ChannelScanPage_Result_Detail}">
+                    <ScrollViewer
+                        Margin="0,6,0,0"
+                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Auto">
+                        <ui:DataGrid
+                            x:Name="ResultDataGrid"
+                            MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            GridLinesVisibility="Horizontal"
+                            HeadersVisibility="Column"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding ScanInfos}"
+                            ScrollViewer.CanContentScroll="True"
+                            SelectionMode="Extended"
+                            SelectionUnit="FullRow">
+                            <ui:DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Click="OnAddIgnoreCharacterClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Character}" />
+                                    <MenuItem Click="OnAddIgnoreCorporationClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Corporation}" />
+                                    <MenuItem Click="OnAddIgnoreAllianceClick" Header="{DynamicResource ChannelScanPage_AddIgnored_Alliance}" />
+                                    <MenuItem Click="OnReloadZKBClick" Header="{DynamicResource ChannelScanPage_ReloadResultZKB}" />
+                                </ContextMenu>
+                            </ui:DataGrid.ContextMenu>
+                            <ui:DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="140"
+                                    Binding="{Binding Name}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_Character}" />
+                                <DataGridTextColumn
+                                    Width="160"
+                                    Binding="{Binding Corporation.Name}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_Corporation}" />
+                                <DataGridTextColumn
+                                    Width="160"
+                                    Binding="{Binding Alliance.Name}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_Alliance}" />
+                                <DataGridTextColumn
+                                    Width="70"
+                                    Binding="{Binding DangerRatio}"
+                                    ElementStyle="{StaticResource ScanNumberCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_DangerRatio}" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding SoloStr}"
+                                    ElementStyle="{StaticResource ScanNumberCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_SoloKills}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding ItemDestroyed}"
+                                    ElementStyle="{StaticResource ScanNumberCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_Kills}" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding ItemLost}"
+                                    ElementStyle="{StaticResource ScanNumberCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_Losses}" />
+                                <DataGridTextColumn
+                                    Width="80"
+                                    Binding="{Binding GangRatio}"
+                                    ElementStyle="{StaticResource ScanNumberCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_GangRatio}" />
+                                <DataGridCheckBoxColumn
+                                    Width="80"
+                                    Binding="{Binding HasSupers}"
+                                    Header="{DynamicResource ChannelScanPage_Result_HasSupers}" />
+                                <DataGridCheckBoxColumn
+                                    Width="100"
+                                    Binding="{Binding CovertCyno}"
+                                    Header="{DynamicResource ChannelScanPage_Result_CanCovertCyno}" />
+                                <DataGridTextColumn
+                                    Width="180"
+                                    Binding="{Binding TopShipsStr}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_TopShips}" />
+                                <DataGridTextColumn
+                                    Width="160"
+                                    Binding="{Binding TopGroupsStr}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_TopGroups}" />
+                                <DataGridTextColumn
+                                    Width="180"
+                                    Binding="{Binding TopSystemsStr}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_TopSystems}" />
+                                <DataGridTextColumn
+                                    Width="180"
+                                    Binding="{Binding TopRegionsStr}"
+                                    ElementStyle="{StaticResource ScanCellStyle}"
+                                    Header="{DynamicResource ChannelScanPage_Result_TopRegions}" />
+                            </ui:DataGrid.Columns>
+                        </ui:DataGrid>
+                    </ScrollViewer>
+                </TabItem>
             </TabControl>
 
             <!--  结果条数（底栏）  -->
