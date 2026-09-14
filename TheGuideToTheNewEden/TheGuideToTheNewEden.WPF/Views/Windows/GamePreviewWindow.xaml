@@ -6,9 +6,8 @@
     Title="GamePreview"
     Width="480"
     Height="270"
+    Background="Transparent"
     ExtendsContentIntoTitleBar="True"
-    MinHeight="120"
-    MinWidth="200"
     ResizeMode="CanResize"
     ShowInTaskbar="False"
     SnapsToDevicePixels="True"
@@ -16,10 +15,15 @@
     UseLayoutRounding="True"
     WindowBackdropType="None"
     WindowStartupLocation="Manual">
+    <!--
+        Background="Transparent" 是"画面能透出后面的窗口"的前提：窗口客户区被标记成可透明
+        （见 GamePreviewWindow.xaml.cs 的 EnsureTransparentClientArea），窗口自己不画东西的地方才会真的透出去。
+        所以窗口里每块要实色的区域都得自己画底色——标题栏（TitleBarHost）与高亮边框就是干这个的。
+    -->
 
     <Grid x:Name="Root">
         <Grid.RowDefinitions>
-            <!--  样式 0 的标题栏占第 0 行；样式 1 时该行高度为 0，名称条改为叠加在画面上（见下）  -->
+            <!--  样式 0 的标题栏占第 0 行；样式 1 时该行高度为 0（标题栏隐藏）  -->
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -27,41 +31,46 @@
         <!--
             样式0（带标题栏）：用与主窗口 / 频道预警小窗一致的标准 WPF-UI 标题栏，
             游戏画面只占据下面的内容区；高度比默认略小。
+            外层 Border 提供**实色**底色：窗口背景已改为透明，标题栏不能跟着透出后面的窗口。
         -->
-        <ui:TitleBar
-            x:Name="TitleBar"
-            Grid.Row="0"
-            Height="28"
-            MinHeight="28"
-            ShowMaximize="False"
-            ShowMinimize="False">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
-            </ui:TitleBar.Icon>
-            <!--  标题栏要矮于常规尺寸，标题栏按钮也得跟着缩小，否则内容会把高度顶回去  -->
-            <ui:TitleBar.Resources>
-                <Style TargetType="{x:Type ui:Button}">
-                    <Setter Property="Width" Value="24" />
-                    <Setter Property="Height" Value="24" />
-                </Style>
-            </ui:TitleBar.Resources>
-        </ui:TitleBar>
+        <Border x:Name="TitleBarHost" Grid.Row="0" Background="{DynamicResource ApplicationBackgroundBrush}">
+            <ui:TitleBar
+                x:Name="TitleBar"
+                Height="28"
+                MinHeight="28"
+                ShowMaximize="False"
+                ShowMinimize="False">
+                <ui:TitleBar.Icon>
+                    <ui:ImageIcon Source="pack://application:,,,/Assets/logo_32.png" />
+                </ui:TitleBar.Icon>
+                <!--  标题栏要矮于常规尺寸，标题栏按钮也得跟着缩小，否则内容会把高度顶回去  -->
+                <ui:TitleBar.Resources>
+                    <Style TargetType="{x:Type ui:Button}">
+                        <Setter Property="Width" Value="24" />
+                        <Setter Property="Height" Value="24" />
+                    </Style>
+                </ui:TitleBar.Resources>
+            </ui:TitleBar>
+        </Border>
 
         <!--
-            游戏画面：DWM 缩略图合成到这里；高亮时由 Padding 露出 HighlightColor 作为边框。
+            游戏画面：DWM 缩略图合成到这里；高亮时由 BorderThickness/BorderBrush 画出高亮边框
+            （不用"底色 + Padding"：画面区是透明的洞，外框一旦填底色就会从洞里透出来、把画面染色）。
             注意：DWM 缩略图由系统在本窗口自身内容之上合成，所以**画在这里的任何 WPF 元素都会被盖住**——
             角色名因此放在独立的叠加窗 PreviewNameOverlayWindow 里，本文件不再有叠加层。
         -->
         <Border
             x:Name="ThumbnailFrame"
             Grid.Row="1"
-            Background="Transparent">
+            Background="Transparent"
+            BorderThickness="0">
             <!--
-                底色是黑：缩略图按源比例居中摆放（letterbox/pillarbox）时，留边露出的就该是黑边。
+                有画面时底色是**透明**的：缩略图自带"不透明度"，透出的就是预览窗口后面的游戏/桌面
+                （这是多开预览的用法——调低不透明度是为了看见被挡住的那个客户端）。
                 没有画面可显示时（源窗口已最小化/已退出）由代码改成主题底色或高亮色，并叠上提示文字，
-                避免留下一块莫名其妙的黑色。
+                避免留下一块莫名其妙的空洞。
             -->
-            <Border x:Name="ThumbnailArea" Background="Black">
+            <Border x:Name="ThumbnailArea" Background="Transparent">
                 <!--  提示文字与"设置界面右侧的选中预览"一致（同一个本地化键）  -->
                 <TextBlock
                     x:Name="PreviewHint"

@@ -60,6 +60,45 @@ internal static class NativeMethods
         public int Y;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DWM_BLURBEHIND
+    {
+        public int dwFlags;
+
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fEnable;
+
+        public IntPtr hRgnBlur;
+
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fTransitionOnMaximized;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MARGINS
+    {
+        public int Left;
+        public int Right;
+        public int Top;
+        public int Bottom;
+    }
+
+    private const int DWM_BB_ENABLE = 0x00000001;
+    private const int DWM_BB_BLURREGION = 0x00000002;
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmEnableBlurBehindWindow(IntPtr hWnd, ref DWM_BLURBEHIND pBlurBehind);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
+
+    [DllImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DeleteObject(IntPtr hObject);
+
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetCursorPos(out POINT point);
@@ -180,4 +219,76 @@ internal static class NativeMethods
     /// <summary>按物理像素设置窗口位置与尺寸。</summary>
     internal static void SetWindowBounds(IntPtr hWnd, int x, int y, int width, int height)
         => SetWindowPos(hWnd, IntPtr.Zero, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+
+    private const int WM_SIZE = 0x0005;
+
+    /// <summary>
+    /// 主动给窗口补一条 <c>WM_SIZE</c>（lParam 为客户区宽高）。
+    /// <para>
+    /// 用途：窗口尺寸是用 <c>SetWindowPos</c> 改的，正常情况下系统会自动发 <c>WM_SIZE</c>；
+    /// 但实测遇到过 WPF 的布局尺寸与实际窗口脱节（布局停在旧尺寸，边框/内容都按旧尺寸绘制），
+    /// 此时补发一条 <c>WM_SIZE</c> 能让 WPF 重新按真实尺寸布局（尺寸本身没变，所以不会引起二次缩放）。
+    /// </para>
+    /// </summary>
+    internal static void NotifyClientSize(IntPtr hWnd, int width, int height)
+    {
+        if (hWnd == IntPtr.Zero || width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        // lParam = MAKELPARAM(宽, 高)
+        var lParam = (IntPtr)((height << 16) | (width & 0xFFFF));
+        SendMessage(hWnd, WM_SIZE, IntPtr.Zero, lParam);
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+    /// <summary>
+    /// 让窗口客户区"可以透明"：DWM 之后才会把客户区里 <b>没有被内容画满</b> 的像素按 alpha 合成到桌面上，
+    /// 也就是"窗口自己没画东西的地方真的透出后面的窗口"。
+    /// <para>
+    /// 传一个<b>空</b>的模糊区域：只要透明、不要模糊。
+    /// </para>
+    /// <para>
+    /// 为什么需要它：预览窗口用 <c>ui:FluentWindow</c>，而 <c>AllowsTransparency</c> 与它冲突（实测抛
+    /// <c>InvalidOperationException</c>），所以拿不到 WPF 的逐像素透明；只把 <c>Window.Background</c> 设成
+    /// Transparent 也不够——非分层窗口的客户区会被 DWM 当作完全不透明处理（透明像素合成成黑色）。
+    /// 把客户区标记为"玻璃"之后，alpha 才会被尊重：画面区交给 DWM 缩略图（<c>DwmThumbnail</c>，本身带不透明度）
+    /// 合成，其余部分由 WPF 正常画成实色（标题栏、高亮边框、无画面时的占位底色）。
+    /// </para>
+    /// </summary>
+    internal static void EnableTransparentClientArea(IntPtr hWnd)
+    {
+        if (hWnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        // ① 把 DWM 玻璃框扩展到整个客户区（四个 -1 = 铺满）：这一步才是"客户区可以透出桌面"的开关。
+        var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        DwmExtendFrameIntoClientArea(hWnd, ref margins);
+
+        // ② 模糊区域给一个空矩形：只要透明、不要模糊。
+        var region = CreateRectRgn(-2, -2, -1, -1);
+        try
+        {
+            var blurBehind = new DWM_BLURBEHIND
+            {
+                dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION,
+                fEnable = true,
+                hRgnBlur = region,
+            };
+
+            DwmEnableBlurBehindWindow(hWnd, ref blurBehind);
+        }
+        finally
+        {
+            if (region != IntPtr.Zero)
+            {
+                DeleteObject(region);
+            }
+        }
+    }
 }

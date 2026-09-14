@@ -44,8 +44,31 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         public int Bottom;
     }
 
-    private const int MinWindowWidth = 200;
-    private const int MinWindowHeight = 120;
+    /// <summary><c>WM_GETMINMAXINFO</c> 的载荷（只用到最小跟踪尺寸，见 OnWindowMessage）。</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MINMAXINFO
+    {
+        public POINT32 ptReserved;
+        public POINT32 ptMaxSize;
+        public POINT32 ptMaxPosition;
+        public POINT32 ptMinTrackSize;
+        public POINT32 ptMaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT32
+    {
+        public int X;
+        public int Y;
+    }
+
+    /// <summary>
+    /// 尺寸下限（物理像素）。预览浮窗**不限制最小尺寸**（用户要求：小尺寸排布时 200×120 的下限挡事），
+    /// 取 1 只是兜住"算出 0 或负数"这种退化尺寸（0 宽的窗口会直接不可见/无法再拖回来）。
+    /// 系统的默认最小跟踪尺寸（约 112×27）在 <see cref="OnWindowMessage"/> 的 WM_GETMINMAXINFO 里一并放开。
+    /// </summary>
+    private const int MinWindowWidth = 1;
+    private const int MinWindowHeight = 1;
     private const int DragThreshold = 4;
 
     /// <summary>
@@ -88,11 +111,16 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// <summary>比例校正期间为 true，避免"校正 → 布局回调 → 再校正"的自我循环。</summary>
     private bool _applyingAspectCorrection;
 
-    /// <summary>最近一次下发过的窗口尺寸；同一尺寸不重复下发。</summary>
-    private (int Width, int Height) _lastCorrectedSize;
-
     /// <summary>最近一次观察到的"源窗口已最小化"状态。</summary>
     private bool _sourceMinimized;
+
+    /// <summary>最近一次观察到的源窗口客户区尺寸（用于发现游戏侧改分辨率/窗口比例变化）。</summary>
+    private int _lastSourceWidth;
+
+    private int _lastSourceHeight;
+
+    /// <summary>用户正在拖动/缩放窗口（系统模态循环 WM_ENTERSIZEMOVE 期间）——此时不做兜底校正，免得打架。</summary>
+    private bool _inSizeMove;
 
     /// <summary>正在走"关闭窗口"流程（用户点 X）：此时不能再对任何窗口调用 Close()。</summary>
     private bool _closing;
@@ -153,9 +181,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
-        ApplyWindowStyles();
 
-        _hwnd = new WindowInteropHelper(this).Handle;
+        // EnsureHandle() 会在内部触发本方法，因此构造里那次赋值要等本方法返回才生效——
+        // 这里再取一次（EnsureHandle 幂等），保证后续 Win32 调用拿到的句柄有效。
+        _hwnd = new WindowInteropHelper(this).EnsureHandle();
+
+        ApplyWindowStyles();
+        EnsureTransparentClientArea();
 
         // 用鼠标拖边框改尺寸时，在 WM_SIZING 里把"另一条边"改写成同游戏客户区比例所需的长度。
         // 注意：这里只改写消息里的矩形、**不调用 SetWindowPos**，所以不存在
@@ -163,23 +195,108 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         HwndSource.FromHwnd(_hwnd)?.AddHook(OnWindowMessage);
     }
 
+    /// <summary>
+    /// 让客户区"可以透明"：把窗口背景与 WPF 合成目标的底色都设成透明，再让 DWM 把客户区当玻璃处理
+    /// （<see cref="NativeMethods.EnableTransparentClientArea"/>）。画面区因此能透出预览窗口后面的游戏窗口，
+    /// 也就是"不透明度"设置真正生效的方式。
+    /// <para>
+    /// 三件事缺一不可（少一件都表现为"画面区既不透明也不透出后面的窗口，只是整体泛白"——实测踩过）：
+    /// ① DWM 侧：<c>DwmExtendFrameIntoClientArea(-1)</c> 把玻璃框铺满客户区（**这一步才是开关**，
+    ///    只调 <c>DwmEnableBlurBehindWindow</c> 没有任何效果）；
+    /// ② WPF 侧：窗口 <c>Background</c> 必须是透明——WPF-UI 的 <c>FluentWindow</c> 会把它设成主题底色
+    ///    （浅色主题就是白），XAML 里写 <c>Background="Transparent"</c> 会被覆盖，所以这里每次重新按回来；
+    /// ③ 合成目标 <c>CompositionTarget.BackgroundColor</c> 也必须是透明（默认不是）。
+    /// </para>
+    /// <para>
+    /// WPF-UI 在显示窗口时会再调整一次窗口外观，所以 <see cref="Start"/> / <see cref="ShowWindow"/>
+    /// 里各补一次；调用幂等且很轻。
+    /// </para>
+    /// </summary>
+    private void EnsureTransparentClientArea()
+    {
+        if (_hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        // 放开最小尺寸：WPF-UI 的 FluentWindow 样式自带一个最小尺寸（实测 460×320 DIP）。
+        // 它会**卡住 WPF 的布局尺寸**——窗口用 Win32 缩小后布局不肯缩：高亮边框按大尺寸绘制
+        // （右侧/下侧画到窗口外 → "高亮时只有左跟上两个边框"），布局多出来的那圈是透明的洞
+        // （→ "有时候有白边"）。预览浮窗按用户要求不设最小尺寸。（WPF-UI 在显示窗口时可能再套一次样式，
+        // 所以 300ms 的兜底对账里也会重新清零。）
+        if (MinWidth > 0 || MinHeight > 0)
+        {
+            MinWidth = 0;
+            MinHeight = 0;
+        }
+
+        if (!ReferenceEquals(Background, Brushes.Transparent))
+        {
+            Background = Brushes.Transparent;
+        }
+
+        if (HwndSource.FromHwnd(_hwnd)?.CompositionTarget is { } target
+            && target.BackgroundColor != Colors.Transparent)
+        {
+            target.BackgroundColor = Colors.Transparent;
+        }
+
+        NativeMethods.EnableTransparentClientArea(_hwnd);
+    }
+
     private IntPtr OnWindowMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        const int WM_GETMINMAXINFO = 0x0024;
+        const int WM_ENTERSIZEMOVE = 0x0231;
+        const int WM_EXITSIZEMOVE = 0x0232;
         const int WM_SIZING = 0x0214;
 
-        if (msg != WM_SIZING || _stopped)
+        if (_stopped)
         {
             return IntPtr.Zero;
         }
 
         try
         {
-            var rect = Marshal.PtrToStructure<RECT32>(lParam);
-            var locked = LockClientAspect(rect, wParam.ToInt32());
-            if (locked is { } target)
+            if (msg == WM_ENTERSIZEMOVE)
             {
-                rect = target;
-                Marshal.StructureToPtr(rect, lParam, true);
+                // 用户开始拖动/缩放：期间不做兜底校正（拖动本身在 WM_SIZING 里锁比例）
+                _inSizeMove = true;
+                return IntPtr.Zero;
+            }
+
+            if (msg == WM_EXITSIZEMOVE)
+            {
+                _inSizeMove = false;
+                // 拖动结束：对一次账并校正比例（拖动期间比例的精度由 WM_SIZING 保证，这里兜住残余）
+                SyncLayoutSizeIfStale();
+                ScheduleAspectCorrection();
+                return IntPtr.Zero;
+            }
+
+            if (msg == WM_GETMINMAXINFO)
+            {
+                // 预览浮窗不限制最小尺寸（用户要求）：系统默认按 SM_CXMINTRACK/SM_CYMINTRACK（约 112×27 物理像素）
+                // 兜底，WPF / WPF-UI 还会把最小跟踪尺寸按回"窗口当前尺寸"——实测只删掉 WPF 的 MinWidth/MinHeight，
+                // 窗口仍会卡在当前尺寸上拖不小（SetWindowPos 与拖动都被拒，查询到的 minTrackSize 恒为启动时的尺寸）。
+                // 因此这里**接管这条消息**（handled = true，不再往后传），只把最小跟踪尺寸放开、其余保持系统预填值。
+                var info = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                info.ptMinTrackSize.X = MinWindowWidth;
+                info.ptMinTrackSize.Y = MinWindowHeight;
+                Marshal.StructureToPtr(info, lParam, true);
+                handled = true;
+                return IntPtr.Zero;
+            }
+
+            if (msg == WM_SIZING)
+            {
+                var rect = Marshal.PtrToStructure<RECT32>(lParam);
+                var locked = LockClientAspect(rect, wParam.ToInt32());
+                if (locked is { } target)
+                {
+                    rect = target;
+                    Marshal.StructureToPtr(rect, lParam, true);
+                }
             }
         }
         catch (Exception ex)
@@ -222,9 +339,10 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return null;
         }
 
-        // 标题栏/名称条的高度必须直接量元素——WPF-UI 把标题栏画在客户区内部，
-        // "窗口高 − 客户区高"恒为 0（详见 GetChromeHeight 的注释）。
-        if (!NativeMethods.GetClientRect(_hwnd, out var client)
+        if (!NativeMethods.GetWindowRect(_hwnd, out var window)
+            || !NativeMethods.GetClientRect(_hwnd, out var client)
+            || client.Width <= 0
+            || client.Height <= 0
             || !TryGetSourceSize(out var sourceWidth, out var sourceHeight))
         {
             return null;
@@ -234,23 +352,25 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var paddingWidth = (int)Math.Round(padding.Horizontal);
         var paddingHeight = (int)Math.Round(padding.Vertical);
         var chromeHeight = GetChromeHeight();
-
-        // 画面区域 = 客户区 − 标题栏/名称条 − 高亮留白（两者都在客户区内部）
-        var areaHeight = Math.Max(1, client.Height - chromeHeight - paddingHeight);
-        var areaWidth = Math.Max(1, client.Width - paddingWidth);
         var aspect = (double)sourceWidth / sourceHeight;
 
+        // 以用户正在拖的那条边为准，另一条边按比例反算。
+        // 注意用**proposed（用户给出的新值）**而不是 GetClientRect 里的旧客户区：
+        // 用旧值的话拖动期间另一条边不动、画面区比例跑偏（留边处是透明的，
+        // 看起来就是"上下/左右出现透明背景"），要等拖动结束后的防抖校正才补回来。
         int width;
         int height;
         var draggingVertical = edge is WMSZ_TOP or WMSZ_BOTTOM;
         if (draggingVertical)
         {
             height = proposedHeight;
+            var areaHeight = Math.Max(1, height - chromeHeight - paddingHeight);
             width = (int)Math.Round(areaHeight * aspect) + paddingWidth;
         }
         else
         {
             width = proposedWidth;
+            var areaWidth = Math.Max(1, width - paddingWidth);
             height = (int)Math.Round(areaWidth / aspect) + paddingHeight + chromeHeight;
         }
 
@@ -316,12 +436,9 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// <b>不能用「窗口高 − 客户区高」求它</b>：WPF-UI 的 <c>FluentWindow</c> 把标题栏画在<b>客户区内部</b>，
     /// <c>GetClientRect</c> 返回的就是整个窗口，该差值恒为 0（实测日志：<c>窗口=1595x842 客户区=1595x842 非客户区高=0</c>）。
     /// 少扣这 40px 会让"画面区域"虚高，窗口被算得偏宽约 77px，表现为**恒定的左右黑边**。
-    /// 因此直接量标题栏元素自身的渲染高度。
+    /// 因此直接量标题栏元素自身的渲染高度（它是固定 <c>Height=28</c> 的，不受窗口尺寸滞后影响）。
     /// </para>
-    /// <para>
-    /// <b>样式 1 返回 0</b>：无标题栏样式的画面占满整个窗口（角色名由独立叠加窗显示），
-    /// 客户区里没有任何占高度的固定装饰，画面区域 = 整个客户区。
-    /// </para>
+    /// <para><b>样式 1 返回 0</b>：无标题栏样式的画面占满整个窗口（角色名由独立叠加窗显示）。</para>
     /// </summary>
     private int GetChromeHeight()
     {
@@ -372,13 +489,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var bounds = ResolveStartBounds();
 
         _isShowing = true;
-        _lastCorrectedSize = default;
         NativeMethods.SetWindowBounds(_hwnd, bounds.Left, bounds.Top, bounds.Width, bounds.Height);
 
         Show();
 
         // FluentWindow 在显示时可能再次调整窗口样式，这里补一次
         ApplyWindowStyles();
+        EnsureTransparentClientArea();
 
         Rebind(Process, Setting);
         SetHighlight(Setting.Highlight);
@@ -399,10 +516,15 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ScheduleAspectCorrection();
 
         _sourceMinimized = IsSourceMinimized();
+        if (!_sourceMinimized && TryGetSourceSize(out var sourceWidth, out var sourceHeight))
+        {
+            _lastSourceWidth = sourceWidth;
+            _lastSourceHeight = sourceHeight;
+        }
+
         ApplyPreviewPlaceholder();
         _minimizeWatchTimer.Start();
     }
-
     public void Stop()
     {
         if (_stopped)
@@ -465,6 +587,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ApplyPreviewPlaceholder();
         _minimizeWatchTimer.Start();
         ShowNameOverlayIfNeeded();
+        EnsureTransparentClientArea();
 
         Recover();
     }
@@ -570,9 +693,6 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         Process = process;
         Setting = setting;
 
-        // 源窗口换了，比例可能不同，允许重新下发一次尺寸
-        _lastCorrectedSize = default;
-
         ApplyVisuals();
         _thumbnail.Rebind(_hwnd, process.MainWindowHandle);
         ScheduleThumbnailUpdate();
@@ -620,7 +740,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
     /// <summary>
     /// 高亮留白在水平/垂直方向占用的总量（物理像素）。与 <see cref="GetHighlightThickness"/> 同源，
-    /// 供比例校正使用——校正的"画面区域"必须与界面上真正留给画面的区域一致。
+    /// 供比例校正与缩略图摆放共用——两边的"画面区域"必须是同一个矩形。
     /// </summary>
     private (double Horizontal, double Vertical) GetHighlightPadding()
     {
@@ -652,6 +772,8 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         // 显示样式：0 标准标题栏；1 无标题栏（画面占满整个窗口）。历史配置里的 2（已废弃的 IPC 无标题栏）并入 1。
         var showTitleBar = HasTitleBar;
         TitleBar.Visibility = showTitleBar ? Visibility.Visible : Visibility.Collapsed;
+        // 连外面的实色底一起隐藏：窗口背景是透明的，留着这层 Border 会在画面顶部留一条空白
+        TitleBarHost.Visibility = showTitleBar ? Visibility.Visible : Visibility.Collapsed;
         TitleBar.Title = name;
         Title = name;
 
@@ -666,10 +788,13 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
 
         // 高亮由缩略图外框（HighlightColor + 边距）体现；"上边距"在带标题栏的样式下不生效
         // （高亮区紧挨标题栏，画面从标题栏正下方开始），详见 GetHighlightThickness。
-        ThumbnailFrame.Background = _isHighlighted
+        // 注意用**边框**而不是"底色 + Padding"：画面区的底色必须是"洞"（透明），
+        // 若给外框填底色，它会从透明的画面区透出来，整幅画面都会被染成高亮色（实测过）。
+        ThumbnailFrame.Background = Brushes.Transparent;
+        ThumbnailFrame.BorderBrush = _isHighlighted
             ? PreviewColorHelper.ToBrush(Setting.HighlightColor)
             : Brushes.Transparent;
-        ThumbnailFrame.Padding = GetHighlightThickness();
+        ThumbnailFrame.BorderThickness = GetHighlightThickness();
 
         ApplyPreviewPlaceholder();
     }
@@ -796,10 +921,12 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     }
 
     /// <summary>
-    /// 没有实时画面时（源窗口已最小化/已退出）的呈现：**不显示黑色底**，改为
+    /// 没有实时画面时（源窗口已最小化/已退出）的呈现：**不留空洞**，改为
     /// 高亮色（有高亮时）或主题底色，并叠上与"设置界面右侧的选中预览"相同的提示文字。
     /// <para>
-    /// 有画面时底色保持黑，因为缩略图按源比例居中摆放时留边露出的就该是黑边（letterbox）。
+    /// 有画面时底色是**透明**的：缩略图自带"不透明度"，透出的正是预览窗口后面的游戏窗口——
+    /// 多开时调低不透明度就是为了看见被预览窗挡住的那个客户端。缩略图按源比例居中摆放时留边露出的
+    /// 同样是"后面的窗口"，窗口比例已被锁定成游戏客户区比例，实际并不会留边。
     /// </para>
     /// </summary>
     private void ApplyPreviewPlaceholder()
@@ -809,7 +936,7 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         if (hasPicture)
         {
             PreviewHint.Visibility = Visibility.Collapsed;
-            ThumbnailArea.Background = Brushes.Black;
+            ThumbnailArea.Background = Brushes.Transparent;
             return;
         }
 
@@ -872,13 +999,26 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        // 元素在窗口客户区内的位置（DIP）→ 物理像素
-        var origin = ThumbnailArea.TransformToAncestor(this).Transform(new Point(0, 0));
+        // 画面区域（物理像素）：**用 Win32 的客户区 + 固定装饰推算，不用 WPF 的布局值**
+        // （TransformToAncestor/ActualWidth 那套）。理由：窗口是用 Win32 的 SetWindowPos 改尺寸的，
+        // WPF 布局偶尔会滞后于实际窗口（实测见过"布局还停在 460x320 DIP、实际窗口已经 485x110"），
+        // 而比例校正用的是 Win32 口径——两边口径必须同源，否则缩略图会按错误的容器摆放、
+        // 画面区留边（画面区是透明的，看起来就是"上下多出一条透明背景"）。
         var dpi = VisualTreeHelper.GetDpi(this);
-        var left = (int)Math.Round(origin.X * dpi.DpiScaleX);
-        var top = (int)Math.Round(origin.Y * dpi.DpiScaleY);
-        var right = (int)Math.Round((origin.X + ThumbnailArea.ActualWidth) * dpi.DpiScaleX);
-        var bottom = (int)Math.Round((origin.Y + ThumbnailArea.ActualHeight) * dpi.DpiScaleY);
+        var thickness = GetHighlightThickness();
+        if (!NativeMethods.GetClientRect(_hwnd, out var client))
+        {
+            return;
+        }
+
+        // 注意单位：GetChromeHeight() 已经返回**物理像素**，不能再乘一次 DPI；
+        // GetHighlightThickness() 返回 DIP，要乘 DPI。混用会让画面区在标题栏下面多让出约 9px
+        // （1.25 缩放下），那一条就是透明的洞——表现成"带标题栏的窗口有一圈透明边框"。
+        var chromeHeight = GetChromeHeight();
+        var left = (int)Math.Round(thickness.Left * dpi.DpiScaleX);
+        var top = chromeHeight + (int)Math.Round(thickness.Top * dpi.DpiScaleY);
+        var right = client.Width - (int)Math.Round(thickness.Right * dpi.DpiScaleX);
+        var bottom = client.Height - (int)Math.Round(thickness.Bottom * dpi.DpiScaleY);
 
         if (right <= left || bottom <= top)
         {
@@ -913,11 +1053,17 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     }
 
     /// <summary>
-    /// 轮询源窗口的最小化/还原并据此刷新缩略图。
+    /// 轮询源窗口的"最小化/还原"与"客户区尺寸"并据此刷新预览窗。
     /// <para>
     /// 为什么是轮询而不是只靠事件：最小化**不会**改变本窗口尺寸，所以 <c>OnRenderSizeChanged</c> 不会触发；
     /// 而监听源窗口的 <c>WM_SIZE</c>/<c>WM_WINDOWPOSCHANGED</c> 需要跨进程子类化（复杂，且项目已移除 Vanara）。
-    /// 本窗口是置顶浮窗、数量有限，300ms 一次 <c>IsIconic</c> 的开销可以忽略，且只在状态真的翻转时才动缩略图。
+    /// 本窗口是置顶浮窗、数量有限，300ms 一次 <c>IsIconic</c>/<c>GetClientRect</c> 的开销可以忽略，
+    /// 且只在状态真的变化时才动缩略图与窗口尺寸。
+    /// </para>
+    /// <para>
+    /// 客户区尺寸也要盯：游戏侧改分辨率、切窗口/全屏、或游戏窗口被拉伸后，客户区比例会变——
+    /// 不重新校正的话预览窗会停在旧比例上，缩略图按比例居中留边，而画面区现在是透明的，
+    /// 那圈留边看起来就是"上下（或左右）多出一条透明背景，窗口没按画面比例"（用户反馈）。
     /// </para>
     /// </summary>
     private void MinimizeWatchTick(object? sender, EventArgs e)
@@ -925,6 +1071,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         if (_stopped || !_isShowing)
         {
             return;
+        }
+
+        // 用户正在拖动/缩放（系统模态循环）时不插手，等 WM_EXITSIZEMOVE 之后再对账
+        if (!_inSizeMove)
+        {
+            SyncLayoutSizeIfStale();
+            TrackSourceSizeChange();
+            EnsureAspectSizeIfNeeded();
         }
 
         // 只在状态真的翻转时才动缩略图与占位呈现；_sourceMinimized 由 ScheduleThumbnailUpdate 统一刷新
@@ -937,6 +1091,102 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         ApplyPreviewPlaceholder();
     }
 
+    /// <summary>
+    /// 兜底对账：WPF 的窗口尺寸偶尔会与实际窗口（Win32）脱节——实测抓到过"布局 460×320 DIP、实际窗口 485×110"。
+    /// 后果有两个：
+    /// <list type="number">
+    ///   <item>高亮边框是 WPF 画的，会按**错的**尺寸绘制：右侧/下侧画到窗口外，看起来就是"高亮时只有左跟上两个边框"；</item>
+    ///   <item>尺寸变化不再触发 <c>OnRenderSizeChanged</c> → 比例校正再也不会被安排 →
+    ///         画面区比例跑偏、缩略图按比例留边（留边处是透明的洞，看起来"有时候有白边/透明边"）。</item>
+    /// </list>
+    /// 每 300ms 对一次账：不一致就把 WPF 的尺寸按当前实际尺寸设回去（等于让 WPF 自己重跑一遍尺寸更新，
+    /// 布局与边框跟着对上），并把比例校正安排上。
+    /// </summary>
+    private void SyncLayoutSizeIfStale()
+    {
+        if (_hwnd == IntPtr.Zero
+            || !NativeMethods.GetClientRect(_hwnd, out var client)
+            || client.Width <= 0
+            || client.Height <= 0)
+        {
+            return;
+        }
+
+        // 兜底：放开窗口的最小尺寸。WPF-UI / 主题会给 FluentWindow 设一个固定的 MinWidth/MinHeight
+        // （实测见过 460×320 DIP），它会**卡住 WPF 的布局尺寸**：窗口用 Win32 缩小之后布局不肯缩，
+        // 于是高亮边框按"大尺寸"绘制（右侧/下侧画到窗口外 → 看起来"高亮时只有左跟上两个边框"），
+        // 布局多出来的那圈则是透明的洞（→ 看起来"有时候有白边"）。预览浮窗按用户要求不设最小尺寸。
+        if (MinWidth > 0 || MinHeight > 0)
+        {
+            MinWidth = 0;
+            MinHeight = 0;
+        }
+
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var wantWidth = client.Width / dpi.DpiScaleX;
+        var wantHeight = client.Height / dpi.DpiScaleY;
+        var stale = Math.Abs(ActualWidth - wantWidth) > 2 || Math.Abs(ActualHeight - wantHeight) > 2;
+        if (!stale)
+        {
+            return;
+        }
+
+        Core.Log.Warn($"[预览窗] WPF 尺寸与实际窗口不一致，已按实际尺寸纠正：布局={ActualWidth}x{ActualHeight}(DIP) 实际={client.Width}x{client.Height}(px)");
+        Width = wantWidth;
+        Height = wantHeight;
+
+        // 只设 Width/Height 有时不够：窗口本身已经是目标尺寸，WPF 会认为"没变化"而跳过重排，
+        // 布局仍停在旧尺寸（高亮边框就会画到窗口外）。补一条 WM_SIZE 逼它按真实客户区重新布局。
+        NativeMethods.NotifyClientSize(_hwnd, client.Width, client.Height);
+        ScheduleAspectCorrection();
+    }
+
+    /// <summary>
+    /// 兜底对账②：窗口尺寸与游戏客户区比例不符时安排一次校正。
+    /// 正常路径是"尺寸变化 → <c>OnRenderSizeChanged</c> → 安排校正"，但那条链路依赖 WPF 的尺寸事件；
+    /// 这里不依赖任何事件，每 300ms 用 Win32 口径核一次（拖动过程中跳过，见 <see cref="_inSizeMove"/>）。
+    /// </summary>
+    private void EnsureAspectSizeIfNeeded()
+    {
+        if (_hwnd == IntPtr.Zero || IsSourceMinimized() || !NativeMethods.GetWindowRect(_hwnd, out var window))
+        {
+            return;
+        }
+
+        if (CorrectSizeToAspect(window.Width, window.Height) is not { } target)
+        {
+            return;
+        }
+
+        if (Math.Abs(target.Width - window.Width) < AspectTolerance && Math.Abs(target.Height - window.Height) < AspectTolerance)
+        {
+            return;
+        }
+
+        ScheduleAspectCorrection();
+    }
+
+    /// <summary>源窗口客户区尺寸变了就重算比例（缩略图目标矩形 + 窗口尺寸）。</summary>
+    private void TrackSourceSizeChange()
+    {
+        // 最小化时客户区是"任务栏缩略图"那种又宽又扁的形状，不能当比例依据
+        if (IsSourceMinimized() || !TryGetSourceSize(out var width, out var height))
+        {
+            return;
+        }
+
+        if (width == _lastSourceWidth && height == _lastSourceHeight)
+        {
+            return;
+        }
+
+        _lastSourceWidth = width;
+        _lastSourceHeight = height;
+
+        ScheduleThumbnailUpdate();
+        ScheduleAspectCorrection();
+        ApplyPreviewPlaceholder();
+    }
     // ---------- 比例校正 ----------
 
     /// <summary>
@@ -987,16 +1237,14 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             return;
         }
 
-        // 同一个尺寸不再重复下发，彻底断掉"下发 → 布局回调 → 再下发"的可能
-        if (size == _lastCorrectedSize)
-        {
-            return;
-        }
-
+        // 注意：这里**不能**再按"算出的尺寸与上次下发过的一样"来跳过（原实现有个 `_lastCorrectedSize` 去重）。
+        // 窗口完全可能在两次校正之间被别的路径改偏几像素（拖动收尾、恢复位置、源画面比例变化……），
+        // 那时算出的目标尺寸与上次相同、窗口却已经不对了——一去重就再也不修，表现为"画面上下（或左右）
+        // 留一条透明边"，看起来像窗口没按画面比例。防自循环交给上面那条容差判断（下发后窗口就等于目标尺寸，
+        // 下一轮必落在容差内）。
         _applyingAspectCorrection = true;
         try
         {
-            _lastCorrectedSize = size;
             NativeMethods.SetWindowBounds(_hwnd, window.Left, window.Top, size.Width, size.Height);
             PersistBounds();
         }
@@ -1009,15 +1257,17 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
     /// <summary>
     /// 由当前的窗口矩形算出"与游戏客户区同比例"的窗口矩形（物理像素）；取不到源画面时返回 null。
     /// <para>
-    /// 两条关键口径（都踩过坑，见 REFACTORING 阶段 44）：
-    /// ① 客户区尺寸取 <b>Win32 的 <c>GetClientRect</c></b>，不要用 WPF 的 <c>ActualWidth/ActualHeight</c>——
-    /// 布局值带 DIP↔像素取整误差，反算尺寸会让误差每轮累积（实测窗口每轮缩窄几十像素，永不收敛）；
-    /// ② 标题栏高度取 <b>标题栏元素自身的渲染高度</b>，不能用"窗口高 − 客户区高"——WPF-UI 把标题栏画在
-    /// 客户区内部，该差值恒为 0，会漏扣约 40px、把窗口算宽约 77px（表现为恒定左右黑边）。
+    /// <b>口径（阶段 44 的教训）</b>：全部用 <b>Win32 物理像素</b>——窗口矩形取 <c>GetWindowRect</c>，
+    /// 客户区取 <c>GetClientRect</c>，标题栏高度取标题栏元素（固定 28）的渲染高度；
+    /// <b>不要用 WPF 的布局值</b>（<c>ActualWidth</c>/<c>TransformToAncestor</c>）：窗口是用
+    /// <c>SetWindowPos</c> 改尺寸的，实测 WPF 布局会滞后于实际窗口（见过"布局停在 460×320 DIP、实际窗口 485×110"），
+    /// 一旦两边口径不同源，比例校正与缩略图摆放就会各算一套、画面区留边（留边处是透明的，
+    /// 看起来就是"上下（或左右）多出一条透明背景，像没按画面比例"）。缩略图摆放（<see cref="UpdateThumbnailDestination"/>）
+    /// 现在也用同一套 Win32 口径。
     /// </para>
     /// <para>
-    /// 固定装饰 = 标题栏/名称条高度 + 高亮留白。两种样式可调的维度不同：
-    /// 样式 0 的标题栏高度固定，调的是客户区高度与随之而来的宽度；样式 1 的名称条高度固定，宽度不变、只调高度。
+    /// 两种样式可调的维度不同：样式 0 标题栏高度固定 → 保持窗口高度、反算画面区宽度；
+    /// 样式 1 无标题栏 → 保持宽度、反算高度。
     /// </para>
     /// </summary>
     private (int Width, int Height)? CorrectSizeToAspect(int requestedWidth, int requestedHeight)
@@ -1041,34 +1291,33 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         }
 
         var padding = GetHighlightPadding();
-
-        // 画面区域（物理像素）：客户区再去掉"标题栏/名称条"与"画面之外的固定留白"
-        // （标题栏由 GetChromeHeight 直接量元素，不能用窗口高 − 客户区高，那里恒为 0）
-        var chromeHeight = GetChromeHeight();
-        var paddingHeight = (int)Math.Round(padding.Vertical);
         var paddingWidth = (int)Math.Round(padding.Horizontal);
-        var sourceAreaWidth = Math.Max(1, client.Width - paddingWidth);
-        var sourceAreaHeight = Math.Max(1, client.Height - chromeHeight - paddingHeight);
+        var paddingHeight = (int)Math.Round(padding.Vertical);
+        var chromeHeight = GetChromeHeight();
+        var aspect = (double)sourceWidth / sourceHeight;
+
+        // 画面区域（物理像素）= 客户区 − 标题栏/名称条 − 高亮留白（三者都在客户区内部）
+        var areaWidth = Math.Max(1, client.Width - paddingWidth);
+        var areaHeight = Math.Max(1, client.Height - chromeHeight - paddingHeight);
 
         int width;
         int height;
         if (HasTitleBar)
         {
-            // 标题栏高度固定 → 保持画面区域的高度，按比例反算它需要的宽度
+            // 标题栏高度固定 → 保持窗口高度，按比例反算画面区宽度
             height = window.Height;
-            width = (int)Math.Round(sourceAreaHeight * (double)sourceWidth / sourceHeight) + paddingWidth;
+            width = (int)Math.Round(areaHeight * aspect) + paddingWidth;
         }
         else
         {
-            // 名称条高度固定、窗口高度随内容 → 宽度不动，按比例反算高度
+            // 无固定名称条 → 保持宽度，按比例反算画面区高度
             width = requestedWidth;
-            height = (int)Math.Round(sourceAreaWidth * (double)sourceHeight / sourceWidth)
-                + paddingHeight
-                + chromeHeight;
+            height = (int)Math.Round(areaWidth / aspect) + paddingHeight + chromeHeight;
         }
 
         return (Math.Max(MinWindowWidth, width), Math.Max(MinWindowHeight, height));
     }
+
 
     protected override void OnRenderSizeChanged(SizeChangedInfo info)
     {
@@ -1150,6 +1399,22 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
         var rect = GetRect();
         var factor = e.Delta > 0 ? 1.05 : 1.0 / 1.05;
 
+        if (!NativeMethods.GetClientRect(_hwnd, out var client)
+            || !TryGetSourceSize(out var sourceWidth, out var sourceHeight))
+        {
+            return;
+        }
+
+        // 缩放的是**画面区域**，再换算回窗口尺寸——与比例校正（CorrectSizeToAspect）用同一口径。
+        // 不能直接按窗口尺寸缩放：样式 0 的窗口含标题栏（约 35px），窗口比例 ≠ 画面比例，
+        // 滚轮刚放大就会被 80ms 后的比例校正拉回去（用户反馈的"缩放放大又自动还原"）。
+        var padding = GetHighlightPadding();
+        var paddingWidth = (int)Math.Round(padding.Horizontal);
+        var paddingHeight = (int)Math.Round(padding.Vertical);
+        var chromeHeight = GetChromeHeight();
+        var areaWidth = Math.Max(1, client.Width - paddingWidth);
+        var areaHeight = Math.Max(1, client.Height - chromeHeight - paddingHeight);
+
         var maxWidth = rect.Width;
         var maxHeight = rect.Height;
         if (NativeMethods.TryGetMonitorWorkArea(_hwnd, out var workArea))
@@ -1158,18 +1423,20 @@ public sealed partial class GamePreviewWindow : Wpf.Ui.Controls.FluentWindow, IP
             maxHeight = workArea.Height;
         }
 
-        // 缩放同样保持源画面比例：否则窗口比例一旦跑偏，画面就会一直留边
-        PreviewGeometry.TryGetSourceSize(Process.MainWindowHandle, out var sourceWidth, out var sourceHeight);
-        var (width, height) = PreviewGeometry.ScalePreservingAspect(
-            rect.Width,
-            rect.Height,
+        var (targetAreaWidth, targetAreaHeight) = PreviewGeometry.ScalePreservingAspect(
+            areaWidth,
+            areaHeight,
             sourceWidth,
             sourceHeight,
             factor,
             MinWindowWidth,
             MinWindowHeight,
-            Math.Max(MinWindowWidth, maxWidth),
-            Math.Max(MinWindowHeight, maxHeight));
+            Math.Max(MinWindowWidth, maxWidth - paddingWidth),
+            Math.Max(MinWindowHeight, maxHeight - chromeHeight - paddingHeight));
+
+        var (width, height) = ClampToWorkArea(
+            targetAreaWidth + paddingWidth,
+            targetAreaHeight + paddingHeight + chromeHeight);
 
         NativeMethods.SetWindowBounds(_hwnd, rect.X, rect.Y, width, height);
         PersistBounds();

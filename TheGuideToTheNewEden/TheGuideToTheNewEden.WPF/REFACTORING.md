@@ -1582,6 +1582,194 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 54：多开预览浮窗的"不透明度"真正生效（画面透出后面的窗口）
+
+- **现象**（用户反馈："多开功能预览浮窗透明度没生效"）：多开页把选中项的**不透明度**从 65% 一路调到 100%、10%，预览浮窗外观基本不变，被它挡住的游戏客户端完全看不见。
+- **根因 ①（实现口径错）**：阶段 43 把"不透明度"实现成 **DWM 缩略图自身的 opacity**，而缩略图是按 alpha 合成到**本窗口自己的内容**上的——
+  画面区的底色当时写死成纯黑（`ThumbnailArea.Background = Black`），于是"调低不透明度"只是把画面**向黑色变暗**，
+  窗口本身始终完全不透明。对比 WinUI 版的实现（`SetLayeredWindowAttributes(LWA_ALPHA)` 整窗 alpha），
+  用户要的是"能看见被预览窗挡住的那个客户端"，也就是**降不透明度=透出后面的窗口**，而不是"画面变暗"。
+  - 实机数据（EVE 客户端在跑，预览窗 476×286 物理像素，取窗口区域平均亮度）：不透明度 65% → **47.05**，
+    100% → **57.16**（画面确实在按 alpha 变暗）；调到 10% 时画面几乎全黑，但**窗口依旧不透明**、后面的窗口一点透不出来。
+- **根因 ②（第一次修复为什么没成：缺了 DWM 那一步，症状是"只是泛白"）**：把画面区改成"洞"（底色透明）之后用户反馈
+  「并没有，只是泛白」——实测确认：画面区**既不透明也不透出后面的窗口**，而是被一层实色填成了白味。
+  - 判据（本阶段的关键手段）：在预览窗后面放一个**红/蓝/黑/绿四色测试窗**，看颜色能不能从画面区透出来。
+    只有模糊区域那次（`DwmEnableBlurBehindWindow` 空区域 + `Window.Background=Transparent`）**四色一点都透不出来**。
+  - 三件事缺一不可，补上之后就通了：
+    1. **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)`**——把 DWM 玻璃框铺满客户区，**这一步才是"客户区可以透出桌面"的开关**；
+       只调 `DwmEnableBlurBehindWindow` 完全没有效果（实测 HRESULT 都是 0，看起来"成功"）。
+    2. **窗口背景必须真是透明**：WPF-UI 的 `FluentWindow` 会把 `Background` 设成主题底色（浅色主题=白），
+       XAML 里的 `Background="Transparent"` 会被它覆盖；诊断日志实测 `bg=#00FFFFFF`（代码按回来的结果）vs
+       `hostBg=#FFFAFAFA`（标题栏实色底）。所以 `EnsureTransparentClientArea()` 里每次重新赋值。
+    3. **`CompositionTarget.BackgroundColor` 也要透明**（WPF 合成目标自带的底色，否则窗口没画到的地方会被它填掉）。
+- **修法（最终）**：把"画面区"做成真正的**洞**（透明），让带不透明度的缩略图合成到"窗口后面的桌面/游戏窗口"上。
+  1. `NativeMethods.EnableTransparentClientArea()`：`DwmExtendFrameIntoClientArea(-1)` + `DwmEnableBlurBehindWindow`（**空模糊区域**：只要透明不要模糊）。
+     为什么必须走 Win32：预览窗口是 `ui:FluentWindow`，与 `AllowsTransparency` 冲突（阶段 43 实测抛 `InvalidOperationException`），
+     拿不到 WPF 的逐像素透明。调用点：`OnSourceInitialized`、`Start`、`ShowWindow`（WPF-UI 显示窗口时会再调一次外观，需要补；调用幂等且很轻）。
+     顺带修掉一处隐患：`OnSourceInitialized` 里原来在 `EnsureTransparentClientArea` **之后**才给 `_hwnd` 赋值，
+     而 `EnsureHandle()` 会在内部触发本方法——首次调用拿到的还是 `IntPtr.Zero`。改为进方法先 `EnsureHandle()` 取一次。
+  2. `GamePreviewWindow.xaml`：窗口 `Background="Transparent"`；标题栏外面包一层**实色** `Border`
+     （`TitleBarHost`，底色 `ApplicationBackgroundBrush`），并在 `ApplyVisuals` 里与 `TitleBar` 一起显示/隐藏——
+     客户区整体透明后，凡是需要实色的区域都得自己画底色。
+  3. `ApplyPreviewPlaceholder()`：**有画面时**画面区底色 = `Transparent`（即那个洞）；没有画面时（源窗口最小化/已退出）
+     仍是实色底（高亮色或主题底色）+ 提示文字，因此不会留下空洞。
+  4. 高亮边框由"`Background` 填色 + `Padding`"改为 **`BorderBrush` + `BorderThickness`**：画面区透明后，
+     外框只要填底色就会从洞里透出来、把整幅画面染成高亮色（**中间版本实测就是这个现象**：整幅画面泛绿）。
+     留白尺寸仍由同一个 `GetHighlightThickness()` 导出，比例校正用的 `GetHighlightPadding()` 与画面区域几何完全不变。
+- **最终行为/取舍**：只有**画面**是半透明的，桌面/游戏窗口从画面里透出来；标题栏（样式 0）、
+  角色名叠加窗（样式 1，本来就是独立窗口）、高亮边框都保持**实色**——既保住了阶段 43 "名称/边框不跟着变灰"的取向，
+  又让不透明度真正可用。缩略图 opacity 仍是唯一的淡化手段：100% 时画面完全不透明，越低越透。
+- **验证**（实机：重建后在装有运行中 EVE 客户端的机器上跑，截图 + 像素统计 + 四色测试窗）：
+  - 四色测试窗放在预览窗后面：画面区**逐像素**透出后面的内容——同一窗口里，压在游戏上的那半透出游戏界面、
+    压在应用窗口上的那半透出应用的导航项（不是"整体泛白"）。
+  - 样式 0（带标题栏）：标题栏保持实色（白底黑字 + 关闭键照常），只有画面透；样式 1（无标题栏）：
+    切换后窗口高度正好少一个标题栏、画面占满窗口、角色名叠加窗照常出现（`TitleBarHost` 的联动隐藏生效）。
+  - 高亮边框：样式 0/1 都仍是实色边框（点击预览窗激活源客户端后边框变绿、叠加窗底色切到高亮色）。
+  - 交互：点击半透明的画面区仍能正常激活源客户端（实测前台窗口从本应用变成 `EVE - QEDSD`）——透明只影响合成，不影响命中测试。
+  - 未覆盖：源窗口最小化/已退出时的占位分支（实色底 + 提示文字）本轮没有实机触发，那条路径给的是实色底、不会留洞。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
+### 阶段 55：预览浮窗不再限制最小尺寸
+
+- **现象**（用户反馈："浮窗最小尺寸被限制了，不应该限制"）：预览浮窗拖到某一尺寸后再也拖不小。
+- **两层限制**：① 我们自己的 **200×120**（XAML 的 `MinWidth/MinHeight` + `GamePreviewWindow` 的 `MinWindowWidth/MinWindowHeight`，
+  后者还出现在比例校正、`SetSize`、滚轮缩放、默认尺寸等处）；② 系统的**默认最小跟踪尺寸**
+  （`SM_CXMINTRACK/SM_CYMINTRACK`，约 112×27 物理像素）。
+- **第一轮（只删前两层）没效果**：去掉 XAML 的 `Min*`、把常量降到 1 之后，窗口**仍然卡在当前尺寸**：
+  `SetWindowPos` 与鼠标拖边框都被拒（`SetWindowPos` 返回 True 但矩形不变），拖动表现为"只能变大、不能变小"。
+- **根因**：窗口对 `WM_GETMINMAXINFO` 的答复恒为"启动时那个尺寸"（实测 575×400）——**不是我们写的**。
+  我们在 `HwndSource` 钩子里把 `ptMinTrackSize` 改成 1×1 之后**没有把它标记为已处理**，WPF / WPF-UI
+  （`FluentWindow` + `WindowChrome` 自己也会处理这条消息）随后又把最小跟踪尺寸按回了窗口当前尺寸。
+  诊断方式：钩子里加日志 + **从外部 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——
+  加上 `handled = true` 前后，同一窗口的答复从 575×400 变成 1×1。
+- **修法**（三处）：
+  1. `GamePreviewWindow.xaml` 去掉 `MinWidth="200" MinHeight="120"`；
+  2. `MinWindowWidth/MinWindowHeight` 由 200/120 降到 **1**（只兜住"算出 0/负数"的退化尺寸，不再构成可用意义上的限制），
+     比例校正 / `SetSize` / 滚轮缩放 / 无历史尺寸时的默认值等处自动跟着放开；
+  3. `OnWindowMessage` 里**接管** `WM_GETMINMAXINFO`：`ptMinTrackSize = 1×1` 并 **`handled = true`**
+     （不再往后传、避免被 WPF/WPF-UI 覆盖；其余字段保持系统预填值）——**这一步才是真正让"拖小"生效的关键**。
+- **验证**（实机，EVE 客户端在跑，预览窗为样式 1）：
+  - 程序化尺寸：575×303 → `SetWindowPos(300,200)` → 稳定在 **300×158**（低于旧的 200×120 下限）；
+    再放大到 800×560 → 自动按游戏比例校正为 **800×422**（比例锁仍然有效）。
+  - 真实拖动：按住右下角边框往内拖 → 575×303 → **175×101**（远低于旧下限），此后还能继续拖到 22×47，没有人为下限；
+    不再出现"拖不动"或"只能变大"。
+  - 构建 **0 错误**。
+- **取舍说明**：比例锁（"画面区域恒等于游戏客户区比例"，阶段 44）没有取消——放开的是**尺寸下限**，窗口仍按游戏比例缩放；
+  把窗口拖得比标题栏还矮时画面区会被压到最小 1px（用户明确要求不设下限）。
+
+---
+
+### 阶段 56：预览浮窗的画面区稳定贴合游戏比例（"缩放后上下出现透明背景"）
+
+- **现象**（用户反馈："缩放有时候会上下出现透明背景，像是窗口没有按照画面比例调整"）：缩放/拖动后画面区与游戏客户区比例不一致，
+  缩略图按比例居中留边，而画面区现在是**透明的洞**（阶段 54），那圈留边就直接透出桌面——看起来就是"多出一条透明背景"。
+- **根因（三处叠加，都让"比例校正"没能把画面区修到位）**：
+  1. **校正里做了"同尺寸去重"**：`_lastCorrectedSize` 让"算出的目标尺寸与上次下发过的相同"时直接跳过。
+     窗口完全可能在两次校正之间被别的路径改偏几像素（拖动收尾、恢复位置、源比例变化……），
+     这时目标尺寸与上次相同、窗口却已经不对了，一去重就**再也不修**。
+     实测：窗口 485×261（画面区 1.858）而游戏客户区 1.8949 → 上下各留 2.5px；把它强改到别的尺寸再回来，仍然停在 485×261。
+  2. **拖动期间的比例锁用了拖动前的客户区**：`LockClientAspect` 反算"另一条边"时读 `GetClientRect`（旧值），
+     于是拖动过程中另一条边不动、比例跑偏，要等拖动结束后 80ms 的防抖校正才补回来——期间就是透明留边。
+  3. **缩略图摆放与比例校正用了两套口径**：缩略图目标矩形原来取 WPF 布局（`TransformToAncestor` + `ActualWidth/Height`），
+     比例校正取 Win32（`GetWindowRect/GetClientRect`）。窗口是用 `SetWindowPos` 改尺寸的，
+     **WPF 布局会滞后于实际窗口**——诊断日志实测抓到过"WPF 布局 460×320 DIP、实际窗口 485×110"的瞬间，
+     那一刻缩略图按错误的容器摆放、画面区就多出透明边。
+- **修法**：
+  1. `CorrectWindowSizeToAspect` 去掉 `_lastCorrectedSize` 去重（防自循环交给原有的 2px 容差判断：
+     下发后窗口就等于目标尺寸，下一轮必落在容差内）。
+  2. `LockClientAspect` 反算另一条边时用**用户这次给出的新值**（`proposedWidth/Height`）而不是旧客户区。
+  3. `UpdateThumbnailDestination` 的画面区域改成与比例校正**同一套 Win32 口径**：
+     客户区（`GetClientRect`）+ 标题栏元素高度（`GetChromeHeight`）+ 高亮留白（`GetHighlightThickness`），
+     两边由同一组函数导出，不再各算一套。`GetChromeHeight` / `GetHighlightPadding` 因此重新成为活代码（阶段 44 的实现）。
+  4. 顺带把"源窗口客户区尺寸变化"也接上：300ms 的轮询原来只盯 `IsIconic`，现在同时比较源客户区尺寸，
+     变了就重算比例（游戏改分辨率/切窗口/拉伸窗口后，预览窗跟着走）。阶段 44 把它列为"未做/后续"，本轮补上。
+- **验证**（实机，EVE 客户端客户区 2560×1351 = 1.8949，预览窗样式 1 + 高亮开=四周 4DIP 留白）：
+  - 比例贴合：485×261 → 画面区 475×251（1.8924，差 **0.62px**）；强改到 520×420 → 自动收敛到 520×279
+    （画面区 510×269 = 1.8959，差 **0.27px**）。都在 1px 以内 → `FitAspect` 走"比例一致、铺满"的短路，不再留边。
+  - 拖动（模拟真实拖右下角）：485×261 → 245×134，画面区 235×124 = 1.8952（差 0.04px），**拖动结束即比例正确**，
+    不必再等防抖校正。
+  - 截图核对：画面被高亮边框完整包住，上下没有透明缝。
+  - 未覆盖：游戏侧改分辨率触发轮询重算这条分支只做了代码检查（没实际去改游戏分辨率）。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
+### 阶段 57：高亮边框只画出左/上两条 + 偶发白边（WPF-UI 的最小尺寸卡住 WPF 布局）
+
+- **现象**（用户反馈："有时候有白边，高亮时只有左跟上两个边框"）。
+- **根因**：**WPF-UI 的 `FluentWindow` 样式自带一个最小尺寸 = 460×320 DIP**
+  （实测日志：`构造后 MinWidth=460 MinHeight=320 localMinW=unset(来自样式/主题)`——
+  不是本地值，是样式给的；项目自己的 XAML 里没有 Window 级 `MinWidth/MinHeight`）。
+  它会**卡住 WPF 的布局尺寸**：
+  - 窗口是用 Win32（`SetWindowPos`）缩小的，而 WPF 的 `Width`/`Height` 会被这个 Min 抬回 460×320，
+    于是布局（Root / `ThumbnailFrame`）一直停在 ≥460×320 DIP，**跟实际窗口脱节**；
+  - 高亮边框是 WPF 画的（`ThumbnailFrame.BorderBrush` + `BorderThickness`），**按"大尺寸"绘制** →
+    右侧/下侧的边框线落到窗口之外 → 看起来"高亮时只有左跟上两个边框"；
+  - 布局多出来的那圈正是画面区的"洞"（阶段 54 起画面区是透明的），于是透出后面的窗口
+    （后面是浅色窗口/页面时就是"白边"）。
+  - **回溯阶段 55**：那轮我量到的"最小跟踪尺寸 = 启动时的尺寸 575×400 物理像素"其实就是这个值
+    （460×320 DIP × 1.25 = 575×400）——不是"当前尺寸"，而是 WPF-UI 样式的固定最小值，
+    恰好与当时的窗口尺寸一致才被误读。当时接管 `WM_GETMINMAXINFO` 只解决了**拖动**这条路径，
+    WPF 布局这一层的最小尺寸仍在，于是"能拖小、但画面/边框按大尺寸画"。
+- **修法**：
+  1. 显式 `MinWidth = 0; MinHeight = 0;`（本地值才能压过样式）：在 `EnsureTransparentClientArea`（启动/显示时）
+     设一次，并在 300ms 兜底对账里再清一次（WPF-UI 显示窗口时会重新套样式）。预览浮窗按用户要求不限制最小尺寸。
+  2. 兜底对账 `SyncLayoutSizeIfStale()`（并进原有的 300ms 源窗口轮询）：比对 WPF 窗口尺寸
+     （`ActualWidth/ActualHeight` × DPI）与 Win32 客户区，不一致时清 Min、把 `Width`/`Height` 按实际尺寸设回，
+     并**补发一条 `WM_SIZE`**（新增 `NativeMethods.NotifyClientSize`）——只设 `Width`/`Height` 有时会被 WPF
+     判成"没变化"而跳过重排（窗口本身已是目标尺寸），补 `WM_SIZE` 才会真正按真实客户区重新布局。
+  3. `WM_ENTERSIZEMOVE`/`WM_EXITSIZEMOVE` 期间跳过对账（`_inSizeMove`），拖动结束再对一次账并安排比例校正。
+- **验证**（实机，EVE 客户端，预览窗样式 1 + 高亮开）：每条边内侧 3px 处取中点像素：
+  - 修复前：左 `(0,128,0)` 绿、上 `(0,128,0)` 绿、**右 `(243,243,243)` 白**、下暗色（与用户描述一致）。
+  - 修复后：**四条边全部 `(0,128,0)`**；正常改尺寸（560×400 → 收敛 560×300）与
+    **故意用 `SWP_NOSENDCHANGING` 制造 WPF 布局滞后**（660×470 → 660×353）之后仍四边全绿、
+    画面区比例误差 0.05–0.48px。
+  - 本轮日志里"WPF 尺寸与实际窗口不一致"的兜底告警出现 **0 次**——Min 清零后布局本来就跟着窗口走，不需要兜底。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
+### 阶段 58：带标题栏的样式不再有透明边框（缩略图摆放里标题栏高度被重复乘了一次 DPI）
+
+- **现象**（用户反馈："有标题栏的窗口带有透明边框"）：样式 0（带标题栏、高亮关）的预览窗，画面没有铺满窗口——
+  标题栏下面以及左右各有一条缝，透出后面的窗口（后面的窗口偏浅时就很显眼）。
+- **根因**：阶段 56 把缩略图摆放改成 Win32 口径时，公式写成了
+  `top = Math.Round((chromeHeight + thickness.Top) * dpiY)`，
+  而 `GetChromeHeight()` **返回的已经是物理像素**（它内部已经乘过 DPI）——等于把标题栏高度又乘了一遍：
+  1.25 缩放下 35px 变成 44px，画面区少了 9px，比例也跟着偏；`FitAspect` 于是按比例居中留边，
+  而留边处是画面区的"洞"（阶段 54 起），看起来就是"一圈透明边框"。
+  （样式 1 的 `chromeHeight` 恒为 0，`0 × 1.25` 还是 0，所以只有带标题栏的样式中招。）
+- **修法**：`top = chromeHeight + (int)Math.Round(thickness.Top * dpiY)`——**统一单位**：
+  `GetChromeHeight()` 是物理像素、`GetHighlightThickness()` 是 DIP（要乘 DPI），并在代码里写明，
+  免得下次又把两者混在一起。
+- **验证**（实机，预览窗样式 0、高亮关、870×494）：把一个**纯色测试窗**（纯红/蓝/绿/洋红四块）压在预览窗后面，
+  然后扫描预览窗客户区内的全部像素（步长 2px）匹配"纯图案色"：
+  **上/下/左/右/中间命中数全部为 0** → 画面把客户区铺满了，没有任何透出后面窗口的缝。
+  对照点：预览窗左侧 40px 处的屏幕像素是 `(254,0,0)`（纯红）→ 说明测试窗确实在预览窗后面、判据有效。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
+### 阶段 59：滚轮缩放不再"放大又被还原"（缩放基准由"窗口"改为"画面区域"）
+
+- **现象**（用户反馈："会出现缩放放大又自动还原……鼠标滚轮放大缩小都会还原"，并且"放大不了，可以缩小"）。
+- **根因**：`OnPreviewMouseWheel` 原来按**窗口尺寸**做等比缩放
+  （`ScalePreservingAspect(rect.Width, rect.Height, sourceWidth, sourceHeight, …)`），等于把"窗口比例"当成了"画面比例"。
+  样式 0（带标题栏）的窗口比画面多出标题栏（约 35px），窗口比例 ≠ 画面比例：
+  滚轮刚把窗口放大，80ms 后的比例校正（按"画面区域"算，见阶段 44）就把它算回去 → "放大又被还原"；
+  缩小时两边同样各算一套（都倾向更窄），用户感觉"只能缩小、放大不了"。
+- **修法**：滚轮改为缩放**画面区域**（客户区 − 标题栏/名称条 − 高亮留白，与 `CorrectSizeToAspect` **同一口径**），
+  再换算回窗口尺寸，并沿用 `ClampToWorkArea` 夹进工作区。由于两边由同一组量导出，滚轮的结果天然满足比例校正，不会再被拉回。
+- **验证**（实机，样式 0、高亮关）：光标停在画面区中间，用 `mouse_event(MOUSEEVENTF_WHEEL)` 模拟滚轮：
+  - 连续上滚 3 次：459×277 → **531×315**（= 459 × 1.05³ ✓），**1.5s 后仍是 531×315**（没有被还原）；
+  - 再下滚 2 次：→ **482×289**（= 531 ÷ 1.05² ✓），1.5s 后不变；
+  - 两次的画面区比例 1.896 / 1.898（游戏客户区 1.8949）→ 比例锁依然成立。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -1787,7 +1975,22 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 36. **`DepthClone<T>` 跨模型拷贝会"拷出空壳"——命名策略不同的两个模型之间不能这么抄**（阶段 53 第三轮，ZKB 数据全空的根因）：`DepthClone` 是 `SerializeObject(obj)` → `DeserializeObject<T>(json)` 的 JSON 往返，**两边必须用同一套命名规则**。`EVEStandard` 的模型靠序列化设置里的 **snake_case 命名策略**解析（属性无 `[JsonProperty]`），而 `ZKB.NET` 的模型用显式 `[JsonProperty("killmail_id")]` —— 从前者拷到后者，键名全对不上，得到一个**字段全为默认值**的对象（`KillmailId=0`/`KillmailTime=default`），而且**不报错、不抛异常**，下游只能靠"id 匹配不上/显示全空"这类间接症状发现。两条教训：① 跨命名空间的模型转换不要用 JSON 往返，老老实实手写映射或用统一命名策略；② "接口响应里已经带了完整数据时，就不要再逐个去另一服务换取再拷贝"——`/kills/` 现在直接返回完整 killmail，`ZKB.GetKillmailDetailsAsync` 直取后本地富化即可（每页省 200 次 ESI 往返）。
 37. **Core 的本地库（SQLite）查询不是并发安全的，批量富化必须串行**（阶段 53 第三轮实测）：`KBHelpers` 注释原文"使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"。实测同一批 50 条的富化，6 并发丢 16 条（单条异常/数据缺失被静默吞掉），串行 50/50。凡要并发调用 `IDNameService` / `MapSolarSystemService` / `InvTypeService` 等 Core DB 服务的，先确认线程安全性，默认**串行**。
 38. **zkillboard 有 IP 限流，"同 URL 直取+重试+兜底三连发"会把自己打死**（阶段 53 第三轮）：排障时连续探测后发现 `/kills/killID/<id>/` 从 200 条变成空——是限流，不是接口变更。日常使用频率不会触发，但写代码时注意：**不要让重试与兜底打同一个 URL**（本项目兜底走的是另一条数据通路），排障时探测间隔拉长、或换 IP 验证。
-39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
+39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。40. **`ui:FluentWindow` 也能做真透明（客户区逐像素透出后面的窗口），但四件事缺一不可**（阶段 54）：① **`AllowsTransparency` 用不了**（与 FluentWindow 冲突，实测抛 `InvalidOperationException`），只能走 Win32；② **`DwmExtendFrameIntoClientArea(hwnd, 四个 -1)` 才是开关**——把 DWM 玻璃框铺满客户区，客户区里的 alpha 才会被尊重；**只调 `DwmEnableBlurBehindWindow`（空模糊区域）没有任何视觉效果**，而且它的 HRESULT 还是 0（看起来"成功"），极易误判；③ **窗口背景必须真的透明**：WPF-UI 会把 `FluentWindow.Background` 设成主题底色（浅色主题=白），XAML 里的 `Background="Transparent"` 会被它覆盖，必须在 `OnSourceInitialized`/`Start`/`ShowWindow` 里重新按回来，`CompositionTarget.BackgroundColor` 也要一并置透明；④ **每块要实色的区域都得自己画底色**，而且**透明的子元素会透出父元素的底色**——给"洞"外面套一个填了高亮色的父元素，整幅画面会被染成高亮色（实测画面泛绿），所以边框要用 `BorderBrush`/`BorderThickness` 画，不能用"背景色 + Padding"。
+41. **"透明/半透明"类问题的验收必须用高对比背景做判据，不能只看"画面是不是变淡了"**（阶段 54）：本次"透明度没生效"的第一版修复看起来对（画面变淡、数值能存），实际画面区被一层实色填成了"泛白"——**透出白色窗口与透出任何东西长得都一样**，肉眼分不出"透明"与"实色填充"。可靠判据是**在目标窗口后面放一个红/蓝/黑/绿四色测试窗**，看颜色能不能逐像素透出来（本次正是靠它定位到缺 `DwmExtendFrameIntoClientArea`）。同族教训：涉及"透明度/遮罩/置顶叠加"的需求，先确认它要透出的是"窗口自己的底色"还是"窗口后面的内容"——前者调 opacity 就够，后者必须真的开洞。42. **在 WPF / WPF-UI 窗口上"放开最小尺寸"，光删 `MinWidth/MinHeight` 不够**（阶段 55）：`WM_GETMINMAXINFO` 会被 WPF / WPF-UI 的后续处理按回"窗口当前尺寸"——实测删掉 `MinWidth/MinHeight` 后窗口仍卡在当前尺寸，`SetWindowPos` 返回 True 但矩形不变、拖边框只能变大；在 `HwndSource` 钩子里写入 1×1 也会被覆盖。正确做法是**在这条消息上自己接管**：改写 `ptMinTrackSize` 后设 `handled = true`（其余字段保持系统预填），此后 1×1 才会被真正采纳（实测可把窗口拖到 175×101 甚至更小）。排查这类"设了没生效"的 Win32 消息问题，最有效的手段是**从另一个进程 `SendMessage(hwnd, WM_GETMINMAXINFO, 0, 缓冲区)` 读回窗口的答复**——它能直接指出"谁在把值按回去"；同族的还有 `GetWindowRect`/`IsWindowVisible` 之类的旁证查询。43. **"比例/尺寸校正"里不要做"同尺寸去重"，同一几何量也只用一套口径**（阶段 56）：
+  ① 去重（"算出的目标 == 上次下发的就跳过"）看着像防自循环，实际会把**真实需要修的情况一起挡掉**——
+  窗口完全可能在两次校正之间被别的路径改偏几像素（拖动收尾、恢复位置、源比例变化），此时目标与上次相同、窗口已经不对，
+  一去重就永远不修（表现为"画面区一直留一条透明边"）。防自循环用"目标与当前尺寸的容差判断"就够了：下发后窗口等于目标，下一轮必落在容差内。
+  ② 同一个几何量（这里是"画面区"）**只能有一套口径**：缩略图摆放原来取 WPF 布局（`TransformToAncestor`/`ActualWidth`），
+  比例校正取 Win32（`GetWindowRect/GetClientRect`）——窗口是用 `SetWindowPos` 改尺寸的，实测 **WPF 布局会滞后于实际窗口**
+  （诊断日志抓到过"布局 460×320 DIP、实际 485×110"），两套口径一旦不同步就各算一套、画面留边。
+  现在统一成"客户区用 Win32 + 标题栏高度用元素 + 留白用同源函数导出"，并把**画面区域算在哪、缩略图就摆在哪**钉在同一组函数上。44. **WPF-UI 的 `FluentWindow` 样式自带最小尺寸（实测 460×320 DIP），它会卡住 WPF 的布局**（阶段 57）：
+  窗口用 Win32 缩小时，WPF 的 `Width`/`Height` 被这个 Min 抬回去，布局（以及 WPF 画的高亮边框）就一直停在 ≥ 该值——
+  表现为"高亮边框右侧/下侧画到窗口外（看着只有左跟上两个边框）"与"布局多出来的那圈是透明的洞（浅色背景下就是白边）"。
+  要让窗口能自由缩小，必须显式 `MinWidth = 0; MinHeight = 0;`（**本地值才能压过样式**；`ReadLocalValue` 返回 Unset 就是样式给的）。
+  另一条同族经验：**布局尺寸与 Win32 尺寸脱节时，只设 `Width`/`Height` 可能无效**——窗口本身已是目标尺寸，
+  WPF 会判成"没变化"而跳过重排，必须补发一条 `WM_SIZE`（`SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(w,h))`）
+  才能逼它按真实客户区重新布局。诊断这类问题的有效手段：把 `MinWidth/MinHeight`、`ActualWidth/ActualHeight`、
+  `Root/子元素` 的渲染尺寸、以及 Win32 客户区**一起打进日志**，两边一比就能看出是"谁比谁大"。
 
 
 ---
@@ -1901,9 +2104,13 @@ Services/GamePreview/SelectionPreview.cs         页面内选中进程实时画�
 Services/GamePreview/PreviewColorHelper.cs       Color ↔ 画刷 / #RRGGBB
 Services/GamePreview/IPreviewWindow.cs           预览载体契约（窗口型 / 无窗口型）
 Services/GamePreview/HeadlessPreviewWindow.cs    不显示窗口时的空实现（仅热键激活）
+Helpers/Interop/DwmThumbnail.cs                  DWM 缩略图（注册/目标矩形/不透明度/可见性/源尺寸/换绑）
+Helpers/Interop/NativeMethods.cs                 Win32 互操作（窗口位置尺寸、扩展样式、可透明客户区，阶段 54）
 Services/Settings/GamePreviewSettingService.cs   Configs/GamePreviewSetting.json
 ViewModels/GamePreview/GamePreviewViewModel.cs   进程列表/排序/分组/快捷键分发
-Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共用一个窗口类；尺寸锁定游戏客户区比例，阶段 44）
+Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共用一个窗口类；尺寸锁定游戏客户区比例，阶段 44；
+                                                 客户区"可透明"、画面为洞、边框/标题栏实色，阶段 54）
+Views/Windows/PreviewNameOverlayWindow.xaml(.cs) 无标题栏样式下左上角的角色名叠加窗（独立窗口，DWM 缩略图盖不住它）
 Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / 设置 / 预览）
 Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
 ```
