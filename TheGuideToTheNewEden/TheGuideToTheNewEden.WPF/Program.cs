@@ -10,8 +10,8 @@ namespace TheGuideToTheNewEden.WPF;
 /// 存在的唯一理由：**让"第二个进程"根本不构造 WPF <see cref="System.Windows.Application"/>**。
 ///
 /// 谁会来当第二个进程？**用户重复启动**（程序已在运行时又双击一次图标/快捷方式）。
-/// 授权回调已经不走这条路了——现行方案是本地回环（<c>Helpers/LoopbackAuthServer</c>），
-/// 浏览器把回调直接打进主实例，全程零第二进程；自定义协议（注册表）那套代码保留但已停用。
+/// 授权回调不走这条路——回调由浏览器**直接打进主实例**监听的本地回环端口
+/// （<c>Helpers/LoopbackAuthServer</c>），全程零第二进程。
 ///
 /// 那为什么还必须提前判定？因为**重复启动本身**就够危险，不能放在 App.OnStartup 里做。
 /// 两点实测结论（独立 WPF 探针，net8）：
@@ -55,7 +55,7 @@ public static class Program
             singleInstance = new SingleInstanceHelper(InstanceName, InstanceTempFile);
             if (!singleInstance.RegisterSingleInstance(SettingsService.DataPath))
             {
-                // 已有实例在运行：命令行已交给它（授权回调同样走这条路径），本进程到此为止。
+                // 已有实例在运行：命令行已交给它，本进程到此为止。
                 return 0;
             }
         }

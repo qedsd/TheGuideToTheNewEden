@@ -172,12 +172,9 @@ Section Uninstall
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  ; 历史遗留清理：老版本安装过程中注册过自定义 URL 协议 eveauth-qedsd-neweden3。
+  ; 现行授权回调走本地回环（浏览器直接请求 127.0.0.1 上的监听端口），不再需要任何协议注册，
+  ; 所以安装时不再写入；这里保留一次删除，用来清掉老版本可能残留的项。
   DeleteRegKey HKCR "eveauth-qedsd-neweden3"
   SetAutoClose true
-SectionEnd
-
-Section "Protocol"
-    WriteRegStr HKCR "eveauth-qedsd-neweden3" "URL Protocol" ''
-    WriteRegStr HKCR "eveauth-qedsd-neweden3\shell\open\command" "" '"$INSTDIR\TheGuideToTheNewEden.exe" "%1"'
-
 SectionEnd

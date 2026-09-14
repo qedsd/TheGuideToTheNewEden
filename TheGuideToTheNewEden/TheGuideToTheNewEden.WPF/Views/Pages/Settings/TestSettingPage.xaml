@@ -67,45 +67,6 @@
 
                         <Border Style="{StaticResource SettingsDivider}" />
 
-                        <!--  HKCR 协议  -->
-                        <controls:SettingCard
-                            Description="{DynamicResource TestSettingPage_HKCRProtocol_Desc}"
-                            Icon="Link24"
-                            Title="{DynamicResource TestSettingPage_HKCRProtocol}">
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal">
-                                <Button
-                                    x:Name="ReadProtocolButton"
-                                    MinWidth="80"
-                                    Content="{DynamicResource TestSettingPage_ReadProtocol}" />
-                                <Button
-                                    x:Name="WriteProtocolButton"
-                                    MinWidth="80"
-                                    Margin="8,0,0,0"
-                                    Content="{DynamicResource TestSettingPage_RegistyProtocol}" />
-                                <Button
-                                    x:Name="DeleteProtocolButton"
-                                    MinWidth="80"
-                                    Margin="8,0,0,0"
-                                    Content="{DynamicResource TestSettingPage_DeleteProtocol}" />
-                            </StackPanel>
-                        </controls:SettingCard>
-
-                        <Border Style="{StaticResource SettingsDivider}" />
-
-                        <controls:SettingCard Icon="Info24" Title="{DynamicResource TestSettingPage_HKCRProtocol}">
-                            <TextBlock
-                                x:Name="ProtocolValueText"
-                                Width="420"
-                                HorizontalAlignment="Right"
-                                FontSize="12"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                TextWrapping="Wrap" />
-                        </controls:SettingCard>
-
-                        <Border Style="{StaticResource SettingsDivider}" />
-
                         <!--  回环回调：现行授权回调通道（浏览器直接打进本进程）  -->
                         <controls:SettingCard
                             Description="{DynamicResource TestSettingPage_Loopback_Desc}"

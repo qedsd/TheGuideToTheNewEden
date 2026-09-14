@@ -8,7 +8,7 @@ using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
-/// <summary>测试页：系统通知、声音播放、HKCR 协议读写、回环回调检测（用于诊断）。</summary>
+/// <summary>测试页：系统通知、声音播放、回环回调检测（用于诊断）。</summary>
 public partial class TestSettingPage : Page
 {
     private readonly MediaPlayer _player = new();
@@ -23,16 +23,6 @@ public partial class TestSettingPage : Page
         PlaySoundButton.Click += (_, _) => PlaySound();
         PauseSoundButton.Click += (_, _) => _player.Pause();
         PickSoundButton.Click += (_, _) => PickSound();
-
-        ReadProtocolButton.Click += (_, _) => RunProtocolAction(
-            () => ProtocolValueText.Text = AuthHelper.ReadProtocol() ?? string.Empty,
-            "TestSettingPage_ReadProtocol_Success");
-        WriteProtocolButton.Click += (_, _) => RunProtocolAction(
-            AuthHelper.WriteProtocol,
-            "TestSettingPage_RegistyProtocol_Success");
-        DeleteProtocolButton.Click += (_, _) => RunProtocolAction(
-            AuthHelper.DeleteProtocol,
-            "TestSettingPage_DeleteProtocol_Success");
 
         // 回环回调：默认显示当前配置（或建议值），方便直接对比开发者后台里登记的那一条。
         LoopbackValueText.Text = AuthHelper.GetCallbackUrlForDisplay();
@@ -100,22 +90,6 @@ public partial class TestSettingPage : Page
         {
             _soundFile = dialog.FileName;
             ShowDialog(FindString("TestSettingPage_MediaPlayer"), dialog.FileName);
-        }
-    }
-
-    // ---------- HKCR 协议 ----------
-
-    private void RunProtocolAction(Action action, string successKey)
-    {
-        try
-        {
-            action();
-            ProtocolValueText.Text = $"{FindString(successKey)}{Environment.NewLine}{ProtocolValueText.Text}";
-        }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-            ShowDialog(FindString("TestSettingPage_HKCRProtocol"), ex.Message);
         }
     }
 

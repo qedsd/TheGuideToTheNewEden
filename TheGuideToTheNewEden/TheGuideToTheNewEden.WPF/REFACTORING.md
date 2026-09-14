@@ -1299,6 +1299,9 @@ EnableWindowsTargeting true
 - **端口/路径不写死**，从 `Config.ESICallback`（= `Configs/ESILicense.txt` 第 2 行）解析——
   它就是发给 CCP 的 `redirect_uri`，天然与后台登记值一致。
   建议值 `http://localhost:38471/callback/` 只用于界面提示与测试页。
+  **端口号本身没有技术含义**，选在 1024–49151 之间是为了：① 不落在特权段（<1024，非管理员绑不上）；
+  ② 避开 Windows 默认动态端口段（49152–65535，系统会派给其它程序的出站连接，落在里面会偶发"端口被占用"）；
+  ③ 避开 80/443/3000/8080 一类常用端口。改端口只需同步改上面两处，`DefaultCallbackPort` 不必动。
 - **只绑 `127.0.0.1` 与 `::1`**：不暴露到局域网、不触发 Windows 防火墙提示，
   也不用 `HttpListener`（它非管理员会 `AccessDenied`，因为要先做 URL ACL）。
   **IPv6 回环是必需的补充**——浏览器可能把 `localhost` 解析成 `::1`，只绑 IPv4 会表现为"跳过去了但回调收不到"。
@@ -1322,6 +1325,8 @@ EnableWindowsTargeting true
 - `App.OnSingleInstanceActivated` 仍识别 `eveauth` 参数，避免把旧链接的唤起当成"用户又开了一次程序"。
 - 安装包 `TheGuideToTheNewEden.nsi` 的 `Protocol` 段不动（无副作用）。
 
+> **以上"保留"的部分已在阶段 52 全部删除**（回环方案实机跑通后清理，见下）。
+
 **实测**（一次性探针：把 `LoopbackAuthServer.cs` **链进**控制台工程 + 一个 `Core.Log` 桩，
 不引用 WPF 程序集也不碰真实日志；6 组 26 项断言 **全 PASS**，产物已清理）：
 
@@ -1336,10 +1341,13 @@ EnableWindowsTargeting true
 
 **验证**：`dotnet build -p:OutDir=<临时目录>` → **0 错误**、14 个警告（既有告警，无一条指向改动文件），exit 0。
 
-**未覆盖**：真实 CCP 授权页的一次完整跳转——需要先把开发者后台的 Callback URL 改成回环地址
-（一次性配置动作，见下表）。
+**实机验证（已闭环）**：真实 CCP 授权页**一次完整跳转跑通**——
+浏览器 → 授权页 → 同意 → 回环回调页 → 主实例拿到 `code` → `ESIService.VerifyAuthorization` 换码 →
+`CharacterStore.Add()` 落盘 `Auth.json`，**「添加角色」全流程一切正常**；
+全程**未再起第二个客户端进程**（回调由浏览器直接打进主实例监听的端口），
+`settings.json` 也未被覆写（阶段 50 的回归在回环通道下不再有可能触发）。
 
-**需要一次性配置**（改完才生效，两处必须完全一致）：
+**一次性配置**（已按下表值生效；两处必须完全一致，否则授权页会直接报 `redirect_uri` 不匹配）：
 
 | 位置 | 值 |
 |---|---|
@@ -1352,6 +1360,41 @@ EnableWindowsTargeting true
 - 设置 → 测试页新增「**回环回调**」卡片：**检测**（校验配置 + 真的占一次端口）/ **复制**
   （把当前或建议地址送进剪贴板，便于贴到开发者后台）。
 - 原 48 阶段加的"超时后弹提示"仍然保留，只是内容从"登录失败"变成具体原因。
+
+---
+
+### 阶段 52：删除协议/注册表通道的全部残留代码
+
+**触发**：阶段 51 的回环方案已**实机跑通**（真实授权页一次完整跳转，「添加角色」全流程正常），
+用户要求把自定义协议（注册表）那套"保留但停用"的代码彻底删除，**包括单实例激活里对 `eveauth` 的识别**。
+
+**删除清单**：
+
+| 文件 | 删除内容 |
+|---|---|
+| `Helpers/AuthHelper.cs` | 整个 `#region 自定义 URL 协议 / 注册表`：`ProtocolName` / `MachineRoot` / `UserRoot` / `BuildCommand()` / `TryWrite()` / `ReadProtocol()` / `WriteProtocol()` / `DeleteProtocol()` / `WaitForProtocolCallbackAsync()`；顺带去掉只被它们使用的 `using System.IO;` 与 `using Microsoft.Win32;` |
+| `App.xaml.cs` | `OnSingleInstanceActivated` 里"命令行带 `eveauth` 就直接 return"的分支（**窗口置前逻辑保留**） |
+| `Views/Pages/Settings/TestSettingPage.xaml` | 「HKCR 协议」卡片（读/写/删三个按钮）与显示协议值的 `ProtocolValueText` 卡片 |
+| `Views/Pages/Settings/TestSettingPage.xaml.cs` | 三个按钮的事件挂接、`RunProtocolAction()` |
+| `Resources/Languages/{zh-CN,en-US}.xaml` | `TestSettingPage_HKCRProtocol(_Desc)` / `_ReadProtocol(_Success)` / `_RegistyProtocol(_Success)` / `_DeleteProtocol(_Success)` 共 8 键 ×2；另删掉同样无人引用的 `CharacterPage_RegistyProtocol`（"注册授权服务失败，请使用管理员模式运行"——注册表时代的话术） |
+| `TheGuideToTheNewEden.nsi` | 安装时的 `Section "Protocol"`（不再写注册表） |
+
+**刻意没删的两处，以及理由**：
+
+- **`Core/Helpers/SingleInstanceHelper.cs` 与 `Program.Main` 的单实例判定保留**——回环消灭的是
+  "授权"这一条第二进程来源，但"程序已在运行时又双击一次"依然会产生第二进程，而阶段 50 已证实
+  这种进程若走到 `App.OnExit` 会用空字典覆盖 `settings.json`。所以判定必须继续留在
+  `Application` 创建之前；它现在只服务于"重复启动置前窗口"，与授权无关。
+- **卸载段的 `DeleteRegKey HKCR "eveauth-qedsd-neweden3"` 保留**——它是老版本残留项的清理动作。
+  删掉它，升级用户注册表里那条陈旧关联就永远留在机器上了。
+
+**不涉及**：WinUI 项目的 `Helpers/AuthHelper.cs` 与语言文件里同名键（旧版仍走协议通道，未动）。
+
+**验证**：`dotnet build -t:Rebuild -p:OutDir=<临时目录>` → **0 错误、35 个警告**（与改动前逐条一致：
+`CS0169`/`CS8604`/`CS0414`/`CS0162` 等既有告警，无一条指向本次改动的文件），exit 0。临时目录已删。
+
+**未覆盖**：删除不影响运行时行为（被删的都是授权流程已不再调用的死代码与界面），
+但**本页的界面改动（测试页少了两张卡片）未做截图核验**——按约定改界面不需要截图，由使用者自行查看。
 
 ---
 
@@ -1422,7 +1465,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 34 | 市场选择器"星系"页签列表为空 | 移植时擅自"优化"了参照实现：WinUI 直接列出全部星系，而 WPF 版写成**搜索词为空就返回空集**，不输入关键字时恒空 | 默认列出全部（`!IsSpecial()`、按 ID 排序），过滤改用 `ICollectionView.Filter + Refresh()`。见阶段 33 |
 | 35 | WPF 版在**未更新的 Windows 10 21H1（19043.985）**上**启动即崩**（`0x80131506`，故障模块 `KERNELBASE.dll`，无托管异常、无日志） | .NET 9 起的 WPF 与该系统补丁级别不兼容——同机 .NET Framework / 6 / 8 的 WPF 与任何控制台程序都正常 | TFM 由 `net10.0-windows10.0.19041` 回退为 **`net8.0-windows10.0.19041`**（LTS），平台版本 `10.0.19041` 保留；连带 `AssemblyName` → `TheGuideToTheNewEden`、`H.NotifyIcon.Wpf` → 2.3.0。见阶段 49。**已实机验证**：net8 产物在该机上正常运行 |
 | 36 | **授权回调的转发进程会清空共享的 `settings.json`**（每次欧服授权回调，以及"程序已在运行时又双击一次图标"都会触发） | 阶段 48 把单实例判定提前到 `CoreInitializer.Init()` 之前，转发进程不再 `Initialize()` 设置 → `App.OnExit` 里的 `SettingsService.Save()` 用**空字典**覆盖 `Configs/settings.json`。且实测在 `Startup` 里 `Shutdown()` **仍会触发 `Exit`**，所以这段清理必然执行 | 入口改为自定义 `Program.Main`（`<StartupObject>`）：非首实例**在创建 `Application` 之前**就转交并 `return`，`Exit` 不再触发；单实例状态从 `App` 迁到 `Program`（碰 `App` 的静态成员会连带加载 WPF 栈）。见阶段 50 |
-| 37 | 欧服授权回调**必然要多起一个客户端进程**（协议激活只能"运行一条命令行"，无法把 URL 投递给已运行的进程） | 自定义 URL 协议是 Windows 上唯一由注册表驱动的机制，它只能表达"运行某个命令"；而同一个 SSO 应用不允许登记第二个 Callback URL，所以两种通道只能二选一（阶段 51 用户确认） | 改用**本地回环**：浏览器把回调直接打进主实例监听的 `http://localhost:<port>/callback/`，零第二进程、零注册表依赖。注册表那套保留代码但不再走（`AuthHelper` 已分区标注）。见阶段 51 |
+| 37 | 欧服授权回调**必然要多起一个客户端进程**（协议激活只能"运行一条命令行"，无法把 URL 投递给已运行的进程） | 自定义 URL 协议是 Windows 上唯一由注册表驱动的机制，它只能表达"运行某个命令"；而同一个 SSO 应用不允许登记第二个 Callback URL，所以两种通道只能二选一（阶段 51 用户确认） | 改用**本地回环**：浏览器把回调直接打进主实例监听的 `http://localhost:<port>/callback/`，零第二进程、零注册表依赖。注册表那套的代码与界面已在阶段 52 **全部删除**。见阶段 51 / 52 |
 
 ---
 
@@ -1436,6 +1479,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 托盘图标与通知 | 运行时自检 | `IsAvailable=True`、图标实例已创建、`ShowNotification` 无异常 |
 | 设置子页构造 | 反射自检（10 页） | 全部 OK |
 | 角色授权 | 真实账号 | 令牌过期后**自动刷新成功**；受授权保护的 ESI 调用返回真实数据（钱包 116,284,940.8 ISK；LP 558,672） |
+| 欧服授权回调（**本地回环**，阶段 51） | **真实账号 + 真实 CCP 授权页** | 通过：浏览器 → 授权 → 回环回调 → 换码 → 落盘 `Auth.json`，**「添加角色」全流程一切正常**；未起第二进程，`settings.json` 未被覆写 |
 | 角色数据服务与缓存 | 运行时自检 | 总览/技能（23,038,797 SP、22 技能组）/钱包流水均取到真实数据；缓存命中 0ms；磁盘缓存已生成 |
 | 角色壳 + 卡片页 + 工作区 + 总览/技能/钱包 | **实机截图（4 屏）** | 通过 |
 | 角色：克隆 | **实机截图**（含展开的"当前克隆"植入体列表） | 通过（修复 #16/#17 后）：家空间站与克隆位置显示**地名**，5 个植入体名称正确 |
@@ -1560,7 +1604,9 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   必须与 **EVE 开发者后台登记的 Callback URL 完全一致**（CCP 不支持通配端口），当前约定值
   `http://localhost:38471/callback/`。改任一处都要同步改另一处，否则授权页会直接报错。
   设置 → 测试 → 「回环回调」卡片可一键检测（校验配置 + 真占一次端口）与复制该地址。
-  `AuthHelper` 里自定义协议/注册表那一组是**保留但停用**的旧通道，不要再接回授权流程。
+- **不要再引入自定义 URL 协议/注册表**（阶段 52）：旧通道的代码、测试页「HKCR 协议」卡片、语言键、
+  安装包的 `Protocol` 段**已全部删除**，没有任何"保留但停用"的入口可以接回去。
+  单实例机制本身**没有删**（见上一条）：它现在只服务于"用户重复启动"，与授权无关。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
 - **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
 - **应用正在运行时想校验"能不能编译"**：用 `dotnet build … -p:OutDir=<临时目录>\` 把输出重定向出去即可（被锁的 `bin` 不参与），核验完删掉临时目录；**正式出包仍必须先退出应用**（阶段 46 追加改动实测：VS 调试会话在跑时普通 `build` 报 `MSB3027/MSB3021`）。

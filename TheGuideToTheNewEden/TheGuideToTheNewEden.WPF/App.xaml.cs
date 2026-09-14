@@ -33,14 +33,8 @@ public partial class App : Application
 
     private void OnSingleInstanceActivated(object? sender, string[] args)
     {
-        // 自定义协议（注册表）通道已停用，但保留这段识别：万一有人从旧的 eveauth 链接
-        // 唤起了本进程，也不该把它当成"用户又开了一次程序"而去抢窗口焦点。
-        var isAuthCallback = args?.Any(a => a.StartsWith("eveauth", StringComparison.OrdinalIgnoreCase)) == true;
-        if (isAuthCallback)
-        {
-            return;
-        }
-
+        // 第二个进程的处境已在 Program.Main 处理完（转交命令行后直接 return 0，不构造 Application），
+        // 走到这里的只可能是"用户又启动了一次"，把主窗口带到前台即可。
         Dispatcher.Invoke(() =>
         {
             MainWindow?.Show();

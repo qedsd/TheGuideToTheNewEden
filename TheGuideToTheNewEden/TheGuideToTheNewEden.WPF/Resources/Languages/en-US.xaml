@@ -213,16 +213,8 @@
     <sys:String x:Key="TestSettingPage_MediaPlayer_Play">Play</sys:String>
     <sys:String x:Key="TestSettingPage_MediaPlayer_Pause">Pause</sys:String>
     <sys:String x:Key="TestSettingPage_MediaPlayer_PickFile">Pick file</sys:String>
-    <sys:String x:Key="TestSettingPage_HKCRProtocol">HKCR Protocol</sys:String>
-    <sys:String x:Key="TestSettingPage_HKCRProtocol_Desc">Registry used for browser authorization callback APP</sys:String>
-    <sys:String x:Key="TestSettingPage_RegistyProtocol">Write</sys:String>
-    <sys:String x:Key="TestSettingPage_RegistyProtocol_Success">Write successfully</sys:String>
-    <sys:String x:Key="TestSettingPage_ReadProtocol">Read</sys:String>
-    <sys:String x:Key="TestSettingPage_ReadProtocol_Success">Read successfull</sys:String>
-    <sys:String x:Key="TestSettingPage_DeleteProtocol">Delete</sys:String>
-    <sys:String x:Key="TestSettingPage_DeleteProtocol_Success">Delete successfull</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback">Loopback Callback</sys:String>
-    <sys:String x:Key="TestSettingPage_Loopback_Desc">Local listener for the browser authorization callback (current approach, no registry needed)</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Desc">Local listener address for the browser authorization callback</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Check">Check</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Copy">Copy</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Check_Success">Listening OK</sys:String>
@@ -441,7 +433,6 @@
     <sys:String x:Key="CharacterPage_All">All</sys:String>
     <sys:String x:Key="CharacterPage_Add">Add Character</sys:String>
     <sys:String x:Key="CharacterPage_AddSuccess">Added successfully</sys:String>
-    <sys:String x:Key="CharacterPage_RegistyProtocol">Registration authorization service failed, please run in administrator mode</sys:String>
     <sys:String x:Key="CharacterPage_Overview">Overview</sys:String>
     <sys:String x:Key="CharacterPage_Skill">Skill</sys:String>
     <sys:String x:Key="CharacterPage_Clone">Clone</sys:String>

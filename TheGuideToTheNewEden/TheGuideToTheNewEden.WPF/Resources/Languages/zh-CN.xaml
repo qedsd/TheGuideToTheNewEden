@@ -213,16 +213,8 @@
     <sys:String x:Key="TestSettingPage_MediaPlayer_Play">播放</sys:String>
     <sys:String x:Key="TestSettingPage_MediaPlayer_Pause">暂停</sys:String>
     <sys:String x:Key="TestSettingPage_MediaPlayer_PickFile">选择声音文件</sys:String>
-    <sys:String x:Key="TestSettingPage_HKCRProtocol">HKCR注册表</sys:String>
-    <sys:String x:Key="TestSettingPage_HKCRProtocol_Desc">用于浏览器授权回调APP用的注册表</sys:String>
-    <sys:String x:Key="TestSettingPage_RegistyProtocol">写入注册表</sys:String>
-    <sys:String x:Key="TestSettingPage_RegistyProtocol_Success">写入成功</sys:String>
-    <sys:String x:Key="TestSettingPage_ReadProtocol">读取注册表</sys:String>
-    <sys:String x:Key="TestSettingPage_ReadProtocol_Success">读取成功</sys:String>
-    <sys:String x:Key="TestSettingPage_DeleteProtocol">删除注册表</sys:String>
-    <sys:String x:Key="TestSettingPage_DeleteProtocol_Success">删除成功</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback">回环回调</sys:String>
-    <sys:String x:Key="TestSettingPage_Loopback_Desc">浏览器授权回调的本地监听（现行方案，不依赖注册表）</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Desc">浏览器授权回调的本地监听地址</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Check">检测</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Copy">复制</sys:String>
     <sys:String x:Key="TestSettingPage_Loopback_Check_Success">监听成功</sys:String>
@@ -441,7 +433,6 @@
     <sys:String x:Key="CharacterPage_All">全部角色</sys:String>
     <sys:String x:Key="CharacterPage_Add">添加角色</sys:String>
     <sys:String x:Key="CharacterPage_AddSuccess">添加成功</sys:String>
-    <sys:String x:Key="CharacterPage_RegistyProtocol">注册授权服务失败，请使用管理员模式运行</sys:String>
     <sys:String x:Key="CharacterPage_Overview">概要</sys:String>
     <sys:String x:Key="CharacterPage_Skill">技能</sys:String>
     <sys:String x:Key="CharacterPage_Clone">克隆</sys:String>
