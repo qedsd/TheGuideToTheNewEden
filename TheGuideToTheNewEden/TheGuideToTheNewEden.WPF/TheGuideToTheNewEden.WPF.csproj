@@ -12,6 +12,10 @@
 		<TargetFramework>net8.0-windows10.0.19041</TargetFramework>
 		<RootNamespace>TheGuideToTheNewEden</RootNamespace>
 		<AssemblyName>TheGuideToTheNewEden</AssemblyName>
+		<!--  自定义入口点：把"单实例判定/命令行转发"提到创建 WPF Application 之前（见 Program.cs）。
+		      不写这一项时入口是 App.xaml 生成的 Main，转发进程也必须先构造 Application，
+		      既白加载一整套资源字典，又会在退出时触发 App.OnExit 的清理（含 SettingsService.Save()）。  -->
+		<StartupObject>TheGuideToTheNewEden.WPF.Program</StartupObject>
 		<UseWPF>true</UseWPF>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -26,7 +30,7 @@
 		<PackageReference Include="WPF-UI" Version="4.3.0" />
 		<!--  托盘与系统通知：与 WinUI 版一致使用 H.NotifyIcon（WinUI 版为 H.NotifyIcon.WinUI）
 		      2.4.1 只带 net10.0-windows / net462 资产，net8 下会回退到 .NET Framework 资产（NU1701）；
-		      2.3.0 是最后一个带 net8.0-windows 资产的版本，故锁在这个版本。  -->
+		      2.3.x（2.3.0 / 2.3.1）都带 net8.0-windows 资产，本项目取 2.3.0。  -->
 		<PackageReference Include="H.NotifyIcon.Wpf" Version="2.3.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<!--  邮件正文 HTML 渲染（替代 WebView2）  -->

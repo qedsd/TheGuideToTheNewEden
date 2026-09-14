@@ -54,6 +54,7 @@ public static class CharacterAuthService
     /// <summary>
     /// 国际服完整登录：打开授权页并等待自定义协议回调。
     /// </summary>
+    /// <returns>授权成功的角色；回调超时 / 被拒绝 / 换码失败时返回 null。</returns>
     public static async Task<AuthorizedCharacterData?> LoginAsync(CancellationToken cancellationToken = default)
     {
         if (!CredentialsAvailable)
@@ -62,12 +63,24 @@ public static class CharacterAuthService
             return null;
         }
 
-        AuthHelper.WriteProtocol();
+        try
+        {
+            // 幂等：已经是正确值时内部直接返回，不会去动安装包写好的机器级注册。
+            AuthHelper.WriteProtocol();
+        }
+        catch (Exception ex)
+        {
+            // 注册不了**不能**中断流程：安装包通常已经注册过协议，回调照样能送达。
+            // 旧实现让异常直接冒出去，结果浏览器根本不会被打开（表现为"点添加角色没反应"）。
+            Core.Log.Error(ex);
+        }
+
         OpenAuthorizationPage();
 
         var callbackUri = await AuthHelper.WaitForCallbackAsync(cancellationToken);
         if (string.IsNullOrEmpty(callbackUri))
         {
+            Core.Log.Warn($"未在 {AuthHelper.CallbackTimeout.TotalMinutes:0.#} 分钟内收到授权回调，已停止等待");
             return null;
         }
 

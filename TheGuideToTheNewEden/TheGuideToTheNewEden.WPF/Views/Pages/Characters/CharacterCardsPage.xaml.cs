@@ -121,7 +121,14 @@ public partial class CharacterCardsPage : Page
             }
             else
             {
+                // 国际服：打开授权页并等待自定义协议回调。
+                // 返回 null 的三种情况（未收到回调 / 用户拒绝 / 换码失败）都要给用户反馈，
+                // 否则表现为"点了添加角色没反应"（等待已在上限时间内自动结束）。
                 reloadNeeded = await CharacterAuthService.LoginAsync() is not null;
+                if (!reloadNeeded)
+                {
+                    MessageBox.Show(FindString("Characters.LoginFailed"), FindString("Characters.Login"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
         }
         catch (Exception ex)

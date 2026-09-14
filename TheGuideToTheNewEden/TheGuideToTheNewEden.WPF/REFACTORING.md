@@ -35,7 +35,7 @@
 
 | 决策点 | 结论 | 理由 |
 |---|---|---|
-| UI 框架 | .NET 10 + WPF + **WPF-UI 4.3.0** | 默认样式/主题/导航控件开箱即用，避免自写控件模板 |
+| UI 框架 | **.NET 8（LTS）** + WPF + **WPF-UI 4.3.0** | 默认样式/主题/导航控件开箱即用，避免自写控件模板；目标框架定 **net8** 而非 net10——.NET 9/10 的 WPF 在未更新的 Win10 21H1 上会启动即崩，改用 net8 后**已实机验证可正常运行**（见 §3「环境变更」与阶段 49） |
 | 表格控件 | **WPF-UI `DataGrid`**（不用 Syncfusion） | 用户明确不再使用 Syncfusion；行为可控 |
 | 图表控件 | **LiveCharts2**（`LiveChartsCore.SkiaSharpView.WPF`，不用 Syncfusion 图表） | 市场历史价格/销量图；开源、SkiaSharp 渲染、支持日期轴与缩放 |
 | 工具窗口 | 统一外壳 **`Views/Windows/ToolWindow`**（`ui:FluentWindow` + `ui:TitleBar`） | 标题栏样式统一（左上角 logo + 窗口名称）；标题按钮组合、置顶按钮、是否显示在任务栏均可配置；内容支持 Page/UserControl |
@@ -55,7 +55,9 @@
 ### 最终 csproj 要点（`TheGuideToTheNewEden.WPF/TheGuideToTheNewEden.WPF.csproj`）
 
 ```
-TargetFramework      net10.0-windows10.0.19041   （阶段 25 起带平台版本：LiveCharts 的 SkiaSharp 资产要求 TPV ≥ 10.0.19041）
+TargetFramework      net8.0-windows10.0.19041    （net8 = LTS，覆盖未更新的老 Win10，见阶段 49；
+                                                平台版本须显式写 10.0.19041：LiveCharts 的 SkiaSharp 资产要求 TPV ≥ 10.0.19041，阶段 25）
+AssemblyName         TheGuideToTheNewEden        （输出 TheGuideToTheNewEden.exe；协议注册依赖真实进程路径，见阶段 48）
 UseWPF               true
 ApplicationIcon      Assets\app.ico
 ApplicationManifest  app.manifest (PerMonitorV2 DPI)
@@ -67,7 +69,7 @@ EnableWindowsTargeting true
 | 包 | 版本 | 用途 |
 |---|---|---|
 | WPF-UI | 4.3.0 | 默认样式、主题、NavigationView、DataGrid、NumberBox、Snackbar 等 |
-| H.NotifyIcon.Wpf | 2.4.1 | 托盘图标 + 系统通知（net10 目标） |
+| H.NotifyIcon.Wpf | **2.3.0** | 托盘图标 + 系统通知。2.4.1 只带 `net462`/`net10.0-windows7.0` 资产，net8 下会回退到 .NET Framework（`NU1701`）；**2.3.x（2.3.0 / 2.3.1）都有 `net8.0-windows7.0` 资产**，本项目取 2.3.0（阶段 49，`project.assets.json` 已确认命中 `lib/net8.0-windows7.0/`） |
 | Newtonsoft.Json | 13.0.4 | 设置/令牌/缓存序列化 |
 | HtmlRenderer.WPF | 1.6.1 | 邮件正文 HTML 渲染（替代 WebView2） |
 | LiveChartsCore.SkiaSharpView.WPF | 2.0.5 | 市场历史图表（替代 Syncfusion 图表）；传递带入 SkiaSharp 3.119.0 |
@@ -79,8 +81,17 @@ EnableWindowsTargeting true
 
 ### 环境变更
 
-- 安装 **.NET 10 SDK 10.0.401**（winget `Microsoft.DotNet.SDK.10`），运行时 `Microsoft.WindowsDesktop.App 10.0.12`；实测无需重启。
-- TFM 演进：`net9.0-windows` → `net9.0-windows10.0.19041.0`（为 Toast 临时启用）→ 最终 **`net10.0-windows`**（去掉 Windows SDK 后缀）。
+- 本机 SDK：**9.0.203 + 10.0.401**（`dotnet --list-sdks`），构建由 **.NET 10 SDK 10.0.401** 驱动（`dotnet --version` 即它）；
+  桌面运行时 6/7/8/9/10 均在位，net8 目标实际跑在 `Microsoft.WindowsDesktop.App 8.0.31` 上。
+  （早期只装了 .NET 10 SDK 10.0.401 / 运行时 10.0.12，实测无需重启；后续为 net8 目标补齐了 8.0.x 运行时。）
+- TFM 演进：`net9.0-windows` → `net9.0-windows10.0.19041.0`（为 Toast 临时启用）→ `net10.0-windows`（阶段 6）
+  → `net10.0-windows10.0.19041`（阶段 25，为 SkiaSharp 资产补平台版本）→ **`net8.0-windows10.0.19041`（阶段 49 回退，现行）**。
+- **回退 net8 的原因**（阶段 49）：.NET 9/10 的 WPF 在**未更新的 Windows 10 21H1（19043.985）**上**一启动就崩**
+  （`0x80131506`，KERNELBASE 里的运行时 fail-fast），同机 .NET Framework / .NET 6 / .NET 8 的 WPF、以及任何控制台程序都正常
+  → 即 .NET 9 起的 WPF 与该系统补丁级别不兼容；net8 是 LTS，用它可覆盖这些老系统。
+  **该结论已实机验证**：回退后的 `TheGuideToTheNewEden.exe` 在那台 Win10 21H1 上能正常跑起来（阶段 49 的未覆盖项已闭环）。
+- 随 TFM 回退的两处连带项：`AssemblyName` 由 `TheGuideToTheNewEden.WPF` → **`TheGuideToTheNewEden`**（输出 `TheGuideToTheNewEden.exe`）；
+  `H.NotifyIcon.Wpf` 2.4.1 → **2.3.0**（见上表）。
 
 ---
 
@@ -120,9 +131,11 @@ EnableWindowsTargeting true
 ### 阶段 5：托盘与通知的依赖替换（方案 C）
 - 移出 `WPF-UI.Tray` 与 `Microsoft.Toolkit.Uwp.Notifications`（后者停更、需 AUMID/开始菜单注册）。
 - 引入 **`H.NotifyIcon.Wpf`**，`tray:NotifyIcon` → `tb:TaskbarIcon`；新增 `NotificationService`（托盘实例持有 + `ShowNotification`）。
-- **踩坑记录（重要）**：`H.NotifyIcon.Wpf 2.4.1` 仅提供 `net462` 与 `net10.0` 目标，在 .NET 9 下会回退到 .NET Framework（`NU1701`）→ 当时固定 **2.3.1**；升级到 .NET 10 后再升回 **2.4.1**。
+- **踩坑记录（重要）**：`H.NotifyIcon.Wpf 2.4.1` 仅提供 `net462` 与 `net10.0` 目标，在 .NET 9 下会回退到 .NET Framework（`NU1701`）→ 当时固定 **2.3.1**；升级到 .NET 10 后再升回 **2.4.1**；**阶段 49 回退 net8 时又锁回 2.3.0（现行版本，`lib/net8.0-windows7.0/`）**。
 
 ### 阶段 6：升级 .NET 10
+> **注（已被阶段 49 取代）**：本阶段引入的 `net10.0-windows` 目标已于阶段 49 **回退为 net8 LTS**，
+> `H.NotifyIcon.Wpf` 随之由 2.4.1 锁回 2.3.0。以下为当时的历史记录，**不代表现行配置**（现行 TFM 见 §3）。
 - 安装 .NET 10 SDK；WPF 项目 TFM → `net10.0-windows`；`H.NotifyIcon.Wpf` → 2.4.1（其 `net10.0-windows7.0` 目标正好匹配）。
 - 验证：运行时报告 ` .NET 10.0.12`；托盘图标创建成功、通知调用无异常；输出资源照常拷贝。
 
@@ -313,7 +326,7 @@ EnableWindowsTargeting true
 - 目标：把 WinUI 的市场页迁到 WPF，历史图表由 **Syncfusion 换成 LiveCharts2**。**本期只做星域市场**——建筑（结构）市场依赖尚未移植的 `StructureService` ESI 结构解析与角色授权，按既有设置 `MarketSkipStructure`（默认 true）跳过。
 - 依赖与工程：
   - 新增 `LiveChartsCore.SkiaSharpView.WPF 2.0.5`（SkiaSharp/HarfBuzz 由它传递）。
-  - **`TargetFramework` 由 `net10.0-windows` 改为 `net10.0-windows10.0.19041`**：LiveCharts 传递依赖的 `SkiaSharp.Views.WPF 3.119.0` 只提供 `net462` / `net8.0-windows10.0.19041` 资产，不写平台版本（隐含 TPV=7.0）会触发 NU1701/NU1202；改后 restore/build 干净，`runtimes/win-{x64,x86,arm64}/native/libSkiaSharp.dll` 正常随包复制。
+  - **`TargetFramework` 由 `net10.0-windows` 改为 `net10.0-windows10.0.19041`**：LiveCharts 传递依赖的 `SkiaSharp.Views.WPF 3.119.0` 只提供 `net462` / `net8.0-windows10.0.19041` 资产，不写平台版本（隐含 TPV=7.0）会触发 NU1701/NU1202；改后 restore/build 干净，`runtimes/win-{x64,x86,arm64}/native/libSkiaSharp.dll` 正常随包复制。（阶段 49 回退 net8 后，**「必须带平台版本 `10.0.19041`」这条结论依旧成立**，只是 TFM 前缀由 `net10` 变为 **`net8.0-windows10.0.19041`**。）
 - 新增代码：
   - `Services/Business/MarketOrderService.cs`：星域订单分页（匿名 ESI，无需授权）+ 历史统计（缓存 `Configs/HistoryOrders/{region}/{type}.json`，TTL 取设置）+ 订单富化（物品类型 / 空间站名 / 星系与所属星域，均来自本地 SDE）；PLEX（44992）自动切全球星域（19000001）；公开方法统一 `try/catch` + `Log.Error` 后返回 null（WPF 服务层约定）。**不拉取建筑订单**，结构位置名只从本地结构列表兜底。
   - `Services/Business/MarketStarService.cs`：物品收藏，读写与 WinUI **共用**的 `Configs/StaredMarketInvType.json`。
@@ -903,6 +916,9 @@ EnableWindowsTargeting true
   - `dotnet publish -c Debug`（不带 RID）：**发布成功**（exit 0），说明修复与 RID/配置无关；
   - 发布产物**冒烟**：启动 `_pubtest\TheGuideToTheNewEden.WPF.exe` → 进程存活、主窗口标题「新伊甸漫游指南」，并在**应用目录**下生成 `Log\20260913.txt`——同时证明发布版的 `log4net.config` 是有效的、且用的是「相对 `Log\`」那一份（若是 Core 版则会写到 `%LocalAppData%`）；核验后已正常关闭进程并删除临时发布目录。
 - 说明：本次只改 csproj，未动任何源码；`_pubtest` 等临时发布目录为一次性产物，已清理。
+  （**产物名注**：本轮 `TheGuideToTheNewEden.WPF.exe` 属 `net10` + `AssemblyName=TheGuideToTheNewEden.WPF` 时期；
+  阶段 49 回退 net8 后程序集名改为 `TheGuideToTheNewEden`，发布物是 `TheGuideToTheNewEden.exe`——
+  阶段 48 的注册表残留正来自这一点。）
 
 ---
 
@@ -1056,7 +1072,7 @@ EnableWindowsTargeting true
 - **追加（用户反馈"翻译这段内容会显示**已停止**"）——本轮抓到两个真 bug，先用探针复现、再修**：
   - **现象**：把一整段频道置顶信息（带 82 个标记，5KB 上下）+ 聊天记录粘进 AI 页翻译，气泡上出现"已停止"（有时译文只写了一半）。
   - **根因 ①（主因）**：`AiChatTranslationView.Unloaded → ViewModel.Dispose() → StopAll()`。**离开页面（切导航、页面被重新承载等）会把正在跑的请求全部掐掉**，而气泡里留下的文案就是"已停止"。实测复现（探针场景 6）：翻译途中把视图从窗口里摘掉一次 → `Unloaded=1`，该条立刻变成"已停止"、译文只落了 80 字。
-  - **根因 ②**：`ChatClient.StreamAsync` 的超时**根本没生效**——`StreamReader.ReadLineAsync(token)` 在 .NET 10 + HttpClient 响应流上"服务端卡住不出字"时不会因为令牌取消而返回，所以一个中途卡死的流会一直挂着（探针场景 2 修前：8 秒卡顿 + 2 秒超时设置 → 14.2 秒后**成功**返回，等于没超时）。
+  - **根因 ②**：`ChatClient.StreamAsync` 的超时**根本没生效**——`StreamReader.ReadLineAsync(token)` 在 .NET 10（当时 TFM）+ HttpClient 响应流上"服务端卡住不出字"时不会因为令牌取消而返回，所以一个中途卡死的流会一直挂着（探针场景 2 修前：8 秒卡顿 + 2 秒超时设置 → 14.2 秒后**成功**返回，等于没超时）。
   - **修法**：
     1. `AiChatTranslationViewModel.Dispose()` 只退订语言事件、**不再取消请求**（页面是缓存的，切走再回来结果还在）；真正中止只由界面上的「停止」触发，并在日志里记一行"用户点了停止，取消 N 条"。
     2. `ChatClient.StreamAsync` 改成**空闲超时**并用 `WaitAsync(TimeSpan, token)` 强制生效：每收到一段增量就把计时器往后推（`timeout.CancelAfter`），所以"生成很久但一直在出字"不会被砍，只有"连续 N 秒一个字都没有"才判超时（抛 `ChatException("请求超时（超过 N 秒没有收到新的内容）")`）。
@@ -1127,6 +1143,138 @@ EnableWindowsTargeting true
 
 
 
+### 阶段 48：欧服授权回调链路的 6 处缺陷修复（注册表指向 / 权限 / 超时 / 单实例隔离）
+
+- **背景**：为回答"欧服角色授权是怎么从浏览器调回客户端的"而通读了整条链路
+  （`CharacterCardsPage.AddCharacterAsync` → `CharacterAuthService.LoginAsync` → `AuthHelper.WriteProtocol` +
+  `ESIService.GetAuthorizeUrl` → 浏览器 → Windows 拉起第二进程 → `Core.SingleInstanceHelper` 转发 →
+  `AuthHelper.WaitForCallbackAsync` → 解析 code → `CharacterStore.Add`），在链路上查出 6 处缺陷，本次全部修掉。
+- **P0-1（致命，已实测复现）：注册表里的 exe 路径指向一个不存在的文件**。
+  - `AuthHelper.WriteProtocol()` 把命令写死为 `TheGuideToTheNewEden.WPF.exe`，但 csproj 早已改成
+    `AssemblyName=TheGuideToTheNewEden`（阶段 45 记录 `.WPF.exe` 是 **net10 时期**的事实，之后回退 net8 时改了程序集名，这行没跟着改）。
+  - **实测证据**（只读查询本机注册表）：
+    - `HKLM\Software\Classes\eveauth-qedsd-neweden3\shell\open\command`
+      = `"…\net8.0-windows10.0.19041\TheGuideToTheNewEden.WPF.exe" "%1"`；
+    - `TheGuideToTheNewEden.WPF.exe` **不存在**（`Test-Path` = False），同目录的 `TheGuideToTheNewEden.exe` 存在。
+  - 即：浏览器授权后重定向到 `eveauth-…://`，Windows 按注册表去启动一个**不存在的 exe** → 回调永远送不回客户端。
+  - **修法**：改用 `Environment.ProcessPath`（当前进程的真实路径），不再硬编码文件名。
+- **P0-2：非提权运行时写注册表抛异常，把整个授权流程挡在开浏览器之前**。
+  - `HKEY_CLASSES_ROOT` 的写入实际落在 `HKLM\Software\Classes`，**需要管理员权限**；而 `LoginAsync` 里
+    `WriteProtocol()` 裸调、没有 try/catch，异常向上冒到 `AddCharacterAsync` 的 catch 里被吞成一条日志
+    → 表现为"点添加角色什么都没发生"（浏览器也没打开）。
+  - **修法**：① `WriteProtocol()` 改为**幂等**——当前值已正确就直接返回，不做写操作（安装包写好的机器级注册
+    对普通用户是"可读不可写"的，硬写必抛）；② 机器级写失败**退回当前用户级**（`HKCU\Software\Classes`，无需管理员，
+    HKCR 合并视图里同名时 HKCU 优先），成功则记 Warn；③ 只有两级都失败才抛；
+    ④ `LoginAsync` 用 try/catch 包住它并降级为日志——注册失败不代表授权不了（安装包通常已注册过）。
+  - 顺带修正读取顺序：`ReadProtocol()` 先读 HKCU 再读 HKLM（**HKCU 优先**才对；顺序反了会把"仅机器级过期"
+    误判成"当前值就是过期的"，从而每次启动都白试一次机器级写入）。
+- **P1-1：`DeleteProtocol()` 是"写空串"，不是删除** → 留下一个坏关联（协议还在、命令为空）。
+  改为对机器级与用户级分别 `DeleteSubKeyTree`（`throwOnMissingSubKey: false`，无权删除只记 Warn）。
+- **P1-2：等待回调没有超时 → 授权流程永久挂起**。`LoginAsync()` 以默认 `CancellationToken.None` 调用，
+  用户放弃授权后那个 Task 永远不完成（按钮点了没反应、也没有任何提示）。
+  改为 `AuthHelper.CallbackTimeout`（默认 5 分钟，可设）→ `CreateLinkedTokenSource` + `CancelAfter`，
+  超时返回 null 并记 Warn；卡片页在该分支弹出失败提示（复用既有 `Characters.LoginFailed`/`Characters.Login` 两个键，不新增语言键）。
+  同时收紧完成条件：**只有命令行里确实带 `eveauth` 参数才结束等待**——原先任何一次激活（例如用户在等授权时又双击了一次图标）
+  都会以 null 结束等待、把登录流程打断。
+- **P2-1：转发用的第二进程会跑完整 `CoreInitializer.Init()`**（日志、设置载入、DB 打开、`CharacterStore.Init()`、
+  `StructureService.Init()` 全做一遍才退出），与正在运行的主实例争抢 SQLite / `settings.json`。
+  改为把单实例注册**提到 Core 初始化之前**（`SettingsService.DataPath` 是静态计算的，不需要 `Initialize()`），
+  第二进程只做"落盘命令行 + 唤醒主实例"就退出；`Activated` 订阅也一并提到初始化之前，避免中间出现订阅空窗。
+- **P2-2：单实例标识全局固定**（`AppName = "TheGuideToTheNewEden"`），WinUI 版与 WPF 版同时运行会互相抢占：
+  后启动的一版会把命令行交给对方然后自己退出（"点了没反应"）。
+  `Core.SingleInstanceHelper` 新增 `(instanceName, tempFileName)` 构造函数（**无参构造保持原样，WinUI 侧零改动**），
+  WPF 版使用 `TheGuideToTheNewEden.WPF` / `SingleInstanceTemp.WPF`。
+- **顺带加固 Core 的转发实现**（同一文件、同一链路）：
+  1. 非首实例**先删旧临时文件再写**，且**写失败就不发信号**——否则主实例会读到上一次的残留内容
+     （对授权来说就是把一条过期 code 又走一遍）；
+  2. 主实例**读完即删**临时文件（原先不删，下一次普通激活会拿到旧命令行；`App.OnSingleInstanceActivated`
+     会把一条陈旧的 eveauth 参数当成回调而直接 return，窗口反而不激活）；
+  3. 监听线程整体 try/catch（原先 `File.ReadAllLines` 一旦抛异常，`while(true)` 后台任务直接死掉 → 此后再也收不到任何激活）。
+- **验证**：`dotnet build -t:Rebuild`（应用正在运行，按 §环境注意用 `-p:OutDir=` 重定向输出目录）
+  → **0 错误**、35 个警告（与改动前逐条一致，均为既有的 CS0108/CS0144/CS8622/CS0162/CS8632，
+  **无一条指向本次改动的 5 个文件**）；构建产物 `TheGuideToTheNewEden.dll` 正常生成。
+  临时输出目录与探针产物已清理。
+- **未覆盖**：真实账号的欧服完整授权（需要一次真实的浏览器授权 + 一条真实的 eveauth 回调），
+  以及非提权环境下 HKCU 回退路径的实机验证（本机注册表里那条机器级值是**提权写入**的历史残留，
+  普通权限下重跑一次授权即可顺带验证回退；届时预期日志出现一条"已退回当前用户级"的 WARN）。
+- **附带发现（已在阶段 49 订正）**：`REFACTORING.md` §3/阶段 6 原先记的 TFM 仍是 `net10.0-windows`，
+  与 csproj 实际的 `net8.0-windows10.0.19041`（注释写明是为兼容未更新的 Win10 21H1 而回退）不一致——
+  正是这处**文档滞后**误导了对 exe 名的判断（P0-1）。全文的 TFM / 程序集名 / 包版本已统一订正为 net8，见阶段 49。
+
+### 阶段 49：TFM 由 net10 回退到 net8 LTS（文档追记）
+
+> **本阶段是追记**：代码侧的改动发生在阶段 45 之后、本轮文档订正之前（旧产物 `bin\Debug\net10.0-windows\TheGuideToTheNewEden.WPF.exe`
+> 停在 2026-09-11 18:05，回退后的 `bin\Debug\net8.0-windows10.0.19041\TheGuideToTheNewEden.exe` 为 2026-09-14 09:31）。
+> 当时未单独记录，导致 §3/阶段 6 的 TFM 表述长期滞后于 csproj，并在阶段 48 直接误导了对注册表 exe 名的判断。
+> 本阶段把代码事实与文档表述一并对齐。
+
+- **触发**：在**未更新的 Windows 10 21H1（19043.985）**上运行 WPF 版**启动即崩**——
+  `0x80131506`（`STATUS_FAIL_FAST_EXCEPTION`），故障模块 `KERNELBASE.dll`，没有托管异常、也没有日志。
+- **根因**：.NET 9 起的 WPF 与该系统补丁级别不兼容。同机对照：.NET Framework / .NET 6 / .NET 8 的 WPF 均正常，
+  任何版本的控制台程序也正常，只有 .NET 9/10 的 WPF 进程在运行时初始化阶段 fail-fast。
+  **该判断已由实机验证证实**（回退 net8 后同机能正常启动，见下「实机验证」）。
+- **修法（`TheGuideToTheNewEden.WPF.csproj`）**：
+  1. `TargetFramework`：`net10.0-windows10.0.19041` → **`net8.0-windows10.0.19041`**。
+     **平台版本 `10.0.19041` 必须保留**——那是阶段 25 为 `SkiaSharp.Views.WPF` 资产加的约束，与 .NET 大版本无关。
+  2. `AssemblyName`：`TheGuideToTheNewEden.WPF` → **`TheGuideToTheNewEden`**，产物为 `TheGuideToTheNewEden.exe`。
+  3. `H.NotifyIcon.Wpf`：2.4.1 → **2.3.0**（2.4.1 只有 `net462`/`net10.0-windows7.0` 资产，net8 下会 `NU1701` 回退到 .NET Framework；
+     **2.3.x（2.3.0 / 2.3.1）都带 `net8.0-windows7.0` 资产**，本项目取 2.3.0，`obj/project.assets.json` 已确认命中 `lib/net8.0-windows7.0/`）。
+- **连带影响（均已同步）**：
+  - Core（`netstandard2.1`）与 WinUI 版（`net9.0-windows10.0.19041.0`）不受影响；net8 目标由 .NET 10 SDK 10.0.401 正常编译。
+  - **协议注册**：程序集名变化后 `AuthHelper` 里硬编码的 `TheGuideToTheNewEden.WPF.exe` 随即失效（阶段 48 P0-1 的根因），
+    现已改为 `Environment.ProcessPath`。
+  - **两版输出同名 exe**：WinUI 版的 `AssemblyName` 一直是 `TheGuideToTheNewEden`，WPF 版改为同名后两版产物都是
+    `TheGuideToTheNewEden.exe`——**不要放进同一目录**，也不要靠文件名区分版本（见 §8「环境/协作注意」）。
+- **文档订正范围**（本阶段一并完成）：§2 架构决策表；§3「最终 csproj 要点」/包引用表/「环境变更」；阶段 6 的 superseded 标注；
+  阶段 25 的 TFM 结论注；阶段 45 的产物名注；§8 环境注意；§9 第 9/19 条。
+- **验证**：`dotnet build -t:Rebuild -p:OutDir=<临时目录>` → **0 错误**、35 个警告与改动前逐条一致（阶段 48 记录）；
+  回退后的产物为 `net8.0-windows10.0.19041\TheGuideToTheNewEden.exe`（2026-09-14 09:31，现行）。
+- **实机验证（已闭环）**：回退后的 `TheGuideToTheNewEden.exe` 在触发问题的那台**未更新的 Win10 21H1（19043.985）**上
+  **可以正常运行**，不再启动即崩 → 确认「.NET 9/10 的 WPF 与该系统补丁级别不兼容」这一根因成立，net8 是可行的落地方案。
+  至此本阶段无遗留未覆盖项。
+
+---
+
+### 阶段 50：授权回调的"转发进程"改为在创建 WPF Application 之前退出
+
+**背景**：欧服授权回调由 Windows 按注册表启动**第二个客户端进程**（协议激活在机制上只能"运行一条命令行"，
+没有任何办法把 URL 直接投递给已运行的进程），该进程的唯一任务是把命令行转交主实例然后退出。
+阶段 48 已把单实例判定提到 `CoreInitializer.Init()` 之前，但**判定点仍在 `App.OnStartup` 内**——
+于是转发进程依然要构造 `Application`、解析 `App.xaml` 里的全部资源字典（WPF-UI 的
+`ThemesDictionary`/`ControlsDictionary` + 3 个项目字典 + `zh-CN.xaml`），最后再走一遍退出清理。
+
+**实测（独立 WPF 探针，net8；一次性产物已清理）**：
+
+1. **在 `Startup` 里调用 `Shutdown()` 依然会触发 `Exit`**——实测时序 `MAIN → STARTUP → EXIT → RUN returned`。
+   于是 `App.OnExit` 会照跑，其中 `SettingsService.Save()` 在**从未调用过 `Initialize()`** 的进程里
+   `Values` 还是空字典，会把与 WinUI 共用的 `Configs/settings.json` **覆盖成 `{}`**。
+   这是阶段 48 把单实例判定提前（因而不再 `Initialize()` 设置）所引入的**回归**；
+   实测当时磁盘上的 settings.json 仍完好，是因为主实例随后会用自己的内存值重新写回——
+   但"回调后主实例被强杀/崩溃"就会真的丢配置。
+2. **只要 `Main` 的方法体不引用 `App`（WPF 派生类），进程内 `PresentationFramework` / `System.Xaml` /
+   `WindowsBase` 一个都不加载**；一旦引用 `App` 的静态成员，其基类 `System.Windows.Application`
+   会被连带加载，三个程序集全部进来。
+3. 而读取**普通静态类**（如 `SettingsService.DataPath`，其方法签名里虽有 WPF 的 `Color`）
+   不会加载任何 WPF 程序集——所以转发进程可以安心复用 `SettingsService.DataPath` 定位数据目录。
+
+**改法**：
+
+1. 新增 `Program.cs` 作为入口，csproj 加 `<StartupObject>TheGuideToTheNewEden.WPF.Program</StartupObject>`：
+   先 `RegisterSingleInstance`，非首实例**直接 `return 0`**——不构造 `Application`、不解析 XAML、不触发 `Exit`。
+2. **单实例状态从 `App` 迁到 `Program`**（`InstanceName` / `InstanceTempFile` / `Program.SingleInstance`）：
+   `App` 继承 `Application`，碰它的静态成员就会把 WPF 栈拉进来；`AuthHelper.WaitForCallbackAsync`
+   改读 `Program.SingleInstance`。
+3. `App.OnStartup` 只保留"订阅 `Activated` + Core 初始化 + 建主窗"，删掉 `Shutdown()` 分支；
+   `App.OnExit` 不变（现在只有真正的主实例会走到）。
+4. `Program.Main` 给单实例注册加 try/catch：失败只记 Warn 并**退回独立实例启动**，
+   不让"命名事件被占用/权限异常"这类意外变成启动即崩（此前异常只是被 WPF 的未处理异常处理器接住）。
+
+**效果**：转发进程从"完整启动一个 WPF 应用再退出"变成"起运行时 → 转发 → 退出"，
+不加载 WPF 程序集、不解析任何 XAML、不碰设置/数据库/日志。
+
+**验证**：`dotnet build -t:Rebuild -p:OutDir=<临时目录>` → **0 错误**、35 个警告（与改动前逐条一致），exit 0。
+**未覆盖**：真实浏览器回调的端到端走通与转发进程的耗时对比（需一次真实授权）。
+
 ---
 
 ## 5. 角色功能分层设计
@@ -1194,6 +1342,8 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 32 | 倒货"进阶设置"里的 `Expander`（连带 `ComboBox`/`NumberBox`）变成 WPF 原生外观 | 页面 `UserControl.Resources` 里放了三个**不带 `x:Key` 的本地隐式样式**（只为设 `Margin` 等布局属性）——**无 key 的本地隐式样式也会整体替换 WPF-UI 的库样式**，控件连模板一起退回原生 | 删掉本地隐式样式，布局属性直接写元素上（照技能页 `Expander` 的做法）。见阶段 31 |
 | 33 | 记录页选中已保存的记录后，右侧"记录详细"始终空白 | 记录 `ListBox` 只绑了 `ItemsSource`，**漏绑 `SelectedItem`**；加载逻辑挂在 VM `SelectedFile` 的 setter 上，选中项从未回写 VM | 补 `SelectedItem="{Binding SelectedFile, Mode=TwoWay}"`。见阶段 31 |
 | 34 | 市场选择器"星系"页签列表为空 | 移植时擅自"优化"了参照实现：WinUI 直接列出全部星系，而 WPF 版写成**搜索词为空就返回空集**，不输入关键字时恒空 | 默认列出全部（`!IsSpecial()`、按 ID 排序），过滤改用 `ICollectionView.Filter + Refresh()`。见阶段 33 |
+| 35 | WPF 版在**未更新的 Windows 10 21H1（19043.985）**上**启动即崩**（`0x80131506`，故障模块 `KERNELBASE.dll`，无托管异常、无日志） | .NET 9 起的 WPF 与该系统补丁级别不兼容——同机 .NET Framework / 6 / 8 的 WPF 与任何控制台程序都正常 | TFM 由 `net10.0-windows10.0.19041` 回退为 **`net8.0-windows10.0.19041`**（LTS），平台版本 `10.0.19041` 保留；连带 `AssemblyName` → `TheGuideToTheNewEden`、`H.NotifyIcon.Wpf` → 2.3.0。见阶段 49。**已实机验证**：net8 产物在该机上正常运行 |
+| 36 | **授权回调的转发进程会清空共享的 `settings.json`**（每次欧服授权回调，以及"程序已在运行时又双击一次图标"都会触发） | 阶段 48 把单实例判定提前到 `CoreInitializer.Init()` 之前，转发进程不再 `Initialize()` 设置 → `App.OnExit` 里的 `SettingsService.Save()` 用**空字典**覆盖 `Configs/settings.json`。且实测在 `Startup` 里 `Shutdown()` **仍会触发 `Exit`**，所以这段清理必然执行 | 入口改为自定义 `Program.Main`（`<StartupObject>`）：非首实例**在创建 `Application` 之前**就转交并 `return`，`Exit` 不再触发；单实例状态从 `App` 迁到 `Program`（碰 `App` 的静态成员会连带加载 WPF 栈）。见阶段 50 |
 
 ---
 
@@ -1318,6 +1468,15 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 ### 环境/协作注意
 - **代码调整不需要截图验证**：改动完成、构建通过后直接说明结果即可，由使用者自行查看界面效果。
 - 设置文件与 WinUI 版**共用** `Configs/settings.json`：两版同时运行会互相覆盖，迁移完成后建议只保留 WPF 版。
+- **目标框架现为 net8（LTS）**：`net8.0-windows10.0.19041`、`AssemblyName=TheGuideToTheNewEden`。
+  原因见阶段 49（.NET 9/10 的 WPF 在未更新的 Win10 21H1 上启动即 fail-fast，**已实机验证回退后可正常运行**）。
+  构建用 .NET 10 SDK 即可（不需要 8.x SDK），但目标机需要 8.0.x 桌面运行时。**别再把 TFM 写回 net10**。
+- **两版产物同名 exe**：WinUI 与 WPF 的 `AssemblyName` 都是 `TheGuideToTheNewEden`，产物都是 `TheGuideToTheNewEden.exe`——
+  不要放进同一目录；凡是"按 exe 路径拉起自己"的逻辑（协议注册、开机自启等）一律取**当前进程路径**，不要拼文件名（阶段 48）。
+- **入口点是自定义的 `Program.Main`（`<StartupObject>`），不要删**：单实例判定/命令行转发必须在**创建 `Application` 之前**完成，
+  否则转发进程会白加载一整套 WPF 资源字典，并在退出时触发 `App.OnExit` 的清理（含 `SettingsService.Save()` 用空字典覆盖 settings.json）。
+  同理，**单实例状态挂在 `Program` 而不是 `App` 上**——`App` 继承 `Application`，访问它的静态成员会把
+  `PresentationFramework`/`System.Xaml`/`WindowsBase` 一起加载（阶段 50 实测）。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
 - **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
 - **应用正在运行时想校验"能不能编译"**：用 `dotnet build … -p:OutDir=<临时目录>\` 把输出重定向出去即可（被锁的 `bin` 不参与），核验完删掉临时目录；**正式出包仍必须先退出应用**（阶段 46 追加改动实测：VS 调试会话在跑时普通 `build` 报 `MSB3027/MSB3021`）。
@@ -1340,7 +1499,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 6. **WPF 没有 `{ThemeResource}`**：WinUI 的 `{ThemeResource}` 对应 WPF 的 `{DynamicResource}`；主题键名需自行对齐。
 7. **`CenterScreen` 按主显示器居中**：多显示器应用应自行定位。
 8. **DPI 与坐标**：跨不同缩放比例的显示器，用 WPF `Left/Top`（DIP）持久化会算错；应用 Win32 物理像素 API。
-9. **NuGet 目标框架陷阱**：包若只提供 `net10.0`/`net462` 而项目为 net9，会**静默回退到 .NET Framework**（`NU1701`，可能运行期异常）。选包前先核对包内 `lib/` 的目标框架。
+9. **NuGet 目标框架陷阱**：包若只提供 `net10.0`/`net462` 这一档资产、而项目目标框架低于它，会**静默回退到 .NET Framework**（`NU1701`，可能运行期异常）。本项目实例：TFM 为 net8 时 `H.NotifyIcon.Wpf 2.4.1`（只有 `net462`/`net10.0-windows7.0`）就会回退，故锁 **2.3.x**（2.3.0 / 2.3.1 均带 `net8.0-windows7.0` 资产；本项目取 2.3.0，见阶段 49）。选包前先核对包内 `lib/` 的目标框架。
 10. **第三方库的 `[NotNull]` 元数据**易触发 `CS8622` 噪音告警，可局部 `#pragma warning disable`。
 11. **`ListBox` 的横向滚动会让行模板"无限宽"测量**：一旦允许横向滚动，行内 `*` 列不再收缩，右侧 `Auto` 列（如日期）会被推出视口且看不到滚动条提示。列表类控件若要"右侧固定列"，显式 `ScrollViewer.HorizontalScrollBarVisibility="Disabled"`。
 12. **栈溢出是"静默死亡"**：`StackOverflowException` 无法被 `try/catch`、`DispatcherUnhandledException` 或 `AppDomain.UnhandledException` 捕获，进程直接退出，事件日志/WER 可能什么都留不下。遇到"进程凭空消失"时，用 `Start-Process -PassThru` + `WaitForExit()` 读 `ExitCode`（`0xC00000FD` = 栈溢出，`0xC0000005` = 访问冲突）比翻日志更快定性。
@@ -1358,7 +1517,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
       **同样适用于"不带 `x:Key` 的本地隐式样式"**：在页面/控件的 `Resources` 里写 `<Style TargetType="Expander">`（哪怕只是为了设一个 `Margin`），也会把库的隐式样式整体顶掉（阶段 31 实测：倒货进阶设置的 `Expander`/`ComboBox`/`NumberBox` 一起退回原生外观）。**只想加布局属性就直接写在元素上**（技能页 `Expander` 就是这么做的：`HorizontalAlignment`/`HorizontalContentAlignment`/`Margin`/`Background` 逐项内联），本地 `Resources` 里只放带 `x:Key` 的样式。
     另：VM 里**缓存本地化字符串**（`TryFindResource(key) as string`）有同类问题——切语言后不会更新，页面需在 `LanguageChanged` 后重建/刷新这些文本。
 
-19. **LiveCharts / SkiaSharp 要求 TFM 带平台版本，且图表配色不会自动跟随主题**：`LiveChartsCore.SkiaSharpView.WPF 2.0.5` 依赖 `SkiaSharp.Views.WPF 3.119.0`，后者的资产只有 `net462` / `net8.0-windows10.0.19041`；项目若写 `net10.0-windows`（隐含 `TargetPlatformVersion=7.0`）就会回退到 .NET Framework 资产（`NU1701`）或报 `NU1202`，把 TFM 写成 **`net10.0-windows10.0.19041`** 即可（阶段 25 已改）。另外两点：
+19. **LiveCharts / SkiaSharp 要求 TFM 带平台版本，且图表配色不会自动跟随主题**：`LiveChartsCore.SkiaSharpView.WPF 2.0.5` 依赖 `SkiaSharp.Views.WPF 3.119.0`，后者的资产只有 `net462` / `net8.0-windows10.0.19041`；项目若写 `net10.0-windows`（隐含 `TargetPlatformVersion=7.0`）就会回退到 .NET Framework 资产（`NU1701`）或报 `NU1202`，把 TFM 写成 **`net8.0-windows10.0.19041`**（现行）即可——阶段 25 先补上平台版本，阶段 49 把 .NET 大版本落到 net8，**这条结论与 .NET 大版本无关**。另外两点：
     - LiveCharts 的 WPF 实现里 `IChartView.IsDarkMode` **恒为 `false`**，默认主题不感知应用深浅色；
     - `Paint`/`SolidColorPaint` 只接受 `SkiaSharp.SKColor`（XAML 里的 `Stroke="#RRGGBB"` 靠内置转换器，**接不了 `DynamicResource` 的 Brush**）。
     因此图表颜色必须在代码里从主题 Brush 转成 `SKColor`，并在主题切换时重新赋值——本项目做法见 `ThemeService.ThemeChanged` 与 `MarketPageViewModel.ApplyThemeColors()`。
@@ -1402,7 +1561,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     - **`Loaded`/`Unloaded` 正好等价于"进入/离开这个页签"**：本项目据此把两个页签的 VM 生命周期挂在自己的 `Loaded → Init()` / `Unloaded → Deactivate()` 上，面板整体离开页面时再由宿主统一 `Dispose()`——**`Deactivate` 只退订语言事件、不取消在跑的请求**（切走再切回来还能看到结果），只有整页离开才取消（`Unloaded` 早于宿主 `Unloaded`，两者是"先轻后重"的关系）。
     - （该页签方案后来改成了左侧导航的两个子菜单，页签本身没有了；但上面两条结论对任何 `TabControl` 都成立。现在两个翻译页各自把 VM 的生命周期挂在 `Loaded → Init()` / `Unloaded → Dispose()` 上：它们是独立页面，离开即收尾、不需要"轻/重"两档。）
 
-29. **`StreamReader.ReadLineAsync(token)` 在 HTTP 响应流上不会因为令牌取消而返回**（阶段 47 追加，实测于 .NET 10 + `HttpClient`）：流式读取里哪怕超时令牌已经触发，只要服务端"卡住不出字"，`ReadLineAsync(timeout.Token)` 就一直挂着——**超时设置形同虚设**（探针实测：2 秒超时 + 8 秒卡顿，最后 14.2 秒后"成功"返回）。正确写法是把读取包一层托管等待：
+29. **`StreamReader.ReadLineAsync(token)` 在 HTTP 响应流上不会因为令牌取消而返回**（阶段 47 追加，当时的测量环境为 .NET 10 + `HttpClient`；现行 TFM 已回退 net8，**修复代码保留、照旧适用**）：流式读取里哪怕超时令牌已经触发，只要服务端"卡住不出字"，`ReadLineAsync(timeout.Token)` 就一直挂着——**超时设置形同虚设**（探针实测：2 秒超时 + 8 秒卡顿，最后 14.2 秒后"成功"返回）。正确写法是把读取包一层托管等待：
     ```csharp
     line = await reader.ReadLineAsync(CancellationToken.None).AsTask()
         .WaitAsync(TimeSpan.FromSeconds(idleSeconds), timeout.Token);

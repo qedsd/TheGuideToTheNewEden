@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Threading;
-using TheGuideToTheNewEden.Core.Helpers;
 using TheGuideToTheNewEden.WPF.Services;
 using TheGuideToTheNewEden.WPF.Services.ChannelIntel;
 
@@ -10,32 +9,26 @@ public partial class App : Application
 {
     public static new Views.MainWindow? MainWindow { get; private set; }
 
-    /// <summary>单实例助手：第二个实例（如 ESI 授权回调）通过它把命令行交给本实例。</summary>
-    public static SingleInstanceHelper? SingleInstanceHelper { get; private set; }
-
     private void OnStartup(object sender, StartupEventArgs e)
     {
         DispatcherUnhandledException += OnDispatcherUnhandledException;
+
+        // 单实例注册、命令行转发、以及"本进程是不是唯一实例"的判定，
+        // 都已在 Program.Main 完成（先于 Application 创建），走到这里的进程必定是唯一实例。
+        // 单实例状态放在 Program 而非本类：本类继承 Application，访问它的静态成员会连带
+        // 加载 PresentationFramework，转发进程就白重了（见 Program 的说明）。
+        if (Program.SingleInstance is not null)
+        {
+            Program.SingleInstance.Activated += OnSingleInstanceActivated;
+        }
 
         // 初始化 Core（含设置存储、数据库、ESI 凭据），之后主题/语言才能读取设置。
         CoreInitializer.Init();
         ThemeService.Initialize();
         LanguageService.Initialize();
 
-        SingleInstanceHelper = new SingleInstanceHelper();
-        if (!SingleInstanceHelper.RegisterSingleInstance(SettingsService.DataPath))
-        {
-            // 已有实例在运行：参数已交给它（授权回调也走这条路径），本进程直接退出。
-            Shutdown();
-            return;
-        }
-
-        SingleInstanceHelper.Activated += OnSingleInstanceActivated;
-
         MainWindow = new Views.MainWindow();
         MainWindow.Show();
-
-
     }
 
     private void OnSingleInstanceActivated(object? sender, string[] args)
