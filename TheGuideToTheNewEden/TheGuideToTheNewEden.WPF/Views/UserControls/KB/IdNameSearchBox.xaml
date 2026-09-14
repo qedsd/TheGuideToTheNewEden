@@ -1,0 +1,69 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.KB.IdNameSearchBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <converters:CategoryEnumToStringConverter x:Key="CategoryEnum" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TextBox
+            x:Name="SearchTextBox"
+            MinWidth="180"
+            PlaceholderText="{DynamicResource ZKBPage_SearchTip}"
+            TextChanged="OnTextChanged" />
+
+        <!--  搜索结果（有结果时才占空间）  -->
+        <Border
+            x:Name="ResultHost"
+            Grid.Row="1"
+            MaxHeight="180"
+            Margin="0,4,0,0"
+            Padding="0,2"
+            Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Visibility="Collapsed">
+            <ListBox
+                x:Name="ResultList"
+                Background="Transparent"
+                BorderThickness="0"
+                ItemContainerStyle="{StaticResource StretchListItem}"
+                SelectionChanged="OnSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{Binding Name}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTip="{Binding Id}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="8,0,4,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding Converter={StaticResource CategoryEnum}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+    </Grid>
+</UserControl>

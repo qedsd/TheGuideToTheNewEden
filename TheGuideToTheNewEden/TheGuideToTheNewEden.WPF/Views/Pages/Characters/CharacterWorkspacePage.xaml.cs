@@ -74,9 +74,11 @@ public partial class CharacterWorkspacePage : Page
         frame.Refresh();
     }
 
+    /// <summary>跳到 Zkillboard 页并直接打开该角色的实体统计标签（此前只跳到占位页）。</summary>
     private void ZkbButton_Click(object sender, RoutedEventArgs e)
     {
-        Services.Navigation.Navigate(typeof(Pages.ZKBPage));
+        var card = _viewModel.Card;
+        Services.KbNavigation.OpenEntity((int)card.CharacterId, Core.DBModels.IdName.CategoryEnum.Character, card.Name);
     }
 
     private static string FindString(string key) =>

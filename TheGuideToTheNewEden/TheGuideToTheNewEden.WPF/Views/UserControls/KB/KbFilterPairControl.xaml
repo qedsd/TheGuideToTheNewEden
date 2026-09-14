@@ -1,0 +1,123 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.KB.KbFilterPairControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:kbControls="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.KB"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent">
+
+    <UserControl.Resources>
+        <converters:CategoryEnumToStringConverter x:Key="CategoryEnum" />
+        <converters:StringToVisibilityConverter x:Key="StringToVis" />
+
+        <DataTemplate x:Key="FilterItemTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis"
+                    ToolTip="{Binding Id}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="6,0,4,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding Converter={StaticResource CategoryEnum}}" />
+                <ui:Button
+                    Grid.Column="2"
+                    Padding="2"
+                    Appearance="Transparent"
+                    Click="OnRemoveClick"
+                    Icon="{ui:SymbolIcon Dismiss24}"
+                    ToolTip="{DynamicResource General_Remove}" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <!--  说明  -->
+        <StackPanel
+            Margin="2,0,0,6"
+            Orientation="Horizontal"
+            Visibility="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource StringToVis}}">
+            <ui:SymbolIcon
+                FontSize="14"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Symbol="Info24" />
+            <TextBlock
+                Margin="4,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <!--  排除项  -->
+            <controls:CardControl Grid.Column="0" Header="{DynamicResource MapIntelTool_Exclusions}">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource General_Add}" />
+                    <kbControls:IdNameSearchBox
+                        x:Name="ExclusionSearchBox"
+                        Categories="{Binding Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        ItemSelected="OnExclusionSelected" />
+                    <ListBox
+                        MinHeight="120"
+                        MaxHeight="240"
+                        Margin="0,8,0,0"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        ItemContainerStyle="{StaticResource StretchListItem}"
+                        ItemTemplate="{StaticResource FilterItemTemplate}"
+                        ItemsSource="{Binding Exclusions, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                </StackPanel>
+            </controls:CardControl>
+
+            <!--  包含项  -->
+            <controls:CardControl Grid.Column="2" Header="{DynamicResource MapIntelTool_Inclusions}">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{DynamicResource General_Add}" />
+                    <kbControls:IdNameSearchBox
+                        x:Name="InclusionSearchBox"
+                        Categories="{Binding Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        ItemSelected="OnInclusionSelected" />
+                    <ListBox
+                        MinHeight="120"
+                        MaxHeight="240"
+                        Margin="0,8,0,0"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        ItemContainerStyle="{StaticResource StretchListItem}"
+                        ItemTemplate="{StaticResource FilterItemTemplate}"
+                        ItemsSource="{Binding Inclusions, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                </StackPanel>
+            </controls:CardControl>
+        </Grid>
+    </StackPanel>
+</UserControl>

@@ -1205,4 +1205,142 @@
     <sys:String x:Key="GlossarySettingPage_Reload">重新载入</sys:String>
     <sys:String x:Key="GlossarySettingPage_Reloading">正在载入…</sys:String>
     <sys:String x:Key="GlossarySettingPage_Reloaded">SDE {0} 条 · 用户 {1} 条 · {2}</sys:String>
+    <!--  ==== Zkillboard（KB）====  -->
+    <!--  实体类别（IdName.CategoryEnum → 文本）  -->
+    <sys:String x:Key="CategoryEnum_Alliance">联盟</sys:String>
+    <sys:String x:Key="CategoryEnum_Character">角色</sys:String>
+    <sys:String x:Key="CategoryEnum_Constellation">星座</sys:String>
+    <sys:String x:Key="CategoryEnum_Corporation">军团</sys:String>
+    <sys:String x:Key="CategoryEnum_InventoryType">物品</sys:String>
+    <sys:String x:Key="CategoryEnum_Region">星域</sys:String>
+    <sys:String x:Key="CategoryEnum_SolarSystem">星系</sys:String>
+    <sys:String x:Key="CategoryEnum_Station">空间站</sys:String>
+    <sys:String x:Key="CategoryEnum_Faction">势力</sys:String>
+    <sys:String x:Key="CategoryEnum_Structure">建筑</sys:String>
+    <sys:String x:Key="CategoryEnum_Group">物品类别</sys:String>
+
+    <!--  过滤黑白名单  -->
+    <sys:String x:Key="MapIntelTool_Exclusions">排除项</sys:String>
+    <sys:String x:Key="MapIntelTool_Exclusions_Tip">不显示列表内的角色、军团、联盟等</sys:String>
+    <sys:String x:Key="MapIntelTool_Inclusions">包含项</sys:String>
+    <sys:String x:Key="MapIntelTool_Inclusions_Tip">仅显示列表内的角色、军团、联盟等</sys:String>
+
+    <!--  主导航页  -->
+    <sys:String x:Key="ZKBPage_SearchTip">搜索角色 / 军团 / 联盟 / 星系 / 舰船…</sys:String>
+    <sys:String x:Key="ZKBPage_NoSearchResult">未找到匹配的实体</sys:String>
+    <sys:String x:Key="ZKBPage_UnsupportedEntity">该类型不支持 ZKB 查询</sys:String>
+    <sys:String x:Key="ZKBPage_QueryFailed">查询失败，详情请查看日志</sys:String>
+    <sys:String x:Key="ZKBPage_Loading">正在加载…</sys:String>
+    <sys:String x:Key="ZKBPage_LoadingStatistic">正在获取统计数据…</sys:String>
+    <sys:String x:Key="ZKBPage_NoData">暂无数据</sys:String>
+    <sys:String x:Key="ZKBPage_OpenEntity">打开该实体</sys:String>
+
+    <!--  KB 列表列名  -->
+    <sys:String x:Key="KBListControl_Date">日期</sys:String>
+    <sys:String x:Key="KBListControl_Time">时间</sys:String>
+    <sys:String x:Key="KBListControl_TotalValue">估价</sys:String>
+    <sys:String x:Key="KBListControl_Location">位置</sys:String>
+    <sys:String x:Key="KBListControl_Type">飞船/建筑</sys:String>
+    <sys:String x:Key="KBListControl_Victim">受害者</sys:String>
+    <sys:String x:Key="KBListControl_FinalBlow">最后一击</sys:String>
+    <sys:String x:Key="KBListControl_OpenBrowser">浏览器查看</sys:String>
+
+    <!--  击杀流页  -->
+    <sys:String x:Key="ZKBHomePage_ConnectingToWSS">连接服务器中...</sys:String>
+    <sys:String x:Key="ZKBHomePage_Connected">已连接ZKB服务器</sys:String>
+    <sys:String x:Key="ZKBHomePage_KillStream">KB流</sys:String>
+    <sys:String x:Key="ZKBHomePage_Connect">连接</sys:String>
+    <sys:String x:Key="ZKBHomePage_Disconnect">断开</sys:String>
+    <sys:String x:Key="ZKBHomePage_DisconnectTip">未连接ZKB服务器，可以点击下方按钮连接服务器</sys:String>
+    <sys:String x:Key="ZKBHomePage_Disconnect_Tip">已断开ZKB服务器</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter">过滤</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Global">通用</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Global_Tip">对KB所在星系、星域、被击杀舰船类型进行过滤</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim">受害者</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">对KB受害者角色、军团、联盟进行过滤</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker">攻击者</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">对KB攻击者角色、军团、联盟进行过滤</sys:String>
+    <sys:String x:Key="ZKBHomePage_TotalReceivedCount">总KB数量</sys:String>
+    <sys:String x:Key="ZKBHomePage_MatchedCount">过滤后KB数量</sys:String>
+    <sys:String x:Key="ZKBHomePage_MatchedKB">筛选KB</sys:String>
+    <sys:String x:Key="ZKBHomePage_FilteredOutKB">已过滤KB</sys:String>
+
+    <!--  KB 详情  -->
+    <sys:String x:Key="KB_TotalValue">总价</sys:String>
+    <sys:String x:Key="KB_DroppedValue">掉落</sys:String>
+    <sys:String x:Key="KB_DestroyedValue">损毁</sys:String>
+    <sys:String x:Key="KB_ShipFitValue">装配</sys:String>
+    <sys:String x:Key="KB_Dropped">掉落</sys:String>
+    <sys:String x:Key="KB_Destroyed">损毁</sys:String>
+    <sys:String x:Key="KB_FinalBlow">最后一击</sys:String>
+    <sys:String x:Key="KB_TopDamage">最高伤害</sys:String>
+    <sys:String x:Key="KB_AttackerCount">参与者</sys:String>
+    <sys:String x:Key="KB_Damage">伤害</sys:String>
+    <sys:String x:Key="KB_Solo">单挑</sys:String>
+    <sys:String x:Key="KB_Attackers">攻击者</sys:String>
+    <sys:String x:Key="KB_Cargo">货柜</sys:String>
+    <sys:String x:Key="KB_CopyLink">复制链接</sys:String>
+    <sys:String x:Key="KB_OpenBrowser">浏览器打开</sys:String>
+    <sys:String x:Key="KB_Copied">已复制链接</sys:String>
+
+    <!--  实体统计页  -->
+    <sys:String x:Key="EntityStatistPage_Character">角色</sys:String>
+    <sys:String x:Key="EntityStatistPage_Corporation">军团</sys:String>
+    <sys:String x:Key="EntityStatistPage_Alliance">联盟</sys:String>
+    <sys:String x:Key="EntityStatistPage_Faction">势力</sys:String>
+    <sys:String x:Key="EntityStatistPage_Ship">舰船</sys:String>
+    <sys:String x:Key="EntityStatistPage_Class">类别</sys:String>
+    <sys:String x:Key="EntityStatistPage_System">星系</sys:String>
+    <sys:String x:Key="EntityStatistPage_Region">星域</sys:String>
+    <sys:String x:Key="EntityStatistPage_CEO">CEO</sys:String>
+    <sys:String x:Key="EntityStatistPage_Members">成员</sys:String>
+    <sys:String x:Key="EntityStatistPage_Executor">执行军团</sys:String>
+    <sys:String x:Key="EntityStatistPage_Sec">安全等级</sys:String>
+    <sys:String x:Key="EntityStatistPage_Destroyed">击杀</sys:String>
+    <sys:String x:Key="EntityStatistPage_Lost">损失</sys:String>
+    <sys:String x:Key="EntityStatistPage_HasSupers">拥有超期</sys:String>
+    <sys:String x:Key="EntityStatistPage_KBList">KB列表</sys:String>
+    <sys:String x:Key="EntityStatistPage_TopValue">最贵击杀</sys:String>
+    <sys:String x:Key="EntityStatistPage_TopStatist">最高击杀</sys:String>
+    <sys:String x:Key="EntityStatistPage_GroupSummary">分类统计</sys:String>
+    <sys:String x:Key="EntityStatistPage_MonthSummary">月份统计</sys:String>
+    <sys:String x:Key="EntityStatistPage_SupperSummary">超期击杀</sys:String>
+
+    <sys:String x:Key="StatistTopValuePage_TopAllTime">历史最高价值KB</sys:String>
+    <sys:String x:Key="StatistTopValuePage_Top7dDays">最近7天最高价值KB</sys:String>
+
+    <sys:String x:Key="StatistKBListPage_KBModifier">类型</sys:String>
+    <sys:String x:Key="StatistKBListPage_All">所有</sys:String>
+    <sys:String x:Key="StatistKBListPage_Kills">击杀</sys:String>
+    <sys:String x:Key="StatistKBListPage_Losses">损失</sys:String>
+    <sys:String x:Key="StatistKBListPage_Wormhole">虫洞</sys:String>
+    <sys:String x:Key="StatistKBListPage_Solo">单挑</sys:String>
+    <sys:String x:Key="StatistKBListPage_Finalblow">最后一击</sys:String>
+    <sys:String x:Key="StatistKBListPage_Awox">Awox</sys:String>
+    <sys:String x:Key="StatistKBListPage_Npc">Npc</sys:String>
+
+    <sys:String x:Key="StatistTopAllTimePage_Character">最高击杀玩家</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Corporation">最高击杀军团</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Alliance">最高击杀联盟</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Faction">最高击杀势力</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Ship">最高击杀舰船</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_System">最高击杀星系</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Kills">击杀数</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_No">排名</sys:String>
+
+    <sys:String x:Key="StatistGroupPage_No">击杀排名</sys:String>
+    <sys:String x:Key="StatistGroupPage_Kills">击杀数</sys:String>
+    <sys:String x:Key="StatistGroupPage_Losses">损失数</sys:String>
+
+    <sys:String x:Key="StatistMonthPage_Year">年</sys:String>
+    <sys:String x:Key="StatistMonthPage_Month">月</sys:String>
+    <sys:String x:Key="StatistMonthPage_PointsDestroyed">击杀点数</sys:String>
+    <sys:String x:Key="StatistMonthPage_SoloDestroyed">单挑击杀</sys:String>
+    <sys:String x:Key="StatistMonthPage_PointsLost">损失点数</sys:String>
+    <sys:String x:Key="StatistMonthPage_SoloLost">单挑损失</sys:String>
+
+    <sys:String x:Key="StatistSuperPage_Titan">泰坦</sys:String>
+    <sys:String x:Key="StatistSuperPage_Supercarrier">大航</sys:String>
+    <sys:String x:Key="StatistSuperPage_No">击杀排名</sys:String>
+    <sys:String x:Key="StatistSuperPage_Kills">击杀数</sys:String>
 </ResourceDictionary>

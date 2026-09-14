@@ -14,7 +14,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task<MapSolarSystem> QueryAsync(long id)
         {
             var type = await DBService.MainDb.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemID == id);
-            if (DBService.NeedLocalization)
+            if (type != null && DBService.NeedLocalization)
             {
                 await LocalDbService.TranMapSolarSystemAsync(type);
             }
@@ -23,7 +23,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static async Task<MapSolarSystem> QueryAsync(string name)
         {
             var type = await DBService.MainDb.Queryable<MapSolarSystem>().FirstAsync(p => p.SolarSystemName == name);
-            if (DBService.NeedLocalization)
+            if (type != null && DBService.NeedLocalization)
             {
                 await LocalDbService.TranMapSolarSystemAsync(type);
             }
@@ -32,7 +32,7 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static MapSolarSystem Query(string name)
         {
             var type = DBService.MainDb.Queryable<MapSolarSystem>().First(p => p.SolarSystemName == name);
-            if (DBService.NeedLocalization)
+            if (type != null && DBService.NeedLocalization)
             {
                 LocalDbService.TranMapSolarSystem(type);
             }
@@ -59,7 +59,9 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static MapSolarSystem Query(int id, bool local = true)
         {
             var system = DBService.MainDb.Queryable<MapSolarSystem>().First(p => id == p.SolarSystemID);
-            if (local && DBService.NeedLocalization)
+
+            // 主库没有该 id 时 system 为 null：此时不能再交给本地化翻译器（会 NRE），也无需查本地库。
+            if (system != null && local && DBService.NeedLocalization)
             {
                 LocalDbService.TranMapSolarSystem(system);
             }

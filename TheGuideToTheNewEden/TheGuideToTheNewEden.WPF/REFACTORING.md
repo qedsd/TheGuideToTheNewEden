@@ -1398,6 +1398,65 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 53：Zkillboard（KB）模块迁移 —— 服务层重建 + 主页面 / 击杀流 / 实体统计 / KB 详情
+
+- 目标：把 WinUI 的 ZKB 模块（`Views/KB/**`、`ViewModels/KB/**`、`Services/KBNavigationService`、`Helpers/ZKBHelper`）迁到 WPF 并按本项目分层重建。此前 WPF 的 ZKB 页只是**导航占位**，角色工作区 ZKB 卡片的按钮跳到该占位页（见原 §8）。
+- **新增服务层**（`Services/KB/`，本项目此前完全没有 ZKB 数据层）：
+  - `ZkbMapping`：`IdName.CategoryEnum ↔ ZKB EntityType ↔ ParamModifier ↔ EntityStatisticType` 的**唯一映射入口** + zkillboard 网页地址。WinUI 把同一套映射分散写在 `KBNavigationService`（两处 switch）、`ZKBHomePage`、各 `Statist*ViewModel` 里；其 `type[..^2]`（去 "ID" 后缀）拼 URL 会把 `ShipTypeID` 拼成 `/shipType/`、`SolarSystemID` 拼成 `/solarSystem/`，这里按 zkillboard 实际路由段名映射。
+  - `ZkbQueryService`：实体统计（2 分钟内存缓存 + `forceRefresh`）、击杀列表分页、单条/批量 killmail、实体搜索、实体基础信息与各统计页富化。**全部 async + CancellationToken，失败返回 null 并 `Log.Error`**（与其它 WPF 服务同约定）。
+  - `ZkbStreamFilter`：把 `ZKBStreamConfig` 的 6 组黑白名单编译成**不可变匹配快照**；未配置"星域"过滤时**跳过** system→region 的 SQLite 查询（WinUI 对每条流消息都查一次库）。
+  - `ZkbKillStreamHub`：进程内**唯一**订阅者（引用计数，最后一个退出才断开）。用有界 `Channel` + `WaitToReadAsync` 取代 WinUI 的 `ConcurrentQueue` + `Thread.Sleep(100)` 忙等轮询（队列满丢最旧，永不积压）；**配置变更自动重建过滤器**，修复 WinUI"过滤条件在连接期间修改不生效、必须断开重连"的问题。
+- **新增界面**：
+  - `Views/Pages/ZKBPage.xaml(.cs)`（替换占位页；类名与 `MainWindow` 注册均不变）：多标签宿主 + 顶部实体搜索。首个标签固定"击杀流"，其余为实体统计标签与 KB 详情标签（可关闭、实例常驻）。标签内容统一用 `Frame` 承载；标签标题绑定到页面 VM 的 `Title`，实体名解析完成后自动更新。
+  - `Views/Pages/KB/KillStreamPage.xaml(.cs)`：击杀流页 —— "筛选 KB / 已过滤 KB"两个列表 + 设置面板（连接、通知、最小价值、最大条数、排序方式、含三组黑白名单的过滤页签）。
+  - `Views/Pages/KB/EntityStatistPage.xaml(.cs)`：实体统计页 —— 左侧信息卡（头像/归属/成员/安全等级 + 危险系数与抱团概率条（`RatioBar`）+ 击杀损失）+ 右侧 **6 个子页签**（KB 列表 / 最贵击杀 / 最高击杀 / 分类统计 / 月份统计 / 超期击杀），**子页签懒加载**。
+  - `Views/Pages/KB/KbDetailPage.xaml(.cs)`：KB 详情 —— 受害者/价值面板/攻击者表/货柜，可复制链接或用浏览器打开。
+  - 可复用控件（`Views/UserControls/KB/`）：`KillListControl`（KB 列表，`ui:DataGrid` + 阶段 22 滚动方案）、`KillRankCard`（排名卡片）、`IdNameSearchBox`（实体搜索框）、`KbFilterPairControl`（一组"排除项/包含项"编辑器）。
+  - 转换器与工具：`CategoryEnumToStringConverter`、`IdNameImageConverter`、`UrlToImageConverter`、`IskConverter`、`DateTimeToLocalConverter`、`StringToVisibilityConverter`；`GameImageHelper` 扩展角色头像/军团徽标/联盟徽标与"按类别分派"的统一入口；`IskFormatHelper`（按**数值阈值**而不是 WinUI `ISKNormalizeConverter` 那种"按字符串长度 + 小数点切分"判断量级）。
+  - `Services/KbNavigation`：让任意界面（角色工作区卡片、击杀列表、统计页里的实体名…）都能"跳到 ZKB 页并打开某实体/某 KB"，与 `Navigation.NavigateToMarket` 同思路（含页面未创建时的待处理请求，两条路径都 `Drain`，不会重复打开）。
+- **顺带修掉的 WinUI 缺陷**（本次未沿用其写法）：
+  1. "最近 7 天最高价值"误用了历史数据源 `TopIskKills`（应为 `TopIskKills7d`）；
+  2. 过滤类型下拉用 `(TypeModifier)(KBModifierIndex - 1)` 强转、与 ComboBox 项顺序强绑定 → 改为显式数组映射；
+  3. 实体页构造函数一次性 `new` 出 5 个子页面（各自挂 `Loaded` 并取数）→ 改懒加载；
+  4. 批量取 killmail 是串行 `foreach + await`（WinUI 里并行实现被整段注释）→ 改为有界并发（信号量，默认 6，上限 16）；
+  5. `KBNavigationService` 直接持有 `TabView`/`TabViewItem`/`ToolWindow`（作者自注"懒得改成 IOC 了"）→ 本模块服务层与 UI 完全解耦。
+- **接线**：角色工作区的 ZKB 卡片按钮由"跳到占位页"改为"跳转并打开该角色的实体统计标签"。
+- **本地化**：中英各补约 120 个键（`CategoryEnum_*`、`KBListControl_*`、`ZKBHomePage_*`、`EntityStatistPage_*`、`Statist*Page_*`、`KB_*`、`ZKBPage_*`、`MapIntelTool_*`），键值沿用 WinUI 原文；已做重键检查（两文件均 1282 键、0 重复）。
+- **校验**：`dotnet build` **0 错误 0 新警告**（仅剩 6 类既有告警，均不指向本次新增文件）。另对 WPF-UI 4.3.0 程序集逐个核对了所用**图标名**（`Play24`/`RecordStop24`/`Eraser24`/`Settings24`/`Dismiss24`/`Filter24`/`ArrowSync24`/`Copy24`/`Open24`/`Info24`）与**主题画刷键**是否存在（图标名非法是运行时 `XamlParseException`，见 §9 第 16 条同类问题）。
+- **未覆盖**：本次**未做实机核验**（真实账号 + 真实 ZKB 服务逐页点击）。新增页面一律未在真机上跑过，首次使用请留意 §8 新增的 ZKB 待办项。
+- **修复（用户实机反馈，2 处）**：打开 ZKB 页即抛 `XamlParseException`——"无法找到名为 `StringToVis` 的资源"（`KbFilterPairControl.xaml` 行 50）。根因：该控件只在 `UserControl.Resources` 里注册了 `CategoryEnum`，却在 `Tip` 的显隐绑定上引用了 `StringToVis`。**`StaticResource` 解析失败是运行时异常**（编译与 BAML 生成都不报），属 §9 第 16 条同类（与阶段 40 那个 `HasResultCard` 完全同型）。修复：补上 `<converters:StringToVisibilityConverter x:Key="StringToVis" />`。
+  - 顺带做了一次**全量 `StaticResource` 键审计**：对本次新增的 8 个 XAML 逐个提取 `{StaticResource X}`，与"本文件 `x:Key` 定义 + App 级三个字典（`GlobalControlStyles`/`CardControlStyles`/`SettingCardStyles`）的键"比对 → 45 处引用全部解析（并打印了每个文件的引用清单以确认不是"正则没匹配到"的假通过）。
+- **修复（自查发现的静默绑定失败）**：`KillRankCard.xaml` 的 7 处绑定写成了 `{Binding No/Name/ImageUrl/SubTitle/Kills/ValueText, RelativeSource={RelativeSource AncestorType=UserControl}}`——`AncestorType=UserControl` 的源是**控件自身**，而这些属性在 `KillCardItem` 上，控件上没有 → 绑定静默失败，"最贵击杀 / 最高击杀 / 超期击杀"的卡片会**名称/击杀数/估价/图片全空**（不报错、不崩溃）。修复：改为经 DP 走一层 `Item.*`。
+  - 同类自查：把所有"以控件自身为源"的绑定路径全部列出核对 → 只剩 `KbFilterPairControl` 的 `Tip/Categories/Exclusions/Inclusions`、`KillListControl` 的 `ItemsSource`、`KillRankCard` 的 `Item.*`，均为该控件上的真实 DP；另确认无 `ElementName=` 残留。
+- **同时修复**：`KillStreamViewModel` 的 `IsConnected` / `IsSettingVisible` 只通知了 `IsDisconnected`（漏了 `IsContentVisible` 与 `ShowDisconnectedHint`）→ **点「连接」后列表不会出现、未连接提示和连接按钮不会隐藏**。属 §9 第 20 条"绑定到不通知的属性"同类，已补齐成对通知。
+- **修复（用户实机反馈，第二轮）**：`System.NullReferenceException` → `Core/Services/DB/LocalDbService.cs:266`（`TranMapSolarSystem(MapSolarSystem item)`）。**这是 Core 里的既有缺陷，WinUI 同样存在**：
+  - **根因**：`MapSolarSystemService.Query(int id, bool local = true)` 在**主库（SDE）里查不到该 id** 时得到 `null`，却仍把它交给 `LocalDbService.TranMapSolarSystem(null)`，而该方法第一行就取 `item.SolarSystemID` → NRE。**同一文件里 `TranInvType(InvType)` / `TranInvTypeAsync` 本来就写了 `if (invType != null)` 守卫，而 region / solar system / station / market group / group 这 5 组（sync + async 共 10 个方法）漏了**——写法不一致导致的缺口。
+  - **修复①（治本）**：上述 10 个"item 变体"翻译器一律补 `item == null` 守卫（与 `TranInvType` 的既有约定一致）；`MapSolarSystemService` 的 4 个 `Query*`（2 个同步 + 2 个异步）改为"**查不到行就不调翻译器**"，顺带省掉一次本地库查询。
+  - **修复②（不再瞎报）**：`App.OnDispatcherUnhandledException` 此前**只弹框、不记日志**，于是出现"界面报了一个异常，但日志从那时起完全静默、无法定位调用方"——本次排障的首要障碍就是它。现在改为 `Core.Log.Error(e.Exception)` + 弹框显示 `e.Exception.ToString()`（含**完整堆栈**）；并补挂 `AppDomain.CurrentDomain.UnhandledException` 与 `TaskScheduler.UnobservedTaskException`，让**后台线程/未观察 Task** 的异常也落盘（ZKB 的流消费、分页取数都在后台线程上）。
+  - **修复③（加固）**：`ZkbKillStreamHub` 的消费循环里 `_filter.Pass(...)` 与事件回调此前在 try/catch **之外**，单条异常会冲出内层循环、结束整个消费者任务——表现为"界面仍显示已连接、却再也收不到任何数据"。已改为逐条走 `ProcessOne` 隔离，坏一条只丢一条。
+  - **定位受限说明（如实记录）**：因修复②之前不记录日志，本次**无法从日志确认具体调用方**。静态排查把该崩溃方法的调用方收敛为全仓库仅两处——`MapSolarSystemService.Query(int, bool)`（第 64 行）与 `Query(string)`（第 37 行）；后者的调用方在仓库内已不存在，前者的 WPF 侧可达路径只有 Core `KBHelpers.cs:96`（在本次新增的 try/catch 内、且 catch 会记日志，与"日志静默"矛盾）与 `ZkbStreamFilter.ResolveRegion`（自带 try/catch）。因此**不排除是调试器把一条已被捕获的首发异常提示给了使用者**。修复①之后该异常已不可能再发生；修复②之后若出现新异常，日志里会有完整堆栈。
+- **修复（用户实机反馈，第三轮："KB列表与最贵击杀都没数据，最高击杀等其他Tab有数据"）**——这一轮用**独立探针工程**（引用 Core + ZKB.NET + WPF，按 `CoreInitializer` 同参数初始化，`%TEMP%` 下一次性产物、核对后已删）把数据链逐跳跑通，找到了**真正的根因**：
+  - **事实链**（探针实测）：① zkillboard `/kills/` 接口现在**直接返回完整 killmail**（`attackers`/`victim`/`killmail_time`/`solar_system_id` + `zkb`），URL 形状（`characterID`/`systemID`/`killID`/`page/1/`）全部 200 条正常；② Core 富化 `KBHelpers.CreateKBItemInfo(List<ZKillmaill>)` 走的是"拿 `killmail_id + zkb.hash` **逐条去 ESI 换完整 killmail**，再 `kmInfo.DepthClone<SKBDetail>()` 跨模型拷贝"；③ **`DepthClone` 是 JSON 往返，而 EVEStandard 模型靠 snake_case 命名策略反序列化（属性上没有 `[JsonProperty]`），`SKBDetail` 靠显式 `[JsonProperty("killmail_id")]`** —— 序列化出 PascalCase、反序列化对不上 → **`SKBDetail` 全是默认值**（`KillmailId=0`、`KillmailTime=default`、`Victim.ShipTypeId=0`、`SolarSystemId=0`）。
+  - **由此同时解释三个症状**：KB列表 50 行全是空壳（开本地化时 `MapSolarSystemService.Query(0)` → null → 正是上一轮那个 NRE）；「最贵击杀」`byId.TryGetValue(真实id)` 因克隆出 `KillmailId=0` **永远匹配不上** → 0 条且无日志（`logErrors:false`）；而最高击杀/分类/月份只用 statistics 聚合数据，不经过 killmail → 正常。
+  - **修复①（主路径改造）**：`ZKB.NET` 新增 `ZKB.GetKillmailDetailsAsync(...)` —— **直接把 `/kills/` 响应反序列化成 `List<SKBDetail>`**（完整数据本来就在响应里），`ZkbQueryService` 的列表/单条/最贵击杀全部改走它，再交给 `KBHelpers.CreateKBItemInfo(SKBDetail)` 做本地库富化。**省掉每页最多 200 次 ESI 往返**，数据也不再是空壳。旧的 ESI 路径保留为兜底（响应形状变化时自动回退），并对其产出的空壳（`KillmailId<=0`）过滤。
+  - **修复②（并发改串行）**：批量富化原计划 6 并发，实测 50 条丢 16 条 —— Core 的名称/星系查询共用同一 SQLite 连接且非并发安全（`KBHelpers` 注释原文："使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"）。改回**串行**后 50/50 全部成功。
+  - **修复③（不再静默）**：直取失败**重试一次**并记 Warn（两次都失败/为空也记）；「最贵击杀」取回数少于 killID 数时记 Warn；击杀列表每页记一条 Info（抓到 N 条/本页富化 M 条）。
+  - **探针验证**（直取路径）：KB列表 `items=50 hasNext=True`；「最贵击杀」`items=1`（旧路径 0）；单条详情正常。**注意**：复测时 `killID` 单查一度返回空——是本机连续探测触发 zkillboard 限流（同一 URL 直取/重试/兜底三连发），非代码问题；正常使用频率不会触发。
+  - **遗留（Core/WinUI 侧）**：`KBHelpers.CreateKBItemInfo(List<ZKillmaill>)` 的 ESI+DepthClone 空壳问题**在 WinUI 版同样存在**，本轮未动 Core（WPF 已完全绕开该路径）；若日后要修 WinUI，可让它也改走 `GetKillmailDetailsAsync`。
+- **修复（用户实机反馈，第四轮："加载等待不要用全局等待效果，实体可并发操作"）**——实体统计页此前复用全局 `PageNotifyService.ShowWaiting/HideWaiting`，但实体标签**可以同时打开多个并发加载**，全局遮罩会误遮其他实体标签、且多页并发时互相干扰（先结束的页会把别的页的遮罩藏掉）。改造为**每页独立等待态**：
+  - `EntityStatistViewModel` 新增 `IsBusy`（**可重入计数**：同页内并发触发的多个操作全部结束才隐藏）与 `BusyText`；`BeginBusy/EndBusy` 由页面驱动。
+  - `EntityStatistPage.RunAsync` 由 static 改实例方法：不再碰 `PageNotifyService.ShowWaiting`，只置/清本页 busy 态；**错误提示仍走右下角非阻塞通知**。首次取数用 `ZKBPage_LoadingStatistic`，其余用 `ZKBPage_Loading`。
+  - `EntityStatistPage.xaml` 新增**页面局部等待遮罩**（`Grid.ColumnSpan=2`，只盖本标签并拦截点击）：半透明背景 + 卡片 + `SpinnerIcon` 自绘旋转图标（视觉与全局 `WaitingOverlay` 一致；不用 `ProgressRing`，见 §9 第 17 条）。
+  - `KillStreamViewModel.ConnectAsync` 同步改掉：连接等待由 `IsConnecting` 驱动 `KillStreamPage` 页内"连接中"指示（`SpinnerIcon` + `ZKBHomePage_ConnectingToWSS`），不再弹全局遮罩；`ShowDisconnectedHint` 增加 `!_isConnecting` 条件（连接中显示指示而非"未连接"提示）；顺带补了 `catch`——此前 `StartAsync` 抛出的异常会沿 async void 调用链冲到全局异常处理器弹框（finally 只复位 `IsConnecting`，不吞异常）。
+  - 全局等待遮罩保留给"应用级单实例操作"（倒货取数/估价等），ZKB 内已无 `ShowWaiting` 调用点。
+- **UI 对齐（用户要求："实体页面左侧概况卡片和 WinUI3 保持一致"）**——左侧列由"单张带标题的卡片"重构为 **WinUI `EntityStatistPage` 同款两张卡**（`ScrollView` 内纵向堆叠）：
+  - **卡 1 实体信息**：100×100 **圆形头像**（`CornerRadius=999`，无头像隐藏）→ 名称（18px Bold，可换行）+ **"浏览器查看"按钮**（`Open24` 图标，打开 `ZkbMapping.BuildEntityWebUrl`，对应 WinUI 的 `OpenInBrowerCommand`）→ 信息行（**标签宽 80 细体 + 值**，同 WinUI `StackPanel_ListInfo` 行组）。信息行带**实体链接**：`EntityInfoRow` 增加 `Link`（`IdName`），非空时值渲染为强调色透明按钮、点击 `KbNavigation.OpenEntity` 跳转（同 WinUI 各 `Button_*_Click`）。行集对齐 WinUI：军团/联盟/执行军团/星系/星域/舰船/类别/安全等级/成员（**WinUI 本就不展示 CEO 行，此处同样移除**）；军团/联盟补**成员数**兜底取 ZKB `statistic.Info.MemberCount`（联盟的 ESI 信息不含成员数，WinUI 即如此）。
+  - **卡 2 统计概览**：危险系数/抱团概率两行改为 WinUI 同款形态——**标签 + 2px 细条（绿轨 `SystemFillColorSuccessBrush` / 红条 `SystemFillColorCriticalBrush`，两者同色，替代原"危险红/抱团橙"）+ 数值 + %**；下方为 WinUI 同款 **3 列统计块**：击杀数/价值/点数（绿）与 损失数/价值/点数（红），外加**单挑击杀/单挑损失**行（`SoloKills`/`SoloLosses`，新增 VM 属性；WinUI 把这些计数误过一遍 `ISKNormalizeConverter` 且两组不一致，WPF 直接显示原始计数）。
+  - 移除旧卡独有的"拥有超期"文字（WinUI 无此元素，超期页签的出现本身已表达该信息；`HasSupers` 属性保留用于页签可见性）。`CategoryLabel` 不再展示（WinUI 无）。
+  - 本地化 **0 新增键**（`EntityStatistPage_Ship`、`StatistMonthPage_Points*/Solo*` 等阶段 53 已带入）。`dotnet build` 0 错误、无新增告警；未实机核验。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
@@ -1569,6 +1628,10 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 41. **AI 翻译页可以并发请求**（阶段 47 追加）：等待期间允许继续发送，每条一个请求、各自一个取消令牌，没有队列与并发上限（点「停止」会取消**全部**在跑的请求）。代价是"连发 5 条"会同时产生 5 个请求——按次计费的服务商请自行留意；相册式的顺序由本地记录顺序保证，与返回先后无关。
 42. **长文本翻译的两个真实上限**（阶段 47 追加，已按 DeepSeek 官方参数重做）：**输入上限（上下文窗口）与输出上限是两件事**。以 `deepseek-flash` 为例，上下文 1M token、最大输出 384K token —— 所以"几万字的原文"本身根本不是问题，瓶颈在**输出**（一次能写多少 token）。本项目的处理：分片阈值由设置决定（`TranslationPage.Ai.MaxChunkChars`，默认 12000 字符，0 = 不分片），`finish_reason=length` 时**自动从断点续写**（最多 3 次），续不完会明确提示"译文可能不完整"。默认 12000 字符的意义是"首段结果更快出现、单次失败损失更小"，并不是模型限制；真嫌慢/嫌请求多都可以在设置页调。
 43. **思考模式默认关闭（仅 DeepSeek 系生效）**（阶段 47 追加）：`deepseek-flash` 的思考模式默认开启且 effort=high，翻译前会先写一大段思维链——又慢又贵，而且**思考模式下 `temperature` 无效**。所以设置页新增「思考模式」，默认 `off`；由于 `thinking`/`reasoning_effort` 是 DeepSeek 专有字段，本项目只在"模型名或地址含 deepseek"时才下发（`AiTranslationSettings.ResolveThinkingMode`），别的服务商保持 `auto`（不下发），避免它们不认识该参数直接 400。
+44. **ZKB 模块整体未做实机核验**（阶段 53）：主页面 / 击杀流 / 实体统计（6 子页签）/ KB 详情均只完成编译与静态校验（图标名、主题画刷键、占位符替换），**没有在真实账号 + 真实 ZKB 服务上逐页点击**。首次使用请优先验证：① 切到 ZKB 页时首个"击杀流"标签是否正常渲染；② 点"连接"能否连上并收到 KB（`ZKBStreamConfig.json` 里的 `AutoConnect` 控制是否自动连）；③ 搜索一个角色名能否打开实体统计并出数。
+45. **ZKB 设置有两处入口**（阶段 53）：设置 → Zkillboard 子页（`ZKBSettingPage`，以逗号 ID 文本维护各过滤集合）与击杀流页内的设置面板（以"搜索 + 黑白名单列表"维护同一批集合）**读写同一份 `Configs/ZKBStreamConfig.json`**，二者会互相覆盖——同时打开两个入口编辑时需要留意（无冲突检测）。后续可考虑把逗号 ID 文本的旧入口收敛掉。
+46. **ZKB 通知点击不会打开对应 KB**（阶段 53）：级联通知走托盘气泡（`NotificationService`），而托盘气泡的点击事件当前被频道预警用于"停止报警声音"，因此 ZKB 通知点击只关闭气泡、不跳转（WinUI 用 Toast 的 `ScenarioId` 做到了点击直达）。要做的话需要在点击事件里按"最后一条通知来源"分流。
+47. **ZKB 击杀流/统计的排序与筛选口径以 WinUI 为准**（阶段 53）：流列表排序沿用 `ZKBStreamConfig.SortWay`（上传时间/发生时间），实体统计的"危险系数/抱团概率"等数值直接取 ZKB 服务端返回，本地不做二次计算；"分类统计"按击杀数降序（WinUI 也是），"最高击杀"按 ZKB 返回顺序重排为击杀数降序。未与 WinUI 逐项对拍。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -1584,7 +1647,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 - 国服授权的**自动化**：国服没有回调地址，只能手动粘贴 code（与 WinUI 一致）；若日后拿到可用的回调/内部协议，可把 `SerenityAuthWindow` 退化为"打开授权页 + 等待回调"。
 - 玩家建筑页的"按角色搜索"（依赖 OAuth 授权链路打通后的 ESI 结构查询）。
 - **结构名称解析**：把 WinUI `StructureService.QueryStructureAsync`（`Universe.GetStructureInfoAsync` + `Structures.json` 缓存）移植到 WPF 版；这是"structure id 请走 StructureService"约定在 WPF 侧落地的前提（详见文末同名小节）。
-- ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）。
+- ~~ZKB 页本身仍是导航占位（工作区 ZKB 卡的"ZKB"按钮跳到该占位页）~~ → **阶段 53 已完成**：ZKB 主页面、击杀流、实体统计（6 子页签）、KB 详情全部落地，工作区卡片改为直接打开该角色的实体统计标签。
 - 软件更新页"安装"仍交外部 Updater。
 - **预览浮窗不跟随源窗口实时改变宽高比**（阶段 44）：窗口尺寸被锁定为游戏客户区比例，但只在启动/缩放/统一尺寸/恢复位置/布局变化时校正；游戏侧切全屏或改分辨率后，要等下一次这类时机才跟着变（未监听源窗口 `WM_SIZE`）。
 
@@ -1698,6 +1761,33 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     ```
     `WaitAsync` 立刻响应超时/取消（超时抛 `TimeoutException`，取消抛 `OperationCanceledException`），被放弃的那次读在随后释放 response/stream 时自然作废。另一个配套结论：**流式超时应该是"空闲超时"**（每收到一段增量就 `CancelAfter` 重置），否则长文本生成（几分钟）会被"总时长超时"砍掉。
 30. **视图 `Unloaded` 里不要取消在跑的请求**（阶段 47 追加，用户反馈"翻译显示已停止"的根因）：`UserControl.Unloaded` 在**切换导航、页面被 Frame 重新承载**等场景都会触发，而本项目的页面是 `NavigationCacheMode="Required"` 常驻缓存的——在 `Unloaded → VM.Dispose()` 里 `Cancel()` 会让"用户只是切了个页面"变成"正在跑的请求被静默取消"，界面上留下的就是一句"已停止"。**只退订事件、别动请求**；要中止请走界面上的显式「停止」，并在日志里记一行原因，避免下次还要靠猜。
+31. **三类"编译期不报、只在运行时炸"的错误，写完界面必须逐一自查**（阶段 53 实机踩全了）：
+    1. **`StaticResource` 键未定义 → 运行时 `XamlParseException`**（内部异常 `无法找到名为 "Xxx" 的资源。资源名称区分大小写。`）。典型来源：控件在 `UserControl.Resources` 里只注册了一部分转换器，别处却引用了另一个键；或批量替换"改了引用、没改定义"。**BAML 生成阶段不校验**。自查（列引用 vs 本文件 `x:Key` + App 级三字典）：
+       ```powershell
+       $t = Get-Content $f -Raw
+       $local = [regex]::Matches($t,'x:Key="([^"]+)"') | % { $_.Groups[1].Value }
+       [regex]::Matches($t,'StaticResource\s+([A-Za-z_]\w*)') | % { $_.Groups[1].Value }   # 逐个对照
+       ```
+    2. **图标名（`SymbolRegular`）非法 → 运行时 `XamlParseException`**。用了新图标名就要先验证（见第 32 条的做法）。
+    3. **绑定路径写错或写"看起来对但其实不对的源" → 静默失败**（不报错、不崩溃、界面空白）。本项目最阴的一种是 **`RelativeSource AncestorType=UserControl` 的源是控件自身**，所以路径必须是**该控件上的 DP**；写成数据项上的属性名（如 `{Binding Name, RelativeSource=...UserControl}`）会全部落空——正确写法是经 DP 走一层：`{Binding Item.Name, RelativeSource=...}`。
+    自查：把"以控件自身为源"的绑定路径列出来，确认每一个都是该控件声明的 DP：
+    `[regex]::Matches($t, '\{Binding\s+([^,}]+),\s*RelativeSource=\{RelativeSource\s+AncestorType=UserControl\}')`
+    第三类的同族问题：**VM 里漏发 `PropertyChanged`**。当一个 `Visibility` 绑在"由两个字段组合出来"的计算属性上（如 `IsContentVisible = 连接中 && !设置面板打开`），两个字段的 setter **都**要通知它，否则会出现"点了连接但列表不出现、提示不消失"。
+32. **校验 WPF-UI 的图标名 / 资源键：别用反射（`.Assembly.LoadFrom` 会被安全策略拦），直接读 dll 字符串表**：
+    ```powershell
+    $p = "...\bin\Debug\net8.0-windows10.0.19041\Wpf.Ui.dll"
+    $b = [IO.File]::ReadAllBytes($p)
+    ([Text.Encoding]::ASCII.GetString($b)).Contains("Filter24")     # 图标名与多数资源键在 ASCII 串表
+    ([Text.Encoding]::Unicode.GetString($b)).Contains("TextFillColorPrimaryBrush")  # 少数在 UTF-16 串表
+    ```
+    两种编码都试一遍即可（某一种返回 False 不代表存在）。
+33. **共享 Core 的"本地化翻译器"不做 null 守卫，是这一类 NRE 的总源头**（阶段 53 第二轮）：`LocalDbService` 里 `TranXxx(Xxx item)` 这种"把翻译结果写回传入对象"的方法，参数**可能**是"主库查不到 id 时返回的 null"（调用方 `XxxService.Query(id)` 就是这么传的）。本文件里 `TranInvType(InvType)` / `TranInvTypeAsync` 有 `if (invType != null)` 守卫，而 `MapRegion` / `MapSolarSystem` / `StaStation` / `InvMarketGroup` / `InvGroup` 这 5 组漏了 → 只要有一个 id 在主库里不存在，取参数属性即 `NullReferenceException`。**两条约定**：① 写这类"回写参数对象"的方法，第一个判断必须是 `item == null` 就返回；② 服务层的 `Query(id)` 在行不存在时**不要**把 null 递给翻译器（既避免异常，也省一次本地库往返）。
+34. **全局异常处理器只弹框不记日志 = 自己把眼睛蒙上**（阶段 53 第二轮）：`App.OnDispatcherUnhandledException` 原先只有 `MessageBox.Show(e.Exception.Message)`，于是"用户看得到异常、日志里什么都没有"，而弹框只给 `Message`（**不含堆栈**），排查时等于没有信息。正确做法：`Core.Log.Error(e.Exception)` **加上**弹框显示 `e.Exception.ToString()`（含类型与完整堆栈）；另外补挂 `AppDomain.CurrentDomain.UnhandledException` 与 `TaskScheduler.UnobservedTaskException` 覆盖后台线程（本项目大量工作在后台线程：ZKB 流消费、分页取数、频道日志轮询）。
+35. **"界面显示已连接但永远收不到数据"要先查消费循环的异常边界**（阶段 53 第二轮）：`ZkbKillStreamHub` 的消费者是 `while (await WaitToReadAsync) { while (TryRead) { ... } }`，若每条的处理逻辑（富化/过滤/回调）不在**内层** try 里，单条异常会冲出内层循环 → 被外层 catch 接住 → **消费者任务直接结束**，而 `IsRunning` 仍是 true。凡"长驻消费循环"，**逐条隔离**（每条的 try/catch 只丢弃该条）比"整体包一层"更稳。
+36. **`DepthClone<T>` 跨模型拷贝会"拷出空壳"——命名策略不同的两个模型之间不能这么抄**（阶段 53 第三轮，ZKB 数据全空的根因）：`DepthClone` 是 `SerializeObject(obj)` → `DeserializeObject<T>(json)` 的 JSON 往返，**两边必须用同一套命名规则**。`EVEStandard` 的模型靠序列化设置里的 **snake_case 命名策略**解析（属性无 `[JsonProperty]`），而 `ZKB.NET` 的模型用显式 `[JsonProperty("killmail_id")]` —— 从前者拷到后者，键名全对不上，得到一个**字段全为默认值**的对象（`KillmailId=0`/`KillmailTime=default`），而且**不报错、不抛异常**，下游只能靠"id 匹配不上/显示全空"这类间接症状发现。两条教训：① 跨命名空间的模型转换不要用 JSON 往返，老老实实手写映射或用统一命名策略；② "接口响应里已经带了完整数据时，就不要再逐个去另一服务换取再拷贝"——`/kills/` 现在直接返回完整 killmail，`ZKB.GetKillmailDetailsAsync` 直取后本地富化即可（每页省 200 次 ESI 往返）。
+37. **Core 的本地库（SQLite）查询不是并发安全的，批量富化必须串行**（阶段 53 第三轮实测）：`KBHelpers` 注释原文"使用一个线程来执行查询KB具体信息，避免ESI查名字时数据库冲突"。实测同一批 50 条的富化，6 并发丢 16 条（单条异常/数据缺失被静默吞掉），串行 50/50。凡要并发调用 `IDNameService` / `MapSolarSystemService` / `InvTypeService` 等 Core DB 服务的，先确认线程安全性，默认**串行**。
+38. **zkillboard 有 IP 限流，"同 URL 直取+重试+兜底三连发"会把自己打死**（阶段 53 第三轮）：排障时连续探测后发现 `/kills/killID/<id>/` 从 200 条变成空——是限流，不是接口变更。日常使用频率不会触发，但写代码时注意：**不要让重试与兜底打同一个 URL**（本项目兜底走的是另一条数据通路），排障时探测间隔拉长、或换 IP 验证。
+39. **可多开并发的页面不要用全局等待遮罩，等待态必须页面私有**（阶段 53 第四轮）：实体统计页一类的"可同时打开 N 份、各自异步加载"的页面，若用 `PageNotifyService.ShowWaiting`（全局 `WaitingOverlay`），会误遮其他副本，且"先结束的页 `HideWaiting`"会把别的页还在转的遮罩藏掉（全局遮罩无计数）。模式：VM 暴露 `IsBusy`（**可重入计数**，同页并发多个操作全结束才隐藏）+ `BusyText`，页面内嵌局部遮罩（`SpinnerIcon` 自绘旋转图标 + 半透明背景，视觉对齐全局 `WaitingOverlay`，但只盖住本页并拦截点击）；错误提示仍走右下角非阻塞通知。全局遮罩留给"应用级单实例操作"（倒货取数、估价等）。另：局部旋转指示**不要用 `ui:ProgressRing`**（WPF-UI 隐式样式栈溢出史，见第 17/22 条），用 `Controls/SpinnerIcon`。
 
 
 ---

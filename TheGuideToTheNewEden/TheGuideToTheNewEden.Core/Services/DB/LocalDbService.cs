@@ -156,11 +156,23 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public static async Task TranInvGroupAsync(InvGroup invGroup)
         {
+            // 主库查不到该 id 时调用方会传进 null（见 MapSolarSystemService.Query 等），此处必须守卫，
+            // 否则取属性即 NullReferenceException（与 TranInvType 系列的既有写法保持一致）。
+            if (invGroup == null)
+            {
+                return;
+            }
+
             var type = await TranInvGroupAsync(invGroup.GroupID);
             invGroup.GroupName = type?.GroupName;
         }
         public static void TranInvGroup(InvGroup invGroup)
         {
+            if (invGroup == null)
+            {
+                return;
+            }
+
             var type = TranInvGroup(invGroup.GroupID);
             invGroup.GroupName = type?.GroupName;
         }
@@ -229,11 +241,21 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranMapRegionAsync(MapRegion item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = await TranMapRegionAsync(item.RegionID);
             item.RegionName = type?.RegionName;
         }
         public static void TranMapRegion(MapRegion item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = TranMapRegion(item.RegionID);
             item.RegionName = type?.RegionName;
         }
@@ -263,6 +285,13 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         }
         public static void TranMapSolarSystem(MapSolarSystem item)
         {
+            // 主库（SDE）里没有该星系 id 时，MapSolarSystemService.Query 会返回 null 并原样传进来，
+            // 此处不守卫就会在取 item.SolarSystemID 时抛 NullReferenceException。
+            if (item == null)
+            {
+                return;
+            }
+
             var tran = TranMapSolarSystem(item.SolarSystemID);
             if(tran != null)
             {
@@ -308,6 +337,11 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranMapSolarSystemAsync(MapSolarSystem item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = await TranMapSolarSystemAsync(item.SolarSystemID);
             item.SolarSystemName = type?.SolarSystemName;
         }
@@ -352,11 +386,21 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranStaStationAsync(StaStation item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = await TranStaStationAsync(item.StationID);
             item.StationName = type?.StationName;
         }
         public static void TranStaStation(StaStation item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = TranStaStation(item.StationID);
             item.StationName = type?.StationName;
         }
@@ -402,12 +446,22 @@ namespace TheGuideToTheNewEden.Core.Services.DB
 
         public static async Task TranInvMarketGroupAsync(InvMarketGroup item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = await TranInvMarketGroupAsync(item.MarketGroupID);
             item.MarketGroupName = type?.MarketGroupName;
             item.Description = type?.Description;
         }
         public static void TranInvMarketGroup(InvMarketGroup item)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             var type = TranInvMarketGroup(item.MarketGroupID);
             item.MarketGroupName = type?.MarketGroupName;
             item.Description = type?.Description;

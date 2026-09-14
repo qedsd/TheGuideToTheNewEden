@@ -1205,4 +1205,135 @@
     <sys:String x:Key="GlossarySettingPage_Reload">Reload</sys:String>
     <sys:String x:Key="GlossarySettingPage_Reloading">Loading…</sys:String>
     <sys:String x:Key="GlossarySettingPage_Reloaded">SDE {0} · user {1} · {2}</sys:String>
+    <!--  ==== Zkillboard (KB) ====  -->
+    <sys:String x:Key="CategoryEnum_Alliance">Alliance</sys:String>
+    <sys:String x:Key="CategoryEnum_Character">Character</sys:String>
+    <sys:String x:Key="CategoryEnum_Constellation">Constellation</sys:String>
+    <sys:String x:Key="CategoryEnum_Corporation">Corporation</sys:String>
+    <sys:String x:Key="CategoryEnum_InventoryType">Inventory Type</sys:String>
+    <sys:String x:Key="CategoryEnum_Region">Region</sys:String>
+    <sys:String x:Key="CategoryEnum_SolarSystem">SolarSystem</sys:String>
+    <sys:String x:Key="CategoryEnum_Station">Station</sys:String>
+    <sys:String x:Key="CategoryEnum_Faction">Faction</sys:String>
+    <sys:String x:Key="CategoryEnum_Structure">Structure</sys:String>
+    <sys:String x:Key="CategoryEnum_Group">Group</sys:String>
+
+    <sys:String x:Key="MapIntelTool_Exclusions">Exclusions</sys:String>
+    <sys:String x:Key="MapIntelTool_Exclusions_Tip">Not displayed in the list</sys:String>
+    <sys:String x:Key="MapIntelTool_Inclusions">Inclusions</sys:String>
+    <sys:String x:Key="MapIntelTool_Inclusions_Tip">Only displayed in the list</sys:String>
+
+    <sys:String x:Key="ZKBPage_SearchTip">Search character / corporation / alliance / system / ship…</sys:String>
+    <sys:String x:Key="ZKBPage_NoSearchResult">No matching entity</sys:String>
+    <sys:String x:Key="ZKBPage_UnsupportedEntity">This entity type is not supported by ZKB</sys:String>
+    <sys:String x:Key="ZKBPage_QueryFailed">Query failed, see the log for details</sys:String>
+    <sys:String x:Key="ZKBPage_Loading">Loading…</sys:String>
+    <sys:String x:Key="ZKBPage_LoadingStatistic">Loading statistics…</sys:String>
+    <sys:String x:Key="ZKBPage_NoData">No data</sys:String>
+    <sys:String x:Key="ZKBPage_OpenEntity">Open this entity</sys:String>
+
+    <sys:String x:Key="KBListControl_Date">Date</sys:String>
+    <sys:String x:Key="KBListControl_Time">Time</sys:String>
+    <sys:String x:Key="KBListControl_TotalValue">TotalValue</sys:String>
+    <sys:String x:Key="KBListControl_Location">Location</sys:String>
+    <sys:String x:Key="KBListControl_Type">Type</sys:String>
+    <sys:String x:Key="KBListControl_Victim">Victim</sys:String>
+    <sys:String x:Key="KBListControl_FinalBlow">Final blow</sys:String>
+    <sys:String x:Key="KBListControl_OpenBrowser">Open by browser</sys:String>
+
+    <sys:String x:Key="ZKBHomePage_ConnectingToWSS">Connecting...</sys:String>
+    <sys:String x:Key="ZKBHomePage_Connected">Connected</sys:String>
+    <sys:String x:Key="ZKBHomePage_KillStream">KB stream</sys:String>
+    <sys:String x:Key="ZKBHomePage_Connect">Connect</sys:String>
+    <sys:String x:Key="ZKBHomePage_Disconnect">Disconnect</sys:String>
+    <sys:String x:Key="ZKBHomePage_DisconnectTip">Disconnected to the ZKB server. You can click the button below to connect to the server</sys:String>
+    <sys:String x:Key="ZKBHomePage_Disconnect_Tip">The ZKB server has been disconnected.</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter">Filter</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Global">Global</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Global_Tip">Filter KB's system, region, and killed ship</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim">Victim</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">Filter KB victim's character, corporation, and alliance</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker">Attacker</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">Filter KB attacker's character, corporation, and alliance</sys:String>
+    <sys:String x:Key="ZKBHomePage_TotalReceivedCount">Total Received</sys:String>
+    <sys:String x:Key="ZKBHomePage_MatchedCount">Matched</sys:String>
+    <sys:String x:Key="ZKBHomePage_MatchedKB">Matched KB</sys:String>
+    <sys:String x:Key="ZKBHomePage_FilteredOutKB">Filtered Out KB</sys:String>
+
+    <sys:String x:Key="KB_TotalValue">Total value</sys:String>
+    <sys:String x:Key="KB_DroppedValue">Dropped value</sys:String>
+    <sys:String x:Key="KB_DestroyedValue">Destroyed value</sys:String>
+    <sys:String x:Key="KB_ShipFitValue">Fit value</sys:String>
+    <sys:String x:Key="KB_Dropped">Dropped</sys:String>
+    <sys:String x:Key="KB_Destroyed">Destroyed</sys:String>
+    <sys:String x:Key="KB_FinalBlow">Final blow</sys:String>
+    <sys:String x:Key="KB_TopDamage">Top damage</sys:String>
+    <sys:String x:Key="KB_AttackerCount">Attackers</sys:String>
+    <sys:String x:Key="KB_Damage">Damage</sys:String>
+    <sys:String x:Key="KB_Solo">Solo</sys:String>
+    <sys:String x:Key="KB_Attackers">Attackers</sys:String>
+    <sys:String x:Key="KB_Cargo">Cargo</sys:String>
+    <sys:String x:Key="KB_CopyLink">Copy link</sys:String>
+    <sys:String x:Key="KB_OpenBrowser">Open by browser</sys:String>
+    <sys:String x:Key="KB_Copied">Link copied</sys:String>
+
+    <sys:String x:Key="EntityStatistPage_Character">Character</sys:String>
+    <sys:String x:Key="EntityStatistPage_Corporation">Corporation</sys:String>
+    <sys:String x:Key="EntityStatistPage_Alliance">Alliance</sys:String>
+    <sys:String x:Key="EntityStatistPage_Faction">Faction</sys:String>
+    <sys:String x:Key="EntityStatistPage_Ship">Ship</sys:String>
+    <sys:String x:Key="EntityStatistPage_Class">Class</sys:String>
+    <sys:String x:Key="EntityStatistPage_System">System</sys:String>
+    <sys:String x:Key="EntityStatistPage_Region">Region</sys:String>
+    <sys:String x:Key="EntityStatistPage_CEO">CEO</sys:String>
+    <sys:String x:Key="EntityStatistPage_Members">Members</sys:String>
+    <sys:String x:Key="EntityStatistPage_Executor">Executor</sys:String>
+    <sys:String x:Key="EntityStatistPage_Sec">Sec</sys:String>
+    <sys:String x:Key="EntityStatistPage_Destroyed">Destroyed</sys:String>
+    <sys:String x:Key="EntityStatistPage_Lost">Lost</sys:String>
+    <sys:String x:Key="EntityStatistPage_HasSupers">Has Supers</sys:String>
+    <sys:String x:Key="EntityStatistPage_KBList">KB</sys:String>
+    <sys:String x:Key="EntityStatistPage_TopValue">Top Value</sys:String>
+    <sys:String x:Key="EntityStatistPage_TopStatist">Top Statist</sys:String>
+    <sys:String x:Key="EntityStatistPage_GroupSummary">Group Summary</sys:String>
+    <sys:String x:Key="EntityStatistPage_MonthSummary">Month Summary</sys:String>
+    <sys:String x:Key="EntityStatistPage_SupperSummary">Supper Summary</sys:String>
+
+    <sys:String x:Key="StatistTopValuePage_TopAllTime">Top All Time</sys:String>
+    <sys:String x:Key="StatistTopValuePage_Top7dDays">Top 7 Days</sys:String>
+
+    <sys:String x:Key="StatistKBListPage_KBModifier">Modifier</sys:String>
+    <sys:String x:Key="StatistKBListPage_All">All</sys:String>
+    <sys:String x:Key="StatistKBListPage_Kills">Kills</sys:String>
+    <sys:String x:Key="StatistKBListPage_Losses">Losses</sys:String>
+    <sys:String x:Key="StatistKBListPage_Wormhole">Wormhole</sys:String>
+    <sys:String x:Key="StatistKBListPage_Solo">Solo</sys:String>
+    <sys:String x:Key="StatistKBListPage_Finalblow">Final Blow</sys:String>
+    <sys:String x:Key="StatistKBListPage_Awox">Awox</sys:String>
+    <sys:String x:Key="StatistKBListPage_Npc">Npc</sys:String>
+
+    <sys:String x:Key="StatistTopAllTimePage_Character">Character</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Corporation">Corporation</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Alliance">Alliance</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Faction">Faction</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Ship">Ship</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_System">System</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_Kills">Kills</sys:String>
+    <sys:String x:Key="StatistTopAllTimePage_No">No</sys:String>
+
+    <sys:String x:Key="StatistGroupPage_No">No</sys:String>
+    <sys:String x:Key="StatistGroupPage_Kills">Kills</sys:String>
+    <sys:String x:Key="StatistGroupPage_Losses">Losses</sys:String>
+
+    <sys:String x:Key="StatistMonthPage_Year">Year</sys:String>
+    <sys:String x:Key="StatistMonthPage_Month">Month</sys:String>
+    <sys:String x:Key="StatistMonthPage_PointsDestroyed">Points Destroyed</sys:String>
+    <sys:String x:Key="StatistMonthPage_SoloDestroyed">Solo Destroyed</sys:String>
+    <sys:String x:Key="StatistMonthPage_PointsLost">Points Lost</sys:String>
+    <sys:String x:Key="StatistMonthPage_SoloLost">Solo Lost</sys:String>
+
+    <sys:String x:Key="StatistSuperPage_Titan">Titan</sys:String>
+    <sys:String x:Key="StatistSuperPage_Supercarrier">Supercarrier</sys:String>
+    <sys:String x:Key="StatistSuperPage_No">No</sys:String>
+    <sys:String x:Key="StatistSuperPage_Kills">Kills</sys:String>
 </ResourceDictionary>

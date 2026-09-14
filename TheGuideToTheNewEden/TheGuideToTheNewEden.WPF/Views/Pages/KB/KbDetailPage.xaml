@@ -1,0 +1,322 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.KB.KbDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:UrlToImageConverter x:Key="UrlImage" />
+        <converters:IdNameImageConverter x:Key="IdNameImg" Size="32" />
+
+        <Style x:Key="KbCell" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="12,0" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+        <Style
+            x:Key="KbNumberCell"
+            BasedOn="{StaticResource KbCell}"
+            TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <Style
+            x:Key="KbDetailGridStyle"
+            BasedOn="{StaticResource {x:Type ui:DataGrid}}"
+            TargetType="{x:Type ui:DataGrid}">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Single" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource FluentColumnHeaderStyle}" />
+            <Setter Property="CellStyle" Value="{StaticResource FluentDataGridCellStyle}" />
+            <Setter Property="RowStyle" Value="{StaticResource FluentDataGridRowStyle}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        </Style>
+    </Page.Resources>
+
+    <controls:CardControl>
+        <!--  ============ 头部：受害者 + 价值 ============  -->
+        <controls:CardControl.Header>
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Image
+                    Width="72"
+                    Height="72"
+                    VerticalAlignment="Center"
+                    Source="{Binding ShipImageUrl, Converter={StaticResource UrlImage}}" />
+
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Title}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding SubTitle}"
+                        TextTrimming="CharacterEllipsis" />
+                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding TimeText}" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding Info.SolarSystem.SolarSystemName}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  价值面板  -->
+                <Grid Grid.Column="2" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_Dropped}" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                            Text="{Binding DroppedValueText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_Destroyed}" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                            Text="{Binding DestroyedValueText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_ShipFitValue}" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding FittedValueText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Margin="12,0,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_TotalValue}" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            Text="{Binding TotalValueText}" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.ColumnSpan="4"
+                        Margin="12,6,0,0"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_AttackerCount}" />
+                        <TextBlock
+                            Margin="4,0,12,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding Attackers.Count}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource KB_Damage}" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{Binding TotalDamage}" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </controls:CardControl.Header>
+
+        <!--  ============ 攻击者 / 货柜 ============  -->
+        <TabControl>
+            <TabItem Header="{DynamicResource KB_Attackers}">
+                <ScrollViewer
+                    Margin="0,6,0,0"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+                    <ui:DataGrid
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        ItemsSource="{Binding Attackers}"
+                        Style="{StaticResource KbDetailGridStyle}">
+                        <ui:DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="80"
+                                Binding="{Binding DamagePercentText}"
+                                ElementStyle="{StaticResource KbNumberCell}"
+                                Header="{DynamicResource KB_Damage}" />
+                            <DataGridTemplateColumn Width="220" Header="{DynamicResource KBListControl_Victim}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="8,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <Image
+                                                Width="32"
+                                                Height="32"
+                                                VerticalAlignment="Center"
+                                                Source="{Binding Info.CharacterName, Converter={StaticResource IdNameImg}}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                Margin="6,0,0,0"
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Info.CharacterName.Name}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Info.AllianceName.Name}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding Info.Ship.TypeName}"
+                                ElementStyle="{StaticResource KbCell}"
+                                Header="{DynamicResource EntityStatistPage_Ship}" />
+                            <DataGridTextColumn
+                                Width="170"
+                                Binding="{Binding Info.Weapon.TypeName}"
+                                ElementStyle="{StaticResource KbCell}"
+                                Header="{DynamicResource KBListControl_Type}" />
+                            <DataGridTextColumn
+                                Width="90"
+                                Binding="{Binding Info.Attacker.DamageDone}"
+                                ElementStyle="{StaticResource KbNumberCell}"
+                                Header="{DynamicResource KB_Damage}" />
+                            <DataGridTemplateColumn Width="150" Header="{DynamicResource KB_FinalBlow}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel
+                                            Margin="8,0"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                Margin="0,0,8,0"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                Text="{DynamicResource KB_FinalBlow}"
+                                                Visibility="{Binding IsFinalBlow, Converter={StaticResource BoolToVis}}" />
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                Text="{DynamicResource KB_TopDamage}"
+                                                Visibility="{Binding IsTopDamage, Converter={StaticResource BoolToVis}}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </ui:DataGrid.Columns>
+                    </ui:DataGrid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{DynamicResource KB_Cargo}">
+                <ScrollViewer
+                    Margin="0,6,0,0"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+                    <ui:DataGrid
+                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        ItemsSource="{Binding Cargo}"
+                        Style="{StaticResource KbDetailGridStyle}">
+                        <ui:DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="420"
+                                Binding="{Binding Name}"
+                                ElementStyle="{StaticResource KbCell}"
+                                Header="{DynamicResource General_Name}" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Destroyed}"
+                                ElementStyle="{StaticResource KbNumberCell}"
+                                Header="{DynamicResource KB_Destroyed}" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Dropped}"
+                                ElementStyle="{StaticResource KbNumberCell}"
+                                Header="{DynamicResource KB_Dropped}" />
+                        </ui:DataGrid.Columns>
+                    </ui:DataGrid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!--  ============ 底栏 ============  -->
+        <controls:CardControl.Footer>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <ui:Button
+                    Margin="0,0,6,0"
+                    Appearance="Primary"
+                    AutomationProperties.Name="{DynamicResource KB_CopyLink}"
+                    Click="OnCopyLinkClick"
+                    Content="{DynamicResource KB_CopyLink}"
+                    Icon="{ui:SymbolIcon Copy24}" />
+                <ui:Button
+                    AutomationProperties.Name="{DynamicResource KB_OpenBrowser}"
+                    Click="OnOpenBrowserClick"
+                    Content="{DynamicResource KB_OpenBrowser}"
+                    Icon="{ui:SymbolIcon Open24}" />
+            </StackPanel>
+        </controls:CardControl.Footer>
+    </controls:CardControl>
+</Page>
