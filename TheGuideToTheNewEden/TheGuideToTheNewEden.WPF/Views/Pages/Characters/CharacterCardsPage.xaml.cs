@@ -121,13 +121,20 @@ public partial class CharacterCardsPage : Page
             }
             else
             {
-                // 国际服：打开授权页并等待自定义协议回调。
-                // 返回 null 的三种情况（未收到回调 / 用户拒绝 / 换码失败）都要给用户反馈，
-                // 否则表现为"点了添加角色没反应"（等待已在上限时间内自动结束）。
+                // 国际服：起本地回环监听并等待浏览器回调。
+                // 返回 null 的几种情况（回调地址没配好 / 端口被占用 / 用户拒绝 / 超时 / 换码失败）
+                // 都要给用户反馈，否则表现为"点了添加角色没反应"（等待已在上限时间内自动结束）。
                 reloadNeeded = await CharacterAuthService.LoginAsync() is not null;
                 if (!reloadNeeded)
                 {
-                    MessageBox.Show(FindString("Characters.LoginFailed"), FindString("Characters.Login"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                    // 优先显示具体原因——只有"登录失败"四个字时，用户既不知道是拒绝授权还是配置有问题。
+                    MessageBox.Show(
+                        string.IsNullOrWhiteSpace(CharacterAuthService.LastFailure)
+                            ? FindString("Characters.LoginFailed")
+                            : CharacterAuthService.LastFailure,
+                        FindString("Characters.Login"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
                 }
             }
         }

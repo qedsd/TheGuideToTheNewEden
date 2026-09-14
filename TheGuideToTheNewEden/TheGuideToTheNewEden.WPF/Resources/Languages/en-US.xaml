@@ -221,6 +221,16 @@
     <sys:String x:Key="TestSettingPage_ReadProtocol_Success">Read successfull</sys:String>
     <sys:String x:Key="TestSettingPage_DeleteProtocol">Delete</sys:String>
     <sys:String x:Key="TestSettingPage_DeleteProtocol_Success">Delete successfull</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback">Loopback Callback</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Desc">Local listener for the browser authorization callback (current approach, no registry needed)</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Check">Check</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Copy">Copy</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Check_Success">Listening OK</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Copy_Success">Copied to clipboard</sys:String>
+    <sys:String x:Key="AuthCallback.SuccessTitle">Authorization successful</sys:String>
+    <sys:String x:Key="AuthCallback.SuccessHint">Authorization received. You may close this page and return to the app.</sys:String>
+    <sys:String x:Key="AuthCallback.FailureTitle">Authorization failed</sys:String>
+    <sys:String x:Key="AuthCallback.RetryHint">Authorization was not granted. Close this page and retry in the app.</sys:String>
     <sys:String x:Key="ZKBSettingPage_SortWay">List display order</sys:String>
     <sys:String x:Key="ZKBSettingPage_SortWay_UploadTime">Upload Time</sys:String>
     <sys:String x:Key="ZKBSettingPage_SortWay_CreateTime">Create Time</sys:String>

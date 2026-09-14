@@ -103,6 +103,40 @@
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                 TextWrapping="Wrap" />
                         </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <!--  回环回调：现行授权回调通道（浏览器直接打进本进程）  -->
+                        <controls:SettingCard
+                            Description="{DynamicResource TestSettingPage_Loopback_Desc}"
+                            Icon="Globe24"
+                            Title="{DynamicResource TestSettingPage_Loopback}">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <Button
+                                    x:Name="CheckLoopbackButton"
+                                    MinWidth="80"
+                                    Content="{DynamicResource TestSettingPage_Loopback_Check}" />
+                                <Button
+                                    x:Name="CopyLoopbackButton"
+                                    MinWidth="80"
+                                    Margin="8,0,0,0"
+                                    Content="{DynamicResource TestSettingPage_Loopback_Copy}" />
+                            </StackPanel>
+                        </controls:SettingCard>
+
+                        <Border Style="{StaticResource SettingsDivider}" />
+
+                        <controls:SettingCard Icon="Info24" Title="{DynamicResource TestSettingPage_Loopback}">
+                            <TextBlock
+                                x:Name="LoopbackValueText"
+                                Width="420"
+                                HorizontalAlignment="Right"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </controls:SettingCard>
                     </StackPanel>
                 </Border>
             </StackPanel>

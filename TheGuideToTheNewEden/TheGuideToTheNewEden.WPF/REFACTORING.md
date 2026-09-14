@@ -1237,6 +1237,11 @@ EnableWindowsTargeting true
 
 ### 阶段 50：授权回调的"转发进程"改为在创建 WPF Application 之前退出
 
+> **注（阶段 51 起前提已变）**：授权回调已改走**本地回环**，不再经由注册表协议拉起第二个进程，
+> 因此本阶段开头"授权回调由 Windows 按注册表启动第二个客户端进程"的前提**不再是现行路径**。
+> 但本阶段的修法**依然有效且必要**——"程序已在运行时用户又双击一次图标"仍然会走到单实例转发，
+> 而那条路径上的 `settings.json` 清空风险与 WPF 程序集白加载问题完全一样。历史记录保持原样。
+
 **背景**：欧服授权回调由 Windows 按注册表启动**第二个客户端进程**（协议激活在机制上只能"运行一条命令行"，
 没有任何办法把 URL 直接投递给已运行的进程），该进程的唯一任务是把命令行转交主实例然后退出。
 阶段 48 已把单实例判定提到 `CoreInitializer.Init()` 之前，但**判定点仍在 `App.OnStartup` 内**——
@@ -1277,10 +1282,83 @@ EnableWindowsTargeting true
 
 ---
 
+### 阶段 51：欧服授权回调改为本地回环（协议/注册表通道保留但停用）
+
+**触发**：用户确认 EVE 开发者后台**不允许为同一个 SSO 应用登记两个 Callback URL**，
+所以"自定义协议（注册表）"与"本地回环"只能二选一。决定改用回环，注册表那套保留代码但不再走。
+
+**为什么回环能省掉一整个进程**：协议激活在机制上只能"运行一条命令行"——
+浏览器跳到 `eveauth-…://` 时 Windows 必然新起一个客户端进程（阶段 50 已把它的代价压到最低，
+但**进程本身依然存在**）。而 `http://localhost:<port>/…` 是浏览器**直接发起的一次 HTTP 请求**，
+打在主实例自己监听的端口上：不需要中间进程、不需要注册表、也不需要
+`App.OnSingleInstanceActivated` 参与。CCP 官方文档也把 loopback 列为非浏览器应用的两条标准路径之一
+（明确允许 `http://localhost:$port/`，但**不支持通配端口**）。
+
+**实现**（新增 `Helpers/LoopbackAuthServer.cs`）：
+
+- **端口/路径不写死**，从 `Config.ESICallback`（= `Configs/ESILicense.txt` 第 2 行）解析——
+  它就是发给 CCP 的 `redirect_uri`，天然与后台登记值一致。
+  建议值 `http://localhost:38471/callback/` 只用于界面提示与测试页。
+- **只绑 `127.0.0.1` 与 `::1`**：不暴露到局域网、不触发 Windows 防火墙提示，
+  也不用 `HttpListener`（它非管理员会 `AccessDenied`，因为要先做 URL ACL）。
+  **IPv6 回环是必需的补充**——浏览器可能把 `localhost` 解析成 `::1`，只绑 IPv4 会表现为"跳过去了但回调收不到"。
+- 手写极简 HTTP：读请求行 → 路径比对 → 解析查询串 → 回一页自带 `prefers-color-scheme` 的 HTML，
+  `Connection: close`。
+- **结束等待的唯一条件**是"路径匹配且带 `code`（或 `error`）"；favicon、`/`、其它路径一律 404 并**继续等待**，
+  用户等待期间随手点开链接不会把登录打断。
+- 拿到回调后**立刻 `StopListening()`**，用户紧接着重试不会撞端口占用；
+  首次绑定失败时带 `SO_REUSEADDR` 重试一次（覆盖上次连接留下的 TIME_WAIT），并记 Debug。
+- 起始失败（端口占用/地址非法）不静默吞：`LoginAsync` 把原因交给界面
+  （新增 `CharacterAuthService.LastFailure`），而不是只显示一句"登录失败"。
+- `AuthHelper.TryGetLoopbackEndpoint` 对配置做五道校验（缺值 / 无法解析 / 非 http / 非回环 / 无端口 / 带查询串），
+  失败时给出"把开发者后台与 `ESILicense.txt` 第 2 行都设为 …"的可执行指引，**并且不打开授权页**——
+  `redirect_uri` 不匹配时 CCP 只会在浏览器里给一个英文报错页，比提前失败难排查得多。
+
+**停用的部分**（保留代码，见 `AuthHelper` 的 `#region 自定义 URL 协议 / 注册表（保留，授权流程已不使用）`）：
+
+- `ProtocolName` / `ReadProtocol` / `WriteProtocol` / `DeleteProtocol` / `WaitForProtocolCallbackAsync`
+  （末者由 `WaitForCallbackAsync` **改名**，以便与回环通道区分）；`LoginAsync` 不再调用 `WriteProtocol()`。
+- 设置 → 测试页的 **HKCR 卡片保持可用**（旧环境排查仍需要）。
+- `App.OnSingleInstanceActivated` 仍识别 `eveauth` 参数，避免把旧链接的唤起当成"用户又开了一次程序"。
+- 安装包 `TheGuideToTheNewEden.nsi` 的 `Protocol` 段不动（无副作用）。
+
+**实测**（一次性探针：把 `LoopbackAuthServer.cs` **链进**控制台工程 + 一个 `Core.Log` 桩，
+不引用 WPF 程序集也不碰真实日志；6 组 26 项断言 **全 PASS**，产物已清理）：
+
+| 场景 | 结果 |
+|---|---|
+| 正常回调 `?code=…&state=…` | `200` + 成功页；结果 URI 完整保留查询串且指向 `127.0.0.1:端口/callback/` |
+| `/favicon.ico`、`/`、`/other/?code=WRONG` | 均 `404`，且**未打断等待**，最后仍由真回调解除 |
+| `?error=access_denied&error_description=user%20said%20no` | `Denied`，原因含 error 与 description；失败页不含成功标题 |
+| 1 秒超时 | `Timeout`，**1010ms** 返回（未永久挂起） |
+| 向 `::1` 发请求 | 连通并解除等待（证明 IPv6 回环补充有效） |
+| 超时后立刻复用同一端口 | 两次绑定都成功（模拟"用户马上重试"） |
+
+**验证**：`dotnet build -p:OutDir=<临时目录>` → **0 错误**、14 个警告（既有告警，无一条指向改动文件），exit 0。
+
+**未覆盖**：真实 CCP 授权页的一次完整跳转——需要先把开发者后台的 Callback URL 改成回环地址
+（一次性配置动作，见下表）。
+
+**需要一次性配置**（改完才生效，两处必须完全一致）：
+
+| 位置 | 值 |
+|---|---|
+| EVE 开发者后台 → 该 SSO 应用的 Callback URL | `http://localhost:38471/callback/` |
+| `%LocalAppData%\TheGuideToTheNewEden\Configs\ESILicense.txt` 第 2 行 | 同上 |
+
+**配套的界面/资源改动**：
+- 新增语言键 `AuthCallback.SuccessTitle/SuccessHint/FailureTitle/RetryHint`（结果页）与
+  `TestSettingPage_Loopback*`（测试页）。
+- 设置 → 测试页新增「**回环回调**」卡片：**检测**（校验配置 + 真的占一次端口）/ **复制**
+  （把当前或建议地址送进剪贴板，便于贴到开发者后台）。
+- 原 48 阶段加的"超时后弹提示"仍然保留，只是内容从"登录失败"变成具体原因。
+
+---
+
 ## 5. 角色功能分层设计
 
 ```
-授权层   CharacterAuthService ── CharacterStore ── AuthHelper / SerenityAuthHelper
+授权层   CharacterAuthService ── CharacterStore ── AuthHelper / LoopbackAuthServer / SerenityAuthHelper
               │                        │
               │                        └─ Auth.json / Auth_Serenity.json（按服务器分文件）
               └─ Core.Services.ESIService（授权 URL / 换码 / 刷新）
@@ -1344,6 +1422,7 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 | 34 | 市场选择器"星系"页签列表为空 | 移植时擅自"优化"了参照实现：WinUI 直接列出全部星系，而 WPF 版写成**搜索词为空就返回空集**，不输入关键字时恒空 | 默认列出全部（`!IsSpecial()`、按 ID 排序），过滤改用 `ICollectionView.Filter + Refresh()`。见阶段 33 |
 | 35 | WPF 版在**未更新的 Windows 10 21H1（19043.985）**上**启动即崩**（`0x80131506`，故障模块 `KERNELBASE.dll`，无托管异常、无日志） | .NET 9 起的 WPF 与该系统补丁级别不兼容——同机 .NET Framework / 6 / 8 的 WPF 与任何控制台程序都正常 | TFM 由 `net10.0-windows10.0.19041` 回退为 **`net8.0-windows10.0.19041`**（LTS），平台版本 `10.0.19041` 保留；连带 `AssemblyName` → `TheGuideToTheNewEden`、`H.NotifyIcon.Wpf` → 2.3.0。见阶段 49。**已实机验证**：net8 产物在该机上正常运行 |
 | 36 | **授权回调的转发进程会清空共享的 `settings.json`**（每次欧服授权回调，以及"程序已在运行时又双击一次图标"都会触发） | 阶段 48 把单实例判定提前到 `CoreInitializer.Init()` 之前，转发进程不再 `Initialize()` 设置 → `App.OnExit` 里的 `SettingsService.Save()` 用**空字典**覆盖 `Configs/settings.json`。且实测在 `Startup` 里 `Shutdown()` **仍会触发 `Exit`**，所以这段清理必然执行 | 入口改为自定义 `Program.Main`（`<StartupObject>`）：非首实例**在创建 `Application` 之前**就转交并 `return`，`Exit` 不再触发；单实例状态从 `App` 迁到 `Program`（碰 `App` 的静态成员会连带加载 WPF 栈）。见阶段 50 |
+| 37 | 欧服授权回调**必然要多起一个客户端进程**（协议激活只能"运行一条命令行"，无法把 URL 投递给已运行的进程） | 自定义 URL 协议是 Windows 上唯一由注册表驱动的机制，它只能表达"运行某个命令"；而同一个 SSO 应用不允许登记第二个 Callback URL，所以两种通道只能二选一（阶段 51 用户确认） | 改用**本地回环**：浏览器把回调直接打进主实例监听的 `http://localhost:<port>/callback/`，零第二进程、零注册表依赖。注册表那套保留代码但不再走（`AuthHelper` 已分区标注）。见阶段 51 |
 
 ---
 
@@ -1477,6 +1556,11 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   否则转发进程会白加载一整套 WPF 资源字典，并在退出时触发 `App.OnExit` 的清理（含 `SettingsService.Save()` 用空字典覆盖 settings.json）。
   同理，**单实例状态挂在 `Program` 而不是 `App` 上**——`App` 继承 `Application`，访问它的静态成员会把
   `PresentationFramework`/`System.Xaml`/`WindowsBase` 一起加载（阶段 50 实测）。
+- **欧服授权走本地回环，不是注册表协议**（阶段 51）：回调地址取自 `Configs/ESILicense.txt` 第 2 行，
+  必须与 **EVE 开发者后台登记的 Callback URL 完全一致**（CCP 不支持通配端口），当前约定值
+  `http://localhost:38471/callback/`。改任一处都要同步改另一处，否则授权页会直接报错。
+  设置 → 测试 → 「回环回调」卡片可一键检测（校验配置 + 真占一次端口）与复制该地址。
+  `AuthHelper` 里自定义协议/注册表那一组是**保留但停用**的旧通道，不要再接回授权流程。
 - 运行时资源以链接方式引用 WinUI 项目的 `Resources/*`：**若删除 WinUI 项目，需改为复制或迁移资源**。
 - **构建前必须先退出应用**：应用运行时锁定输出目录的 `*.dll`/`*.exe`（以及 `Resources/Database/*.db`），`Rebuild` 会以 `MSB3061` 警告跳过复制，导致"改了代码但运行的是旧程序集"（本次排查名称解析时踩到）。改动 Core 后若行为未变，先核对 `bin\...\TheGuideToTheNewEden.Core.dll` 的时间戳。
 - **应用正在运行时想校验"能不能编译"**：用 `dotnet build … -p:OutDir=<临时目录>\` 把输出重定向出去即可（被锁的 `bin` 不参与），核验完删掉临时目录；**正式出包仍必须先退出应用**（阶段 46 追加改动实测：VS 调试会话在跑时普通 `build` 报 `MSB3027/MSB3021`）。

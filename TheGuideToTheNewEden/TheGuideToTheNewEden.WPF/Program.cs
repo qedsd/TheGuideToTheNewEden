@@ -7,21 +7,22 @@ namespace TheGuideToTheNewEden.WPF;
 /// 自定义入口点（由 csproj 的 <c>StartupObject</c> 指定），替代 App.xaml 生成的 Main。
 /// </summary>
 /// <remarks>
-/// 存在的唯一理由：**让"转发进程"根本不构造 WPF <see cref="System.Windows.Application"/>**。
+/// 存在的唯一理由：**让"第二个进程"根本不构造 WPF <see cref="System.Windows.Application"/>**。
 ///
-/// 浏览器授权回调由 Windows 按注册表启动**第二个客户端进程**，它唯一的任务是把命令行
-/// （<c>eveauth-*://?code=…</c>）转交给已运行的实例然后退出——这是 Windows 协议激活的机制边界，
-/// 没有任何办法把 URL 直接投递给一个正在运行的进程。既然这次进程启动不可避免，就让它**尽早结束**。
+/// 谁会来当第二个进程？**用户重复启动**（程序已在运行时又双击一次图标/快捷方式）。
+/// 授权回调已经不走这条路了——现行方案是本地回环（<c>Helpers/LoopbackAuthServer</c>），
+/// 浏览器把回调直接打进主实例，全程零第二进程；自定义协议（注册表）那套代码保留但已停用。
 ///
-/// 为什么不能放在 App.OnStartup 里做？两点实测结论（独立 WPF 探针，net8）：
+/// 那为什么还必须提前判定？因为**重复启动本身**就够危险，不能放在 App.OnStartup 里做。
+/// 两点实测结论（独立 WPF 探针，net8）：
 /// 1. 走到 OnStartup 时 <c>App.InitializeComponent()</c> 已经解析加载了 WPF-UI 主题/控件字典
 ///    与项目全部资源字典，纯属白费；
 /// 2. 在 OnStartup 里调用 <c>Shutdown()</c> **依然会触发 Exit 事件**
 ///    （实测时序：MAIN → STARTUP → EXIT → RUN returned），于是 App.OnExit 的清理逻辑会照跑，
 ///    其中 <c>SettingsService.Save()</c> 在**从未调用过 Initialize()** 的进程里会用空字典
-///    把共享的 <c>settings.json</c> 覆盖成 <c>{}</c>。
+///    把共享的 <c>settings.json</c> 覆盖成 <c>{}</c>——每一次"程序已在运行时再双击一次"都会清空一次。
 ///
-/// 提前判定后，转发进程既不加载 XAML 也不触发任何退出清理，更不碰用户数据。
+/// 提前判定后，第二个进程既不加载 XAML 也不触发任何退出清理，更不碰用户数据。
 /// 另经实测：只要 Main 的方法体不引用 <see cref="App"/>（WPF 派生类），进程内
 /// PresentationFramework / System.Xaml / WindowsBase 会**一个都不加载**
 /// （引用 App 的静态成员则会连带其基类 Application 一起加载）；

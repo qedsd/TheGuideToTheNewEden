@@ -221,6 +221,16 @@
     <sys:String x:Key="TestSettingPage_ReadProtocol_Success">读取成功</sys:String>
     <sys:String x:Key="TestSettingPage_DeleteProtocol">删除注册表</sys:String>
     <sys:String x:Key="TestSettingPage_DeleteProtocol_Success">删除成功</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback">回环回调</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Desc">浏览器授权回调的本地监听（现行方案，不依赖注册表）</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Check">检测</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Copy">复制</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Check_Success">监听成功</sys:String>
+    <sys:String x:Key="TestSettingPage_Loopback_Copy_Success">已复制到剪贴板</sys:String>
+    <sys:String x:Key="AuthCallback.SuccessTitle">授权成功</sys:String>
+    <sys:String x:Key="AuthCallback.SuccessHint">已收到授权，可以关闭本页面并返回「新伊甸漫游指南」。</sys:String>
+    <sys:String x:Key="AuthCallback.FailureTitle">授权失败</sys:String>
+    <sys:String x:Key="AuthCallback.RetryHint">未获得授权，请关闭本页面并返回应用重试。</sys:String>
     <sys:String x:Key="ZKBSettingPage_AutoConnect">自动接收KB流</sys:String>
     <sys:String x:Key="ZKBSettingPage_AutoConnect_Desc">打开ZKillborad功能时是否自动连接服务器以接收KB流</sys:String>
     <sys:String x:Key="ZKBSettingPage_Notify">击杀系统通知</sys:String>

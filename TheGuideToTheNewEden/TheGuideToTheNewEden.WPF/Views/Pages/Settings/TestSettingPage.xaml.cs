@@ -8,7 +8,7 @@ using TheGuideToTheNewEden.WPF.Services;
 
 namespace TheGuideToTheNewEden.WPF.Views.Pages.Settings;
 
-/// <summary>测试页：系统通知、声音播放、HKCR 协议读写（用于诊断）。</summary>
+/// <summary>测试页：系统通知、声音播放、HKCR 协议读写、回环回调检测（用于诊断）。</summary>
 public partial class TestSettingPage : Page
 {
     private readonly MediaPlayer _player = new();
@@ -33,6 +33,11 @@ public partial class TestSettingPage : Page
         DeleteProtocolButton.Click += (_, _) => RunProtocolAction(
             AuthHelper.DeleteProtocol,
             "TestSettingPage_DeleteProtocol_Success");
+
+        // 回环回调：默认显示当前配置（或建议值），方便直接对比开发者后台里登记的那一条。
+        LoopbackValueText.Text = AuthHelper.GetCallbackUrlForDisplay();
+        CheckLoopbackButton.Click += (_, _) => CheckLoopback();
+        CopyLoopbackButton.Click += (_, _) => CopyLoopbackUrl();
     }
 
     // ---------- 系统通知 ----------
@@ -111,6 +116,46 @@ public partial class TestSettingPage : Page
         {
             Core.Log.Error(ex);
             ShowDialog(FindString("TestSettingPage_HKCRProtocol"), ex.Message);
+        }
+    }
+
+    // ---------- 回环回调 ----------
+
+    /// <summary>
+    /// 校验配置里的回调地址，并**真的占用一次端口**，确认浏览器回调能打进本进程。
+    /// </summary>
+    /// <remarks>
+    /// 授权能不能收到回调，取决于三件事同时成立：<c>Configs/ESILicense.txt</c> 第 2 行的地址、
+    /// EVE 开发者后台登记的 Callback URL、以及本机这个端口真的能用。这里一次全测掉。
+    /// </remarks>
+    private void CheckLoopback()
+    {
+        if (!AuthHelper.TryGetLoopbackEndpoint(out var endpoint, out var endpointError))
+        {
+            LoopbackValueText.Text = $"✗ {endpointError}";
+            return;
+        }
+
+        using var server = LoopbackAuthServer.TryStart(
+            endpoint, AuthHelper.LoadPageStrings(), AuthHelper.CallbackTimeout, out var startError);
+
+        LoopbackValueText.Text = server is null
+            ? $"✗ {endpoint} {Environment.NewLine}{startError}"
+            : $"✓ {FindString("TestSettingPage_Loopback_Check_Success")}{Environment.NewLine}{endpoint}";
+    }
+
+    private void CopyLoopbackUrl()
+    {
+        var url = AuthHelper.GetCallbackUrlForDisplay();
+        try
+        {
+            Clipboard.SetText(url);
+            LoopbackValueText.Text = $"{FindString("TestSettingPage_Loopback_Copy_Success")}{Environment.NewLine}{url}";
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            ShowDialog(FindString("TestSettingPage_Loopback"), ex.Message);
         }
     }
 
