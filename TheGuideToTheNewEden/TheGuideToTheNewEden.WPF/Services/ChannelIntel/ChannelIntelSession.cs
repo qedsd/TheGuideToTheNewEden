@@ -372,6 +372,9 @@ public sealed class ChannelIntelSession
             intelWindow.StopRequested += IntelWindow_StopRequested;
         }
 
+        // 注册到星图的情报聚合器（"无视跳数"旁路的消费方）
+        Services.Map.ChannelIntelManager.Current.Register(this);
+
         Running = true;
         SaveSetting();
     }
@@ -477,6 +480,7 @@ public sealed class ChannelIntelSession
 
     public void Stop()
     {
+        Services.Map.ChannelIntelManager.Current.Unregister(this);
         Core.Services.ObservableFileService.Remove(_observers);
         _observers.Clear();
         Running = false;

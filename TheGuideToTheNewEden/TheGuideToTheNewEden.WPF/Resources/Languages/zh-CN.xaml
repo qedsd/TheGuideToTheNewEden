@@ -1344,4 +1344,39 @@
     <sys:String x:Key="StatistSuperPage_Supercarrier">大航</sys:String>
     <sys:String x:Key="StatistSuperPage_No">击杀排名</sys:String>
     <sys:String x:Key="StatistSuperPage_Kills">击杀数</sys:String>
+
+    <!--  星图页  -->
+    <sys:String x:Key="MapPage_SearchPlaceholder">搜索星系</sys:String>
+    <sys:String x:Key="MapPage_ColorSecurity">安全等级</sys:String>
+    <sys:String x:Key="MapPage_ColorKills">击杀热度</sys:String>
+    <sys:String x:Key="MapPage_ColorJumps">通行热度</sys:String>
+    <sys:String x:Key="MapPage_Characters">角色</sys:String>
+    <sys:String x:Key="MapPage_Intel">情报</sys:String>
+    <sys:String x:Key="MapPage_Navigate">导航</sys:String>
+    <sys:String x:Key="MapPage_ResetView">重置视图</sys:String>
+    <sys:String x:Key="MapPage_Clear">清</sys:String>
+    <sys:String x:Key="MapPage_IntelExclude">排除关键词（空格分隔）</sys:String>
+    <sys:String x:Key="MapPage_IntelInclude">包含关键词（空格分隔）</sys:String>
+    <sys:String x:Key="MapPage_IntelHint">点击条目定位星系；情报随时间自动过期</sys:String>
+    <sys:String x:Key="MapPage_IntelNoSessions">需先在"频道预警"页启动预警</sys:String>
+    <sys:String x:Key="MapPage_Loading">正在装载星图数据…</sys:String>
+    <sys:String x:Key="MapPage_Kills">击杀</sys:String>
+    <sys:String x:Key="MapPage_Jumps">通行</sys:String>
+    <sys:String x:Key="MapPage_Neighbors">星门邻接</sys:String>
+    <sys:String x:Key="MapPage_NavHint">搜索或点击地图选中星系后点"选中加入"；首个航点为起点</sys:String>
+    <sys:String x:Key="MapPage_Waypoints">航点</sys:String>
+    <sys:String x:Key="MapPage_Avoid">规避</sys:String>
+    <sys:String x:Key="MapPage_AddSelected">选中加入</sys:String>
+    <sys:String x:Key="MapPage_CapitalMode">旗舰跳</sys:String>
+    <sys:String x:Key="MapPage_MaxLy">最大跳距(ly)</sys:String>
+    <sys:String x:Key="MapPage_Compute">计算</sys:String>
+    <sys:String x:Key="MapPage_ClearRoute">清除</sys:String>
+    <sys:String x:Key="MapPage_SetInGame">在游戏中设置</sys:String>
+    <sys:String x:Key="MapPage_Nav_Start">起点</sys:String>
+    <sys:String x:Key="MapPage_Nav_Gate">星门</sys:String>
+    <sys:String x:Key="MapPage_Nav_Capital">旗舰跳</sys:String>
+    <sys:String x:Key="MapPage_Error_NeedWaypoints">至少需要两个航点</sys:String>
+    <sys:String x:Key="MapPage_Error_NoPath">未找到可达航线（检查规避星系/跳距）</sys:String>
+    <sys:String x:Key="MapPage_AutopilotDone">已在游戏中设置航点</sys:String>
+    <sys:String x:Key="MapPage_AutopilotFail">设置航点失败（需要有效令牌）</sys:String>
 </ResourceDictionary>

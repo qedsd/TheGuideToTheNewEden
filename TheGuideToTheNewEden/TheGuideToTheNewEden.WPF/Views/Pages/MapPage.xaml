@@ -1,0 +1,686 @@
+<Page
+    x:Class="TheGuideToTheNewEden.WPF.Views.Pages.MapPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:map="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.Map"
+    xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Background="Transparent"
+    ScrollViewer.CanContentScroll="False">
+
+    <!--  HUD 深空配色（画布区域永远是深空，浮层用固定深色而非主题色）  -->
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
+        <SolidColorBrush x:Key="HudBg" Color="#E0101626" />
+        <SolidColorBrush x:Key="HudBorder" Color="#2E7DF9FF" />
+        <SolidColorBrush x:Key="HudAccent" Color="#7DF9FF" />
+        <SolidColorBrush x:Key="HudText" Color="#E6F0FF" />
+        <SolidColorBrush x:Key="HudDim" Color="#8FA3C8" />
+        <SolidColorBrush x:Key="HudIntel" Color="#FF5C74" />
+
+        <Style x:Key="HudPanel" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource HudBg}" />
+            <Setter Property="BorderBrush" Value="{StaticResource HudBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+
+        <Style x:Key="HudTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource HudAccent}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+
+        <Style x:Key="HudTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource HudText}" />
+        </Style>
+
+        <!--  情报流条目：时间 + 星系 + 内容  -->
+        <DataTemplate x:Key="IntelMsgTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{StaticResource HudDim}"
+                    Text="{Binding TimeText}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource HudAccent}"
+                    Text="{Binding SystemName}" />
+                <Border
+                    Grid.Column="2"
+                    Margin="6,0,0,0"
+                    Padding="4,0"
+                    VerticalAlignment="Center"
+                    Background="#30FF5C74"
+                    CornerRadius="3"
+                    Visibility="{Binding IsClear, Converter={StaticResource BoolToVis}}">
+                    <TextBlock FontSize="10" Foreground="{StaticResource HudIntel}" Text="{DynamicResource MapPage_Clear}" />
+                </Border>
+                <TextBlock
+                    Grid.Column="3"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{StaticResource HudText}"
+                    Text="{Binding Content}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  导航结果行  -->
+        <DataTemplate x:Key="NavResultTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="26" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="58" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource HudDim}" Text="{Binding Index}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource HudText}"
+                    Text="{Binding Node.Name}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource HudDim}"
+                    Text="{Binding SecurityText}" />
+                <TextBlock
+                    Grid.Column="3"
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource HudDim}"
+                    Text="{Binding DistanceLy, StringFormat={}{0:N1}ly}" />
+                <TextBlock
+                    Grid.Column="4"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{StaticResource HudAccent}"
+                    Text="{Binding NavTypeText}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <!--  ============ 顶栏 ============  -->
+        <Border
+            Grid.Row="0"
+            Padding="10,6"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,0,0,1">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal">
+                    <!--  星系搜索  -->
+                    <ui:TextBox
+                        x:Name="SearchBox"
+                        Width="220"
+                        ClearButtonEnabled="True"
+                        PlaceholderText="{DynamicResource MapPage_SearchPlaceholder}"
+                        TextChanged="SearchBox_TextChanged" />
+                    <ComboBox
+                        x:Name="RegionCombo"
+                        MinWidth="130"
+                        Margin="8,0,0,0"
+                        ItemsSource="{Binding Regions}"
+                        SelectionChanged="RegionCombo_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding RegionName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <!--  着色模式  -->
+                    <ComboBox
+                        x:Name="ColorModeCombo"
+                        MinWidth="110"
+                        Margin="8,0,0,0"
+                        SelectedIndex="0"
+                        SelectionChanged="ColorMode_SelectionChanged">
+                        <ComboBoxItem Content="{DynamicResource MapPage_ColorSecurity}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ColorKills}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ColorJumps}" />
+                    </ComboBox>
+                    <!--  角色标记  -->
+                    <CheckBox
+                        x:Name="CharactersToggle"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Checked="CharactersToggle_Changed"
+                        Content="{DynamicResource MapPage_Characters}"
+                        Unchecked="CharactersToggle_Changed" />
+                    <!--  情报  -->
+                    <CheckBox
+                        x:Name="IntelToggle"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Checked="IntelToggle_Changed"
+                        Content="{DynamicResource MapPage_Intel}"
+                        Unchecked="IntelToggle_Changed" />
+                    <!--  导航  -->
+                    <ui:Button
+                        Margin="8,0,0,0"
+                        Appearance="Secondary"
+                        Click="NavButton_Click"
+                        Content="{DynamicResource MapPage_Navigate}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Target24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </StackPanel>
+                <!--  右侧：重置视图  -->
+                <ui:Button
+                    DockPanel.Dock="Right"
+                    Appearance="Transparent"
+                    Click="ResetView_Click"
+                    Content="{DynamicResource MapPage_ResetView}"
+                    ToolTip="{DynamicResource MapPage_ResetView}">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="ArrowClockwise24" />
+                    </ui:Button.Icon>
+                </ui:Button>
+            </DockPanel>
+        </Border>
+
+        <!--  ============ 画布区 ============  -->
+        <Grid Grid.Row="1">
+            <!--  深空底（保证画布外圈也是深色）  -->
+            <Border Background="#05070E" />
+            <map:StarMapCanvas x:Name="MapCanvas" />
+
+            <!--  悬停提示（顶部居中 HUD）  -->
+            <Border
+                x:Name="HoverHud"
+                Padding="12,5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Background="{StaticResource HudBg}"
+                BorderBrush="{StaticResource HudBorder}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Name="HoverHudText"
+                    FontSize="13"
+                    Foreground="{StaticResource HudText}" />
+            </Border>
+
+            <!--  情报流面板（右上）  -->
+            <Border
+                x:Name="IntelPanel"
+                Width="440"
+                Height="300"
+                Margin="12"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Visibility="Collapsed">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource HudPanel}">
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <DropShadowEffect
+                                    BlurRadius="24"
+                                    Opacity="0.45"
+                                    ShadowDepth="0"
+                                    Color="#7DF9FF" />
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <DockPanel>
+                        <TextBlock Style="{StaticResource HudTitle}" Text="{DynamicResource MapPage_Intel}" />
+                        <TextBlock
+                            DockPanel.Dock="Right"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{StaticResource HudDim}"
+                            Text="{Binding ActiveListeners[0]}" />
+                    </DockPanel>
+                    <!--  过滤关键词  -->
+                    <Grid Grid.Row="1" Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox
+                            x:Name="IntelExcludeBox"
+                            Height="28"
+                            FontSize="11"
+                            LostFocus="IntelFilter_LostFocus"
+                            PlaceholderText="{DynamicResource MapPage_IntelExclude}"
+                            Text="{Binding IntelExcludeKeywords, UpdateSourceTrigger=PropertyChanged}" />
+                        <ui:TextBox
+                            x:Name="IntelIncludeBox"
+                            Grid.Column="1"
+                            Height="28"
+                            Margin="6,0,0,0"
+                            FontSize="11"
+                            LostFocus="IntelFilter_LostFocus"
+                            PlaceholderText="{DynamicResource MapPage_IntelInclude}"
+                            Text="{Binding IntelIncludeKeywords, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                    <TextBlock
+                        Grid.Row="2"
+                        FontSize="11"
+                        Foreground="{StaticResource HudDim}"
+                        Text="{DynamicResource MapPage_IntelHint}" />
+                    <ListBox
+                        x:Name="IntelList"
+                        Grid.Row="3"
+                        Margin="0,4,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemTemplate="{StaticResource IntelMsgTemplate}"
+                        ItemsSource="{Binding IntelMessages}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        SelectionChanged="IntelList_SelectionChanged" />
+                </Grid>
+            </Border>
+
+            <!--  选中星系信息卡（右下）  -->
+            <Border
+                x:Name="InfoCard"
+                Width="300"
+                Margin="12"
+                Padding="12"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Background="{StaticResource HudBg}"
+                BorderBrush="{StaticResource HudBorder}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Visibility="{Binding SelectedSystem, Converter={StaticResource NullToVisibility}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource HudText}"
+                            Text="{Binding SelectedSystem.Name}" />
+                        <Border
+                            MinWidth="40"
+                            Margin="8,0,0,0"
+                            Padding="6,1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Background="#307DF9FF"
+                            BorderBrush="{StaticResource HudBorder}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{StaticResource HudAccent}"
+                                Text="{Binding SelectedSecurityText}" />
+                        </Border>
+                    </DockPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        FontSize="12"
+                        Foreground="{StaticResource HudDim}"
+                        Text="{Binding SelectedInfoText}" />
+                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{StaticResource HudDim}"
+                                Text="{DynamicResource MapPage_Kills}" />
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                FontSize="12"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource HudText}"
+                                Text="{Binding SelectedKillsText}" />
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{StaticResource HudDim}"
+                                Text="{DynamicResource MapPage_Jumps}" />
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                FontSize="12"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource HudText}"
+                                Text="{Binding SelectedJumpsText}" />
+                        </StackPanel>
+                    </Grid>
+                    <!--  邻接星系  -->
+                    <StackPanel Grid.Row="3" Margin="0,8,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{StaticResource HudDim}"
+                            Text="{DynamicResource MapPage_Neighbors}" />
+                        <ItemsControl ItemsSource="{Binding Neighbors}" Margin="0,4,0,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Margin="0,0,6,6"
+                                        Padding="8,2"
+                                        Background="#207DF9FF"
+                                        BorderBrush="{StaticResource HudBorder}"
+                                        Click="Neighbor_Click"
+                                        Content="{Binding Name}"
+                                        Cursor="Hand"
+                                        FontSize="11"
+                                        Foreground="{StaticResource HudText}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  加载遮罩  -->
+            <Border Background="#AA05070E" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" />
+                    <TextBlock
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
+                        Foreground="{StaticResource HudDim}"
+                        Text="{DynamicResource MapPage_Loading}" />
+                </StackPanel>
+            </Border>
+
+            <!--  搜索下拉  -->
+            <Popup
+                x:Name="SearchPopup"
+                Width="260"
+                AllowsTransparency="True"
+                PlacementTarget="{Binding ElementName=SearchBox}"
+                Placement="Bottom"
+                PopupAnimation="Fade"
+                StaysOpen="False">
+                <Border
+                    Margin="0,4,8,8"
+                    Background="{StaticResource HudBg}"
+                    BorderBrush="{StaticResource HudBorder}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <ListBox
+                        x:Name="SearchList"
+                        MaxHeight="280"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemContainerStyle="{x:Null}"
+                        ItemsSource="{Binding SearchResults}"
+                        SelectionChanged="SearchList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Foreground="{StaticResource HudText}" Text="{Binding Name}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        FontSize="11"
+                                        Foreground="{StaticResource HudDim}"
+                                        Text="{Binding RegionName}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Popup>
+
+            <!--  导航面板  -->
+            <Popup
+                x:Name="NavPopup"
+                Width="340"
+                AllowsTransparency="True"
+                PlacementTarget="{Binding ElementName=NavButton}"
+                Placement="Bottom"
+                PopupAnimation="Fade"
+                StaysOpen="False">
+                <Border
+                    Margin="0,4,8,8"
+                    Padding="12"
+                    Background="{StaticResource HudBg}"
+                    BorderBrush="{StaticResource HudBorder}"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{StaticResource HudTitle}" Text="{DynamicResource MapPage_Navigate}" />
+                        <TextBlock
+                            Grid.Row="0"
+                            FontSize="11"
+                            Foreground="{StaticResource HudDim}"
+                            Text="{DynamicResource MapPage_NavHint}" />
+
+                        <!--  航点  -->
+                        <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                            <DockPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{StaticResource HudText}"
+                                    Text="{DynamicResource MapPage_Waypoints}" />
+                                <ui:Button
+                                    DockPanel.Dock="Right"
+                                    HorizontalAlignment="Right"
+                                    Padding="8,1"
+                                    Click="AddWaypoint_Click"
+                                    Content="{DynamicResource MapPage_AddSelected}" />
+                            </DockPanel>
+                            <ItemsControl ItemsSource="{Binding Waypoints}" Margin="0,4,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,6,6"
+                                            Padding="8,2"
+                                            Background="#207DF9FF"
+                                            BorderBrush="{StaticResource HudBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource HudText}"
+                                                    Text="{Binding Name}" />
+                                                <TextBlock
+                                                    Margin="6,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Cursor="Hand"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource HudIntel}"
+                                                    MouseLeftButtonUp="RemoveWaypoint_Click"
+                                                    Text="✕" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!--  规避  -->
+                        <StackPanel Grid.Row="2" Margin="0,2,0,0">
+                            <DockPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{StaticResource HudText}"
+                                    Text="{DynamicResource MapPage_Avoid}" />
+                                <ui:Button
+                                    DockPanel.Dock="Right"
+                                    HorizontalAlignment="Right"
+                                    Padding="8,1"
+                                    Click="AddAvoid_Click"
+                                    Content="{DynamicResource MapPage_AddSelected}" />
+                            </DockPanel>
+                            <ItemsControl ItemsSource="{Binding AvoidSystems}" Margin="0,4,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="0,0,6,6"
+                                            Padding="8,2"
+                                            Background="#30FF5C74"
+                                            BorderThickness="1"
+                                            CornerRadius="4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource HudText}"
+                                                    Text="{Binding Name}" />
+                                                <TextBlock
+                                                    Margin="6,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Cursor="Hand"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource HudIntel}"
+                                                    MouseLeftButtonUp="RemoveAvoid_Click"
+                                                    Text="✕" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!--  选项与计算  -->
+                        <StackPanel Grid.Row="3" Margin="0,6,0,0" Orientation="Horizontal">
+                            <CheckBox
+                                x:Name="CapitalToggle"
+                                VerticalAlignment="Center"
+                                Checked="CapitalToggle_Changed"
+                                Content="{DynamicResource MapPage_CapitalMode}"
+                                Foreground="{StaticResource HudText}"
+                                Unchecked="CapitalToggle_Changed" />
+                            <TextBlock
+                                Margin="12,0,4,0"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{StaticResource HudText}"
+                                Text="{DynamicResource MapPage_MaxLy}" />
+                            <ui:NumberBox
+                                x:Name="MaxLyBox"
+                                Width="70"
+                                Height="30"
+                                Maximum="20"
+                                Minimum="1"
+                                Value="{Binding MaxLy, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="4" Margin="0,8,0,0" Orientation="Horizontal">
+                            <ui:Button
+                                Appearance="Primary"
+                                Click="ComputeRoute_Click"
+                                Content="{DynamicResource MapPage_Compute}" />
+                            <ui:Button
+                                Margin="8,0,0,0"
+                                Appearance="Transparent"
+                                Click="ClearRoute_Click"
+                                Content="{DynamicResource MapPage_ClearRoute}" />
+                            <TextBlock
+                                x:Name="NavErrorText"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{StaticResource HudIntel}" />
+                        </StackPanel>
+
+                        <!--  结果  -->
+                        <ListBox
+                            Grid.Row="5"
+                            MaxHeight="200"
+                            Margin="0,8,0,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ItemTemplate="{StaticResource NavResultTemplate}"
+                            ItemsSource="{Binding NavResult}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionChanged="NavResult_SelectionChanged" />
+
+                        <!--  在游戏中设置  -->
+                        <StackPanel Grid.Row="6" Margin="0,8,0,0" Orientation="Horizontal">
+                            <ComboBox
+                                x:Name="AutopilotCombo"
+                                MinWidth="150"
+                                ItemsSource="{Binding AutopilotCharacters}"
+                                SelectedItem="{Binding AutopilotCharacter, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding CharacterName}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <ui:Button
+                                Margin="8,0,0,0"
+                                Click="SetAutopilot_Click"
+                                Content="{DynamicResource MapPage_SetInGame}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Popup>
+        </Grid>
+    </Grid>
+</Page>

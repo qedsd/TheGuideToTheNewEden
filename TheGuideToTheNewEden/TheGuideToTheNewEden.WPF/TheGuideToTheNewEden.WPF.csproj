@@ -37,6 +37,9 @@
 		<PackageReference Include="HtmlRenderer.WPF" Version="1.6.1" />
 		<!--  市场历史图表（替代 Syncfusion 图表）；SkiaSharp/HarfBuzz 由它传递  -->
 		<PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
+		<!--  星图画布（StarMapCanvas）渲染：LiveCharts 已传递带入 SkiaSharp.Views.WPF（SKElement），
+		      这里显式声明以固定同版本（3.119.0），避免将来 LiveCharts 升级后传递版本漂移  -->
+		<PackageReference Include="SkiaSharp.Views.WPF" Version="3.119.0" />
 	</ItemGroup>
 
 	<ItemGroup>

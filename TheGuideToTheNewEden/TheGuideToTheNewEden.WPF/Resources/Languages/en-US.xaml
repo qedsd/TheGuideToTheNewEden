@@ -1337,4 +1337,39 @@
     <sys:String x:Key="StatistSuperPage_Supercarrier">Supercarrier</sys:String>
     <sys:String x:Key="StatistSuperPage_No">No</sys:String>
     <sys:String x:Key="StatistSuperPage_Kills">Kills</sys:String>
+
+    <!--  Map Page  -->
+    <sys:String x:Key="MapPage_SearchPlaceholder">Search system</sys:String>
+    <sys:String x:Key="MapPage_ColorSecurity">Security</sys:String>
+    <sys:String x:Key="MapPage_ColorKills">Kill heat</sys:String>
+    <sys:String x:Key="MapPage_ColorJumps">Traffic heat</sys:String>
+    <sys:String x:Key="MapPage_Characters">Characters</sys:String>
+    <sys:String x:Key="MapPage_Intel">Intel</sys:String>
+    <sys:String x:Key="MapPage_Navigate">Navigation</sys:String>
+    <sys:String x:Key="MapPage_ResetView">Reset view</sys:String>
+    <sys:String x:Key="MapPage_Clear">Clear</sys:String>
+    <sys:String x:Key="MapPage_IntelExclude">Exclude keywords (space separated)</sys:String>
+    <sys:String x:Key="MapPage_IntelInclude">Include keywords (space separated)</sys:String>
+    <sys:String x:Key="MapPage_IntelHint">Click an entry to locate the system; intel expires over time</sys:String>
+    <sys:String x:Key="MapPage_IntelNoSessions">Start a channel intel session first</sys:String>
+    <sys:String x:Key="MapPage_Loading">Loading star map data…</sys:String>
+    <sys:String x:Key="MapPage_Kills">Kills</sys:String>
+    <sys:String x:Key="MapPage_Jumps">Jumps</sys:String>
+    <sys:String x:Key="MapPage_Neighbors">Stargate neighbors</sys:String>
+    <sys:String x:Key="MapPage_NavHint">Select a system via search or map click, then "Add selected"; first waypoint is the start</sys:String>
+    <sys:String x:Key="MapPage_Waypoints">Waypoints</sys:String>
+    <sys:String x:Key="MapPage_Avoid">Avoid</sys:String>
+    <sys:String x:Key="MapPage_AddSelected">Add selected</sys:String>
+    <sys:String x:Key="MapPage_CapitalMode">Capital jump</sys:String>
+    <sys:String x:Key="MapPage_MaxLy">Max jump (ly)</sys:String>
+    <sys:String x:Key="MapPage_Compute">Compute</sys:String>
+    <sys:String x:Key="MapPage_ClearRoute">Clear</sys:String>
+    <sys:String x:Key="MapPage_SetInGame">Set in game</sys:String>
+    <sys:String x:Key="MapPage_Nav_Start">Start</sys:String>
+    <sys:String x:Key="MapPage_Nav_Gate">Gate</sys:String>
+    <sys:String x:Key="MapPage_Nav_Capital">Capital</sys:String>
+    <sys:String x:Key="MapPage_Error_NeedWaypoints">At least two waypoints are required</sys:String>
+    <sys:String x:Key="MapPage_Error_NoPath">No reachable route (check avoided systems / jump range)</sys:String>
+    <sys:String x:Key="MapPage_AutopilotDone">Waypoints set in game</sys:String>
+    <sys:String x:Key="MapPage_AutopilotFail">Failed to set waypoints (valid token required)</sys:String>
 </ResourceDictionary>

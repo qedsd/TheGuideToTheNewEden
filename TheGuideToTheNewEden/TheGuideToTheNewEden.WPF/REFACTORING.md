@@ -1908,6 +1908,37 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 62：星图（Map）模块迁移 —— SkiaSharp 全新渲染 + 页面化情报/导航（重设计，非逐行照搬）
+
+- **目标**：替换 `Views/Pages/MapPage.cs` 占位页，迁移 WinUI 星图核心能力；按用户要求**不照搬 WinUI 的框架与 UI**，
+  重新设计星图展示方式（深空科幻 HUD 风格），必要时用开源库做渲染效果。
+- **渲染技术选型（与 WinUI 的最大分歧）**：WinUI 用 **Win2D `CanvasControl`**（改数据坐标 + Invalidate 全量重绘，三层画布分离）；
+  WPF 没有 Win2D，若沿用 WPF 视觉树（8000+ Ellipse/Line）会退化严重。选 **SkiaSharp**（`SkiaSharp.Views.WPF` 的 `SKElement`）：
+  - LiveCharts 2.0.5 **已经传递带入** SkiaSharp 3.119.0（阶段 25 为其补过 TPV ≥ 10.0.19041），csproj 显式声明同版本（防传递漂移），**零新增重量级依赖**；
+  - Skia 光栅化 8000 星系 + 10000 星门连线单帧毫秒级，且能做径向渐变发光、深空渐变、视差星尘等"科幻感"效果；
+  - 交互自绘（滚轮以鼠标为锚缩放、拖拽平移、命中测试线性扫描 8k 节点 ~0.1ms，无需空间索引）。
+- **新增文件**：
+  - `Views/UserControls/Map/StarMapCanvas.cs` —— 核心画布（继承 `SKElement`）：
+    - **LOD 分级**：连线透明度随缩放淡入（贴图缩放下不画）；`zmult≥5.5` 画星系名；`≥13` 画节点内安等数字；`>30` 画白色内核；
+    - **着色**：安等（高安青绿 `#2EE6A8` / 低安橙→青绿过渡 / 00 红 `#FF4D6A`）、击杀/通行热度（对数刻度 蓝→橙→红）；
+    - **覆盖层**：情报红圈脉冲（半径随威胁权重）、角色头像标记（圆形裁剪 + 定位光环 + 名字）、航线发光折线 + 流动光点 + 航点编号徽标、悬停高亮相邻星门、选中双环、定位涟漪高亮（`ToSystem`）；
+    - **性能（实测踩坑后重构，见下）**：**底图缓存**——背景渐变/星尘/连线/节点标签渲染进 `SKBitmap`，键 = (zoom, offset, size, dpi, dataVersion, colorMode)；视图未变时动画帧只"贴底图 + 画覆盖层"；节点外发光用**精灵缓存**（颜色量化 5bit/通道，上限 96 张，避免每帧每节点创建渐变着色器）；
+    - **动画驱动**：`CompositionTarget.Rendering` 仅在 `HasActiveAnimation`（飞行动画/情报圈/航线/定位高亮）时 `InvalidateVisual`，静止零开销；**选中环有意做成静态**（选中态不再触发连续重绘）。
+  - `Services/Map/MapSettingService.cs` —— `Configs/MapSettings.json`（Core `MapConfig`），**与 WinUI 同路径同格式**，情报配置互通；
+  - `Services/Map/ChannelIntelManager.cs` —— 复刻 WinUI 同名单例：聚合运行中的 `ChannelIntelSession`，`ListenChannelIntel` 把会话观察者切 `IgnoreJumps=true`（"无视跳数"旁路）、`UnListenChannelIntel` 还原；聚合 `OnIgnoreJumpsIntelUpdate`。`ChannelIntelSession.Start/Stop` 挂钩 Register/Unregister（会话停止时自动摘除其监听）；
+  - `Services/Map/CharacterLocationService.cs` —— "显示角色"数据源：轮询全部授权角色 ESI `Location.GetCharacterLocation`（30s，令牌失效自动刷新），失败角色跳过；
+  - `ViewModels/Map/MapPageViewModel.cs` —— 数据装载（`MapSolarSystemService.QueryAll` + `MapSolarSystemJumpService.QueryAll` + 区域名，Y 轴翻转口径与 `SolarSystemPosHelper` 一致）、ESI 击杀/通行统计、搜索、情报流（关键词过滤 + `ChannelDuration` 过期清理 + 按星系聚合权重）、导航（航点/规避/星门或旗舰跳/MaxLY）；
+  - `Views/Pages/MapPage.xaml(.cs)`（替换占位页，类名/命名空间不变，`MainWindow` 注册无需改动）：
+    - 顶栏：星系搜索（Popup 建议列表）、**星域定位**下拉（按星域包围盒适配视图）、着色模式、角色/情报开关、导航弹窗、重置视图；
+    - 画布区永远是深空（不随主题变）；HUD 浮层（顶中悬停提示 / 右上情报流 / 右下选中星系信息卡）用固定深色玻璃面板 + 青色描边，不随主题；
+    - 导航是**页内 Popup 面板**而非 WinUI 的 ToolWindow：选中星系后"选中加入"航点（首个为起点）/规避，结果列表点击定位、整条航线画在图上，可选角色"在游戏中设置"（ESI `UserInterface.SetAutopilotWaypoint`）。
+- **与 WinUI 的有意差异**：情报工具不再是独立 ToolWindow（页签 + 设置页），改为页面右侧常驻情报流面板 + 顶栏开关；过滤改为排除/包含关键词（空格分隔，落盘到共用 `MapIntelConfig.Exclusions/Inclusions.Name`）；导航无燃料列（不做旗舰型号/技能换算）；星图永远深色（不做浅色主题适配）；连续动画只用"底图缓存 + 覆盖层"方案（WinUI 无此层）。
+- **实机验证（CUA 自动化点击 + UIA 断言）**：构建 0 错误；启动 → 导航星图页 → **悬停命中测试命中 `西玛特尔 埃维斯贝尔 0.8`**（HUD 文案）→ **点击选中成功**（信息卡显示 星系名/安等/区域）→ **ESI 统计载入**（通行 153）→ 星门邻接/搜索/着色控件齐全；日志无异常。
+- **实测踩坑（重要）**：首版"选中星系脉冲环"导致 `CompositionTarget.Rendering` 连续 60fps **全量重绘**（8k 节点 + 10k 连线 + 每节点创建渐变着色器），实测 **CPU 105%**。修复：① 选中环改静态；② 引入**底图缓存** + 发光精灵缓存。复测**空闲 CPU 1.1%**（10s 窗口），动画帧只剩位图 blit + 少量覆盖层绘制。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -1968,6 +1999,18 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     - **`id <= 0`**（受害者无联盟、NPC 击杀、星系未被本地库收录）：在排除里永不命中（`FilterSet` 只收正整数）；在包含项非空时判为不通过。**这是 WPF 相对 WinUI 的有意修正**——WinUI 的 `Contains(category, id)` 先 `if (id <= 0) return false;`，导致"受害者无联盟"的击杀在包含项为空时也被一并丢弃。
     - **组与组之间没有互斥**：同一个 ID 出现在不同组的列表里互不影响（某角色可以是这条的攻击者、另一条的受害者）；UI 已按类别限制可选范围（通用限星系/星域/舰船，角色组限角色/军团/联盟），因此正常路径不会出现"类别放错列表"——但若手工改 JSON 放错，`AddByCat` / `AddRoles` 会**静默忽略**该项。
     - 取消/重建时机：过滤快照在配置变更时按脏标记重建（`ZkbStreamFilter` 不可变，中枢 `EnsureFilter` 每次唤醒重建），因此改过滤**无需断开重连**；隐患是 `HookConfig` 订阅的是集合**实例**，若将来有代码整体替换 `CommonExclusions` 等集合（公开 setter 允许），脏标记将不再触发。
+51. **星图（阶段 62）相对 WinUI 的功能缺口**（均为有意暂缓，框架已预留挂点）：
+    - **无 SOV（主权）着色 / SOV 分组**（WinUI 的 `SetDataToSOV` + `SOVGroup.json`）——需 ESI `Sovereignty.ListSovereigntyOfSystems` + 联盟名解析；
+    - **无行星资源热力 / 行星资源清单页**（WinUI `SetDataToPlanetResourc` / `PlanetResourcListPage`）——数据在本地库（`SolarSystemResourcesService`），待接入着色模式与列表工具；
+    - **无星系详情页**（WinUI `MapSystemDetailPage` 五页签：统计/设施升级/行星资源/天体/邻接）——WPF 只有信息卡的 击杀/通行/邻接；
+    - **无一跳覆盖工具**（WinUI `OneJumpCover`：`CalOneJumpCover` + 圈叠加）——Core 算法现成，缺 UI；
+    - **无跳桥（JumpBridge）层**：`JumpBridgeSetting.json` 读写与虚线绘制、导航走桥边权（`CalStargatePath` 的 `bridge` 参数已支持，传 `null` 即可）都未接；
+    - **情报红圈没有舰船图标**（WinUI `IntelDrawer` 在节点旁画攻击者舰船图 + 计数）——当前只有红圈权重 + 情报流文字；接入需图片下载 + `SKBitmap` 解码缓存 + 空白探测摆放；
+    - **ZKB 击杀不上图**（WinUI IntelTool 订阅 `ZKBStreamService` 叠加击杀）——可复用 WPF 的 `ZkbKillStreamHub`，尚未接；
+    - **导航结果无燃料列**（不做旗舰型号/技能换算），"省钱优先"模式（`CalCapitalJumpPath` mode=1）未暴露；
+    - **星域筛选**（按区域/安等批量 `Enable`）未做，只有"星域定位"与安等着色。
+52. **星图 intel 的会话依赖**：情报模式开关要求**先在频道预警页启动至少一个角色的预警**（`ChannelIntelManager` 才有会话可切 `IgnoreJumps`）；无会话时开关仍可点但不起作用（面板显示提示文案）。另外情报**排除/包含关键词**在"开始情报"时从共用 `MapSettings.json` 读入、失焦时写回——WinUI 与 WPF 共用该文件，字段语义（`IdName.Name` 当关键词）为 WPF 侧约定。
+53. **星图性能边界**：底图缓存键按 (zoom, offset) 精确匹配，**拖拽/滚轮/飞行动画期间每帧都重建底图**（与 WinUI 同为全量重绘，只是把静态场景隔离开了）；实测拖拽流畅。窗口铺满 4K + 高 DPI 时位图缓存 ~几十 MB，Unloaded 时释放。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -2280,6 +2323,19 @@ Views/Windows/GamePreviewWindow.xaml(.cs)        预览窗口（两种样式共�
 Views/Windows/PreviewNameOverlayWindow.xaml(.cs) 无标题栏样式下左上角的角色名叠加窗（独立窗口，DWM 缩略图盖不住它）
 Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / 设置 / 预览）
 Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
+```
+
+### 星图模块（阶段 62：SkiaSharp 重设计渲染，占位页已替换）
+```
+Views/UserControls/Map/StarMapCanvas.cs   核心画布（SKElement）：深空背景/星尘/星门连线/发光节点/LOD 标签、
+                                          底图缓存 + 发光精灵缓存、缩放平移/命中/悬停/选中、情报红圈、
+                                          角色标记、航线折线、定位飞行与涟漪高亮；MapColorMode/MapSystemNode/覆盖层模型同文件
+Services/Map/MapSettingService.cs         Configs/MapSettings.json（Core MapConfig，与 WinUI 共用）
+Services/Map/ChannelIntelManager.cs       运行中预警会话聚合 + IgnoreJumps 开关 + 情报事件聚合（对齐 WinUI 同名单例）
+Services/Map/CharacterLocationService.cs  授权角色 ESI 位置轮询（"显示角色"）
+ViewModels/Map/MapPageViewModel.cs        数据装载/统计/搜索/情报流/导航编排
+Views/Pages/MapPage.xaml(.cs)             星图页（顶栏搜索/星域/着色/角色/情报/导航 + HUD 浮层；占位页已替换）
+Converters/NullToVisibilityConverter.cs   null → Collapsed（信息卡显隐）
 ```
 
 ### 主窗口
