@@ -46,6 +46,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     kbItemInfo.FinalBlowCharacterName = results.FirstOrDefault(p => p.Id == finalBlow.CharacterId);
                     kbItemInfo.FinalBlowCorporationIdName = results.FirstOrDefault(p => p.Id == finalBlow.CorporationId);
                     kbItemInfo.FinalBlowAllianceName = results.FirstOrDefault(p => p.Id == finalBlow.AllianceId);
+                    kbItemInfo.FinalBlowFctionName = kbItemInfo.FinalBlowAllianceName ?? kbItemInfo.FinalBlowCorporationIdName;
                 }
             }
             kbItemInfo.SolarSystem = await MapSolarSystemService.QueryAsync(detail.SolarSystemId);
@@ -91,6 +92,7 @@ namespace TheGuideToTheNewEden.Core.Helpers
                     kbItemInfo.FinalBlowCharacterName = results.FirstOrDefault(p => p.Id == finalBlow.CharacterId);
                     kbItemInfo.FinalBlowCorporationIdName = results.FirstOrDefault(p => p.Id == finalBlow.CorporationId);
                     kbItemInfo.FinalBlowAllianceName = results.FirstOrDefault(p => p.Id == finalBlow.AllianceId);
+                    kbItemInfo.FinalBlowFctionName = kbItemInfo.FinalBlowAllianceName ?? kbItemInfo.FinalBlowCorporationIdName;
                 }
             }
             kbItemInfo.SolarSystem = MapSolarSystemService.Query(detail.SolarSystemId);

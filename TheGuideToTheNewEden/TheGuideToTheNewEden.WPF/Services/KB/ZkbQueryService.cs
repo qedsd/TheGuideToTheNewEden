@@ -40,6 +40,12 @@ public static class ZkbQueryService
     /// </summary>
     private const int DefaultConcurrency = 1;
 
+    /// <summary>
+    /// 名称批量解析的分块大小。ESI <c>/universe/names</c> 单次上限 1000 个 ID，
+    /// 取 500 留出余量（同时也避开 SQLite 的 IN 变量数上限）。
+    /// </summary>
+    private const int ResolveChunkSize = 500;
+
     private static readonly TimeSpan StatisticTtl = TimeSpan.FromMinutes(2);
 
     private static readonly ConcurrentDictionary<(EntityType Type, int Id), (EntityStatistic Value, DateTime ExpiresUtc)>
@@ -209,6 +215,17 @@ public static class ZkbQueryService
     /// 把 zkillboard 直接返回的完整 killmail 富化为 <see cref="KBItemInfo"/>（用本地 SDE 补名称/星系/船型），
     /// 有界并发；单条失败只丢该条。
     /// </summary>
+    /// <summary>
+    /// 把 zkillboard 直接返回的完整 killmail 富化为 <see cref="KBItemInfo"/>（用本地 SDE 补名称/星系/船型）。
+    ///
+    /// <para>
+    /// <b>批量去重是关键</b>：整个战场/军团同一批击杀涉及的角色/军团/联盟/星系/船型高度重叠，
+    /// 早期实现是"逐条调 <c>KBHelpers.CreateKBItemInfo</c>"（每条各查一次 SQLite，甚至各发一次 ESI），
+    /// 50 条 = 最多 50 次查询且**串行**（Core 的 SQLite 非并发安全，并发度只能是 1）——
+    /// 这就是"击杀人数多时卡一会儿"的主因。现在改成：先汇总全部 ID **一次性解析**，
+    /// 再用字典本地组装，查询次数与条数不再成正比。
+    /// </para>
+    /// </summary>
     private static async Task<List<KBItemInfo>> EnrichDetailsAsync(IReadOnlyList<SKBDetail> details, CancellationToken ct)
     {
         if (details.Count == 0)
@@ -216,37 +233,209 @@ public static class ZkbQueryService
             return [];
         }
 
-        var results = new KBItemInfo?[details.Count];
-        using var gate = new SemaphoreSlim(DefaultConcurrency);
+        // 1) 汇总这一页所有 killmail 需要的 ID（角色/军团/联盟 + 星系 + 船型）
+        var nameIds = new HashSet<int>();
+        var systemIds = new HashSet<int>();
+        var typeIds = new HashSet<int>();
 
-        var tasks = new List<Task>(details.Count);
-        for (var i = 0; i < details.Count; i++)
+        foreach (var detail in details)
         {
-            var index = i;
-            tasks.Add(Task.Run(async () =>
+            AddNameIds(nameIds, detail.Victim?.CharacterId);
+            AddNameIds(nameIds, detail.Victim?.CorporationId);
+            AddNameIds(nameIds, detail.Victim?.AllianceId);
+
+            var finalBlow = detail.Attackers?.FirstOrDefault(p => p.FinalBlow);
+            if (finalBlow is not null)
             {
-                await gate.WaitAsync(ct).ConfigureAwait(false);
-                try
-                {
-                    if (!ct.IsCancellationRequested)
-                    {
-                        results[index] = Core.Helpers.KBHelpers.CreateKBItemInfo(details[index]);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Core.Log.Error(ex);
-                }
-                finally
-                {
-                    gate.Release();
-                }
-            }, CancellationToken.None));
+                AddNameIds(nameIds, finalBlow.CharacterId);
+                AddNameIds(nameIds, finalBlow.CorporationId);
+                AddNameIds(nameIds, finalBlow.AllianceId);
+            }
+
+            if (detail.SolarSystemId > 0)
+            {
+                systemIds.Add(detail.SolarSystemId);
+            }
+
+            if (detail.Victim?.ShipTypeId > 0)
+            {
+                typeIds.Add(detail.Victim.ShipTypeId);
+            }
         }
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.Where(p => p is not null).Select(p => p!).ToList();
+        // 2) 一次性解析（去重后通常只有几十~几百个，与页大小无关）。
+        //    星域 / 类别要二次收集：regionId 藏在星系里、groupId 藏在船型里，只有查出来才知道，同样只查一次
+        var names = await ResolveNamesAsync(nameIds.ToList()).ConfigureAwait(false);
+        var systems = await Task.Run(() => QuerySystems(systemIds), ct).ConfigureAwait(false);
+        var types = await Task.Run(() => QueryTypes(typeIds), ct).ConfigureAwait(false);
+        var regions = await Task.Run(() => QueryRegions(systems.Values.Select(p => p.RegionID)), ct).ConfigureAwait(false);
+        var groups = await Task.Run(() => QueryGroups(types.Values.Select(p => p.GroupID)), ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+
+        // 3) 本地组装，不再有任何查询
+        var results = new List<KBItemInfo>(details.Count);
+        foreach (var detail in details)
+        {
+            try
+            {
+                results.Add(BuildFromResolved(detail, names, systems, types, regions, groups));
+            }
+            catch (Exception ex)
+            {
+                // 单条组装失败只丢该条
+                Core.Log.Error(ex);
+            }
+        }
+
+        return results;
     }
+
+    private static void AddNameIds(HashSet<int> ids, int? id)
+    {
+        if (id is > 0)
+        {
+            ids.Add(id.Value);
+        }
+    }
+
+    private static Dictionary<int, Core.DBModels.MapSolarSystem> QuerySystems(HashSet<int> systemIds)
+    {
+        if (systemIds.Count == 0)
+        {
+            return [];
+        }
+
+        try
+        {
+            return Core.Services.DB.MapSolarSystemService
+                .Query(systemIds.ToList())
+                .Where(p => p is not null)
+                .ToDictionary(p => p.SolarSystemID, p => p);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return [];
+        }
+    }
+
+    private static Dictionary<int, Core.DBModels.InvType> QueryTypes(HashSet<int> typeIds)
+    {
+        if (typeIds.Count == 0)
+        {
+            return [];
+        }
+
+        try
+        {
+            return Core.Services.DB.InvTypeService
+                .QueryTypes(typeIds.ToList())
+                .Where(p => p is not null)
+                .ToDictionary(p => p.TypeID, p => p);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return [];
+        }
+    }
+
+    private static Dictionary<int, Core.DBModels.MapRegion> QueryRegions(IEnumerable<int> regionIds)
+    {
+        var ids = regionIds.Where(p => p > 0).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        try
+        {
+            return Core.Services.DB.MapRegionService
+                .Query(ids)
+                .Where(p => p is not null)
+                .ToDictionary(p => p.RegionID, p => p);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return [];
+        }
+    }
+
+    private static Dictionary<int, Core.DBModels.InvGroup> QueryGroups(IEnumerable<int> groupIds)
+    {
+        var ids = groupIds.Where(p => p > 0).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        try
+        {
+            return Core.Services.DB.InvGroupService
+                .QueryGroups(ids)
+                .Where(p => p is not null)
+                .ToDictionary(p => p.GroupID, p => p);
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return [];
+        }
+    }
+
+    /// <summary>用已解析好的名称/星系/船型/星域/类别字典组装单条 <see cref="KBItemInfo"/>（纯内存操作）。</summary>
+    private static KBItemInfo BuildFromResolved(
+        SKBDetail detail,
+        Dictionary<int, IdName> names,
+        Dictionary<int, Core.DBModels.MapSolarSystem> systems,
+        Dictionary<int, Core.DBModels.InvType> types,
+        Dictionary<int, Core.DBModels.MapRegion> regions,
+        Dictionary<int, Core.DBModels.InvGroup> groups)
+    {
+        var info = new KBItemInfo(detail);
+
+        IdName? Get(int? id) => id is > 0 && names.TryGetValue(id.Value, out var found) ? found : null;
+
+        info.VictimCharacterName = Get(detail.Victim?.CharacterId);
+        info.VictimCorporationIdName = Get(detail.Victim?.CorporationId);
+        info.VictimAllianceName = Get(detail.Victim?.AllianceId);
+        info.VictimFctionName = info.VictimAllianceName ?? info.VictimCorporationIdName;
+
+        var finalBlow = detail.Attackers?.FirstOrDefault(p => p.FinalBlow);
+        if (finalBlow is not null)
+        {
+            info.FinalBlowCharacterName = Get(finalBlow.CharacterId);
+            info.FinalBlowCorporationIdName = Get(finalBlow.CorporationId);
+            info.FinalBlowAllianceName = Get(finalBlow.AllianceId);
+            info.FinalBlowFctionName = info.FinalBlowAllianceName ?? info.FinalBlowCorporationIdName;
+        }
+
+        if (detail.SolarSystemId > 0 && systems.TryGetValue(detail.SolarSystemId, out var system))
+        {
+            info.SolarSystem = system;
+
+            // 星域：由星系的 RegionID 关联（原 KBHelpers 也是这么补的，批量版一度漏掉 → 列表星域空白）
+            if (regions.TryGetValue(system.RegionID, out var region))
+            {
+                info.Region = region;
+            }
+        }
+
+        if (detail.Victim?.ShipTypeId > 0 && types.TryGetValue(detail.Victim.ShipTypeId, out var type))
+        {
+            info.Type = type;
+
+            // 类别：由船型的 GroupID 关联（同上，批量版一度漏掉）
+            if (groups.TryGetValue(type.GroupID, out var group))
+            {
+                info.Group = group;
+            }
+        }
+
+        return info;
+    }
+
 
     /// <summary>取单条 killmail 的富化信息（失败返回 null）。</summary>
     public static Task<KBItemInfo?> GetKillmailAsync(int killmailId, CancellationToken ct = default)
@@ -1040,7 +1229,15 @@ public static class ZkbQueryService
         }
     }
 
-    /// <summary>批量解析 ID → 名称。</summary>
+    /// <summary>
+    /// 批量解析 ID → 名称。
+    ///
+    /// <para>
+    /// **按 <see cref="ResolveChunkSize"/> 分批**：大战场单条 killmail 的攻击者可达数百人，
+    /// 每人 4 个 ID（角色/军团/联盟/势力）时总量会突破 ESI <c>/universe/names</c> 的 **1000 个 ID 上限**
+    /// （同时也在逼近 SQLite 的 IN 变量数上限），整批请求会被直接拒绝、名字全空。分批后逐块合并。
+    /// </para>
+    /// </summary>
     public static async Task<Dictionary<int, IdName>> ResolveNamesAsync(List<int> ids)
     {
         var valid = ids.Where(p => p > 0).Distinct().ToList();
@@ -1049,17 +1246,30 @@ public static class ZkbQueryService
             return new Dictionary<int, IdName>();
         }
 
-        try
+        var result = new Dictionary<int, IdName>(valid.Count);
+        foreach (var chunk in valid.Chunk(ResolveChunkSize))
         {
-            var list = await Core.Services.IDNameService.GetByIdsAsync(valid).ConfigureAwait(false);
-            return list?.GroupBy(p => p.Id).ToDictionary(g => g.Key, g => g.First())
-                   ?? new Dictionary<int, IdName>();
+            try
+            {
+                var list = await Core.Services.IDNameService.GetByIdsAsync(chunk.ToList()).ConfigureAwait(false);
+                if (list is null)
+                {
+                    continue;
+                }
+
+                foreach (var name in list)
+                {
+                    result[name.Id] = name;
+                }
+            }
+            catch (Exception ex)
+            {
+                // 单批失败不影响其余批次
+                Core.Log.Error(ex);
+            }
         }
-        catch (Exception ex)
-        {
-            Core.Log.Error(ex);
-            return new Dictionary<int, IdName>();
-        }
+
+        return result;
     }
 
     private static async Task<TModel?> FetchEsiAsync<TModel>(Func<Task<EVEStandard.Models.API.ESIModelDTO<TModel>>> call)

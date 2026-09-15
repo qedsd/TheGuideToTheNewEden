@@ -33,6 +33,9 @@ namespace TheGuideToTheNewEden.Core.Models.KB
         public IdName FinalBlowCorporationIdName { get; set; }
         public IdName FinalBlowAllianceName { get; set; }
 
+        /// <summary>最后一击者的势力名（联盟优先、否则军团）——列表里显示"势力归属"，与 <see cref="VictimFctionName"/> 对应。</summary>
+        public IdName FinalBlowFctionName { get; set; }
+
         public IdName Victim
         {
             get

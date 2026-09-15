@@ -11,7 +11,7 @@ namespace TheGuideToTheNewEden.WPF.Views.UserControls.KB;
 
 /// <summary>
 /// 可复用 KB 列表（对齐 WinUI 的 <c>KBListControl</c>，但用 <c>ui:DataGrid</c> 替代 Syncfusion）。
-/// 只负责展示与交互，不持有数据源；行双击、实体名点击、右键浏览器查看都通过事件交给宿主页面处理。
+/// 只负责展示与交互，不持有数据源；行单击、实体名点击、右键浏览器查看都通过事件交给宿主页面处理。
 /// </summary>
 public partial class KillListControl : UserControl
 {
@@ -30,13 +30,13 @@ public partial class KillListControl : UserControl
         set => SetValue(ItemsSourceProperty, value);
     }
 
-    /// <summary>双击某一行（打开 KB 详情）。</summary>
+    /// <summary>单击某一行（打开 KB 详情；行内实体链接为 ButtonBase，自行处理左键抬起，不会触发本事件）。</summary>
     public event Action<KBItemInfo>? OpenKillmail;
 
     /// <summary>点击舰船 / 类别 / 星系 / 星域 / 受害者 / 最后一击（打开实体统计）。</summary>
     public event Action<IdName>? EntityClicked;
 
-    private void OnRowDoubleClick(object sender, MouseButtonEventArgs e)
+    private void OnRowClick(object sender, MouseButtonEventArgs e)
     {
         if (sender is DataGridRow { Item: KBItemInfo info })
         {
@@ -66,7 +66,9 @@ public partial class KillListControl : UserControl
                 ? null
                 : new IdName(info.Region.RegionID, info.Region.RegionName, IdName.CategoryEnum.Region),
             "victim" => info.Victim,
+            "victimfaction" => info.VictimFctionName,
             "finalblow" => info.FinalBlow,
+            "finalblowfaction" => info.FinalBlowFctionName,
             _ => null,
         };
 

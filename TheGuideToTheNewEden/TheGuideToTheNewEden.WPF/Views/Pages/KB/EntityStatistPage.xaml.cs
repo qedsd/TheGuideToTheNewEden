@@ -74,7 +74,7 @@ public partial class EntityStatistPage : Page
     private async void OnKillListPageChanged(object? sender, int page) =>
         await RunAsync(() => _viewModel.GoToPageAsync(page));
 
-    private void OnListOpenKillmail(KBItemInfo info) => KbNavigation.OpenKillmail(info.SKBDetail.KillmailId);
+    private void OnListOpenKillmail(KBItemInfo info) => KbNavigation.OpenKillmail(info);
 
     private void OnListEntityClicked(IdName idName) => KbNavigation.OpenEntity(idName);
 

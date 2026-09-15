@@ -1454,6 +1454,101 @@ EnableWindowsTargeting true
   - **卡 2 统计概览**：危险系数/抱团概率两行改为 WinUI 同款形态——**标签 + 2px 细条（绿轨 `SystemFillColorSuccessBrush` / 红条 `SystemFillColorCriticalBrush`，两者同色，替代原"危险红/抱团橙"）+ 数值 + %**；下方为 WinUI 同款 **3 列统计块**：击杀数/价值/点数（绿）与 损失数/价值/点数（红），外加**单挑击杀/单挑损失**行（`SoloKills`/`SoloLosses`，新增 VM 属性；WinUI 把这些计数误过一遍 `ISKNormalizeConverter` 且两组不一致，WPF 直接显示原始计数）。
   - 移除旧卡独有的"拥有超期"文字（WinUI 无此元素，超期页签的出现本身已表达该信息；`HasSupers` 属性保留用于页签可见性）。`CategoryLabel` 不再展示（WinUI 无）。
   - 本地化 **0 新增键**（`EntityStatistPage_Ship`、`StatistMonthPage_Points*/Solo*` 等阶段 53 已带入）。`dotnet build` 0 错误、无新增告警；未实机核验。
+- **修复（用户实机反馈，第五轮："实体头像还是矩形；KB 列表双击弹详情改单击"）**：
+  - **头像圆形裁剪**：上一轮用 `<Border CornerRadius="999"><Image/></Border>` 仍是矩形——WPF 的 `Border.CornerRadius` 只圆化 Border **自身**的背景/边框，**不裁剪子元素**（与 UWP/WinUI 不同）。改为 `Image.Clip` 椭圆几何：100×100 定尺寸 + `<EllipseGeometry Center="50,50" RadiusX="50" RadiusY="50"/>`，外层换回 `Grid` 只承担 `AvatarUrl` 可见性绑定（见 §9 第 45 条）。
+  - **KB 行单击开详情**：`KillListControl` 行事件由 `MouseDoubleClick`（`OnRowDoubleClick`）改为 `MouseLeftButtonUp`（`OnRowClick`），对齐 WinUI `KBListControl` 的 `IsItemClickEnabled` 单击行为。安全性：行内的 `KbLinkButton` 实体链接（舰船/类别/星系/星域/受害者/最后一击）是 `ButtonBase`，其 `OnMouseLeftButtonUp` 触发 Click 后把事件标记为 Handled，**不会**冒泡到行处理器造成"点实体名却开了 KB 详情"；该控件为共享控件，实体统计/月统计/主页等所有宿主一并生效（`OpenKillmail` 订阅方无需改动）。
+- **修复（用户实机反馈，第五轮补遗 09-15："系统通知 KB 时点击通知没法导航到 KB详情"）**——即 §8 第 46 条的落地：
+  - `NotificationService.Show` 增加可选 `onClick` 参数（**单槽位** `volatile` 字段，"最后一次 Show 获胜"——Win32 气泡点击回调不带通知身份，只能近似路由）；`TrayBalloonTipClicked` 先触发既有全局 `NotificationClicked`（频道预警"点击停声"不受影响）再执行槽位动作并清空。
+  - `ZkbKillStreamHub.TryNotify` 传入 `() => KbNavigation.OpenKillmail(detail.KillmailId)`——复用既有导航链路：`Navigation.Navigate(ZKBPage)` → ZKB 页 `Drain()` 取 killmailId 开详情标签 → `Navigation.Activate()` 前置/恢复主窗口（最小化到托盘也能拉回前台）。
+  - 边界：同一时刻只有"最近一条"通知可点开；击杀流高频时旧通知点击会开到最新的 kill（Win32 无 per-balloon 身份，无解，已在 §8 第 46 条记录）。构建 0 错误无新告警；未实机核验。
+- **UI 重构（用户要求，09-15："KB 主页应该使用卡片将连接、设置等按钮放到 footer，设置界面使用弹窗弹出"）**：
+  - `KillStreamPage` 整页改为一张 `controls:CardControl`：**Header** = 标题（`ZKBHomePage_KillStream`）+ 连接状态点（绿 `SystemFillColorSuccessBrush` / 灰 `TextFillColorSecondaryBrush`，随 `IsConnected`/`IsDisconnected` 切换）+ 右侧"匹配 / 总数"计数；**Footer** = 连接（Primary）/断开/清空/设置四个按钮；内容区只剩"未连接提示 / 连接中指示 / 筛选-已过滤两个列表"。本地化 0 新增键。
+  - 设置改为**弹窗**：原内嵌设置面板抽成 `Views/UserControls/KB/KillStreamSettingView`（构造传入 `KillStreamViewModel`，绑定同一份 Config），页面以 `ToolWindow` 单实例承载（`Owner=主窗口`、重复点击仅激活、680×640，与 MarketPage / 频道翻译弹窗同款模式）；页面 `Unloaded`（页签切换/关闭）时关闭弹窗并 `Dispose` VM——设置视图绑定的是页 VM，页签切走即退订流事件，留着弹窗只会展示陈旧状态。
+  - VM 顺带删掉过时的 `IsSettingVisible`（设置不再遮挡内容区，`IsContentVisible`/`ShowDisconnectedHint` 只看连接状态）。构建 0 错误无新告警；未实机核验。
+- **UI 调整（用户要求，09-15："搜索可以 flyout 显示吗"）**——ZKB 实体搜索收进 Flyout：
+  - `ZKBPage` 顶部由"常驻搜索框 + 左侧结果卡"改为**右上角一个搜索按钮**（`Search24`，沿用既有键 `ZKBPage_SearchTip`，0 新增本地化键）；搜索框、搜索状态、结果列表整体移入 `<ui:Flyout Placement="Bottom">`（内容宽 380、结果 MaxHeight 360），标签宿主改为全宽。选中结果后 `SearchFlyout.Hide()` 并清空（跳实体统计标签，行为不变）。
+  - **WPF-UI 4.x 的 Flyout 用法**（3.x 的 `FlyoutService` 附加属性已移除；4.3.0 API 以读 dll 字符串表 + GitHub 源码双重确认）：`Wpf.Ui.Controls.Flyout : ContentControl`，DP `IsOpen`/`Placement`（`System.Windows.Controls.Primitives.PlacementMode`），方法 `Show()/Hide()`，路由事件 `Opened`/`Closed`（`TypedEventHandler<Flyout, RoutedEventArgs>`）。**模板内的 `PART_Popup` 不设 PlacementTarget → 锚点 = Flyout 元素自身在布局中的位置**：把 Flyout 与锚定按钮放进同一个 Grid 并 `HorizontalAlignment/VerticalAlignment=Stretch` 覆盖同一矩形，`Placement="Bottom"` 即"从按钮下方弹出"；`Popup.StaysOpen=False`（点外部自动关闭）。展开后聚焦搜索框挂在 `Opened` 事件上（此时 Popup 已呈现，可安全 `Focus()`）。
+  - 构建 0 错误无新告警；未实机核验。
+- **UI 调整二（用户要求，09-15："搜索按钮放到 TabControl 的 Header 区域末尾，与 KB 流、各实体页 TabItem 的 Header 同行，末尾留一段宽度给按钮"）**：
+  - `ZKBPage.xaml` 新增 `ControlTemplate x:Key="KbTabsTemplate"`（TargetType TabControl）**逐项镜像 WPF-UI 4.3.0 默认模板**（来源 GitHub tag 4.3.0 `TabControl.xaml`：外层 Grid 两行、`TabPanel` 头行 `Panel.ZIndex=1` 压住内容区顶边线、内容 Border `BorderThickness="0,1,0,0"` + `CornerRadius="0,4,4,4"` + `PART_SelectedContentHost` `ContentSource="SelectedContent"`），唯一差异：头行由单个 TabPanel 改为 Grid 两列 `*,40`——TabPanel 占第 0 列，**右端 40px 空列留给搜索按钮**；标签多了在预留位前换行，永远不会滑到按钮底下。
+  - 搜索按钮 + Flyout 移入页面级**覆盖层** `Grid Width=40 Height=36 HorizontalAlignment=Right VerticalAlignment=Top`（40 = 预留列宽、36 = WPF-UI TabItem MinHeight，按钮与 TabItem Header 精确同行）；Flyout 锚定沿用上一轮"同 Grid Stretch 覆盖同矩形 + `Placement=Bottom`"惯用法，仍从按钮下方弹出。
+  - **关键取舍（模板命名空间）**：`ControlTemplate` 内的 `x:Name` 处于模板命名空间，页面 code-behind **拿不到**对应字段——模板只放非交互骨架（TabPanel/Border/ContentPresenter），交互元素（SearchButton/SearchFlyout/SearchBox/SearchResultList）全留在页面层覆盖层上，事件照常挂（见 §9 第 46 条）。
+  - 构建 0 错误、14 既有警告；未实机核验。
+- **UI 调整三（用户实机反馈，09-15："搜索 Flyout 会飞到窗口外面，往左显示；Header 放不下会分行，要像 WinUI3 那样按钮切换、永远一行"）**：
+  - **Flyout 向左展开**：`Placement=Bottom` 的弹出层与**锚点左缘对齐**向下展开，而锚点 = Flyout 元素自身布局矩形（此前只有 40px 宽）→ 380px 内容向右伸出窗口。修复：页面级覆盖层从 40px 加宽到 **420px**（380 内容 + 40 按钮列，按钮仍右对齐其中），锚点矩形随之加宽——弹出后右缘落在按钮下方附近、整体向左展开，不再出窗。通用规律：Bottom 模式要"右对齐弹出"，就把锚点元素加宽到"内容宽 + 右缘余量"。
+  - **头行单行化（WinUI3 TabView 式）**：`KbTabsTemplate` 头行由 `TabPanel`（放不下即换行）改为 `DockPanel`（左/右两个 `RepeatButton` 卷动钮 + 中间 `ScrollViewer`（滚动条 Hidden）包 `Orientation=Horizontal` 的 `StackPanel IsItemsHost="True"`）——标签**永不换行**，溢出经卷动钮/滚轮横滚；`ScrollableWidth=0`（无溢出）时卷动钮经 DataTrigger **折叠**（对齐 WinUI3"溢出才出按钮"），到达两端时命令 `CanExecute=false` 自动置灰（Opacity 0.35）。
+  - **模板内元素取用按 §9 第 46 条实战**：`Tabs.Loaded` 里 `Tabs.Template.FindName("HeaderScroll", Tabs)` 取滚动宿主（挂 `ScrollChanged → CommandManager.InvalidateRequerySuggested` 刷新按钮状态）；卷动钮不挂 Click 而用页面级静态 `RoutedCommand`（`HeaderScrollLeft/RightCommand` + `CommandBinding`，路由命令从模板冒泡到页面，RepeatButton 按住可连发）；`SelectionChanged → BringIntoView()` 让新开/搜索跳转/关闭后顺移的标签自动滚入可视区；`PreviewMouseWheel` 把滚轮转成横滚。
+  - 卷动钮为自绘轻量模板（26×26 圆角块 + `ChevronLeft24/ChevronRight24`，悬停 `SubtleFillColorSecondaryBrush` / 按下 `SubtleFillColorTertiaryBrush`，两键项目已多处使用）。
+  - 构建 0 错误、14 既有警告；未实机核验。
+- **修复（用户实机反馈，09-15："点击系统通知的 KB 会显示查询失败"）**——根因是**击杀广播先于 API 可查**（见 §9 第 47 条）：
+  - 日志实锤（`Log/20260915.txt`）：11:38 点通知 → `[ZKB] kills 直取两次均为空（KillID:138452560）` → 兜底也无数据 → null →「查询失败」；09:34 同模式还炸出 ESI `Ensure all IDs are valid before resolving`（空壳数据带无效 ID 去解析）。zkillboard 的 websocket 流把击杀推出来的那一刻，`/kills/killID/` 还要过几秒才查得到——而"点通知"恰恰是击杀广播后的最早时刻，按 ID 重查必然扑空。
+  - 修复：**携带现成数据直开，不重查**。`KbNavigation.OpenKillmail` 新增 `KBItemInfo` 重载（内部随请求携带 `_pendingKillmailInfo`，`Drain()` 改为返回三元组 Entity/KillmailId/Info）；通知回调（`TryNotify` 闭包里本就有富化好的 info）、击杀流行点击（`KillStreamPage`）、实体统计页行点击（`EntityStatistPage`）全部直传 info；`ZKBPage.OpenKillmailAsync` 有现成数据就**零网络**建页，仅无数据时才按 ID 查询（"最高击杀"卡片只有 ID，但都是历史击杀、API 必可查，走 ID 路径）。
+  - 收益：点通知秒开详情（省一次网络往返），"最新击杀查不到"的竞态从根上消除；附带修复了击杀流行点击"刚出的 kill"同样会查询失败的隐患。构建 0 错误、14 既有警告；未实机核验。
+- **性能修复（用户实机反馈，09-15："加载 KB 时击杀人数过多会卡一会儿；从实体 KB 列表点击时也会卡住一会儿"）**——两个独立瓶颈，都是"UI 线程被同步工作占住"：
+  - **① 富化逐条查询 → 批量去重**（`ZkbQueryService.EnrichDetailsAsync`）：原实现对 slice 里每条 killmail 各调一次 `KBHelpers.CreateKBItemInfo`，每条都做 `IDNameService.GetByIds`（SQLite 查询，未命中还会发 ESI `/universe/names`）；而 `DefaultConcurrency=1`（Core SQLite 非并发安全，见 §9 第 37 条）使其**完全串行**——50 条 = 最多 50 次查询。但一页击杀涉及的**角色/军团/联盟/星系/船型高度重叠**（同一战场同一批人），重复查询纯属浪费。改为：先汇总全页所有 ID **一次性解析**（`ResolveNamesAsync` + `MapSolarSystemService.Query` + `InvTypeService.QueryTypes` 各一次），再用字典**纯内存组装**（新增 `BuildFromResolved`），查询次数与页内条数**解耦**。单条组装失败只丢该条。
+  - **② 图片在 UI 线程同步下载**（新增 `Controls/AsyncImage` + `Controls/AsyncImageCache`）：`TypeImageConverter` / `UrlToImageConverter` 走 `BitmapImage.UriSource`，那是 WIC 的**按需下载**路径——首次 `EndInit()` 在调用线程（图像绑定都在 UI 线程求值）**同步下载**。击杀列表每行 1 张舰船图标、KB 详情页每行 1 张头像，行一多就是"整页卡一会儿"；且转换器一旦返回 null **不会自动重算**，做不了"先占位后填充"。新增附加属性 `ctl:AsyncImage.Source/IdName/TypeId` (+`Size`)：后台抓字节 → 同线程解码 → `Freeze()` → 回 UI 线程直写 `Image.Source`（不依赖绑定刷新），按 URL 进程内缓存（`null` 也缓存，取不到的地址不再重试），并发同 URL 合并为一次下载；下载完成时校验容器地址，避免列表虚拟化复用造成串图。
+  - **改造范围**：`KillListControl`（舰船图标）、`KbDetailPage`（受害者舰船图 + 攻击者头像）、`EntityStatistPage`（实体圆头像）、`KillRankCard`（排名卡图片）。`TypeImageConverter`/`UrlToImageConverter` 保留（频道市场窗等非列表场景仍在用），`IdNameImageConverter` 改为走 `AsyncImageCache.TryGet` 并注明"列表请用附加属性"。
+  - 构建 0 错误、14 既有警告；未实机核验（效果需实机确认：击杀者上百的 KB 详情页与首页列表滚动应明显顺滑）。
+- **性能修复二（用户实机反馈，09-15："从实体 KB 列表点 KB 还是卡一会，像是先把数据加载完才跳详情页"）**——卡的不是数据，是**渲染**：
+  - **主因：外层 `ScrollViewer` 废掉了 `DataGrid` 的行虚拟化**（见 §9 第 49 条）。`KbDetailPage` 两个表格原本套着外层 `ScrollViewer`（+`MinWidth` 绑视口宽）——外层以**无限高度**测量表格，表格自己的滚动视口等于全部内容，于是**一次性实例化所有行**（攻击者表每行 1 张头像 + 6 列模板）。击杀者上百的 KB 点开就卡一下，且卡在标签首次布局时，观感就是"先加载完数据才跳页"。改为：去掉外层 `ScrollViewer`，表格自滚（`Vertical/HorizontalScrollBarVisibility=Auto`、`CanContentScroll=True`，仅在样式里把横向滚动条从 `Disabled` 改成 `Auto` 以保留窄窗可横向滚动），删掉指向外层视口的 `MinWidth` 绑定 → 只实例化可见行，页面秒出。
+  - **页内加载态**（用户要求"在详细页加载数据并显示加载效果"）：数据本来就是携带现成 `KBItemInfo` 直开（无网络），真正耗时的是页内富化（名称/星系/船型）。现在标签先出现、富化在页内异步补齐，期间显示**局部加载遮罩**（`SmokeFillColorDefaultBrush` 半透明底 + 卡片 + `controls:SpinnerIcon`，文案沿用既有键 `ZKBPage_Loading`，**0 新增本地化键**），视觉与实体统计页的局部等待一致。**坑**：`KbDetailViewModel.IsLoading` 原本是普通自动属性（`{ get; private set; }`），**不发通知** → 遮罩绑上去永远不显示（属静默失效）；已改为带 `OnPropertyChanged` 的属性。
+  - **顺带修一个"人多才触发"的隐患**：`ResolveNamesAsync` 原来一次性把全部 ID 交给 ESI `/universe/names`，而单条 killmail 的攻击者按 4 个 ID/人收集，**攻击者 ≥250 人时就会超过 ESI 的 1000 ID 上限**（也在逼近 SQLite 的 IN 变量数上限），整批会被拒绝、名字全空。改为按 500 分批解析再合并（单批失败不影响其余）。
+  - 构建 0 错误、14 既有警告；未实机核验（重点复测：击杀者上百的 KB 点开后是否立刻出页 + 显示加载卡片，玩家名是否齐全）。
+- **UI 调整四（用户要求，09-15："实体 KB 列表的类型下拉框、刷新挪到底部与切页按钮同一行，靠左显示"）**：
+  - `EntityStatistPage` 的「KB 列表」页签：顶部工具栏整行取消，`类型`标签 + `ComboBox`(宽 140) + 刷新按钮(ArrowSync24) 移到底部行，与 `controls:PagerControl` 同处一个 Grid——筛选区 `HorizontalAlignment="Left"`，分页保持 `Right`；列表因此多出一行高度（Grid 由三行减为两行）。本地化 **0 新增键**（沿用 `StatistKBListPage_KBModifier`、`General_Refresh`）。
+  - 验证：XAML/C# 编译通过（`dotnet build` 仅在**拷贝输出**阶段报 `MSB3027`/`MSB3021`——exe 被运行中的程序占用；关闭程序后重新构建即可生效，见 §9 第 50 条）。
+- **UI 调整五（用户要求，09-15："KB 列表的受害者、最后一击只显示玩家名，WinUI3 里还有势力归属与头像"）**——对齐 WinUI 的 `KBListCharacterControl`：
+  - **WinUI 原样**：每列 = 身份图（`Victim`/`FinalBlow` 的 `IdName`，按类别分派角色头像 / 军团、联盟徽标）+ 势力徽标（有联盟显联盟、否则显军团）+ 两行链接（名称、势力名，各自可点击跳实体统计）；**最后一击列的名称后附 `( 击杀者数 )`**（WinUI 把攻击者数放在这一列）。
+  - WPF 改造：`KillListControl` 的受害者 / 最后一击列由"名称 + 类别文字"改为上述三列 Grid（两张 32×32 `ctl:AsyncImage`，`Size=64` 取更清晰的源图；两行 `KbLinkButton`），列宽 176 → 210；点击分派新增 `victimfaction` / `finalblowfaction` 两个 Tag（`OnEntityClick` 里分别取 `VictimFctionName` / `FinalBlowFctionName`）。
+  - 数据侧：`VictimFctionName` 已有，**`FinalBlowFctionName` 是本次新增**（Core `KBItemInfo`，与前者对应），并在 `ZkbQueryService.BuildFromResolved`（批量富化主路径）与 `KBHelpers.CreateKBItemInfo`/`CreateKBItemInfoAsync`（旧/兜底路径）三处赋值，保证两条路径都有势力名。Core 属性为纯新增，WinUI 侧不受影响。
+  - 构建：编译 0 错误、无新增告警（55 条唯一告警全在既有文件，见 §9 第 50 条关于"仅拷贝阶段失败"的说明）。
+- **修复（用户实机反馈，09-15："位置列只有星系、没有星域"）**——**上一轮批量富化改写的回归**（见 §9 第 51 条）：
+  - 为性能把逐条 `KBHelpers.CreateKBItemInfo` 换成自写的批量组装后，只补了名称 / 星系 / 船型，**漏了 `Region` 与 `Group`**——这两者需要二次关联（`regionId` 藏在星系里、`groupId` 藏在船型里）。结果：列表"星域"第二行静默空白、详情页副标题也少了星域。编译、告警、日志全无提示。
+  - 修复：`EnrichDetailsAsync` 在解析完星系/船型后再收集一轮 `RegionID` / `GroupID`，用 `MapRegionService.Query(ids)` / `InvGroupService.QueryGroups(ids)` **各批量查一次**（仍然与页内条数解耦）；`BuildFromResolved` 补 `info.Region` / `info.Group` 赋值，行为与原 `KBHelpers` 完全对齐。
+- **UI 调整六（用户要求，09-15："估价去掉粗体；位置列星系第一行、星域第二行"）**：
+  - 列表估价列去掉 `FontWeight="SemiBold"`（用户对本控件的 `Width="Auto"` 微调一并保留）。
+  - 位置列**布局本就是"第一行星系（+安全等级）、第二行星域"**（两者都是可点链接），用户看到"没有星域"实为上述数据回归；修数据后即正常显示。本地化 0 新增键。
+  - 验证：本次 app 已关闭，`dotnet build` **完整成功**——0 错误、35 警告（全量双项目基线），并已把新产物写入 `bin\Debug\net8.0-windows10.0.19041`（Core.dll 15:35:50 / 主程序集 15:36:12）。
+- **UI 调整七（用户要求，09-15："KB 详情页里参与者的名字、势力、舰船要可点击跳转；受害者的名字、舰船、星系、星域也要"）**：
+  - **统一链接控件**：`KbLinkButton` 样式从 `KillListControl` 的局部资源**提升为全局键控样式**（`Controls/GlobalControlStyles.xaml`）——与本项目既有的 `StretchListItem`/`TranslationFieldLabel` 同样处理（跨页面复用的样式必须放全局，否则 `StaticResource` 找不到会在页面构造时抛 `XamlParseException`）；列表与详情页共用同一份定义，避免两处漂移。
+  - **点击契约**：新增 `KbDetailPage.OnEntityLinkClick`——各链接的 `Tag` 上直接挂 **`IdName` 对象**（`Tag="{Binding VictimEntity}"`），处理器只做 `Tag as IdName → KbNavigation.OpenEntity(idName)`，无需按字符串 Tag 分派；导航链路与列表内的实体链接完全一致（跳到 ZKB 页开该实体统计标签）。
+  - **受害者侧**（`KbDetailViewModel` 新增 `IdName` 属性）：`VictimEntity`（角色/军团/联盟）、`VictimFactionEntity`（联盟优先、否则军团）、`ShipEntity`、`SystemEntity`、`RegionEntity`，另加 `SystemSecurityText`。头部由"标题 + 副标题字符串 + 尾随星系名"改为 **4 行离散链接**：受害者名（16px，保留原字重）/ 势力 / 舰船 · 星系(安全等级) · 星域 / 时间——原先 `SubTitle` 一行字符串与之重复，故不再展示（`BuildSubTitle` 保留未删），尾随的重复星系名一并去除。
+  - **参与者侧**（`AttackerRow` 新增 `CharacterEntity` / `FactionEntity` / `ShipEntity`）：角色名与势力名由纯文本改为链接（势力名同时修正为**联盟优先、否则军团**，原先只绑 `AllianceName`，无联盟时该行为空）；舰船列由 `DataGridTextColumn` 换成模板列 + 链接按钮。
+  - 本地化 0 新增键；构建编译通过（`dotnet build` 仍只在**拷贝阶段**失败：用户重启了程序，exe 被 `TheGuideToTheNewEden (32216)` 占用，见 §9 第 50 条）。
+- **UI 调整八（用户要求，09-15："把 KB 详情里的受害者头像、势力头像也显示"）**——对齐 WinUI `Views/KB/KBDetailPage.xaml` 的头部布局：
+  - 头部由 3 列改为 **4 列**：`受害者身份图(高 128) | 受害者舰船图(高 128) | 信息列 | 价值面板`。身份图走 `ctl:AsyncImage.IdName="{Binding VictimEntity}"`——按 `IdName` 类别自动分派角色头像 / 军团、联盟徽标（与 KB 列表同一套规则，受害者是军团或联盟时该图自动换成对应徽标）；舰船图仍用 `ShipImageUrl`，**源图本来就是 `size=128`**，此前只显示 72，现按 WinUI 用 128。
+  - 势力改为 **军团与联盟各一枚 32px 徽标 + 各一条链接**（WinUI 同款），取代「UI 调整七」里那条二选一的合并链接；对应数据为空时徽标与链接**各自隐藏**（VM 新增 `VictimCorpEntity` / `VictimAllianceEntity` / `HasVictimCorp` / `HasVictimAlliance`，显隐用页面既有的 `BoolToVis` 转换器，未新增转换器）。
+  - 本地化 0 新增键；构建 **0 错误、14 既有警告**（WPF 增量基线），产物已落地（`TheGuideToTheNewEden.dll` 16:06:41——本次构建时程序已关闭）。
+- **UI 调整九（用户要求，09-15："搜索 Flyout 现在在左下方，改到左侧"）**：
+  - `SearchFlyout` 的 `Placement` 由 `Bottom` 改为 **`Left`**：弹出层贴在搜索按钮**左侧**（WPF `PlacementMode.Left` 使弹出层右缘对齐锚点左缘），与按钮所在行齐平。
+  - 同时把覆盖层锚点宽度由 420 **收回 40**（= 预留按钮列宽）：`Left` 模式下"锚点左缘 = 弹出层右缘"，锚点若仍是 420，弹出层会离按钮约 380px 远。**规律**：`Bottom` 想要"右对齐向左展开"就把锚点加宽；`Left`/`Right` 想要"紧贴按钮"就把锚点收窄到按钮本身。
+  - 本地化 0 新增键；构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 16:15:04）。
+- **UI 调整十（用户要求，09-15："搜索框固定在现在按钮处、不再 flyout、宽 200"）**：
+  - `ZKBPage` 头行右端的**搜索按钮 + Flyout（含输入框）改为常驻搜索框**：`ui:TextBox`（宽 200）直接摆在按钮原位置（右对齐），只有**结果列表**仍用 `<ui:Flyout>` 弹出。相应地删掉 `SearchButton`、`OnSearchToggleClick`、`SearchFlyout.Opened → OnSearchFlyoutOpened`（按钮不存在了，聚焦逻辑失去意义）；`OnSearchTextChanged` 改为**输入即展开结果下拉、清空即收起**（仍保留 350ms 防抖）。
+  - 模板头行右侧预留列 **40 → 240**：200 给搜索框本体，另 40 是给结果弹出层的余量——`Placement=Bottom` 按"锚点左缘对齐"展开，弹出层实际宽 = 内容 200 + 内边距（≈226），锚点 240 才保证右缘不出窗口（同「调整三/九」的锚点宽度规律）。
+  - 本地化 0 新增键；构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 16:26:47）。
+- **UI 调整十一（用户要求，09-15："把 KB 流的标签头也固定，实体页多到要滚动切换时不影响它"）**——**钉住"击杀流"标签头**（见 §9 第 52 条）：
+  - **首个 TabItem 的头部收敛为零宽**：`Header = null` + `Margin/Padding = 0` + `MinWidth = 0` + `Width = 0`——它照常承载击杀流页面内容与选中态，但不在标签行里占位置（否则会出现第二个"击杀流"）；零宽不影响程序化选中（`SelectedIndex = 0`）与 `BringIntoView`。
+  - **页面级覆盖层重绘头部**（`PinnedStreamHeaderHost` + `PinnedStreamHeader`，固定 `HorizontalAlignment=Left`、高 36 与标签行同高）：点击 `SelectedIndex = 0` 切回击杀流；选中态用 `DataTrigger`（`{Binding SelectedIndex, ElementName=Tabs}` == 0）切换主色文字 + 半粗 + 强调色下划线，视觉对齐 WPF-UI 的选中标签。
+  - **标签容器运行时让位**：模板里的标签容器 `DockPanel` 命名为 `HeaderTabsPanel`，代码在 `Tabs.Loaded` 与钉住头部 `SizeChanged` 时把它的 `Margin.Left` 设为钉住头部实际宽度——于是实体/详情标签**始终钉住头部右侧滚动**，且标题随语言变宽变窄会自动跟随（不写死宽度）。
+  - 本地化 0 新增键；构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 16:39:25）。
+- **修复（用户实机反馈，09-15："没打开任何实体/KB 时头部区域变小，KB 流与搜索框压到内容区上了"）**——钉住标签头的连带回归（见 §9 第 53 条）：
+  - 根因：首个 `TabItem` 头部收敛为零宽后，**它的高度也跟着塌了**；标签行是 `Auto` 行，于是整行高度变 0 → 内容区从页面顶端开始，而两个固定高度、Top 对齐的页面级覆盖层（钉住头部、搜索框）就压在了击杀流内容上（截图即此现象）。
+  - 修复：**给该 TabItem 显式 `Height = 36`**（= 标签行高度），**并给模板里的标签行 Grid 写死 `Height="36"`**（双保险：即使将来标签内容再变，行高也不会塌）。构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 16:46:12）。
+- **UI 调整十二（用户要求，09-15："加粗显示左右切换按钮"）**——标签行的左右卷动钮改为**实心字形**：
+  - `ui:SymbolIcon` 加 **`Filled="True"`**（走 Fluent 的 `_filled` 变体，比描边版明显更粗），文字色由 `TextFillColorSecondaryBrush` 提到 `TextFillColorPrimaryBrush` 增强对比；按钮尺寸/悬停/按下态不变。
+  - 探测方式（项目既有手法）：`Wpf.Ui.dll` 拷到临时目录后扫字符串表，确认 `SymbolIcon` 有 `FilledProperty` / `get_Filled`、字体为 `FluentSystemIcons-Filled`，且 `ic_fluent_chevron_left_24_filled` / `_right_24_filled` 字形都在（避免出现空白方框）。
+  - 构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 16:54:41）。
+- **过滤机制复核与处置（用户要求，09-15："检查过滤机制、分析是否存在 bug、明确各过滤条件间互斥关系"）**——完整结论见 §8 第 48–50 条，本轮处置两项：
+  - **删除旧入口的失效过滤字段**（§8 第 48 条处置）：`ZKBSettingPage` 的 6 个"逗号分隔 ID"文本框（类型 / 星系 / 星域 / 角色 / 军团 / 联盟）连同其读写代码与 `Join`/`Parse` 辅助一并移除，该页只保留 **连接 / 通知 / 列表上限 / 通知阈值**；过滤条件统一在击杀流页的设置弹窗里维护（6 组黑白名单）。核心理由：那 6 个字段（`ZKBStreamConfig.Types / Systems / Regions / Characters / Corps / Alliances`）**没有任何代码读取**，留在界面上只会让用户以为"配了过滤"却全放行。`ZKBStreamConfig` 中对应字段保留（WinUI 侧可能仍在使用）。
+  - **修掉"空攻击者跳过"**（§8 第 49 条处置）：`ZkbStreamFilter.Pass` 去掉 `if (detail.Attackers is { Count: > 0 })` 守卫，改为**始终执行**攻击者三项检查——空集合 + 包含项非空 → 判为不通过，与 WinUI 对齐（原先会放行）。
+  - 未动的两条已知代价（见 §8 第 50 条末段）：过滤发生在**富化之后**（被过滤的击杀也要付完整富化代价，属"已过滤列表要展示行"的设计取舍）；`HookConfig` 订阅的是**集合实例**（若将来整体替换 `CommonExclusions` 等集合，脏标记会失效）。
+  - 构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 17:21:01）。
+- **设置收敛 + 过滤说明（用户要求，09-15："全局设置界面的剩余 zkb 设置全部迁移到 zkb 页面的设置弹窗；给过滤设置界面增加各个过滤间与或关系说明"）**：
+  - **收敛为单一入口**：`SettingsPage` 移除"设置 → Zkillboard"分类，`ZKBSettingPage.xaml/.cs` 一并删除（它是 §8 第 48 条那组"无代码读取"旧字段的宿主）。核对结果：实时流的全部设置在 `KillStreamSettingView` 里本就是旧页的**超集**（旧页没有"列表排序"），因此无需搬运、只需删入口；`SettingsPage.BuildCategories` 留注释说明"为何这里没有 ZKB 分类"。
+  - **过滤界面加"组合规则"说明**：`KillStreamSettingView` 的「过滤」页签顶部新增信息块（`Info24` + 6 条规则），把 §8 第 50 条对外表述清楚：排除优先 / 包含项按类别分别判空 / 组内 AND / 三组之间 AND / 攻击者是"任一"判定 / 留空=不限制。文案为新键 `ZKBHomePage_Setting_Filter_Semantics`（zh-CN、en-US 各一条；已按项目脚本查重：两侧各 1283 键、**0 重复**、新键两侧都在）。XAML 注释里写明"改过滤逻辑时必须同步维护该文案"。
+  - 构建 0 错误、14 既有警告，产物已落地（`TheGuideToTheNewEden.dll` 17:28:57）。
+  - **补充修复（同日实机截图："过滤说明提示显示不全、不会自动换行"）**：根因见 §9 第 54 条——**横向 `StackPanel` 会给子元素无限宽度，`TextWrapping="Wrap"` 因此完全失效**（文字被父 Border 裁切）；文案里原本用 `&#10;` 写的换行也未生效。改法：① 文案写成**不依赖换行**的整段（编号之间用"；"分隔，随宽度自然折行）；② 承载块由横向 `StackPanel` 改为 **`Grid`（图标 Auto 列 + 文字 `*` 列）**以限宽。`KbFilterPairControl` 的 `Tip` 说明块是同款写法、有同样隐患，一并改为 `Grid`。
 
 ---
 
@@ -1817,9 +1912,19 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 42. **长文本翻译的两个真实上限**（阶段 47 追加，已按 DeepSeek 官方参数重做）：**输入上限（上下文窗口）与输出上限是两件事**。以 `deepseek-flash` 为例，上下文 1M token、最大输出 384K token —— 所以"几万字的原文"本身根本不是问题，瓶颈在**输出**（一次能写多少 token）。本项目的处理：分片阈值由设置决定（`TranslationPage.Ai.MaxChunkChars`，默认 12000 字符，0 = 不分片），`finish_reason=length` 时**自动从断点续写**（最多 3 次），续不完会明确提示"译文可能不完整"。默认 12000 字符的意义是"首段结果更快出现、单次失败损失更小"，并不是模型限制；真嫌慢/嫌请求多都可以在设置页调。
 43. **思考模式默认关闭（仅 DeepSeek 系生效）**（阶段 47 追加）：`deepseek-flash` 的思考模式默认开启且 effort=high，翻译前会先写一大段思维链——又慢又贵，而且**思考模式下 `temperature` 无效**。所以设置页新增「思考模式」，默认 `off`；由于 `thinking`/`reasoning_effort` 是 DeepSeek 专有字段，本项目只在"模型名或地址含 deepseek"时才下发（`AiTranslationSettings.ResolveThinkingMode`），别的服务商保持 `auto`（不下发），避免它们不认识该参数直接 400。
 44. **ZKB 模块整体未做实机核验**（阶段 53）：主页面 / 击杀流 / 实体统计（6 子页签）/ KB 详情均只完成编译与静态校验（图标名、主题画刷键、占位符替换），**没有在真实账号 + 真实 ZKB 服务上逐页点击**。首次使用请优先验证：① 切到 ZKB 页时首个"击杀流"标签是否正常渲染；② 点"连接"能否连上并收到 KB（`ZKBStreamConfig.json` 里的 `AutoConnect` 控制是否自动连）；③ 搜索一个角色名能否打开实体统计并出数。
-45. **ZKB 设置有两处入口**（阶段 53）：设置 → Zkillboard 子页（`ZKBSettingPage`，以逗号 ID 文本维护各过滤集合）与击杀流页内的设置面板（以"搜索 + 黑白名单列表"维护同一批集合）**读写同一份 `Configs/ZKBStreamConfig.json`**，二者会互相覆盖——同时打开两个入口编辑时需要留意（无冲突检测）。后续可考虑把逗号 ID 文本的旧入口收敛掉。
-46. **ZKB 通知点击不会打开对应 KB**（阶段 53）：级联通知走托盘气泡（`NotificationService`），而托盘气泡的点击事件当前被频道预警用于"停止报警声音"，因此 ZKB 通知点击只关闭气泡、不跳转（WinUI 用 Toast 的 `ScenarioId` 做到了点击直达）。要做的话需要在点击事件里按"最后一条通知来源"分流。
+45. **ZKB 设置已收敛为"单一入口"**（阶段 53 起，09-15 完成）：实时流的**全部**设置（自动连接 / 通知 / 通知阈值 / 列表上限 / 列表排序 + 6 组黑白名单）都在**击杀流页的设置弹窗**（`KillStreamSettingView`）里维护；原先"设置 → Zkillboard"子页（`ZKBSettingPage`）维护的是 `ZKBStreamConfig.Types / Systems / Regions / Characters / Corps / Alliances` 这组**没有任何代码读取**的旧字段（详见第 48 条），已连同该子页与 `SettingsPage` 里的分类项一并删除。`SettingsPage.BuildCategories` 留有注释说明"这里为什么没有 ZKB 分类"。
+46. **托盘气泡没有"每条通知"的身份，点击路由是"最后一次 Show 获胜"**（阶段 53 第五轮补，原"通知点击不跳 KB"已修）：Win32 气泡/Win10+ 操作中心 toast 的点击回调（`TrayBalloonTipClicked`）不带"是哪条通知"的信息，因此 `NotificationService.Show` 提供可选 `onClick` **单槽位**——每次 Show 覆盖上一次，点击气泡时（UI 线程）触发。ZKB 击杀通知传入"打开对应 KB详情"（`KbNavigation.OpenKillmail`：导航 ZKB 页 → 页面 Drain 开详情标签 → `Navigation.Activate()` 前置/恢复主窗口）；频道预警的"点击停止报警"仍走全局 `NotificationClicked` 事件（点任何气泡都会顺带停声，无声音时无害）。已知边界：多条通知堆在操作中心时，点旧的那条执行的也是"最新一条"的动作——ZKB 击杀流高频时点开的是最近一次通知对应的 KB。
 47. **ZKB 击杀流/统计的排序与筛选口径以 WinUI 为准**（阶段 53）：流列表排序沿用 `ZKBStreamConfig.SortWay`（上传时间/发生时间），实体统计的"危险系数/抱团概率"等数值直接取 ZKB 服务端返回，本地不做二次计算；"分类统计"按击杀数降序（WinUI 也是），"最高击杀"按 ZKB 返回顺序重排为击杀数降序。未与 WinUI 逐项对拍。
+48. **"设置 → Zkillboard" 旧入口的 6 组过滤字段对击杀流完全无效**（阶段 53 过滤机制复核，实锤）：`ZKBSettingPage` 维护的 `ZKBStreamConfig.Types / Systems / Regions / Characters / Corps / Alliances`（逗号 ID 文本框）**没有任何代码读取**——`ZkbStreamFilter.FromConfig` 只读 6 个黑白名单集合（Common / Victim / Attacker × Exclusions / Inclusions），`EnsureRoleFiltersInitialized` 也只补这 6 个集合、不碰那 6 个 `HashSet`。后果：① 在旧入口填的过滤条件不生效（流照旧全放行）；② 旧入口也清不掉新入口配置的过滤。**第 45 条"两处入口互相覆盖"的说法需按此修正为"旧入口整体失效"**。**处置（阶段 53）**：已删除旧入口的 6 个过滤文本框及其读写代码（含 `Join`/`Parse` 辅助），该页只留 连接 / 通知 / 列表上限 / 通知阈值；`ZKBStreamConfig` 里那 6 个 `HashSet` 字段保留（WinUI 侧可能仍在用）。
+49. **攻击者过滤在 `Attackers` 为空时被整组跳过**（阶段 53 复核；与 WinUI 的小分歧）：`ZkbStreamFilter.Pass` 中 `if (detail.Attackers is { Count: > 0 })` 才做攻击者三项检查，于是"攻击者列表为空 + 配置了攻击者包含项"的消息会被**放行**；WinUI 对空集合仍执行检查（包含项非空 → 不命中 → 丢弃）。实际 killmail 至少有一名攻击者，影响面极小，**处置（阶段 53）**：已去掉 `Attackers is { Count: > 0 }` 守卫、改为始终执行三项检查（空集合 + 包含项非空 → 判为不通过，与 WinUI 对齐）。
+50. **ZKB 过滤机制语义与"互斥关系"备忘**（阶段 53 复核；实现与 WinUI 逐条对齐，差异仅第 48/49 条）：
+    - **单个子条件（一组 × 一个类别）**：**排除优先**——同一 ID 同时在排除与包含列表时按排除处理；包含项非空则必须命中，为空则不限；排除项为空则不否决。
+    - **组内三个类别之间是 AND**（通用：星系 / 舰船类型 / 星域；受害者：角色 / 军团 / 联盟），短路求值——任一子条件不通过即丢弃整条。特别注意**包含项是"按类别分别判空"**：只往通用包含项里放"舰船"时，星系/星域不受限制（不是"整个通用列表当成一个白名单"），因此"星系 A + 舰船 B 同时放进包含项"= 要求两者**同时**命中。
+    - **三个组之间也是 AND**（通用 × 受害者 × 攻击者）。
+    - **攻击者组是集合级判定**：任一攻击者命中排除即整条否决；包含项非空时要求**至少一个**攻击者命中（不是"每个攻击者都要命中"）。受害者组是**单值级**判定。
+    - **`id <= 0`**（受害者无联盟、NPC 击杀、星系未被本地库收录）：在排除里永不命中（`FilterSet` 只收正整数）；在包含项非空时判为不通过。**这是 WPF 相对 WinUI 的有意修正**——WinUI 的 `Contains(category, id)` 先 `if (id <= 0) return false;`，导致"受害者无联盟"的击杀在包含项为空时也被一并丢弃。
+    - **组与组之间没有互斥**：同一个 ID 出现在不同组的列表里互不影响（某角色可以是这条的攻击者、另一条的受害者）；UI 已按类别限制可选范围（通用限星系/星域/舰船，角色组限角色/军团/联盟），因此正常路径不会出现"类别放错列表"——但若手工改 JSON 放错，`AddByCat` / `AddRoles` 会**静默忽略**该项。
+    - 取消/重建时机：过滤快照在配置变更时按脏标记重建（`ZkbStreamFilter` 不可变，中枢 `EnsureFilter` 每次唤醒重建），因此改过滤**无需断开重连**；隐患是 `HookConfig` 订阅的是集合**实例**，若将来有代码整体替换 `CommonExclusions` 等集合（公开 setter 允许），脏标记将不再触发。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -1990,7 +2095,21 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   另一条同族经验：**布局尺寸与 Win32 尺寸脱节时，只设 `Width`/`Height` 可能无效**——窗口本身已是目标尺寸，
   WPF 会判成"没变化"而跳过重排，必须补发一条 `WM_SIZE`（`SendMessage(hwnd, WM_SIZE, 0, MAKELPARAM(w,h))`）
   才能逼它按真实客户区重新布局。诊断这类问题的有效手段：把 `MinWidth/MinHeight`、`ActualWidth/ActualHeight`、
-  `Root/子元素` 的渲染尺寸、以及 Win32 客户区**一起打进日志**，两边一比就能看出是"谁比谁大"。
+  `Root/子元素` 的渲染尺寸、以及 Win32 客户区**一起打进日志**，两边一比就能看出是"谁比谁大"。45. **WPF 的 `Border.CornerRadius` 不裁剪子元素，圆头像必须用 `Image.Clip`**（阶段 53 第五轮）：
+  与 UWP/WinUI 不同，WPF `Border` 的 `CornerRadius` 只影响**自身**背景/边框的绘制，里面的 `Image`/`Grid` 仍是矩形——
+  `<Border CornerRadius="999"><Image/></Border>` 表面上"该圆了"，实际头像依旧是方块（编译期无任何提示）。
+  两条正路：① `Image.Clip` + `EllipseGeometry`（需要定尺寸，中心/半径不能随尺寸自适应，写死即可）；② `Ellipse` + `ImageBrush`。
+  `Grid` 想整体裁圆则用 `Clip` 绑定 `SizeChanged` 重算几何，或外包 `Border` + `OpacityMask`——别指望 `CornerRadius` 代劳。
+46. **`ControlTemplate` 里的 `x:Name` 在模板命名空间，页面 code-behind 拿不到对应字段**（阶段 53 第五轮，TabControl 头行预留列）：自定义 `TabControl` 头行模板（左标签区 + 右端 40px 预留列给搜索按钮）时，模板内的 `x:Name` **编译照过**但页面类不生成对应字段——模板实例化属于另一个 namescope，`InitializeComponent` 只为页面级 XAML 生成字段。做法：模板只放非交互骨架（`TabPanel`/`Border`/`PART_SelectedContentHost`），要挂事件/程序化访问的元素（按钮、Flyout、输入框）放**页面级**（模板之外）叠加覆盖；确需取模板内元素用 `template.FindName(name, templatedParent)`。镜像库默认模板时逐项对照来源（WPF-UI 4.3.0 `TabControl.xaml`：`TabPanel` `Panel.ZIndex=1` 压住内容区顶边线、内容 `Border` `BorderThickness="0,1,0,0"` + `CornerRadius="0,4,4,4"`、`PART_SelectedContentHost` `ContentSource="SelectedContent"`；TabItem `MinHeight=36` 可用来对齐覆盖层高度）。
+47. **zkillboard 的 websocket 击杀流先于 API 可查**（阶段 53 修复"点通知查询失败"时日志实锤）：流里刚广播出来的击杀，`/kills/killID/<id>/` 直取（含 500ms 重试）在最初几秒内是空，ESI 兜底同样空、还可能因空壳数据带无效 ID 炸出 `Ensure all IDs are valid before resolving`。**任何"手里已有完整富化数据"的入口（通知点击、流列表行点击、统计页行点击）都应携带现成 `KBItemInfo` 直开**（`KbNavigation.OpenKillmail(KBItemInfo)`），只把"按 ID 查询"留给手里没有数据的入口（如"最高击杀"卡片——均为历史击杀，API 必可查）。
+48. **`BitmapImage.UriSource` 会同步下载，列表里每行一张图就是"卡一会儿"**（阶段 53 性能修复实锤）：图像绑定都在 **UI 线程**求值，而 `UriSource` 走 WIC 的**按需下载**路径——首次 `EndInit()` 当场同步下载。`CacheOption=OnLoad` 配 `UriSource` 同样是同步下载（只是时机提前），所以"改 OnLoad 就不卡了"是**错的**（正确做法是连字节一起自己抓，见阶段 11 的同族教训）。更要命的是**转换器返回 null 后绑定不会自动重算**，"先返回 null、下载完再给图"这条路走不通。正解：`Image` 用附加属性（本项目 `ctl:AsyncImage.Source/IdName/TypeId`），后台线程抓字节 → 同线程解码 + `Freeze()` → 回 UI 线程**直写 `Image.Source`**（绕开绑定刷新限制），并按 URL 做进程内缓存（失败的 URL 也要缓存 null，否则每次重试都打网络）；下载完成时务必校验容器当前地址（列表虚拟化会复用容器，不校验会串图）。
+49. **外层 `ScrollViewer` 会废掉 `DataGrid` 的行虚拟化，表现为"点开先卡一下才出页面"**（阶段 53 性能修复二实锤）：把表格套进 `ScrollViewer`（本意是"列固定宽 + 表头随表滚"），外层会以**无限高度**测量表格 → 表格自身的滚动视口等于全部内容 → 虚拟化失效、**一次性实例化所有行**（每行还有头像与多列 `DataTemplate`）。击杀者上百的 KB 详情页一打开就卡，且卡在标签首次布局时，观感像"先把数据加载完才跳页"。两条要点：① 要虚拟化就别套外层 `ScrollViewer`，让表格自滚（`ScrollViewer.Vertical/HorizontalScrollBarVisibility=Auto` + `CanContentScroll=True`），列宽总量大于视口时把横向滚动交给表格自身；② **页面级 `ScrollViewer.CanContentScroll="False"` 是另一件事**（那只是让 WPF-UI 别给整个页面套滚动壳、页面自管滚动），别把两者混为一谈。同族：页内加载态要绑 `IsLoading` 之类的标志，而**该属性必须发通知**——普通自动属性 `{ get; private set; }` 绑上去永远不显示（静默失效，极易误判成"遮罩没写对"）。
+50. **构建报 `MSB3027` / `MSB3021` 不是编译错误，是程序正在运行锁住了 exe**（阶段 53 实机验收到）：`dotnet build` 最后一步把 apphost → `TheGuideToTheNewEden.exe` 拷进输出目录，若 app 还在运行（能查到同名进程），这步会重试 10 次后失败——**此时编译（含 XAML 标记编译）其实已经通过**，不要回头去改代码。判别方法：错误里只有 `MSB3027`/`MSB3021`、没有任何 `CS`/XAML 错误；只验证编译可用 `dotnet build -t:Compile`（不拷贝输出）。**另外务必核对产物时间戳**：若 `bin\Debug\<tfm>\TheGuideToTheNewEden.dll` 早于源码改动时间，说明新代码**没进 bin**，必须关掉程序重新构建，否则用户测的还是旧版本。被锁的文件可能是 `Core.dll`/`Core.pdb`（Visual Studio + 运行中的 app 都会持有），关程序（VS 启动的则停止调试）即可。
+51. **把"逐条富化"改写成"批量富化"时，必须逐字段对齐原实现**（阶段 53 实机回归，代价是一次用户可见的"数据消失"）：为性能把 `KBHelpers.CreateKBItemInfo` 换成自写的批量组装后，只补了名称/星系/船型，**漏掉 `Region` 与 `Group`**——这两者要二次关联（`regionId` 藏在星系里、`groupId` 藏在船型里），于是列表星域列与详情副标题静默少了星域，**编译、告警、日志全无信号**。三条纪律：① 改写前把原方法体逐行列出、逐项打勾（尤其"顺手补的关联字段"）；② 需要二次关联的字段要在批量阶段**再收集一轮 ID** 批次查询，不能因为"麻烦"省略；③ 这类缺失没有任何自动化提示，只能靠界面比对，改完必须实机看一遍每列每行。
+52. **`TabControl` 只有一个 items host，"钉住某个标签"要绕道做**（阶段 53 钉住"击杀流"标签头）：想让首个标签固定在左端、其余标签在它右侧滚动，不能靠"把标签分到两个 `IsItemsHost` 面板"（`TabControl` 只认一个 items host）。可行做法是三件套：① 把该标签的头部**收敛为零宽**（`Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0`）——它照常承载内容与选中态，只是不在标签行占位，零宽也不影响 `SelectedIndex=0` 选中与 `BringIntoView`；② 用**页面级覆盖层**重绘一个"标签头"（高度与标签行一致、`HorizontalAlignment=Left`），点击时 `SelectedIndex = 0`；③ 代码在 `Loaded` 与该覆盖层 `SizeChanged` 时把模板里的标签容器 `Margin.Left` 设为覆盖层实际宽度，使其让位（**不要写死宽度**，标题会随语言变宽变窄）。
+    两个易踩的细节：**选中态绑定 `{Binding SelectedIndex, ElementName=Tabs}` 只能写在 `Style.Triggers` 里**——写在 `ControlTemplate.Triggers` 里会按模板命名空间解析、找不到页面级 `Tabs`（静默失效）；同理 `Template.FindName` 取模板元素时优先取 `FrameworkElement`（如 `DockPanel`），对 `ColumnDefinition` 这类非 `FrameworkElement` 的命名元素不可靠。
+53. **"零宽标签"会把标签行的高度一起塌掉**（阶段 53 钉住标签头的实机回归，用户截图实证）：把某个 `TabItem` 做成 `Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0` 后，**它的高度也会跟着塌**——标签行若是 `Auto` 行，整行高度变 0，内容区便从页面顶端开始；此时任何"固定高度 + `VerticalAlignment=Top`"的页面级覆盖层（钉住头部、搜索框）都会**压到内容上**（现象就是"头部区域变小、控件跑到内容里"）。修法：给该 TabItem **显式 `Height`（= 标签行高度，本项目 36）**，并给模板里承载标签行的 Grid **写死 `Height="36"`** 双保险。排查提示：这类"覆盖层压内容"的问题先量一下承载行的实际高度（`ActualHeight`），别急着调覆盖层的定位。
+54. **横向 `StackPanel` 里的 `TextWrapping="Wrap"` 完全无效**（阶段 53 实机截图实证："过滤说明显示不全、不会自动换行"）：横向 `StackPanel` 以**无限宽度**测量子元素，内部 `TextBlock` 便按单行布局，超出部分被父容器（如 `Border`）裁切——`Wrap` 设置了也没用。要让说明文字换行，承载块用 **`Grid`（图标 `Auto` 列 + 文字 `*` 列）** 或 `DockPanel` 限宽。同族坑：本地化资源串（`sys:String`）里用 `&#10;` 写的换行**不保证生效**，长文案应写成不依赖换行的整段（编号/条目之间用"；"分隔），由宽度决定折行。
 
 
 ---

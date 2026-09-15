@@ -44,23 +44,28 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <!--  说明  -->
-        <StackPanel
+        <!--  说明：用 Grid 限宽——横向 StackPanel 会给子元素无限宽度，TextWrapping 会失效（文字被裁切）  -->
+        <Grid
             Margin="2,0,0,6"
-            Orientation="Horizontal"
             Visibility="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource StringToVis}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <ui:SymbolIcon
+                Grid.Column="0"
                 FontSize="14"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Symbol="Info24" />
             <TextBlock
+                Grid.Column="1"
                 Margin="4,0,0,0"
                 VerticalAlignment="Center"
                 FontSize="12"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Text="{Binding Tip, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 TextWrapping="Wrap" />
-        </StackPanel>
+        </Grid>
 
         <Grid>
             <Grid.ColumnDefinitions>

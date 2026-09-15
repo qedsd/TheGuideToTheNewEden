@@ -1,0 +1,158 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.KB.KillStreamSettingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:kb="clr-namespace:TheGuideToTheNewEden.WPF.Models.KB"
+    xmlns:kbControls="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.KB"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--  由 KillStreamPage 的设置按钮以 ToolWindow 弹窗承载；DataContext = 宿主页的 KillStreamViewModel（同一份 Config）  -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <TabControl>
+            <!--  通用设置  -->
+            <TabItem Header="{DynamicResource SettingPage_General}">
+                <Grid Margin="12,8,12,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock VerticalAlignment="Center" Text="{DynamicResource ZKBSettingPage_AutoConnect}" />
+                    <ui:ToggleSwitch
+                        Grid.Column="1"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Config.AutoConnect, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Grid.Row="1"
+                        VerticalAlignment="Center"
+                        Text="{DynamicResource ZKBSettingPage_Notify}" />
+                    <ui:ToggleSwitch
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Config.Notify, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Grid.Row="2"
+                        VerticalAlignment="Center"
+                        Text="{DynamicResource ZKBSettingPage_MinNotifyValue}" />
+                    <ui:NumberBox
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        Minimum="0"
+                        SmallChange="1000000"
+                        SpinButtonPlacementMode="Inline"
+                        Value="{Binding Config.MinNotifyValue, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Grid.Row="3"
+                        VerticalAlignment="Center"
+                        Text="{DynamicResource ZKBSettingPage_MaxKBItems}" />
+                    <ui:NumberBox
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        Minimum="1"
+                        SmallChange="10"
+                        SpinButtonPlacementMode="Inline"
+                        Value="{Binding Config.MaxKBItems, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Grid.Row="4"
+                        VerticalAlignment="Center"
+                        Text="{DynamicResource ZKBSettingPage_SortWay}" />
+                    <ComboBox
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        SelectedIndex="{Binding Config.SortWay, Mode=TwoWay}">
+                        <ComboBoxItem Content="{DynamicResource ZKBSettingPage_SortWay_UploadTime}" />
+                        <ComboBoxItem Content="{DynamicResource ZKBSettingPage_SortWay_CreateTime}" />
+                    </ComboBox>
+                </Grid>
+            </TabItem>
+
+            <!--  过滤设置  -->
+            <TabItem Header="{DynamicResource ZKBHomePage_Setting_Filter}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  组合规则说明（与/或关系）：改过滤逻辑时必须同步维护该文案  -->
+                    <Border
+                        Grid.Row="0"
+                        Margin="0,6,0,0"
+                        Padding="10,8"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                        <!--  用 Grid 限宽：横向 StackPanel 会给子元素无限宽度，TextWrapping 会失效（文字被裁切）  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon
+                                Grid.Column="0"
+                                VerticalAlignment="Top"
+                                FontSize="14"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Symbol="Info24" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="6,0,0,0"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource ZKBHomePage_Setting_Filter_Semantics}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </Border>
+
+                    <TabControl Grid.Row="1" Margin="0,4,0,0">
+                        <TabItem Header="{DynamicResource ZKBHomePage_Setting_Filter_Global}">
+                            <kbControls:KbFilterPairControl
+                                Margin="0,6,0,0"
+                                Categories="{x:Static kb:KbCategories.Common}"
+                                Exclusions="{Binding Config.CommonExclusions}"
+                                Inclusions="{Binding Config.CommonInclusions}"
+                                Tip="{DynamicResource ZKBHomePage_Setting_Filter_Global_Tip}" />
+                        </TabItem>
+                        <TabItem Header="{DynamicResource ZKBHomePage_Setting_Filter_Victim}">
+                            <kbControls:KbFilterPairControl
+                                Margin="0,6,0,0"
+                                Categories="{x:Static kb:KbCategories.Role}"
+                                Exclusions="{Binding Config.VictimExclusions}"
+                                Inclusions="{Binding Config.VictimInclusions}"
+                                Tip="{DynamicResource ZKBHomePage_Setting_Filter_Victim_Tip}" />
+                        </TabItem>
+                        <TabItem Header="{DynamicResource ZKBHomePage_Setting_Filter_Attacker}">
+                            <kbControls:KbFilterPairControl
+                                Margin="0,6,0,0"
+                                Categories="{x:Static kb:KbCategories.Role}"
+                                Exclusions="{Binding Config.AttackerExclusions}"
+                                Inclusions="{Binding Config.AttackerInclusions}"
+                                Tip="{DynamicResource ZKBHomePage_Setting_Filter_Attacker_Tip}" />
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </ScrollViewer>
+</UserControl>

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ctl="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:kbControls="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.KB"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
@@ -142,21 +143,25 @@
         <!--  ============ 左：实体概况（布局与 WinUI 实体统计页一致：信息卡 + 统计卡） ============  -->
         <ScrollViewer
             Grid.Column="0"
-            Margin="0,0,8,0"
+            Margin="4,4,8,0"
             VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <!--  卡 1：实体信息（圆形头像 + 名称 + 浏览器打开 + 可点击信息行）  -->
                 <controls:CardControl>
                     <StackPanel>
-                        <Border
+                        <!--  Border.CornerRadius 不裁剪子元素，必须用 Image.Clip 的椭圆几何才能真正裁圆（阶段 53 第五轮修复）  -->
+                        <Grid
                             Width="100"
                             Height="100"
                             Margin="0,2,0,0"
                             HorizontalAlignment="Center"
-                            CornerRadius="999"
                             Visibility="{Binding AvatarUrl, Converter={StaticResource StringToVis}}">
-                            <Image Source="{Binding AvatarUrl, Converter={StaticResource UrlImage}}" Stretch="Fill" />
-                        </Border>
+                            <Image ctl:AsyncImage.Source="{Binding AvatarUrl}" Stretch="Fill">
+                                <Image.Clip>
+                                    <EllipseGeometry Center="50,50" RadiusX="50" RadiusY="50" />
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
 
                         <Grid Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
@@ -388,44 +393,43 @@
             <TabItem Header="{DynamicResource EntityStatistPage_KBList}" Tag="kb">
                 <Grid Margin="0,6,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
-                        <TextBlock
-                            Margin="0,0,6,0"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{DynamicResource StatistKBListPage_KBModifier}" />
-                        <ComboBox
-                            Width="140"
-                            DisplayMemberPath="Label"
-                            ItemsSource="{Binding ModifierOptions}"
-                            SelectedIndex="{Binding ModifierIndex, Mode=TwoWay}" />
-                        <ui:Button
-                            Margin="8,0,0,0"
-                            AutomationProperties.Name="{DynamicResource General_Refresh}"
-                            Click="OnRefreshKillListClick"
-                            Icon="{ui:SymbolIcon ArrowSync24}"
-                            ToolTip="{DynamicResource General_Refresh}" />
-                    </StackPanel>
-
                     <kbControls:KillListControl
                         x:Name="KillList"
-                        Grid.Row="1"
                         EntityClicked="OnListEntityClicked"
                         ItemsSource="{Binding Killmails}"
                         OpenKillmail="OnListOpenKillmail" />
 
-                    <controls:PagerControl
-                        Grid.Row="2"
-                        Margin="0,8,0,0"
-                        HorizontalAlignment="Right"
-                        HasNext="{Binding HasNext}"
-                        Page="{Binding Page}"
-                        PageChanged="OnKillListPageChanged" />
+                    <!--  底部同一行：左侧"类型"筛选 + 刷新，右侧分页  -->
+                    <Grid Grid.Row="1" Margin="4,8">
+                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource StatistKBListPage_KBModifier}" />
+                            <ComboBox
+                                Width="140"
+                                DisplayMemberPath="Label"
+                                ItemsSource="{Binding ModifierOptions}"
+                                SelectedIndex="{Binding ModifierIndex, Mode=TwoWay}" />
+                            <ui:Button
+                                Margin="8,0,0,0"
+                                AutomationProperties.Name="{DynamicResource General_Refresh}"
+                                Click="OnRefreshKillListClick"
+                                Icon="{ui:SymbolIcon ArrowSync24}"
+                                ToolTip="{DynamicResource General_Refresh}" />
+                        </StackPanel>
+
+                        <controls:PagerControl
+                            HorizontalAlignment="Right"
+                            HasNext="{Binding HasNext}"
+                            Page="{Binding Page}"
+                            PageChanged="OnKillListPageChanged" />
+                    </Grid>
                 </Grid>
             </TabItem>
 

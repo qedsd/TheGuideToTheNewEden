@@ -3,9 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel
-        HorizontalAlignment="Right"
-        Orientation="Horizontal">
+    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
         <Button
             x:Name="PrevButton"
             MinWidth="72"

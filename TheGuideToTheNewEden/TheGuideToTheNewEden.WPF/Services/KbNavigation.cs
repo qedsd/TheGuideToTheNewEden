@@ -1,4 +1,5 @@
 using TheGuideToTheNewEden.Core.DBModels;
+using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WPF.Services.KB;
 using ZKB.NET;
 
@@ -19,6 +20,14 @@ public static class KbNavigation
 
     private static EntityRequest? _pendingEntity;
     private static int _pendingKillmailId;
+
+    /// <summary>
+    /// 与待开 killmail 一同携带的已富化数据（通知点击/列表行点击时手里就有）。
+    /// **击杀刚从 websocket 流广播出来的几秒内，zkillboard 的 API（/kills/killID/）还查不到它**
+    /// （实测日志：直取两次均空 → ESI 兜底也空/炸出"Ensure all IDs are valid"），
+    /// 所以按 ID 重查必然扑空——能用现成数据就绝不重查。
+    /// </summary>
+    private static KBItemInfo? _pendingKillmailInfo;
 
     /// <summary>请求打开实体统计标签（页面已存在时触发）。</summary>
     public static event Action? Requested;
@@ -50,10 +59,11 @@ public static class KbNavigation
 
         _pendingEntity = new EntityRequest(entityType, id, title);
         _pendingKillmailId = 0;
+        _pendingKillmailInfo = null;
         NavigateAndNotify();
     }
 
-    /// <summary>打开指定 killmail 的详情标签。</summary>
+    /// <summary>打开指定 killmail 的详情标签（无现成数据，页面将按 ID 查询）。</summary>
     public static void OpenKillmail(long killmailId)
     {
         if (killmailId <= 0)
@@ -62,18 +72,38 @@ public static class KbNavigation
         }
 
         _pendingKillmailId = (int)killmailId;
+        _pendingKillmailInfo = null;
+        _pendingEntity = null;
+        NavigateAndNotify();
+    }
+
+    /// <summary>
+    /// 打开指定 killmail 的详情标签，**携带已富化的完整数据直开**（通知点击 / 击杀列表行点击）。
+    /// 新击杀在流里广播的当时 API 还查不到，重查只会得到"查询失败"。
+    /// </summary>
+    public static void OpenKillmail(KBItemInfo info)
+    {
+        if (info?.SKBDetail is null || info.SKBDetail.KillmailId <= 0)
+        {
+            return;
+        }
+
+        _pendingKillmailId = (int)info.SKBDetail.KillmailId;
+        _pendingKillmailInfo = info;
         _pendingEntity = null;
         NavigateAndNotify();
     }
 
     /// <summary>取走待处理的请求（页面加载完成 / 收到事件时调用；取到即清空）。</summary>
-    public static (EntityRequest? Entity, int KillmailId) Drain()
+    public static (EntityRequest? Entity, int KillmailId, KBItemInfo? Info) Drain()
     {
         var entity = _pendingEntity;
         var killmailId = _pendingKillmailId;
+        var info = _pendingKillmailInfo;
         _pendingEntity = null;
         _pendingKillmailId = 0;
-        return (entity, killmailId);
+        _pendingKillmailInfo = null;
+        return (entity, killmailId, info);
     }
 
     private static void NavigateAndNotify()

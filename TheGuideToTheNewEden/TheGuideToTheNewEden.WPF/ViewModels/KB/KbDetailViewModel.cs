@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TheGuideToTheNewEden.Core.DBModels;
 using TheGuideToTheNewEden.Core.Models.KB;
 using TheGuideToTheNewEden.WPF.Helpers;
 using TheGuideToTheNewEden.WPF.Services.KB;
@@ -44,6 +45,41 @@ public sealed class KbDetailViewModel : INotifyPropertyChanged
 
     public string? ShipImageUrl { get; }
 
+    /// <summary>受害者实体（角色 / 军团 / 联盟，点击跳其统计标签；也用作头部身份图）。</summary>
+    public IdName? VictimEntity => Info.Victim;
+
+    /// <summary>受害者军团（点击跳其统计标签；为空时头部整块隐藏）。</summary>
+    public IdName? VictimCorpEntity => Info.VictimCorporationIdName;
+
+    /// <summary>受害者联盟（点击跳其统计标签；为空时头部整块隐藏）。</summary>
+    public IdName? VictimAllianceEntity => Info.VictimAllianceName;
+
+    /// <summary>是否有军团（控制头部军团徽标与链接的显隐）。</summary>
+    public bool HasVictimCorp => Info.VictimCorporationIdName is not null;
+
+    /// <summary>是否有联盟（控制头部联盟徽标与链接的显隐）。</summary>
+    public bool HasVictimAlliance => Info.VictimAllianceName is not null;
+
+    /// <summary>受害者舰船（点击跳舰船统计标签）。</summary>
+    public IdName? ShipEntity => Info.Type is null
+        ? null
+        : new IdName(Info.Type.TypeID, Info.Type.TypeName, IdName.CategoryEnum.InventoryType);
+
+    /// <summary>星系（点击跳星系统计标签）。</summary>
+    public IdName? SystemEntity => Info.SolarSystem is null
+        ? null
+        : new IdName(Info.SolarSystem.SolarSystemID, Info.SolarSystem.SolarSystemName, IdName.CategoryEnum.SolarSystem);
+
+    /// <summary>星域（点击跳星域统计标签）。</summary>
+    public IdName? RegionEntity => Info.Region is null
+        ? null
+        : new IdName(Info.Region.RegionID, Info.Region.RegionName, IdName.CategoryEnum.Region);
+
+    /// <summary>星系安全等级文本（如 0.5）。</summary>
+    public string SystemSecurityText => Info.SolarSystem is null
+        ? string.Empty
+        : Info.SolarSystem.Security.ToString("0.0");
+
     public string TimeText { get; }
 
     public string DroppedValueText { get; }
@@ -72,7 +108,26 @@ public sealed class KbDetailViewModel : INotifyPropertyChanged
 
     public bool HasCargo => Cargo.Count > 0;
 
-    public bool IsLoading { get; private set; }
+    private bool _isLoading;
+
+    /// <summary>
+    /// 是否正在页内加载（攻击者/货柜）。详情页的局部等待遮罩绑这里——
+    /// 必须走 <see cref="OnPropertyChanged(string?)"/>，否则界面收不到通知，遮罩永远不显示。
+    /// </summary>
+    public bool IsLoading
+    {
+        get => _isLoading;
+        private set
+        {
+            if (_isLoading == value)
+            {
+                return;
+            }
+
+            _isLoading = value;
+            OnPropertyChanged();
+        }
+    }
 
     public async Task LoadAsync()
     {
@@ -82,6 +137,7 @@ public sealed class KbDetailViewModel : INotifyPropertyChanged
         }
 
         _loaded = true;
+        // 先亮遮罩再干活：本方法由 Loaded 触发，早于首帧渲染，页面一出现就是"加载中"
         IsLoading = true;
 
         try
@@ -181,6 +237,17 @@ public sealed class AttackerRow
     }
 
     public AttackerInfo Info { get; }
+
+    /// <summary>参与者角色（点击跳其统计标签）。</summary>
+    public IdName? CharacterEntity => Info.CharacterName;
+
+    /// <summary>参与者势力：联盟优先、否则军团（点击跳其统计标签）。</summary>
+    public IdName? FactionEntity => Info.AllianceName ?? Info.CorpName;
+
+    /// <summary>参与者舰船（点击跳舰船统计标签）。</summary>
+    public IdName? ShipEntity => Info.Ship is null
+        ? null
+        : new IdName(Info.Ship.TypeID, Info.Ship.TypeName, IdName.CategoryEnum.InventoryType);
 
     public bool IsFinalBlow { get; }
 

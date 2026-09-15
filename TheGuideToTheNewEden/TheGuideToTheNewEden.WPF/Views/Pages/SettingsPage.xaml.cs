@@ -60,7 +60,9 @@ public partial class SettingsPage : Page
         Add(SymbolRegular.DataTrending24, "SettingPage_Market", "SettingPage_Market_Desc", typeof(MarketSettingPage), () => new MarketSettingPage());
         Add(SymbolRegular.Building24, "SettingPage_Structures", "SettingPage_Structures_Desc", typeof(StructuresSettingPage), () => new StructuresSettingPage());
         Add(SymbolRegular.Shield24, "SettingPage_ESIScope", "SettingPage_ESIScope_Desc", typeof(ESIScopeSettingPage), () => new ESIScopeSettingPage());
-        Add(SymbolRegular.Scan24, "SettingPage_ZKB", "SettingPage_ZKB_Desc", typeof(ZKBSettingPage), () => new ZKBSettingPage());
+        // 注意：这里**没有** ZKB 分类——ZKB 实时流的全部设置（连接/通知/上限/排序/过滤）已并入
+        // "击杀流"页右上角的设置弹窗（KillStreamSettingView）。原先的"设置 → Zkillboard"子页只维护
+        // 一组没有任何代码读取的旧过滤字段，已整体删除（REFACTORING §8 第 48 条）。
         Add(SymbolRegular.Translate24, "SettingPage_AiTranslation", "SettingPage_AiTranslation_Desc", typeof(AiTranslationSettingPage), () => new AiTranslationSettingPage());
         Add(SymbolRegular.LocalLanguage24, "SettingPage_Glossary", "SettingPage_Glossary_Desc", typeof(GlossarySettingPage), () => new GlossarySettingPage());
         Add(SymbolRegular.Keyboard24, "SettingPage_KeyboardList", "SettingPage_KeyboardList_Desc", typeof(KeyboardListPage), () => new KeyboardListPage());

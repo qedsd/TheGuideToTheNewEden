@@ -5,7 +5,7 @@
 
     <sys:String x:Key="AppDisplayName">The Guide To The New Eden</sys:String>
 
-    <!-- Menu -->
+    <!--  Menu  -->
     <sys:String x:Key="Nav.Home">Home</sys:String>
     <sys:String x:Key="Nav.Characters">Characters</sys:String>
     <sys:String x:Key="Nav.Business">Business</sys:String>
@@ -38,7 +38,7 @@
     <sys:String x:Key="Nav.Tools_Taskbar">Split Screen</sys:String>
     <sys:String x:Key="Nav.Settings">Settings</sys:String>
 
-    <!-- Settings -->
+    <!--  Settings  -->
     <sys:String x:Key="Settings.Title">Settings</sys:String>
     <sys:String x:Key="Settings.Appearance">Appearance</sys:String>
     <sys:String x:Key="Settings.ThemeColor">Theme color</sys:String>
@@ -52,14 +52,14 @@
     <sys:String x:Key="Settings.MinimizeToTray">Minimize to tray on close</sys:String>
     <sys:String x:Key="Settings.MinimizeToTray.Description">The app keeps running in background after closing the main window and can be restored from the tray icon.</sys:String>
 
-    <!-- Tray -->
+    <!--  Tray  -->
     <sys:String x:Key="Tray.Show">Show main window</sys:String>
     <sys:String x:Key="Tray.Exit">Exit</sys:String>
 
-    <!-- Common -->
+    <!--  Common  -->
     <sys:String x:Key="Placeholder.Title">Page under development</sys:String>
     <sys:String x:Key="Placeholder.Description">This feature page is not implemented yet. It is a navigation placeholder.</sys:String>
-    <!-- 以下键移植自 WinUI 设置页，保持键名一致以便对照 -->
+    <!--  以下键移植自 WinUI 设置页，保持键名一致以便对照  -->
     <sys:String x:Key="SettingPage">Setting</sys:String>
     <sys:String x:Key="Setting_AlwaysOnTop">Displayed at the top</sys:String>
     <sys:String x:Key="Setting_NotAlwaysOnTop">The top display has been cancelled</sys:String>
@@ -782,8 +782,8 @@
     <sys:String x:Key="ChannelIntelPage_ApplySettingToAll_Succes">Settings applied</sys:String>
     <sys:String x:Key="ChannelIntelPage_StartZKBFaild">Failed to start ZKB intel, check log for details</sys:String>
     <sys:String x:Key="EarlyWarningPage_Jumps">jumps</sys:String>
-    <sys:String x:Key="EarlyWarningPage_Befor_Min"> min ago</sys:String>
-    <sys:String x:Key="EarlyWarningPage_Befor_Sec"> sec ago</sys:String>
+    <sys:String x:Key="EarlyWarningPage_Befor_Min">min ago</sys:String>
+    <sys:String x:Key="EarlyWarningPage_Befor_Sec">sec ago</sys:String>
     <sys:String x:Key="EarlyWarningItemPage_Jump">Jump</sys:String>
     <sys:String x:Key="EarlyWarningItemPage_Loop">Loop</sys:String>
     <sys:String x:Key="EarlyWarningItemPage_DefaultFile">Default</sys:String>
@@ -974,7 +974,7 @@
     <sys:String x:Key="ChannelScanPage_AddIgnored_Alliance">Ignore this alliance</sys:String>
     <sys:String x:Key="ChannelScanPage_ReloadResultZKB">Reload ZKB Info</sys:String>
     <!--  Channel - Market  -->
-    <sys:String x:Key="ChannelMarket_Items"> items</sys:String>
+    <sys:String x:Key="ChannelMarket_Items">items</sys:String>
     <sys:String x:Key="ChannelMarket_NoChannel">No channel selected</sys:String>
     <sys:String x:Key="ChannelMarket_Started">Channel monitor started</sys:String>
     <sys:String x:Key="ChannelMarket_ApplySettingToAll">Apply Setting To All</sys:String>
@@ -1223,7 +1223,7 @@
     <sys:String x:Key="MapIntelTool_Inclusions">Inclusions</sys:String>
     <sys:String x:Key="MapIntelTool_Inclusions_Tip">Only displayed in the list</sys:String>
 
-    <sys:String x:Key="ZKBPage_SearchTip">Search character / corporation / alliance / system / ship…</sys:String>
+    <sys:String x:Key="ZKBPage_SearchTip">Search character / corporation / alliance…</sys:String>
     <sys:String x:Key="ZKBPage_NoSearchResult">No matching entity</sys:String>
     <sys:String x:Key="ZKBPage_UnsupportedEntity">This entity type is not supported by ZKB</sys:String>
     <sys:String x:Key="ZKBPage_QueryFailed">Query failed, see the log for details</sys:String>
@@ -1255,6 +1255,7 @@
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">Filter KB victim's character, corporation, and alliance</sys:String>
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker">Attacker</sys:String>
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">Filter KB attacker's character, corporation, and alliance</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Semantics">How filter conditions combine: (1) within one condition, "exclusion" wins - an ID present in both lists is treated as excluded (dropped); (2) per list: an empty exclusion list excludes nothing, an empty inclusion list means no restriction while a non-empty one requires a hit; (3) within a group it is AND - Global = system AND ship type AND region, Victim / Attacker = character AND corporation AND alliance (each inclusion list applies per category, so listing only ships will not restrict systems); (4) across groups it is also AND - Global, Victim and Attacker must all pass, failing any one drops the kill; (5) attacker filters use ANY - any attacker hitting an exclusion list drops the kill, and with a non-empty inclusion list one matching attacker is enough; (6) empty means no restriction, and a group whose lists are all empty takes no part in filtering.</sys:String>
     <sys:String x:Key="ZKBHomePage_TotalReceivedCount">Total Received</sys:String>
     <sys:String x:Key="ZKBHomePage_MatchedCount">Matched</sys:String>
     <sys:String x:Key="ZKBHomePage_MatchedKB">Matched KB</sys:String>

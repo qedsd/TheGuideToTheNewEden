@@ -112,15 +112,17 @@ public sealed class ZkbStreamFilter
             return false;
         }
 
-        // 攻击者（任一命中即算命中）
-        if (detail.Attackers is { Count: > 0 })
+        // 攻击者：集合级判定——任一攻击者命中排除即否决；包含项非空时要求至少一名命中。
+        // **不能因 Attackers 为空就整组跳过**：空集合 + 已配攻击者包含项时应判为不通过（与 WinUI 对齐）。
+        var attackerCharacters = detail.Attackers?.Select(a => a.CharacterId) ?? Enumerable.Empty<int>();
+        var attackerCorporations = detail.Attackers?.Select(a => a.CorporationId) ?? Enumerable.Empty<int>();
+        var attackerAlliances = detail.Attackers?.Select(a => a.AllianceId) ?? Enumerable.Empty<int>();
+
+        if (!PassGroupAny(_attackerCharacterExclusions, _attackerCharacterInclusions, attackerCharacters)
+            || !PassGroupAny(_attackerCorporationExclusions, _attackerCorporationInclusions, attackerCorporations)
+            || !PassGroupAny(_attackerAllianceExclusions, _attackerAllianceInclusions, attackerAlliances))
         {
-            if (!PassGroupAny(_attackerCharacterExclusions, _attackerCharacterInclusions, detail.Attackers.Select(a => a.CharacterId))
-                || !PassGroupAny(_attackerCorporationExclusions, _attackerCorporationInclusions, detail.Attackers.Select(a => a.CorporationId))
-                || !PassGroupAny(_attackerAllianceExclusions, _attackerAllianceInclusions, detail.Attackers.Select(a => a.AllianceId)))
-            {
-                return false;
-            }
+            return false;
         }
 
         return true;

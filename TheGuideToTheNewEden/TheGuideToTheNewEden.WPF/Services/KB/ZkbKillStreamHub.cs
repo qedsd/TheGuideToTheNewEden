@@ -270,7 +270,12 @@ public sealed class ZkbKillStreamHub
                           + $" · {IskFormatHelper.Format(totalValue)} ISK"
                           + (string.IsNullOrEmpty(system) ? string.Empty : $" @ {system}");
 
-            NotificationService.Show(FindString("Nav.ZKB"), message);
+            // 点击通知打开对应 KB 详情（KbNavigation 内含导航到 ZKB 页 + 主窗口前置/托盘恢复）。
+            // 携带已富化的 info 直开——击杀刚广播的几秒内 API 还查不到，按 ID 重查会"查询失败"
+            NotificationService.Show(
+                FindString("Nav.ZKB"),
+                message,
+                () => KbNavigation.OpenKillmail(info));
         }
         catch (Exception ex)
         {

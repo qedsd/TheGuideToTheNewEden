@@ -26,7 +26,6 @@ public sealed class KillStreamViewModel : INotifyPropertyChanged
     private bool _subscribed;
     private bool _isConnected;
     private bool _isConnecting;
-    private bool _isSettingVisible;
     private int _totalReceivedCount;
     private int _passedCount;
     private int _filteredCount;
@@ -73,25 +72,11 @@ public sealed class KillStreamViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>是否展开设置面板。</summary>
-    public bool IsSettingVisible
-    {
-        get => _isSettingVisible;
-        set
-        {
-            if (Set(ref _isSettingVisible, value))
-            {
-                OnPropertyChanged(nameof(IsContentVisible));
-                OnPropertyChanged(nameof(ShowDisconnectedHint));
-            }
-        }
-    }
-
-    /// <summary>是否显示 KB 列表区（已连接且未展开设置）。</summary>
-    public bool IsContentVisible => _isConnected && !_isSettingVisible;
+    /// <summary>是否显示 KB 列表区（已连接）。</summary>
+    public bool IsContentVisible => _isConnected;
 
     /// <summary>是否显示"未连接"提示（连接中改为显示页内局部连接指示，不显示本提示）。</summary>
-    public bool ShowDisconnectedHint => !_isConnected && !_isSettingVisible && !_isConnecting;
+    public bool ShowDisconnectedHint => !_isConnected && !_isConnecting;
 
     public int TotalReceivedCount
     {

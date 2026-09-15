@@ -1226,7 +1226,7 @@
     <sys:String x:Key="MapIntelTool_Inclusions_Tip">仅显示列表内的角色、军团、联盟等</sys:String>
 
     <!--  主导航页  -->
-    <sys:String x:Key="ZKBPage_SearchTip">搜索角色 / 军团 / 联盟 / 星系 / 舰船…</sys:String>
+    <sys:String x:Key="ZKBPage_SearchTip">搜索角色、军团、联盟…</sys:String>
     <sys:String x:Key="ZKBPage_NoSearchResult">未找到匹配的实体</sys:String>
     <sys:String x:Key="ZKBPage_UnsupportedEntity">该类型不支持 ZKB 查询</sys:String>
     <sys:String x:Key="ZKBPage_QueryFailed">查询失败，详情请查看日志</sys:String>
@@ -1260,6 +1260,7 @@
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Victim_Tip">对KB受害者角色、军团、联盟进行过滤</sys:String>
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker">攻击者</sys:String>
     <sys:String x:Key="ZKBHomePage_Setting_Filter_Attacker_Tip">对KB攻击者角色、军团、联盟进行过滤</sys:String>
+    <sys:String x:Key="ZKBHomePage_Setting_Filter_Semantics">过滤条件的组合规则：① 同一项内"排除"优先——某个 ID 同时在排除与包含列表中时按排除处理（丢弃）；② 单个列表：排除为空则不排除，包含为空则不限制、非空则必须命中其中之一；③ 组内是"与"——通用 = 星系 与 舰船类型 与 星域，受害者 / 攻击者 = 角色 与 军团 与 联盟（包含列表按类别分别生效：只填了舰船就不会限制星系）；④ 三组之间也是"与"——通用、受害者、攻击者三组都通过才保留，任一组不通过即丢弃；⑤ 攻击者是"任一"判定——任一攻击者命中排除列表即丢弃，包含列表非空时有一名攻击者命中即通过；⑥ 留空 = 不限制，某组所有列表都为空时该组不参与过滤。</sys:String>
     <sys:String x:Key="ZKBHomePage_TotalReceivedCount">总KB数量</sys:String>
     <sys:String x:Key="ZKBHomePage_MatchedCount">过滤后KB数量</sys:String>
     <sys:String x:Key="ZKBHomePage_MatchedKB">筛选KB</sys:String>

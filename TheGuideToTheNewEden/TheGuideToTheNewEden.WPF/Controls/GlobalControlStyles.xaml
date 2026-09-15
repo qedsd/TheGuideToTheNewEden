@@ -163,4 +163,35 @@
         <Setter Property="Margin" Value="0,12,0,2" />
     </Style>
 
+    <!--
+        实体名"链接"按钮（KB 列表、KB 详情页的攻击者/受害者等共用）。
+        原先是 `KillListControl` 的局部样式，KB 详情页也要用同类链接，故提升为**全局键控样式**——
+        与 StretchListItem / TranslationFieldLabel 同样的处理：跨页面复用的样式必须放全局，
+        否则 StaticResource 找不到会在页面构造时抛 XamlParseException。
+    -->
+    <Style x:Key="KbLinkButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <TextBlock
+                        Foreground="{TemplateBinding Foreground}"
+                        Text="{TemplateBinding Content}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="{TemplateBinding ToolTip}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

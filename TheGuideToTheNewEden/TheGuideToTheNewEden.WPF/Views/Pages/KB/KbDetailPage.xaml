@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ctl="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
@@ -11,7 +12,6 @@
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <converters:UrlToImageConverter x:Key="UrlImage" />
-        <converters:IdNameImageConverter x:Key="IdNameImg" Size="32" />
 
         <Style x:Key="KbCell" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
@@ -26,6 +26,8 @@
             <Setter Property="HorizontalAlignment" Value="Right" />
         </Style>
 
+        <!--  表格自己滚动（**不要**再套外层 ScrollViewer）：外层会以无限高度测量 DataGrid，
+             行虚拟化随即失效——击杀者上百时一次性实例化全部行，点击后要卡一下才出页面  -->
         <Style
             x:Key="KbDetailGridStyle"
             BasedOn="{StaticResource {x:Type ui:DataGrid}}"
@@ -48,7 +50,7 @@
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
             <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
             <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         </Style>
     </Page.Resources>
@@ -59,46 +61,123 @@
             <Grid Margin="0,2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!--  受害者身份图（角色头像 / 军团、联盟徽标，按 IdName 类别自动分派）  -->
                 <Image
-                    Width="72"
-                    Height="72"
+                    Height="128"
+                    Margin="2,0"
                     VerticalAlignment="Center"
-                    Source="{Binding ShipImageUrl, Converter={StaticResource UrlImage}}" />
+                    ctl:AsyncImage.IdName="{Binding VictimEntity}"
+                    ctl:AsyncImage.Size="128" />
+
+                <!--  受害者舰船图  -->
+                <Image
+                    Grid.Column="1"
+                    Height="128"
+                    Margin="2,0"
+                    VerticalAlignment="Center"
+                    ctl:AsyncImage.Source="{Binding ShipImageUrl}" />
 
                 <StackPanel
-                    Grid.Column="1"
+                    Grid.Column="2"
                     Margin="10,0,0,0"
                     VerticalAlignment="Center">
-                    <TextBlock
+                    <!--  受害者名（点击打开该实体统计）  -->
+                    <Button
+                        HorizontalAlignment="Left"
+                        Click="OnEntityLinkClick"
+                        Content="{Binding Title}"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{Binding Title}"
-                        TextTrimming="CharacterEllipsis" />
+                        Style="{StaticResource KbLinkButton}"
+                        Tag="{Binding VictimEntity}"
+                        ToolTip="{Binding Title}" />
+
+                    <!--  军团 / 联盟：徽标 + 名称链接（对应数据为空时整块隐藏）  -->
+                    <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                        <Image
+                            Width="32"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            ctl:AsyncImage.IdName="{Binding VictimCorpEntity}"
+                            ctl:AsyncImage.Size="64"
+                            Visibility="{Binding HasVictimCorp, Converter={StaticResource BoolToVis}}" />
+                        <Image
+                            Width="32"
+                            Height="32"
+                            Margin="4,0"
+                            VerticalAlignment="Center"
+                            ctl:AsyncImage.IdName="{Binding VictimAllianceEntity}"
+                            ctl:AsyncImage.Size="64"
+                            Visibility="{Binding HasVictimAlliance, Converter={StaticResource BoolToVis}}" />
+                        <StackPanel VerticalAlignment="Center">
+                            <Button
+                                Click="OnEntityLinkClick"
+                                Content="{Binding VictimCorpEntity.Name}"
+                                FontSize="12"
+                                Style="{StaticResource KbLinkButton}"
+                                Tag="{Binding VictimCorpEntity}"
+                                Visibility="{Binding HasVictimCorp, Converter={StaticResource BoolToVis}}" />
+                            <Button
+                                Click="OnEntityLinkClick"
+                                Content="{Binding VictimAllianceEntity.Name}"
+                                FontSize="12"
+                                Style="{StaticResource KbLinkButton}"
+                                Tag="{Binding VictimAllianceEntity}"
+                                Visibility="{Binding HasVictimAlliance, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!--  舰船 · 星系(安全等级) · 星域：各自可点击跳转  -->
+                    <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                        <Button
+                            Click="OnEntityLinkClick"
+                            Content="{Binding ShipEntity.Name}"
+                            FontSize="12"
+                            Style="{StaticResource KbLinkButton}"
+                            Tag="{Binding ShipEntity}" />
+                        <TextBlock
+                            Margin="6,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="·" />
+                        <Button
+                            Click="OnEntityLinkClick"
+                            Content="{Binding SystemEntity.Name}"
+                            FontSize="12"
+                            Style="{StaticResource KbLinkButton}"
+                            Tag="{Binding SystemEntity}" />
+                        <TextBlock
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{Binding SystemSecurityText}" />
+                        <TextBlock
+                            Margin="6,0"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="·" />
+                        <Button
+                            Click="OnEntityLinkClick"
+                            Content="{Binding RegionEntity.Name}"
+                            FontSize="12"
+                            Style="{StaticResource KbLinkButton}"
+                            Tag="{Binding RegionEntity}" />
+                    </StackPanel>
                     <TextBlock
+                        Margin="0,4,0,0"
                         FontSize="12"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Text="{Binding SubTitle}"
-                        TextTrimming="CharacterEllipsis" />
-                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                        <TextBlock
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding TimeText}" />
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            FontSize="12"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Text="{Binding Info.SolarSystem.SolarSystemName}" />
-                    </StackPanel>
+                        Text="{Binding TimeText}" />
                 </StackPanel>
 
                 <!--  价值面板  -->
-                <Grid Grid.Column="2" VerticalAlignment="Center">
+                <Grid Grid.Column="3" VerticalAlignment="Center">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -180,15 +259,14 @@
             </Grid>
         </controls:CardControl.Header>
 
-        <!--  ============ 攻击者 / 货柜 ============  -->
-        <TabControl>
-            <TabItem Header="{DynamicResource KB_Attackers}">
-                <ScrollViewer
-                    Margin="0,6,0,0"
-                    HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto">
+        <!--  ============ 攻击者 / 货柜 + 局部加载遮罩 ============
+              标签先出现、数据在页内异步补齐：遮罩只盖住本页内容区（页面自管滚动，不走全局 WaitingOverlay），
+              视觉与实体统计页的局部等待一致（半透明底 + 卡片 + 自绘旋转图标）。  -->
+        <Grid>
+            <TabControl>
+                <TabItem Header="{DynamicResource KB_Attackers}">
                     <ui:DataGrid
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        Margin="0,6,0,0"
                         ItemsSource="{Binding Attackers}"
                         Style="{StaticResource KbDetailGridStyle}">
                         <ui:DataGrid.Columns>
@@ -205,34 +283,54 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
+                                            <!--  异步取图：击杀者多时每行一张头像，走转换器会在 UI 线程同步下载造成卡顿  -->
                                             <Image
                                                 Width="32"
                                                 Height="32"
                                                 VerticalAlignment="Center"
-                                                Source="{Binding Info.CharacterName, Converter={StaticResource IdNameImg}}" />
+                                                ctl:AsyncImage.IdName="{Binding Info.CharacterName}"
+                                                ctl:AsyncImage.Size="32" />
                                             <StackPanel
                                                 Grid.Column="1"
                                                 Margin="6,0,0,0"
                                                 VerticalAlignment="Center">
-                                                <TextBlock
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="{Binding Info.CharacterName.Name}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <TextBlock
+                                                <!--  参与者名字 / 势力：可点击跳实体统计  -->
+                                                <Button
+                                                    HorizontalAlignment="Left"
+                                                    Click="OnEntityLinkClick"
+                                                    Content="{Binding Info.CharacterName.Name}"
+                                                    Style="{StaticResource KbLinkButton}"
+                                                    Tag="{Binding CharacterEntity}"
+                                                    ToolTip="{Binding Info.CharacterName.Name}" />
+                                                <Button
+                                                    HorizontalAlignment="Left"
+                                                    Click="OnEntityLinkClick"
+                                                    Content="{Binding FactionEntity.Name}"
                                                     FontSize="11"
-                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                    Text="{Binding Info.AllianceName.Name}"
-                                                    TextTrimming="CharacterEllipsis" />
+                                                    Style="{StaticResource KbLinkButton}"
+                                                    Tag="{Binding FactionEntity}"
+                                                    ToolTip="{Binding FactionEntity.Name}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn
-                                Width="170"
-                                Binding="{Binding Info.Ship.TypeName}"
-                                ElementStyle="{StaticResource KbCell}"
-                                Header="{DynamicResource EntityStatistPage_Ship}" />
+                            <!--  参与者舰船：可点击跳舰船统计  -->
+                            <DataGridTemplateColumn Width="170" Header="{DynamicResource EntityStatistPage_Ship}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Margin="12,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Click="OnEntityLinkClick"
+                                            Content="{Binding Info.Ship.TypeName}"
+                                            Style="{StaticResource KbLinkButton}"
+                                            Tag="{Binding ShipEntity}"
+                                            ToolTip="{Binding Info.Ship.TypeName}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn
                                 Width="170"
                                 Binding="{Binding Info.Weapon.TypeName}"
@@ -267,16 +365,11 @@
                             </DataGridTemplateColumn>
                         </ui:DataGrid.Columns>
                     </ui:DataGrid>
-                </ScrollViewer>
-            </TabItem>
+                </TabItem>
 
-            <TabItem Header="{DynamicResource KB_Cargo}">
-                <ScrollViewer
-                    Margin="0,6,0,0"
-                    HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto">
+                <TabItem Header="{DynamicResource KB_Cargo}">
                     <ui:DataGrid
-                        MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                        Margin="0,6,0,0"
                         ItemsSource="{Binding Cargo}"
                         Style="{StaticResource KbDetailGridStyle}">
                         <ui:DataGrid.Columns>
@@ -297,9 +390,37 @@
                                 Header="{DynamicResource KB_Dropped}" />
                         </ui:DataGrid.Columns>
                     </ui:DataGrid>
-                </ScrollViewer>
-            </TabItem>
-        </TabControl>
+                </TabItem>
+            </TabControl>
+
+            <!--  加载遮罩：详情数据（攻击者/货柜）在页内异步补齐，期间只盖住本页并拦截点击  -->
+            <Border
+                Background="{DynamicResource SmokeFillColorDefaultBrush}"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                <Border
+                    Width="240"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <StackPanel>
+                        <controls:SpinnerIcon
+                            HorizontalAlignment="Center"
+                            FontSize="30"
+                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
+                            IsActive="{Binding IsLoading}" />
+                        <TextBlock
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="{DynamicResource ZKBPage_Loading}" />
+                    </StackPanel>
+                </Border>
+            </Border>
+        </Grid>
 
         <!--  ============ 底栏 ============  -->
         <controls:CardControl.Footer>
