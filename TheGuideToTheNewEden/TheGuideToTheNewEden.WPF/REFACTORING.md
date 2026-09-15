@@ -1865,6 +1865,49 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 60：进程列表的"角色名"列不刷新（转换器绑了整个对象）
+
+- **现象**（用户反馈）：EVE 客户端刚启动时窗口标题只有 `EVE`，选中角色后才变成 `EVE - 角色名`；
+  进程列表的**名字列一直显示 `EVE`**，等多久都不变，点"刷新列表"也不变（标题列倒是会跟着变）→
+  "不会识别到角色名称"。
+- **根因**（纯 WPF 绑定语义，与刷新逻辑无关）：名字列的绑定是
+  `Text="{Binding Converter={StaticResource ProcessName}}"`——**绑的是整个 `ProcessInfo` 对象**（路径 `.`）。
+  WPF 对"路径为 `.`"的绑定只在源对象发出**空名/`null` 名**的 `PropertyChanged` 时才重新求值，
+  而 `ProcessInfo` 改的是具体属性名（`WindowTitle`、`Setting`），于是**转换器再也不会重跑**：
+  名字列就停在"进程刚被发现那一刻"的值（那时标题还是 `EVE`）。
+  标题列是 `{Binding WindowTitle}`（具体路径）所以会刷新——这正是"标题变了、名字没变"的原因。
+  （实测：把 EVE 窗口标题改回 `EVE` 再改回 `EVE - QEDSD`，标题列两次都跟着变，名字列始终显示旧值。）
+- **修法**：`ProcessDisplayNameConverter` 由 `IValueConverter` 改为 **`IMultiValueConverter`**，
+  改用 `MultiBinding` 把两个**会变的输入**分别绑上：`{Binding WindowTitle}` + `{Binding Setting.Name}`——
+  任一变化都会重新求值。解析规则不变（配置里的角色名优先 → 否则取标题第一个 `-` 之后的部分 → 否则回退标题原文），
+  且解析口径与 Core `ProcessInfo.GetCharacterName()` 保持一致。
+- **验证**（实机复现用户场景）：把 EVE 客户端窗口标题临时改成 `EVE`（模拟"刚启动、未选角色"）→
+  启动应用 → 列表为 **`EVE / EVE`**（名字列 = 回退到标题，与用户描述一致）→ 把标题改回 `EVE - QEDSD` →
+  3.5s 后列表变成 **`QEDSD / EVE - QEDSD`**（名字列已跟着更新）。修复前同样操作名字列会一直停在 `EVE`。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
+### 阶段 61：选中角色、出现角色名后没有自动开始预览
+
+- **现象**（用户反馈）："选完角色出现角色名称后没有自动开始预览"。
+- **根因**：`AutoStartNewProcess`（"自动开始新出现的进程"）**只在新发现进程的那一轮生效**——
+  `RefreshAsync` 里只有遍历 `byHandle.Values`（本轮新发现、尚未入列表的进程）时才会"能解析出角色名就 `StartProcess`"。
+  EVE 刚启动时窗口标题只有 `EVE`、解析不出角色名 → 不开始（这一步是对的）；
+  等选中角色、标题变成 `EVE - 角色名` 时，这个进程**早就在列表里了**（不属于"新发现"），
+  而改名那条分支只对"已在前台运行且带配置"的进程做换绑（`OnCharacterSwitched` 开头就 `return` 了），
+  于是**再也没有人调用 `StartProcess`**。
+- **修法**：在"改名后刚解析出角色名"这一刻补一次自动开始：
+  `!hadCharacter && !existing.Running && AutoStartNewProcess && 现在能解析出角色名` → `StartProcess(existing)`。
+  用"**改名前是否已经有角色名**"（`hadCharacter`）把**角色切换**排除在外——那种情况归
+  "同进程切换角色后沿用设置"与 `OnCharacterSwitched` 管，不该被"自动开始"逻辑重新拉起来。
+- **验证**（实机，先复现再修）：把 EVE 客户端窗口标题临时改成 `EVE`（模拟"刚启动、未选角色"）→ 启动应用 → 进入多开页 →
+  列表里有进程但**没有预览窗**（正确）；把标题改回 `EVE - QEDSD` → **修复后 500ms 内自动出现预览窗**
+  （窗口标题 `QEDSD` + 角色名叠加窗 `PreviewName`）✓；**修复前**同样操作 **6s 后仍无预览窗**（已复现该缺陷）。
+- **构建状态**：**0 错误**（仅既有警告）。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -2109,7 +2152,12 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 52. **`TabControl` 只有一个 items host，"钉住某个标签"要绕道做**（阶段 53 钉住"击杀流"标签头）：想让首个标签固定在左端、其余标签在它右侧滚动，不能靠"把标签分到两个 `IsItemsHost` 面板"（`TabControl` 只认一个 items host）。可行做法是三件套：① 把该标签的头部**收敛为零宽**（`Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0`）——它照常承载内容与选中态，只是不在标签行占位，零宽也不影响 `SelectedIndex=0` 选中与 `BringIntoView`；② 用**页面级覆盖层**重绘一个"标签头"（高度与标签行一致、`HorizontalAlignment=Left`），点击时 `SelectedIndex = 0`；③ 代码在 `Loaded` 与该覆盖层 `SizeChanged` 时把模板里的标签容器 `Margin.Left` 设为覆盖层实际宽度，使其让位（**不要写死宽度**，标题会随语言变宽变窄）。
     两个易踩的细节：**选中态绑定 `{Binding SelectedIndex, ElementName=Tabs}` 只能写在 `Style.Triggers` 里**——写在 `ControlTemplate.Triggers` 里会按模板命名空间解析、找不到页面级 `Tabs`（静默失效）；同理 `Template.FindName` 取模板元素时优先取 `FrameworkElement`（如 `DockPanel`），对 `ColumnDefinition` 这类非 `FrameworkElement` 的命名元素不可靠。
 53. **"零宽标签"会把标签行的高度一起塌掉**（阶段 53 钉住标签头的实机回归，用户截图实证）：把某个 `TabItem` 做成 `Header=null` + `Margin/Padding=0` + `MinWidth=0` + `Width=0` 后，**它的高度也会跟着塌**——标签行若是 `Auto` 行，整行高度变 0，内容区便从页面顶端开始；此时任何"固定高度 + `VerticalAlignment=Top`"的页面级覆盖层（钉住头部、搜索框）都会**压到内容上**（现象就是"头部区域变小、控件跑到内容里"）。修法：给该 TabItem **显式 `Height`（= 标签行高度，本项目 36）**，并给模板里承载标签行的 Grid **写死 `Height="36"`** 双保险。排查提示：这类"覆盖层压内容"的问题先量一下承载行的实际高度（`ActualHeight`），别急着调覆盖层的定位。
-54. **横向 `StackPanel` 里的 `TextWrapping="Wrap"` 完全无效**（阶段 53 实机截图实证："过滤说明显示不全、不会自动换行"）：横向 `StackPanel` 以**无限宽度**测量子元素，内部 `TextBlock` 便按单行布局，超出部分被父容器（如 `Border`）裁切——`Wrap` 设置了也没用。要让说明文字换行，承载块用 **`Grid`（图标 `Auto` 列 + 文字 `*` 列）** 或 `DockPanel` 限宽。同族坑：本地化资源串（`sys:String`）里用 `&#10;` 写的换行**不保证生效**，长文案应写成不依赖换行的整段（编号/条目之间用"；"分隔），由宽度决定折行。
+54. **横向 `StackPanel` 里的 `TextWrapping="Wrap"` 完全无效**（阶段 53 实机截图实证："过滤说明显示不全、不会自动换行"）：横向 `StackPanel` 以**无限宽度**测量子元素，内部 `TextBlock` 便按单行布局，超出部分被父容器（如 `Border`）裁切——`Wrap` 设置了也没用。要让说明文字换行，承载块用 **`Grid`（图标 `Auto` 列 + 文字 `*` 列）** 或 `DockPanel` 限宽。同族坑：本地化资源串（`sys:String`）里用 `&#10;` 写的换行**不保证生效**，长文案应写成不依赖换行的整段（编号/条目之间用"；"分隔），由宽度决定折行。45. **`{Binding Converter=…}`（绑整个对象）不会随对象属性的变化刷新**（阶段 60）：WPF 对"路径为 `.`"的绑定
+  只在源对象发出**空名/`null` 名**的 `PropertyChanged` 时才重新求值；我们改的是具体属性名（如 `WindowTitle`、`Setting`），
+  于是**转换器再也不会重跑**——表现为"某一列永远停在初始值"（本次是进程列表的角色名列停在 `EVE`，
+  而绑具体路径的标题列正常刷新，很容易误判成"列表不刷新"）。
+  要让它跟着变，就把**会变的输入**分别绑上（`MultiBinding`）或绑到具体路径（`{Binding WindowTitle, Converter=…}`），
+  不要用"整对象 + 转换器"。
 
 
 ---

@@ -253,6 +253,7 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                 if (byHandle.Remove(existing.MainWindowHandle, out var fresh))
                 {
                     var renamed = existing.WindowTitle != fresh.WindowTitle;
+                    var hadCharacter = !string.IsNullOrEmpty(existing.GetCharacterName());
                     var oldProcess = existing.Process;
                     existing.WindowTitle = fresh.WindowTitle;
                     existing.ProcessName = fresh.ProcessName;
@@ -261,6 +262,19 @@ public sealed class GamePreviewViewModel : INotifyPropertyChanged, IDisposable
                     if (renamed)
                     {
                         OnCharacterSwitched(existing);
+
+                        // "自动开始新出现的进程"原来只覆盖**新发现**的进程：EVE 刚启动时标题只有 "EVE"、
+                        // 解析不出角色名，于是不会被自动开始；等选中角色后标题才变成 "EVE - 角色名"，
+                        // 这时进程早就在列表里了（不属于"新发现"），就再也没有人开始它（用户反馈）。
+                        // 这里补一次"刚解析出角色名"的自动开始；角色**切换**（改名前已有角色名）不在此列——
+                        // 那种情况由"同进程切换角色后沿用设置"和 `OnCharacterSwitched` 负责。
+                        if (!hadCharacter
+                            && !existing.Running
+                            && _setting.AutoStartNewProcess
+                            && !string.IsNullOrEmpty(existing.GetCharacterName()))
+                        {
+                            StartProcess(existing);
+                        }
                     }
                 }
                 else

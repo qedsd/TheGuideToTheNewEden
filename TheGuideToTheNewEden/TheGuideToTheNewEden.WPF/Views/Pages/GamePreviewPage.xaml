@@ -45,10 +45,22 @@
                     ToolTip="{DynamicResource GamePreviewPage_Running}"
                     Visibility="{Binding Running, Converter={StaticResource BoolToVis}}" />
                 <StackPanel Grid.Column="1">
+                    <!--
+                        名字列用 MultiBinding 把两个"会变"的输入都绑上（窗口标题 + 配置里的角色名）：
+                        单值绑定 {Binding Converter=…} 绑的是整个对象，WPF 只在空名 PropertyChanged 时才重新求值，
+                        我们改的是具体属性 → 名字列再也不会刷新（EVE 刚启动标题是 "EVE"，选好角色后标题变成
+                        "EVE - 角色名"，名字列却一直停在 "EVE"）。详见 ProcessDisplayNameConverter 的注释。
+                    -->
                     <TextBlock
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="{Binding Converter={StaticResource ProcessName}}"
-                        TextTrimming="CharacterEllipsis" />
+                        TextTrimming="CharacterEllipsis">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource ProcessName}">
+                                <Binding Path="WindowTitle" />
+                                <Binding Path="Setting.Name" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                     <TextBlock
                         FontSize="11"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
