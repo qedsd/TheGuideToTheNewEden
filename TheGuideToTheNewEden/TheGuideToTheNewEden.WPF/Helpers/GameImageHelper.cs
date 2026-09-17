@@ -10,6 +10,13 @@ namespace TheGuideToTheNewEden.WPF.Helpers;
 /// </summary>
 public static class GameImageHelper
 {
+    /// <summary>
+    /// 物品图片地址缓存：图标地址只由 (服务器, 类型ID, 尺寸) 决定，永不变化。
+    /// 不缓存的话，击杀列表/星图舰船图标等高频路径每次都要查一次本地库（物品 → 市场分组），
+    /// 在后台线程与 UI 线程并发时会撞出 Microsoft.Data.Sqlite 的 Close() NRE（阶段 63 实机）。
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(int Server, long TypeId, int Size), string?> TypeUrlCache = new();
+
     /// <summary>物品图片地址；ID 无效返回 null。</summary>
     public static string? BuildTypeImageUrl(long typeId, int size = 64)
     {
@@ -18,7 +25,13 @@ public static class GameImageHelper
             return null;
         }
 
-        if (GameServerSelectorService.Value == GameServerType.Serenity)
+        var server = (int)GameServerSelectorService.Value;
+        return TypeUrlCache.GetOrAdd((server, typeId, size), static key => BuildTypeImageUrlCore(key.TypeId, key.Size, (GameServerType)key.Server));
+    }
+
+    private static string? BuildTypeImageUrlCore(long typeId, int size, GameServerType server)
+    {
+        if (server == GameServerType.Serenity)
         {
             return $"https://image.evepc.163.com/types/{typeId}_{size}.png";
         }

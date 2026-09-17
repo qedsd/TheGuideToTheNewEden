@@ -1939,6 +1939,112 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 63：星图功能补齐（跳桥 / 主权 / 行星资源 / 一跳覆盖 / 星系详情 / ZKB 上图 / 情报舰船图标）+ 阶段 62 问题清单修复
+
+- **先修问题清单（阶段 62 遗留，本轮代码审查发现）**：
+  1. **P0**：`MapPageViewModel.Canvas`（页面注入的画布引用）**全仓库从未被赋值** → `BuildNavResult()` 首行 `Canvas.TryGetNode` 必抛 NRE，
+     "计算航线"算出路径后必然失败。**修法改为彻底解耦**：VM 自己保存 `Dictionary<int, MapSystemNode> _nodeById`（`LoadAsync` 里建立），
+     `BuildNavResult` / 详情页 / 搜索都用它，`Canvas` 属性删除——VM 不再依赖任何 View 类型。
+  2. **情报红圈权重口径**：`IntelMarker.Weight` 注释写"舰船数 + 消息数"但实现只数消息条数 → 改为 **Σ舰船数 + 频道消息数 × 5**（对齐 WinUI `GetWeigh()`）。
+  3. **着色模式去 `SelectedIndex` 强转**：新增 `MapPageViewModel.ColorModes` / `ResourceKinds` 静态数组做显式映射（改下拉顺序不再静默错位）。
+  4. **底图位图按尺寸复用**：拖拽/滚轮/飞行动画期间每帧都会重建底图，原来每帧 `new SKBitmap`（4K 高 DPI 约 30MB/帧）→ 现在尺寸不变只 `Clear` 重画，消除 LOH 压力。
+  5. **首次装载失败可重试**：删掉页面里的 `_initialized` 单例门闩（它在 `await` 前就置位），改由 `IsLoaded` 判定——数据库临时失败后再进页面会重试而不是永远空白。
+  6. **自动航点发送**：逐跳调 ESI 与 WinUI 参数一致（`clearOtherWaypoints=false / addToBeginning=false`），但补了 **120ms 间隔节流**、
+     **全局等待遮罩显示 "n/m" 进度**、**失败即中断并把原因回报到页面/通知**（对齐 WinUI 的 `ShowWaiting($"{i+1}/{count}")` 但不再静默失败）。
+  7. **死代码**：删 `StarMapCanvas.InvalidateBase()`（无调用方）、`SetData` 首轮 `_indexById[node.Id] = _indexById.Count` 退化赋值。
+  8. **顺带修两处 UI 缺陷**：`NavPopup` 的 `PlacementTarget` 指向**不存在的 `NavButton`**（补 `x:Name`，此前弹层定位失效）；
+     导航面板"标题"与"提示"原本共用同一 Grid 单元（文字重叠）→ 拆成独立行，面板整体重排为 10 行。
+  9. **画布中文全成"口口口"**（实机反馈"名称是乱码"）：`SKTypeface.FromFamilyName("Segoe UI")` **没有 CJK 字形**，自绘的星系名/角色名渲染成豆腐块
+     （同页 XAML 文本正常 → 锁定字体问题）。改为**候选家族 + `FamilyName` 校验**的解析（`Microsoft YaHei UI` 起，逐级到 `Segoe UI`；因 `FromFamilyName` 找不到家族时不返回 null 而是静默回退，
+     必须用 `FamilyName` 判断命中），全不命中再 `SKFontManager.Default.MatchCharacter('星')` 兜底，结果 `static readonly` 缓存；详见 §9 第 55 条。
+  10. **低缩放下节点光晕糊成一片**（实机反馈"缩小状态下星系光晕太强显得一片模糊"）：外发光原来是固定 `nodeR × 3.4` 半径 + 精灵中心 255 α 的"实心圆盘"，
+     8000 个节点在整图适配时互相叠加 → 一片粉雾。改为**光晕随缩放淡入 + 半径收敛**：
+     `GlowAlpha = clamp((zmult − 1) × 55, 0, 220)`（整图 ≈0、5× 以上封顶）、`GlowScale = clamp(1.15 + (zmult − 1) × 0.45, 1.15, 3.4)`，
+     并把发光精灵渐变由"实心圆盘"改成三段衰减（235 → 55 @45% → 透明）；低缩放只留清晰小点，放大后才发亮。
+  11. **点开星系详情抛 `NullReferenceException`（Core 侧，已修）**：`SolarSystemResourcesService.QueryBySolarSystemID` 在聚合时直接点
+     `p.PlanetResources.Power` / `.TypeId`，而 `PlanetResourcesDetail.PlanetResources` **可以为 null**（该天体在 `planetResources` 表里没有行）
+     → 第 25 行 NRE。**批量重载没有这个问题**（它用 `TryGetValue` 只收命中项），所以"行星资源着色 / 清单页正常、只有详情页炸"正是这个信号。
+     修法：两处聚合都改成 `p.PlanetResources?.Power ?? 0`，两种资源量直接用明细模型自带的守卫计算属性 `p.SuperionicIce` / `p.MagmaticGas`。
+     顺带修掉同文件 `QueryByRegionID` 的两个既有缺陷：① `List<SolarSystemResources> list = null` 后直接 `list.Add`（星域非空即 NRE）；
+     ② 循环里把**星域 ID** 当星系 ID 传给 `GetPlanetResourcesDetailsBySolarSystemID(id)`（每个星系都算成同一个错误星系的资源）。
+     WPF 侧同时给"按单星系补资源"这一步加了**独立 try/catch**——Core 这一路挂掉只应丢"四项资源"，不该让五个页签全都加载不出来。
+     回归：WPF 与 **WinUI 两个项目都 `dotnet build` 0 错误**（Core 为共享代码）。
+  12. **星域 / 安等批量筛选（§8.51 最后一个缺口，补齐后星图与 WinUI 的功能面对齐）**：顶栏"筛选"按钮 → 弹窗（星域下拉 + 安等区间两个 NumberBox）
+     → `MapPageViewModel.ApplySystemFilter()` 批量写 `MapSystemNode.Enabled`（哨兵星域 `RegionID=0` = 全部；区间自动 min/max 交换）
+     → 页面收到 `NodeStatesChanged` 调 `StarMapCanvas.RefreshNodeStates()`（**递增 dataVersion 重建底图**——缓存键不含 Enabled，必须显式失效）。
+     未命中节点用 `DimColor`（向中性灰收敛 0.72、保留一点色相）绘制，相关连线也灰化并把 alpha 降到 1/3；
+     **只影响显示**，悬停/选中/导航不受影响。新增 5 个语言键（`MapPage_Filter*`，两文件 1404 键 0 重复、键集一致）。
+  13. **"查询物品不在本地数据库时经常出现 null 报错"（图标热路径，两层修）**：用户堆栈为 `Microsoft.Data.Sqlite.SqliteConnection.Close()` 内 NRE，
+     落在 `InvMarketGroupService.QueryParentId` 第 99 行。两层问题：
+     ① **没做"不存在处理"**——`First()` 查不到返回 null 后直接点 `.ParentGroupID` → NRE（补 `?.`）；
+     ② **图标热路径查库太频繁**——`GameImageHelper.BuildTypeImageUrl` 每个图标都调 `QueryRootGroupOfType`（沿市场分组树逐级查库，3~5 次 SQLite/图标），
+     而击杀列表 / 星图舰船图标都在后台线程调，与 UI 线程并发撞库 → Sqlite 的 Close() NRE。
+     修法：`QueryRootGroupOfType` 改为 **invMarketGroups 全表一次载入静态映射（仅约两千行）+ 内存游走（带 32 步防环）**；
+     WPF 侧 `GameImageHelper` 增加 `(服务器, 类型ID, 尺寸) → URL` 的 `ConcurrentDictionary` 缓存（图标地址永不变化），热路径从"每图标 N 次查库"降为 0。
+     顺带核对：全 Core DB 服务只有这一处 `.First(...).属性` 直接解引用。**回归：WPF 与 WinUI 双项目 0 错误**。
+  14. **SQLite 并发撞库的根因修复（DBService 重写）**：上一条只治了"图标"一个热路径，用户随即又贴出 `InvTypeService.QueryType` 的同款
+     `SqliteConnection.Close()` NRE——根因是 **SqlSugarScope 的客户端按 AsyncLocal 上下文共享，同一上下文里并行跑的线程池线程共用同一条
+     SqliteConnection**，任何两个线程同时查/关库都会炸。全仓核对：DB 句柄只在 Core 服务层使用（WPF/WinUI 零直连）、**没有任何事务**
+     （无 UseTran/BeginTran）、全部是单条操作 → 把 6 个 `SqlSugarScope` 静态字段换成 **ThreadLocal<SqlSugarClient>（每线程一个客户端）**：
+     `DBService` 新增私有 `ThreadDb`（`SetPath` / `Db`），六个句柄改为属性（`MainDb => Handle.Db` …；未初始化仍返回 null，
+     `MainDbReady/LocalDbReady` 语义不变；`IsAutoCloseConnection=true` + Microsoft.Data.Sqlite 默认连接池，每线程连接用完即还、成本可忽略）。
+     `CreateDatabase` / `CodeFirst.InitTables` 的一次性初始化照旧在 `InitXxx` 里完成。事务语义不变（本来就是单条操作）。
+     回归：WPF 与 WinUI 双项目 0 错误。
+- **新增功能（对齐 WinUI 功能语义，渲染继续自绘，非逐行照搬）**：
+  - **跳桥（Jump Bridge）**：`Services/Map/JumpBridgeSettingService.cs`（**同 WinUI 路径同格式** `Configs/JumpBridgeSetting.json`，`GetBridgesDict()` 返回双向字典）；
+    画布新增**跳桥点线**（画进底图缓存，可开关）；`CalStargatePath(..., bridge)` 真正传入；导航结果新增 **NavType=3「跳桥」**；
+    新增 `JumpBridgeSettingView`（星系名或 ID 解析、增删、显示开关、重复/占用校验与提示）。
+  - **主权（SOV）着色**：`Services/Map/SovService.cs`（ESI 主权接口 → 按联盟聚合 → `IDNameService` 解析联盟名；分组号持久化 `Configs/SOVGroup.json`，与 WinUI 同格式，30 分钟内存缓存、可强制刷新）；
+    `MapColorMode.Sovereignty`；**配色改为"分组号 → 黄金角散列色相"**（同一分组永远同色、跨会话稳定；WinUI 是每次 `Random` 随机色，同一联盟两次刷新颜色都不同）；
+    高缩放下节点内圈显示分组号（对应 WinUI 的 `InnerText`）；新增 `SovGroupSettingView`（分组号编辑 + 重置 1..N + 重新拉取，带色块预览，`SovGroupColorConverter` 直接复用画布配色算法保证预览一致）。
+  - **行星资源**：`Services/Map/MapResourceService.cs`（只统计 `Security <= 0` 星系；`GetPlanetResourcesDetailsBySolarSystemID(ids)` 批量取 → 按星系聚合 Power/Workforce/岩浆气 81143/超离子冰 81144 → 再按星域汇总（产能+人力为 0 的星域不入表）；设施升级读 `UpgradeResources.csv`）；
+    `MapColorMode.PlanetResource` + **资源类型子下拉**（产能/人力/岩浆气/超离子冰，仅该模式显示）；新增 `PlanetResourceListView`（星域 / 星系 / 设施升级三页签 + "只显示有资源星系" + 重新载入）。
+  - **一跳覆盖**：`OneJumpCoverViewModel` + `OneJumpCoverView`——旗舰型号（`CapitalJumpShipInfoHelper`）+ JDC/JFC/JF（仅战略货舰 GroupID 1089 显示货舰栏）
+    → `MaxJump = MaxLY * (1 + 0.2 × JDC)`、每光年燃料按 JFC/货舰技能逐级减免（公式与 WinUI 一致）；`CalOneJumpCover` 结果按 3D 距离排序并算燃料，**结果圈回星图为虚线圆**（`StarMapCanvas.SetCover`）。
+  - **星系详情页**：`MapSystemDetailViewModel` + `MapSystemDetailView`——左侧 ID / 安等 / 星域 / 主权 / 四项资源，
+    五页签：**统计**（舰船/逃生舱/NPC 击杀 + 通行量，来自 ESI）/ **设施升级**（`UpgradeResources.csv`，标出产能是否够用）/ **行星资源**（行星名 + ID + 四项）/ **天体**（`MapDenormalize` 含类型名）/ **邻接**（星门邻居 + 星域 + 安等 + 主权）。
+  - **导航增强**：旗舰参数进导航面板（船型 / JDC / JFC / JF + 允许走星门 + **省钱优先**（`CalCapitalJumpPath` mode=1）），自动用船型算最大跳距；
+    结果表新增**燃料列**，新增**概览行**（共 N 跳：星门 / 旗舰跳 / 跳桥 / 旗舰距离 / 燃料）。
+  - **ZKB 击杀上图 + 情报舰船图标**：`MapPageViewModel` 订阅 `ZkbKillStreamHub.Current.Matched`（事件在后台线程 → `Dispatcher`），
+    按星系聚合**攻方舰船类型**（同一 `attackerId` 去重，与 WinUI 一致）、按 `MapIntelConfig.ZKBDuration` 过期、`Clear` 消息清空该星系；
+    画布 `DrawIntelShips`：`zmult ≥ 12` 逐个画舰船图标（`GameImageHelper.BuildTypeImageUrl` → `HttpClient` 取字节 → `SKBitmap` 缓存，最多 8 个 + "+N"）× 数量角标，
+    `zmult ≥ 16` 再画"多少分钟前"，低缩放只画 `+舰船数(情报数)`；情报面板加 **ZKB 开关 + 保留分钟数**（落 `MapIntelConfig.ZKB/ZKBDuration`）。
+- **本地化**：中英各新增 84 键（`MapPage_*` / `MapTool_*`），两文件均 **1399 键、0 重复、zh/en 键集完全一致**（按 §8 第 33 条的查重脚本核过）；
+  另跑了"DynamicResource 引用 → 语言键"的存在性核对（星图相关 XAML 共 99 个引用、0 缺失）。
+- **构建**：`dotnet build` → **0 错误**、39 条警告（既有基线 37 条 + 本轮 0 条新增；SOV 的 `CS0618`（`ListSovereigntyOfSystemsAsync` 被 ESI 标记 2026-05-19 移除）
+  已用局部 `#pragma warning disable` 抑制并在代码注释里写明"待整体升级 ESI 版本时改用 `GetSovereigntySystemsAsync`"）。
+- **未实机核验（交用户自测）**：重点验证——① 导航不再报错（本轮 P0）；② 跳桥开关 + 增删 + 寻路走桥；③ 主权着色与分组编辑（需 ESI 可访问）；
+  ④ 行星资源着色与清单页（首次装载会遍历全部 00 星系，属本地库查询）；⑤ 一跳覆盖；⑥ 详情页五页签；⑦ 开情报 + ZKB 后红圈出现舰船图标与计数。
+
+---
+
+### 阶段 64：星图支持亮色主题（画布双调色板 + HUD 随主题重着色）
+
+- **背景**：星图画布的所有颜色原本按深空调死（深空渐变背景、亮色星尘、浅蓝文字、青色强调 `7DF9FF`、白色内核、深色 HUD 玻璃面板），
+  亮主题下文字不可见、光晕成脏斑。用户问"直接把黑色背景去掉是否就可以"——**不够**：去背景只解决底色，文字/徽章/强调色/光晕/星尘
+  都是"亮色只在深底上成立"的，必须成套换。
+- **画布（`StarMapCanvas`）**：新增 `_light` 标记 + `SetTheme(bool)`（变化时递增 dataVersion 重建底图）与一组**主题二选一**的调色板成员：
+  `BgBase/BgCenter/BgMid/BgEdge`（背景渐变）、`StarColor`（星尘亮色下改深蓝灰）、`LinkAlpha`（亮色上限 80→120 补偿浅底）、
+  `Accent/AccentDim/RouteFlow/Bridge`（青色 `7DF9FF` 在白底不可见 → 加深为 `0E7490` 系）、`BadgeBg/BadgeText/NameText/Kernel/HoverRing`
+  （深浅反转：安等徽章白底深字、白色内核改深色内核）、`IntelGlow/IntelRed/IntelText/IntelSoft/IntelTime`（红色加深、光晕 ×0.55）、
+  `CharBlue/CharText`；节点外发光 alpha 在亮色下 ×0.45（浅底上的光晕会显脏）。约 35 处颜色字面量全部改走调色板，暗色值与原值一致（深色主题零视觉变化）。
+- **页面（`MapPage`）**：订阅 `ThemeService.ThemeChanged` + 构造时应用一次 `ApplyTheme()`——
+  ① `MapCanvas.SetTheme(light)`；② HUD 的六个玻璃面板画刷（`HudBg/Border/Accent/Text/Dim/Intel`）与画布区底色/加载遮罩
+  （新增 `MapBg`/`MapLoadingBg`）改为 **DynamicResource**，画刷值在 `ApplyTheme` 里按主题重设（XAML 里约 73 处 `StaticResource Hud*` 全部改 DynamicResource；
+  注意 `BasedOn="{StaticResource HudPanel}"` 这类样式继承不能改 DynamicResource，XAML 不允许）。
+- **工具教训（已记 §9.1）**：用 PowerShell 批量替换颜色字面量时，**调色板定义里的暗色分支字面量会被一起换掉**（BgBase/Bridge/StarColor 三处
+  变成了自引用 = 无限递归），已逐一修复；批量 Replace 后必须核对每处替换落点（按出现次数核对 + 编译 + 审查调色板块）。
+- **已知边界**：画布强调色是固定的青/teal 系，未跟随用户自选强调色（LiveCharts 那套是从主题 Brush 转换的；星图要跟的话需把 accent 色也接进调色板）。
+- **修复：选主权着色 StackOverflow**（实机）：`ApplySovAsync` 末尾发 `ColorModeChanged` → 页面处理器再次调 `ApplySovAsync` → 再发事件……
+  且 `SovService.LoadAsync` 缓存命中时全程同步完成（没有任何 await 让出）→ **同步无限递归** → `StackOverflowException`（不可捕获、进程直接死）。
+  `ApplyResourceAsync` 同款（行星资源着色同样会炸）。修法：两处删掉事件重发——重着色由页面在 `ApplyColorModeAsync` 末尾统一 `SetColorMode` 完成；
+  主权分组编辑窗的 `GroupsSaved` 处理器本来就显式重着色，不受影响。通则见 §9 第 60 条。
+- **构建**：0 错误（35 全量基线，无新增）。未实机核验，由用户切换深/浅主题目检。
+- **情报面板布局**（用户指定）：右上悬浮 440×300 → **左侧停靠**（`HorizontalAlignment=Left` + `VerticalAlignment=Stretch`、四周 `Margin=12`、宽 420、去掉固定高度），情报列表随窗口高度伸展。
+- **情报面板收起/展开 + 换行 + 对齐**（用户截图反馈）：① 头部加收起按钮（ChevronLeft24，新键 `MapPage_IntelCollapse`），收起后左上角只剩小标签（Info24 + "情报"），点击展开，监听/过滤不受影响；顶栏情报开关切关时两者都隐藏。② 情报行内容由省略号改 `TextWrapping=Wrap`，条目间距 0,2→0,4。③ **ZKB 时长 NumberBox 文字被挤没**：WPF-UI NumberBox 默认 Inline 调节按钮垂直堆在右侧，小尺寸（66×28）下数值区被挤占——加宽加高（90×32）+ **`SpinButtonPlacementMode="Hidden"`**（API 经 dll 字符串表验证：`NumberBoxSpinButtonPlacementMode{Hidden,Compact,Inline}`），筛选弹窗的两个安等 NumberBox 同款处理。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -1999,18 +2105,26 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     - **`id <= 0`**（受害者无联盟、NPC 击杀、星系未被本地库收录）：在排除里永不命中（`FilterSet` 只收正整数）；在包含项非空时判为不通过。**这是 WPF 相对 WinUI 的有意修正**——WinUI 的 `Contains(category, id)` 先 `if (id <= 0) return false;`，导致"受害者无联盟"的击杀在包含项为空时也被一并丢弃。
     - **组与组之间没有互斥**：同一个 ID 出现在不同组的列表里互不影响（某角色可以是这条的攻击者、另一条的受害者）；UI 已按类别限制可选范围（通用限星系/星域/舰船，角色组限角色/军团/联盟），因此正常路径不会出现"类别放错列表"——但若手工改 JSON 放错，`AddByCat` / `AddRoles` 会**静默忽略**该项。
     - 取消/重建时机：过滤快照在配置变更时按脏标记重建（`ZkbStreamFilter` 不可变，中枢 `EnsureFilter` 每次唤醒重建），因此改过滤**无需断开重连**；隐患是 `HookConfig` 订阅的是集合**实例**，若将来有代码整体替换 `CommonExclusions` 等集合（公开 setter 允许），脏标记将不再触发。
-51. **星图（阶段 62）相对 WinUI 的功能缺口**（均为有意暂缓，框架已预留挂点）：
-    - **无 SOV（主权）着色 / SOV 分组**（WinUI 的 `SetDataToSOV` + `SOVGroup.json`）——需 ESI `Sovereignty.ListSovereigntyOfSystems` + 联盟名解析；
-    - **无行星资源热力 / 行星资源清单页**（WinUI `SetDataToPlanetResourc` / `PlanetResourcListPage`）——数据在本地库（`SolarSystemResourcesService`），待接入着色模式与列表工具；
-    - **无星系详情页**（WinUI `MapSystemDetailPage` 五页签：统计/设施升级/行星资源/天体/邻接）——WPF 只有信息卡的 击杀/通行/邻接；
-    - **无一跳覆盖工具**（WinUI `OneJumpCover`：`CalOneJumpCover` + 圈叠加）——Core 算法现成，缺 UI；
-    - **无跳桥（JumpBridge）层**：`JumpBridgeSetting.json` 读写与虚线绘制、导航走桥边权（`CalStargatePath` 的 `bridge` 参数已支持，传 `null` 即可）都未接；
-    - **情报红圈没有舰船图标**（WinUI `IntelDrawer` 在节点旁画攻击者舰船图 + 计数）——当前只有红圈权重 + 情报流文字；接入需图片下载 + `SKBitmap` 解码缓存 + 空白探测摆放；
-    - **ZKB 击杀不上图**（WinUI IntelTool 订阅 `ZKBStreamService` 叠加击杀）——可复用 WPF 的 `ZkbKillStreamHub`，尚未接；
-    - **导航结果无燃料列**（不做旗舰型号/技能换算），"省钱优先"模式（`CalCapitalJumpPath` mode=1）未暴露；
-    - **星域筛选**（按区域/安等批量 `Enable`）未做，只有"星域定位"与安等着色。
-52. **星图 intel 的会话依赖**：情报模式开关要求**先在频道预警页启动至少一个角色的预警**（`ChannelIntelManager` 才有会话可切 `IgnoreJumps`）；无会话时开关仍可点但不起作用（面板显示提示文案）。另外情报**排除/包含关键词**在"开始情报"时从共用 `MapSettings.json` 读入、失焦时写回——WinUI 与 WPF 共用该文件，字段语义（`IdName.Name` 当关键词）为 WPF 侧约定。
-53. **星图性能边界**：底图缓存键按 (zoom, offset) 精确匹配，**拖拽/滚轮/飞行动画期间每帧都重建底图**（与 WinUI 同为全量重绘，只是把静态场景隔离开了）；实测拖拽流畅。窗口铺满 4K + 高 DPI 时位图缓存 ~几十 MB，Unloaded 时释放。
+51. **星图相对 WinUI 的功能缺口：阶段 63 已基本补齐**（原缺口逐条对应）：
+    - SOV 着色 / 分组 → **已做**（`SovService` + `MapColorMode.Sovereignty` + `SovGroupSettingView`）；差异：**配色改为按分组号稳定散列**（WinUI 每次 `Random`，同一联盟两次刷新颜色都不同），设置窗色块预览与图上完全一致；
+    - 行星资源热力 / 清单页 → **已做**（`MapResourceService` + 资源类型子下拉 + `PlanetResourceListView` 三页签）；
+    - 星系详情页（五页签）→ **已做**（`MapSystemDetailView`，左侧信息栏 + 统计/设施升级/行星资源/天体/邻接）；
+    - 一跳覆盖工具 → **已做**（`OneJumpCoverView`，船型 + JDC/JFC/JF + 燃料，结果圈回星图）；
+    - 跳桥层 → **已做**（配置读写 + 底图点线 + 寻路走桥 + `NavType=3` + 设置窗）；
+    - 情报红圈舰船图标 → **已做**（攻方舰船聚合 + 图标缓存 + `×数量` + "n 分钟前"）；差异：**不做 WinUI 的"空白探测避让"**——图标固定排在节点右侧、最多 8 个再折叠成 `+N`，密集星域会有视觉重叠；
+    - ZKB 击杀上图 → **已做**（订阅 `ZkbKillStreamHub`，按星系聚合、按 `ZKBDuration` 过期、"清怪"清空该星系）；
+    - 导航燃料列 / 省钱优先 → **已做**（旗舰参数进导航面板，`CalCapitalJumpPath` mode=1 已暴露，结果加燃料列 + 概览行）；
+    - 星域 / 安等批量筛选 → **已做（阶段 63 末尾补齐，§8.51 至此全部闭合）**：顶栏"筛选"弹窗（星域 + 安等区间）→ `MapSystemNode.Enabled`
+      → 未命中星系与相关连线按灰化色绘制（底图重建）。与 WinUI 的差异：**只灰化显示**，不做 `DisableNoActiveSystem` 的
+      "只保留工具覆盖星系高亮"联动；命中测试 / 选中 / 导航也不受筛选影响。
+52. **星图情报的会话依赖（阶段 63 放宽）**：频道情报仍要求在频道预警页先启动至少一个角色的预警（`ChannelIntelManager` 才有会话可切 `IgnoreJumps`）；
+    **ZKB 击杀不再依赖会话**——没有会话也能打开情报面板（提示文案会说明"仅 ZKB"），此时只画 ZKB 红圈与舰船图标。
+    情报**排除/包含关键词**（空格/逗号/分号分隔）对频道正文与 ZKB 摘要文本同时生效，落共用 `MapSettings.json` 的 `MapIntelConfig.Exclusions/Inclusions.Name`（WPF 侧把这两列当关键词用）。
+    ZKB 开关与保留时长落 `MapIntelConfig.ZKB / ZKBDuration`（与 WinUI 共用）。
+53. **星图性能边界（阶段 63 更新）**：底图缓存键按 (zoom, offset, size, dpi, dataVersion, colorMode) 精确匹配，
+    **拖拽/滚轮/飞行动画期间每帧仍要重建底图内容，但位图本身已按尺寸复用**（不再每帧 `new SKBitmap`，消除了 4K 高 DPI 下 ~30MB/帧 的 LOH 压力）；
+    实测拖拽流畅。窗口铺满 4K 时位图缓存 ~几十 MB，`Unloaded` 时释放。
+    新增开销：`CalOneJumpCover`（全网 3D 距离扫描）在 6 ly 左右量级为毫秒级；行星资源首次装载遍历全部 00 星系（本地库批量查询）。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
@@ -2201,6 +2315,42 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   而绑具体路径的标题列正常刷新，很容易误判成"列表不刷新"）。
   要让它跟着变，就把**会变的输入**分别绑上（`MultiBinding`）或绑到具体路径（`{Binding WindowTitle, Converter=…}`），
   不要用"整对象 + 转换器"。
+55. **SkiaSharp 自绘文字必须显式换中文字体：`Segoe UI` 没有 CJK 字形，中文会全变成"口口口"**（阶段 63 实机截图实证）：
+   `StarMapCanvas` 原先写死 `SKTypeface.FromFamilyName("Segoe UI", …)`，于是画布上的中文星系名渲染成一排豆腐块——
+   而同一页的 HUD 浮层与信息卡文字正常（那是 XAML 文本，走 WPF 字体回退），所以**"只有自绘画布乱"就基本锁定是字体问题**（乱码/问号才是编码问题）。
+   修法：候选家族列表（`Microsoft YaHei UI` → `Microsoft YaHei` → `微软雅黑` → `PingFang SC` → `Noto Sans CJK SC` → `Meiryo` → `Yu Gothic UI` → `Malgun Gothic` → `Segoe UI`）逐个创建，
+   **并用返回的 `FamilyName` 校验是否真的命中**——`FromFamilyName` 找不到家族时**不返回 null，而是静默回退到默认字体**，只能靠 `FamilyName` 判断；
+   全不命中时再 `SKFontManager.Default.MatchCharacter('星')` 按字符兜底。结果做 `static readonly` 缓存（字体族不会变，不必每次创建）。
+   本机实测注册表存在 `Microsoft YaHei & Microsoft YaHei UI (TrueType) => msyh.ttc`，首个候选即命中。
+56. **"上万图元自绘"的发光/描边必须随缩放收敛，否则低缩放一定糊**（阶段 63 实机反馈："缩小状态下星系光晕太强显得一片模糊"）：
+   星图 8k 节点的外发光原为固定 `nodeR × 3.4` 半径 + 精灵中心 α=255 的实心渐变圆盘——整图适配时节点间距只有 1~3px，
+   10px 的光晕互相叠加，密区直接连成一片粉雾（颜色在密区完全失真，看上去像"马赛克云"）。
+   两条通用做法：① **强度随缩放淡入**（`GlowAlpha = clamp((zmult − 1) × 55, 0, 220)`，整图时 ≈0、放大后才亮起来）；
+   ② **半径倍数随缩放收敛**（`1.15` → `3.4`），并让精灵渐变**中间调更暗**（三段：235 → 55 @45% → 透明）——这样低缩放是清晰小点，放大才成"发光星体"。
+   同族提醒：屏幕空间固定像素的装饰（发光、描边、阴影、虚线间隔）在"图元数量 ≫ 屏幕像素"时都会退化成噪声，**任何"看起来糊/发灰/颜色失真"的低缩放画面先查这类累加项**。
+57. **Core 的"明细聚合"方法里，明细项的关联对象可能为 null——只靠"外层集合非空"守卫不够**（阶段 63 实机：点开星系详情 NRE）：
+   `SolarSystemResourcesService.QueryBySolarSystemID` 用 `if (planetResources.NotNullOrEmpty())` 守住了集合，却在里面直接点 `p.PlanetResources.Power`；
+   而 `PlanetResourcesDetail.PlanetResources` 是按 `mapDenormalizes` 逐天体查 `planetResources` 得到的，**查不到就是 null**（很常见：只有部分天体有资源行）。
+   同一文件里"批量重载"用 `TryGetValue` 只收命中项，所以没炸——**"批量版本正常、单个版本炸"就是这类"守卫只守了集合没守元素"的典型信号**。
+   处置：聚合一律走 `p.Xxx?.Prop ?? 0`，或直接用模型自带的守卫计算属性（`PlanetResourcesDetail.MagmaticGas` / `SuperionicIce` / `ContainResource` 都已做 null 守卫）；
+   本轮顺带修掉同文件 `QueryByRegionID` 的 `list = null` 后 `list.Add`、以及"把星域 ID 当星系 ID 传下去"两个既有缺陷（Core 共享，WinUI 同样受益）。
+   调用方纪律：**调用 Core 拿数据的步骤要各自独立 try/catch**——一个"补充信息"失败不应该让整页数据都加载不出来（本轮 WPF 详情页已按此加固）。
+58. **Core 是 netstandard2.1（C# 8.0），WPF 里顺手写的 C# 9+ 语法搬进 Core 会 CS8400**（阶段 63 实测）：
+   target-typed `new()`、`is not` / 关系模式（`is not > 0`）、`[]` 集合表达式、record / `init` 等都不能在 Core 用——WPF 项目能编译不代表 Core 能。
+   改 Core 一律按 C# 8 写：`new object()`、`== null ||` 显式判断。本项目已知的 "Core 能用 / 不能用" 快速对照见技能 `tgne-wpf-module-guide` §8。
+59. **SqlSugarScope 不是"多线程并发安全"，是"每 AsyncLocal 上下文一个客户端"**（阶段 63 根因修复，DBService 重写）：
+   同一上下文里 `Task.Run` 出来的并行线程会**共享同一条 SqliteConnection**，并发查询炸在 `Microsoft.Data.Sqlite.SqliteConnection.Close()` /
+   `SqliteDataReader.Dispose` 内部——表现为"功能正常但时不时崩"，堆栈全在 Sqlite 内部、业务帧只剩"哪个服务在查库"（QueryParentId / QueryType / 任意）。
+   修法：**ThreadLocal\<SqlSugarClient\> 每线程一个客户端**（本项目无事务、DB 句柄只在 Core 服务层使用，改造零波及调用方；
+   `IsAutoCloseConnection=true` + Microsoft.Data.Sqlite 默认连接池让"每线程一条连接"成本可忽略）。
+   排查口诀：**堆栈在 Sqlite 内部（Close / Dispose）= 撞库，去找后台高频查库点；堆栈在业务代码 = 普通空引用**。
+   注意 Core 是 C# 8，线程相关代码别用 `is not null` / `new()`（§9.58）。
+60. **VM 的"数据应用"方法末尾不要再发"触发它自己的那个事件"——缓存命中时整条链路同步执行，等于同步无限递归**（阶段 64 实机：
+   星图选主权着色直接 `StackOverflowException`）：`ApplySovAsync` 末尾发 `ColorModeChanged` → 页面处理器再调 `ApplySovAsync` →
+   `SovService.LoadAsync` 缓存命中同步返回 → 再发事件……没有任何 await 让出，栈打爆即进程死（StackOverflow 不可捕获）。
+   同族：`ApplyResourceAsync`（行星资源）。**规矩**：数据应用方法只改数据 + 发"数据变了"的窄事件（或什么都不发）；
+   "重新着色/刷新 UI"由**事件处理器末尾**统一做（页面本来就在末尾 `SetColorMode`）；两件事绝不能互相触发。
+   判据：StackOverflow 且没有业务堆栈（栈已耗尽打不出帧）→ 沿"谁会同步调用谁"画环，重点查"事件处理器 → 服务方法 → 同一事件"。
 
 
 ---
@@ -2325,17 +2475,30 @@ Views/Pages/GamePreviewPage.xaml(.cs)            三列页面（进程列表 / �
 Converters/{ColorHex,ColorToBrush,ProcessDisplayName,StringSet}Converter.cs  多开用转换器
 ```
 
-### 星图模块（阶段 62：SkiaSharp 重设计渲染，占位页已替换）
+### 星图模块（阶段 62 起 SkiaSharp 重设计渲染；阶段 63 功能补齐）
 ```
-Views/UserControls/Map/StarMapCanvas.cs   核心画布（SKElement）：深空背景/星尘/星门连线/发光节点/LOD 标签、
-                                          底图缓存 + 发光精灵缓存、缩放平移/命中/悬停/选中、情报红圈、
-                                          角色标记、航线折线、定位飞行与涟漪高亮；MapColorMode/MapSystemNode/覆盖层模型同文件
+Views/UserControls/Map/StarMapCanvas.cs   核心画布（SKElement）：深空背景/星尘/星门连线/跳桥点线/发光节点
+                                          （安等·主权·行星资源·击杀·通行五种着色）/LOD 标签、底图缓存（位图按尺寸复用）
+                                          + 发光精灵缓存、缩放平移/命中/悬停/选中、情报红圈与舰船图标、角色标记、
+                                          航线折线、一跳覆盖圈、定位飞行与涟漪高亮；MapColorMode/MapSystemNode/IntelMarker 同文件
 Services/Map/MapSettingService.cs         Configs/MapSettings.json（Core MapConfig，与 WinUI 共用）
+Services/Map/JumpBridgeSettingService.cs  Configs/JumpBridgeSetting.json（与 WinUI 同格式）+ 双向桥梁字典/增删/显示开关/SettingChanged
+Services/Map/SovService.cs                主权：ESI 聚合 + 联盟名解析 + Configs/SOVGroup.json 分组读写/重置 + 30 分钟缓存
+Services/Map/MapResourceService.cs        行星资源：00 星系聚合（Power/Workforce/岩浆气/超离子冰）+ 星域汇总 + 设施升级表 + 天体/行星明细
 Services/Map/ChannelIntelManager.cs       运行中预警会话聚合 + IgnoreJumps 开关 + 情报事件聚合（对齐 WinUI 同名单例）
 Services/Map/CharacterLocationService.cs  授权角色 ESI 位置轮询（"显示角色"）
-ViewModels/Map/MapPageViewModel.cs        数据装载/统计/搜索/情报流/导航编排
-Views/Pages/MapPage.xaml(.cs)             星图页（顶栏搜索/星域/着色/角色/情报/导航 + HUD 浮层；占位页已替换）
+ViewModels/Map/MapPageViewModel.cs        数据装载/统计/搜索/着色（五种，含主权与行星资源）/情报流（频道 + ZKB 舰船聚合）/导航（星门·旗舰跳·跳桥 + 燃料）/自动航点
+ViewModels/Map/OneJumpCoverViewModel.cs   一跳覆盖：船型/技能 → 最大跳距与燃料 → CalOneJumpCover → 结果表 + 圈回星图
+ViewModels/Map/MapSystemDetailViewModel.cs 星系详情：统计（ESI）/设施升级/行星资源/天体/邻接 五组数据
+ViewModels/Map/PlanetResourceListViewModel.cs 行星资源清单：星域/星系/设施升级三表（含"只显示有资源星系"）
+Views/Pages/MapPage.xaml(.cs)             星图页（顶栏搜索/星域/着色+资源类型/跳桥/角色/情报/工具菜单/导航 + HUD 浮层 + 五个工具窗宿主）
+Views/UserControls/Map/OneJumpCoverView.xaml(.cs)      一跳覆盖窗
+Views/UserControls/Map/MapSystemDetailView.xaml(.cs)   星系详情窗（五页签）
+Views/UserControls/Map/PlanetResourceListView.xaml(.cs) 行星资源清单窗（三页签）
+Views/UserControls/Map/SovGroupSettingView.xaml(.cs)   主权分组编辑窗（分组号 + 色块预览 + 重置/重新拉取）
+Views/UserControls/Map/JumpBridgeSettingView.xaml(.cs) 跳桥设置窗（星系名或 ID 增删 + 显示开关）
 Converters/NullToVisibilityConverter.cs   null → Collapsed（信息卡显隐）
+Converters/SovGroupColorConverter.cs      分组号 → 刷子（复用画布配色算法，保证设置窗预览与图上一致）
 ```
 
 ### 主窗口

@@ -22,10 +22,12 @@ namespace TheGuideToTheNewEden.Core.Services.DB
             var planetResources = GetPlanetResourcesDetailsBySolarSystemID(id);
             if(planetResources.NotNullOrEmpty())
             {
-                solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
-                solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
-                solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
-                solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
+                // 注意：PlanetResourcesDetail.PlanetResources 可能为 null（该天体在 planetResources 表里没有行），
+                // 直接点 p.PlanetResources.X 会 NRE（阶段 63 实机踩到）。两种用量都走 null 守卫。
+                solarSystemResources.Power = planetResources.Sum(p => (long)(p.PlanetResources?.Power ?? 0));
+                solarSystemResources.Workforce = planetResources.Sum(p => (long)(p.PlanetResources?.Workforce ?? 0));
+                solarSystemResources.SuperionicIce = planetResources.Sum(p => p.SuperionicIce);
+                solarSystemResources.MagmaticGas = planetResources.Sum(p => p.MagmaticGas);
             }
             return solarSystemResources;
         }
@@ -54,7 +56,9 @@ namespace TheGuideToTheNewEden.Core.Services.DB
         public static List<SolarSystemResources> QueryByRegionID(int id)
         {
             var systems = MapSolarSystemService.QueryByRegionID(id);
-            List<SolarSystemResources> list = null;
+            // 原来是 list = null，一旦 systems 非空就会在 list.Add 处 NRE；同时循环内把"星域 ID"当"星系 ID"传下去，
+            // 每个星系都算成同一个（错误的）星系资源。两处都在阶段 63 一并修掉。
+            var list = new List<SolarSystemResources>();
             if(systems.NotNullOrEmpty())
             {
                 foreach(var system in systems)
@@ -63,13 +67,13 @@ namespace TheGuideToTheNewEden.Core.Services.DB
                     {
                         MapSolarSystem = system,
                     };
-                    var planetResources = GetPlanetResourcesDetailsBySolarSystemID(id);
+                    var planetResources = GetPlanetResourcesDetailsBySolarSystemID(system.SolarSystemID);
                     if (planetResources.NotNullOrEmpty())
                     {
-                        solarSystemResources.Power = planetResources.Sum(p => p.PlanetResources.Power);
-                        solarSystemResources.Workforce = planetResources.Sum(p => p.PlanetResources.Workforce);
-                        solarSystemResources.SuperionicIce = planetResources.Where(p => p.PlanetResources.TypeId == SuperionicIceID).Sum(p => p.PlanetResources.AmountPerCycle);
-                        solarSystemResources.MagmaticGas = planetResources.Where(p => p.PlanetResources.TypeId == MagmaticGasID).Sum(p => p.PlanetResources.AmountPerCycle);
+                        solarSystemResources.Power = planetResources.Sum(p => (long)(p.PlanetResources?.Power ?? 0));
+                        solarSystemResources.Workforce = planetResources.Sum(p => (long)(p.PlanetResources?.Workforce ?? 0));
+                        solarSystemResources.SuperionicIce = planetResources.Sum(p => p.SuperionicIce);
+                        solarSystemResources.MagmaticGas = planetResources.Sum(p => p.MagmaticGas);
                     }
                     list.Add(solarSystemResources);
                 }

@@ -18,29 +18,32 @@
         <SolidColorBrush x:Key="HudText" Color="#E6F0FF" />
         <SolidColorBrush x:Key="HudDim" Color="#8FA3C8" />
         <SolidColorBrush x:Key="HudIntel" Color="#FF5C74" />
+        <!--  画布区底色与加载遮罩（随主题切换，值在 MapPage.ApplyTheme 里重设）  -->
+        <SolidColorBrush x:Key="MapBg" Color="#05070E" />
+        <SolidColorBrush x:Key="MapLoadingBg" Color="#AA05070E" />
 
         <Style x:Key="HudPanel" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource HudBg}" />
-            <Setter Property="BorderBrush" Value="{StaticResource HudBorder}" />
+            <Setter Property="Background" Value="{DynamicResource HudBg}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource HudBorder}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="12" />
         </Style>
 
         <Style x:Key="HudTitle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource HudAccent}" />
+            <Setter Property="Foreground" Value="{DynamicResource HudAccent}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
 
         <Style x:Key="HudTextStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource HudText}" />
+            <Setter Property="Foreground" Value="{DynamicResource HudText}" />
         </Style>
 
-        <!--  情报流条目：时间 + 星系 + 内容  -->
+        <!--  情报流条目：时间 + 星系 + 内容（内容可换行，条目间留 4px 间距）  -->
         <DataTemplate x:Key="IntelMsgTemplate">
-            <Grid Margin="0,2">
+            <Grid Margin="0,4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -50,7 +53,7 @@
                 <TextBlock
                     VerticalAlignment="Center"
                     FontSize="11"
-                    Foreground="{StaticResource HudDim}"
+                    Foreground="{DynamicResource HudDim}"
                     Text="{Binding TimeText}" />
                 <TextBlock
                     Grid.Column="1"
@@ -58,7 +61,7 @@
                     VerticalAlignment="Center"
                     FontSize="12"
                     FontWeight="Bold"
-                    Foreground="{StaticResource HudAccent}"
+                    Foreground="{DynamicResource HudAccent}"
                     Text="{Binding SystemName}" />
                 <Border
                     Grid.Column="2"
@@ -68,16 +71,15 @@
                     Background="#30FF5C74"
                     CornerRadius="3"
                     Visibility="{Binding IsClear, Converter={StaticResource BoolToVis}}">
-                    <TextBlock FontSize="10" Foreground="{StaticResource HudIntel}" Text="{DynamicResource MapPage_Clear}" />
+                    <TextBlock FontSize="10" Foreground="{DynamicResource HudIntel}" Text="{DynamicResource MapPage_Clear}" />
                 </Border>
                 <TextBlock
                     Grid.Column="3"
                     Margin="8,0,0,0"
-                    VerticalAlignment="Center"
                     FontSize="12"
-                    Foreground="{StaticResource HudText}"
+                    Foreground="{DynamicResource HudText}"
                     Text="{Binding Content}"
-                    TextTrimming="CharacterEllipsis" />
+                    TextWrapping="Wrap" />
             </Grid>
         </DataTemplate>
 
@@ -88,34 +90,41 @@
                     <ColumnDefinition Width="26" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="54" />
                     <ColumnDefinition Width="58" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource HudDim}" Text="{Binding Index}" />
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource HudDim}" Text="{Binding Index}" />
                 <TextBlock
                     Grid.Column="1"
                     Margin="4,0,0,0"
                     VerticalAlignment="Center"
-                    Foreground="{StaticResource HudText}"
+                    Foreground="{DynamicResource HudText}"
                     Text="{Binding Node.Name}" />
                 <TextBlock
                     Grid.Column="2"
                     Margin="6,0,0,0"
                     VerticalAlignment="Center"
-                    Foreground="{StaticResource HudDim}"
+                    Foreground="{DynamicResource HudDim}"
                     Text="{Binding SecurityText}" />
                 <TextBlock
                     Grid.Column="3"
                     Margin="0,0,0,0"
                     VerticalAlignment="Center"
-                    Foreground="{StaticResource HudDim}"
+                    Foreground="{DynamicResource HudDim}"
                     Text="{Binding DistanceLy, StringFormat={}{0:N1}ly}" />
                 <TextBlock
                     Grid.Column="4"
                     Margin="6,0,0,0"
                     VerticalAlignment="Center"
+                    Foreground="{DynamicResource HudDim}"
+                    Text="{Binding FuelText}" />
+                <TextBlock
+                    Grid.Column="5"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
                     FontSize="11"
-                    Foreground="{StaticResource HudAccent}"
+                    Foreground="{DynamicResource HudAccent}"
                     Text="{Binding NavTypeText}" />
             </Grid>
         </DataTemplate>
@@ -154,21 +163,54 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <!--  着色模式  -->
+                    <!--  着色模式（索引 → MapColorMode 由 MapPageViewModel.ColorModes 显式映射）  -->
                     <ComboBox
                         x:Name="ColorModeCombo"
-                        MinWidth="110"
+                        MinWidth="120"
                         Margin="8,0,0,0"
                         SelectedIndex="0"
                         SelectionChanged="ColorMode_SelectionChanged">
                         <ComboBoxItem Content="{DynamicResource MapPage_ColorSecurity}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ColorSov}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ColorPlanetResource}" />
                         <ComboBoxItem Content="{DynamicResource MapPage_ColorKills}" />
                         <ComboBoxItem Content="{DynamicResource MapPage_ColorJumps}" />
                     </ComboBox>
+                    <!--  行星资源类型（仅"行星资源"着色时显示）  -->
+                    <ComboBox
+                        x:Name="ResourceKindCombo"
+                        MinWidth="120"
+                        Margin="8,0,0,0"
+                        SelectionChanged="ResourceKind_SelectionChanged"
+                        Visibility="Collapsed">
+                        <ComboBoxItem Content="{DynamicResource MapPage_ResourcePower}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceWorkforce}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceMagmaticGas}" />
+                        <ComboBoxItem Content="{DynamicResource MapPage_ResourceSuperionicIce}" />
+                    </ComboBox>
+                    <!--  星域 / 安等筛选  -->
+                    <ui:Button
+                        x:Name="FilterButton"
+                        Margin="8,0,0,0"
+                        Appearance="Secondary"
+                        Click="FilterButton_Click"
+                        Content="{DynamicResource MapPage_Filter}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Filter24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <!--  跳桥  -->
+                    <CheckBox
+                        x:Name="BridgesToggle"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Checked="BridgesToggle_Changed"
+                        Content="{DynamicResource MapPage_Bridges}"
+                        Unchecked="BridgesToggle_Changed" />
                     <!--  角色标记  -->
                     <CheckBox
                         x:Name="CharactersToggle"
-                        Margin="12,0,0,0"
+                        Margin="8,0,0,0"
                         VerticalAlignment="Center"
                         Checked="CharactersToggle_Changed"
                         Content="{DynamicResource MapPage_Characters}"
@@ -181,8 +223,20 @@
                         Checked="IntelToggle_Changed"
                         Content="{DynamicResource MapPage_Intel}"
                         Unchecked="IntelToggle_Changed" />
+                    <!--  工具  -->
+                    <ui:Button
+                        x:Name="ToolsButton"
+                        Margin="8,0,0,0"
+                        Appearance="Secondary"
+                        Click="ToolsButton_Click"
+                        Content="{DynamicResource MapPage_Tools}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Wrench24" />
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <!--  导航  -->
                     <ui:Button
+                        x:Name="NavButton"
                         Margin="8,0,0,0"
                         Appearance="Secondary"
                         Click="NavButton_Click"
@@ -209,7 +263,7 @@
         <!--  ============ 画布区 ============  -->
         <Grid Grid.Row="1">
             <!--  深空底（保证画布外圈也是深色）  -->
-            <Border Background="#05070E" />
+            <Border Background="{DynamicResource MapBg}" />
             <map:StarMapCanvas x:Name="MapCanvas" />
 
             <!--  悬停提示（顶部居中 HUD）  -->
@@ -218,25 +272,48 @@
                 Padding="12,5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Background="{StaticResource HudBg}"
-                BorderBrush="{StaticResource HudBorder}"
+                Background="{DynamicResource HudBg}"
+                BorderBrush="{DynamicResource HudBorder}"
                 BorderThickness="1"
                 CornerRadius="8"
                 Visibility="Collapsed">
                 <TextBlock
                     x:Name="HoverHudText"
                     FontSize="13"
-                    Foreground="{StaticResource HudText}" />
+                    Foreground="{DynamicResource HudText}" />
             </Border>
 
-            <!--  情报流面板（右上）  -->
+            <!--  情报面板收起态（左上角小标签，点击展开；情报监听不受影响）  -->
+            <Button
+                x:Name="IntelCollapsedButton"
+                Margin="12"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="{DynamicResource HudBg}"
+                BorderBrush="{DynamicResource HudBorder}"
+                BorderThickness="1"
+                Click="IntelCollapsed_Click"
+                Cursor="Hand"
+                Foreground="{DynamicResource HudText}"
+                Padding="10,5"
+                Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Foreground="{DynamicResource HudAccent}" Symbol="Info24" />
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Text="{DynamicResource MapPage_Intel}" />
+                </StackPanel>
+            </Button>
+
+            <!--  情报流面板（左侧停靠，占满高度，四周留边距）  -->
             <Border
                 x:Name="IntelPanel"
-                Width="440"
-                Height="300"
+                Width="420"
                 Margin="12"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
                 Visibility="Collapsed">
                 <Border.Style>
                     <Style TargetType="Border" BasedOn="{StaticResource HudPanel}">
@@ -256,16 +333,28 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <DockPanel>
-                        <TextBlock Style="{StaticResource HudTitle}" Text="{DynamicResource MapPage_Intel}" />
+                    <DockPanel LastChildFill="False">
+                        <TextBlock Style="{DynamicResource HudTitle}" Text="{DynamicResource MapPage_Intel}" />
+                        <ui:Button
+                            DockPanel.Dock="Right"
+                            Padding="2,1"
+                            Appearance="Transparent"
+                            Click="IntelCollapse_Click"
+                            Foreground="{DynamicResource HudAccent}"
+                            ToolTip="{DynamicResource MapPage_IntelCollapse}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="ChevronLeft24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                         <TextBlock
                             DockPanel.Dock="Right"
-                            HorizontalAlignment="Right"
+                            Margin="0,0,4,0"
                             VerticalAlignment="Center"
                             FontSize="11"
-                            Foreground="{StaticResource HudDim}"
+                            Foreground="{DynamicResource HudDim}"
                             Text="{Binding ActiveListeners[0]}" />
                     </DockPanel>
                     <!--  过滤关键词  -->
@@ -294,11 +383,37 @@
                     <TextBlock
                         Grid.Row="2"
                         FontSize="11"
-                        Foreground="{StaticResource HudDim}"
-                        Text="{DynamicResource MapPage_IntelHint}" />
+                        Foreground="{DynamicResource HudDim}"
+                        Text="{Binding IntelHintText}"
+                        TextWrapping="Wrap" />
+                    <!--  ZKB 击杀源  -->
+                    <StackPanel
+                        Grid.Row="3"
+                        Margin="0,6,0,0"
+                        Orientation="Horizontal">
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            Content="{DynamicResource MapPage_IntelZkb}"
+                            Foreground="{DynamicResource HudText}"
+                            IsChecked="{Binding ZkbIntel, Mode=TwoWay}" />
+                        <TextBlock
+                            Margin="10,0,4,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudDim}"
+                            Text="{DynamicResource MapPage_IntelZkbMinutes}" />
+                        <ui:NumberBox
+                            Width="90"
+                            Height="32"
+                            Margin="0,0,0,0"
+                            Maximum="180"
+                            Minimum="1"
+                            SpinButtonPlacementMode="Hidden"
+                            Value="{Binding ZkbDurationMinutes, Mode=TwoWay}" />
+                    </StackPanel>
                     <ListBox
                         x:Name="IntelList"
-                        Grid.Row="3"
+                        Grid.Row="4"
                         Margin="0,4,0,0"
                         Background="Transparent"
                         BorderThickness="0"
@@ -317,8 +432,8 @@
                 Padding="12"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Background="{StaticResource HudBg}"
-                BorderBrush="{StaticResource HudBorder}"
+                Background="{DynamicResource HudBg}"
+                BorderBrush="{DynamicResource HudBorder}"
                 BorderThickness="1"
                 CornerRadius="10"
                 Visibility="{Binding SelectedSystem, Converter={StaticResource NullToVisibility}}">
@@ -333,8 +448,20 @@
                         <TextBlock
                             FontSize="16"
                             FontWeight="Bold"
-                            Foreground="{StaticResource HudText}"
+                            Foreground="{DynamicResource HudText}"
                             Text="{Binding SelectedSystem.Name}" />
+                        <Button
+                            Margin="6,0,0,0"
+                            Padding="6,1"
+                            VerticalAlignment="Center"
+                            Background="#207DF9FF"
+                            BorderBrush="{DynamicResource HudBorder}"
+                            BorderThickness="1"
+                            Click="SystemDetail_Click"
+                            Content="{DynamicResource MapPage_Detail}"
+                            Cursor="Hand"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudAccent}" />
                         <Border
                             MinWidth="40"
                             Margin="8,0,0,0"
@@ -342,19 +469,19 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Background="#307DF9FF"
-                            BorderBrush="{StaticResource HudBorder}"
+                            BorderBrush="{DynamicResource HudBorder}"
                             BorderThickness="1"
                             CornerRadius="4">
                             <TextBlock
                                 HorizontalAlignment="Center"
-                                Foreground="{StaticResource HudAccent}"
+                                Foreground="{DynamicResource HudAccent}"
                                 Text="{Binding SelectedSecurityText}" />
                         </Border>
                     </DockPanel>
                     <TextBlock
                         Grid.Row="1"
                         FontSize="12"
-                        Foreground="{StaticResource HudDim}"
+                        Foreground="{DynamicResource HudDim}"
                         Text="{Binding SelectedInfoText}" />
                     <Grid Grid.Row="2" Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
@@ -364,13 +491,13 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 FontSize="12"
-                                Foreground="{StaticResource HudDim}"
+                                Foreground="{DynamicResource HudDim}"
                                 Text="{DynamicResource MapPage_Kills}" />
                             <TextBlock
                                 Margin="6,0,0,0"
                                 FontSize="12"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource HudText}"
+                                Foreground="{DynamicResource HudText}"
                                 Text="{Binding SelectedKillsText}" />
                         </StackPanel>
                         <StackPanel
@@ -379,13 +506,13 @@
                             Orientation="Horizontal">
                             <TextBlock
                                 FontSize="12"
-                                Foreground="{StaticResource HudDim}"
+                                Foreground="{DynamicResource HudDim}"
                                 Text="{DynamicResource MapPage_Jumps}" />
                             <TextBlock
                                 Margin="6,0,0,0"
                                 FontSize="12"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource HudText}"
+                                Foreground="{DynamicResource HudText}"
                                 Text="{Binding SelectedJumpsText}" />
                         </StackPanel>
                     </Grid>
@@ -393,7 +520,7 @@
                     <StackPanel Grid.Row="3" Margin="0,8,0,0">
                         <TextBlock
                             FontSize="11"
-                            Foreground="{StaticResource HudDim}"
+                            Foreground="{DynamicResource HudDim}"
                             Text="{DynamicResource MapPage_Neighbors}" />
                         <ItemsControl ItemsSource="{Binding Neighbors}" Margin="0,4,0,0">
                             <ItemsControl.ItemsPanel>
@@ -407,12 +534,12 @@
                                         Margin="0,0,6,6"
                                         Padding="8,2"
                                         Background="#207DF9FF"
-                                        BorderBrush="{StaticResource HudBorder}"
+                                        BorderBrush="{DynamicResource HudBorder}"
                                         Click="Neighbor_Click"
                                         Content="{Binding Name}"
                                         Cursor="Hand"
                                         FontSize="11"
-                                        Foreground="{StaticResource HudText}" />
+                                        Foreground="{DynamicResource HudText}" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -421,13 +548,13 @@
             </Border>
 
             <!--  加载遮罩  -->
-            <Border Background="#AA05070E" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource MapLoadingBg}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" />
                     <TextBlock
                         Margin="0,12,0,0"
                         HorizontalAlignment="Center"
-                        Foreground="{StaticResource HudDim}"
+                        Foreground="{DynamicResource HudDim}"
                         Text="{DynamicResource MapPage_Loading}" />
                 </StackPanel>
             </Border>
@@ -443,8 +570,8 @@
                 StaysOpen="False">
                 <Border
                     Margin="0,4,8,8"
-                    Background="{StaticResource HudBg}"
-                    BorderBrush="{StaticResource HudBorder}"
+                    Background="{DynamicResource HudBg}"
+                    BorderBrush="{DynamicResource HudBorder}"
                     BorderThickness="1"
                     CornerRadius="8">
                     <ListBox
@@ -462,11 +589,11 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Foreground="{StaticResource HudText}" Text="{Binding Name}" />
+                                    <TextBlock Foreground="{DynamicResource HudText}" Text="{Binding Name}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         FontSize="11"
-                                        Foreground="{StaticResource HudDim}"
+                                        Foreground="{DynamicResource HudDim}"
                                         Text="{Binding RegionName}" />
                                 </Grid>
                             </DataTemplate>
@@ -475,10 +602,150 @@
                 </Border>
             </Popup>
 
+            <!--  星域 / 安等筛选  -->
+            <Popup
+                x:Name="FilterPopup"
+                AllowsTransparency="True"
+                PlacementTarget="{Binding ElementName=FilterButton}"
+                Placement="Bottom"
+                PopupAnimation="Fade"
+                StaysOpen="False">
+                <Border
+                    Margin="0,4,8,8"
+                    Padding="12"
+                    Background="{DynamicResource HudBg}"
+                    BorderBrush="{DynamicResource HudBorder}"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <StackPanel Width="270">
+                        <TextBlock
+                            Style="{StaticResource HudTitle}"
+                            Text="{DynamicResource MapPage_Filter}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource HudDim}"
+                            Text="{DynamicResource MapPage_Filter_Hint}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Margin="0,8,0,2"
+                            FontSize="12"
+                            Foreground="{DynamicResource HudText}"
+                            Text="{DynamicResource MapTool_Region}" />
+                        <ComboBox
+                            DisplayMemberPath="RegionName"
+                            ItemsSource="{Binding FilterRegions}"
+                            SelectedItem="{Binding FilterRegion, Mode=TwoWay}" />
+                        <TextBlock
+                            Margin="0,8,0,2"
+                            FontSize="12"
+                            Foreground="{DynamicResource HudText}"
+                            Text="{DynamicResource MapTool_Security}" />
+                        <StackPanel Orientation="Horizontal">
+                            <ui:NumberBox
+                                Width="86"
+                                Height="30"
+                                Maximum="1"
+                                Minimum="-1"
+                                SmallChange="0.1"
+                                SpinButtonPlacementMode="Hidden"
+                                Value="{Binding FilterSecMin, Mode=TwoWay}" />
+                            <TextBlock
+                                Margin="6,0,6,0"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource HudDim}"
+                                Text="~" />
+                            <ui:NumberBox
+                                Width="86"
+                                Height="30"
+                                Maximum="1"
+                                Minimum="-1"
+                                SmallChange="0.1"
+                                SpinButtonPlacementMode="Hidden"
+                                Value="{Binding FilterSecMax, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <ui:Button
+                                Appearance="Primary"
+                                Click="FilterApply_Click"
+                                Content="{DynamicResource MapPage_Filter_Apply}" />
+                            <ui:Button
+                                Margin="8,0,0,0"
+                                Appearance="Transparent"
+                                Click="FilterClear_Click"
+                                Content="{DynamicResource MapPage_Filter_Clear}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <!--  工具菜单  -->
+            <Popup
+                x:Name="ToolsPopup"
+                AllowsTransparency="True"
+                PlacementTarget="{Binding ElementName=ToolsButton}"
+                Placement="Bottom"
+                PopupAnimation="Fade"
+                StaysOpen="False">
+                <Border
+                    Margin="0,4,8,8"
+                    Padding="6"
+                    Background="{DynamicResource HudBg}"
+                    BorderBrush="{DynamicResource HudBorder}"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <StackPanel Width="220">
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Appearance="Transparent"
+                            Click="OneJumpCover_Click"
+                            Content="{DynamicResource MapPage_Tool_Cover}"
+                            Foreground="{DynamicResource HudText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Target24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Appearance="Transparent"
+                            Click="PlanetResourceList_Click"
+                            Content="{DynamicResource MapPage_Tool_Resource}"
+                            Foreground="{DynamicResource HudText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="DataUsage24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Appearance="Transparent"
+                            Click="JumpBridgeSetting_Click"
+                            Content="{DynamicResource MapPage_Tool_Bridge}"
+                            Foreground="{DynamicResource HudText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Road24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Appearance="Transparent"
+                            Click="SovGroupSetting_Click"
+                            Content="{DynamicResource MapPage_Tool_Sov}"
+                            Foreground="{DynamicResource HudText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Globe24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
             <!--  导航面板  -->
             <Popup
                 x:Name="NavPopup"
-                Width="340"
+                Width="400"
                 AllowsTransparency="True"
                 PlacementTarget="{Binding ElementName=NavButton}"
                 Placement="Bottom"
@@ -487,8 +754,8 @@
                 <Border
                     Margin="0,4,8,8"
                     Padding="12"
-                    Background="{StaticResource HudBg}"
-                    BorderBrush="{StaticResource HudBorder}"
+                    Background="{DynamicResource HudBg}"
+                    BorderBrush="{DynamicResource HudBorder}"
                     BorderThickness="1"
                     CornerRadius="10">
                     <Grid>
@@ -500,20 +767,26 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock Style="{StaticResource HudTitle}" Text="{DynamicResource MapPage_Navigate}" />
                         <TextBlock
                             Grid.Row="0"
+                            Style="{StaticResource HudTitle}"
+                            Text="{DynamicResource MapPage_Navigate}" />
+                        <TextBlock
+                            Grid.Row="1"
                             FontSize="11"
-                            Foreground="{StaticResource HudDim}"
+                            Foreground="{DynamicResource HudDim}"
                             Text="{DynamicResource MapPage_NavHint}" />
 
                         <!--  航点  -->
-                        <StackPanel Grid.Row="1" Margin="0,8,0,0">
+                        <StackPanel Grid.Row="2" Margin="0,8,0,0">
                             <DockPanel>
                                 <TextBlock
                                     FontSize="12"
-                                    Foreground="{StaticResource HudText}"
+                                    Foreground="{DynamicResource HudText}"
                                     Text="{DynamicResource MapPage_Waypoints}" />
                                 <ui:Button
                                     DockPanel.Dock="Right"
@@ -534,21 +807,21 @@
                                             Margin="0,0,6,6"
                                             Padding="8,2"
                                             Background="#207DF9FF"
-                                            BorderBrush="{StaticResource HudBorder}"
+                                            BorderBrush="{DynamicResource HudBorder}"
                                             BorderThickness="1"
                                             CornerRadius="4">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock
                                                     VerticalAlignment="Center"
                                                     FontSize="11"
-                                                    Foreground="{StaticResource HudText}"
+                                                    Foreground="{DynamicResource HudText}"
                                                     Text="{Binding Name}" />
                                                 <TextBlock
                                                     Margin="6,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Cursor="Hand"
                                                     FontSize="11"
-                                                    Foreground="{StaticResource HudIntel}"
+                                                    Foreground="{DynamicResource HudIntel}"
                                                     MouseLeftButtonUp="RemoveWaypoint_Click"
                                                     Text="✕" />
                                             </StackPanel>
@@ -559,11 +832,11 @@
                         </StackPanel>
 
                         <!--  规避  -->
-                        <StackPanel Grid.Row="2" Margin="0,2,0,0">
+                        <StackPanel Grid.Row="3" Margin="0,2,0,0">
                             <DockPanel>
                                 <TextBlock
                                     FontSize="12"
-                                    Foreground="{StaticResource HudText}"
+                                    Foreground="{DynamicResource HudText}"
                                     Text="{DynamicResource MapPage_Avoid}" />
                                 <ui:Button
                                     DockPanel.Dock="Right"
@@ -590,14 +863,14 @@
                                                 <TextBlock
                                                     VerticalAlignment="Center"
                                                     FontSize="11"
-                                                    Foreground="{StaticResource HudText}"
+                                                    Foreground="{DynamicResource HudText}"
                                                     Text="{Binding Name}" />
                                                 <TextBlock
                                                     Margin="6,0,0,0"
                                                     VerticalAlignment="Center"
                                                     Cursor="Hand"
                                                     FontSize="11"
-                                                    Foreground="{StaticResource HudIntel}"
+                                                    Foreground="{DynamicResource HudIntel}"
                                                     MouseLeftButtonUp="RemoveAvoid_Click"
                                                     Text="✕" />
                                             </StackPanel>
@@ -607,30 +880,115 @@
                             </ItemsControl>
                         </StackPanel>
 
-                        <!--  选项与计算  -->
-                        <StackPanel Grid.Row="3" Margin="0,6,0,0" Orientation="Horizontal">
+                        <!--  基础选项  -->
+                        <StackPanel
+                            Grid.Row="4"
+                            Margin="0,6,0,0"
+                            Orientation="Horizontal">
                             <CheckBox
                                 x:Name="CapitalToggle"
                                 VerticalAlignment="Center"
                                 Checked="CapitalToggle_Changed"
                                 Content="{DynamicResource MapPage_CapitalMode}"
-                                Foreground="{StaticResource HudText}"
+                                Foreground="{DynamicResource HudText}"
                                 Unchecked="CapitalToggle_Changed" />
-                            <TextBlock
-                                Margin="12,0,4,0"
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{StaticResource HudText}"
-                                Text="{DynamicResource MapPage_MaxLy}" />
-                            <ui:NumberBox
-                                x:Name="MaxLyBox"
-                                Width="70"
-                                Height="30"
-                                Maximum="20"
-                                Minimum="1"
-                                Value="{Binding MaxLy, Mode=TwoWay}" />
                         </StackPanel>
-                        <StackPanel Grid.Row="4" Margin="0,8,0,0" Orientation="Horizontal">
+
+                        <!--  旗舰参数（仅旗舰模式）  -->
+                        <StackPanel
+                            Grid.Row="5"
+                            Margin="0,6,0,0"
+                            Visibility="{Binding CapitalMode, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource HudText}"
+                                    Text="{DynamicResource MapTool_Cover_Ship}" />
+                                <ComboBox
+                                    x:Name="JumpShipCombo"
+                                    Width="210"
+                                    Margin="6,0,0,0"
+                                    DisplayMemberPath="Name"
+                                    ItemsSource="{Binding JumpShips}"
+                                    SelectedItem="{Binding JumpShip, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource HudText}"
+                                    Text="{DynamicResource MapTool_Cover_Jdc}" />
+                                <ui:NumberBox
+                                    Width="62"
+                                    Height="28"
+                                    Margin="4,0,0,0"
+                                    Maximum="5"
+                                    Minimum="0"
+                                    Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource HudText}"
+                                    Text="{DynamicResource MapTool_Cover_Jfc}" />
+                                <ui:NumberBox
+                                    Width="62"
+                                    Height="28"
+                                    Margin="4,0,0,0"
+                                    Maximum="5"
+                                    Minimum="0"
+                                    Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
+                                <TextBlock
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource HudText}"
+                                    Text="{DynamicResource MapTool_Cover_Jf}"
+                                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+                                <ui:NumberBox
+                                    Width="62"
+                                    Height="28"
+                                    Margin="4,0,0,0"
+                                    Maximum="5"
+                                    Minimum="0"
+                                    Value="{Binding JumpFreighters, Mode=TwoWay}"
+                                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                <CheckBox
+                                    x:Name="UseGatesToggle"
+                                    VerticalAlignment="Center"
+                                    Content="{DynamicResource MapPage_UseGates}"
+                                    Foreground="{DynamicResource HudText}"
+                                    IsChecked="{Binding UseGates, Mode=TwoWay}" />
+                                <CheckBox
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Content="{DynamicResource MapPage_PreferCheaper}"
+                                    Foreground="{DynamicResource HudText}"
+                                    IsChecked="{Binding PreferCheaper, Mode=TwoWay}" />
+                                <TextBlock
+                                    Margin="12,0,4,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource HudText}"
+                                    Text="{DynamicResource MapPage_MaxLy}" />
+                                <ui:NumberBox
+                                    x:Name="MaxLyBox"
+                                    Width="66"
+                                    Height="28"
+                                    Maximum="20"
+                                    Minimum="1"
+                                    Value="{Binding MaxLy, Mode=TwoWay}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  计算  -->
+                        <StackPanel
+                            Grid.Row="6"
+                            Margin="0,8,0,0"
+                            Orientation="Horizontal">
                             <ui:Button
                                 Appearance="Primary"
                                 Click="ComputeRoute_Click"
@@ -645,13 +1003,22 @@
                                 Margin="10,0,0,0"
                                 VerticalAlignment="Center"
                                 FontSize="11"
-                                Foreground="{StaticResource HudIntel}" />
+                                Foreground="{DynamicResource HudIntel}" />
                         </StackPanel>
+
+                        <!--  概览  -->
+                        <TextBlock
+                            Grid.Row="7"
+                            Margin="0,6,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudDim}"
+                            Text="{Binding NavSummary}"
+                            TextWrapping="Wrap" />
 
                         <!--  结果  -->
                         <ListBox
-                            Grid.Row="5"
-                            MaxHeight="200"
+                            Grid.Row="8"
+                            MaxHeight="220"
                             Margin="0,8,0,0"
                             Background="Transparent"
                             BorderThickness="0"
@@ -661,18 +1028,16 @@
                             SelectionChanged="NavResult_SelectionChanged" />
 
                         <!--  在游戏中设置  -->
-                        <StackPanel Grid.Row="6" Margin="0,8,0,0" Orientation="Horizontal">
+                        <StackPanel
+                            Grid.Row="9"
+                            Margin="0,8,0,0"
+                            Orientation="Horizontal">
                             <ComboBox
                                 x:Name="AutopilotCombo"
                                 MinWidth="150"
+                                DisplayMemberPath="CharacterName"
                                 ItemsSource="{Binding AutopilotCharacters}"
-                                SelectedItem="{Binding AutopilotCharacter, Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding CharacterName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                SelectedItem="{Binding AutopilotCharacter, Mode=TwoWay}" />
                             <ui:Button
                                 Margin="8,0,0,0"
                                 Click="SetAutopilot_Click"
