@@ -1,0 +1,597 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Map.IntelToolView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:ctl="clr-namespace:TheGuideToTheNewEden.WPF.Controls"
+    xmlns:kbControls="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.KB"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--  由星图页以 ToolWindow 承载；DataContext = 星图页的 MapPageViewModel（与主图共用同一份情报状态）  -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:CategoryEnumToStringConverter x:Key="CategoryText" />
+
+        <!--  实时数据表格样式：必须 BasedOn 隐式 ui:DataGrid 样式，否则会丢主题颜色  -->
+        <Style
+            x:Key="IntelMsgGridStyle"
+            BasedOn="{StaticResource {x:Type ui:DataGrid}}"
+            TargetType="{x:Type ui:DataGrid}">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Single" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource FluentColumnHeaderStyle}" />
+            <Setter Property="CellStyle" Value="{StaticResource FluentDataGridCellStyle}" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TabControl>
+            <!--  实时数据  -->
+            <TabItem Header="{DynamicResource IntelTool_Tab_Live}">
+                <Grid Margin="12,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="{Binding IntelHintText}"
+                        TextWrapping="Wrap" />
+                    <ui:DataGrid
+                        x:Name="MessageGrid"
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        ItemsSource="{Binding IntelMessages}"
+                        MouseRightButtonUp="MessageGrid_RightButtonUp"
+                        SelectionChanged="MessageGrid_SelectionChanged"
+                        Style="{StaticResource IntelMsgGridStyle}">
+                        <ui:DataGrid.Columns>
+                            <!--  时间 + 相对时间  -->
+                            <DataGridTemplateColumn Width="92" Header="{DynamicResource MapTool_Time}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TimeText}" />
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                                Text="{Binding ElapsedText}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!--  星系主权联盟徽标（点击打开联盟 KB 页）  -->
+                            <DataGridTemplateColumn Width="54" Header="{DynamicResource IntelTool_Alliance}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image
+                                            Width="24"
+                                            Height="24"
+                                            Cursor="Hand"
+                                            MouseLeftButtonUp="SovAlliance_Click"
+                                            PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                            ToolTip="{Binding SovAllianceName}"
+                                            ctl:AsyncImage.Size="32"
+                                            ctl:AsyncImage.Source="{Binding SovLogoUrl}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!--  星系（点击定位）  -->
+                            <DataGridTemplateColumn Width="130" Header="{DynamicResource MapTool_System}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Cursor="Hand"
+                                            MouseLeftButtonUp="SystemText_Click"
+                                            Text="{Binding SystemName}"
+                                            TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!--  星域（点击定位）  -->
+                            <DataGridTemplateColumn Width="110" Header="{DynamicResource MapTool_Region}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Cursor="Hand"
+                                            MouseLeftButtonUp="RegionText_Click"
+                                            Text="{Binding RegionName}"
+                                            TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn
+                                Width="72"
+                                Binding="{Binding SystemId}"
+                                Header="{DynamicResource IntelTool_SystemId}" />
+
+                            <!--  受害方：舰船 / 角色 / 势力（点击打开 KB 击杀详情 / 角色 / 势力页）  -->
+                            <DataGridTemplateColumn Width="112" Header="{DynamicResource IntelTool_Victim}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Visibility="{Binding HasVictim, Converter={StaticResource BoolToVis}}">
+                                            <Image
+                                                Width="26"
+                                                Height="26"
+                                                Cursor="Hand"
+                                                MouseLeftButtonUp="Killmail_Click"
+                                                PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                ToolTip="{Binding VictimShipName}"
+                                                ctl:AsyncImage.Size="64"
+                                                ctl:AsyncImage.Source="{Binding VictimShipImageUrl}" />
+                                            <Image
+                                                Width="22"
+                                                Height="22"
+                                                Margin="4,0,0,0"
+                                                Cursor="Hand"
+                                                MouseLeftButtonUp="VictimCharacter_Click"
+                                                PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                ToolTip="{Binding VictimCharacterName}"
+                                                ctl:AsyncImage.Size="32"
+                                                ctl:AsyncImage.Source="{Binding VictimPortraitUrl}" />
+                                            <Image
+                                                Width="22"
+                                                Height="22"
+                                                Margin="4,0,0,0"
+                                                Cursor="Hand"
+                                                MouseLeftButtonUp="VictimFaction_Click"
+                                                PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                ToolTip="{Binding VictimFactionName}"
+                                                ctl:AsyncImage.Size="32"
+                                                ctl:AsyncImage.Source="{Binding VictimFactionLogoUrl}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!--  攻方：每种舰船 = 舰船图标 + ×数量 + 首个攻方角色头像 + 势力徽标  -->
+                            <DataGridTemplateColumn Width="280" Header="{DynamicResource IntelTool_Attacker}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding Ships}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <!--  未聚合 = 单个攻方（舰船 + 角色 + 势力）；聚合 = 一组（舰船或势力 + "+N"）  -->
+                                                    <StackPanel
+                                                        Margin="0,1,6,1"
+                                                        Orientation="Horizontal">
+                                                        <Image
+                                                            Width="26"
+                                                            Height="26"
+                                                            Cursor="Hand"
+                                                            MouseLeftButtonUp="Killmail_Click"
+                                                            PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                            ToolTip="{DynamicResource IntelTool_OpenKb}"
+                                                            Visibility="{Binding HasShip, Converter={StaticResource BoolToVis}}"
+                                                            ctl:AsyncImage.Size="64"
+                                                            ctl:AsyncImage.Source="{Binding ShipImageUrl}" />
+                                                        <Image
+                                                            Width="20"
+                                                            Height="20"
+                                                            Margin="3,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Cursor="Hand"
+                                                            MouseLeftButtonUp="AttackerCharacter_Click"
+                                                            PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                            ToolTip="{DynamicResource IntelTool_OpenCharacter}"
+                                                            Visibility="{Binding HasCharacter, Converter={StaticResource BoolToVis}}"
+                                                            ctl:AsyncImage.Size="32"
+                                                            ctl:AsyncImage.Source="{Binding CharacterPortraitUrl}" />
+                                                        <Image
+                                                            Width="20"
+                                                            Height="20"
+                                                            Margin="3,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            Cursor="Hand"
+                                                            MouseLeftButtonUp="AttackerFaction_Click"
+                                                            PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
+                                                            ToolTip="{DynamicResource IntelTool_OpenEntity}"
+                                                            Visibility="{Binding HasFaction, Converter={StaticResource BoolToVis}}"
+                                                            ctl:AsyncImage.Size="32"
+                                                            ctl:AsyncImage.Source="{Binding FactionLogoUrl}" />
+                                                        <TextBlock
+                                                            Margin="3,0,0,0"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding DisplayText}"
+                                                            Visibility="{Binding HasText, Converter={StaticResource BoolToVis}}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn
+                                Width="74"
+                                Binding="{Binding SourceText}"
+                                Header="{DynamicResource IntelTool_Source}" />
+
+                            <DataGridTemplateColumn Width="*" Header="{DynamicResource IntelTool_Content}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Content}"
+                                            TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </ui:DataGrid.Columns>
+                    </ui:DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!--  过滤：与 WinUI 一致的按实体过滤（角色 / 军团 / 联盟 / 星系 / 星域 / 物品类型）  -->
+            <TabItem Header="{DynamicResource IntelTool_Tab_Filter}">
+                <Grid Margin="12,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="13" FontWeight="SemiBold" Text="{DynamicResource IntelTool_Exclusion}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource IntelTool_ExclusionHint}"
+                            TextWrapping="Wrap" />
+                        <kbControls:IdNameSearchBox
+                            Grid.Row="2"
+                            Margin="0,8,0,0"
+                            ItemSelected="ExclusionSearch_ItemSelected" />
+                        <ListBox
+                            x:Name="ExclusionList"
+                            Grid.Row="3"
+                            Margin="0,8,0,0"
+                            ItemsSource="{Binding EntityExclusions}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionMode="Extended">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding Id}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="8,0,0,0"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding Converter={StaticResource CategoryText}}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <ui:Button
+                            Grid.Row="4"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Appearance="Transparent"
+                            Click="RemoveExclusion_Click"
+                            Content="{DynamicResource IntelTool_Remove}" />
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="13" FontWeight="SemiBold" Text="{DynamicResource IntelTool_Inclusion}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,4,0,0"
+                            FontSize="11"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{DynamicResource IntelTool_InclusionHint}"
+                            TextWrapping="Wrap" />
+                        <kbControls:IdNameSearchBox
+                            Grid.Row="2"
+                            Margin="0,8,0,0"
+                            ItemSelected="InclusionSearch_ItemSelected" />
+                        <ListBox
+                            x:Name="InclusionList"
+                            Grid.Row="3"
+                            Margin="0,8,0,0"
+                            ItemsSource="{Binding EntityInclusions}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionMode="Extended">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Name}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTip="{Binding Id}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="8,0,0,0"
+                                            FontSize="11"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding Converter={StaticResource CategoryText}}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <ui:Button
+                            Grid.Row="4"
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Left"
+                            Appearance="Transparent"
+                            Click="RemoveInclusion_Click"
+                            Content="{DynamicResource IntelTool_Remove}" />
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!--  设置  -->
+            <TabItem Header="{DynamicResource IntelTool_Tab_Setting}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="12,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource MapPage_IntelZkb}" />
+                        <ui:ToggleSwitch
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding ZkbIntel, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            VerticalAlignment="Center"
+                            Text="{DynamicResource MapPage_IntelZkbMinutes}" />
+                        <ui:NumberBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Maximum="180"
+                            SpinButtonPlacementMode="Hidden"
+                            Value="{Binding ZkbDurationMinutes, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            VerticalAlignment="Center"
+                            Text="{DynamicResource IntelTool_ChannelDuration}" />
+                        <ui:NumberBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Maximum="180"
+                            SpinButtonPlacementMode="Hidden"
+                            Value="{Binding ChannelDurationMinutes, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            VerticalAlignment="Center"
+                            Text="{DynamicResource IntelTool_MaxAttackers}"
+                            TextWrapping="Wrap" />
+                        <ui:NumberBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Maximum="30"
+                            SpinButtonPlacementMode="Hidden"
+                            Value="{Binding ZkbMaxAttackerCount, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Grid.Row="4"
+                            VerticalAlignment="Center"
+                            Text="{DynamicResource IntelTool_MaxMessages}" />
+                        <ui:NumberBox
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            Minimum="50"
+                            Maximum="10000"
+                            SpinButtonPlacementMode="Hidden"
+                            Value="{Binding MaxIntelMessages, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Grid.Row="5"
+                            VerticalAlignment="Center"
+                            Text="{DynamicResource IntelTool_ClearMode}"
+                            TextWrapping="Wrap" />
+                        <ui:ToggleSwitch
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding ClearZkbWithChannel, Mode=TwoWay}" />
+
+                        <!--  频道（= 频道预警里已启动的会话监听者）：勾选哪些频道参与星图情报  -->
+                        <TextBlock
+                            Grid.Row="6"
+                            Margin="0,6,0,6"
+                            VerticalAlignment="Top"
+                            Text="{DynamicResource IntelTool_Channels}" />
+                        <Grid Grid.Row="6" Grid.Column="1" Margin="0,6,0,6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ListBox
+                                MaxHeight="150"
+                                ItemsSource="{Binding Channels}"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox
+                                                VerticalAlignment="Center"
+                                                Click="ChannelCheck_Click"
+                                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Margin="4,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                Text="{Binding Data}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <ui:Button
+                                Grid.Row="1"
+                                Margin="0,6,0,0"
+                                HorizontalAlignment="Left"
+                                Click="RefreshChannels_Click"
+                                Content="{DynamicResource IntelTool_RefreshChannels}" />
+                        </Grid>
+
+                        <!--  说明块：用 Grid 限宽（横向 StackPanel 会让 TextWrapping 失效）  -->
+                        <Border
+                            Grid.Row="7"
+                            Grid.ColumnSpan="2"
+                            Margin="0,8,0,0"
+                            Padding="10,8"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon
+                                    Grid.Column="0"
+                                    VerticalAlignment="Top"
+                                    FontSize="14"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Symbol="Info24" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="6,0,0,0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{DynamicResource IntelTool_SettingHint}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!--  底部状态栏  -->
+        <Border
+            Grid.Row="1"
+            Padding="12,8"
+            BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
+            <DockPanel LastChildFill="False">
+                <ui:Button
+                    x:Name="StartStopButton"
+                    DockPanel.Dock="Left"
+                    Appearance="Primary"
+                    Click="StartStop_Click" />
+                <ui:Button
+                    x:Name="ClearButton"
+                    DockPanel.Dock="Left"
+                    Margin="8,0,0,0"
+                    Click="Clear_Click"
+                    Content="{DynamicResource IntelTool_Clear}" />
+                <TextBlock
+                    x:Name="CountText"
+                    DockPanel.Dock="Right"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    x:Name="StatusText"
+                    DockPanel.Dock="Right"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

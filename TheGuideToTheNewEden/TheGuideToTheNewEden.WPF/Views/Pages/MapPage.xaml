@@ -22,14 +22,6 @@
         <SolidColorBrush x:Key="MapBg" Color="#05070E" />
         <SolidColorBrush x:Key="MapLoadingBg" Color="#AA05070E" />
 
-        <Style x:Key="HudPanel" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource HudBg}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource HudBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="12" />
-        </Style>
-
         <Style x:Key="HudTitle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource HudAccent}" />
             <Setter Property="FontSize" Value="12" />
@@ -40,48 +32,6 @@
         <Style x:Key="HudTextStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource HudText}" />
         </Style>
-
-        <!--  情报流条目：时间 + 星系 + 内容（内容可换行，条目间留 4px 间距）  -->
-        <DataTemplate x:Key="IntelMsgTemplate">
-            <Grid Margin="0,4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="11"
-                    Foreground="{DynamicResource HudDim}"
-                    Text="{Binding TimeText}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="12"
-                    FontWeight="Bold"
-                    Foreground="{DynamicResource HudAccent}"
-                    Text="{Binding SystemName}" />
-                <Border
-                    Grid.Column="2"
-                    Margin="6,0,0,0"
-                    Padding="4,0"
-                    VerticalAlignment="Center"
-                    Background="#30FF5C74"
-                    CornerRadius="3"
-                    Visibility="{Binding IsClear, Converter={StaticResource BoolToVis}}">
-                    <TextBlock FontSize="10" Foreground="{DynamicResource HudIntel}" Text="{DynamicResource MapPage_Clear}" />
-                </Border>
-                <TextBlock
-                    Grid.Column="3"
-                    Margin="8,0,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource HudText}"
-                    Text="{Binding Content}"
-                    TextWrapping="Wrap" />
-            </Grid>
-        </DataTemplate>
 
         <!--  导航结果行  -->
         <DataTemplate x:Key="NavResultTemplate">
@@ -281,147 +231,6 @@
                     x:Name="HoverHudText"
                     FontSize="13"
                     Foreground="{DynamicResource HudText}" />
-            </Border>
-
-            <!--  情报面板收起态（左上角小标签，点击展开；情报监听不受影响）  -->
-            <Button
-                x:Name="IntelCollapsedButton"
-                Margin="12"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Background="{DynamicResource HudBg}"
-                BorderBrush="{DynamicResource HudBorder}"
-                BorderThickness="1"
-                Click="IntelCollapsed_Click"
-                Cursor="Hand"
-                Foreground="{DynamicResource HudText}"
-                Padding="10,5"
-                Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal">
-                    <ui:SymbolIcon Foreground="{DynamicResource HudAccent}" Symbol="Info24" />
-                    <TextBlock
-                        Margin="6,0,0,0"
-                        VerticalAlignment="Center"
-                        FontSize="12"
-                        Text="{DynamicResource MapPage_Intel}" />
-                </StackPanel>
-            </Button>
-
-            <!--  情报流面板（左侧停靠，占满高度，四周留边距）  -->
-            <Border
-                x:Name="IntelPanel"
-                Width="420"
-                Margin="12"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Stretch"
-                Visibility="Collapsed">
-                <Border.Style>
-                    <Style TargetType="Border" BasedOn="{StaticResource HudPanel}">
-                        <Setter Property="Effect">
-                            <Setter.Value>
-                                <DropShadowEffect
-                                    BlurRadius="24"
-                                    Opacity="0.45"
-                                    ShadowDepth="0"
-                                    Color="#7DF9FF" />
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Border.Style>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <DockPanel LastChildFill="False">
-                        <TextBlock Style="{DynamicResource HudTitle}" Text="{DynamicResource MapPage_Intel}" />
-                        <ui:Button
-                            DockPanel.Dock="Right"
-                            Padding="2,1"
-                            Appearance="Transparent"
-                            Click="IntelCollapse_Click"
-                            Foreground="{DynamicResource HudAccent}"
-                            ToolTip="{DynamicResource MapPage_IntelCollapse}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="ChevronLeft24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        <TextBlock
-                            DockPanel.Dock="Right"
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource HudDim}"
-                            Text="{Binding ActiveListeners[0]}" />
-                    </DockPanel>
-                    <!--  过滤关键词  -->
-                    <Grid Grid.Row="1" Margin="0,0,0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBox
-                            x:Name="IntelExcludeBox"
-                            Height="28"
-                            FontSize="11"
-                            LostFocus="IntelFilter_LostFocus"
-                            PlaceholderText="{DynamicResource MapPage_IntelExclude}"
-                            Text="{Binding IntelExcludeKeywords, UpdateSourceTrigger=PropertyChanged}" />
-                        <ui:TextBox
-                            x:Name="IntelIncludeBox"
-                            Grid.Column="1"
-                            Height="28"
-                            Margin="6,0,0,0"
-                            FontSize="11"
-                            LostFocus="IntelFilter_LostFocus"
-                            PlaceholderText="{DynamicResource MapPage_IntelInclude}"
-                            Text="{Binding IntelIncludeKeywords, UpdateSourceTrigger=PropertyChanged}" />
-                    </Grid>
-                    <TextBlock
-                        Grid.Row="2"
-                        FontSize="11"
-                        Foreground="{DynamicResource HudDim}"
-                        Text="{Binding IntelHintText}"
-                        TextWrapping="Wrap" />
-                    <!--  ZKB 击杀源  -->
-                    <StackPanel
-                        Grid.Row="3"
-                        Margin="0,6,0,0"
-                        Orientation="Horizontal">
-                        <CheckBox
-                            VerticalAlignment="Center"
-                            Content="{DynamicResource MapPage_IntelZkb}"
-                            Foreground="{DynamicResource HudText}"
-                            IsChecked="{Binding ZkbIntel, Mode=TwoWay}" />
-                        <TextBlock
-                            Margin="10,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource HudDim}"
-                            Text="{DynamicResource MapPage_IntelZkbMinutes}" />
-                        <ui:NumberBox
-                            Width="90"
-                            Height="32"
-                            Margin="0,0,0,0"
-                            Maximum="180"
-                            Minimum="1"
-                            SpinButtonPlacementMode="Hidden"
-                            Value="{Binding ZkbDurationMinutes, Mode=TwoWay}" />
-                    </StackPanel>
-                    <ListBox
-                        x:Name="IntelList"
-                        Grid.Row="4"
-                        Margin="0,4,0,0"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ItemTemplate="{StaticResource IntelMsgTemplate}"
-                        ItemsSource="{Binding IntelMessages}"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        SelectionChanged="IntelList_SelectionChanged" />
-                </Grid>
             </Border>
 
             <!--  选中星系信息卡（右下）  -->
@@ -736,6 +545,17 @@
                             Foreground="{DynamicResource HudText}">
                             <ui:Button.Icon>
                                 <ui:SymbolIcon Symbol="Globe24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Appearance="Transparent"
+                            Click="IntelTool_Click"
+                            Content="{DynamicResource MapPage_Tool_Intel}"
+                            Foreground="{DynamicResource HudText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Info24" />
                             </ui:Button.Icon>
                         </ui:Button>
                     </StackPanel>

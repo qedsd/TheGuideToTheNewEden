@@ -24,6 +24,7 @@ public partial class MapPage : Page
     private ToolWindow? _bridgeWindow;
     private ToolWindow? _sovWindow;
     private ToolWindow? _detailWindow;
+    private ToolWindow? _intelWindow;
 
     public MapPage()
     {
@@ -39,6 +40,7 @@ public partial class MapPage : Page
         _viewModel.ShowCharactersChanged += (_, enabled) => SetCharactersEnabled(enabled);
         _viewModel.BridgesChanged += (_, _) => ApplyBridges();
         _viewModel.NodeStatesChanged += (_, _) => MapCanvas.RefreshNodeStates();
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         Services.ThemeService.ThemeChanged += ApplyTheme;
         ApplyTheme();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
@@ -83,12 +85,23 @@ public partial class MapPage : Page
         await ApplyColorModeAsync(_viewModel.ColorMode);
     }
 
-    /// <summary>页面切走时关掉工具窗（页面常驻，窗口留着只会陈旧）。</summary>
+    /// <summary>
+    /// 页面切走时关掉"跟着页面上下文"的工具窗（一跳覆盖 / 行星资源清单 / 跳桥 / 主权分组 / 星系详情——
+    /// 它们引用页面选中态，留着会陈旧）；可复用窗口先解除"关闭即隐藏"再关。
+    /// **情报窗不在这里关**：情报监听是后台能力，切页面要保留（用户要求），窗口与监听一并保留；
+    /// 只有用户主动关窗或取消顶栏勾选才会停止监听。
+    /// </summary>
     private void MapPage_Unloaded(object sender, RoutedEventArgs e)
     {
         foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow })
         {
-            window?.Close();
+            if (window is null)
+            {
+                continue;
+            }
+
+            window.AllowClose();
+            window.Close();
         }
 
         NavPopup.IsOpen = false;
@@ -141,6 +154,9 @@ public partial class MapPage : Page
             _viewModel.SetSelectedSystem(node, neighbors);
         }
     }
+
+    /// <summary>定位到星域（情报表格的"星域"列点击用）。</summary>
+    private void LocateRegion(int regionId) => MapCanvas.ToRegion(regionId);
 
     // ---------- 顶栏 ----------
 
@@ -328,18 +344,24 @@ public partial class MapPage : Page
             return;
         }
 
-        // 已开则先关（详情是"当前星系"的窗口，换星系要重建）
+        // 详情窗口内容是"当前星系"，换星系要重建 → 不用 CloseToHide（真关 + 重建）
         _detailWindow?.Close();
-        _detailWindow = CreateToolWindow(new MapSystemDetailView(node, _viewModel), "MapPage_Detail", 900, 640);
+        _detailWindow = CreateToolWindow(new MapSystemDetailView(node, _viewModel), "MapPage_Detail", 900, 640, reusable: false);
         _detailWindow.Closed += (_, _) => _detailWindow = null;
         _detailWindow.Show();
         _detailWindow.Activate();
     }
 
-    private ToolWindow CreateToolWindow(object content, string titleKey, int width, int height)
+    /// <summary>
+    /// 建工具窗（标题栏样式由 <see cref="ToolWindow"/> 自己定义，这里只给标题与尺寸）。
+    /// 默认 <see cref="ToolWindow.SetCloseToHide"/>：点 X 只是隐藏，**窗口实例复用**，不再每次点开都 new 一个；
+    /// 页面 <c>Unloaded</c> 时统一 <see cref="ToolWindow.AllowClose"/> 再真关。
+    /// 内容随对象变化的窗口（星系详情）传 <paramref name="reusable"/>=false，走"真关 + 重建"。
+    /// </summary>
+    private ToolWindow CreateToolWindow(object content, string titleKey, int width, int height, bool reusable = true)
     {
         var title = FindString(titleKey);
-        return new ToolWindow(
+        var window = new ToolWindow(
             content,
             ToolWindowTitleStyle.Default,
             showTopmostButton: false,
@@ -351,6 +373,13 @@ public partial class MapPage : Page
             DisplayTitle = title,
             SystemTitle = title,
         };
+
+        if (reusable)
+        {
+            window.SetCloseToHide();
+        }
+
+        return window;
     }
 
     // ---------- 角色标记 ----------
@@ -394,55 +423,63 @@ public partial class MapPage : Page
 
     // ---------- 情报 ----------
 
+    /// <summary>顶栏"情报"开关：既是监听总闸，也负责开关情报工具窗口。</summary>
     private void IntelToggle_Changed(object sender, RoutedEventArgs e)
     {
         var enabled = IntelToggle.IsChecked == true;
-        IntelPanel.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
-        IntelCollapsedButton.Visibility = Visibility.Collapsed;
         _viewModel.RefreshIntelAvailability();
 
         if (enabled)
         {
-            // 没有频道预警会话也能开：ZKB 击杀不依赖会话（此时面板会提示"仅 ZKB"）
+            // 没有频道预警会话也能开：ZKB 击杀不依赖会话（工具窗会提示"仅 ZKB"）
             _viewModel.StartIntel();
+            ShowIntelTool();
         }
         else
         {
-            _viewModel.SaveIntelKeywords();
+            _viewModel.SaveIntelConfig();
             _viewModel.StopIntel();
+            _intelWindow?.Close();
         }
     }
 
-    private void IntelCollapse_Click(object sender, RoutedEventArgs e)
+    private void IntelTool_Click(object sender, RoutedEventArgs e)
     {
-        // 收起成左上角小标签；情报监听与过滤配置不受影响
-        IntelPanel.Visibility = Visibility.Collapsed;
-        IntelCollapsedButton.Visibility = Visibility.Visible;
+        ToolsPopup.IsOpen = false;
+        _viewModel.RefreshIntelAvailability();
+        ShowIntelTool();
     }
 
-    private void IntelCollapsed_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 打开（或前置）情报工具窗口。窗口是"真关闭"的（不用 CloseToHide）：
+    /// 点 X → 真正销毁 → 顺带把顶栏"情报"复选框取消勾选（复选框 = 监听总闸，于是监听一起停），
+    /// 反之取消勾选 / 在窗口里点"停止"也会把窗口关掉——窗口与复选框始终一致。
+    /// 但**切换页面时两者都保留**（窗口不随页面卸载关闭，监听继续）。
+    /// </summary>
+    private void ShowIntelTool()
     {
-        IntelCollapsedButton.Visibility = Visibility.Collapsed;
-        IntelPanel.Visibility = Visibility.Visible;
-    }
-
-    private void IntelFilter_LostFocus(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.IntelRunning)
+        if (_intelWindow is null)
         {
-            _viewModel.SaveIntelKeywords();
-        }
-    }
-
-    private void IntelList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is ListBox { SelectedItem: IntelMsgItem item })
-        {
-            IntelList.SelectedItem = null;
-            if (item.SystemId > 0)
+            _intelWindow = CreateToolWindow(new IntelToolView(_viewModel, Locate, LocateRegion), "MapPage_Intel", 1180, 700, reusable: false);
+            // 情报窗不需要最大化/置顶：只留最小化与关闭（ToolWindow 的精细按钮控制）
+            _intelWindow.SetVisibleTitleBarButtons(ToolWindowButtons.Minimize | ToolWindowButtons.Close);
+            _intelWindow.Closed += (_, _) =>
             {
-                Locate(item.SystemId);
-            }
+                _intelWindow = null;
+                IntelToggle.IsChecked = false;
+            };
+        }
+
+        _intelWindow.Show();
+        _intelWindow.Activate();
+    }
+
+    /// <summary>顶栏"情报"复选框跟随监听状态（例如在情报窗里点了"停止"时）。</summary>
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MapPageViewModel.IntelRunning))
+        {
+            IntelToggle.IsChecked = _viewModel.IntelRunning;
         }
     }
 

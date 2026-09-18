@@ -41,11 +41,44 @@ public static class SovService
         }
     }
 
+    private static Dictionary<int, SovInfo>? _systemIndex;
+
+    /// <summary>
+    /// 取星系所属的主权信息（未加载或无主权返回 null）。
+    /// 内部维护"星系 → 主权"反查索引：情报列表/星系详情/一跳覆盖都会**按行**调用，
+    /// 原来每次线性扫全部联盟 × 系统的做法是 O(星系总数)，现在 O(1)。
+    /// </summary>
+    public static SovInfo? GetSovInfo(int systemId)
+    {
+        var infos = Current;
+        if (infos.Count == 0)
+        {
+            return null;
+        }
+
+        var index = _systemIndex;
+        if (index is null)
+        {
+            index = new Dictionary<int, SovInfo>();
+            foreach (var info in infos)
+            {
+                foreach (var id in info.SystemIds)
+                {
+                    index[id] = info;
+                }
+            }
+
+            _systemIndex = index;
+        }
+
+        return index.TryGetValue(systemId, out var found) ? found : null;
+    }
+
     /// <summary>取星系的主权联盟名（未加载或无主权返回空串）。</summary>
-    public static string GetSovName(int systemId) => Current.FirstOrDefault(p => p.SystemIds.Contains(systemId))?.AllianceName ?? string.Empty;
+    public static string GetSovName(int systemId) => GetSovInfo(systemId)?.AllianceName ?? string.Empty;
 
     /// <summary>取星系的主权分组号（未加载或无主权返回 0）。</summary>
-    public static long GetGroupId(int systemId) => Current.FirstOrDefault(p => p.SystemIds.Contains(systemId))?.GroupId ?? 0;
+    public static long GetGroupId(int systemId) => GetSovInfo(systemId)?.GroupId ?? 0;
 
     public static bool IsLoaded
     {
@@ -64,6 +97,7 @@ public static class SovService
         lock (Locker)
         {
             _cache = null;
+            _systemIndex = null;
         }
     }
 
@@ -132,6 +166,7 @@ public static class SovService
             {
                 _cache = result;
                 _cacheTime = DateTime.UtcNow;
+                _systemIndex = null; // 数据换了，反查索引重建
             }
 
             AssignGroups(_cache);

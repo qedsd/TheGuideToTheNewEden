@@ -172,6 +172,23 @@ public class StarMapCanvas : SKElement
     private static readonly SKTypeface _typeface = ResolveTypeface(SKFontStyle.Normal);
     private static readonly SKTypeface _typefaceBold = ResolveTypeface(SKFontStyle.Bold);
 
+    /// <summary>画 emoji（📢 / 🕒）用的字体：Windows 上首选 Segoe UI Emoji；拿不到返回 null（调用方退回 UI 字体）。</summary>
+    private static readonly SKTypeface? _emojiTypeface = ResolveEmojiTypeface();
+
+    private static SKTypeface? ResolveEmojiTypeface()
+    {
+        foreach (var family in new[] { "Segoe UI Emoji", "Segoe UI Symbol" })
+        {
+            var typeface = SKTypeface.FromFamilyName(family, SKFontStyle.Normal);
+            if (typeface is not null && string.Equals(typeface.FamilyName, family, StringComparison.OrdinalIgnoreCase))
+            {
+                return typeface;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// 取一款存在的中文字体：逐个候选家族创建，**并用返回的 FamilyName 校验是否真的命中**
     /// （<c>FromFamilyName</c> 找不到家族时会静默回退到默认字体，只能靠 FamilyName 判断）；
@@ -236,13 +253,7 @@ public class StarMapCanvas : SKElement
         Unloaded += (_, _) =>
         {
             CompositionTarget.Rendering -= OnRendering;
-            _baseCache?.Dispose();
-            _baseCache = null;
-            foreach (var kv in _glowCache)
-            {
-                kv.Value.Dispose();
-            }
-            _glowCache.Clear();
+            ReleaseCaches();
         };
         SizeChanged += (_, _) => { _needFit = true; InvalidateVisual(); };
     }
@@ -809,12 +820,12 @@ public class StarMapCanvas : SKElement
 
         // 底图缓存：视图/数据未变时直接贴图，动画帧只叠加覆盖层
         var key = (_zoom, _offsetX, _offsetY, (int)w, (int)h, dpiScale, _dataVersion, (int)_currentColorMode);
-        if (_baseKey is null || _baseKey.Value != key)
+        if (_baseCache is null || _baseKey is null || _baseKey.Value != key)
         {
             RebuildBase(e.Info.Width, e.Info.Height, w, h, zmult, nodeR);
             _baseKey = key;
         }
-        canvas.DrawBitmap(_baseCache!, new SKRect(0, 0, w, h));
+        canvas.DrawBitmap(_baseCache, new SKRect(0, 0, w, h));
 
         using var paint = new SKPaint { IsAntialias = true };
 
@@ -841,6 +852,25 @@ public class StarMapCanvas : SKElement
         DrawHover(canvas, paint, nodeR);
         DrawSelection(canvas, paint, nodeR);
         DrawHighlight(canvas, paint, nodeR);
+    }
+
+    /// <summary>
+    /// 释放底图与发光精灵缓存（页面切走时调用）。
+    /// **必须同时清掉 <see cref="_baseKey"/>**：否则切回星图时"缓存仍有效"的判断会误判，
+    /// 直接拿已释放的 null 位图去画 → DrawBitmap 抛 ArgumentException（阶段 65 实机：打开星图→切主页面→切回）。
+    /// </summary>
+    private void ReleaseCaches()
+    {
+        _baseCache?.Dispose();
+        _baseCache = null;
+        _baseKey = null;
+
+        foreach (var kv in _glowCache)
+        {
+            kv.Value.Dispose();
+        }
+
+        _glowCache.Clear();
     }
 
     /// <summary>重建底图缓存（背景 + 星尘 + 星门连线 + 跳桥点线 + 全部节点与标签）。</summary>
@@ -1232,11 +1262,16 @@ public class StarMapCanvas : SKElement
     // ---------- 情报 ----------
 
     /// <summary>
-    /// 情报层：红圈脉冲（圈大小随威胁权重）+ 舰船图标与计数
-    /// （对齐 WinUI IntelDrawer——高缩放逐个画舰船图标并标 ×数量，低缩放只画汇总 "+舰船数(情报数)"）。
+    /// 情报层：红圈脉冲（圈大小随威胁权重）+ 舰船图标与计数 + 频道标注
+    /// （对齐 WinUI IntelDrawer——高缩放逐个画舰船图标、撞到邻近星系就折叠成 "+剩余"，低缩放只画汇总；
+    /// 频道情报在圈下方标 📢 条数与最早时间）。
     /// </summary>
     private void DrawIntel(SKCanvas canvas, SKPaint paint, float nodeR, double zmult)
     {
+        // 情报图标要做"空白探测避让"：先把本帧可见星系的屏幕网格建好（每帧一次，O(节点数)）
+        var iconCell = Math.Max(8f, nodeR * 2.4f);
+        BuildIntelOccupancy(iconCell);
+
         foreach (var marker in _intel)
         {
             if (!_indexById.TryGetValue(marker.SystemId, out var index))
@@ -1273,12 +1308,12 @@ public class StarMapCanvas : SKElement
             paint.Color = IntelRed(90);
             canvas.DrawCircle(p, radius + 3 + pulse * 2.5f, paint);
 
-            DrawIntelShips(canvas, paint, marker, p, nodeR, zmult);
+            DrawIntelShips(canvas, paint, marker, index, p, nodeR, zmult, iconCell);
         }
     }
 
-    /// <summary>情报层：舰船图标 / 计数 / "多少分钟前"。</summary>
-    private void DrawIntelShips(SKCanvas canvas, SKPaint paint, IntelMarker marker, SKPoint p, float nodeR, double zmult)
+    /// <summary>情报层：舰船图标 / 计数 / 相对时间 / 频道标注。图标遇邻近星系占位冲突会让位（折叠成 "+剩余"）。</summary>
+    private void DrawIntelShips(SKCanvas canvas, SKPaint paint, IntelMarker marker, int selfIndex, SKPoint p, float nodeR, double zmult, float iconCell)
     {
         if (marker.ShipCount <= 0 && marker.ChannelCount <= 0)
         {
@@ -1295,6 +1330,13 @@ public class StarMapCanvas : SKElement
             foreach (var (shipTypeId, count) in marker.Ships)
             {
                 var rect = new SKRect(x, y - iconSize / 2, x + iconSize, y + iconSize / 2);
+
+                // 空白探测：这一格压到别的星系了就让位，剩下的折成 "+N"
+                if (IsIntelSlotOccupied(rect, selfIndex, iconCell))
+                {
+                    break;
+                }
+
                 paint.Style = SKPaintStyle.Fill;
                 if (_intelShipImages.TryGetValue(shipTypeId, out var img) && img is not null)
                 {
@@ -1338,14 +1380,99 @@ public class StarMapCanvas : SKElement
             canvas.DrawText($"+{marker.ShipCount}({marker.ChannelCount})", x, y + sumFont.Size * 0.4f, sumFont, paint);
         }
 
+        // 相对时间（🕒 用 emoji 字体画，拿不到就退回 UI 字体）
         if (zmult >= IntelElapsedZoom && marker.OldestUtc != default)
         {
-            var minutes = (int)Math.Max(0, (DateTime.UtcNow - marker.OldestUtc).TotalMinutes);
-            using var timeFont = new SKFont(_typeface, Math.Max(7, nodeR * 0.7f + 4));
+            using var timeFont = new SKFont(_emojiTypeface ?? _typefaceBold, Math.Max(7, nodeR * 0.7f + 4));
             paint.Color = IntelTime(220);
-            canvas.DrawText($"{minutes}m", x, y + iconSize * 0.8f, timeFont, paint);
+            canvas.DrawText($"🕒 {FormatElapsed(marker.OldestUtc)}", x, y + iconSize * 0.8f, timeFont, paint);
+        }
+
+        // 频道情报标注：📢 条数 + 最早一条的时间（画在圈下方，与 WinUI 的 IntelDrawer 一致）
+        if (marker.ChannelCount > 0)
+        {
+            using var channelFont = new SKFont(_emojiTypeface ?? _typeface, Math.Max(7, nodeR * 0.8f + 4));
+            paint.Color = IntelTime(230);
+            var elapsed = marker.OldestUtc == default ? string.Empty : FormatElapsed(marker.OldestUtc);
+            var text = string.Format(FindString("MapPage_IntelChannelTag"), marker.ChannelCount, elapsed);
+            canvas.DrawText(text, p.X - nodeR, p.Y + nodeR + channelFont.Size * 1.5f, channelFont, paint);
         }
     }
+
+    /// <summary>相对时间（"42s / 3m / 2h"）。</summary>
+    private static string FormatElapsed(DateTime oldestUtc)
+    {
+        var elapsed = DateTime.UtcNow - oldestUtc;
+        if (elapsed.TotalSeconds < 60)
+        {
+            return $"{(int)Math.Max(0, elapsed.TotalSeconds)}s";
+        }
+
+        return elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes}m" : $"{(int)elapsed.TotalHours}h";
+    }
+
+    // ---------- 情报图标避让（空白探测） ----------
+
+    private readonly Dictionary<long, List<int>> _intelOccupancy = [];
+
+    /// <summary>为一帧构建"可见星系 → 屏幕网格"索引（格子边长 = 图标尺寸）。</summary>
+    private void BuildIntelOccupancy(float cell)
+    {
+        _intelOccupancy.Clear();
+        for (var i = 0; i < _nodes.Length; i++)
+        {
+            var node = _nodes[i];
+            if (!node.Visible)
+            {
+                continue;
+            }
+
+            var p = NodePos(node);
+            var key = PackCell((int)Math.Floor(p.X / cell), (int)Math.Floor(p.Y / cell));
+            if (!_intelOccupancy.TryGetValue(key, out var list))
+            {
+                _intelOccupancy[key] = list = [];
+            }
+
+            list.Add(i);
+        }
+    }
+
+    private static long PackCell(int cx, int cy) => ((long)cx << 32) ^ (uint)cy;
+
+    /// <summary>该图标格是否压到了"本星系之外"的星系节点（压到就让位，避免糊成一片）。</summary>
+    private bool IsIntelSlotOccupied(SKRect rect, int selfIndex, float cell)
+    {
+        for (var cx = (int)Math.Floor(rect.Left / cell); cx <= (int)Math.Floor(rect.Right / cell); cx++)
+        {
+            for (var cy = (int)Math.Floor(rect.Top / cell); cy <= (int)Math.Floor(rect.Bottom / cell); cy++)
+            {
+                if (!_intelOccupancy.TryGetValue(PackCell(cx, cy), out var list))
+                {
+                    continue;
+                }
+
+                foreach (var index in list)
+                {
+                    if (index == selfIndex)
+                    {
+                        continue;
+                    }
+
+                    var q = NodePos(_nodes[index]);
+                    if (q.X >= rect.Left - 2 && q.X <= rect.Right + 2 && q.Y >= rect.Top - 2 && q.Y <= rect.Bottom + 2)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string FindString(string key) =>
+        System.Windows.Application.Current?.TryFindResource(key) as string ?? key;
 
     // ---------- 角色标记 ----------
 

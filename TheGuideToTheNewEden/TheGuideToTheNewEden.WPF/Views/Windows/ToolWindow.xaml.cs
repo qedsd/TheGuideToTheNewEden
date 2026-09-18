@@ -25,6 +25,24 @@ public enum ToolWindowTitleStyle
 }
 
 /// <summary>
+/// 标题栏按钮位标志：可任意组合，配合 <see cref="ToolWindow.SetVisibleTitleBarButtons"/>、
+/// <see cref="ToolWindow.HideTitleBarButton"/>、<see cref="ToolWindow.ShowTitleBarButton"/> 使用。
+/// </summary>
+[Flags]
+public enum ToolWindowButtons
+{
+    /// <summary>一个都不显示（注意标题栏本身仍在，只是没有按钮）。</summary>
+    None = 0,
+    Minimize = 1,
+    Maximize = 2,
+    Close = 4,
+    /// <summary>标题栏上的"置顶"切换按钮。</summary>
+    Topmost = 8,
+    /// <summary>全部按钮。</summary>
+    All = Minimize | Maximize | Close | Topmost,
+}
+
+/// <summary>
 /// 工具窗口外壳：统一的标题栏样式（左上角 logo，右侧窗口名称）、可配置的标题按钮与置顶按钮，
 /// 内容通过 <see cref="SetContent"/> / 构造函数传入（Page、UserControl 或任意 UIElement 均可，
 /// 内部用 Frame 承载以规避 "Page 只能由 Window/Frame 承载" 的限制）。
@@ -199,6 +217,74 @@ public partial class ToolWindow : FluentWindow
 
     /// <summary>点关闭时改为隐藏窗口（对应 WinUI 版 SetCloseToHide）。</summary>
     public void SetCloseToHide() => _closeToHide = true;
+
+    // ---------- 标题栏按钮的精细控制 ----------
+
+    /// <summary>
+    /// 一次性指定"要显示哪些标题栏按钮"（未列出的都隐藏），比逐个设 <c>ShowXxxButton</c> 更直观。
+    /// 例：只留关闭 → <c>SetVisibleTitleBarButtons(ToolWindowButtons.Close)</c>；按钮全隐藏 → <c>ToolWindowButtons.None</c>
+    /// （标题栏本身仍在；要连标题栏一起隐藏用 <see cref="ShowTitleBar"/>）。
+    /// </summary>
+    public void SetVisibleTitleBarButtons(ToolWindowButtons buttons)
+    {
+        ShowMinimizeButton = (buttons & ToolWindowButtons.Minimize) != 0;
+        ShowMaximizeButton = (buttons & ToolWindowButtons.Maximize) != 0;
+        ShowCloseButton = (buttons & ToolWindowButtons.Close) != 0;
+        ShowTopmostButton = (buttons & ToolWindowButtons.Topmost) != 0;
+        ApplyToTitleBar();
+    }
+
+    /// <summary>隐藏指定的一个（或几个）标题栏按钮，其余按钮保持不动。</summary>
+    public void HideTitleBarButton(ToolWindowButtons buttons)
+    {
+        if ((buttons & ToolWindowButtons.Minimize) != 0)
+        {
+            ShowMinimizeButton = false;
+        }
+
+        if ((buttons & ToolWindowButtons.Maximize) != 0)
+        {
+            ShowMaximizeButton = false;
+        }
+
+        if ((buttons & ToolWindowButtons.Close) != 0)
+        {
+            ShowCloseButton = false;
+        }
+
+        if ((buttons & ToolWindowButtons.Topmost) != 0)
+        {
+            ShowTopmostButton = false;
+        }
+
+        ApplyToTitleBar();
+    }
+
+    /// <summary>显示指定的一个（或几个）标题栏按钮，其余按钮保持不动。</summary>
+    public void ShowTitleBarButton(ToolWindowButtons buttons)
+    {
+        if ((buttons & ToolWindowButtons.Minimize) != 0)
+        {
+            ShowMinimizeButton = true;
+        }
+
+        if ((buttons & ToolWindowButtons.Maximize) != 0)
+        {
+            ShowMaximizeButton = true;
+        }
+
+        if ((buttons & ToolWindowButtons.Close) != 0)
+        {
+            ShowCloseButton = true;
+        }
+
+        if ((buttons & ToolWindowButtons.Topmost) != 0)
+        {
+            ShowTopmostButton = true;
+        }
+
+        ApplyToTitleBar();
+    }
 
     protected override void OnClosing(CancelEventArgs e)
     {

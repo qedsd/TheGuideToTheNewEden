@@ -9,25 +9,131 @@ using TheGuideToTheNewEden.Core.Enums;
 using TheGuideToTheNewEden.Core.Models;
 using TheGuideToTheNewEden.Core.Models.Character;
 using TheGuideToTheNewEden.WPF.Helpers;
+using TheGuideToTheNewEden.WPF.Models.Map;
 using TheGuideToTheNewEden.WPF.Services.Characters;
 using TheGuideToTheNewEden.WPF.Services.Map;
 using TheGuideToTheNewEden.WPF.Views.UserControls.Map;
 
 namespace TheGuideToTheNewEden.WPF.ViewModels.Map;
 
-/// <summary>情报流条目（频道情报文本 + ZKB 击杀摘要）。</summary>
-public sealed class IntelMsgItem
+/// <summary>
+/// 情报条目里的一条攻方徽标（与 WinUI 的攻方展示语义对应）：
+/// 未聚合时代表**单个攻方**（舰船 + 角色 + 势力，无数字）；超过阈值聚合后代表**一组**（舰船组或势力组，显示 <c>+N</c>）。
+/// </summary>
+public sealed class IntelShipBadge
+{
+    /// <summary>舰船类型（势力聚合组为 0）。</summary>
+    public long ShipTypeId { get; init; }
+
+    /// <summary>攻方角色（未聚合时才有；0 = 未知）。</summary>
+    public long CharacterId { get; init; }
+
+    /// <summary>势力（联盟优先、其次军团；0 = 无）。</summary>
+    public long FactionId { get; init; }
+
+    public bool FactionIsAlliance { get; init; }
+
+    public int Count { get; init; }
+
+    /// <summary>所属击杀（点舰船图标打开 KB 详情用）。</summary>
+    public long KillmailId { get; init; }
+
+    /// <summary>聚合时的 "+N" 文本；未聚合为空。</summary>
+    public string DisplayText { get; init; } = string.Empty;
+
+    public bool HasText => DisplayText.Length > 0;
+
+    public bool HasShip => ShipTypeId > 0;
+
+    public bool HasCharacter => CharacterId > 0;
+
+    public bool HasFaction => FactionId > 0;
+
+    // 行内图片一律用 ctl:AsyncImage 的 Source（后台下载 + 进程内缓存），不要用同步下载的 UriSource
+    public string? ShipImageUrl => ShipTypeId > 0 ? GameImageHelper.BuildTypeImageUrl(ShipTypeId, 64) : null;
+
+    public string? CharacterPortraitUrl => CharacterId > 0 ? GameImageHelper.BuildCharacterPortraitUrl(CharacterId, 32) : null;
+
+    public string? FactionLogoUrl => FactionId <= 0
+        ? null
+        : FactionIsAlliance
+            ? GameImageHelper.BuildAllianceLogoUrl(FactionId, 32)
+            : GameImageHelper.BuildCorporationLogoUrl(FactionId, 32);
+}
+
+/// <summary>情报流条目（频道情报文本 + ZKB 击杀摘要）。相对时间会随过期计时器刷新，故实现 INPC。</summary>
+public sealed class IntelMsgItem : INotifyPropertyChanged
 {
     public DateTime TimeUtc { get; init; }
     public string TimeText { get; init; } = string.Empty;
     public string Content { get; init; } = string.Empty;
     public int SystemId { get; init; }
     public string SystemName { get; init; } = string.Empty;
+    public int RegionId { get; init; }
+    public string RegionName { get; init; } = string.Empty;
     public string Listener { get; init; } = string.Empty;
     public bool IsClear { get; init; }
 
     /// <summary>来源：频道情报 / ZKB 击杀（用于左侧色标）。</summary>
     public bool IsZkb { get; init; }
+
+    /// <summary>ZKB 击杀 ID（0 = 频道情报）；点图标可打开 KB 击杀详情。</summary>
+    public long KillmailId { get; init; }
+
+    /// <summary>星系主权联盟（0 = 无主权）。</summary>
+    public long SovAllianceId { get; init; }
+
+    public string SovAllianceName { get; init; } = string.Empty;
+
+    /// <summary>受害方（仅 ZKB）：舰船类型 / 角色 / 势力（联盟优先、其次军团）。</summary>
+    public long VictimShipTypeId { get; init; }
+
+    public long VictimCharacterId { get; init; }
+    public long VictimFactionId { get; init; }
+    public bool VictimFactionIsAlliance { get; init; }
+    public string VictimShipName { get; init; } = string.Empty;
+    public string VictimCharacterName { get; init; } = string.Empty;
+    public string VictimFactionName { get; init; } = string.Empty;
+
+    /// <summary>本条情报涉及的攻方舰船（ZKB 击杀才有；按数量降序、最多 10 种）。</summary>
+    public IReadOnlyList<IntelShipBadge> Ships { get; init; } = [];
+
+    /// <summary>表格"来源"列：ZKB 击杀显示 ZKB，频道情报显示频道名。</summary>
+    public string SourceText => IsZkb ? "ZKB" : Listener;
+
+    /// <summary>是否有受害方信息（频道情报没有）→ 用于隐藏受害方单元格。</summary>
+    public bool HasVictim => VictimShipTypeId > 0 || VictimCharacterId > 0;
+
+    /// <summary>相对时间（"42s / 3m / 2h"），由过期计时器每 10 秒刷新。</summary>
+    public string ElapsedText
+    {
+        get
+        {
+            var elapsed = DateTime.UtcNow - TimeUtc;
+            if (elapsed.TotalSeconds < 60)
+            {
+                return $"{(int)Math.Max(0, elapsed.TotalSeconds)}s";
+            }
+
+            return elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes}m" : $"{(int)elapsed.TotalHours}h";
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void RefreshElapsed() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ElapsedText)));
+
+    public string? SovLogoUrl => SovAllianceId > 0 ? GameImageHelper.BuildAllianceLogoUrl(SovAllianceId, 32) : null;
+
+    public string? VictimShipImageUrl => VictimShipTypeId > 0 ? GameImageHelper.BuildTypeImageUrl(VictimShipTypeId, 64) : null;
+
+    public string? VictimPortraitUrl => VictimCharacterId > 0 ? GameImageHelper.BuildCharacterPortraitUrl(VictimCharacterId, 32) : null;
+
+    public string? VictimFactionLogoUrl => VictimFactionId <= 0
+        ? null
+        : VictimFactionIsAlliance
+            ? GameImageHelper.BuildAllianceLogoUrl(VictimFactionId, 32)
+            : GameImageHelper.BuildCorporationLogoUrl(VictimFactionId, 32);
 }
 
 /// <summary>导航结果行。</summary>
@@ -100,6 +206,10 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     private bool _intelRunning;
     private bool _zkbIntel;
     private double _zkbDurationMinutes = 20;
+    private int _zkbMaxAttackerCount = 8;
+    private double _channelDurationMinutes = 20;
+    private bool _clearZkbWithChannel = true;
+    private int _maxIntelMessages = MaxIntelMsgs;
     private MapSystemNode? _selectedSystem;
     private double _selectedKills;
     private double _selectedJumps;
@@ -112,8 +222,6 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     private int _jfc = 4;
     private int _jumpFreighters = 4;
     private AuthorizedCharacterData? _autopilotCharacter;
-    private string _intelExcludeKeywords = string.Empty;
-    private string _intelIncludeKeywords = string.Empty;
     private string _navSummary = string.Empty;
 
     private Dictionary<int, double> _killValues = [];
@@ -234,7 +342,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         {
             if (Set(ref _zkbDurationMinutes, Math.Clamp(value, 1, 180)))
             {
-                SaveIntelKeywords();
+                SaveIntelConfig();
             }
         }
     }
@@ -395,20 +503,6 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     {
         get => _autopilotCharacter;
         set => Set(ref _autopilotCharacter, value);
-    }
-
-    /// <summary>情报排除关键词（空格/逗号/分号分隔）。</summary>
-    public string IntelExcludeKeywords
-    {
-        get => _intelExcludeKeywords;
-        set => Set(ref _intelExcludeKeywords, value);
-    }
-
-    /// <summary>情报包含关键词（非空时仅包含任一关键词的情报展示）。</summary>
-    public string IntelIncludeKeywords
-    {
-        get => _intelIncludeKeywords;
-        set => Set(ref _intelIncludeKeywords, value);
     }
 
     /// <summary>导航概览（总跳数 / 旗舰跳 / 燃料）。</summary>
@@ -920,15 +1014,26 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
         // 载入/合并情报配置（与 WinUI 共用 MapSettings.json）
         var config = MapSettingService.GetIntel();
-        IntelExcludeKeywords = config.Exclusions is { Count: > 0 } ? string.Join(' ', config.Exclusions.Select(p => p.Name)) : IntelExcludeKeywords;
-        IntelIncludeKeywords = config.Inclusions is { Count: > 0 } ? string.Join(' ', config.Inclusions.Select(p => p.Name)) : IntelIncludeKeywords;
         _zkbIntel = config.ZKB;
         _zkbDurationMinutes = config.ZKBDuration > 0 ? Math.Round(config.ZKBDuration / 60.0, 0) : 20;
+        _zkbMaxAttackerCount = config.ZKBMaxAttackerCount > 0 ? Math.Clamp((int)config.ZKBMaxAttackerCount, 1, 200) : 10;
+        _channelDurationMinutes = config.ChannelDuration > 0 ? Math.Max(1, Math.Round(config.ChannelDuration / 60.0, 0)) : 20;
+        _clearZkbWithChannel = config.ClearChannelMode == 0;
+        _maxIntelMessages = config.MaxMsgCount > 0 ? (int)config.MaxMsgCount : MaxIntelMsgs;
         OnPropertyChanged(nameof(ZkbIntel));
         OnPropertyChanged(nameof(ZkbDurationMinutes));
+        OnPropertyChanged(nameof(ZkbMaxAttackerCount));
+        OnPropertyChanged(nameof(ChannelDurationMinutes));
+        OnPropertyChanged(nameof(ClearZkbWithChannel));
+        OnPropertyChanged(nameof(MaxIntelMessages));
+        LoadIntelFilters();
 
         ChannelIntelManager.Current.OnIgnoreJumpsIntelUpdate += Intel_OnIgnoreJumpsIntelUpdate;
-        ChannelIntelManager.Current.ListenChannelIntel(ChannelIntelManager.Current.GetActiveListeners());
+        if (_selectedChannelListeners.Count > 0)
+        {
+            ChannelIntelManager.Current.ListenChannelIntel(_selectedChannelListeners);
+        }
+
         IntelRunning = true;
         ApplyZkbSubscription();
 
@@ -1025,18 +1130,20 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 攻方舰船（与 WinUI 一致：同一 attackerId 只计一次）
+        // 攻方（与 WinUI 一致：同一 attackerId 只计一次）；既用于主图按星系聚合舰船，也用于消息级徽标
         var attackerIds = new HashSet<int>();
         var ships = new List<int>();
+        var attackers = new List<ZKB.NET.Models.Killmails.Attacker>();
         if (detail.Attackers is { Count: > 0 })
         {
             foreach (var attacker in detail.Attackers)
             {
-                if (attacker.CharacterId is > 0 && !attackerIds.Add((int)attacker.CharacterId))
+                if (attacker.CharacterId is > 0 && !attackerIds.Add(attacker.CharacterId))
                 {
                     continue;
                 }
 
+                attackers.Add(attacker);
                 if (attacker.ShipTypeId > 0)
                 {
                     ships.Add(attacker.ShipTypeId);
@@ -1052,12 +1159,27 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (!PassKeywordFilter(text))
+            // 过滤（逐条与 WinUI 对齐）：非 NPC + 在 ZKB 时间窗内 + 星系/攻方角色·军团·联盟·舰船类型的实体过滤
+            if (detail.Zkb?.Npc == true)
+            {
+                return;
+            }
+
+            if (_zkbDurationMinutes > 0 && (DateTime.UtcNow - detail.KillmailTime).TotalSeconds >= _zkbDurationMinutes * 60)
             {
                 return;
             }
 
             var systemId = (int)detail.SolarSystemId;
+            if (IsEntityBlocked(IdName.CategoryEnum.SolarSystem, [systemId])
+                || IsEntityBlocked(IdName.CategoryEnum.Character, attackers.Select(p => p.CharacterId))
+                || IsEntityBlocked(IdName.CategoryEnum.Corporation, attackers.Select(p => p.CorporationId))
+                || IsEntityBlocked(IdName.CategoryEnum.Alliance, attackers.Select(p => p.AllianceId))
+                || IsEntityBlocked(IdName.CategoryEnum.InventoryType, attackers.Select(p => p.ShipTypeId)))
+            {
+                return;
+            }
+
             var entry = GetIntelSystem(systemId);
             if (entry.ZkbKillmails.Add(detail.KillmailId))
             {
@@ -1070,6 +1192,8 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
             entry.OldestUtc = entry.OldestUtc > detail.KillmailTime ? detail.KillmailTime : entry.OldestUtc;
 
+            var victim = detail.Victim;
+            var meta = ResolveSystemMeta(systemId);
             AddIntelMessage(new IntelMsgItem
             {
                 TimeUtc = detail.KillmailTime,
@@ -1077,12 +1201,101 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 Content = text,
                 SystemId = systemId,
                 SystemName = TryGetNode(systemId, out var node) && node is not null ? node.Name : systemId.ToString(),
+                RegionId = meta.RegionId,
+                RegionName = meta.RegionName,
+                SovAllianceId = meta.SovId,
+                SovAllianceName = meta.SovName,
                 Listener = "ZKB",
                 IsZkb = true,
+                KillmailId = detail.KillmailId,
+                Ships = BuildAttackerBadges(attackers, detail.KillmailId),
+                VictimShipTypeId = victim?.ShipTypeId ?? 0,
+                VictimCharacterId = victim?.CharacterId ?? 0,
+                VictimFactionId = victim is null ? 0 : victim.AllianceId > 0 ? victim.AllianceId : victim.CorporationId,
+                VictimFactionIsAlliance = victim is { AllianceId: > 0 },
+                VictimShipName = info.Type?.TypeName ?? string.Empty,
+                VictimCharacterName = info.VictimCharacterName?.Name ?? string.Empty,
+                VictimFactionName = info.VictimAllianceName?.Name ?? info.VictimCorporationIdName?.Name ?? string.Empty,
             });
 
             IntelMarkersChanged?.Invoke(this, BuildIntelMarkers());
         });
+    }
+
+    /// <summary>
+    /// 攻方徽标（与 WinUI 的攻方展示语义一致）：
+    /// 攻方数量不超过 <see cref="ZkbMaxAttackerCount"/> 时**每个攻方一条**（舰船图标 + 角色头像 + 势力徽标，无数字）；
+    /// 超过阈值时聚合成两组摘要——"每种舰船一条 / 每个势力一条"，各自显示 <c>+N</c>。
+    /// </summary>
+    private List<IntelShipBadge> BuildAttackerBadges(List<ZKB.NET.Models.Killmails.Attacker> attackers, long killmailId)
+    {
+        var badges = new List<IntelShipBadge>();
+        var list = attackers.Where(p => p.ShipTypeId > 0).ToList();
+        if (list.Count == 0)
+        {
+            return badges;
+        }
+
+        if (list.Count <= _zkbMaxAttackerCount)
+        {
+            foreach (var attacker in list)
+            {
+                badges.Add(new IntelShipBadge
+                {
+                    ShipTypeId = attacker.ShipTypeId,
+                    CharacterId = attacker.CharacterId,
+                    FactionId = attacker.AllianceId > 0 ? attacker.AllianceId : attacker.CorporationId,
+                    FactionIsAlliance = attacker.AllianceId > 0,
+                    KillmailId = killmailId,
+                });
+            }
+
+            return badges;
+        }
+
+        foreach (var group in list.GroupBy(p => p.ShipTypeId).OrderByDescending(p => p.Count()))
+        {
+            badges.Add(new IntelShipBadge
+            {
+                ShipTypeId = group.Key,
+                Count = group.Count(),
+                DisplayText = $"+{group.Count()}",
+                KillmailId = killmailId,
+            });
+        }
+
+        foreach (var group in list
+                     .Select(p => (Id: p.AllianceId > 0 ? p.AllianceId : p.CorporationId, IsAlliance: p.AllianceId > 0))
+                     .Where(p => p.Id > 0)
+                     .GroupBy(p => (p.Id, p.IsAlliance))
+                     .OrderByDescending(p => p.Count()))
+        {
+            badges.Add(new IntelShipBadge
+            {
+                FactionId = group.Key.Id,
+                FactionIsAlliance = group.Key.IsAlliance,
+                Count = group.Count(),
+                DisplayText = $"+{group.Count()}",
+                KillmailId = killmailId,
+            });
+        }
+
+        return badges;
+    }
+
+    /// <summary>情报条目要展示的星系元信息（星域 + 主权），主权走 O(1) 反查索引。</summary>
+    private (int RegionId, string RegionName, long SovId, string SovName) ResolveSystemMeta(int systemId)
+    {
+        var regionId = 0;
+        var regionName = string.Empty;
+        if (TryGetNode(systemId, out var node) && node is not null)
+        {
+            regionId = node.RegionId;
+            regionName = node.RegionName;
+        }
+
+        var sov = SovService.GetSovInfo(systemId);
+        return (regionId, regionName, sov?.AllianceId ?? 0, sov?.AllianceName ?? string.Empty);
     }
 
     private static string BuildZkbText(Core.Models.KB.KBItemInfo info)
@@ -1159,11 +1372,18 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                     continue;
                 }
 
-                if (!PassKeywordFilter(content.Content))
+                // 频道过滤（与 WinUI 对齐）：只收"勾选的监听者（频道）"推送，并做星系实体过滤（频道情报没有攻方实体可过滤）
+                if (_selectedChannelListeners.Count > 0 && !_selectedChannelListeners.Contains(content.Listener ?? string.Empty))
                 {
                     continue;
                 }
 
+                if (content.SolarSystemId > 0 && IsEntityBlocked(IdName.CategoryEnum.SolarSystem, [content.SolarSystemId]))
+                {
+                    continue;
+                }
+
+                var meta = ResolveSystemMeta(content.SolarSystemId);
                 var item = new IntelMsgItem
                 {
                     TimeUtc = content.Time,
@@ -1171,6 +1391,10 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                     Content = content.Content,
                     SystemId = content.SolarSystemId,
                     SystemName = content.SolarSystemName ?? string.Empty,
+                    RegionId = meta.RegionId,
+                    RegionName = meta.RegionName,
+                    SovAllianceId = meta.SovId,
+                    SovAllianceName = meta.SovName,
                     Listener = content.Listener ?? string.Empty,
                     IsClear = content.IntelType == IntelChatType.Clear,
                 };
@@ -1188,8 +1412,12 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
                     if (_intelSystems.TryGetValue(content.SolarSystemId, out var entry))
                     {
-                        entry.Ships.Clear();
-                        entry.ZkbKillmails.Clear();
+                        // "清怪"是否连 ZKB 一起清，由 ClearZkbWithChannel 决定（对应 MapIntelConfig.ClearChannelMode）
+                        if (_clearZkbWithChannel)
+                        {
+                            entry.Ships.Clear();
+                            entry.ZkbKillmails.Clear();
+                        }
                     }
                 }
                 else if (content.SolarSystemId > 0)
@@ -1208,41 +1436,18 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     private void AddIntelMessage(IntelMsgItem item)
     {
         IntelMessages.Insert(0, item);
-        var max = MaxIntelMsgs;
-        var configMax = (int)MapSettingService.Value.Intel.MaxMsgCount;
-        if (configMax > 0)
-        {
-            max = configMax;
-        }
-
+        var max = _maxIntelMessages > 0 ? _maxIntelMessages : MaxIntelMsgs;
         while (IntelMessages.Count > max)
         {
             IntelMessages.RemoveAt(IntelMessages.Count - 1);
         }
     }
 
-    private bool PassKeywordFilter(string? content)
-    {
-        if (string.IsNullOrEmpty(content))
-        {
-            return true;
-        }
-
-        var include = SplitKeywords(IntelIncludeKeywords);
-        if (include.Count > 0 && !include.Any(content.Contains))
-        {
-            return false;
-        }
-
-        var exclude = SplitKeywords(IntelExcludeKeywords);
-        return !exclude.Any(content.Contains);
-    }
-
     private void IntelExpiry_Tick(object? sender, EventArgs e)
     {
-        var config = MapSettingService.Value.Intel;
-        var channelSeconds = config.ChannelDuration > 0 ? config.ChannelDuration : 1200;
-        var zkbSeconds = config.ZKBDuration > 0 ? config.ZKBDuration : 1200;
+        // 两类情报各自按自己的保留时长过期（都可从情报工具窗实时调整）
+        var channelSeconds = _channelDurationMinutes * 60;
+        var zkbSeconds = _zkbDurationMinutes * 60;
         var now = DateTime.UtcNow;
         var channelDeadline = now.AddSeconds(-channelSeconds);
         var zkbDeadline = now.AddSeconds(-zkbSeconds);
@@ -1268,6 +1473,12 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 entry.ZkbKillmails.Clear();
                 removed = true;
             }
+        }
+
+        // 列表里的"相对时间"每 10 秒刷一次（表格显示 42s / 3m / 2h）
+        foreach (var message in IntelMessages)
+        {
+            message.RefreshElapsed();
         }
 
         if (removed)
@@ -1303,21 +1514,220 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         return markers;
     }
 
-    private static List<string> SplitKeywords(string? text) =>
-        string.IsNullOrWhiteSpace(text)
-            ? []
-            : text.Split([' ', ',', ';', '，', '；'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+    // ---------- 情报工具窗口（过滤 / 设置） ----------
 
-    public void SaveIntelKeywords()
+    private readonly IntelEntityFilter _exclusionsFilter = new() { EmptyAlwayContains = false };
+    private readonly IntelEntityFilter _inclusionsFilter = new() { EmptyAlwayContains = true };
+
+    /// <summary>排除实体（角色 / 军团 / 联盟 / 星系 / 星域 / 物品类型）——与 WinUI 共用同一份配置。</summary>
+    public ObservableCollection<IdName> EntityExclusions { get; } = [];
+
+    /// <summary>包含实体（非空时只保留命中任一实体的情报）。</summary>
+    public ObservableCollection<IdName> EntityInclusions { get; } = [];
+
+    /// <summary>频道情报的可选监听者（勾选参与星图情报；名单来自频道预警里已启动的会话）。</summary>
+    public ObservableCollection<CheckableModel<string>> Channels { get; } = [];
+
+    private readonly HashSet<string> _selectedChannelListeners = [];
+
+    /// <summary>攻方数量超过该值时按"舰船 / 势力"聚合展示（落 MapIntelConfig.ZKBMaxAttackerCount，语义与 WinUI 一致）。</summary>
+    public int ZkbMaxAttackerCount
+    {
+        get => _zkbMaxAttackerCount;
+        set
+        {
+            if (Set(ref _zkbMaxAttackerCount, Math.Clamp(value, 1, 200)))
+            {
+                SaveIntelConfig();
+            }
+        }
+    }
+
+    /// <summary>把当前设置与过滤实体写回 MapSettings.json（与 WinUI 版共用同一份文件）。</summary>
+    public void SaveIntelConfig()
     {
         var config = MapSettingService.GetIntel();
-        config.Exclusions = new System.Collections.ObjectModel.ObservableCollection<IdName>(
-            SplitKeywords(IntelExcludeKeywords).Select(p => new IdName { Name = p }));
-        config.Inclusions = new System.Collections.ObjectModel.ObservableCollection<IdName>(
-            SplitKeywords(IntelIncludeKeywords).Select(p => new IdName { Name = p }));
+        config.Exclusions = new ObservableCollection<IdName>(EntityExclusions);
+        config.Inclusions = new ObservableCollection<IdName>(EntityInclusions);
         config.ZKB = _zkbIntel;
         config.ZKBDuration = (float)(_zkbDurationMinutes * 60);
+        config.ZKBMaxAttackerCount = _zkbMaxAttackerCount;
+        config.ChannelDuration = (float)(_channelDurationMinutes * 60);
+        config.ClearChannelMode = _clearZkbWithChannel ? 0 : 1;
+        config.MaxMsgCount = _maxIntelMessages;
+        config.Channels = [.. Channels.Where(p => p.IsChecked == true).Select(p => p.Data)];
         MapSettingService.SaveIntel(config);
+    }
+
+    /// <summary>从配置装载过滤实体与频道选择（打开工具窗 / 启动情报时调用），并重建实体过滤器。</summary>
+    public void LoadIntelFilters()
+    {
+        var config = MapSettingService.GetIntel();
+        EntityExclusions.Clear();
+        foreach (var item in config.Exclusions.Where(p => IsFilterCategory(p.GetCategory())))
+        {
+            EntityExclusions.Add(item);
+        }
+
+        EntityInclusions.Clear();
+        foreach (var item in config.Inclusions.Where(p => IsFilterCategory(p.GetCategory())))
+        {
+            EntityInclusions.Add(item);
+        }
+
+        RebuildFilters();
+        RefreshChannels();
+    }
+
+    /// <summary>六类可过滤实体（旧版 WPF 把 IdName.Name 当关键词用的历史条目会落在这里被忽略并逐步清理）。</summary>
+    private static bool IsFilterCategory(IdName.CategoryEnum category) => category
+        is IdName.CategoryEnum.Character
+        or IdName.CategoryEnum.Corporation
+        or IdName.CategoryEnum.Alliance
+        or IdName.CategoryEnum.SolarSystem
+        or IdName.CategoryEnum.Region
+        or IdName.CategoryEnum.InventoryType;
+
+    /// <summary>重建两个实体过滤器（过滤项增删后必须调用——运行中改也立即生效）。</summary>
+    public void RebuildFilters()
+    {
+        _exclusionsFilter.Clear();
+        _exclusionsFilter.Add(EntityExclusions);
+        _inclusionsFilter.Clear();
+        _inclusionsFilter.Add(EntityInclusions);
+    }
+
+    /// <summary>实体过滤：排除项命中 → 拦；包含项非空且未命中 → 拦（与 WinUI 的两级判断一致）。</summary>
+    private bool IsEntityBlocked(IdName.CategoryEnum category, IEnumerable<int> ids)
+        => _exclusionsFilter.Contains(category, ids) || !_inclusionsFilter.Contains(category, ids);
+
+    /// <summary>频道情报保留时长（分钟，落 MapIntelConfig.ChannelDuration）。</summary>
+    public double ChannelDurationMinutes
+    {
+        get => _channelDurationMinutes;
+        set
+        {
+            if (Set(ref _channelDurationMinutes, Math.Clamp(value, 1, 180)))
+            {
+                SaveIntelConfig();
+            }
+        }
+    }
+
+    /// <summary>收到"清怪"预警时是否连该星系的 ZKB 击杀一起清（对应 MapIntelConfig.ClearChannelMode 0/1）。</summary>
+    public bool ClearZkbWithChannel
+    {
+        get => _clearZkbWithChannel;
+        set
+        {
+            if (Set(ref _clearZkbWithChannel, value))
+            {
+                SaveIntelConfig();
+            }
+        }
+    }
+
+    /// <summary>情报列表上限（落 MapIntelConfig.MaxMsgCount）。</summary>
+    public int MaxIntelMessages
+    {
+        get => _maxIntelMessages;
+        set
+        {
+            if (Set(ref _maxIntelMessages, Math.Clamp(value, 50, 10000)))
+            {
+                SaveIntelConfig();
+            }
+        }
+    }
+
+    /// <summary>清空情报列表与该星系聚合（不影响监听）；红圈随之清空。</summary>
+    public void ClearIntelMessages()
+    {
+        IntelMessages.Clear();
+        _intelSystems.Clear();
+        IntelMarkersChanged?.Invoke(this, []);
+    }
+
+    /// <summary>刷新可选频道（= 频道预警里已启动会话的监听者）；配置为空时默认全选（"空集=全部"约定）。</summary>
+    public void RefreshChannels()
+    {
+        var config = MapSettingService.GetIntel();
+        var saved = config.Channels;
+        Channels.Clear();
+        foreach (var listener in ChannelIntelManager.Current.GetActiveListeners())
+        {
+            var isChecked = saved is null || saved.Count == 0 || saved.Contains(listener);
+            Channels.Add(new CheckableModel<string>(listener, isChecked));
+        }
+
+        ApplyChannelSelection(save: false);
+    }
+
+    /// <summary>把勾选的频道（监听者）落到配置；运行中立即重新订阅频道预警推送。</summary>
+    public void ApplyChannelSelection(bool save = true)
+    {
+        _selectedChannelListeners.Clear();
+        foreach (var channel in Channels.Where(p => p.IsChecked == true))
+        {
+            _selectedChannelListeners.Add(channel.Data);
+        }
+
+        if (IntelRunning)
+        {
+            ChannelIntelManager.Current.UnListenChannelIntel();
+            if (_selectedChannelListeners.Count > 0)
+            {
+                ChannelIntelManager.Current.ListenChannelIntel(_selectedChannelListeners);
+            }
+        }
+
+        if (save)
+        {
+            SaveIntelConfig();
+        }
+    }
+
+    public void AddEntityExclusion(IdName? entity) => AddEntity(EntityExclusions, entity);
+
+    public void RemoveEntityExclusion(IdName? entity) => RemoveEntity(EntityExclusions, entity);
+
+    public void AddEntityInclusion(IdName? entity) => AddEntity(EntityInclusions, entity);
+
+    public void RemoveEntityInclusion(IdName? entity) => RemoveEntity(EntityInclusions, entity);
+
+    private void AddEntity(ObservableCollection<IdName> target, IdName? entity)
+    {
+        if (entity is null || entity.Id <= 0 || !IsFilterCategory(entity.GetCategory()))
+        {
+            return;
+        }
+
+        if (target.Any(p => p.Id == entity.Id && p.GetCategory() == entity.GetCategory()))
+        {
+            return;
+        }
+
+        target.Add(entity);
+        RebuildFilters();
+        SaveIntelConfig();
+    }
+
+    private void RemoveEntity(ObservableCollection<IdName> target, IdName? entity)
+    {
+        if (entity is null)
+        {
+            return;
+        }
+
+        var existing = target.FirstOrDefault(p => p.Id == entity.Id && p.GetCategory() == entity.GetCategory());
+        if (existing is null)
+        {
+            return;
+        }
+
+        target.Remove(existing);
+        RebuildFilters();
+        SaveIntelConfig();
     }
 
     // ---------- 导航 ----------

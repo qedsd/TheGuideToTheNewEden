@@ -2045,6 +2045,71 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
 
 ---
 
+### 阶段 65：情报面板改为独立工具窗口（对齐 WinUI `IntelTool`，功能补齐）
+
+- **背景**：用户要求把页内情报面板改成独立窗口（参考 WinUI 的 IntelTool），并把原有功能都加回来。
+- **新增** `Views/UserControls/Map/IntelToolView.xaml(.cs)`，用 `ToolWindow`（900×620）承载，**DataContext 直接复用星图页 VM**——
+  状态与主图零同步成本（同一份 `IntelMessages`/过滤/设置），主图继续负责画红圈与舰船图标。视图沿用项目现成范式（`KillStreamSettingView`）：ToggleSwitch / NumberBox / ComboBox / 说明块 + 主题画刷，不用 HUD 固定色。
+  - **实时数据**：情报列表（时间 / 星系 / 内容换行；点击一条即定位到该星系）、底部计数；
+  - **过滤**：排除项与包含项**并排两个列表**，输入框添加、多选删除，改动即时落 `MapIntelConfig.Exclusions/Inclusions`
+    （沿用 WPF 侧"`IdName.Name` 当关键词"的口径，与频道内置过滤共用同一份配置）；
+  - **设置**：ZKB 开关 / 击杀保留(分) / **频道情报保留(分)** / **每星系最多舰船图标** / **情报列表上限** / **收到"清怪"时是否连 ZKB 一起清**（`ClearChannelMode` 0/1）；
+  - **底部状态栏**：开始/停止监听（与顶栏开关同源）、清空情报、监听角色、消息计数。
+- **VM 补齐**（这些正是 WinUI 工具窗里原先 WPF 缺的能力）：`ZkbMaxAttackerCount`（映射为画布"每星系舰船图标上限"，画布新增 `SetIntelShipIconLimit`）、
+  `ChannelDurationMinutes`、`ClearZkbWithChannel`、`MaxIntelMessages`、`ClearIntelMessages()`、
+  过滤条目增删（`ExclusionItems/InclusionItems` + `Add/Remove`，同步关键词串并落盘）、`ReloadKeywordItems()`；
+  过期计时与"清怪"分支改用这些**可实时调整**的属性（原来每次都回读磁盘配置）。
+- **页面**：移除页内情报面板与"收起"标签（连带删掉只服务它的 `HudPanel` 样式与 `IntelMsgTemplate`）；
+  顶栏"情报"开关 = 监听总闸 + 开关窗口；**工具菜单新增"情报"入口**（关窗不停监听，随时可重开）。
+- **本地化**：新增 22 键（`MapPage_Tool_Intel` + `IntelTool_*`），两文件 1426 键、0 重复、键集一致。
+- **工具窗实例复用**（用户指出"避免每次都创建一个 window"）：一跳覆盖 / 行星资源清单 / 跳桥设置 / 主权分组 改用 `ToolWindow.SetCloseToHide()`——
+  点 X 只是 `Hide()`，**同一个窗口实例反复使用**（内容与事件订阅保持存活）；页面 `Unloaded` 时统一 `AllowClose()` 再 `Close()`（真关，`Closed` 处理器清空字段）。
+  星系详情（内容随"当前星系"变化）与**情报窗**走 `reusable: false` 的"真关 + 重建"。
+- **`ToolWindow` 标题栏按钮精细控制**（用户要求"能隐藏任何一个标题栏按钮"）：新增 `[Flags] ToolWindowButtons { None / Minimize / Maximize / Close / Topmost / All }`
+  与三个方法——`SetVisibleTitleBarButtons(buttons)`（一次性指定显示哪些、其余隐藏）、`HideTitleBarButton(buttons)` / `ShowTitleBarButton(buttons)`（只动指定按钮），
+  比逐个设 `ShowXxxButton` 属性直观。情报窗即用 `SetVisibleTitleBarButtons(Minimize | Close)`（不需要最大化与置顶）。
+- **情报窗与顶栏复选框双向联动**（用户要求"点关闭后真的关闭，并且和星图界面的情报复选框关联"）：情报窗**真关闭**——
+  点 X → 销毁 → 字段置空 → **复选框自动取消勾选** → 走禁用分支停止监听；反向亦然（取消勾选、或在窗内点"停止"，都会把窗口关掉；
+  页面订阅 VM 的 `PropertyChanged.IntelRunning` 同步复选框）。**情报窗不随页面卸载关闭**：切换页面时窗口与监听都保留（用户要求"页面切换时保留监听"），
+  只有用户主动关窗或取消勾选才停；其余工具窗（引用页面选中态）仍在 `Unloaded` 里关闭。
+- **修复：切走再切回星图 → `DrawBitmap` `ArgumentNullException`**（实机：打开星图（情报窗开着）→ 切主页面 → 切回）：
+  `StarMapCanvas.Unloaded` 释放了 `_baseCache` 却**没清 `_baseKey`**，切回后 paint 时 key 相同 → 判定"缓存有效"跳过重建 → 拿已释放的 null 位图去画
+  （那行还写着 `_baseCache!` 压掉了空检查）。修法：抽出 `ReleaseCaches()`（Dispose 底图 + **清 `_baseKey`** + 清发光精灵缓存）供 Unloaded 调用；
+  贴图前判断补 `_baseCache is null || _baseKey is null ||`，去掉 `!`——即便缓存被别处清掉也不可能再传 null。
+  顺带核对：`Loaded` 会重新订阅 `CompositionTarget.Rendering`，动画切回后正常恢复。
+- **实时数据改为 DataGrid**（用户要求"用 datagrid 展示足够多的数据，舰船图片等都没有"）：六列——时间 / 来源（ZKB 或频道名）/ 星系 / 星系 ID /
+  **舰船（攻方舰船图标 + ×数量，按数量降序最多 10 种）** / 内容（自动换行）；单击某行定位到该星系（同原 ListBox 行为）。
+  `IntelMsgItem` 增加 `Ships`（每条自己的攻方舰船徽标 `IntelShipBadge { TypeId, Count }`）与 `SourceText`，`OnZkbMatched` 填充；
+  图标用 `ctl:AsyncImage.TypeId`（**列表/表格里的图必须异步加载，别用 `UriSource` 同步下载**，见技能 §5.10）；
+  本地化新增 5 键（`MapTool_Time` / `IntelTool_Source` / `SystemId` / `Ship` / `Content`），两文件 1431 键、0 重复、键集一致。
+- **实时数据补成"图形化卡片"（P0+P1 已做）**：新增 **联盟徽标 / 星域 / 受害方 / 攻方** 四列，时间列加了**相对时间**（42s / 3m / 2h，由 10 秒过期计时器刷新，`IntelMsgItem` 因此实现 INPC）；
+  受害方单元格 = 受害舰船图标 + 受害者头像 + 受害势力徽标（`HasVictim` 为假时整格隐藏）；攻方单元格 = 每个舰船类型一组 **舰船图标 + ×N + 首个攻方角色头像 + 势力徽标**（WrapPanel 折行）；
+  所有图标与星系/星域名都可点击——舰船图标开 KB 击杀详情（`KbNavigation.OpenKillmail`）、头像/徽标开实体 KB 页（`KbNavigation.OpenEntity`）、星系定位、星域定位（`MapCanvas.ToRegion`）；
+  行右键也定位该星系（与 WinUI 一致）；点图标时 `PreviewMouseLeftButtonDown` 置 `Handled` 以免顺带触发"选中整行 → 定位"。
+  `IntelMsgItem` 新增 `KillmailId/RegionId/RegionName/SovAllianceId/Name/Victim*/Ships`；`IntelShipBadge` 新增 `CharacterId/FactionId/FactionIsAlliance/CountText` 与三个图片地址；
+  消息元信息（星域 + 主权）由新的 `ResolveSystemMeta` 统一填充（ZKB 与频道两条路径都走它）。
+  顺带把 `SovService.GetSovName/GetGroupId` 从"每次线性扫全部联盟×系统"改成 **O(1) 反查索引**（`GetSovInfo`，缓存刷新时重建）——星系详情、一跳覆盖、情报列表都是按行调用，收益明显。
+  情报窗默认尺寸放大到 1180×700 容纳新列。
+- **过滤语义对齐 WinUI（P2）、频道多选、攻方聚合、主图避让与标注（一次性做完）**：
+  - **实体过滤**：新增 `Models/Map/IntelEntityFilter.cs`，**语义逐条照搬 WinUI 的 `MapIntelFilter`**——六类集合（角色/军团/联盟/星系/星域/物品类型）+
+    `EmptyAlwayContains`（排除项 false：空集不拦；包含项 true：空集放行）+ `Contains(category, ids)` 的 any-of 判定。
+    ZKB 路径按 WinUI 逐项判断：**非 NPC + ZKB 时间窗内 + 星系 + 攻方角色/军团/联盟/舰船类型**（受害方不参与过滤）；
+    频道路径只过滤星系（与 WinUI 一致）。过滤页由"关键词文本框"改成 **`IdNameSearchBox` 实体搜索 + 列表显示"名称 + 类别"**（复用 `CategoryEnumToStringConverter`），
+    增删**运行中即时生效**（`RebuildFilters()`）；旧版把 `IdName.Name` 当关键词写进配置的历史条目在装载时被忽略并逐步清理（`IsFilterCategory`），配置仍与 WinUI 完全互通。
+  - **频道多选 + 刷新**：设置页新增频道区块——`CheckableModel<string>` 列表（= 频道预警里已启动会话的监听者）+ **刷新**按钮；
+    勾选即落 `MapIntelConfig.Channels` 并**立即重新订阅**（`ApplyChannelSelection`），运行中改也即时生效；配置为空时默认全选（沿用"空集=全部"约定）。
+    频道消息按"勾选的监听者 + 星系实体过滤"入库。
+  - **`ZKBMaxAttackerCount` 语义与 WinUI 一致**：攻方数量 **≤ 阈值 → 每个攻方一条**徽标（舰船 + 角色头像 + 势力徽标，无数字）；
+    **> 阈值 → 聚合成两组摘要**（每种舰船一条 / 每个势力一条，显示 `+N`）。默认 10。画布"每星系图标上限"回到固定常量 8（删除 `SetIntelShipIconLimit` 与 `IntelDisplayLimitChanged` 这套实验性接口）。
+  - **运行中允许即时改设置**：WPF 保持（与 WinUI 的 `IsEnabled` 反绑 `Running` 有意不同）。
+  - **主图叠加**：新增**图标空白探测避让**——每帧先按图标尺寸建"可见星系 → 屏幕网格"索引（`BuildIntelOccupancy`，O(节点数) 一次），
+    每个图标格做"格子 + 精确矩形"两级判定，压到别的星系就让位并把剩余折成 `+N`；新增**频道标注** `📢 {条数} 🕒 {最早多久前}`（画在圈下方）与 🕒 相对时间；
+    emoji 用 `Segoe UI Emoji`（`ResolveEmojiTypeface`，拿不到退回 UI 字体）。
+  - **本地化**：清理 7 个失效键（面板时代的关键词/图标上限/展开收起）、新增 4 键（最大攻方数 / 频道 / 刷新频道 / 频道标注），两文件 **1434 键、0 重复、键集一致**。
+- **构建**：0 错误（35 全量基线）。未实机核验。
+
+---
+
 ## 8. 已知限制与待办
 
 ### 功能降级（为保证可编译而暂缓，补起来各需数分钟）
@@ -2125,6 +2190,17 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     **拖拽/滚轮/飞行动画期间每帧仍要重建底图内容，但位图本身已按尺寸复用**（不再每帧 `new SKBitmap`，消除了 4K 高 DPI 下 ~30MB/帧 的 LOH 压力）；
     实测拖拽流畅。窗口铺满 4K 时位图缓存 ~几十 MB，`Unloaded` 时释放。
     新增开销：`CalOneJumpCover`（全网 3D 距离扫描）在 6 ly 左右量级为毫秒级；行星资源首次装载遍历全部 00 星系（本地库批量查询）。
+54. **情报工具窗与 WinUI `IntelTool` 的剩余差异**（阶段 65 逐行核对，按重要性排序）：
+    - **实时数据行的信息量**：~~最大差异~~ **P0+P1 已补齐**（阶段 65 末）——相对时间 Elapsed、联盟徽标、星域名、受害方卡片（舰船/角色/势力）、
+      攻方（舰船 ×N + 角色头像 + 势力徽标）、图标与名称点击跳转（KB 击杀详情 / 实体页 / 定位主图）、行右键定位，均已对齐。
+      **仍差**：WinUI 的 ZKB 行不显示文本内容（纯图标 + 提示），WPF 额外保留了"受害 · 船型 ← 最后一击"文本列（有意保留，信息更全）。
+    - ~~**过滤语义**~~ → **已对齐**（阶段 65 末）：改为按实体（六类）+ 同一套 `EmptyAlwayContains` 两级语义，配置与 WinUI 完全互通；ZKB 判断非 NPC、时间窗、
+      星系与攻方四类实体，频道只判星系。
+    - ~~**频道设置**~~ → **已对齐**：工具窗自带频道多选列表 + 刷新（= 频道预警已启动会话的监听者），勾选即时重订阅；时长单位仍为分钟（WinUI 秒）。
+    - ~~**`ZKBMaxAttackerCount` 语义**~~ → **已对齐**：> 阈值按舰船/势力聚合成 `+N`，≤ 阈值每个攻方一条。
+    - ~~**主图叠加**~~ → **已对齐**：图标空白探测避让（本帧占用网格 + 两级判定，冲突折成 `+N`）+ 频道 `📢 条数 🕒 最早` 标注 + 🕒 相对时间。
+    - **有意保留的差异**：运行中允许改设置（WinUI 锁死）；频道情报不做"被星域/安等筛选灰化的星系不入库"联动（WPF 的筛选是纯显示）；ZKB 行保留可读文本列。
+    - **WPF 多出来的**：底部"监听角色 + 条数"统计、过滤项即时落盘、DataGrid 可选行定位与右键定位。
 
 ### 本次核验结论（阶段 9）
 - 克隆 / 邮件（含详情窗 HTML 渲染）/ 合同 / 工业 **已完成逐页实机截图核验**，结论见 §7。
