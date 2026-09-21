@@ -2106,6 +2106,135 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
     每个图标格做"格子 + 精确矩形"两级判定，压到别的星系就让位并把剩余折成 `+N`；新增**频道标注** `📢 {条数} 🕒 {最早多久前}`（画在圈下方）与 🕒 相对时间；
     emoji 用 `Segoe UI Emoji`（`ResolveEmojiTypeface`，拿不到退回 UI 字体）。
   - **本地化**：清理 7 个失效键（面板时代的关键词/图标上限/展开收起）、新增 4 键（最大攻方数 / 频道 / 刷新频道 / 频道标注），两文件 **1434 键、0 重复、键集一致**。
+- **情报表格收敛（阶段 65 追加，用户反馈）**：① 删除无用的"联盟"列（连带 `SovAlliance_Click` 与 `IntelMsgItem.SovLogoUrl`）；
+  ② 受害方/攻方图标尺寸统一 **24px**（原来 26/22/20 混用，`AsyncImage.Size` 也统一 64）；③ **攻方"最多 2 项 + 统计形式"**——
+  `MaxAttackerBadges = 2`：人数 ≤ `ZkbMaxAttackerCount` 时逐个显示但最多 2 条；超阈值只保留"人数最多的舰船 ×N"与"人数最多的势力 ×N"两项
+  （原来"每种舰船/每个势力各一条"，上百人会刷满整列）；规模信息（人数/舰船种类/势力个数）走攻方单元格 ToolTip（`AttackerSummaryText`，新键 `IntelTool_AttackerSummary`）。
+  列宽随之下调（受害方 112→98、攻方 280→210）。语言键 1434（删 `IntelTool_Alliance`、增 `IntelTool_AttackerSummary`）。
+- **情报表格列宽与 ID 提示（同批追加）**：① **星系 / 星域列改 `Width="Auto"`**（按内容自适应），**删除"星系 ID"列**；
+  ② **所有名字与图标改为"悬停显示 ID"**——星系名 tooltip = 星系 ID、星域名 tooltip = 星域 ID，受害方/攻方的舰船·角色·势力图标 tooltip 分别 = 舰船类型 ID / 角色 ID / 势力 ID
+  （原来是"点击打开 KB 详情/角色/实体页"的说明文字，点击行为保留不变；攻方单元格仍保留 `AttackerSummaryText` 的统计摘要 tooltip）。
+  随之失效的 4 个语言键（`IntelTool_OpenKb` / `OpenCharacter` / `OpenEntity` / `SystemId`）已删除，两文件 **1430 键**、0 重复、键集一致。
+- **情报提示改为"名字优先、ID 兜底" + 工具窗与主窗口解耦（用户反馈）**：
+  - 受害方 / 攻方图标的悬停提示改成**名字**（星系 / 星域仍显示 ID，按上一轮要求）：名字解析走 `ResolveTypeName`（本地库 `InvTypeService.QueryType`）与 `ResolveEntityName`
+    （本地库 `IDNameService.GetById` 直查；本地没有的交给 `ZkbQueryService.ResolveIdNameAsync` **后台补**，补到后经 INPC 把提示从 ID 换成名字），两级都有进程内缓存；
+    `IntelShipBadge` / `IntelMsgItem` 的名字字段因此改为可写并触发通知，提示属性为 `*Tooltip`（名字为空时退回 ID）。
+  - **工具窗不再设 `Owner`**：设了 Owner 后 Windows 会把工具窗的最小化状态**绑定到主窗口**（主窗口最小化 → 工具窗一起最小化）；改为不设 Owner
+    + `WindowStartupLocation = CenterScreen`，两者互不影响；应用退出仍由 `MainWindow → Application.Shutdown()` 统一关闭全部窗口。
+- **工具菜单改 WinUI3 下拉样式 + 导航改独立弹窗（用户反馈）**：
+  - **工具菜单**：`Popup`（HUD 固定深色面板）→ **`ui:Flyout`**（WPF-UI 标准下拉：主题底色、圆角、阴影、外部点击自动关），菜单项改为主题化的
+    `ui:Button Appearance="Transparent"` + 图标；Flyout 元素放在顶栏工具按钮之后（自身位置即锚点，`Placement="Bottom"`），开关用 `Show()/Hide()`/`IsOpen`（与 `ZKBPage` 的用法一致）；入口新增"导航"。
+  - **导航**：`NavPopup`（页内锚定浮层）→ **独立工具窗 `Views/UserControls/Map/MapNavigationView.xaml(.cs)`**（ToolWindow 980×720，`DataContext` = 页面 VM；
+    航点 / 规避 / 旗舰参数 / 计算与错误提示 / 概览 / 结果列表 / 在游戏中设置航点全部搬过去，样式换成主题色）；需要画布配合的动作用回调交回页面
+    （`Locate` 定位、`ClearRouteOnCanvas` 清航线）。顶栏"导航"按钮与工具菜单都能打开；页面删除 `NavPopup`、`NavResultTemplate` 与 9 个导航处理器，
+    `_navWindow` 参与 `Unloaded` 统一关闭。语言键 +1（`MapPage_Tool_Navigate`）→ **1431 键**、0 重复、键集一致。
+- **入口收敛：删掉顶栏重复的"导航"按钮与"情报"复选框（用户要求，只留工具菜单入口）**：
+  顶栏不再有 导航 按钮与 情报 勾选框——导航、情报（以及一跳覆盖 / 资源清单 / 跳桥 / 主权分组）**统一从"工具"下拉进入**。
+  随之调整：`IntelTool_Click` 打开窗口时若未在监听则顺手 `StartIntel()`；情报窗 `Closed` 改为直接 `SaveIntelConfig + StopIntel`（原来靠顶栏复选框回调，现已无复选框）；
+  删除 `IntelToggle_Changed` / `ViewModel_PropertyChanged`（复选框同步）与顶栏按钮/复选框 XAML；导航窗顶部补回原来浮层里的操作提示（`MapPage_NavHint`）。
+  失效键 `MapPage_Navigate` 已删 → 两文件 **1430 键**、0 重复、键集一致。
+- **筛选面板改 WinUI3 风格 + 负安全等级显示修正（用户反馈）**：
+  - **筛选**：`Popup`（HUD 深色玻璃面板）→ **`ui:Flyout`**（主题底色、圆角、阴影、点外自动关；控件一并换成主题色：星域 ComboBox、安等区间两个 NumberBox、应用/清除按钮），
+    与工具下拉同一套写法；开关用 `Show()/Hide()`，页面里 3 处 `FilterPopup.IsOpen = false` 改为 `FilterFlyout.Hide()`。
+  - **负安全等级**：原来 **9 处**都是 `sec <= 0 ? "0.0" : ...` 的写法，负安等星系（如 -0.1）**全被显示成 0.0**。新增 `Helpers/MapTextHelper.FormatSecurity(sec, decimals)` 统一口径——
+    0 ≤ sec < 0.05 → `0.0`（EVE 惯例，不显示 0.04 这种伪低安）、**负数按实际值显示**（且 ≤ -0.05 才显示负号，避免出现 `-0.0`）、其余正常小数；
+    替换调用点：画布节点标签、悬停 HUD、信息卡 `SelectedSecurityText`、导航结果行、星系详情（本体 + 邻接）、一跳覆盖（结果行 + 中心标题）、行星资源清单。
+  - **构建**：0 错误（14 基线）。
+- **节点文字随"着色模式"变化（用户反馈：切到主权/行星资源后只变色、没有数值，且仍显示安全等级）**：
+  画布新增 `FormatNodeLabel(node)` —— **安等** = 安全等级；**主权** = **分组号**（无主权的星系**不再回退显示安等**，直接不显示，与 WinUI `SetDataToSOV` 先清空 `InnerText` 再接分组号的语义一致）；
+  **行星资源** = 该星系资源值；**击杀 / 通行** = 热度值；无数据返回空串，**连文字底圈一起省掉**。
+  数值用新写的 `NormalizeCount`（1.2k / 3.4m / 5.6b / 7.8t，0 → "0"）压缩，口径对齐 WinUI 的 `ISKNormalize`。
+  数据在切换模式时由页面先填（`ApplySovAsync` / `ApplyResourceAsync` / `FillHeat`）再 `SetColorMode` 重绘，所以在高缩放（`zmult ≥ 13`）下能立刻看到对应数值。
+  - **教训（前一轮踩到）**：`dotnet build -t:Compile` 在 WPF 项目下**不可靠**——它会跳过 XAML 标记编译，报出一堆 `InitializeComponent / ContentFrame 不存在` 的**假错误**（MessageHost、ToolWindow、WaitingOverlay…）；
+    验证编译请用常规 `dotnet build`，若 exe 被运行中的程序占用，则按 §9.50 只看错误里是否**仅有 MSB3027/MSB3021**。
+- **安等配色对齐 WinUI `SystemSecurityForegroundConverter`（用户反馈"不同安全等级的颜色不太合理"）**：
+  原来 WPF 自创三段渐变（≥0.5 一律青绿、0~0.5 橙→青绿插值、≤0 粉红），相邻等级几乎看不出差别、负安等还变成粉红；
+  现改为 **先 `Math.Round(sec, 1)` 取 0.1 分档，再取 WinUI `Styles/Colors.xaml` 里那套 11 色**——
+  `1.0 #24d7f9 青 / 0.9 #2dd6c3 蓝绿 / 0.8 #02f345 绿 / 0.7 #15f100 黄绿 / 0.6 #8ff930 青柠 / 0.5 #d3d112 黄 / 0.4 #e58000 橙 / 0.3 #f64d19 橙红 / 0.2 #eb4909 红橙 / 0.1 #c4261e 暗红 / 其余（0.0 与负安等）#d10202 红`。
+  与 WinUI 的实现逐档一致（含"负值落 00 红"与"分档用 `Math.Round`"两个细节）。
+  **备注**：WinUI 的行星资源着色复用同一套调色板（`value / max` 同样四舍五入到 0.1 分档），WPF 目前仍用热度渐变——如需完全一致，改一行即可（`SetColorMode` 的 PlanetResource 分支）。
+- **行星资源 / 击杀 / 通行统一用同一套 11 色调色板（用户要求）**：新增 `ScaleColor(value, maxValue)`——按 `value / maxValue` 比例走
+  **与安等相同的 11 色**（内部就是 `SecurityColor(比例)`，同样是"四舍五入到 0.1 分档"，与 WinUI 行星资源着色 `PlanetRecourceColorConverter` 的口径一致）；
+  `SetColorMode` 的 Kills / Jumps / PlanetResource 三个分支由原来的 `HeatColor`（蓝色→橙→红、对数刻度）改为 `ScaleColor`，**删掉 `HeatColor`**。
+  **无数据（值 < 0，或最大值为 0）用中性灰**（`NeutralColor`，深浅主题各一档），避免没数据的星系被当成最高值；
+  行星资源里"表内为 0 的星系"仍落在最低档（红），与 WinUI 表现一致——如需改成中性灰，改 `ScaleColor` 一处即可。
+  注：换成线性离散分档后，极值偏斜的数据（例如击杀数 1~2 对 数千）会集中在最低几档；若要更均衡可把比例先取对数再分档（同样的 11 色）。
+- **热力块层：行星资源 / 击杀 / 通行改成"色块热力图"（用户要求"单点上色不方便观察，要一眼看出哪里热"）**：
+  新增 `StarMapCanvas.DrawHeatMap` + `RebuildHeatGrid`——这三种模式除保留单点着色外，再叠一层色块：
+  **网格挂在世界坐标上**（`HeatGridCells = 56`：世界长边固定切 56 格，格宽 `_worldW / 56`），每格累加格内星系数值（**值 ≤ 0 的不计**，空区保持干净）；
+  归一化用**全图最大格值** `log(1+sum)/log(1+max)`（对数刻度压低极值、拉开低值），颜色复用**同一套 11 色**、透明度随热度 30 → 165；
+  画在**底图里、连线与节点之下**（`RebuildBase` 中 `DrawBackground` 之后）。
+  **关键设计（用户问"放大后色块为什么在变"）**：网格**只在数据变化时重建**（切换模式 / 重新载入地图），缩放平移**不重建**——
+  所以同一块区域的颜色在任何缩放下都一样，放大只是把同一块画得更大（像天气雷达的"场"，而不是每帧重算的屏幕栅格）。
+  早先那版是**屏幕坐标**网格（固定 26px/格 + 用"当前视口最大格值"归一化），于是放大时"每格覆盖的世界面积变小、格内星系变少、基准值也跟着变"，
+  颜色必然一直跳；现已整体替换。
+- **热力场细化 + 高倍淡出（用户截图反馈"热力场很模糊、像被遮挡、位置不一样"）**：
+  ① **分辨率 160 → 512 列**：全图时格子约 2px（柔和的云），放大到星域时约 30px（热区贴着星系团，不再是一大片糊）；分辨率上去后"模糊"和"错位感"同时缓解；
+  ② **高倍淡出**：`zmult` 越过 `HeatFadeStart=25` 后线性降透明度、`HeatFadeEnd=45` 起完全不画——极高倍下 512 格的双线性放大就是大片模糊色块，看着像雾一样"遮挡"星图，此时冷热改由节点内圈的数值文字表达；
+  ③ 透明度整体提档（alpha 40 → 200），浅色背景下冷区可读；
+  ④ 像素填充改 `Marshal.Copy` 写预乘 BGRA 缓冲（15 万像素逐个 `SetPixel` 会卡顿，整块拷贝只要几毫秒）。
+  注意：`SKCanvas.DrawBitmap`（SkiaSharp 3.119）没有带 `SKSamplingOptions` 的重载，淡出用 `paint.Color = White.WithAlpha(fade)` 实现（白色 tint + alpha 即"只降不透明度、不调色"）。
+- **热力色块开关（用户要求）**：顶栏新增「热力色块」复选框（`MapPage_HeatBlocks`）→ `MapCanvas.SetHeatMapVisible(bool)`；关闭时连热力网格都不建（省掉排序）。
+  **踩坑**：加开关时引用了新语言键却**忘了把键加进语言文件** → 运行时只有开关没文字（DynamicResource 缺键静默为空）。已补；并做了一次全项目"DynamicResource 引用 → 语言键"缺失核对（958 个引用，扣掉页面自有画刷后无真缺失）。
+  **踩坑（用户截图"色块像是错位了"）**：`NodePos` 的屏幕换算是 `NX * _worldW * _zoom + _offsetX`（y 用 `_worldH`），
+  而初版色块只写了 `cx * step * _zoom`——**漏掉 `_worldW / _worldH` 两个因子**，于是块的位置与尺寸都随距离原点越来越偏（星域越远偏得越多）。
+  修正后：`left = cx * stepX * _worldW * _zoom + _offsetX`、`cellW = stepX * _worldW * _zoom`（y 同理用 `_worldH`）——
+  **凡是自己换算"世界→屏幕"的地方，都要和 `NodePos` 用同一套因子**（NX/NY 是归一化坐标，不是屏幕比例）。
+- **热力图的归一化：从"值/最大值"改成"全图相对排名（分位）"（用户问"行星资源为什么只有绿块、没有红块"）**：
+  原来归一化是 `log(1+格子值)/log(1+全图最大格子值)`（单点则是 `值/最大值`）。对数把大量中等格子"抬"到 0.4~0.7 一段，
+  而调色板中段正好是橙→青柠→绿——于是整片图看起来全是绿系、几乎没有红色（行星资源这种"各系统量级接近"的数据尤其明显）。
+  现改为**分位（quantile）**：把所有有数据的格子（单点则是所有有数据的星系）按值排序、取每个值的分位位置（相同值同分位）作为 0..1 的 `t`，
+  再交给同一套 11 色。效果：**最冷的必然红、最热的必然青、11 档被均匀用满**（每档约 1/11），色阶与图例"低 → 高"严格对应。
+  统一抽出 `BuildQuantileMap(已排序序列)` 复用，另加 `BuildNodeHeatRanks`。
+  **单点口径再修正（用户截图反馈"这效果不对"）**：单点**不再**按分位着色——逐点按排名上色时相邻星系颜色随机跳变，
+  看起来像一把彩纸屑、完全读不出冷热。现在热力三模式下**圆点统一中性色**（有数据的用 `NeutralColor`，无数据的 `DimColor(NeutralColor)`），
+  冷热完全交给热力场表达；原来的 `ScaleColor` / `BuildNodeHeatRanks` 都已删除；无数据星系仍是中性灰。
+  语义影响：分位是"相对"的（颜色 = 在全图里的相对冷热排名），绝对量由节点内圈文字给出。
+  热力场透明度也提高了一档（alpha 40 → 185），浅色背景下也能读出冷区。
+  语义影响：分位是"相对"的（颜色 = 在全图里的相对冷热排名），绝对量由节点内圈文字给出。
+- **色阶图例（用户要求"应该提示什么颜色是什么意思"）**：星图左下角新增图例面板（HUD 配色，跟随主题）——
+  **标题**取当前着色模式（行星资源模式还带上资源种类，如"行星资源 · 产能"）；**11 格色条**直接复用画布的调色板（`StarMapCanvas.Palette` 公开出去，UI 图例与画布**共用同一份定义**，不再两处硬编码）；
+  **两端标签**按模式语义解释：安等 = 左「1.0（高安）」→ 右「0.0 / 负（低安）」（色条从高档往低档排），
+  行星资源 / 击杀 / 通行 = 左「低」→ 右「高」；**主权模式不画色条**（分组号是散列色、没有固定色阶），只留"同一分组号的联盟同色、分组号显示在放大后的星系上"的说明；
+  另有随模式切换的说明文字（安等 = 颜色与内圈文字都是安等 / 热力 = 色块是该区域聚合值、对数刻度）。
+  图例在构造、切模式（`ApplyColorModeAsync` 末尾）时刷新；新增 7 个语言键（`MapPage_Legend_*`），两文件 **1437 键**、0 重复、键集一致。
+- **热力块 → 平滑热力场（用户要求"铺满全局的热力图，不是方方正正的矩形"）**：
+  聚合逻辑不变（世界坐标网格、每格累加、分位归一化、值 ≤ 0 不计），但**渲染方式换了**——
+  把"每格一像素"的低分辨率位图（`HeatFieldColumns = 160` 列，行数按纵横比；像素颜色 = 调色板 + 透明度 30→165，无数据 = 透明）
+  用 `SKPaint.FilterQuality = SKFilterQuality.Low`（**bilinear**）放大铺满整个世界矩形 → 得到平滑过渡、铺满全局的热力图。
+  位图只在数据变化时重生成（`_heatDirty` 标记；`ReleaseCaches` 里释放），缩放平移只是重新采样同一张位图 → 颜色稳定。
+  **踩坑（SkiaSharp 3.119）**：`SKCanvas.DrawBitmap` **没有**带 `SKSamplingOptions` 的重载（只有经典 4 种）；平滑要用 `SKPaint.FilterQuality`——
+  且 3.x 的 `SKFilterQuality` 枚举是 `None/Low/Medium/High`（**没有 `Linear`**，bilinear = `Low`）。
+- **回退到矩形色块版本（用户决定"算了，回退"）**：平滑热力场（位图双线性放大）整体撤销，恢复**世界坐标 56 格矩形色块**实现
+  （含对齐修复、分位归一化、值 ≤ 0 不计）。这期间有效的改动全部保留：顶栏「热力色块」开关、热力模式圆点统一中性色、左下图例、`BuildQuantileMap` 分位归一化。
+  平滑版的踩坑记录（`DrawBitmap` 无 sampling 重载、`SKFilterQuality` 枚举无 `Linear`）保留在本文与技能里备查。
+- **热力色块开关移到左下角图例 + 逐着色类型独立记忆（用户要求"开关放到颜色说明那里，每个类型单独保存"）**：
+  顶栏「热力色块」复选框删除，开关搬进左下角图例面板（`LegendHeatRow`，只在行星资源 / 击杀 / 通行三种模式显示，安等 / 主权模式整行隐藏）；
+  画布 `_showHeatMap` 单布尔改为 **`_showHeatByMode`（按 `MapColorMode` 各存一份，缺省 = 显示）**：`SetHeatMapVisible(bool)` 作用于当前模式，
+  另有 `SetHeatMapVisible(mode, visible)`（页面启动回填用，非当前模式只记值不重画）与 `GetHeatMapVisible(mode)`；
+  持久化落 `MapSettings.json`（与 WinUI 共用）新增 `MapConfig.Canvas`（`MapCanvasConfig`：`ShowHeatKills / ShowHeatJumps / ShowHeatPlanetResource`，默认 true，
+  旧配置文件缺字段走默认值、WinUI 侧不受影响）；页面 `Loaded` 回填画布，`UpdateLegend` 随模式回显勾选态（`_suppressHeatToggle` 挡住回显触发的落盘），勾选时写回并 `MapSettingService.Save()`。
+- **热力模式圆点始终按值排名上色（用户反馈"你没有把星系圆点颜色恢复"→ 随即定论"色块显示时也显示颜色，一直都显示颜色"）**：
+  `SetColorMode` 的圆点上色抽出为 `ApplyNodeColors()`——热力三类模式下圆点**始终**按全图分位排名上色
+  （复用 `BuildQuantileMap` → `SecurityColor(t)`，与色块同一套归一化与 11 色调色板，相同值同色；无数据仍是暗中性色），
+  **不再有"色块显示时圆点中性"的分支**——早先"彩纸屑"顾虑按用户决定放弃，圆点（精确到星系）与色块（区域聚合）两层信息并存；
+  `SetHeatMapVisible` 只重建色块层、不再联动圆点。
+- **色块大小开放设置（用户要求"把色块大小也开放设置"）**：
+  `HeatGridCells` 由 `const 56` 改为**可调属性**（`HeatGridCells` + `SetHeatGridSize(cells)`，Clamp 16..120，变化才重建；
+  `_dataVersion++` 让底图缓存键失效 → 色块立即按新格数重画）。语义：**格数越少块越大**。
+  图例面板热力行下新增「色块大小」滑条（`MapPage_HeatGridSize`，16..120 步进 1 + 当前格数文字），只在热力三模式显示；
+  持久化落 `MapCanvasConfig.HeatGridSize`（默认 56，全局一份、不按类型分；`MapPage_Loaded` 回填，`UpdateLegend` 回显滑条，`_suppressHeatSize` 挡回显落盘）。
+  新语言键 `MapPage_HeatGridSize`（zh「色块大小」/ en「Block size」）→ 两文件 **1439 键**、0 重复、键集一致。
+  **踩坑（用户贴 NRE 堆栈）**：XAML 解析期 Slider 的 `Minimum="16"` 一生效就把 Value 从 0 钳到 16 → **ValueChanged 在 InitializeComponent 期间触发**，
+  此时同面板里排在滑条后面的 `HeatSizeText` 还没创建 → `HeatSizeText.Text = ...` 抛 NullReferenceException。
+  处理器头部已加 `HeatSizeText is null || MapCanvas is null` 防护。**通则：x:Name 字段按 XAML 文档顺序赋值，控件在 XAML 里设会钳制 Value 的
+  Min/Max 时，ValueChanged 处理器必须防空**（或初值改在代码里设——顶栏旧热力开关注释即同类问题）。
+  **方向修正（用户反馈"色块大小是不是反了"）**：滑条原样暴露的是"格数"（往右 = 格多 = 块小），与"色块大小"直觉相反；
+  改为滑条值 = **大小档位**（往右 = 块越大），内部镜像换算 `cells = MaxHeatGridCells + MinHeatGridCells − size`
+  （`Min/MaxHeatGridCells` 改 public 常量供页面换算）；**持久化的 `HeatGridSize` 仍是格数**，旧配置无需迁移；
+  图例回显同样镜像（格数 56 → 滑条显示 80）。
+  **上限再放大（用户要求"最大色块大小可以再放大"）**：`MinHeatGridCells` 16 → **8**（滑条 Minimum 同步 16 → 8）——
+  格数越少块越大，8 格 ≈ 世界长边的 1/8，是当前最大块；最小块端（120 格）不变。
 - **构建**：0 错误（35 全量基线）。未实机核验。
 
 ---

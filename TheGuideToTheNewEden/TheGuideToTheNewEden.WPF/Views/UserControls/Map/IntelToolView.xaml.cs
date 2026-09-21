@@ -122,15 +122,6 @@ public partial class IntelToolView : UserControl
         }
     }
 
-    /// <summary>星系主权联盟徽标 → 联盟 KB 页。</summary>
-    private void SovAlliance_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (FindMessage(sender) is { SovAllianceId: > 0 } message)
-        {
-            KbNavigation.OpenEntity((int)message.SovAllianceId, IdName.CategoryEnum.Alliance, message.SovAllianceName);
-        }
-    }
-
     private void VictimCharacter_Click(object sender, MouseButtonEventArgs e)
     {
         if (FindMessage(sender) is { VictimCharacterId: > 0 } message)

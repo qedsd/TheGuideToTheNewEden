@@ -291,6 +291,9 @@ public class StarMapCanvas : SKElement
     public void SetData(IReadOnlyList<MapSystemNode> nodes, IEnumerable<(int From, int To)> links)
     {
         _nodes = nodes.ToArray();
+        // 数据换了：热力色块作废（等页面按新数据再次 SetColorMode 时重建）
+        _heatCells = [];
+        _heatRanks = [];
         _indexById = new Dictionary<int, int>(_nodes.Length);
         var minX = double.MaxValue;
         var maxX = double.MinValue;
@@ -895,6 +898,7 @@ public class StarMapCanvas : SKElement
         using var font = new SKFont(_typeface, 10);
 
         DrawBackground(baseCanvas, paint, w, h, zmult);
+        DrawHeatMap(baseCanvas, paint, w, h);
         DrawLinks(baseCanvas, paint, zmult);
         if (_showBridges && _bridges.Count > 0)
         {
@@ -904,6 +908,174 @@ public class StarMapCanvas : SKElement
         DrawNodes(baseCanvas, paint, font, zmult, nodeR);
     }
 
+    // ---------- 热力图（行星资源 / 击杀 / 通行） ----------
+
+    /// <summary>热力网格的默认格数（世界长边切成多少格）——网格挂在世界坐标上（不是屏幕坐标），
+    /// 同一块区域的颜色在缩放/平移时不会变；放大只是把同一块画得更大。格数可由图例面板的滑条调整并持久化。</summary>
+    public const int DefaultHeatGridCells = 56;
+    public const int MinHeatGridCells = 8;
+    public const int MaxHeatGridCells = 120;
+
+    /// <summary>当前热力网格格数（世界长边；格数越多色块越小）。</summary>
+    public int HeatGridCells { get; private set; } = DefaultHeatGridCells;
+
+    /// <summary>调整热力网格格数（即色块大小：格数越少块越大）。范围 16..120，变化才重建。</summary>
+    public void SetHeatGridSize(int cells)
+    {
+        cells = Math.Clamp(cells, MinHeatGridCells, MaxHeatGridCells);
+        if (HeatGridCells == cells)
+        {
+            return;
+        }
+
+        HeatGridCells = cells;
+        _dataVersion++;
+        RebuildHeatGrid();
+        InvalidateVisual();
+    }
+
+    private Dictionary<long, double> _heatCells = [];    // 格子 → 聚合值
+    private Dictionary<long, double> _heatRanks = [];    // 格子 → 分位 0..1（全图相对排名）
+    private bool _heatRanksBuilt;
+
+    /// <summary>各热力模式的色块显隐（每个着色类型独立一份，缺省 = 显示；开关在左下角图例面板）。</summary>
+    private readonly Dictionary<MapColorMode, bool> _showHeatByMode = [];
+
+    /// <summary>开关当前着色模式的热力色块（默认开）。关闭/开启都会让底图重建。</summary>
+    public void SetHeatMapVisible(bool visible) => SetHeatMapVisible(_currentColorMode, visible);
+
+    /// <summary>
+    /// 设置指定模式的热力色块显隐：页面启动时用它回填持久化的各模式状态；
+    /// 目标模式是当前模式才触发重建重画，其余只记值（等切到该模式时 <see cref="SetColorMode"/> 会重建）。
+    /// </summary>
+    public void SetHeatMapVisible(MapColorMode mode, bool visible)
+    {
+        if (GetHeatMapVisible(mode) == visible)
+        {
+            return;
+        }
+
+        _showHeatByMode[mode] = visible;
+        if (mode == _currentColorMode)
+        {
+            // 圆点颜色与色块显隐无关（始终按值排名上色），这里只需重建色块层
+            RebuildHeatGrid();
+            _dataVersion++;
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>查询指定模式的色块显隐（从未设置过 = 显示）。</summary>
+    public bool GetHeatMapVisible(MapColorMode mode) => !_showHeatByMode.TryGetValue(mode, out var visible) || visible;
+
+    /// <summary>这三个模式除单点着色外，再叠一层矩形色块热力图。</summary>
+    private bool IsHeatMode => _currentColorMode is MapColorMode.Kills or MapColorMode.Jumps or MapColorMode.PlanetResource;
+
+    /// <summary>
+    /// 按"世界坐标网格"重建热力色块：每格累加格内星系数值（值 ≤ 0 的星系不计，空区保持干净）。
+    /// **归一化用"全图相对排名（分位）"**——最冷的格子必然红、最热的必然青，11 档均匀用满；
+    /// 只在**数据变化**时重建（切换模式 / 重新载入地图），缩放平移不重建 → 颜色稳定。
+    /// </summary>
+    private void RebuildHeatGrid()
+    {
+        _heatCells = [];
+        _heatRanks = [];
+        _heatRanksBuilt = false;
+        if (!IsHeatMode || !GetHeatMapVisible(_currentColorMode) || _nodes.Length == 0 || _worldW <= 0)
+        {
+            return;
+        }
+
+        var isResource = _currentColorMode == MapColorMode.PlanetResource;
+        var step = _worldW / HeatGridCells;
+        foreach (var node in _nodes)
+        {
+            var value = isResource ? node.Resource : node.Heat;
+            if (value <= 0)
+            {
+                continue;
+            }
+
+            var key = PackCell((int)Math.Floor(node.NX / step), (int)Math.Floor(node.NY / step));
+            _heatCells.TryGetValue(key, out var sum);
+            sum += value;
+            _heatCells[key] = sum;
+        }
+
+        if (_heatCells.Count == 0)
+        {
+            return;
+        }
+
+        var rankByValue = BuildQuantileMap(_heatCells.Values.OrderBy(p => p).ToList());
+        foreach (var (key, sum) in _heatCells)
+        {
+            _heatRanks[key] = rankByValue[sum];
+        }
+
+        _heatRanksBuilt = true;
+    }
+
+    /// <summary>把"已排序的值序列"映射成 0..1 的分位（相同值同分位；只有一个值时给 0.5）。</summary>
+    private static Dictionary<double, double> BuildQuantileMap(List<double> ordered)
+    {
+        var map = new Dictionary<double, double>(ordered.Count);
+        var i = 0;
+        while (i < ordered.Count)
+        {
+            var value = ordered[i];
+            var j = i;
+            while (j + 1 < ordered.Count && ordered[j + 1] == value)
+            {
+                j++;
+            }
+
+            map[value] = (i + j) / 2.0 / (ordered.Count - 1);
+            i = j + 1;
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// 矩形色块热力图（画在连线与节点之下）：颜色与透明度用与安等相同的 11 色 + 分位；
+    /// 世界 → 屏幕换算必须与 <see cref="NodePos"/> 同一套因子（NX * _worldW * _zoom + offset）。
+    /// </summary>
+    private void DrawHeatMap(SKCanvas canvas, SKPaint paint, float w, float h)
+    {
+        if (!_heatRanksBuilt)   // 关闭或非热力模式时 RebuildHeatGrid 不会置位 → 自然跳过
+        {
+            return;
+        }
+
+        // 注意：NX/NY 是"归一化世界坐标"，屏幕换算要和 NodePos 一致——必须带上 _worldW / _worldH 因子
+        var stepX = _worldW / HeatGridCells;
+        var stepY = stepX;
+        var cellW = (float)(stepX * _worldW * _zoom);
+        var cellH = (float)(stepY * _worldH * _zoom);
+        if (cellW <= 1f || cellH <= 1f)
+        {
+            return;   // 缩太小：色块比节点还小，没有观察价值
+        }
+
+        paint.Style = SKPaintStyle.Fill;
+        foreach (var key in _heatRanks.Keys)
+        {
+            var t = _heatRanks[key];
+            var cx = (int)(key >> 32);
+            var cy = (int)(uint)key;
+            var left = (float)(cx * stepX * _worldW * _zoom + _offsetX);
+            var top = (float)(cy * stepY * _worldH * _zoom + _offsetY);
+            if (left + cellW < 0 || top + cellH < 0 || left > w || top > h)
+            {
+                continue;
+            }
+
+            var color = SecurityColor(t);
+            paint.Color = new SKColor(color.Red, color.Green, color.Blue, (byte)Math.Clamp(40 + (t * 150), 40, 185));
+            canvas.DrawRoundRect(new SKRect(left + 0.5f, top + 0.5f, left + cellW - 0.5f, top + cellH - 0.5f), 3f, 3f, paint);
+        }
+    }
     private float NodeRadius(double zmult) => (float)Math.Clamp(1.5 * Math.Pow(zmult, 0.42), 1.2, 26);
 
     /// <summary>
@@ -1118,18 +1290,19 @@ public class StarMapCanvas : SKElement
 
             if (showSec)
             {
-                // 主权着色时内圈显示分组号（与 WinUI 的 InnerText 语义一致），其余模式显示安全等级
-                var secText = _currentColorMode == MapColorMode.Sovereignty && node.GroupId > 0
-                    ? node.GroupId.ToString(CultureInfo.InvariantCulture)
-                    : FormatSecurity(node.Security);
-                font.Typeface = _typefaceBold;
-                font.Size = secTextSize;
-                var width = font.MeasureText(secText);
-                paint.Color = BadgeBg(210);
-                canvas.DrawCircle(p, secTextSize * 0.85f + 2.5f, paint);
-                paint.Color = BadgeText(230);
-                canvas.DrawText(secText, p.X - width / 2, p.Y + secTextSize * 0.36f, font, paint);
-                font.Typeface = _typeface;
+                // 内圈文字随着色模式变化（安等 / 分组号 / 行星资源值 / 击杀·通行量）；无数据就不画（连底圈一起省掉）
+                var label = FormatNodeLabel(node);
+                if (label.Length > 0)
+                {
+                    font.Typeface = _typefaceBold;
+                    font.Size = secTextSize;
+                    var width = font.MeasureText(label);
+                    paint.Color = BadgeBg(210);
+                    canvas.DrawCircle(p, secTextSize * 0.85f + 2.5f, paint);
+                    paint.Color = BadgeText(230);
+                    canvas.DrawText(label, p.X - width / 2, p.Y + secTextSize * 0.36f, font, paint);
+                    font.Typeface = _typeface;
+                }
             }
 
             if (showName)
@@ -1182,10 +1355,48 @@ public class StarMapCanvas : SKElement
         return image;
     }
 
-    private static string FormatSecurity(double sec)
+    /// <summary>节点上的安全等级文本（负安等按实际显示，见 <see cref="Helpers.MapTextHelper.FormatSecurity"/>）。</summary>
+    private static string FormatSecurity(double sec) => Helpers.MapTextHelper.FormatSecurity(Math.Max(sec, -1));
+
+    /// <summary>
+    /// 节点内圈文字（对着色模式变化，与 WinUI 的 <c>InnerText</c> 语义一致）：
+    /// 安等模式 = 安全等级；主权模式 = **分组号**（无主权不显示）；行星资源模式 = **该星系资源值**；
+    /// 击杀 / 通行模式 = **热度值**。无数据返回空串（调用方连底圈一起省掉）。
+    /// </summary>
+    private string FormatNodeLabel(MapSystemNode node) => _currentColorMode switch
     {
-        var v = Math.Round(Math.Max(sec, -1), 1);
-        return v <= 0 ? "0.0" : v.ToString("0.0", CultureInfo.InvariantCulture);
+        MapColorMode.Sovereignty => node.GroupId > 0 ? node.GroupId.ToString(CultureInfo.InvariantCulture) : string.Empty,
+        MapColorMode.PlanetResource => node.Resource >= 0 ? NormalizeCount((long)Math.Round(node.Resource)) : string.Empty,
+        MapColorMode.Kills or MapColorMode.Jumps => node.Heat >= 0 ? NormalizeCount((long)Math.Round(node.Heat)) : string.Empty,
+        _ => FormatSecurity(node.Security),
+    };
+
+    /// <summary>大数字缩写（1.2k / 3.4m / 5.6b / 7.8t；0 显示 "0"），与 WinUI 的 ISKNormalize 口径一致。</summary>
+    private static string NormalizeCount(long value)
+    {
+        if (value <= 0)
+        {
+            return "0";
+        }
+
+        if (value < 1_000)
+        {
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (value < 1_000_000)
+        {
+            return (value / 1_000.0).ToString("0.#", CultureInfo.InvariantCulture) + "k";
+        }
+
+        if (value < 1_000_000_000)
+        {
+            return (value / 1_000_000.0).ToString("0.#", CultureInfo.InvariantCulture) + "m";
+        }
+
+        return value < 1_000_000_000_000
+            ? (value / 1_000_000_000.0).ToString("0.#", CultureInfo.InvariantCulture) + "b"
+            : (value / 1_000_000_000_000.0).ToString("0.#", CultureInfo.InvariantCulture) + "t";
     }
 
     // ---------- 航线 ----------
@@ -1606,23 +1817,66 @@ public class StarMapCanvas : SKElement
 
     // ---------- 着色 ----------
 
-    /// <summary>切换着色模式并重算节点颜色（热度用 Heat，行星资源用 Resource，主权用分组号）。</summary>
+    /// <summary>切换着色模式并重算节点颜色（热力三模式的圆点始终按值排名上色，色块是独立叠加的一层）。</summary>
     public void SetColorMode(MapColorMode mode, double killsMax = 0, double jumpsMax = 0, double resourceMax = 0)
     {
         _currentColorMode = mode;
         _dataVersion++;
+        ApplyNodeColors();
+
+        // 热力场挂在世界坐标上，只在"数值变了"时重建（缩放平移不重建 → 颜色稳定）
+        RebuildHeatGrid();
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// 按当前模式给所有圆点上色。热力三类模式（行星资源 / 击杀 / 通行）**始终按值排名上色**
+    /// （用户定论"一直都显示颜色"，撤销早先"色块显示时圆点中性"的方案）：
+    /// 有数据星系按全图分位排名取 11 色调色板（相同值同色，红=相对冷 → 青=相对热），无数据星系保持暗中性色；
+    /// 色块层只是在这之上叠加的区域聚合视图，显隐不影响圆点。
+    /// </summary>
+    private void ApplyNodeColors()
+    {
+        var mode = _currentColorMode;
+        if (mode is not (MapColorMode.Kills or MapColorMode.Jumps or MapColorMode.PlanetResource))
+        {
+            foreach (var node in _nodes)
+            {
+                node.Color = mode switch
+                {
+                    MapColorMode.Sovereignty => SovGroupColor(node.GroupId, node.Security),
+                    _ => SecurityColor(node.Security),
+                };
+            }
+
+            return;
+        }
+
+        // 圆点按"全图分位排名"上色（与色块同一套归一化，最冷必红、最热必青、11 档均匀用满）
+        var isResource = mode == MapColorMode.PlanetResource;
+        var ordered = new List<double>(_nodes.Length);
         foreach (var node in _nodes)
         {
-            node.Color = mode switch
+            var value = isResource ? node.Resource : node.Heat;
+            if (value > 0)
             {
-                MapColorMode.Kills => HeatColor(node.Heat, killsMax),
-                MapColorMode.Jumps => HeatColor(node.Heat, jumpsMax),
-                MapColorMode.PlanetResource => HeatColor(node.Resource, resourceMax),
-                MapColorMode.Sovereignty => SovGroupColor(node.GroupId, node.Security),
-                _ => SecurityColor(node.Security),
-            };
+                ordered.Add(value);
+            }
         }
-        InvalidateVisual();
+
+        var rankByValue = ordered.Count > 0 ? BuildQuantileMap(ordered.OrderBy(p => p).ToList()) : [];
+        foreach (var node in _nodes)
+        {
+            var value = isResource ? node.Resource : node.Heat;
+            if (value > 0 && rankByValue.TryGetValue(value, out var t))
+            {
+                node.Color = SecurityColor(t);
+            }
+            else
+            {
+                node.Color = DimColor(NeutralColor);
+            }
+        }
     }
 
     /// <summary>
@@ -1660,32 +1914,39 @@ public class StarMapCanvas : SKElement
             (byte)Math.Clamp((b + m) * 255, 0, 255));
     }
 
+    /// <summary>
+    /// 安全等级 / 热力共用的 11 色调色板（**索引 0 = 最低档 #d10202 红 … 10 = 最高档 #24d7f9 青**），
+    /// 与 WinUI 的 <c>SystemSecurityForeground00…1</c> 逐档一致；
+    /// 画布与 UI 色阶图例共用这一份定义，避免两处硬编码走样。
+    /// </summary>
+    public static readonly IReadOnlyList<SKColor> Palette =
+    [
+        new(0xD1, 0x02, 0x02), // 00 最低
+        new(0xC4, 0x26, 0x1E),
+        new(0xEB, 0x49, 0x09),
+        new(0xF6, 0x4D, 0x19),
+        new(0xE5, 0x80, 0x00),
+        new(0xD3, 0xD1, 0x12),
+        new(0x8F, 0xF9, 0x30),
+        new(0x15, 0xF1, 0x00),
+        new(0x02, 0xF3, 0x45),
+        new(0x2D, 0xD6, 0xC3),
+        new(0x24, 0xD7, 0xF9), // 10 最高
+    ];
+
+    /// <summary>
+    /// 安全等级配色——**与 WinUI 的 <c>SystemSecurityForegroundConverter</c> 完全一致**：
+    /// 先 <c>Math.Round(sec, 1)</c> 取 0.1 分档，再取 <see cref="Palette"/> 对应档；
+    /// 0.0 与负安等（虫洞 / Pochven 之类）一起落在最低档（#d10202 红）。
+    /// </summary>
     public static SKColor SecurityColor(double sec)
     {
-        if (sec >= 0.5)
-        {
-            return new SKColor(46, 230, 168);
-        }
-        if (sec > 0)
-        {
-            // 低安：橙 → 青绿过渡
-            var t = (float)(sec / 0.5);
-            return LerpColor(new SKColor(255, 178, 61), new SKColor(46, 230, 168), t);
-        }
-        return new SKColor(255, 77, 106);
+        var step = (int)Math.Round(Math.Round(sec, 1) * 10);
+        return Palette[Math.Clamp(step, 0, Palette.Count - 1)];
     }
 
-    public static SKColor HeatColor(double value, double maxValue)
-    {
-        if (maxValue <= 0 || value < 0)
-        {
-            return new SKColor(120, 130, 160);
-        }
-        var t = Math.Clamp(Math.Log(1 + value) / Math.Log(1 + maxValue), 0, 1);
-        return t < 0.5
-            ? LerpColor(new SKColor(61, 107, 255), new SKColor(255, 177, 61), (float)(t * 2))
-            : LerpColor(new SKColor(255, 177, 61), new SKColor(255, 68, 68), (float)((t - 0.5) * 2));
-    }
+    /// <summary>无数据节点的中性色（深浅主题下都能看清的中灰）。</summary>
+    private SKColor NeutralColor => _light ? new SKColor(168, 176, 192) : new SKColor(96, 104, 122);
 
     private static SKColor LerpColor(SKColor a, SKColor b, float t)
     {

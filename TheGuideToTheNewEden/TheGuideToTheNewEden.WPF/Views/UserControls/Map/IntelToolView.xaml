@@ -80,58 +80,40 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!--  星系主权联盟徽标（点击打开联盟 KB 页）  -->
-                            <DataGridTemplateColumn Width="54" Header="{DynamicResource IntelTool_Alliance}">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Image
-                                            Width="24"
-                                            Height="24"
-                                            Cursor="Hand"
-                                            MouseLeftButtonUp="SovAlliance_Click"
-                                            PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                            ToolTip="{Binding SovAllianceName}"
-                                            ctl:AsyncImage.Size="32"
-                                            ctl:AsyncImage.Source="{Binding SovLogoUrl}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
-                            <!--  星系（点击定位）  -->
-                            <DataGridTemplateColumn Width="130" Header="{DynamicResource MapTool_System}">
+                            <!--  星系（自动宽度，悬停显示星系 ID，点击定位）  -->
+                            <DataGridTemplateColumn Width="Auto" Header="{DynamicResource MapTool_System}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock
+                                            Margin="0,0,8,0"
                                             VerticalAlignment="Center"
                                             Cursor="Hand"
                                             MouseLeftButtonUp="SystemText_Click"
                                             Text="{Binding SystemName}"
-                                            TextWrapping="Wrap" />
+                                            TextWrapping="Wrap"
+                                            ToolTip="{Binding SystemId}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!--  星域（点击定位）  -->
-                            <DataGridTemplateColumn Width="110" Header="{DynamicResource MapTool_Region}">
+                            <!--  星域（自动宽度，悬停显示星域 ID，点击定位）  -->
+                            <DataGridTemplateColumn Width="Auto" Header="{DynamicResource MapTool_Region}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock
+                                            Margin="0,0,8,0"
                                             VerticalAlignment="Center"
                                             Cursor="Hand"
                                             MouseLeftButtonUp="RegionText_Click"
                                             Text="{Binding RegionName}"
-                                            TextWrapping="Wrap" />
+                                            TextWrapping="Wrap"
+                                            ToolTip="{Binding RegionId}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn
-                                Width="72"
-                                Binding="{Binding SystemId}"
-                                Header="{DynamicResource IntelTool_SystemId}" />
-
-                            <!--  受害方：舰船 / 角色 / 势力（点击打开 KB 击杀详情 / 角色 / 势力页）  -->
-                            <DataGridTemplateColumn Width="112" Header="{DynamicResource IntelTool_Victim}">
+                            <!--  受害方：舰船 / 角色 / 势力（统一 24px；悬停显示各自 ID，点击打开 KB / 角色 / 势力页）  -->
+                            <DataGridTemplateColumn Width="98" Header="{DynamicResource IntelTool_Victim}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel
@@ -139,44 +121,44 @@
                                             Orientation="Horizontal"
                                             Visibility="{Binding HasVictim, Converter={StaticResource BoolToVis}}">
                                             <Image
-                                                Width="26"
-                                                Height="26"
+                                                Width="24"
+                                                Height="24"
+                                                ctl:AsyncImage.Size="64"
+                                                ctl:AsyncImage.Source="{Binding VictimShipImageUrl}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonUp="Killmail_Click"
                                                 PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                ToolTip="{Binding VictimShipName}"
-                                                ctl:AsyncImage.Size="64"
-                                                ctl:AsyncImage.Source="{Binding VictimShipImageUrl}" />
+                                                ToolTip="{Binding VictimShipTooltip}" />
                                             <Image
-                                                Width="22"
-                                                Height="22"
-                                                Margin="4,0,0,0"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="3,0,0,0"
+                                                ctl:AsyncImage.Size="64"
+                                                ctl:AsyncImage.Source="{Binding VictimPortraitUrl}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonUp="VictimCharacter_Click"
                                                 PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                ToolTip="{Binding VictimCharacterName}"
-                                                ctl:AsyncImage.Size="32"
-                                                ctl:AsyncImage.Source="{Binding VictimPortraitUrl}" />
+                                                ToolTip="{Binding VictimCharacterTooltip}" />
                                             <Image
-                                                Width="22"
-                                                Height="22"
-                                                Margin="4,0,0,0"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="3,0,0,0"
+                                                ctl:AsyncImage.Size="64"
+                                                ctl:AsyncImage.Source="{Binding VictimFactionLogoUrl}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonUp="VictimFaction_Click"
                                                 PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                ToolTip="{Binding VictimFactionName}"
-                                                ctl:AsyncImage.Size="32"
-                                                ctl:AsyncImage.Source="{Binding VictimFactionLogoUrl}" />
+                                                ToolTip="{Binding VictimFactionTooltip}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <!--  攻方：每种舰船 = 舰船图标 + ×数量 + 首个攻方角色头像 + 势力徽标  -->
-                            <DataGridTemplateColumn Width="280" Header="{DynamicResource IntelTool_Attacker}">
+                            <!--  攻方：最多 2 项（人数多时是"最多人的舰船 + 最多人的势力"统计形式），尺寸统一 24px  -->
+                            <DataGridTemplateColumn Width="210" Header="{DynamicResource IntelTool_Attacker}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ItemsControl ItemsSource="{Binding Ships}">
+                                        <ItemsControl ItemsSource="{Binding Ships}" ToolTip="{Binding AttackerSummaryText}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <WrapPanel />
@@ -184,44 +166,40 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <!--  未聚合 = 单个攻方（舰船 + 角色 + 势力）；聚合 = 一组（舰船或势力 + "+N"）  -->
-                                                    <StackPanel
-                                                        Margin="0,1,6,1"
-                                                        Orientation="Horizontal">
+                                                    <!--  未聚合 = 单个攻方（舰船 + 角色 + 势力）；聚合 = 统计形式（舰船或势力 + ×人数）  -->
+                                                    <StackPanel Margin="0,1,6,1" Orientation="Horizontal">
                                                         <Image
-                                                            Width="26"
-                                                            Height="26"
+                                                            Width="24"
+                                                            Height="24"
+                                                            ctl:AsyncImage.Size="64"
+                                                            ctl:AsyncImage.Source="{Binding ShipImageUrl}"
                                                             Cursor="Hand"
                                                             MouseLeftButtonUp="Killmail_Click"
                                                             PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                            ToolTip="{DynamicResource IntelTool_OpenKb}"
-                                                            Visibility="{Binding HasShip, Converter={StaticResource BoolToVis}}"
-                                                            ctl:AsyncImage.Size="64"
-                                                            ctl:AsyncImage.Source="{Binding ShipImageUrl}" />
+                                                            ToolTip="{Binding ShipTooltip}"
+                                                            Visibility="{Binding HasShip, Converter={StaticResource BoolToVis}}" />
                                                         <Image
-                                                            Width="20"
-                                                            Height="20"
+                                                            Width="24"
+                                                            Height="24"
                                                             Margin="3,0,0,0"
-                                                            VerticalAlignment="Center"
+                                                            ctl:AsyncImage.Size="64"
+                                                            ctl:AsyncImage.Source="{Binding CharacterPortraitUrl}"
                                                             Cursor="Hand"
                                                             MouseLeftButtonUp="AttackerCharacter_Click"
                                                             PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                            ToolTip="{DynamicResource IntelTool_OpenCharacter}"
-                                                            Visibility="{Binding HasCharacter, Converter={StaticResource BoolToVis}}"
-                                                            ctl:AsyncImage.Size="32"
-                                                            ctl:AsyncImage.Source="{Binding CharacterPortraitUrl}" />
+                                                            ToolTip="{Binding CharacterTooltip}"
+                                                            Visibility="{Binding HasCharacter, Converter={StaticResource BoolToVis}}" />
                                                         <Image
-                                                            Width="20"
-                                                            Height="20"
+                                                            Width="24"
+                                                            Height="24"
                                                             Margin="3,0,0,0"
-                                                            VerticalAlignment="Center"
+                                                            ctl:AsyncImage.Size="64"
+                                                            ctl:AsyncImage.Source="{Binding FactionLogoUrl}"
                                                             Cursor="Hand"
                                                             MouseLeftButtonUp="AttackerFaction_Click"
                                                             PreviewMouseLeftButtonDown="Icon_PreviewMouseDown"
-                                                            ToolTip="{DynamicResource IntelTool_OpenEntity}"
-                                                            Visibility="{Binding HasFaction, Converter={StaticResource BoolToVis}}"
-                                                            ctl:AsyncImage.Size="32"
-                                                            ctl:AsyncImage.Source="{Binding FactionLogoUrl}" />
+                                                            ToolTip="{Binding FactionTooltip}"
+                                                            Visibility="{Binding HasFaction, Converter={StaticResource BoolToVis}}" />
                                                         <TextBlock
                                                             Margin="3,0,0,0"
                                                             VerticalAlignment="Center"
@@ -275,7 +253,10 @@
                             <RowDefinition />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock FontSize="13" FontWeight="SemiBold" Text="{DynamicResource IntelTool_Exclusion}" />
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource IntelTool_Exclusion}" />
                         <TextBlock
                             Grid.Row="1"
                             Margin="0,4,0,0"
@@ -333,7 +314,10 @@
                             <RowDefinition />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock FontSize="13" FontWeight="SemiBold" Text="{DynamicResource IntelTool_Inclusion}" />
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{DynamicResource IntelTool_Inclusion}" />
                         <TextBlock
                             Grid.Row="1"
                             Margin="0,4,0,0"
@@ -420,8 +404,8 @@
                             Grid.Column="1"
                             Width="200"
                             HorizontalAlignment="Left"
-                            Minimum="1"
                             Maximum="180"
+                            Minimum="1"
                             SpinButtonPlacementMode="Hidden"
                             Value="{Binding ZkbDurationMinutes, Mode=TwoWay}" />
 
@@ -434,8 +418,8 @@
                             Grid.Column="1"
                             Width="200"
                             HorizontalAlignment="Left"
-                            Minimum="1"
                             Maximum="180"
+                            Minimum="1"
                             SpinButtonPlacementMode="Hidden"
                             Value="{Binding ChannelDurationMinutes, Mode=TwoWay}" />
 
@@ -449,8 +433,8 @@
                             Grid.Column="1"
                             Width="200"
                             HorizontalAlignment="Left"
-                            Minimum="1"
                             Maximum="30"
+                            Minimum="1"
                             SpinButtonPlacementMode="Hidden"
                             Value="{Binding ZkbMaxAttackerCount, Mode=TwoWay}" />
 
@@ -463,8 +447,8 @@
                             Grid.Column="1"
                             Width="200"
                             HorizontalAlignment="Left"
-                            Minimum="50"
                             Maximum="10000"
+                            Minimum="50"
                             SpinButtonPlacementMode="Hidden"
                             Value="{Binding MaxIntelMessages, Mode=TwoWay}" />
 
@@ -486,7 +470,10 @@
                             Margin="0,6,0,6"
                             VerticalAlignment="Top"
                             Text="{DynamicResource IntelTool_Channels}" />
-                        <Grid Grid.Row="6" Grid.Column="1" Margin="0,6,0,6">
+                        <Grid
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            Margin="0,6,0,6">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
@@ -569,26 +556,26 @@
             <DockPanel LastChildFill="False">
                 <ui:Button
                     x:Name="StartStopButton"
-                    DockPanel.Dock="Left"
                     Appearance="Primary"
-                    Click="StartStop_Click" />
+                    Click="StartStop_Click"
+                    DockPanel.Dock="Left" />
                 <ui:Button
                     x:Name="ClearButton"
-                    DockPanel.Dock="Left"
                     Margin="8,0,0,0"
                     Click="Clear_Click"
-                    Content="{DynamicResource IntelTool_Clear}" />
+                    Content="{DynamicResource IntelTool_Clear}"
+                    DockPanel.Dock="Left" />
                 <TextBlock
                     x:Name="CountText"
-                    DockPanel.Dock="Right"
                     Margin="10,0,0,0"
                     VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
                     FontSize="12"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <TextBlock
                     x:Name="StatusText"
-                    DockPanel.Dock="Right"
                     VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
                     FontSize="12"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
             </DockPanel>

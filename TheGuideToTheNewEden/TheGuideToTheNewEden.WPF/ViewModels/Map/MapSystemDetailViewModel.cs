@@ -75,7 +75,7 @@ public sealed class MapSystemDetailViewModel : INotifyPropertyChanged
         _map = map;
         SystemIdText = node.Id.ToString();
         Name = node.Name;
-        SecurityText = node.Security <= 0 ? "0.0" : node.Security.ToString("0.00");
+        SecurityText = Helpers.MapTextHelper.FormatSecurity(node.Security, 2);
         RegionName = node.RegionName;
         SovName = Services.Map.SovService.GetSovName(node.Id);
         var resources = Services.Map.MapResourceService.SystemResources.TryGetValue(node.Id, out var res) ? res : null;
@@ -254,7 +254,7 @@ public sealed class MapSystemDetailViewModel : INotifyPropertyChanged
                 SystemId = system.SolarSystemID,
                 Name = system.SolarSystemName ?? string.Empty,
                 RegionName = regionDic.TryGetValue(system.RegionID, out var regionName) ? regionName : string.Empty,
-                SecurityText = system.Security <= 0 ? "0.0" : system.Security.ToString("0.00"),
+                SecurityText = Helpers.MapTextHelper.FormatSecurity(system.Security, 2),
                 SovName = Services.Map.SovService.GetSovName(system.SolarSystemID),
             });
         }

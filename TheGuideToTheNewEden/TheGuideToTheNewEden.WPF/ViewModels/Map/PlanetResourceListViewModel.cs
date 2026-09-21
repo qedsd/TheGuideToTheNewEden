@@ -117,7 +117,7 @@ public sealed class PlanetResourceListViewModel : INotifyPropertyChanged
                 SystemId = p.MapSolarSystem.SolarSystemID,
                 Name = p.MapSolarSystem.SolarSystemName ?? string.Empty,
                 RegionName = regionDic.TryGetValue(p.MapSolarSystem.RegionID, out var regionName) ? regionName : string.Empty,
-                SecurityText = p.MapSolarSystem.Security <= 0 ? "0.0" : p.MapSolarSystem.Security.ToString("0.00"),
+                SecurityText = Helpers.MapTextHelper.FormatSecurity(p.MapSolarSystem.Security, 2),
                 Power = p.Power,
                 Workforce = p.Workforce,
                 MagmaticGas = p.MagmaticGas,

@@ -13,7 +13,7 @@ public sealed class CoverItem
     public MapSystemNode Node { get; init; } = null!;
     public string Name => Node.Name;
     public string RegionName => Node.RegionName;
-    public string SecurityText => Node.Security <= 0 ? "0.0" : Node.Security.ToString("0.00");
+    public string SecurityText => Helpers.MapTextHelper.FormatSecurity(Node.Security, 2);
     /// <summary>距中心星系的 3D 距离（光年）。</summary>
     public double DistanceLy { get; init; }
     /// <summary>本跳预计燃料。</summary>
@@ -65,7 +65,7 @@ public sealed class OneJumpCoverViewModel : INotifyPropertyChanged
 
     public string CenterText => Center is null
         ? FindString("MapTool_Cover_NoCenter")
-        : $"{Center.RegionName} · {Center.Name}  {(Center.Security <= 0 ? "0.0" : Center.Security.ToString("0.00"))}";
+        : $"{Center.RegionName} · {Center.Name}  {Helpers.MapTextHelper.FormatSecurity(Center.Security, 2)}";
 
     public CapitalJumpShipInfo? Ship
     {

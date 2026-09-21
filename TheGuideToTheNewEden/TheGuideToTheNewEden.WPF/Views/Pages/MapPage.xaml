@@ -33,51 +33,7 @@
             <Setter Property="Foreground" Value="{DynamicResource HudText}" />
         </Style>
 
-        <!--  导航结果行  -->
-        <DataTemplate x:Key="NavResultTemplate">
-            <Grid Margin="0,2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="26" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="44" />
-                    <ColumnDefinition Width="54" />
-                    <ColumnDefinition Width="58" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource HudDim}" Text="{Binding Index}" />
-                <TextBlock
-                    Grid.Column="1"
-                    Margin="4,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource HudText}"
-                    Text="{Binding Node.Name}" />
-                <TextBlock
-                    Grid.Column="2"
-                    Margin="6,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource HudDim}"
-                    Text="{Binding SecurityText}" />
-                <TextBlock
-                    Grid.Column="3"
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource HudDim}"
-                    Text="{Binding DistanceLy, StringFormat={}{0:N1}ly}" />
-                <TextBlock
-                    Grid.Column="4"
-                    Margin="6,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource HudDim}"
-                    Text="{Binding FuelText}" />
-                <TextBlock
-                    Grid.Column="5"
-                    Margin="6,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="11"
-                    Foreground="{DynamicResource HudAccent}"
-                    Text="{Binding NavTypeText}" />
-            </Grid>
-        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -149,6 +105,70 @@
                             <ui:SymbolIcon Symbol="Filter24" />
                         </ui:Button.Icon>
                     </ui:Button>
+                    <!--  筛选下拉（标准 WinUI3 风格：主题底色 + 主题化控件）  -->
+                    <ui:Flyout
+                        x:Name="FilterFlyout"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Placement="Bottom">
+                        <StackPanel Width="280">
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapPage_Filter}" />
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{DynamicResource MapPage_Filter_Hint}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Margin="0,10,0,4"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapTool_Region}" />
+                            <ComboBox
+                                DisplayMemberPath="RegionName"
+                                ItemsSource="{Binding FilterRegions}"
+                                SelectedItem="{Binding FilterRegion, Mode=TwoWay}" />
+                            <TextBlock
+                                Margin="0,10,0,4"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="{DynamicResource MapTool_Security}" />
+                            <StackPanel Orientation="Horizontal">
+                                <ui:NumberBox
+                                    Width="100"
+                                    Maximum="1"
+                                    Minimum="-1"
+                                    SmallChange="0.1"
+                                    SpinButtonPlacementMode="Hidden"
+                                    Value="{Binding FilterSecMin, Mode=TwoWay}" />
+                                <TextBlock
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="~" />
+                                <ui:NumberBox
+                                    Width="100"
+                                    Maximum="1"
+                                    Minimum="-1"
+                                    SmallChange="0.1"
+                                    SpinButtonPlacementMode="Hidden"
+                                    Value="{Binding FilterSecMax, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                                <ui:Button
+                                    Appearance="Primary"
+                                    Click="FilterApply_Click"
+                                    Content="{DynamicResource MapPage_Filter_Apply}" />
+                                <ui:Button
+                                    Margin="8,0,0,0"
+                                    Appearance="Transparent"
+                                    Click="FilterClear_Click"
+                                    Content="{DynamicResource MapPage_Filter_Clear}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:Flyout>
                     <!--  跳桥  -->
                     <CheckBox
                         x:Name="BridgesToggle"
@@ -165,15 +185,7 @@
                         Checked="CharactersToggle_Changed"
                         Content="{DynamicResource MapPage_Characters}"
                         Unchecked="CharactersToggle_Changed" />
-                    <!--  情报  -->
-                    <CheckBox
-                        x:Name="IntelToggle"
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Checked="IntelToggle_Changed"
-                        Content="{DynamicResource MapPage_Intel}"
-                        Unchecked="IntelToggle_Changed" />
-                    <!--  工具  -->
+                    <!--  工具（导航 / 情报等入口都在这个下拉里）  -->
                     <ui:Button
                         x:Name="ToolsButton"
                         Margin="8,0,0,0"
@@ -184,17 +196,75 @@
                             <ui:SymbolIcon Symbol="Wrench24" />
                         </ui:Button.Icon>
                     </ui:Button>
-                    <!--  导航  -->
-                    <ui:Button
-                        x:Name="NavButton"
-                        Margin="8,0,0,0"
-                        Appearance="Secondary"
-                        Click="NavButton_Click"
-                        Content="{DynamicResource MapPage_Navigate}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Target24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                    <!--  工具菜单（标准 WinUI3 风格下拉：主题底色 + 标准菜单项）  -->
+                    <ui:Flyout
+                        x:Name="ToolsFlyout"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Placement="Bottom">
+                        <StackPanel Width="220">
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="NavButton_Click"
+                                Content="{DynamicResource MapPage_Tool_Navigate}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Map24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="OneJumpCover_Click"
+                                Content="{DynamicResource MapPage_Tool_Cover}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Target24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="PlanetResourceList_Click"
+                                Content="{DynamicResource MapPage_Tool_Resource}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="DataUsage24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="JumpBridgeSetting_Click"
+                                Content="{DynamicResource MapPage_Tool_Bridge}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Road24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="SovGroupSetting_Click"
+                                Content="{DynamicResource MapPage_Tool_Sov}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Globe24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Appearance="Transparent"
+                                Click="IntelTool_Click"
+                                Content="{DynamicResource MapPage_Tool_Intel}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Info24" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </StackPanel>
+                    </ui:Flyout>
                 </StackPanel>
                 <!--  右侧：重置视图  -->
                 <ui:Button
@@ -356,6 +426,86 @@
                 </Grid>
             </Border>
 
+            <!--  色阶图例（左下）：标题随着色模式，色条与两端标签解释颜色含义  -->
+            <Border
+                x:Name="LegendPanel"
+                Margin="12"
+                Padding="10,8"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Background="{DynamicResource HudBg}"
+                BorderBrush="{DynamicResource HudBorder}"
+                BorderThickness="1"
+                CornerRadius="10">
+                <StackPanel MaxWidth="240">
+                    <TextBlock
+                        x:Name="LegendTitle"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource HudText}" />
+                    <StackPanel x:Name="LegendScale" Margin="0,6,0,0">
+                        <StackPanel x:Name="LegendStrips" Orientation="Horizontal" />
+                        <Grid Margin="0,3,0,0">
+                            <TextBlock
+                                x:Name="LegendLow"
+                                HorizontalAlignment="Left"
+                                FontSize="11"
+                                Foreground="{DynamicResource HudDim}" />
+                            <TextBlock
+                                x:Name="LegendHigh"
+                                HorizontalAlignment="Right"
+                                FontSize="11"
+                                Foreground="{DynamicResource HudDim}" />
+                        </Grid>
+                    </StackPanel>
+                    <TextBlock
+                        x:Name="LegendNote"
+                        Margin="0,4,0,0"
+                        FontSize="11"
+                        Foreground="{DynamicResource HudDim}"
+                        TextWrapping="Wrap" />
+                    <!--  热力色块开关：只在行星资源 / 击杀 / 通行三种模式下显示，逐类型独立记忆（落 MapSettings.json）  -->
+                    <StackPanel x:Name="LegendHeatRow" Margin="0,6,0,0" Visibility="Collapsed">
+                        <CheckBox
+                            x:Name="HeatToggle"
+                            Checked="HeatToggle_Changed"
+                            Content="{DynamicResource MapPage_HeatBlocks}"
+                            FontSize="12"
+                            Foreground="{DynamicResource HudText}"
+                            Unchecked="HeatToggle_Changed" />
+                        <!--  色块大小：滑条值越大块越大（内部镜像换算为网格格数 16..120），全局一份设置  -->
+                        <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{DynamicResource HudDim}"
+                                Text="{DynamicResource MapPage_HeatGridSize}" />
+                            <Slider
+                                x:Name="HeatSizeSlider"
+                                Width="110"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                IsMoveToPointEnabled="True"
+                                IsSnapToTickEnabled="True"
+                                LargeChange="8"
+                                Maximum="120"
+                                Minimum="8"
+                                SmallChange="1"
+                                TickFrequency="1"
+                                ValueChanged="HeatSizeSlider_ValueChanged" />
+                            <TextBlock
+                                x:Name="HeatSizeText"
+                                Width="26"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="11"
+                                Foreground="{DynamicResource HudText}"
+                                TextAlignment="Right" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!--  加载遮罩  -->
             <Border Background="{DynamicResource MapLoadingBg}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -411,461 +561,11 @@
                 </Border>
             </Popup>
 
-            <!--  星域 / 安等筛选  -->
-            <Popup
-                x:Name="FilterPopup"
-                AllowsTransparency="True"
-                PlacementTarget="{Binding ElementName=FilterButton}"
-                Placement="Bottom"
-                PopupAnimation="Fade"
-                StaysOpen="False">
-                <Border
-                    Margin="0,4,8,8"
-                    Padding="12"
-                    Background="{DynamicResource HudBg}"
-                    BorderBrush="{DynamicResource HudBorder}"
-                    BorderThickness="1"
-                    CornerRadius="10">
-                    <StackPanel Width="270">
-                        <TextBlock
-                            Style="{StaticResource HudTitle}"
-                            Text="{DynamicResource MapPage_Filter}" />
-                        <TextBlock
-                            FontSize="11"
-                            Foreground="{DynamicResource HudDim}"
-                            Text="{DynamicResource MapPage_Filter_Hint}"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            Margin="0,8,0,2"
-                            FontSize="12"
-                            Foreground="{DynamicResource HudText}"
-                            Text="{DynamicResource MapTool_Region}" />
-                        <ComboBox
-                            DisplayMemberPath="RegionName"
-                            ItemsSource="{Binding FilterRegions}"
-                            SelectedItem="{Binding FilterRegion, Mode=TwoWay}" />
-                        <TextBlock
-                            Margin="0,8,0,2"
-                            FontSize="12"
-                            Foreground="{DynamicResource HudText}"
-                            Text="{DynamicResource MapTool_Security}" />
-                        <StackPanel Orientation="Horizontal">
-                            <ui:NumberBox
-                                Width="86"
-                                Height="30"
-                                Maximum="1"
-                                Minimum="-1"
-                                SmallChange="0.1"
-                                SpinButtonPlacementMode="Hidden"
-                                Value="{Binding FilterSecMin, Mode=TwoWay}" />
-                            <TextBlock
-                                Margin="6,0,6,0"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource HudDim}"
-                                Text="~" />
-                            <ui:NumberBox
-                                Width="86"
-                                Height="30"
-                                Maximum="1"
-                                Minimum="-1"
-                                SmallChange="0.1"
-                                SpinButtonPlacementMode="Hidden"
-                                Value="{Binding FilterSecMax, Mode=TwoWay}" />
-                        </StackPanel>
-                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                            <ui:Button
-                                Appearance="Primary"
-                                Click="FilterApply_Click"
-                                Content="{DynamicResource MapPage_Filter_Apply}" />
-                            <ui:Button
-                                Margin="8,0,0,0"
-                                Appearance="Transparent"
-                                Click="FilterClear_Click"
-                                Content="{DynamicResource MapPage_Filter_Clear}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </Popup>
 
-            <!--  工具菜单  -->
-            <Popup
-                x:Name="ToolsPopup"
-                AllowsTransparency="True"
-                PlacementTarget="{Binding ElementName=ToolsButton}"
-                Placement="Bottom"
-                PopupAnimation="Fade"
-                StaysOpen="False">
-                <Border
-                    Margin="0,4,8,8"
-                    Padding="6"
-                    Background="{DynamicResource HudBg}"
-                    BorderBrush="{DynamicResource HudBorder}"
-                    BorderThickness="1"
-                    CornerRadius="10">
-                    <StackPanel Width="220">
-                        <ui:Button
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Appearance="Transparent"
-                            Click="OneJumpCover_Click"
-                            Content="{DynamicResource MapPage_Tool_Cover}"
-                            Foreground="{DynamicResource HudText}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Target24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        <ui:Button
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Appearance="Transparent"
-                            Click="PlanetResourceList_Click"
-                            Content="{DynamicResource MapPage_Tool_Resource}"
-                            Foreground="{DynamicResource HudText}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="DataUsage24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        <ui:Button
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Appearance="Transparent"
-                            Click="JumpBridgeSetting_Click"
-                            Content="{DynamicResource MapPage_Tool_Bridge}"
-                            Foreground="{DynamicResource HudText}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Road24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        <ui:Button
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Appearance="Transparent"
-                            Click="SovGroupSetting_Click"
-                            Content="{DynamicResource MapPage_Tool_Sov}"
-                            Foreground="{DynamicResource HudText}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Globe24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                        <ui:Button
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Left"
-                            Appearance="Transparent"
-                            Click="IntelTool_Click"
-                            Content="{DynamicResource MapPage_Tool_Intel}"
-                            Foreground="{DynamicResource HudText}">
-                            <ui:Button.Icon>
-                                <ui:SymbolIcon Symbol="Info24" />
-                            </ui:Button.Icon>
-                        </ui:Button>
-                    </StackPanel>
-                </Border>
-            </Popup>
 
-            <!--  导航面板  -->
-            <Popup
-                x:Name="NavPopup"
-                Width="400"
-                AllowsTransparency="True"
-                PlacementTarget="{Binding ElementName=NavButton}"
-                Placement="Bottom"
-                PopupAnimation="Fade"
-                StaysOpen="False">
-                <Border
-                    Margin="0,4,8,8"
-                    Padding="12"
-                    Background="{DynamicResource HudBg}"
-                    BorderBrush="{DynamicResource HudBorder}"
-                    BorderThickness="1"
-                    CornerRadius="10">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            Grid.Row="0"
-                            Style="{StaticResource HudTitle}"
-                            Text="{DynamicResource MapPage_Navigate}" />
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="11"
-                            Foreground="{DynamicResource HudDim}"
-                            Text="{DynamicResource MapPage_NavHint}" />
 
-                        <!--  航点  -->
-                        <StackPanel Grid.Row="2" Margin="0,8,0,0">
-                            <DockPanel>
-                                <TextBlock
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapPage_Waypoints}" />
-                                <ui:Button
-                                    DockPanel.Dock="Right"
-                                    HorizontalAlignment="Right"
-                                    Padding="8,1"
-                                    Click="AddWaypoint_Click"
-                                    Content="{DynamicResource MapPage_AddSelected}" />
-                            </DockPanel>
-                            <ItemsControl ItemsSource="{Binding Waypoints}" Margin="0,4,0,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border
-                                            Margin="0,0,6,6"
-                                            Padding="8,2"
-                                            Background="#207DF9FF"
-                                            BorderBrush="{DynamicResource HudBorder}"
-                                            BorderThickness="1"
-                                            CornerRadius="4">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    FontSize="11"
-                                                    Foreground="{DynamicResource HudText}"
-                                                    Text="{Binding Name}" />
-                                                <TextBlock
-                                                    Margin="6,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Cursor="Hand"
-                                                    FontSize="11"
-                                                    Foreground="{DynamicResource HudIntel}"
-                                                    MouseLeftButtonUp="RemoveWaypoint_Click"
-                                                    Text="✕" />
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
 
-                        <!--  规避  -->
-                        <StackPanel Grid.Row="3" Margin="0,2,0,0">
-                            <DockPanel>
-                                <TextBlock
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapPage_Avoid}" />
-                                <ui:Button
-                                    DockPanel.Dock="Right"
-                                    HorizontalAlignment="Right"
-                                    Padding="8,1"
-                                    Click="AddAvoid_Click"
-                                    Content="{DynamicResource MapPage_AddSelected}" />
-                            </DockPanel>
-                            <ItemsControl ItemsSource="{Binding AvoidSystems}" Margin="0,4,0,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border
-                                            Margin="0,0,6,6"
-                                            Padding="8,2"
-                                            Background="#30FF5C74"
-                                            BorderThickness="1"
-                                            CornerRadius="4">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    FontSize="11"
-                                                    Foreground="{DynamicResource HudText}"
-                                                    Text="{Binding Name}" />
-                                                <TextBlock
-                                                    Margin="6,0,0,0"
-                                                    VerticalAlignment="Center"
-                                                    Cursor="Hand"
-                                                    FontSize="11"
-                                                    Foreground="{DynamicResource HudIntel}"
-                                                    MouseLeftButtonUp="RemoveAvoid_Click"
-                                                    Text="✕" />
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
 
-                        <!--  基础选项  -->
-                        <StackPanel
-                            Grid.Row="4"
-                            Margin="0,6,0,0"
-                            Orientation="Horizontal">
-                            <CheckBox
-                                x:Name="CapitalToggle"
-                                VerticalAlignment="Center"
-                                Checked="CapitalToggle_Changed"
-                                Content="{DynamicResource MapPage_CapitalMode}"
-                                Foreground="{DynamicResource HudText}"
-                                Unchecked="CapitalToggle_Changed" />
-                        </StackPanel>
-
-                        <!--  旗舰参数（仅旗舰模式）  -->
-                        <StackPanel
-                            Grid.Row="5"
-                            Margin="0,6,0,0"
-                            Visibility="{Binding CapitalMode, Converter={StaticResource BoolToVis}}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapTool_Cover_Ship}" />
-                                <ComboBox
-                                    x:Name="JumpShipCombo"
-                                    Width="210"
-                                    Margin="6,0,0,0"
-                                    DisplayMemberPath="Name"
-                                    ItemsSource="{Binding JumpShips}"
-                                    SelectedItem="{Binding JumpShip, Mode=TwoWay}" />
-                            </StackPanel>
-                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapTool_Cover_Jdc}" />
-                                <ui:NumberBox
-                                    Width="62"
-                                    Height="28"
-                                    Margin="4,0,0,0"
-                                    Maximum="5"
-                                    Minimum="0"
-                                    Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
-                                <TextBlock
-                                    Margin="10,0,0,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapTool_Cover_Jfc}" />
-                                <ui:NumberBox
-                                    Width="62"
-                                    Height="28"
-                                    Margin="4,0,0,0"
-                                    Maximum="5"
-                                    Minimum="0"
-                                    Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
-                                <TextBlock
-                                    Margin="10,0,0,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapTool_Cover_Jf}"
-                                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
-                                <ui:NumberBox
-                                    Width="62"
-                                    Height="28"
-                                    Margin="4,0,0,0"
-                                    Maximum="5"
-                                    Minimum="0"
-                                    Value="{Binding JumpFreighters, Mode=TwoWay}"
-                                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
-                            </StackPanel>
-                            <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                                <CheckBox
-                                    x:Name="UseGatesToggle"
-                                    VerticalAlignment="Center"
-                                    Content="{DynamicResource MapPage_UseGates}"
-                                    Foreground="{DynamicResource HudText}"
-                                    IsChecked="{Binding UseGates, Mode=TwoWay}" />
-                                <CheckBox
-                                    Margin="12,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Content="{DynamicResource MapPage_PreferCheaper}"
-                                    Foreground="{DynamicResource HudText}"
-                                    IsChecked="{Binding PreferCheaper, Mode=TwoWay}" />
-                                <TextBlock
-                                    Margin="12,0,4,0"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource HudText}"
-                                    Text="{DynamicResource MapPage_MaxLy}" />
-                                <ui:NumberBox
-                                    x:Name="MaxLyBox"
-                                    Width="66"
-                                    Height="28"
-                                    Maximum="20"
-                                    Minimum="1"
-                                    Value="{Binding MaxLy, Mode=TwoWay}" />
-                            </StackPanel>
-                        </StackPanel>
-
-                        <!--  计算  -->
-                        <StackPanel
-                            Grid.Row="6"
-                            Margin="0,8,0,0"
-                            Orientation="Horizontal">
-                            <ui:Button
-                                Appearance="Primary"
-                                Click="ComputeRoute_Click"
-                                Content="{DynamicResource MapPage_Compute}" />
-                            <ui:Button
-                                Margin="8,0,0,0"
-                                Appearance="Transparent"
-                                Click="ClearRoute_Click"
-                                Content="{DynamicResource MapPage_ClearRoute}" />
-                            <TextBlock
-                                x:Name="NavErrorText"
-                                Margin="10,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="{DynamicResource HudIntel}" />
-                        </StackPanel>
-
-                        <!--  概览  -->
-                        <TextBlock
-                            Grid.Row="7"
-                            Margin="0,6,0,0"
-                            FontSize="11"
-                            Foreground="{DynamicResource HudDim}"
-                            Text="{Binding NavSummary}"
-                            TextWrapping="Wrap" />
-
-                        <!--  结果  -->
-                        <ListBox
-                            Grid.Row="8"
-                            MaxHeight="220"
-                            Margin="0,8,0,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            ItemTemplate="{StaticResource NavResultTemplate}"
-                            ItemsSource="{Binding NavResult}"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            SelectionChanged="NavResult_SelectionChanged" />
-
-                        <!--  在游戏中设置  -->
-                        <StackPanel
-                            Grid.Row="9"
-                            Margin="0,8,0,0"
-                            Orientation="Horizontal">
-                            <ComboBox
-                                x:Name="AutopilotCombo"
-                                MinWidth="150"
-                                DisplayMemberPath="CharacterName"
-                                ItemsSource="{Binding AutopilotCharacters}"
-                                SelectedItem="{Binding AutopilotCharacter, Mode=TwoWay}" />
-                            <ui:Button
-                                Margin="8,0,0,0"
-                                Click="SetAutopilot_Click"
-                                Content="{DynamicResource MapPage_SetInGame}" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Popup>
         </Grid>
     </Grid>
 </Page>

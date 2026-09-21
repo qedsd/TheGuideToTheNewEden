@@ -18,9 +18,10 @@ namespace TheGuideToTheNewEden.WPF.ViewModels.Map;
 
 /// <summary>
 /// 情报条目里的一条攻方徽标（与 WinUI 的攻方展示语义对应）：
-/// 未聚合时代表**单个攻方**（舰船 + 角色 + 势力，无数字）；超过阈值聚合后代表**一组**（舰船组或势力组，显示 <c>+N</c>）。
+/// 未聚合时代表**单个攻方**（舰船 + 角色 + 势力，无数字）；超过阈值聚合后代表**一组**（舰船组或势力组，显示 <c>×N</c>）。
+/// 名字本地库直查、缺名时后台补（工具提示用"名字优先、拿不到退回 ID"）。
 /// </summary>
-public sealed class IntelShipBadge
+public sealed class IntelShipBadge : INotifyPropertyChanged
 {
     /// <summary>舰船类型（势力聚合组为 0）。</summary>
     public long ShipTypeId { get; init; }
@@ -38,7 +39,7 @@ public sealed class IntelShipBadge
     /// <summary>所属击杀（点舰船图标打开 KB 详情用）。</summary>
     public long KillmailId { get; init; }
 
-    /// <summary>聚合时的 "+N" 文本；未聚合为空。</summary>
+    /// <summary>聚合时的 "×N" 文本；未聚合为空。</summary>
     public string DisplayText { get; init; } = string.Empty;
 
     public bool HasText => DisplayText.Length > 0;
@@ -48,6 +49,69 @@ public sealed class IntelShipBadge
     public bool HasCharacter => CharacterId > 0;
 
     public bool HasFaction => FactionId > 0;
+
+    private string _shipName = string.Empty;
+    private string _characterName = string.Empty;
+    private string _factionName = string.Empty;
+
+    /// <summary>舰船名（本地库直查）。</summary>
+    public string ShipName
+    {
+        get => _shipName;
+        set
+        {
+            if (_shipName == value)
+            {
+                return;
+            }
+
+            _shipName = value;
+            Raise(nameof(ShipTooltip));
+        }
+    }
+
+    /// <summary>攻方角色名。</summary>
+    public string CharacterName
+    {
+        get => _characterName;
+        set
+        {
+            if (_characterName == value)
+            {
+                return;
+            }
+
+            _characterName = value;
+            Raise(nameof(CharacterTooltip));
+        }
+    }
+
+    /// <summary>势力名。</summary>
+    public string FactionName
+    {
+        get => _factionName;
+        set
+        {
+            if (_factionName == value)
+            {
+                return;
+            }
+
+            _factionName = value;
+            Raise(nameof(FactionTooltip));
+        }
+    }
+
+    /// <summary>悬停提示：名字优先，拿不到就退回 ID。</summary>
+    public string ShipTooltip => string.IsNullOrEmpty(_shipName) ? ShipTypeId.ToString() : _shipName;
+
+    public string CharacterTooltip => string.IsNullOrEmpty(_characterName) ? CharacterId.ToString() : _characterName;
+
+    public string FactionTooltip => string.IsNullOrEmpty(_factionName) ? FactionId.ToString() : _factionName;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void Raise(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
     // 行内图片一律用 ctl:AsyncImage 的 Source（后台下载 + 进程内缓存），不要用同步下载的 UriSource
     public string? ShipImageUrl => ShipTypeId > 0 ? GameImageHelper.BuildTypeImageUrl(ShipTypeId, 64) : null;
@@ -91,12 +155,72 @@ public sealed class IntelMsgItem : INotifyPropertyChanged
     public long VictimCharacterId { get; init; }
     public long VictimFactionId { get; init; }
     public bool VictimFactionIsAlliance { get; init; }
-    public string VictimShipName { get; init; } = string.Empty;
-    public string VictimCharacterName { get; init; } = string.Empty;
-    public string VictimFactionName { get; init; } = string.Empty;
 
-    /// <summary>本条情报涉及的攻方舰船（ZKB 击杀才有；按数量降序、最多 10 种）。</summary>
+    private string _victimShipName = string.Empty;
+    private string _victimCharacterName = string.Empty;
+    private string _victimFactionName = string.Empty;
+
+    /// <summary>受害舰船名（击杀流里已解析；缺名时后台补）。</summary>
+    public string VictimShipName
+    {
+        get => _victimShipName;
+        set
+        {
+            if (_victimShipName == value)
+            {
+                return;
+            }
+
+            _victimShipName = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VictimShipTooltip)));
+        }
+    }
+
+    public string VictimCharacterName
+    {
+        get => _victimCharacterName;
+        set
+        {
+            if (_victimCharacterName == value)
+            {
+                return;
+            }
+
+            _victimCharacterName = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VictimCharacterTooltip)));
+        }
+    }
+
+    public string VictimFactionName
+    {
+        get => _victimFactionName;
+        set
+        {
+            if (_victimFactionName == value)
+            {
+                return;
+            }
+
+            _victimFactionName = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(VictimFactionTooltip)));
+        }
+    }
+
+    /// <summary>悬停提示：名字优先，拿不到就退回 ID。</summary>
+    public string VictimShipTooltip => string.IsNullOrEmpty(_victimShipName) ? VictimShipTypeId.ToString() : _victimShipName;
+
+    public string VictimCharacterTooltip => string.IsNullOrEmpty(_victimCharacterName) ? VictimCharacterId.ToString() : _victimCharacterName;
+
+    public string VictimFactionTooltip => string.IsNullOrEmpty(_victimFactionName) ? VictimFactionId.ToString() : _victimFactionName;
+
+    /// <summary>本条情报涉及的攻方徽标（最多 2 项，见 MapPageViewModel.BuildAttackerBadges）。</summary>
     public IReadOnlyList<IntelShipBadge> Ships { get; init; } = [];
+
+    /// <summary>本次击杀的攻方人数（"攻方"列 tooltip 用）。</summary>
+    public int AttackerCount { get; init; }
+
+    /// <summary>攻方规模摘要（人数 / 舰船种类 / 势力个数）——只显示前 2 项时用它说明全貌。</summary>
+    public string AttackerSummaryText { get; init; } = string.Empty;
 
     /// <summary>表格"来源"列：ZKB 击杀显示 ZKB，频道情报显示频道名。</summary>
     public string SourceText => IsZkb ? "ZKB" : Listener;
@@ -122,8 +246,6 @@ public sealed class IntelMsgItem : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public void RefreshElapsed() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ElapsedText)));
-
-    public string? SovLogoUrl => SovAllianceId > 0 ? GameImageHelper.BuildAllianceLogoUrl(SovAllianceId, 32) : null;
 
     public string? VictimShipImageUrl => VictimShipTypeId > 0 ? GameImageHelper.BuildTypeImageUrl(VictimShipTypeId, 64) : null;
 
@@ -378,7 +500,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
     public string SelectedSecurityText => SelectedSystem is null
         ? string.Empty
-        : (SelectedSystem.Security <= 0 ? "0.0" : SelectedSystem.Security.ToString("0.0"));
+        : MapTextHelper.FormatSecurity(SelectedSystem.Security);
 
     public string SelectedInfoText => SelectedSystem is null
         ? string.Empty
@@ -1194,7 +1316,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
             var victim = detail.Victim;
             var meta = ResolveSystemMeta(systemId);
-            AddIntelMessage(new IntelMsgItem
+            var message = new IntelMsgItem
             {
                 TimeUtc = detail.KillmailTime,
                 TimeText = detail.KillmailTime.ToLocalTime().ToString("HH:mm:ss"),
@@ -1209,6 +1331,12 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 IsZkb = true,
                 KillmailId = detail.KillmailId,
                 Ships = BuildAttackerBadges(attackers, detail.KillmailId),
+                AttackerCount = attackers.Count,
+                AttackerSummaryText = string.Format(
+                    FindString("IntelTool_AttackerSummary"),
+                    attackers.Count,
+                    attackers.Select(p => p.ShipTypeId).Where(p => p > 0).Distinct().Count(),
+                    attackers.Select(p => p.AllianceId > 0 ? p.AllianceId : p.CorporationId).Where(p => p > 0).Distinct().Count()),
                 VictimShipTypeId = victim?.ShipTypeId ?? 0,
                 VictimCharacterId = victim?.CharacterId ?? 0,
                 VictimFactionId = victim is null ? 0 : victim.AllianceId > 0 ? victim.AllianceId : victim.CorporationId,
@@ -1216,16 +1344,38 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 VictimShipName = info.Type?.TypeName ?? string.Empty,
                 VictimCharacterName = info.VictimCharacterName?.Name ?? string.Empty,
                 VictimFactionName = info.VictimAllianceName?.Name ?? info.VictimCorporationIdName?.Name ?? string.Empty,
-            });
+            };
+
+            // 受害方名字：击杀流里已解析的优先，缺哪补哪（本地库直查，缺名后台补 → tooltip 从 ID 变名字）
+            if (message.VictimShipName.Length == 0)
+            {
+                message.VictimShipName = ResolveTypeName(message.VictimShipTypeId);
+            }
+
+            if (message.VictimCharacterName.Length == 0)
+            {
+                message.VictimCharacterName = ResolveEntityName(message.VictimCharacterId, name => message.VictimCharacterName = name);
+            }
+
+            if (message.VictimFactionName.Length == 0)
+            {
+                message.VictimFactionName = ResolveEntityName(message.VictimFactionId, name => message.VictimFactionName = name);
+            }
+
+            AddIntelMessage(message);
 
             IntelMarkersChanged?.Invoke(this, BuildIntelMarkers());
         });
     }
 
+    /// <summary>攻方徽标最多显示几个（超过就用统计形式概括，避免上百人刷满一整列）。</summary>
+    private const int MaxAttackerBadges = 2;
+
     /// <summary>
-    /// 攻方徽标（与 WinUI 的攻方展示语义一致）：
-    /// 攻方数量不超过 <see cref="ZkbMaxAttackerCount"/> 时**每个攻方一条**（舰船图标 + 角色头像 + 势力徽标，无数字）；
-    /// 超过阈值时聚合成两组摘要——"每种舰船一条 / 每个势力一条"，各自显示 <c>+N</c>。
+    /// 攻方徽标（对齐 WinUI 的攻方展示语义，并按"最多 2 项"收敛）：
+    /// 人数不超过 <see cref="ZkbMaxAttackerCount"/> → **每个攻方一条**（舰船 + 角色 + 势力，无数字），但表格里最多 2 条；
+    /// 超过阈值 → **统计形式**，最多 2 项：① 人数最多的舰船（图标 + ×人数）② 人数最多的势力（徽标 + ×人数）。
+    /// 完整规模放 tooltip（<see cref="IntelMsgItem.AttackerSummaryText"/>）。
     /// </summary>
     private List<IntelShipBadge> BuildAttackerBadges(List<ZKB.NET.Models.Killmails.Attacker> attackers, long killmailId)
     {
@@ -1238,46 +1388,54 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
 
         if (list.Count <= _zkbMaxAttackerCount)
         {
-            foreach (var attacker in list)
+            foreach (var attacker in list.Take(MaxAttackerBadges))
             {
-                badges.Add(new IntelShipBadge
+                var badge = new IntelShipBadge
                 {
                     ShipTypeId = attacker.ShipTypeId,
                     CharacterId = attacker.CharacterId,
                     FactionId = attacker.AllianceId > 0 ? attacker.AllianceId : attacker.CorporationId,
                     FactionIsAlliance = attacker.AllianceId > 0,
                     KillmailId = killmailId,
-                });
+                    ShipName = ResolveTypeName(attacker.ShipTypeId),
+                };
+                badge.CharacterName = ResolveEntityName(attacker.CharacterId, name => badge.CharacterName = name);
+                badge.FactionName = ResolveEntityName(badge.FactionId, name => badge.FactionName = name);
+                badges.Add(badge);
             }
 
             return badges;
         }
 
-        foreach (var group in list.GroupBy(p => p.ShipTypeId).OrderByDescending(p => p.Count()))
+        // 统计形式：只保留"人最多的舰船"与"人最多的势力"两项
+        var topShip = list.GroupBy(p => p.ShipTypeId).OrderByDescending(p => p.Count()).First();
+        badges.Add(new IntelShipBadge
         {
-            badges.Add(new IntelShipBadge
-            {
-                ShipTypeId = group.Key,
-                Count = group.Count(),
-                DisplayText = $"+{group.Count()}",
-                KillmailId = killmailId,
-            });
-        }
+            ShipTypeId = topShip.Key,
+            Count = topShip.Count(),
+            DisplayText = $"×{topShip.Count()}",
+            KillmailId = killmailId,
+            ShipName = ResolveTypeName(topShip.Key),
+        });
 
-        foreach (var group in list
-                     .Select(p => (Id: p.AllianceId > 0 ? p.AllianceId : p.CorporationId, IsAlliance: p.AllianceId > 0))
-                     .Where(p => p.Id > 0)
-                     .GroupBy(p => (p.Id, p.IsAlliance))
-                     .OrderByDescending(p => p.Count()))
+        var topFaction = list
+            .Select(p => (Id: p.AllianceId > 0 ? p.AllianceId : p.CorporationId, IsAlliance: p.AllianceId > 0))
+            .Where(p => p.Id > 0)
+            .GroupBy(p => (p.Id, p.IsAlliance))
+            .OrderByDescending(p => p.Count())
+            .FirstOrDefault();
+        if (topFaction is not null)
         {
-            badges.Add(new IntelShipBadge
+            var factionBadge = new IntelShipBadge
             {
-                FactionId = group.Key.Id,
-                FactionIsAlliance = group.Key.IsAlliance,
-                Count = group.Count(),
-                DisplayText = $"+{group.Count()}",
+                FactionId = topFaction.Key.Id,
+                FactionIsAlliance = topFaction.Key.IsAlliance,
+                Count = topFaction.Count(),
+                DisplayText = $"×{topFaction.Count()}",
                 KillmailId = killmailId,
-            });
+            };
+            factionBadge.FactionName = ResolveEntityName(factionBadge.FactionId, name => factionBadge.FactionName = name);
+            badges.Add(factionBadge);
         }
 
         return badges;
@@ -1648,6 +1806,100 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
         IntelMarkersChanged?.Invoke(this, []);
     }
 
+    // ---------- 名字解析（表格悬停提示用） ----------
+
+    private readonly Dictionary<long, string> _typeNameCache = [];
+    private readonly Dictionary<long, string> _idNameCache = [];
+    private readonly HashSet<long> _idNameRequested = [];
+
+    /// <summary>舰船 / 物品名：本地库直查 + 进程内缓存（不联网）。</summary>
+    private string ResolveTypeName(long typeId)
+    {
+        if (typeId <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (_typeNameCache.TryGetValue(typeId, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            var name = Core.Services.DB.InvTypeService.QueryType(typeId)?.TypeName ?? string.Empty;
+            if (name.Length > 0)
+            {
+                _typeNameCache[typeId] = name;
+            }
+
+            return name;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// 角色 / 军团 / 联盟名：先本地库直查；本地没有时交给解析服务后台补（其内部有缓存与批量分批），
+    /// 补到后经 <paramref name="onResolved"/> 回填到 UI（tooltip 从 ID 变成名字）。
+    /// </summary>
+    private string ResolveEntityName(long id, Action<string>? onResolved = null)
+    {
+        if (id <= 0 || id > int.MaxValue)
+        {
+            return string.Empty;
+        }
+
+        if (_idNameCache.TryGetValue(id, out var cached))
+        {
+            return cached;
+        }
+
+        string name;
+        try
+        {
+            name = Core.Services.IDNameService.GetById((int)id)?.Name ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Core.Log.Error(ex);
+            name = string.Empty;
+        }
+
+        if (name.Length > 0)
+        {
+            _idNameCache[id] = name;
+            return name;
+        }
+
+        if (onResolved is not null && _idNameRequested.Add(id))
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var resolved = (await Services.KB.ZkbQueryService.ResolveIdNameAsync(id))?.Name;
+                    if (string.IsNullOrEmpty(resolved))
+                    {
+                        return;
+                    }
+
+                    _idNameCache[id] = resolved;
+                    await _dispatcher.BeginInvoke(() => onResolved(resolved));
+                }
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex);
+                }
+            });
+        }
+
+        return string.Empty;
+    }
+
     /// <summary>刷新可选频道（= 频道预警里已启动会话的监听者）；配置为空时默认全选（"空集=全部"约定）。</summary>
     public void RefreshChannels()
     {
@@ -1889,7 +2141,7 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
             {
                 Index = result.Count + 1,
                 Node = node,
-                SecurityText = node.Security <= 0 ? "0.0" : node.Security.ToString("0.0"),
+                SecurityText = MapTextHelper.FormatSecurity(node.Security),
                 RegionName = node.RegionName,
                 DistanceLy = ly,
                 NavType = navType,

@@ -10,6 +10,51 @@ namespace TheGuideToTheNewEden.Core.Models.Map
     public class MapConfig
     {
         public MapIntelConfig Intel { get; set; } = new MapIntelConfig();
+
+        /// <summary>
+        /// 星图画布显示项（WPF 版）。
+        /// </summary>
+        public MapCanvasConfig Canvas { get; set; } = new MapCanvasConfig();
+    }
+
+    /// <summary>
+    /// 星图画布的显示开关（逐着色类型独立保存；JSON 缺字段时用默认值）。
+    /// </summary>
+    public class MapCanvasConfig : ObservableObject
+    {
+        private bool _showHeatKills = true;
+        /// <summary>热力色块：击杀模式是否显示。</summary>
+        public bool ShowHeatKills
+        {
+            get => _showHeatKills;
+            set => SetProperty(ref _showHeatKills, value);
+        }
+
+        private bool _showHeatJumps = true;
+        /// <summary>热力色块：通行模式是否显示。</summary>
+        public bool ShowHeatJumps
+        {
+            get => _showHeatJumps;
+            set => SetProperty(ref _showHeatJumps, value);
+        }
+
+        private bool _showHeatPlanetResource = true;
+        /// <summary>热力色块：行星资源模式是否显示。</summary>
+        public bool ShowHeatPlanetResource
+        {
+            get => _showHeatPlanetResource;
+            set => SetProperty(ref _showHeatPlanetResource, value);
+        }
+
+        private int _heatGridSize = 56;
+        /// <summary>
+        /// 热力网格格数（世界长边切成多少格；格数越少色块越大）。使用方需 Clamp 到 16..120。
+        /// </summary>
+        public int HeatGridSize
+        {
+            get => _heatGridSize;
+            set => SetProperty(ref _heatGridSize, value);
+        }
     }
     public class MapIntelConfig : ObservableObject
     {

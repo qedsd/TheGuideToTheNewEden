@@ -1,0 +1,324 @@
+<UserControl
+    x:Class="TheGuideToTheNewEden.WPF.Views.UserControls.Map.MapNavigationView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--  由星图页以 ToolWindow 承载；DataContext = 星图页的 MapPageViewModel（与主图共用同一份状态）  -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!--  导航结果行（主题色）  -->
+        <DataTemplate x:Key="NavResultTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="46" />
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding Index}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding Node.Name}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding SecurityText}" />
+                <TextBlock
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding DistanceLy, StringFormat={}{0:N1}ly}" />
+                <TextBlock
+                    Grid.Column="4"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding FuelText}" />
+                <TextBlock
+                    Grid.Column="5"
+                    Margin="6,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="{Binding NavTypeText}" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  航点标签  -->
+        <DataTemplate x:Key="WaypointChipTemplate">
+            <Border
+                Margin="0,0,6,6"
+                Padding="8,2"
+                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Name}" />
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        MouseLeftButtonUp="RemoveWaypoint_Click"
+                        Text="✕" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!--  规避标签  -->
+        <DataTemplate x:Key="AvoidChipTemplate">
+            <Border
+                Margin="0,0,6,6"
+                Padding="8,2"
+                Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="{Binding Name}" />
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        VerticalAlignment="Center"
+                        Cursor="Hand"
+                        FontSize="12"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        MouseLeftButtonUp="RemoveAvoid_Click"
+                        Text="✕" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  航点  -->
+        <StackPanel Grid.Row="0">
+            <DockPanel>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Text="{DynamicResource MapPage_Waypoints}" />
+                <ui:Button
+                    DockPanel.Dock="Right"
+                    Padding="8,1"
+                    Click="AddWaypoint_Click"
+                    Content="{DynamicResource MapPage_AddSelected}" />
+            </DockPanel>
+            <TextBlock
+                Margin="0,4,0,0"
+                FontSize="11"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Text="{DynamicResource MapPage_NavHint}"
+                TextWrapping="Wrap" />
+            <ItemsControl
+                Margin="0,6,0,0"
+                ItemTemplate="{StaticResource WaypointChipTemplate}"
+                ItemsSource="{Binding Waypoints}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+
+        <!--  规避  -->
+        <StackPanel Grid.Row="1" Margin="0,4,0,0">
+            <DockPanel>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Text="{DynamicResource MapPage_Avoid}" />
+                <ui:Button
+                    DockPanel.Dock="Right"
+                    Padding="8,1"
+                    Click="AddAvoid_Click"
+                    Content="{DynamicResource MapPage_AddSelected}" />
+            </DockPanel>
+            <ItemsControl
+                Margin="0,6,0,0"
+                ItemTemplate="{StaticResource AvoidChipTemplate}"
+                ItemsSource="{Binding AvoidSystems}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+
+        <!--  旗舰参数（仅旗舰模式显示）  -->
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,8,0,0"
+            Visibility="{Binding CapitalMode, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource MapTool_Cover_Ship}" />
+                <ComboBox
+                    x:Name="JumpShipCombo"
+                    Width="240"
+                    Margin="6,0,0,0"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{Binding JumpShips}"
+                    SelectedItem="{Binding JumpShip, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource MapTool_Cover_Jdc}" />
+                <ui:NumberBox
+                    Width="64"
+                    Margin="4,0,0,0"
+                    Maximum="5"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding JumpDriveCalibration, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource MapTool_Cover_Jfc}" />
+                <ui:NumberBox
+                    Width="64"
+                    Margin="4,0,0,0"
+                    Maximum="5"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding JumpFuelConservation, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource MapTool_Cover_Jf}"
+                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+                <ui:NumberBox
+                    Width="64"
+                    Margin="4,0,0,0"
+                    Maximum="5"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding JumpFreighters, Mode=TwoWay}"
+                    Visibility="{Binding ShowJumpFreighters, Converter={StaticResource BoolToVis}}" />
+            </StackPanel>
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <CheckBox
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource MapPage_UseGates}"
+                    IsChecked="{Binding UseGates, Mode=TwoWay}" />
+                <CheckBox
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource MapPage_PreferCheaper}"
+                    IsChecked="{Binding PreferCheaper, Mode=TwoWay}" />
+                <TextBlock
+                    Margin="12,0,4,0"
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource MapPage_MaxLy}" />
+                <ui:NumberBox
+                    Width="70"
+                    Maximum="20"
+                    Minimum="1"
+                    SpinButtonPlacementMode="Hidden"
+                    Value="{Binding MaxLy, Mode=TwoWay}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!--  模式与计算  -->
+        <StackPanel
+            Grid.Row="3"
+            Margin="0,10,0,0"
+            Orientation="Horizontal">
+            <CheckBox
+                x:Name="CapitalToggle"
+                VerticalAlignment="Center"
+                Checked="CapitalToggle_Changed"
+                Content="{DynamicResource MapPage_CapitalMode}"
+                Unchecked="CapitalToggle_Changed" />
+            <ui:Button
+                Margin="12,0,0,0"
+                Appearance="Primary"
+                Click="ComputeRoute_Click"
+                Content="{DynamicResource MapPage_Compute}" />
+            <ui:Button
+                Margin="8,0,0,0"
+                Appearance="Transparent"
+                Click="ClearRoute_Click"
+                Content="{DynamicResource MapPage_ClearRoute}" />
+            <TextBlock
+                x:Name="NavErrorText"
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{DynamicResource SystemFillColorCriticalBrush}" />
+        </StackPanel>
+
+        <!--  概览  -->
+        <TextBlock
+            Grid.Row="4"
+            Margin="0,8,0,0"
+            FontSize="12"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            Text="{Binding NavSummary}"
+            TextWrapping="Wrap" />
+
+        <!--  结果  -->
+        <ListBox
+            x:Name="NavResultList"
+            Grid.Row="5"
+            Margin="0,8,0,0"
+            Background="Transparent"
+            BorderThickness="0"
+            ItemTemplate="{StaticResource NavResultTemplate}"
+            ItemsSource="{Binding NavResult}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            SelectionChanged="NavResult_SelectionChanged" />
+
+        <!--  在游戏中设置航点  -->
+        <StackPanel
+            Grid.Row="6"
+            Margin="0,8,0,0"
+            Orientation="Horizontal">
+            <ComboBox
+                MinWidth="180"
+                DisplayMemberPath="CharacterName"
+                ItemsSource="{Binding AutopilotCharacters}"
+                SelectedItem="{Binding AutopilotCharacter, Mode=TwoWay}" />
+            <ui:Button
+                Margin="8,0,0,0"
+                Click="SetAutopilot_Click"
+                Content="{DynamicResource MapPage_SetInGame}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

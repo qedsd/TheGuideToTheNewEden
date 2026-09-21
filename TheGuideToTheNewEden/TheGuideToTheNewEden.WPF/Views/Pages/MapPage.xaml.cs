@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using TheGuideToTheNewEden.Core.Models.Map;
 using TheGuideToTheNewEden.WPF.Services.Map;
 using TheGuideToTheNewEden.WPF.ViewModels.Map;
 using TheGuideToTheNewEden.WPF.Views.UserControls.Map;
@@ -25,6 +26,7 @@ public partial class MapPage : Page
     private ToolWindow? _sovWindow;
     private ToolWindow? _detailWindow;
     private ToolWindow? _intelWindow;
+    private ToolWindow? _navWindow;
 
     public MapPage()
     {
@@ -40,9 +42,9 @@ public partial class MapPage : Page
         _viewModel.ShowCharactersChanged += (_, enabled) => SetCharactersEnabled(enabled);
         _viewModel.BridgesChanged += (_, _) => ApplyBridges();
         _viewModel.NodeStatesChanged += (_, _) => MapCanvas.RefreshNodeStates();
-        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         Services.ThemeService.ThemeChanged += ApplyTheme;
         ApplyTheme();
+        UpdateLegend();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
         _viewModel.IntelShipImageLoaded += (_, e) => MapCanvas.SetIntelShipImage(e.ShipTypeId, e.Bitmap);
         _viewModel.PortraitLoaded += (_, e) => MapCanvas.SetCharacterImage(e.CharacterId, e.Bitmap);
@@ -74,6 +76,12 @@ public partial class MapPage : Page
         }
 
         _initialized = true;
+        // 回填持久化的各模式热力色块开关（左下角图例面板，逐着色类型独立记忆）
+        var heat = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        MapCanvas.SetHeatMapVisible(MapColorMode.Kills, heat.ShowHeatKills);
+        MapCanvas.SetHeatMapVisible(MapColorMode.Jumps, heat.ShowHeatJumps);
+        MapCanvas.SetHeatMapVisible(MapColorMode.PlanetResource, heat.ShowHeatPlanetResource);
+        MapCanvas.SetHeatGridSize(heat.HeatGridSize);
         BridgesToggle.IsChecked = _viewModel.ShowBridges;
         var kindIndex = Array.IndexOf(MapPageViewModel.ResourceKinds, _viewModel.ResourceKind);
         if (kindIndex >= 0)
@@ -93,7 +101,7 @@ public partial class MapPage : Page
     /// </summary>
     private void MapPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow })
+        foreach (var window in new[] { _coverWindow, _resourceWindow, _bridgeWindow, _sovWindow, _detailWindow, _navWindow })
         {
             if (window is null)
             {
@@ -104,10 +112,9 @@ public partial class MapPage : Page
             window.Close();
         }
 
-        NavPopup.IsOpen = false;
         SearchPopup.IsOpen = false;
-        ToolsPopup.IsOpen = false;
-        FilterPopup.IsOpen = false;
+        ToolsFlyout.Hide();
+        FilterFlyout.Hide();
     }
 
     // ---------- 画布交互 ----------
@@ -136,7 +143,7 @@ public partial class MapPage : Page
             return;
         }
 
-        var secText = node.Security <= 0 ? "0.0" : node.Security.ToString("0.0");
+        var secText = Helpers.MapTextHelper.FormatSecurity(node.Security);
         HoverHudText.Text = $"{node.RegionName}  {node.Name}  {secText}";
         HoverHud.Visibility = Visibility.Visible;
     }
@@ -225,7 +232,95 @@ public partial class MapPage : Page
         }
 
         MapCanvas.SetColorMode(mode, _viewModel.KillsMax, _viewModel.JumpsMax, _viewModel.ResourceMax);
+        UpdateLegend();
     }
+
+    // ---------- 色阶图例 ----------
+
+    private bool? _legendFromHigh;
+
+    /// <summary>程序化回显 <see cref="HeatToggle"/> 状态时置位，避免触发一次多余的落盘。</summary>
+    private bool _suppressHeatToggle;
+
+    /// <summary>程序化回显 <see cref="HeatSizeSlider"/> 时置位（滑条拖动才落盘）。</summary>
+    private bool _suppressHeatSize;
+
+    /// <summary>
+    /// 更新左下角的色阶图例：标题取当前着色模式，色条与两端标签按模式的语义解释——
+    /// 安等 = 左「1.0 高安」→ 右「0.0 / 负 低安」；行星资源 / 击杀 / 通行 = 左「低」→ 右「高」；
+    /// 主权 = 不画色条，只给"同组同色"的文字说明（分组号是散列色，无固定色阶）。
+    /// </summary>
+    private void UpdateLegend()
+    {
+        var mode = _viewModel.ColorMode;
+        var fromHigh = mode == MapColorMode.Security;
+        if (_legendFromHigh != fromHigh)
+        {
+            BuildLegendStrips(fromHigh);
+            _legendFromHigh = fromHigh;
+        }
+
+        LegendTitle.Text = mode switch
+        {
+            MapColorMode.Sovereignty => FindString("MapPage_ColorSov"),
+            MapColorMode.PlanetResource =>
+                $"{FindString("MapPage_ColorPlanetResource")} · {FindString(ResourceKindKey(_viewModel.ResourceKind))}",
+            MapColorMode.Kills => FindString("MapPage_ColorKills"),
+            MapColorMode.Jumps => FindString("MapPage_ColorJumps"),
+            _ => FindString("MapPage_ColorSecurity"),
+        };
+
+        var isSecurity = mode == MapColorMode.Security;
+        LegendScale.Visibility = mode == MapColorMode.Sovereignty ? Visibility.Collapsed : Visibility.Visible;
+        LegendLow.Text = FindString(isSecurity ? "MapPage_Legend_HighSec" : "MapPage_Legend_Low");
+        LegendHigh.Text = FindString(isSecurity ? "MapPage_Legend_LowSec" : "MapPage_Legend_High");
+        LegendNote.Text = FindString(mode switch
+        {
+            MapColorMode.Sovereignty => "MapPage_Legend_SovNote",
+            MapColorMode.Security => "MapPage_Legend_SecNote",
+            _ => "MapPage_Legend_HeatNote",
+        });
+
+        // 热力色块开关：只在行星资源 / 击杀 / 通行三种模式下显示，随模式回显各自的记忆状态
+        var isHeatMode = mode is MapColorMode.Kills or MapColorMode.Jumps or MapColorMode.PlanetResource;
+        LegendHeatRow.Visibility = isHeatMode ? Visibility.Visible : Visibility.Collapsed;
+        if (isHeatMode)
+        {
+            _suppressHeatToggle = true;
+            _suppressHeatSize = true;
+            HeatToggle.IsChecked = MapCanvas.GetHeatMapVisible(mode);
+            // 滑条显示"大小档位"（越大块越大）：格数做镜像换算
+            HeatSizeSlider.Value = StarMapCanvas.MaxHeatGridCells + StarMapCanvas.MinHeatGridCells - MapCanvas.HeatGridCells;
+            HeatSizeText.Text = ((int)Math.Round(HeatSizeSlider.Value)).ToString();
+            _suppressHeatToggle = false;
+            _suppressHeatSize = false;
+        }
+    }
+
+    /// <summary>色条用画布的同一份调色板（安等从"高安"侧开始，其余模式从"低值"侧开始）。</summary>
+    private void BuildLegendStrips(bool fromHigh)
+    {
+        LegendStrips.Children.Clear();
+        var palette = StarMapCanvas.Palette;
+        for (var i = 0; i < palette.Count; i++)
+        {
+            var color = palette[fromHigh ? palette.Count - 1 - i : i];
+            LegendStrips.Children.Add(new System.Windows.Shapes.Rectangle
+            {
+                Width = 18,
+                Height = 10,
+                Fill = new SolidColorBrush(Color.FromRgb(color.Red, color.Green, color.Blue)),
+            });
+        }
+    }
+
+    private static string ResourceKindKey(ResourceKind kind) => kind switch
+    {
+        ResourceKind.Workforce => "MapPage_ResourceWorkforce",
+        ResourceKind.MagmaticGas => "MapPage_ResourceMagmaticGas",
+        ResourceKind.SuperionicIce => "MapPage_ResourceSuperionicIce",
+        _ => "MapPage_ResourcePower",
+    };
 
     private void ResetView_Click(object sender, RoutedEventArgs e)
     {
@@ -237,6 +332,58 @@ public partial class MapPage : Page
         _viewModel.ShowBridges = BridgesToggle.IsChecked == true;
     }
 
+    /// <summary>
+    /// 热力色块开关（左下角图例面板，只影响行星资源 / 击杀 / 通行三种模式）：
+    /// 每个着色类型独立记忆——画布按模式存运行态，MapSettings.json 的 Canvas 节做持久化。
+    /// </summary>
+    private void HeatToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_suppressHeatToggle)
+        {
+            return;
+        }
+
+        var visible = HeatToggle.IsChecked == true;
+        MapCanvas.SetHeatMapVisible(visible);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        switch (_viewModel.ColorMode)
+        {
+            case MapColorMode.Kills:
+                canvas.ShowHeatKills = visible;
+                break;
+            case MapColorMode.Jumps:
+                canvas.ShowHeatJumps = visible;
+                break;
+            case MapColorMode.PlanetResource:
+                canvas.ShowHeatPlanetResource = visible;
+                break;
+        }
+
+        MapSettingService.Save();
+    }
+
+    /// <summary>
+    /// 色块大小滑条：值越大块越大（与直觉一致）。滑条值是"大小档位"（16..120），
+    /// 内部换算成网格格数 cells = Max + Min − size（存 <see cref="MapCanvasConfig.HeatGridSize"/> 的仍是格数，配置兼容）。
+    /// </summary>
+    private void HeatSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        // XAML 解析期 Minimum 一生效就把 Value 钳到 16 → 触发本事件，此时同面板里排在滑条后面的
+        // HeatSizeText（以及极端情况下的 MapCanvas）还没创建，必须防空
+        if (_suppressHeatSize || HeatSizeText is null || MapCanvas is null)
+        {
+            return;
+        }
+
+        var size = (int)Math.Round(HeatSizeSlider.Value);
+        var cells = StarMapCanvas.MaxHeatGridCells + StarMapCanvas.MinHeatGridCells - size;
+        HeatSizeText.Text = size.ToString();
+        MapCanvas.SetHeatGridSize(cells);
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.HeatGridSize = cells;
+        MapSettingService.Save();
+    }
+
     private void ApplyBridges()
     {
         BridgesToggle.IsChecked = _viewModel.ShowBridges;
@@ -245,27 +392,47 @@ public partial class MapPage : Page
 
     // ---------- 星域 / 安等筛选 ----------
 
-    private void FilterButton_Click(object sender, RoutedEventArgs e) => FilterPopup.IsOpen = !FilterPopup.IsOpen;
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FilterFlyout.IsOpen)
+        {
+            FilterFlyout.Hide();
+        }
+        else
+        {
+            FilterFlyout.Show();
+        }
+    }
 
     private void FilterApply_Click(object sender, RoutedEventArgs e)
     {
-        FilterPopup.IsOpen = false;
+        FilterFlyout.Hide();
         _viewModel.ApplySystemFilter();
     }
 
     private void FilterClear_Click(object sender, RoutedEventArgs e)
     {
-        FilterPopup.IsOpen = false;
+        FilterFlyout.Hide();
         _viewModel.ClearSystemFilter();
     }
 
     // ---------- 工具菜单 ----------
 
-    private void ToolsButton_Click(object sender, RoutedEventArgs e) => ToolsPopup.IsOpen = !ToolsPopup.IsOpen;
+    private void ToolsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ToolsFlyout.IsOpen)
+        {
+            ToolsFlyout.Hide();
+        }
+        else
+        {
+            ToolsFlyout.Show();
+        }
+    }
 
     private void OneJumpCover_Click(object sender, RoutedEventArgs e)
     {
-        ToolsPopup.IsOpen = false;
+        ToolsFlyout.Hide();
         if (_coverWindow is null)
         {
             var view = new OneJumpCoverView();
@@ -285,7 +452,7 @@ public partial class MapPage : Page
 
     private void PlanetResourceList_Click(object sender, RoutedEventArgs e)
     {
-        ToolsPopup.IsOpen = false;
+        ToolsFlyout.Hide();
         if (_resourceWindow is null)
         {
             _resourceWindow = CreateToolWindow(new PlanetResourceListView(), "MapPage_Tool_Resource", 1000, 680);
@@ -298,7 +465,7 @@ public partial class MapPage : Page
 
     private void JumpBridgeSetting_Click(object sender, RoutedEventArgs e)
     {
-        ToolsPopup.IsOpen = false;
+        ToolsFlyout.Hide();
         if (_bridgeWindow is null)
         {
             var view = new JumpBridgeSettingView();
@@ -317,7 +484,7 @@ public partial class MapPage : Page
 
     private void SovGroupSetting_Click(object sender, RoutedEventArgs e)
     {
-        ToolsPopup.IsOpen = false;
+        ToolsFlyout.Hide();
         if (_sovWindow is null)
         {
             var view = new SovGroupSettingView();
@@ -354,6 +521,8 @@ public partial class MapPage : Page
 
     /// <summary>
     /// 建工具窗（标题栏样式由 <see cref="ToolWindow"/> 自己定义，这里只给标题与尺寸）。
+    /// **不设 Owner**：工具窗与主窗口相互独立——主窗口最小化不会连带最小化工具窗（设置 Owner 的话 Windows 会把它们绑在一起），
+    /// 应用退出时统一由 Shutdown 关闭它们。
     /// 默认 <see cref="ToolWindow.SetCloseToHide"/>：点 X 只是隐藏，**窗口实例复用**，不再每次点开都 new 一个；
     /// 页面 <c>Unloaded</c> 时统一 <see cref="ToolWindow.AllowClose"/> 再真关。
     /// 内容随对象变化的窗口（星系详情）传 <paramref name="reusable"/>=false，走"真关 + 重建"。
@@ -369,7 +538,7 @@ public partial class MapPage : Page
             width: width,
             height: height)
         {
-            Owner = Window.GetWindow(this),
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
             DisplayTitle = title,
             SystemTitle = title,
         };
@@ -423,38 +592,26 @@ public partial class MapPage : Page
 
     // ---------- 情报 ----------
 
-    /// <summary>顶栏"情报"开关：既是监听总闸，也负责开关情报工具窗口。</summary>
-    private void IntelToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        var enabled = IntelToggle.IsChecked == true;
-        _viewModel.RefreshIntelAvailability();
-
-        if (enabled)
-        {
-            // 没有频道预警会话也能开：ZKB 击杀不依赖会话（工具窗会提示"仅 ZKB"）
-            _viewModel.StartIntel();
-            ShowIntelTool();
-        }
-        else
-        {
-            _viewModel.SaveIntelConfig();
-            _viewModel.StopIntel();
-            _intelWindow?.Close();
-        }
-    }
-
+    /// <summary>
+    /// 工具菜单的"情报"入口：打开（或前置）情报工具窗口，未在监听时顺手开始监听。
+    /// 入口只保留这一处——顶栏那个"情报"复选框已按用户要求删除。
+    /// </summary>
     private void IntelTool_Click(object sender, RoutedEventArgs e)
     {
-        ToolsPopup.IsOpen = false;
+        ToolsFlyout.Hide();
         _viewModel.RefreshIntelAvailability();
+        if (!_viewModel.IntelRunning)
+        {
+            _viewModel.StartIntel();
+        }
+
         ShowIntelTool();
     }
 
     /// <summary>
     /// 打开（或前置）情报工具窗口。窗口是"真关闭"的（不用 CloseToHide）：
-    /// 点 X → 真正销毁 → 顺带把顶栏"情报"复选框取消勾选（复选框 = 监听总闸，于是监听一起停），
-    /// 反之取消勾选 / 在窗口里点"停止"也会把窗口关掉——窗口与复选框始终一致。
-    /// 但**切换页面时两者都保留**（窗口不随页面卸载关闭，监听继续）。
+    /// 点 X → 真正销毁 → **顺手停止监听**（窗口已是唯一的情报 UI，关掉即停）；
+    /// 窗口内的"停止"按钮照旧；切换页面时窗口与监听都保留。
     /// </summary>
     private void ShowIntelTool()
     {
@@ -466,7 +623,8 @@ public partial class MapPage : Page
             _intelWindow.Closed += (_, _) =>
             {
                 _intelWindow = null;
-                IntelToggle.IsChecked = false;
+                _viewModel.SaveIntelConfig();
+                _viewModel.StopIntel();
             };
         }
 
@@ -474,111 +632,29 @@ public partial class MapPage : Page
         _intelWindow.Activate();
     }
 
-    /// <summary>顶栏"情报"复选框跟随监听状态（例如在情报窗里点了"停止"时）。</summary>
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(MapPageViewModel.IntelRunning))
-        {
-            IntelToggle.IsChecked = _viewModel.IntelRunning;
-        }
-    }
-
     // ---------- 导航 ----------
 
+    /// <summary>工具菜单的"导航"入口：打开（或前置）导航工具窗口（顶栏那个按钮已按用户要求删除）。</summary>
     private void NavButton_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.RefreshIntelAvailability();
-        NavPopup.IsOpen = true;
+        ToolsFlyout.Hide();
+        ShowNavigation();
     }
 
-    private void AddWaypoint_Click(object sender, RoutedEventArgs e)
+    private void ShowNavigation()
     {
-        _viewModel.AddWaypoint(_viewModel.SelectedSystem);
-    }
-
-    private void AddAvoid_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.AddAvoid(_viewModel.SelectedSystem);
-    }
-
-    private void RemoveWaypoint_Click(object sender, MouseButtonEventArgs e)
-    {
-        if ((sender as FrameworkElement)?.DataContext is MapSystemNode node)
+        if (_navWindow is null)
         {
-            _viewModel.RemoveWaypoint(node);
+            _navWindow = CreateToolWindow(new MapNavigationView(_viewModel, Locate, ClearRouteOnCanvas), "MapPage_Tool_Navigate", 980, 720);
+            _navWindow.Closed += (_, _) => _navWindow = null;
         }
+
+        _navWindow.Show();
+        _navWindow.Activate();
     }
 
-    private void RemoveAvoid_Click(object sender, MouseButtonEventArgs e)
-    {
-        if ((sender as FrameworkElement)?.DataContext is MapSystemNode node)
-        {
-            _viewModel.RemoveAvoid(node);
-        }
-    }
-
-    private void CapitalToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        _viewModel.CapitalMode = CapitalToggle.IsChecked == true;
-    }
-
-    private async void ComputeRoute_Click(object sender, RoutedEventArgs e)
-    {
-        NavErrorText.Text = string.Empty;
-        Services.PageNotifyService.ShowWaiting(FindString("MapPage_Loading"));
-        try
-        {
-            var ok = await _viewModel.NavigateAsync();
-            if (!ok)
-            {
-                NavErrorText.Text = _viewModel.LastNavigationError ?? string.Empty;
-            }
-        }
-        finally
-        {
-            Services.PageNotifyService.HideWaiting();
-        }
-    }
-
-    private void ClearRoute_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ClearNavigation();
-        MapCanvas.ClearRoute();
-        NavErrorText.Text = string.Empty;
-    }
-
-    private void NavResult_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is ListBox { SelectedItem: NavResultItem item })
-        {
-            Locate(item.Node.Id);
-        }
-    }
-
-    private async void SetAutopilot_Click(object sender, RoutedEventArgs e)
-    {
-        NavErrorText.Text = string.Empty;
-        Services.PageNotifyService.ShowWaiting(FindString("MapPage_SetInGame"));
-        try
-        {
-            var ok = await _viewModel.SetAutopilotAsync((current, total) =>
-                Services.PageNotifyService.UpdateWaiting($"{current}/{total}"));
-            if (ok)
-            {
-                Services.PageNotifyService.Success(FindString("MapPage_AutopilotDone"));
-            }
-            else
-            {
-                var message = _viewModel.LastNavigationError ?? FindString("MapPage_AutopilotFail");
-                NavErrorText.Text = message;
-                Services.PageNotifyService.Error(message);
-            }
-        }
-        finally
-        {
-            Services.PageNotifyService.HideWaiting();
-        }
-    }
+    /// <summary>导航窗里点"清除"时，把画布上的航线一起抹掉。</summary>
+    private void ClearRouteOnCanvas() => MapCanvas.ClearRoute();
 
     // ---------- 信息卡 ----------
 

@@ -1345,7 +1345,6 @@
     <sys:String x:Key="MapPage_ColorJumps">Traffic heat</sys:String>
     <sys:String x:Key="MapPage_Characters">Characters</sys:String>
     <sys:String x:Key="MapPage_Intel">Intel</sys:String>
-    <sys:String x:Key="MapPage_Navigate">Navigation</sys:String>
     <sys:String x:Key="MapPage_ResetView">Reset view</sys:String>
     <sys:String x:Key="MapPage_Clear">Clear</sys:String>
     <sys:String x:Key="MapPage_IntelHint">Click an entry to locate the system; intel expires over time</sys:String>
@@ -1459,6 +1458,7 @@
     <sys:String x:Key="MapPage_Filter_Apply">Apply</sys:String>
     <sys:String x:Key="MapPage_Filter_Clear">Clear filter</sys:String>
     <sys:String x:Key="MapPage_Tool_Intel">Intel</sys:String>
+    <sys:String x:Key="MapPage_Tool_Navigate">Navigation</sys:String>
     <sys:String x:Key="IntelTool_Tab_Live">Live feed</sys:String>
     <sys:String x:Key="IntelTool_Tab_Filter">Filter</sys:String>
     <sys:String x:Key="IntelTool_Tab_Setting">Settings</sys:String>
@@ -1478,16 +1478,21 @@
     <sys:String x:Key="IntelTool_SettingHint">Channel intel needs at least one warning session running on the Channel Warning page; ZKB kills do not need a session. Circles and ship icons are drawn on the map — the more you zoom in, the more detail appears.</sys:String>
     <sys:String x:Key="MapTool_Time">Time</sys:String>
     <sys:String x:Key="IntelTool_Source">Source</sys:String>
-    <sys:String x:Key="IntelTool_SystemId">System ID</sys:String>
     <sys:String x:Key="IntelTool_Content">Content</sys:String>
-    <sys:String x:Key="IntelTool_Alliance">Alliance</sys:String>
     <sys:String x:Key="IntelTool_Victim">Victim</sys:String>
     <sys:String x:Key="IntelTool_Attacker">Attackers</sys:String>
-    <sys:String x:Key="IntelTool_OpenKb">Open this killmail in KB</sys:String>
-    <sys:String x:Key="IntelTool_OpenCharacter">Open this character's KB page</sys:String>
-    <sys:String x:Key="IntelTool_OpenEntity">Open this entity's KB page</sys:String>
     <sys:String x:Key="IntelTool_MaxAttackers">Max attackers (aggregate beyond this)</sys:String>
     <sys:String x:Key="IntelTool_Channels">Channels (from running warning sessions)</sys:String>
     <sys:String x:Key="IntelTool_RefreshChannels">Refresh channels</sys:String>
     <sys:String x:Key="MapPage_IntelChannelTag">📢 {0}  🕒 {1}</sys:String>
+    <sys:String x:Key="IntelTool_AttackerSummary">{0} attackers · {1} ship types · {2} factions (only the top 2 are shown)</sys:String>
+    <sys:String x:Key="MapPage_Legend_Low">Low</sys:String>
+    <sys:String x:Key="MapPage_Legend_High">High</sys:String>
+    <sys:String x:Key="MapPage_Legend_HighSec">1.0 (hisec)</sys:String>
+    <sys:String x:Key="MapPage_Legend_LowSec">0.0 / negative (lowsec)</sys:String>
+    <sys:String x:Key="MapPage_Legend_SecNote">Node colour and inner text both show that system's security status; negative status shares the lowest step with 0.0.</sys:String>
+    <sys:String x:Key="MapPage_Legend_HeatNote">Blocks = aggregated heat per area (whole-map rank); dots are neutral — zoom in for exact values.</sys:String>
+    <sys:String x:Key="MapPage_Legend_SovNote">Alliances in the same group share one colour; the group id is shown on systems when zoomed in.</sys:String>
+    <sys:String x:Key="MapPage_HeatBlocks">Heat blocks</sys:String>
+    <sys:String x:Key="MapPage_HeatGridSize">Block size</sys:String>
 </ResourceDictionary>
