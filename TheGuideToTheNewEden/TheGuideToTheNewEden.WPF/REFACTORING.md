@@ -2235,7 +2235,67 @@ UI 层    CharactersShellPage(Tab) ─ CharacterCardsPage
   图例回显同样镜像（格数 56 → 滑条显示 80）。
   **上限再放大（用户要求"最大色块大小可以再放大"）**：`MinHeatGridCells` 16 → **8**（滑条 Minimum 同步 16 → 8）——
   格数越少块越大，8 格 ≈ 世界长边的 1/8，是当前最大块；最小块端（120 格）不变。
-- **构建**：0 错误（35 全量基线）。未实机核验。
+- **主权模式修复：无色无字根因 + 圆点显示联盟徽标（用户反馈"主权模式现在什么颜色都没有，文字也没有，需要把圆点显示主权的图标"）**：
+  ① **根因（`ApplySovAsync` 条件写反）**：原代码 `if (map.ContainsKey(systemId)) map[systemId] = info.GroupId;`——
+  `map` 初始为空、`ContainsKey` 永远为 false，**任何东西都写不进去** → 全星系 `GroupId=0` → `SovGroupColor` 对 0 走"灰化安等色"回退（整图灰）+ 分组号文字全消失。
+  修复为 `if (map.ContainsKey(systemId)) continue;`（同一星系防御性先到先得）+ 同步写 `alliances[systemId] = info.AllianceId`，
+  节点循环里同时写 `node.GroupId` 与 `node.AllianceId`。**教训：向空字典填充的循环里，"ContainsKey 才写"几乎必然是写反了。**
+  ② **联盟徽标上图**（复用角色头像同套路）：
+  `MapSystemNode` 新增 `AllianceId`（0 = 无主权）；
+  VM 侧新增 `RequestSovIcons(infos)`（`_sovIconCache` / `_sovIconsRequested` 去重；命中缓存直接回调；否则后台 Task.Run 走
+  `GameImageHelper.BuildAllianceLogoUrl(id, 64)`（国服 evepc / 国际服 evetech）→ `HttpHelper.GetByteArrayAsync` → `SKBitmap.Decode` →
+  `_dispatcher.BeginInvoke` 回 UI 线程发 `SovIconLoaded` 事件，`ApplySovAsync` 末尾统一调用）；
+  页面 ctor 接线 `_viewModel.SovIconLoaded += (_, e) => MapCanvas.SetSovIcon(...)`；
+  画布新增 `_sovIcons` 字典与 `SetSovIcon(allianceId, bitmap)`（allianceId≤0 / null 忽略、dispose 旧图、`_dataVersion++` 触发底图重建）；
+  `DrawNodes` 在白色内核之后**圆形裁剪叠加徽标**（半径 `nodeR * 1.3`、外圈 1px 半透明白描边；守卫：仅主权模式 + `node.Enabled` + `node.AllianceId > 0` + `nodeR ≥ 2.4`）；
+  内圈文字徽章（分组号）画在图标**之后**、带背景圆，不会被图标盖住。
+  图标未到位 / 联盟未知 / 节点过小 / 被筛掉时，保留分组色圆点——分层降级，不空转。
+  ③ 风险备查：`SovService` 用的 ESI `/sovereignty/map` 端点注释标注 2026-05-19 后移除，当前 EVEStandard 固定兼容日期 v2025_12_16 仍可用；日后真失效按 `SovService` 注释切换 `GetSovereigntySystemsAsync`。
+- **主权模式不再显示分组号（用户定论"显示联盟徽标即可，不需要再显示编号"）**：`FormatNodeLabel` 主权分支直接返回 `string.Empty`
+  （不再画分组号徽章，徽标即身份标识；未拿到图标 / 节点过小时只剩分组色圆点，同组同色仍可辨识）；
+  图例文案同步改为「同一联盟的星系同色；放大后圆点显示联盟徽标」（`MapPage_Legend_SovNote`，zh/en 两文件，键数不变）。
+- **无主权星系改中性灰（用户追问"为什么没有主权联盟的会显示棕色大圆点+黑色小圆点"）**：
+  棕色大圆点 = `SovGroupColor` 对 GroupId≤0 的回退"安等色混 75% 深灰蓝"——无主权星系集中在低安/无安（安等色红系），灰化后呈红棕，
+  视觉上像"某个联盟的分组色"，语义误导（黑色小圆点 = `Kernel` 内核，浅色主题近黑/深色主题白，所有模式共有的放大细节，非主权特有）。
+  `ApplyNodeColors` 主权分支改 `GroupId > 0 ? SovGroupColor(...) : NeutralColor`（主题感知中性灰，与热力"无数据"同色）；
+  `SovGroupColor` static 回退仅作兜底（分组设置窗预览只传正分组号，不受影响）。
+- **顶栏星域定位下拉默认空白（用户反馈"星域选择UI应该默认提示全部，现在直接显示空白"）**：
+  顶栏 `RegionCombo`（星域定位）原样绑定 `Regions`（纯星域列表，无哨兵、无默认选中）→ 打开页面显示空白，不像筛选下拉已有「全部星域」哨兵。
+  修复：`Regions` 头部插入「全部星域」哨兵（`RegionID = 0`，**复用筛选下拉的语言键 `MapPage_Filter_AllRegions`**——两处哨兵语义相同、避免同文案双键；初版独立键「全部」按用户反馈改文案后删掉）+ VM 新增
+  `SelectedLocateRegion`（数据加载后默认选中哨兵，XAML `SelectedItem` 双向绑定）；
+  选择哨兵 = `MapCanvas.ToOverview()`（新增公开方法：飞回全图适配视图并清除高亮，边距与 `FitView` 一致），其余星域照旧 `ToRegion`。
+  （WPF 注意：`ItemsSource` 异步填充后 `SelectedIndex="0"` 不会可靠地重新应用，默认选中要走 VM 属性。）
+- **图例热力行合并为一行（用户要求"色块大小一行跟是否启用色块放到同一行，'色块大小'文字改成大小即可"）**：
+  `LegendHeatRow` 改单行横向（热力色块 CheckBox + 「大小」+ 滑条 + 数值，均居中对齐；滑条 110→96），
+  图例面板 `MaxWidth` 240→256 容纳 en 单行；文案 `MapPage_HeatGridSize` zh「色块大小」→「大小」/ en「Block size」→「Size」。
+- **图例色条自适应占满整行（用户反馈"颜色条现在没有占满全部水平空间"）**：
+  色条 11 格 Rectangle 原固定 `Width=18` 放横向 StackPanel（198px < 面板内容宽，右侧留空）→
+  容器改 **UniformGrid（Rows=1）**、Rectangle 删固定 Width——单行子元素自动等分整行，随面板宽度自适应。
+- **图例"大小"滑条左右分色（用户问"Slider 可以修改拖动按钮左右侧进度条的颜色吗"）**：
+  可以——自定义 Slider ControlTemplate，`Track.DecreaseRepeatButton`（Thumb 左侧 = 已填充，`HudAccent`）与
+  `Track.IncreaseRepeatButton`（右侧 = 未填充轨道，`HudBorder`）分别套模板，随 Thumb 移动天然正确分界；
+  Thumb 改 12px 圆点（HudText + HudAccent 描边）。样式 `HudSliderFillLeft/FillRight/Thumb/HudSlider` 落 MapPage 页面资源，
+  `HeatSizeSlider` 套 `HudSlider`（IsSnapToTick / IsMoveToPointEnabled / TickFrequency 等逻辑属性不受模板影响）。
+  **踩坑（MC3072）**：`IsMoveToPointEnabled` 是 **Slider** 的属性、Track 没有——模板里 Track 绑它直接 XAML 编译错；
+  Slider 内部自监听轨道点击并用 PART_Track 换算，模板无需绑定。
+  **踩坑 2（用户实测"并没有效果"）**：`BasedOn="{StaticResource {x:Type Slider}}"` 继承 WPF-UI 隐式样式后，
+  **继承链里的 Style.Triggers 优先于普通 Setter**——链上有 Trigger 设 Template 且条件为真时，自定义模板被整体覆盖（样式在用、模板被吞）。
+  **根因实锤（WPF-UI 源码 Slider.xaml）**：WPF-UI 隐式 Slider 样式**用 Orientation Trigger 设 Template**
+  （`<Trigger Property="Orientation" Value="Horizontal">` → `UiHorizontalSlider`，水平滑条永远触发）→ 普通 Template Setter 永远无效。
+  **正确做法**：BasedOn 隐式样式 + **同样用 Orientation Trigger 设模板**（派生样式的 Trigger 优先于基样式的 Trigger）；
+  模板复制 WPF-UI 的 `UiHorizontalSlider`（TickBar / TrackBackground / hover / `UiSliderThumbStyle` 全保留），仅把
+  `DecreaseRepeatButton` 换成主题色填充条（`SliderFillAccentStyle`）——右侧露出的 TrackBackground 即 Fluent 灰轨道，风格与全局完全一致；
+  垂直滑条沿用 `UiVerticalSlider`。**通则：给用 Trigger 设模板的库样式做派生时，必须用同样的 Trigger 覆盖；改库模板先读库源码。**
+  全局左右分色（用户要求"应用到全局默认，左侧改成主题色，右侧改成灰色"）：样式落 `Controls/GlobalControlStyles.xaml`
+  （App.xaml 里排在 `ui:ControlsDictionary` 之后合并），隐式 Slider 样式生效于全项目（倒货分析 ~12 / 频道情报 2 / 多开 1 / 星图图例 1）。
+- **修复：左侧填充不随应用内主题色（用户反馈"左侧一直都是蓝色，并不是主题色"）**：
+  根因 = **`SystemAccentColorPrimaryBrush` 是 Windows 系统强调色**（随 WPF-UI 主题字典加载），`ApplicationAccentColorManager.Apply`
+  换应用内主题色时**不更新该键**（源码 `UpdateColorResources` 实锤：只更新 Color 键与 `SystemAccentBrush`、`AccentTextFillColor*Brush`、
+  `AccentFillColorDefaultBrush`（= Dark?secondary:primary，Fluent 控件标准强调填充）、`AccentFillColorSecondary/TertiaryBrush`、
+  `SystemFillColorAttentionBrush`、`TextOnAccentFillColor*Brush` 等）。`SliderFillAccentStyle` 填充改用 **`AccentFillColorDefaultBrush`**
+  （Dark 取 secondaryAccent / Light 取 primaryAccent），`ThemeService.ApplyAccentColor` 换色即实时跟随。
+  **通则：要"随应用内主题色"的填充/文字一律用 `AccentFillColor*` 系画刷，`SystemAccentColorPrimaryBrush` 只是 Windows 系统色的别名。**
+- **构建**：0 错误（35 全量基线）。主权改动未实机核验。
 
 ---
 

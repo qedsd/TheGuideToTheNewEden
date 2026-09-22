@@ -1499,7 +1499,9 @@
     <sys:String x:Key="MapPage_Legend_LowSec">0.0 / 负（低安）</sys:String>
     <sys:String x:Key="MapPage_Legend_SecNote">节点颜色与内圈文字都是该星系的安全等级；负安等与 0.0 同为最低档。</sys:String>
     <sys:String x:Key="MapPage_Legend_HeatNote">色块 = 该区域聚合的热度（按全图相对排名）；圆点为中性色，具体数值放大后看星系内圈文字。</sys:String>
-    <sys:String x:Key="MapPage_Legend_SovNote">同一分组号的联盟同色；分组号显示在放大后的星系上。</sys:String>
-    <sys:String x:Key="MapPage_HeatBlocks">热力色块</sys:String>
-    <sys:String x:Key="MapPage_HeatGridSize">色块大小</sys:String>
+    <sys:String x:Key="MapPage_Legend_SovNote">同一联盟的星系同色；放大后圆点显示联盟徽标。</sys:String>
+    <sys:String x:Key="MapPage_HeatBlocks">热力</sys:String>
+    <sys:String x:Key="MapPage_HeatGridSize">大小</sys:String>
+    <sys:String x:Key="MapPage_HeatOffset">网格偏移</sys:String>
+    <sys:String x:Key="MapPage_HeatOffsetReset">复位</sys:String>
 </ResourceDictionary>

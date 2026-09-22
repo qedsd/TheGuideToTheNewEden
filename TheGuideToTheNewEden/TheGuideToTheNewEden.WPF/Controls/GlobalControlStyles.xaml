@@ -194,4 +194,105 @@
         </Style.Triggers>
     </Style>
 
+    <!--
+        Slider：全局左右分色（左侧主题色填充、右侧 Fluent 灰轨道），基于 WPF-UI 隐式样式。
+        关键机制（MapPage 实测踩坑 + WPF-UI 源码实锤）：WPF-UI 的隐式 Slider 样式用 Orientation Trigger 设置 Template
+        （水平滑条永远触发 → 普通 Template Setter 永远被覆盖）；因此本样式同样用 Orientation Trigger 设模板
+        （派生样式的 Trigger 优先于基样式的 Trigger）。
+        模板复制 WPF-UI 的 UiHorizontalSlider，仅把 DecreaseRepeatButton（Thumb 左侧）换成主题色填充条；
+        右侧露出的 TrackBackground（SliderTrackFill）即灰色轨道，Thumb 沿用 WPF-UI 原生——风格与全局 Fluent 完全一致。
+        填充色必须用 AccentFillColorDefaultBrush 而非 SystemAccentColorPrimaryBrush（WPF-UI 源码实锤）：
+        后者随主题字典加载（= Windows 系统强调色），ApplicationAccentColorManager.Apply 换应用内主题色时不更新该键；
+        前者会被实时更新（Dark 主题取 secondaryAccent、Light 取 primaryAccent），是 Fluent 控件的标准强调填充。
+    -->
+    <Style x:Key="SliderFillAccentStyle" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Grid
+                        Height="4"
+                        VerticalAlignment="Center"
+                        Background="Transparent">
+                        <Border Background="{DynamicResource AccentFillColorDefaultBrush}" CornerRadius="2" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="HorizontalSliderFillTemplate" TargetType="Slider">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" MinHeight="{TemplateBinding MinHeight}" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TickBar
+                x:Name="TopTick"
+                Grid.Row="0"
+                Height="6"
+                Fill="{DynamicResource SliderTickBarFill}"
+                Placement="Top"
+                SnapsToDevicePixels="True"
+                Visibility="Collapsed" />
+            <Border
+                x:Name="TrackBackground"
+                Grid.Row="1"
+                Height="4"
+                Margin="0"
+                Background="{DynamicResource SliderTrackFill}"
+                BorderThickness="0"
+                CornerRadius="2" />
+            <Track x:Name="PART_Track" Grid.Row="1">
+                <Track.DecreaseRepeatButton>
+                    <RepeatButton Command="Slider.DecreaseLarge" Style="{StaticResource SliderFillAccentStyle}" />
+                </Track.DecreaseRepeatButton>
+                <Track.Thumb>
+                    <Thumb x:Name="Thumb" Style="{StaticResource UiSliderThumbStyle}" />
+                </Track.Thumb>
+                <Track.IncreaseRepeatButton>
+                    <RepeatButton Command="Slider.IncreaseLarge" Style="{StaticResource UiSliderButtonStyle}" />
+                </Track.IncreaseRepeatButton>
+            </Track>
+            <TickBar
+                x:Name="BottomTick"
+                Grid.Row="2"
+                Height="6"
+                Fill="{DynamicResource SliderTickBarFill}"
+                Placement="Bottom"
+                SnapsToDevicePixels="True"
+                Visibility="Collapsed" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="TickPlacement" Value="TopLeft">
+                <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="TickPlacement" Value="BottomRight">
+                <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="TickPlacement" Value="Both">
+                <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource SliderTrackFillPointerOver}" />
+                <Setter TargetName="Thumb" Property="Foreground" Value="{DynamicResource SliderThumbBackgroundPointerOver}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style BasedOn="{StaticResource {x:Type Slider}}" TargetType="Slider">
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Template" Value="{StaticResource HorizontalSliderFillTemplate}" />
+            </Trigger>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Template" Value="{StaticResource UiVerticalSlider}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

@@ -3,8 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:uc="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent">
 
     <UserControl.Resources>
@@ -100,12 +100,23 @@
 
                 <!--  高级设置  -->
                 <TabItem Header="{DynamicResource BusinessPage_AdvancedSetting}">
-                    <ScrollViewer Margin="0,6,0,0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer
+                        Margin="0,6,0,0"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,0,8,0">
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_BuyPrice}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_BuyPrice}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_PriceType}" />
-                                    <ComboBox HorizontalAlignment="Stretch" Margin="0,4" SelectedIndex="{Binding BuyPriceType, Mode=TwoWay}">
+                                    <ComboBox
+                                        Margin="0,4"
+                                        HorizontalAlignment="Stretch"
+                                        SelectedIndex="{Binding BuyPriceType, Mode=TwoWay}">
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellTop5}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellAvailable}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellTop}" />
@@ -118,14 +129,16 @@
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryMedian}" />
                                     </ComboBox>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HistoryDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
-                                        Value="{Binding Setting.BuyHistoryDay, Mode=TwoWay}"
-                                        Visibility="{Binding Setting.IsHistoryBuyPrice, Converter={StaticResource BoolToVis}}" />
+                                        Visibility="{Binding Setting.IsHistoryBuyPrice, Converter={StaticResource BoolToVis}}"
+                                        Value="{Binding Setting.BuyHistoryDay, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_PriceScale}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="0.1"
                                         SmallChange="0.1"
                                         SpinButtonPlacementMode="Inline"
@@ -138,10 +151,18 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_SellPrice}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_SellPrice}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_PriceType}" />
-                                    <ComboBox HorizontalAlignment="Stretch" Margin="0,4" SelectedIndex="{Binding SellPriceType, Mode=TwoWay}">
+                                    <ComboBox
+                                        Margin="0,4"
+                                        HorizontalAlignment="Stretch"
+                                        SelectedIndex="{Binding SellPriceType, Mode=TwoWay}">
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellTop5}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellAvailable}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_SellTop}" />
@@ -154,14 +175,16 @@
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryMedian}" />
                                     </ComboBox>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HistoryDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
-                                        Value="{Binding Setting.SellHistoryDay, Mode=TwoWay}"
-                                        Visibility="{Binding Setting.IsHistorySellPrice, Converter={StaticResource BoolToVis}}" />
+                                        Visibility="{Binding Setting.IsHistorySellPrice, Converter={StaticResource BoolToVis}}"
+                                        Value="{Binding Setting.SellHistoryDay, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_PriceScale}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="0.1"
                                         SmallChange="0.1"
                                         SpinButtonPlacementMode="Inline"
@@ -174,18 +197,24 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_SourceSales}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_SourceSales}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SalesDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
                                         Value="{Binding Setting.SourceSalesDay, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SalesType}" />
                                     <ComboBox
-                                        HorizontalAlignment="Stretch"
                                         Margin="0,4"
+                                        HorizontalAlignment="Stretch"
                                         SelectedIndex="{Binding SourceSalesType, Mode=TwoWay}">
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryLowestSalse}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryHighestSalse}" />
@@ -198,18 +227,24 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_DestinationSales}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_DestinationSales}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SalesDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
                                         Value="{Binding Setting.DestinationSalesDay, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SalesType}" />
                                     <ComboBox
-                                        HorizontalAlignment="Stretch"
                                         Margin="0,4"
+                                        HorizontalAlignment="Stretch"
                                         SelectedIndex="{Binding DestinationSalesType, Mode=TwoWay}">
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryLowestSalse}" />
                                         <ComboBoxItem Content="{DynamicResource BusinessPage_HistoryHighestSalse}" />
@@ -228,10 +263,16 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_DestinationHistoryPriceFluctuation}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_DestinationHistoryPriceFluctuation}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HistoryPriceFluctuationDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
@@ -239,10 +280,16 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_DestinationNowPriceFluctuationDay}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_DestinationNowPriceFluctuationDay}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HistoryPriceFluctuationDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
@@ -250,10 +297,16 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_SellOrderSaturation}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_SellOrderSaturation}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SellOrderSaturationFluctuation}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="0"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
@@ -261,16 +314,23 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_HeatValue}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_HeatValue}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HeatValueDay}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
                                         Value="{Binding Setting.HeatValueDay, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HeatValueThreshold}" />
-                                    <ui:NumberBox Margin="0,4"
+                                    <ui:NumberBox
+                                        Margin="0,4"
                                         Minimum="1"
                                         SmallChange="1"
                                         SpinButtonPlacementMode="Inline"
@@ -278,26 +338,58 @@
                                 </StackPanel>
                             </Expander>
 
-                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,4" Background="Transparent" Header="{DynamicResource BusinessPage_SuggestionWeight}">
+                            <Expander
+                                Margin="0,4"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Background="Transparent"
+                                Header="{DynamicResource BusinessPage_SuggestionWeight}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_ROI}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionROI, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionROI, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_TargetSalesNetProfit}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionNetProfit, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionNetProfit, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_Principal}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionPrincipal, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionPrincipal, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_DaySales}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionSales, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionSales, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_DestinationHistoryPriceFluctuation}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionHistoryPriceFluctuation, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionHistoryPriceFluctuation, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_DestinationNowPriceFluctuationDay}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionNowPriceFluctuation, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionNowPriceFluctuation, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_SellOrderSaturation}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionSaturation, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionSaturation, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_HeatValue}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionHeatValue, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionHeatValue, Mode=TwoWay}" />
                                     <TextBlock Style="{StaticResource ScalperFieldLabel}" Text="{DynamicResource BusinessPage_IskPerVolume}" />
-                                    <Slider Maximum="100" Minimum="0" Value="{Binding Setting.SuggestionIskPerVolume, Mode=TwoWay}" />
+                                    <Slider
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{Binding Setting.SuggestionIskPerVolume, Mode=TwoWay}" />
                                 </StackPanel>
                             </Expander>
                         </StackPanel>
@@ -350,6 +442,7 @@
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <ui:DataGrid
                     x:Name="ResultGrid"
+                    MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
@@ -357,7 +450,6 @@
                     HeadersVisibility="Column"
                     IsReadOnly="True"
                     ItemsSource="{Binding ScalperItems}"
-                    MinWidth="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                     MouseDoubleClick="OnResultGridDoubleClick"
                     ScrollViewer.CanContentScroll="True"
                     SelectionMode="Extended"

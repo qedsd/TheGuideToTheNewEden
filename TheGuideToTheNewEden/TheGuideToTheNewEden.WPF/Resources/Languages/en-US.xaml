@@ -1492,7 +1492,9 @@
     <sys:String x:Key="MapPage_Legend_LowSec">0.0 / negative (lowsec)</sys:String>
     <sys:String x:Key="MapPage_Legend_SecNote">Node colour and inner text both show that system's security status; negative status shares the lowest step with 0.0.</sys:String>
     <sys:String x:Key="MapPage_Legend_HeatNote">Blocks = aggregated heat per area (whole-map rank); dots are neutral — zoom in for exact values.</sys:String>
-    <sys:String x:Key="MapPage_Legend_SovNote">Alliances in the same group share one colour; the group id is shown on systems when zoomed in.</sys:String>
-    <sys:String x:Key="MapPage_HeatBlocks">Heat blocks</sys:String>
-    <sys:String x:Key="MapPage_HeatGridSize">Block size</sys:String>
+    <sys:String x:Key="MapPage_Legend_SovNote">Systems of the same alliance share one colour; zoomed in, the node shows the alliance logo.</sys:String>
+    <sys:String x:Key="MapPage_HeatBlocks">Heat</sys:String>
+    <sys:String x:Key="MapPage_HeatGridSize">Size</sys:String>
+    <sys:String x:Key="MapPage_HeatOffset">Offset</sys:String>
+    <sys:String x:Key="MapPage_HeatOffsetReset">Reset</sys:String>
 </ResourceDictionary>

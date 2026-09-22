@@ -45,6 +45,9 @@ public sealed class MapSystemNode
     /// <summary>该星系所属主权分组（SOV 着色用；0 = 无主权）。</summary>
     public long GroupId { get; set; }
 
+    /// <summary>该星系所属主权联盟 ID（0 = 无主权；主权模式圆点叠加联盟徽标用）。</summary>
+    public long AllianceId { get; set; }
+
     /// <summary>行星资源值（行星资源着色用；-1 表示无数据）。</summary>
     public double Resource { get; set; } = -1;
 
@@ -115,6 +118,7 @@ public class StarMapCanvas : SKElement
     private List<IntelMarker> _intel = [];
     private List<CharacterMarker> _characters = [];
     private readonly Dictionary<long, SKBitmap?> _characterImages = [];
+    private readonly Dictionary<long, SKBitmap> _sovIcons = [];
     private readonly Dictionary<int, SKBitmap?> _intelShipImages = [];
     private IReadOnlyList<int> _routePath = [];
     private IReadOnlyList<int> _routeWaypoints = [];
@@ -458,6 +462,33 @@ public class StarMapCanvas : SKElement
         FlyTo(targetZoom, targetX, targetY);
     }
 
+    /// <summary>飞回全图概览并清除高亮（顶栏星域下拉选「全部」时用；边距与 FitView 一致）。</summary>
+    public void ToOverview()
+    {
+        if (_nodes.Length == 0 || _worldW <= 0)
+        {
+            return;
+        }
+
+        if (_needFit)
+        {
+            FitView();
+        }
+
+        var w = ActualWidth;
+        var h = ActualHeight;
+        if (w < 10 || h < 10)
+        {
+            return;
+        }
+
+        var targetZoom = Math.Min(w / _worldW, h / _worldH) * 0.92;
+        var targetX = (w - _worldW * targetZoom) / 2;
+        var targetY = (h - _worldH * targetZoom) / 2;
+        _highlight = null;
+        FlyTo(targetZoom, targetX, targetY);
+    }
+
     private void FlyTo(double zoom, double x, double y)
     {
         _animFrom = (_zoom, _offsetX, _offsetY);
@@ -499,6 +530,26 @@ public class StarMapCanvas : SKElement
             old.Dispose();
         }
         _characterImages[characterId] = bitmap;
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// 设置联盟徽标（主权模式的节点图标，画进底图缓存 → 每来一个就使缓存失效重建一次）。
+    /// </summary>
+    public void SetSovIcon(long allianceId, SKBitmap? bitmap)
+    {
+        if (allianceId <= 0 || bitmap is null)
+        {
+            return;
+        }
+
+        if (_sovIcons.TryGetValue(allianceId, out var old) && old is not null)
+        {
+            old.Dispose();
+        }
+
+        _sovIcons[allianceId] = bitmap;
+        _dataVersion++;
         InvalidateVisual();
     }
 
@@ -912,14 +963,18 @@ public class StarMapCanvas : SKElement
 
     /// <summary>热力网格的默认格数（世界长边切成多少格）——网格挂在世界坐标上（不是屏幕坐标），
     /// 同一块区域的颜色在缩放/平移时不会变；放大只是把同一块画得更大。格数可由图例面板的滑条调整并持久化。</summary>
-    public const int DefaultHeatGridCells = 56;
-    public const int MinHeatGridCells = 8;
-    public const int MaxHeatGridCells = 120;
+    public const int DefaultHeatGridCells = 30;
+    /// <summary>热力格数下限（最少格数 = 块最大，8 格 = 世界长边切 8 份）。图例滑条档位 1..100 线性映射到
+    /// [本值, <see cref="MaxHeatGridCells"/>]：档位 100 → 本值（即旧版滑条满档的块大小）。</summary>
+    public const int MinHeatGridCells = 4;
+    /// <summary>热力格数上限（最多格数 = 块最小）。图例滑条档位 1..100 线性映射：档位 1 → 本值。</summary>
+    public const int MaxHeatGridCells = 50;
 
     /// <summary>当前热力网格格数（世界长边；格数越多色块越小）。</summary>
     public int HeatGridCells { get; private set; } = DefaultHeatGridCells;
 
-    /// <summary>调整热力网格格数（即色块大小：格数越少块越大）。范围 16..120，变化才重建。</summary>
+    /// <summary>调整热力网格格数（即色块大小：格数越少块越大）。合法范围 = Min/MaxHeatGridCells，
+    /// 越界静默钳制（含默认值）；图例滑条档位 1..100 经线性映射落入本范围（见 MapPage.HeatSizeSlider_ValueChanged）。</summary>
     public void SetHeatGridSize(int cells)
     {
         cells = Math.Clamp(cells, MinHeatGridCells, MaxHeatGridCells);
@@ -933,6 +988,37 @@ public class StarMapCanvas : SKElement
         RebuildHeatGrid();
         InvalidateVisual();
     }
+
+    /// <summary>热力网格原点的归一化偏移（相对数据包围盒左上角；正 = 右/下移，1.0 = 世界宽/高）。
+    /// 聚合与绘制共用同一偏移，保证色块边界与星系落格始终一致。</summary>
+    public double HeatGridOffsetX { get; private set; }
+    public double HeatGridOffsetY { get; private set; }
+
+    /// <summary>方向按钮的单步平移量 = 当前格归一化步长的 1/4（随格子大小自适应）。</summary>
+    public double HeatGridNudgeStep => _worldW <= 0 ? 0.05 : _worldW / Math.Max(1, HeatGridCells) / 4.0;
+
+    /// <summary>绝对设置热力网格偏移（页面加载回填），变化才重建。</summary>
+    public void SetHeatGridOffset(double x, double y)
+    {
+        x = Math.Clamp(x, -1, 1);
+        y = Math.Clamp(y, -1, 1);
+        if (HeatGridOffsetX == x && HeatGridOffsetY == y)
+        {
+            return;
+        }
+
+        HeatGridOffsetX = x;
+        HeatGridOffsetY = y;
+        _dataVersion++;
+        RebuildHeatGrid();
+        InvalidateVisual();
+    }
+
+    /// <summary>按归一化增量平移热力网格（图例方向按钮），越界钳到 ±1。</summary>
+    public void NudgeHeatGridOffset(double dx, double dy) => SetHeatGridOffset(HeatGridOffsetX + dx, HeatGridOffsetY + dy);
+
+    /// <summary>热力网格偏移复位（回到默认的左上角对齐）。</summary>
+    public void ResetHeatGridOffset() => SetHeatGridOffset(0, 0);
 
     private Dictionary<long, double> _heatCells = [];    // 格子 → 聚合值
     private Dictionary<long, double> _heatRanks = [];    // 格子 → 分位 0..1（全图相对排名）
@@ -996,7 +1082,10 @@ public class StarMapCanvas : SKElement
                 continue;
             }
 
-            var key = PackCell((int)Math.Floor(node.NX / step), (int)Math.Floor(node.NY / step));
+            // 减去网格原点偏移后再落格；偏移可为负索引（PackCell 算术移位保留符号，安全）
+            var nx = node.NX - HeatGridOffsetX;
+            var ny = node.NY - HeatGridOffsetY;
+            var key = PackCell((int)Math.Floor(nx / step), (int)Math.Floor(ny / step));
             _heatCells.TryGetValue(key, out var sum);
             sum += value;
             _heatCells[key] = sum;
@@ -1064,8 +1153,8 @@ public class StarMapCanvas : SKElement
             var t = _heatRanks[key];
             var cx = (int)(key >> 32);
             var cy = (int)(uint)key;
-            var left = (float)(cx * stepX * _worldW * _zoom + _offsetX);
-            var top = (float)(cy * stepY * _worldH * _zoom + _offsetY);
+            var left = (float)((cx * stepX + HeatGridOffsetX) * _worldW * _zoom + _offsetX);
+            var top = (float)((cy * stepY + HeatGridOffsetY) * _worldH * _zoom + _offsetY);
             if (left + cellW < 0 || top + cellH < 0 || left > w || top > h)
             {
                 continue;
@@ -1288,6 +1377,28 @@ public class StarMapCanvas : SKElement
                 canvas.DrawCircle(p, nodeR * 0.45f, paint);
             }
 
+            // 主权模式：圆点上叠加联盟徽标（图标未到位 / 节点太小 / 被筛掉时保留分组色圆点）
+            if (_currentColorMode == MapColorMode.Sovereignty
+                && node.Enabled
+                && node.AllianceId > 0
+                && _sovIcons.TryGetValue(node.AllianceId, out var logo)
+                && logo is not null
+                && nodeR >= 2.4f)
+            {
+                var iconR = nodeR * 1.3f;
+                using var clip = new SKPath();
+                clip.AddCircle(p.X, p.Y, iconR, SKPathDirection.Clockwise);
+                canvas.Save();
+                canvas.ClipPath(clip, antialias: true);
+                canvas.DrawBitmap(logo, new SKRect(p.X - iconR, p.Y - iconR, p.X + iconR, p.Y + iconR));
+                canvas.Restore();
+                paint.Style = SKPaintStyle.Stroke;
+                paint.StrokeWidth = 1f;
+                paint.Color = new SKColor(255, 255, 255, 90);
+                canvas.DrawCircle(p.X, p.Y, iconR, paint);
+                paint.Style = SKPaintStyle.Fill;
+            }
+
             if (showSec)
             {
                 // 内圈文字随着色模式变化（安等 / 分组号 / 行星资源值 / 击杀·通行量）；无数据就不画（连底圈一起省掉）
@@ -1365,7 +1476,8 @@ public class StarMapCanvas : SKElement
     /// </summary>
     private string FormatNodeLabel(MapSystemNode node) => _currentColorMode switch
     {
-        MapColorMode.Sovereignty => node.GroupId > 0 ? node.GroupId.ToString(CultureInfo.InvariantCulture) : string.Empty,
+        // 主权模式：圆点显示联盟徽标即可，不再画分组号徽章（用户定论"显示联盟徽标即可，不需要再显示编号"）
+        MapColorMode.Sovereignty => string.Empty,
         MapColorMode.PlanetResource => node.Resource >= 0 ? NormalizeCount((long)Math.Round(node.Resource)) : string.Empty,
         MapColorMode.Kills or MapColorMode.Jumps => node.Heat >= 0 ? NormalizeCount((long)Math.Round(node.Heat)) : string.Empty,
         _ => FormatSecurity(node.Security),
@@ -1844,7 +1956,9 @@ public class StarMapCanvas : SKElement
             {
                 node.Color = mode switch
                 {
-                    MapColorMode.Sovereignty => SovGroupColor(node.GroupId, node.Security),
+                    // 无主权星系（GroupId ≤ 0）直接用中性灰：原回退"灰化安等色"在低安区呈红棕色，
+                    // 容易被误读成"某个联盟的分组色"——主权模式语义应为"只有有主权的星系才参与配色"（用户追问后修正）
+                    MapColorMode.Sovereignty => node.GroupId > 0 ? SovGroupColor(node.GroupId, node.Security) : NeutralColor,
                     _ => SecurityColor(node.Security),
                 };
             }
@@ -1881,7 +1995,8 @@ public class StarMapCanvas : SKElement
 
     /// <summary>
     /// 主权分组配色：按分组号取黄金角散列色相（同一分组永远同色、跨会话稳定，优于 WinUI 的每次随机）。
-    /// 无主权星系（GroupId ≤ 0）退回灰化后的安全等级色。
+    /// 无主权星系（GroupId ≤ 0）在画布侧（ApplyNodeColors）已改用主题感知中性灰，不再走这里的回退；
+    /// 此回退仅作静态兜底（分组设置窗预览只传正分组号，不受影响）。
     /// </summary>
     public static SKColor SovGroupColor(long groupId, double security)
     {

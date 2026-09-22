@@ -366,6 +366,16 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     public ObservableCollection<MapSystemNode> Neighbors { get; } = [];
     public ObservableCollection<AuthorizedCharacterData> AutopilotCharacters { get; } = [];
     public ObservableCollection<MapRegion> Regions { get; } = [];
+
+    private MapRegion? _selectedLocateRegion;
+
+    /// <summary>顶栏星域定位下拉的选中项（首个「全部」哨兵 = 全图概览，默认选中避免下拉空白）。</summary>
+    public MapRegion? SelectedLocateRegion
+    {
+        get => _selectedLocateRegion;
+        set => Set(ref _selectedLocateRegion, value);
+    }
+
     public ObservableCollection<string> ActiveListeners { get; } = [];
     public ObservableCollection<JumpBridge> Bridges { get; } = [];
     public ObservableCollection<CapitalJumpShipInfo> JumpShips { get; } = [];
@@ -672,10 +682,14 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
                 .OrderBy(p => p.RegionName)
                 .ToList());
             Regions.Clear();
+            // 头部「全部星域」哨兵：默认选中，顶栏下拉不再空白（RegionID = 0，选择后回全图概览）；
+            // 文案复用筛选下拉的 MapPage_Filter_AllRegions（两处哨兵语义相同，键名虽带 Filter 但避免同文案双键）
+            Regions.Add(new MapRegion { RegionID = 0, RegionName = FindString("MapPage_Filter_AllRegions") });
             foreach (var region in regions)
             {
                 Regions.Add(region);
             }
+            SelectedLocateRegion = Regions.FirstOrDefault();
 
             // 筛选下拉（首个"全部星域"哨兵）
             FilterRegions.Clear();
@@ -878,28 +892,99 @@ public sealed class MapPageViewModel : INotifyPropertyChanged
     {
         var infos = await SovService.LoadAsync(forceRefresh);
         var map = new Dictionary<int, long>();
+        var alliances = new Dictionary<int, long>();
         foreach (var info in infos)
         {
             foreach (var systemId in info.SystemIds)
             {
-                if(map.ContainsKey(systemId))
-                    map[systemId] = info.GroupId;
+                // **修复**：原来写反成 if (map.ContainsKey(systemId))——map 初始为空，条件永远不成立，
+                // 分组号根本填不进去 → 所有星系 GroupId=0，主权模式整图灰色回退、无分组号文字（用户实测反馈）。
+                // 同一星系理论上只属于一个联盟；防御性处理：先到先得。
+                if (map.ContainsKey(systemId))
+                {
+                    continue;
+                }
+
+                map[systemId] = info.GroupId;
+                alliances[systemId] = info.AllianceId;
             }
         }
 
         foreach (var node in _nodeById.Values)
         {
             node.GroupId = map.TryGetValue(node.Id, out var groupId) ? groupId : 0;
+            node.AllianceId = alliances.TryGetValue(node.Id, out var allianceId) ? allianceId : 0;
         }
 
         _sovLoaded = true;
         OnPropertyChanged(nameof(SelectedSovText));
+        RequestSovIcons(infos);
         // 注意：这里绝不能再发 ColorModeChanged——页面处理器收到后会再次调 ApplySovAsync，
         // 而本方法在缓存命中时全程同步执行 → 同步无限递归 → StackOverflowException（阶段 64 实机）。
         // 重着色由页面在事件处理器末尾统一调 MapCanvas.SetColorMode 完成。
     }
 
     public bool IsSovLoaded => _sovLoaded;
+
+    // ---------- 主权：联盟徽标 ----------
+
+    private readonly Dictionary<long, SKBitmap> _sovIconCache = [];
+    private readonly HashSet<long> _sovIconsRequested = [];
+
+    /// <summary>联盟徽标下载完成（主权模式的圆点图标；逐个回调，画布自行重建底图）。</summary>
+    public event EventHandler<(long AllianceId, SKBitmap Bitmap)>? SovIconLoaded;
+
+    /// <summary>
+    /// 为所有主权联盟请求徽标（images.evetech / 国服 evepc，64px）：内存缓存 + "已请求"去重，
+    /// 命中缓存直接回调，未命中后台下载、解码后回到 UI 线程发事件。与角色头像（<see cref="OnCharacterLocations"/>）同一套做法。
+    /// </summary>
+    private void RequestSovIcons(IReadOnlyList<SovInfo> infos)
+    {
+        foreach (var info in infos)
+        {
+            if (info.AllianceId <= 0 || !_sovIconsRequested.Add(info.AllianceId))
+            {
+                continue;
+            }
+
+            if (_sovIconCache.TryGetValue(info.AllianceId, out var cached) && cached is not null)
+            {
+                SovIconLoaded?.Invoke(this, (info.AllianceId, cached));
+                continue;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var url = GameImageHelper.BuildAllianceLogoUrl(info.AllianceId, 64);
+                    if (url is null)
+                    {
+                        return;
+                    }
+
+                    var bytes = await Core.Helpers.HttpHelper.GetByteArrayAsync(url);
+                    if (bytes is not { Length: > 0 })
+                    {
+                        return;
+                    }
+
+                    var bitmap = SKBitmap.Decode(bytes);
+                    if (bitmap is null)
+                    {
+                        return;
+                    }
+
+                    _sovIconCache[info.AllianceId] = bitmap;
+                    await _dispatcher.BeginInvoke(() => SovIconLoaded?.Invoke(this, (info.AllianceId, bitmap)));
+                }
+                catch (Exception ex)
+                {
+                    Core.Log.Error(ex);
+                }
+            });
+        }
+    }
 
     // ---------- 着色：行星资源 ----------
 

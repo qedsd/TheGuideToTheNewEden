@@ -46,6 +46,7 @@ public partial class MapPage : Page
         ApplyTheme();
         UpdateLegend();
         _viewModel.CoverChanged += (_, ids) => MapCanvas.SetCover(ids);
+        _viewModel.SovIconLoaded += (_, e) => MapCanvas.SetSovIcon(e.AllianceId, e.Bitmap);
         _viewModel.IntelShipImageLoaded += (_, e) => MapCanvas.SetIntelShipImage(e.ShipTypeId, e.Bitmap);
         _viewModel.PortraitLoaded += (_, e) => MapCanvas.SetCharacterImage(e.CharacterId, e.Bitmap);
         _viewModel.NavigationCompleted += (_, _) => MapCanvas.SetRoute(_viewModel.LastPath, _viewModel.LastWaypointIndices);
@@ -82,6 +83,7 @@ public partial class MapPage : Page
         MapCanvas.SetHeatMapVisible(MapColorMode.Jumps, heat.ShowHeatJumps);
         MapCanvas.SetHeatMapVisible(MapColorMode.PlanetResource, heat.ShowHeatPlanetResource);
         MapCanvas.SetHeatGridSize(heat.HeatGridSize);
+        MapCanvas.SetHeatGridOffset(heat.HeatGridOffsetX, heat.HeatGridOffsetY);
         BridgesToggle.IsChecked = _viewModel.ShowBridges;
         var kindIndex = Array.IndexOf(MapPageViewModel.ResourceKinds, _viewModel.ResourceKind);
         if (kindIndex >= 0)
@@ -187,7 +189,15 @@ public partial class MapPage : Page
     {
         if (RegionCombo.SelectedItem is Core.DBModels.MapRegion region)
         {
-            MapCanvas.ToRegion(region.RegionID);
+            // 「全部」哨兵（RegionID = 0）：飞回全图概览；其余星域正常定位
+            if (region.RegionID == 0)
+            {
+                MapCanvas.ToOverview();
+            }
+            else
+            {
+                MapCanvas.ToRegion(region.RegionID);
+            }
         }
     }
 
@@ -284,20 +294,24 @@ public partial class MapPage : Page
         // 热力色块开关：只在行星资源 / 击杀 / 通行三种模式下显示，随模式回显各自的记忆状态
         var isHeatMode = mode is MapColorMode.Kills or MapColorMode.Jumps or MapColorMode.PlanetResource;
         LegendHeatRow.Visibility = isHeatMode ? Visibility.Visible : Visibility.Collapsed;
+        LegendHeatOffsetRow.Visibility = LegendHeatRow.Visibility;
         if (isHeatMode)
         {
             _suppressHeatToggle = true;
             _suppressHeatSize = true;
             HeatToggle.IsChecked = MapCanvas.GetHeatMapVisible(mode);
-            // 滑条显示"大小档位"（越大块越大）：格数做镜像换算
-            HeatSizeSlider.Value = StarMapCanvas.MaxHeatGridCells + StarMapCanvas.MinHeatGridCells - MapCanvas.HeatGridCells;
+            // 滑条显示"大小档位"（1..100，越大块越大）：格数按同一线性映射反解（越界值由滑条自身钳到 [Min,Max]）
+            var sliderSpan = HeatSizeSlider.Maximum - HeatSizeSlider.Minimum;
+            var cellSpan = (double)(StarMapCanvas.MaxHeatGridCells - StarMapCanvas.MinHeatGridCells);
+            HeatSizeSlider.Value = HeatSizeSlider.Maximum - sliderSpan * (MapCanvas.HeatGridCells - StarMapCanvas.MinHeatGridCells) / cellSpan;
             HeatSizeText.Text = ((int)Math.Round(HeatSizeSlider.Value)).ToString();
             _suppressHeatToggle = false;
             _suppressHeatSize = false;
         }
     }
 
-    /// <summary>色条用画布的同一份调色板（安等从"高安"侧开始，其余模式从"低值"侧开始）。</summary>
+    /// <summary>色条用画布的同一份调色板（安等从"高安"侧开始，其余模式从"低值"侧开始）；
+    /// 容器是 UniformGrid，每格不设宽度自动等分整行 → 随图例面板自适应占满。</summary>
     private void BuildLegendStrips(bool fromHigh)
     {
         LegendStrips.Children.Clear();
@@ -307,7 +321,6 @@ public partial class MapPage : Page
             var color = palette[fromHigh ? palette.Count - 1 - i : i];
             LegendStrips.Children.Add(new System.Windows.Shapes.Rectangle
             {
-                Width = 18,
                 Height = 10,
                 Fill = new SolidColorBrush(Color.FromRgb(color.Red, color.Green, color.Blue)),
             });
@@ -363,12 +376,14 @@ public partial class MapPage : Page
     }
 
     /// <summary>
-    /// 色块大小滑条：值越大块越大（与直觉一致）。滑条值是"大小档位"（16..120），
-    /// 内部换算成网格格数 cells = Max + Min − size（存 <see cref="MapCanvasConfig.HeatGridSize"/> 的仍是格数，配置兼容）。
+    /// 色块大小滑条：滑条值是"大小档位"（XAML 定义 1..100，值越大块越大），**线性映射**到实际网格格数
+    /// [<see cref="StarMapCanvas.MinHeatGridCells"/>, <see cref="StarMapCanvas.MaxHeatGridCells"/>]（范围见 StarMapCanvas 常量，格多块小）。
+    /// 两端解耦：调滑条手感改 XAML 的 Minimum/Maximum，调实际块大小范围改 StarMapCanvas 常量，映射自动适配；
+    /// 存 <see cref="MapCanvasConfig.HeatGridSize"/> 的仍是格数，配置兼容。
     /// </summary>
     private void HeatSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        // XAML 解析期 Minimum 一生效就把 Value 钳到 16 → 触发本事件，此时同面板里排在滑条后面的
+        // XAML 解析期 Minimum 一生效就把 Value 钳到下限 → 触发本事件，此时同面板里排在滑条后面的
         // HeatSizeText（以及极端情况下的 MapCanvas）还没创建，必须防空
         if (_suppressHeatSize || HeatSizeText is null || MapCanvas is null)
         {
@@ -376,11 +391,41 @@ public partial class MapPage : Page
         }
 
         var size = (int)Math.Round(HeatSizeSlider.Value);
-        var cells = StarMapCanvas.MaxHeatGridCells + StarMapCanvas.MinHeatGridCells - size;
+        // 线性映射：档位 100（块最大）→ MinHeatGridCells（40 格）；档位 1（块最小）→ MaxHeatGridCells（200 格）
+        var sliderSpan = HeatSizeSlider.Maximum - HeatSizeSlider.Minimum;
+        var cellSpan = StarMapCanvas.MaxHeatGridCells - StarMapCanvas.MinHeatGridCells;
+        var cells = (int)Math.Round(StarMapCanvas.MinHeatGridCells + cellSpan * (HeatSizeSlider.Maximum - size) / sliderSpan);
         HeatSizeText.Text = size.ToString();
         MapCanvas.SetHeatGridSize(cells);
         var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
         canvas.HeatGridSize = cells;
+        MapSettingService.Save();
+    }
+
+    /// <summary>
+    /// 热力网格偏移按钮（图例面板）：四个方向按 1/4 格步进平移网格原点，「复位」回到默认左上角对齐；
+    /// 偏移随 <see cref="MapCanvasConfig.HeatGridOffsetX"/> / <see cref="MapCanvasConfig.HeatGridOffsetY"/> 持久化。
+    /// </summary>
+    private void HeatOffset_Click(object sender, RoutedEventArgs e)
+    {
+        if (MapCanvas is null)
+        {
+            return;
+        }
+
+        var step = MapCanvas.HeatGridNudgeStep;
+        switch (((FrameworkElement)sender).Tag as string)
+        {
+            case "L": MapCanvas.NudgeHeatGridOffset(-step, 0); break;
+            case "R": MapCanvas.NudgeHeatGridOffset(+step, 0); break;
+            case "U": MapCanvas.NudgeHeatGridOffset(0, -step); break;
+            case "D": MapCanvas.NudgeHeatGridOffset(0, +step); break;
+            default: MapCanvas.ResetHeatGridOffset(); break;
+        }
+
+        var canvas = MapSettingService.Value.Canvas ??= new MapCanvasConfig();
+        canvas.HeatGridOffsetX = MapCanvas.HeatGridOffsetX;
+        canvas.HeatGridOffsetY = MapCanvas.HeatGridOffsetY;
         MapSettingService.Save();
     }
 

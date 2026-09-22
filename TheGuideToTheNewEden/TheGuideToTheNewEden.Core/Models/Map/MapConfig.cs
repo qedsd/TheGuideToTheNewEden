@@ -48,12 +48,28 @@ namespace TheGuideToTheNewEden.Core.Models.Map
 
         private int _heatGridSize = 56;
         /// <summary>
-        /// 热力网格格数（世界长边切成多少格；格数越少色块越大）。使用方需 Clamp 到 16..120。
+        /// 热力网格格数（世界长边切成多少格；格数越少色块越大）。使用方由画布 Clamp 到 Min/MaxHeatGridCells。
         /// </summary>
         public int HeatGridSize
         {
             get => _heatGridSize;
             set => SetProperty(ref _heatGridSize, value);
+        }
+
+        private double _heatGridOffsetX;
+        /// <summary>热力网格原点的归一化偏移（相对数据包围盒左上角，正 = 右移；1.0 = 世界宽）。</summary>
+        public double HeatGridOffsetX
+        {
+            get => _heatGridOffsetX;
+            set => SetProperty(ref _heatGridOffsetX, value);
+        }
+
+        private double _heatGridOffsetY;
+        /// <summary>热力网格原点的归一化偏移（相对数据包围盒左上角，正 = 下移；1.0 = 世界高）。</summary>
+        public double HeatGridOffsetY
+        {
+            get => _heatGridOffsetY;
+            set => SetProperty(ref _heatGridOffsetY, value);
         }
     }
     public class MapIntelConfig : ObservableObject

@@ -2,8 +2,8 @@
     x:Class="TheGuideToTheNewEden.WPF.Views.Pages.MapPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:map="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.Map"
     xmlns:converters="clr-namespace:TheGuideToTheNewEden.WPF.Converters"
+    xmlns:map="clr-namespace:TheGuideToTheNewEden.WPF.Views.UserControls.Map"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Background="Transparent"
     ScrollViewer.CanContentScroll="False">
@@ -33,6 +33,10 @@
             <Setter Property="Foreground" Value="{DynamicResource HudText}" />
         </Style>
 
+        <!--
+            Slider 左右分色样式已上移为全局隐式样式（Controls/GlobalControlStyles.xaml）：左侧主题色、右侧灰；
+            图例"大小"滑条直接走全局样式，HUD 面板上同样可读（主题色画刷随主题、深浅均可辨识）
+        -->
 
     </Page.Resources>
 
@@ -62,6 +66,7 @@
                         MinWidth="130"
                         Margin="8,0,0,0"
                         ItemsSource="{Binding Regions}"
+                        SelectedItem="{Binding SelectedLocateRegion, Mode=TwoWay}"
                         SelectionChanged="RegionCombo_SelectionChanged">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -268,10 +273,10 @@
                 </StackPanel>
                 <!--  右侧：重置视图  -->
                 <ui:Button
-                    DockPanel.Dock="Right"
                     Appearance="Transparent"
                     Click="ResetView_Click"
                     Content="{DynamicResource MapPage_ResetView}"
+                    DockPanel.Dock="Right"
                     ToolTip="{DynamicResource MapPage_ResetView}">
                     <ui:Button.Icon>
                         <ui:SymbolIcon Symbol="ArrowClockwise24" />
@@ -401,7 +406,7 @@
                             FontSize="11"
                             Foreground="{DynamicResource HudDim}"
                             Text="{DynamicResource MapPage_Neighbors}" />
-                        <ItemsControl ItemsSource="{Binding Neighbors}" Margin="0,4,0,0">
+                        <ItemsControl Margin="0,4,0,0" ItemsSource="{Binding Neighbors}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel />
@@ -437,14 +442,15 @@
                 BorderBrush="{DynamicResource HudBorder}"
                 BorderThickness="1"
                 CornerRadius="10">
-                <StackPanel MaxWidth="240">
+                <StackPanel MaxWidth="256">
                     <TextBlock
                         x:Name="LegendTitle"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource HudText}" />
                     <StackPanel x:Name="LegendScale" Margin="0,6,0,0">
-                        <StackPanel x:Name="LegendStrips" Orientation="Horizontal" />
+                        <!--  11 格色条：UniformGrid 等分整行宽度，随图例面板自适应占满  -->
+                        <UniformGrid x:Name="LegendStrips" Rows="1" />
                         <Grid Margin="0,3,0,0">
                             <TextBlock
                                 x:Name="LegendLow"
@@ -464,44 +470,105 @@
                         FontSize="11"
                         Foreground="{DynamicResource HudDim}"
                         TextWrapping="Wrap" />
-                    <!--  热力色块开关：只在行星资源 / 击杀 / 通行三种模式下显示，逐类型独立记忆（落 MapSettings.json）  -->
-                    <StackPanel x:Name="LegendHeatRow" Margin="0,6,0,0" Visibility="Collapsed">
+                    <!--  热力色块开关 + 大小滑条：同一行，只在行星资源 / 击杀 / 通行三种模式下显示，逐类型独立记忆（落 MapSettings.json）  -->
+                    <StackPanel
+                        x:Name="LegendHeatRow"
+                        Margin="0,6,0,0"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed">
                         <CheckBox
                             x:Name="HeatToggle"
+                            Margin="-12,0,0,0"
+                            VerticalAlignment="Center"
                             Checked="HeatToggle_Changed"
                             Content="{DynamicResource MapPage_HeatBlocks}"
                             FontSize="12"
                             Foreground="{DynamicResource HudText}"
                             Unchecked="HeatToggle_Changed" />
-                        <!--  色块大小：滑条值越大块越大（内部镜像换算为网格格数 16..120），全局一份设置  -->
-                        <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="{DynamicResource HudDim}"
-                                Text="{DynamicResource MapPage_HeatGridSize}" />
-                            <Slider
-                                x:Name="HeatSizeSlider"
-                                Width="110"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"
-                                IsMoveToPointEnabled="True"
-                                IsSnapToTickEnabled="True"
-                                LargeChange="8"
-                                Maximum="120"
-                                Minimum="8"
-                                SmallChange="1"
-                                TickFrequency="1"
-                                ValueChanged="HeatSizeSlider_ValueChanged" />
-                            <TextBlock
-                                x:Name="HeatSizeText"
-                                Width="26"
-                                Margin="8,0,0,0"
-                                VerticalAlignment="Center"
-                                FontSize="11"
-                                Foreground="{DynamicResource HudText}"
-                                TextAlignment="Right" />
-                        </StackPanel>
+                        <!--  色块大小：滑条值越大块越大（内部镜像换算为网格格数 8..120），全局一份设置  -->
+                        <TextBlock
+                            Margin="-40,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudDim}"
+                            Text="{DynamicResource MapPage_HeatGridSize}" />
+                        <Slider
+                            x:Name="HeatSizeSlider"
+                            Width="100"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Center"
+                            IsMoveToPointEnabled="True"
+                            IsSnapToTickEnabled="True"
+                            LargeChange="8"
+                            Maximum="100"
+                            Minimum="1"
+                            SmallChange="1"
+                            TickFrequency="1"
+                            ValueChanged="HeatSizeSlider_ValueChanged" />
+                        <TextBlock
+                            x:Name="HeatSizeText"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudText}"
+                            TextAlignment="Right" />
+                    </StackPanel>
+                    <!--  热力网格偏移：方向按钮按 1/4 格步进平移网格原点（默认贴数据包围盒左上角），复位回原点；随热力行同显隐  -->
+                    <StackPanel
+                        x:Name="LegendHeatOffsetRow"
+                        Margin="0,4,0,0"
+                        Orientation="Horizontal"
+                        Visibility="Collapsed">
+                        <TextBlock
+                            Margin="0,0,6,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource HudDim}"
+                            Text="{DynamicResource MapPage_HeatOffset}" />
+                        <Button
+                            MinWidth="26"
+                            MinHeight="22"
+                            Padding="4,0"
+                            Click="HeatOffset_Click"
+                            Content="{ui:SymbolIcon ArrowLeft24}"
+                            FontSize="11"
+                            Tag="L"
+                            ToolTip="{DynamicResource MapPage_HeatOffset}" />
+                        <Button
+                            MinWidth="26"
+                            MinHeight="22"
+                            Padding="4,0"
+                            Click="HeatOffset_Click"
+                            Content="{ui:SymbolIcon ArrowRight24}"
+                            FontSize="11"
+                            Tag="R"
+                            ToolTip="{DynamicResource MapPage_HeatOffset}" />
+                        <Button
+                            MinWidth="26"
+                            MinHeight="22"
+                            Padding="4,0"
+                            Click="HeatOffset_Click"
+                            Content="{ui:SymbolIcon ArrowUp24}"
+                            FontSize="11"
+                            Tag="U"
+                            ToolTip="{DynamicResource MapPage_HeatOffset}" />
+                        <Button
+                            MinWidth="26"
+                            MinHeight="22"
+                            Padding="4,0"
+                            Click="HeatOffset_Click"
+                            Content="{ui:SymbolIcon ArrowDown24}"
+                            FontSize="11"
+                            Tag="D"
+                            ToolTip="{DynamicResource MapPage_HeatOffset}" />
+                        <Button
+                            MinHeight="22"
+                            Margin="4,0,0,0"
+                            Padding="6,0"
+                            Click="HeatOffset_Click"
+                            Content="{DynamicResource MapPage_HeatOffsetReset}"
+                            FontSize="11"
+                            Tag="C" />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -509,7 +576,10 @@
             <!--  加载遮罩  -->
             <Border Background="{DynamicResource MapLoadingBg}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" />
+                    <ui:ProgressRing
+                        Width="48"
+                        Height="48"
+                        IsIndeterminate="True" />
                     <TextBlock
                         Margin="0,12,0,0"
                         HorizontalAlignment="Center"
@@ -523,8 +593,8 @@
                 x:Name="SearchPopup"
                 Width="260"
                 AllowsTransparency="True"
-                PlacementTarget="{Binding ElementName=SearchBox}"
                 Placement="Bottom"
+                PlacementTarget="{Binding ElementName=SearchBox}"
                 PopupAnimation="Fade"
                 StaysOpen="False">
                 <Border
